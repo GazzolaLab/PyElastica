@@ -3,6 +3,11 @@ black:
 	@find . -maxdepth 3 -name '*.py'\
 		| while read -r src; do black "$$src"; done
 
+black_check:
+	@black --version
+	@find . -maxdepth 3 -name '*.py'\
+		| while read -r src; do black --check "$$src"; done
+
 flake8:
 	@flake8 --version
 	@find . -maxdepth 3 -name '*.py'\
@@ -14,3 +19,4 @@ clean:
 		| while read -r src; do jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace "$$src"; done
 
 all:black flake8
+ci:black_check flake8
