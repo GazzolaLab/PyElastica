@@ -203,7 +203,7 @@ class rod(object):
             k[far, 1] = theta_u[far, 0, -1] / self.D_org[far]
             k[far, 2] = theta_u[far, 1, 0] / self.D_org[far]
 
-        return -k
+        return  -k
 
     # Slower version, use inverse_rotate_v
     def inverse_rotate(self,):
