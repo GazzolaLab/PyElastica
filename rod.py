@@ -12,9 +12,10 @@ __email__ = "fchan5@illinois.edu"
 __status__ = "Production"
 
 
-TOL = np.finfo(float).eps * 10.0
-# TOL = 1.0e-12
-
+class Tolerance():
+    @staticmethod
+    def tol():
+        return np.finfo(float).eps * 10.0
 
 class rod(object):
     ###########################
@@ -188,7 +189,7 @@ class rod(object):
         theta = np.around((np.trace(R, axis1=1, axis2=2) - 1.0) / 2.0, 12)
         theta = np.arccos(theta)
 
-        far = np.invert(np.isclose(theta, 0.0, atol=TOL))
+        far = np.invert(np.isclose(theta, 0.0, atol=Tolerance.tol()))
 
         k = np.zeros((self.n - 1, 3))
         theta_u = np.empty((self.n - 1, 3, 3))
@@ -211,7 +212,7 @@ class rod(object):
             t = (np.trace(R) - 1.0) / 2.0
             t = np.around(t, 12)
             theta = np.arccos(t)
-            if np.isclose(theta, 0.0, atol=TOL):
+            if np.isclose(theta, 0.0, atol=Tolerance.tol()):
                 k[i] = np.array([0.0, 0.0, 0.0])
             else:
                 theta_u = (R - R.T) * theta / (2.0 * np.sin(theta))
@@ -226,7 +227,7 @@ class rod(object):
         def normalize(v):
             """ Normalize a vector/ matrix """
             norm = np.linalg.norm(v)
-            if np.isclose(norm, 0.0, atol=TOL):
+            if np.isclose(norm, 0.0, atol=Tolerance.tol()):
                 # raise RuntimeError(
                 #     "Not rotating because axis specified to be zero")
                 # return v
@@ -261,7 +262,7 @@ class rod(object):
         def normalize(v):
             """ Normalize a vector/ matrix """
             norm = np.linalg.norm(v)
-            if np.isclose(norm, 0.0, atol = TOL):
+            if np.isclose(norm, 0.0, atol = Tolerance.tol()):
                 return np.zeros(3)
             return v / norm
         '''
@@ -276,7 +277,7 @@ class rod(object):
         mag = np.linalg.norm(u, axis=1)
         theta *= mag
 
-        rot_idx = np.invert(np.isclose(mag, 0.0, atol=TOL))
+        rot_idx = np.invert(np.isclose(mag, 0.0, atol=Tolerance.tol()))
 
         unorm = np.zeros_like(u)
         if np.any(rot_idx):
