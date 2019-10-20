@@ -21,6 +21,7 @@ from elastica._rotations import (
 
 from elastica.utils import Tolerance
 
+
 ###############################################################################
 ##################### Implementation tests start ##############################
 ###############################################################################
@@ -72,7 +73,7 @@ def test_matrix_diag_map(dim, diag_map):
     assert _get_diag_map(dim) == diag_map
 
 
-def test_skew_symmetrize_impl_two_dimensions():
+def test_skew_symmetrize_correctness_in_two_dimensions():
     dim = 3
     vector = np.hstack((np.random.randn(2), 1))
 
@@ -88,7 +89,7 @@ def test_skew_symmetrize_impl_two_dimensions():
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_skew_symmetrize_impl_three_dimensions(blocksize):
+def test_skew_symmetrize_correctness_in_three_dimensions(blocksize):
     dim = 3
     vector = np.random.randn(dim, blocksize)
     correct_matrix = np.zeros((dim * dim, blocksize))
@@ -105,11 +106,12 @@ def test_skew_symmetrize_impl_three_dimensions(blocksize):
     # reshape and squeeze because we are testing a single vector
     test_matrix = _skew_symmetrize(vector)
 
+    assert test_matrix.shape == (3, 3, blocksize)
     assert_allclose(test_matrix, correct_matrix)
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_skew_symmetrize_sq_impl_three_dimensions(blocksize):
+def test_skew_symmetrize_sq_correctness_in_three_dimensions(blocksize):
     dim = 3
     vector = np.random.randn(dim, blocksize)
     correct_matrix = _skew_symmetrize(vector).reshape(dim, dim, -1)
@@ -118,19 +120,21 @@ def test_skew_symmetrize_sq_impl_three_dimensions(blocksize):
     # reshape and squeeze because we are testing a single vector
     test_matrix = _skew_symmetrize_sq(vector)
 
+    assert test_matrix.shape == (3, 3, blocksize)
     assert_allclose(test_matrix, correct_matrix)
 
 
-def test_get_skew_symmetric_pair_impl():
+def test_get_skew_symmetric_pair_correctness():
     dim = 3
     blocksize = 8
     vector_collection = np.random.randn(dim, blocksize)
     u, u_sq = _get_skew_symmetric_pair(vector_collection)
+    assert u_sq.shape == (3, 3, blocksize)
     assert_allclose(u_sq, _skew_symmetrize_sq(vector_collection))
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_inv_skew_symmetrize_impl(blocksize):
+def test_inv_skew_symmetrize_correctness(blocksize):
     dim = 3
     vector = np.random.randn(dim, blocksize)
     input_matrix = _skew_symmetrize(vector)
@@ -138,19 +142,96 @@ def test_inv_skew_symmetrize_impl(blocksize):
     # reshape and squeeze because we are testing a single vector
     test_vector = _inv_skew_symmetrize(input_matrix)
 
+    assert test_vector.shape == (3, blocksize)
     assert_allclose(test_vector, vector)
 
 
-@pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_construct_rotation_matrix_impl_no_throw(blocksize):
+@pytest.mark.parametrize("zcomp", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
+    vector_collection = np.array([0.0, 0.0, zcomp]).reshape(-1, 1)
+    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_theta = zcomp * dt
+    correct_rot_mat = np.array(
+        [
+            [np.cos(test_theta), -np.sin(test_theta), 0.0],
+            [np.sin(test_theta), np.cos(test_theta), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    ).reshape(3, 3, 1)
+
+    assert test_rot_mat.shape == (3, 3, 1)
+    assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
+
+
+@pytest.mark.parametrize("ycomp", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
+    vector_collection = np.array([0.0, ycomp, 0.0]).reshape(-1, 1)
+    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_theta = ycomp * dt
+    correct_rot_mat = np.array(
+        [
+            [np.cos(test_theta), 0.0, np.sin(test_theta)],
+            [0.0, 1.0, 0.0],
+            [-np.sin(test_theta), 0.0, np.cos(test_theta)],
+        ]
+    ).reshape(3, 3, 1)
+
+    assert test_rot_mat.shape == (3, 3, 1)
+    assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
+
+
+@pytest.mark.parametrize("xcomp", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+def test_get_rotation_matrix_correct_rotation_about_x(xcomp, dt):
+    vector_collection = np.array([xcomp, 0.0, 0.0]).reshape(-1, 1)
+    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_theta = xcomp * dt
+    correct_rot_mat = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(test_theta), -np.sin(test_theta)],
+            [0.0, np.sin(test_theta), np.cos(test_theta)],
+        ]
+    ).reshape(3, 3, 1)
+
+    assert test_rot_mat.shape == (3, 3, 1)
+    assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
+
+
+def test_get_rotation_matrix_correctness_in_three_dimensions():
+    # A rotation of 120 degrees about x=y=z gives
+    # the permutation matrix P
+    # {\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}}
+    vector_collection = np.array([1.0, 1.0, 1.0]) / np.sqrt(3.0)
+    vector_collection = vector_collection.reshape(-1, 1)
+    theta = np.deg2rad(120.0)
+    test_rot_mat = _construct_rotation_matrix(theta, vector_collection)
+    correct_rot_mat = np.roll(np.eye(3), -1, axis=1).reshape(3, 3, 1)
+
+    assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
+
+
+@pytest.mark.parametrize("blocksize", [32, 128, 512])
+def test_get_rotation_matrix_correctness(blocksize):
     dim = 3
-    vector_collection = np.random.randn(dim, blocksize)
     dt = np.random.random_sample()
-    _construct_rotation_matrix(dt, vector_collection)
-    assert True
+    vector_collection = np.random.randn(dim).reshape(-1, 1)
+    correct_rot_mat_collection = _construct_rotation_matrix(
+        dt, vector_collection.copy()
+    )
+    correct_rot_mat_collection = np.tile(correct_rot_mat_collection, blocksize)
+
+    # Construct
+    test_vector_collection = np.tile(vector_collection, blocksize)
+    test_rot_mat_collection = _construct_rotation_matrix(dt, test_vector_collection)
+
+    assert test_rot_mat_collection.shape == (3, 3, blocksize)
+    assert_allclose(test_rot_mat_collection, correct_rot_mat_collection)
 
 
-def test_rotation_matrix_impl_is_orthonormal():
+def test_get_rotation_matrix_gives_orthonormal_matrices():
     dim = 3
     blocksize = 2
     dt = np.random.random_sample()
