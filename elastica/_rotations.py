@@ -4,8 +4,6 @@ from itertools import combinations
 
 import numpy as np
 
-from .utils import isqrt
-
 
 # TODO Check feasiblity of Quaternions here
 
@@ -21,7 +19,7 @@ def _generate_skew_map(dim: int):
         # matrix indices
         tgt_idx = dim * i + j
         # Sign-bit to check order of entries
-        sign = (-1) ** (tgt_idx)
+        sign = (-1) ** tgt_idx
         # idx in v
         # TODO Wrong formulae, but works for two and three dimensions
         src_idx = dim - (i + j)
@@ -246,8 +244,10 @@ def _construct_rotation_matrix(dt: float, omega_collection):
     Returns
     -------
 
+    # TODO include microbechmark results
     """
-    # First normalize omega
+    # First normalize omega, this is approx 2x faster than
+    # np.linalg.norm(omega_collection, ord=2, axis=0) for bs=128
     theta = np.sqrt(np.einsum("ij,ij->j", omega_collection, omega_collection))
     omega_collection /= theta
 
@@ -276,6 +276,8 @@ def _construct_rotation_matrix(dt: float, omega_collection):
 
 def _rotate(director_collection, dt: float, omega_collection):
     """
+    Does alibi rotations
+    https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
 
     Parameters
     ----------
@@ -286,10 +288,65 @@ def _rotate(director_collection, dt: float, omega_collection):
     Returns
     -------
 
-    """
     # TODO Finish documentation
+    """
     return np.einsum(
         "ijk,jlk->ilk",
         _construct_rotation_matrix(dt, omega_collection),
         director_collection,
     )
+
+
+def _inv_rotate(director_collection):
+    """
+    Calculated rate of change using Rodrigues' formula
+
+    Parameters
+    ----------
+    director_collection : The collection of frames/directors at every element,
+    numpy.ndarray of shape (dim, dim, n)
+
+    Returns
+    -------
+    vector_collection : The collection of axes around which the body rotates
+    numpy.ndarray of shape (dim, n)
+
+    Note
+    ----
+    Routine bogged down by 6ms for index checking, gets
+    37.4 µs ± 1.04 µs per loop
+
+    """
+
+    # Q_{i+i}Q^T_{i} collection
+    rotmat_collection = np.einsum(
+        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+    )
+
+    # Returns rate-of-change direction as a collection unit vectors
+    #  unit vector              skew-symmetrize the collection
+    #       |                              |                collection transpose
+    #       |                              |                     |
+    vector_collection = _inv_skew_symmetrize(
+        rotmat_collection - np.einsum("ijk->jik", rotmat_collection)
+    )
+
+    # Returns magnitude of rotation along the above vector_collection
+    #  theta vector              Rodrigues formula from trace invariance Tr(R) = 1 + 2cos(\theta)
+    #       |         angle from trace                 trace calculation
+    #       |              |                                  |
+    theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
+
+    # Get filter of entities that are close to 0.0
+    # Loses performance significantly because of this unavoidable condition
+    # Not using utils.Tolerance.tol() because performance intensive loop
+    # but it adds only 3-4 µs or so...
+    filter_idx = np.where(np.abs(theta_collection) < 1e-14)
+
+    # Scale the vector collection by \theta/sin(\theta), from Rodrigues
+    vector_collection *= theta_collection / np.sin(theta_collection)
+
+    # Set filter_idx locations to 0.0
+    vector_collection[..., filter_idx] = 0.0
+
+    return vector_collection
