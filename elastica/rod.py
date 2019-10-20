@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
+from .utils import Tolerance
 
 __author__ = "Fan Kiat Chan"
 __copyright__ = "Copyright 2019, Elastica Python"
@@ -10,8 +11,6 @@ __version__ = "0.1.0"
 __maintainer__ = "Fan Kiat Chan"
 __email__ = "fchan5@illinois.edu"
 __status__ = "Production"
-
-
 
 
 class rod(object):
