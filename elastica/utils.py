@@ -2,6 +2,7 @@
 """
 __all__ = ["isqrt"]
 import functools
+from numpy import finfo, float64
 
 
 # Slower than the python3.8 isqrt implementation for small ints
@@ -59,3 +60,26 @@ class MaxDimension:
         3, static value
         """
         return 3
+
+class Tolerance:
+    @staticmethod
+    def atol():
+        """
+        Static absolute tolerance method
+
+        Returns
+        -------
+        atol : library-wide set absolute tolerance for kernels
+        """
+        return finfo(float64).eps * 10.0
+
+    @staticmethod
+    def rtol():
+        """
+        Static relative tolerance method
+
+        Returns
+        -------
+        tol : library-wide set relative tolerance for kernels
+        """
+        return finfo(float64).eps * 10.0
