@@ -233,7 +233,7 @@ def _inv_skew_symmetrize(matrix):
     return vector
 
 
-def _construct_rotation_matrix(dt: float, omega_collection):
+def _get_rotation_matrix(dt: float, omega_collection):
     """
 
     Parameters
@@ -298,9 +298,7 @@ def _rotate(director_collection, dt: float, omega_collection):
     # TODO Finish documentation
     """
     return np.einsum(
-        "ijk,jlk->ilk",
-        _construct_rotation_matrix(dt, omega_collection),
-        director_collection,
+        "ijk,jlk->ilk", _get_rotation_matrix(dt, omega_collection), director_collection
     )
 
 

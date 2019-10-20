@@ -16,7 +16,7 @@ from elastica._rotations import (
     _inv_skew_symmetrize,  # noqa
     _skew_symmetrize,  # noqa
     _skew_symmetrize_sq,  # noqa
-    _construct_rotation_matrix,  # noqa
+    _get_rotation_matrix,  # noqa
 )
 
 from elastica.utils import Tolerance
@@ -150,7 +150,7 @@ def test_inv_skew_symmetrize_correctness(blocksize):
 @pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
 def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     vector_collection = np.array([0.0, 0.0, zcomp]).reshape(-1, 1)
-    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = zcomp * dt
     correct_rot_mat = np.array(
         [
@@ -168,7 +168,7 @@ def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
 @pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
 def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     vector_collection = np.array([0.0, ycomp, 0.0]).reshape(-1, 1)
-    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = ycomp * dt
     correct_rot_mat = np.array(
         [
@@ -186,7 +186,7 @@ def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
 @pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
 def test_get_rotation_matrix_correct_rotation_about_x(xcomp, dt):
     vector_collection = np.array([xcomp, 0.0, 0.0]).reshape(-1, 1)
-    test_rot_mat = _construct_rotation_matrix(dt, vector_collection)
+    test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = xcomp * dt
     correct_rot_mat = np.array(
         [
@@ -207,25 +207,25 @@ def test_get_rotation_matrix_correctness_in_three_dimensions():
     vector_collection = np.array([1.0, 1.0, 1.0]) / np.sqrt(3.0)
     vector_collection = vector_collection.reshape(-1, 1)
     theta = np.deg2rad(120.0)
-    test_rot_mat = _construct_rotation_matrix(theta, vector_collection)
+    test_rot_mat = _get_rotation_matrix(theta, vector_collection)
     correct_rot_mat = np.roll(np.eye(3), -1, axis=1).reshape(3, 3, 1)
 
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
-def test_get_rotation_matrix_correctness(blocksize):
+def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
     dim = 3
     dt = np.random.random_sample()
     vector_collection = np.random.randn(dim).reshape(-1, 1)
     # No need for copying the vector collection here, as we now create
     # new arrays inside
-    correct_rot_mat_collection = _construct_rotation_matrix(dt, vector_collection)
+    correct_rot_mat_collection = _get_rotation_matrix(dt, vector_collection)
     correct_rot_mat_collection = np.tile(correct_rot_mat_collection, blocksize)
 
     # Construct
     test_vector_collection = np.tile(vector_collection, blocksize)
-    test_rot_mat_collection = _construct_rotation_matrix(dt, test_vector_collection)
+    test_rot_mat_collection = _get_rotation_matrix(dt, test_vector_collection)
 
     assert test_rot_mat_collection.shape == (3, 3, blocksize)
     assert_allclose(test_rot_mat_collection, correct_rot_mat_collection)
@@ -233,9 +233,9 @@ def test_get_rotation_matrix_correctness(blocksize):
 
 def test_get_rotation_matrix_gives_orthonormal_matrices():
     dim = 3
-    blocksize = 2
+    blocksize = 16
     dt = np.random.random_sample()
-    rot_mat = _construct_rotation_matrix(dt, np.random.randn(dim, blocksize))
+    rot_mat = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
 
     r_rt = np.einsum("ijk,ljk->ilk", rot_mat, rot_mat)
     rt_r = np.einsum("jik,jlk->ilk", rot_mat, rot_mat)
