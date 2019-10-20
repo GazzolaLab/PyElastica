@@ -12,10 +12,11 @@ __email__ = "fchan5@illinois.edu"
 __status__ = "Production"
 
 
-class Tolerance():
+class Tolerance:
     @staticmethod
     def tol():
         return np.finfo(float).eps * 10.0
+
 
 class rod(object):
     ###########################
