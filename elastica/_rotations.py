@@ -233,13 +233,13 @@ def _inv_skew_symmetrize(matrix):
     return vector
 
 
-def _get_rotation_matrix(dt: float, omega_collection):
+def _get_rotation_matrix(scale: float, axis_collection):
     """
 
     Parameters
     ----------
-    dt
-    omega_collection
+    scale
+    axis_collection
 
     Returns
     -------
@@ -247,22 +247,22 @@ def _get_rotation_matrix(dt: float, omega_collection):
     # TODO include microbechmark results
     """
     # First normalize omega, this is approx 2x faster than
-    # np.linalg.norm(omega_collection, ord=2, axis=0) for bs=128
-    theta = np.sqrt(np.einsum("ij,ij->j", omega_collection, omega_collection))
+    # np.linalg.norm(axis_collection, ord=2, axis=0) for bs=128
+    theta = np.sqrt(np.einsum("ij,ij->j", axis_collection, axis_collection))
 
     # Get skew symmetric U and U * U
-    # Comes first before theta gets multiplied by dt, see rationale
+    # Comes first before theta gets multiplied by scale, see rationale
     # in the block comment below
-    u, u_sq = _get_skew_symmetric_pair(omega_collection / theta)
+    u, u_sq = _get_skew_symmetric_pair(axis_collection / theta)
 
     # Nasty bug, as it changes the state of a passed in variable
     # This gets transmitted back to the user scope
     # Avoid doing in-place transformations, send as omega/theta instead
     # as show above
-    # omega_collection /= theta
+    # axis_collection /= theta
 
-    # Multiply theta by dt (efficient, as 1D) and get prefixes
-    theta *= dt
+    # Multiply theta by scale (efficient, as 1D) and get prefixes
+    theta *= scale
     u_prefix = np.sin(theta)
     u_sq_prefix = 1.0 - np.cos(theta)
 
@@ -272,7 +272,7 @@ def _get_rotation_matrix(dt: float, omega_collection):
     """Both these versions are almost equivalent, both in time and memory
     keeping second for ease of us"""
 
-    # dim, _ = omega_collection.shape
+    # dim, _ = axis_collection.shape
     # for idx in iters(dim):
     #     rot_mat[idx, :] += 1.0
 
@@ -281,7 +281,7 @@ def _get_rotation_matrix(dt: float, omega_collection):
     return rot_mat
 
 
-def _rotate(director_collection, dt: float, omega_collection):
+def _rotate(director_collection, scale: float, axis_collection):
     """
     Does alibi rotations
     https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
@@ -289,8 +289,8 @@ def _rotate(director_collection, dt: float, omega_collection):
     Parameters
     ----------
     director_collection
-    dt
-    omega_collection
+    scale
+    axis_collection
 
     Returns
     -------
@@ -298,7 +298,9 @@ def _rotate(director_collection, dt: float, omega_collection):
     # TODO Finish documentation
     """
     return np.einsum(
-        "ijk,jlk->ilk", _get_rotation_matrix(dt, omega_collection), director_collection
+        "ijk,jlk->ilk",
+        _get_rotation_matrix(scale, axis_collection),
+        director_collection,
     )
 
 
