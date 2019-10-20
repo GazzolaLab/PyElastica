@@ -61,6 +61,7 @@ class MaxDimension:
         """
         return 3
 
+
 class Tolerance:
     @staticmethod
     def atol():
