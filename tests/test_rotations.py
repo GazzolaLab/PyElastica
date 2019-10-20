@@ -19,6 +19,7 @@ from elastica._rotations import (
     _construct_rotation_matrix,  # noqa
 )
 
+from elastica.utils import Tolerance
 
 ###############################################################################
 ##################### Implementation tests start ##############################
@@ -159,9 +160,9 @@ def test_rotation_matrix_impl_is_orthonormal():
     rt_r = np.einsum("jik,jlk->ilk", rot_mat, rot_mat)
 
     test_mat = np.array([np.eye(dim) for _ in range(blocksize)]).T
-    # We can't get there fully, but 1e-12 suffices in precision
-    assert_allclose(r_rt, test_mat, atol=1e-12)
-    assert_allclose(rt_r, test_mat, atol=1e-12)
+    # We can't get there fully, but 1e-15 suffices in precision
+    assert_allclose(r_rt, test_mat, atol=Tolerance.atol())
+    assert_allclose(rt_r, test_mat, atol=Tolerance.atol())
 
 
 ###############################################################################
