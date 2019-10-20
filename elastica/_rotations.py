@@ -12,6 +12,7 @@ from .utils import isqrt
 
 @functools.lru_cache(maxsize=1)
 def _generate_skew_map(dim: int):
+    # TODO Documentation
     # Preallocate
     mapping_list = [None] * ((dim ** 2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
@@ -61,6 +62,7 @@ def _get_skew_map(dim):
 
 @functools.lru_cache(maxsize=1)
 def _get_inv_skew_map(dim):
+    # TODO Documentation
     # (vec_src, mat_i, mat_j, sign)
     mapping_list = _generate_skew_map(dim)
 
@@ -93,19 +95,26 @@ def _get_diag_map(dim):
 
 
 def _skew_symmetrize(vector):
-    """ Generate an orthogonal matrix from vector elements
+    """
 
-    Input:
-    vector : (dim, blocksize) numpy.ndarray
-    output : (dim*dim, blocksize) numpy.ndarray corresponding to
-    [0, -z, y, z, 0, -x, -y , x, 0]
+    Parameters
+    ----------
+    vector : numpy.ndarray of shape (dim, blocksize)
 
-    Note : Gets close to the hard-coded implementation in time
-    but with slightly high memory requirement for iteration.
+    Returns
+    -------
+    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
+             [0, -z, y, z, 0, -x, -y , x, 0]
+
+    Note
+    ----
+    Gets close to the hard-coded implementation in time but with slightly
+    high memory requirement for iteration.
 
     For blocksize=128,
     hardcoded : 5.9 µs ± 186 ns per loop
     this : 6.19 µs ± 79.2 ns per loop
+
     """
     dim, blocksize = vector.shape
     skewed = np.zeros((dim, dim, blocksize))
@@ -121,14 +130,21 @@ def _skew_symmetrize(vector):
 # This is purely for testing and optimization sake
 # While calculating u^2, use u with einsum instead, as it is tad bit faster
 def _skew_symmetrize_sq(vector):
-    """ Generate the square of an orthogonal matrix from vector elements
+    """
+    Generate the square of an orthogonal matrix from vector elements
 
-    Input:
-    vector : (dim, blocksize) numpy.ndarray
-    output : (dim*dim, blocksize) numpy.ndarray corresponding to
-    [-(y^2+z^2), xy, xz, yx, -(x^2+z^2), yz, zx, zy, -(x^2+y^2)]
+    Parameters
+    ----------
+    vector : numpy.ndarray of shape (dim, blocksize)
 
-    Note : Faster than hard-coded implementation in time with slightly high
+    Returns
+    -------
+    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
+             [-(y^2+z^2), xy, xz, yx, -(x^2+z^2), yz, zx, zy, -(x^2+y^2)]
+
+    Note
+    ----
+    Faster than hard-coded implementation in time with slightly high
     memory requirement for einsum calculation.
 
     For blocksize=128,
@@ -175,8 +191,13 @@ def _skew_symmetrize_sq(vector):
 def _get_skew_symmetric_pair(vector_collection):
     """
 
-    :param vector_collection:
-    :return:
+    Parameters
+    ----------
+    vector_collection
+
+    Returns
+    -------
+
     """
     u = _skew_symmetrize(vector_collection)
     u_sq = np.einsum("ijk,jlk->ilk", u, u)
@@ -184,15 +205,19 @@ def _get_skew_symmetric_pair(vector_collection):
 
 
 def _inv_skew_symmetrize(matrix):
-    """ Return the vector elements from a skew-symmetric matrix M
+    """
+    Return the vector elements from a skew-symmetric matrix M
 
-    Input:
-        matrix, np.ndarray of dimension (dim, dim, blocksize)
+    Parameters
+    ----------
+    matrix : np.ndarray of dimension (dim, dim, blocksize)
 
-    Output:
-        vector, np.ndarray of dimension (dim, blocksize)
+    Returns
+    -------
+    vector : np.ndarray of dimension (dim, blocksize)
 
-    Note:
+    Note
+    ----
     Harcoded : 2.28 µs ± 63.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
     This : 2.91 µs ± 58.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
     """
@@ -211,6 +236,17 @@ def _inv_skew_symmetrize(matrix):
 
 
 def _construct_rotation_matrix(dt: float, omega_collection):
+    """
+
+    Parameters
+    ----------
+    dt
+    omega_collection
+
+    Returns
+    -------
+
+    """
     # First normalize omega
     theta = np.sqrt(np.einsum("ij,ij->j", omega_collection, omega_collection))
     omega_collection /= theta
@@ -241,11 +277,17 @@ def _construct_rotation_matrix(dt: float, omega_collection):
 def _rotate(director_collection, dt: float, omega_collection):
     """
 
-    :param director_collection:
-    :param dt:
-    :param omega_collection:
-    :return:
+    Parameters
+    ----------
+    director_collection
+    dt
+    omega_collection
+
+    Returns
+    -------
+
     """
+    # TODO Finish documentation
     return np.einsum(
         "ijk,jlk->ilk",
         _construct_rotation_matrix(dt, omega_collection),
