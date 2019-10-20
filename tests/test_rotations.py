@@ -218,9 +218,9 @@ def test_get_rotation_matrix_correctness(blocksize):
     dim = 3
     dt = np.random.random_sample()
     vector_collection = np.random.randn(dim).reshape(-1, 1)
-    correct_rot_mat_collection = _construct_rotation_matrix(
-        dt, vector_collection.copy()
-    )
+    # No need for copying the vector collection here, as we now create
+    # new arrays inside
+    correct_rot_mat_collection = _construct_rotation_matrix(dt, vector_collection)
     correct_rot_mat_collection = np.tile(correct_rot_mat_collection, blocksize)
 
     # Construct

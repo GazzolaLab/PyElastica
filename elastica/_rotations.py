@@ -249,15 +249,22 @@ def _construct_rotation_matrix(dt: float, omega_collection):
     # First normalize omega, this is approx 2x faster than
     # np.linalg.norm(omega_collection, ord=2, axis=0) for bs=128
     theta = np.sqrt(np.einsum("ij,ij->j", omega_collection, omega_collection))
-    omega_collection /= theta
+
+    # Get skew symmetric U and U * U
+    # Comes first before theta gets multiplied by dt, see rationale
+    # in the block comment below
+    u, u_sq = _get_skew_symmetric_pair(omega_collection / theta)
+
+    # Nasty bug, as it changes the state of a passed in variable
+    # This gets transmitted back to the user scope
+    # Avoid doing in-place transformations, send as omega/theta instead
+    # as show above
+    # omega_collection /= theta
 
     # Multiply theta by dt (efficient, as 1D) and get prefixes
     theta *= dt
     u_prefix = np.sin(theta)
     u_sq_prefix = 1.0 - np.cos(theta)
-
-    # Get skew symmetric U and U * U
-    u, u_sq = _get_skew_symmetric_pair(omega_collection)
 
     # Start rotate_mat minus the \delta_ij
     rot_mat = u_prefix * u + u_sq_prefix * u_sq
