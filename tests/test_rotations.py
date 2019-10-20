@@ -17,6 +17,7 @@ from elastica._rotations import (
     _skew_symmetrize,  # noqa
     _skew_symmetrize_sq,  # noqa
     _get_rotation_matrix,  # noqa
+    _rotate,
 )
 
 from elastica.utils import Tolerance
@@ -256,6 +257,46 @@ def test_get_rotation_matrix_gives_unit_determinant():
     correct_det_collection = 1.0 + 0.0 * test_det_collection
 
     assert_allclose(correct_det_collection, test_det_collection)
+
+
+def test_rotate_correctness():
+    dim = 3
+    blocksize = 16
+
+    def get_aligned_director_collection(theta_collection):
+        sins = np.sin(theta_collection)
+        coss = np.cos(theta_collection)
+        # Get basic director out, then modify it as you like
+        dir = np.tile(np.eye(3).reshape(3, 3, 1), blocksize)
+        dir[0, 0, ...] = coss
+        dir[0, 1, ...] = -sins
+        dir[1, 0, ...] = sins
+        dir[1, 1, ...] = coss
+
+        return dir
+
+    base_angle = np.deg2rad(np.linspace(0.0, 90.0, blocksize))
+    rotated_by = np.deg2rad(15.0) + 0.0 * base_angle
+    rotated_about = np.array([0.0, 0.0, 1.0]).reshape(-1, 1)
+
+    director_collection = get_aligned_director_collection(base_angle)
+    # print(director_collection.shape)
+    axis_collection = np.tile(rotated_about, blocksize)
+    axis_collection *= rotated_by
+    dt = 1.0
+
+    test_rotated_director_collection = _rotate(director_collection, dt, axis_collection)
+    correct_rotation = rotated_by + 1.0 * base_angle
+    correct_rotated_director_collection = get_aligned_director_collection(
+        correct_rotation
+    )
+
+    assert test_rotated_director_collection.shape == (3, 3, blocksize)
+    assert_allclose(
+        test_rotated_director_collection,
+        correct_rotated_director_collection,
+        atol=Tolerance.atol(),
+    )
 
 
 ###############################################################################
