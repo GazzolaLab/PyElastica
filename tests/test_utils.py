@@ -4,7 +4,7 @@ __doc__ = """Test utility scripts"""
 
 import pytest
 
-from elastica.utils import *
+from elastica.utils import isqrt
 
 
 def test_isqrt_with_zero():
