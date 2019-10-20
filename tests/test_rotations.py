@@ -246,6 +246,18 @@ def test_get_rotation_matrix_gives_orthonormal_matrices():
     assert_allclose(rt_r, test_mat, atol=Tolerance.atol())
 
 
+def test_get_rotation_matrix_gives_unit_determinant():
+    dim = 3
+    blocksize = 16
+    dt = np.random.random_sample()
+    test_rot_mat_collection = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
+
+    test_det_collection = np.linalg.det(test_rot_mat_collection.T)
+    correct_det_collection = 1.0 + 0.0 * test_det_collection
+
+    assert_allclose(correct_det_collection, test_det_collection)
+
+
 ###############################################################################
 ##################### Implementation tests finis ##############################
 ###############################################################################
