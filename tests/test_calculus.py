@@ -6,27 +6,47 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica._calculus import _trapezoidal
+from elastica._calculus import _trapezoidal, _two_point_difference
 
 
+class Trapezoidal:
+    kernel = _trapezoidal
 
-@pytest.fixture()
-def oned_trapezoidal():
-    blocksize = 32
-    input_vector = np.random.randn(blocksize)
+    @staticmethod
+    def oned_setup():
+        blocksize = 32
+        input_vector = np.random.randn(blocksize)
 
-    first_element = 0.5 * input_vector[0]
-    last_element = 0.5 * input_vector[-1]
-    correct_vector = np.hstack(
-        (first_element, 0.5 * (input_vector[1:] + input_vector[:-1]), last_element)
-    )
+        first_element = 0.5 * input_vector[0]
+        last_element = 0.5 * input_vector[-1]
+        correct_vector = np.hstack(
+            (first_element, 0.5 * (input_vector[1:] + input_vector[:-1]), last_element)
+        )
 
-    return input_vector, correct_vector
+        return input_vector, correct_vector
 
 
+class Difference:
+    kernel = _two_point_difference
+
+    @staticmethod
+    def oned_setup():
+        blocksize = 32
+        input_vector = np.random.randn(blocksize)
+
+        first_element = input_vector[0]
+        last_element = -input_vector[-1]
+        correct_vector = np.hstack(
+            (first_element, (input_vector[1:] - input_vector[:-1]), last_element)
+        )
+
+        return input_vector, correct_vector
+
+
+@pytest.mark.parametrize("Setup", [Trapezoidal, Difference])
 @pytest.mark.parametrize("ndim", [1, 2, 3])
-def test_trapezoidal_integrity(oned_trapezoidal, ndim):
-    input_vector_oned, correct_vector_oned = oned_trapezoidal
+def test_two_point_difference_integrity(Setup, ndim):
+    input_vector_oned, correct_vector_oned = Setup.oned_setup()
     dim = 3
     test_vector = input_vector = correct_vector = 0.0
 
@@ -37,15 +57,15 @@ def test_trapezoidal_integrity(oned_trapezoidal, ndim):
 
     if ndim == 1:
         input_vector = input_vector_oned
-        test_vector = _trapezoidal(input_vector)
+        test_vector = Setup.kernel(input_vector)
         correct_vector = correct_vector_oned
     if ndim == 2:
         input_vector = setup(input_vector_oned, dim)
-        test_vector = _trapezoidal(input_vector)
+        test_vector = Setup.kernel(input_vector)
         correct_vector = setup(correct_vector_oned, dim)
     if ndim == 3:
         input_vector = setup(input_vector_oned, dim * dim)
-        test_vector = _trapezoidal(input_vector)
+        test_vector = Setup.kernel(input_vector)
         correct_vector = setup(correct_vector_oned, dim * dim)
         input_vector = input_vector.reshape(dim, dim, -1)
         test_vector = test_vector.reshape(dim, dim, -1)
@@ -56,14 +76,39 @@ def test_trapezoidal_integrity(oned_trapezoidal, ndim):
 
 
 def test_trapezoidal_correctness():
+    """
+    Tests integral of a function f:[a,b]-> R,
+         \int_{a}^{b} f -> R
+    where f satisfies the conditions f(a) = f(b) = 0.0
+    """
     blocksize = 32
     a = 0.0
     b = np.pi
     dh = (b - a) / (blocksize - 1)
 
-    # Should integrate this well
-    input_vector = np.sin(np.linspace(0.0, np.pi, blocksize))
+    # Should integrate this well, as end
+    input_vector = np.sin(np.linspace(a, b, blocksize))
     test_vector = _trapezoidal(input_vector[1:-1]) * dh
 
     # Pathetic error of 1e-2 :(
     assert_allclose(np.sum(test_vector), 2.0, atol=1e-2)
+
+
+def test_two_point_difference_correctness():
+    """
+    Tests difference of a function f:[a,b]-> R, i.e
+        D f[a,b] -> df[a,b]
+    where f satisfies the conditions f(a) = f(b) = 0.0
+    """
+    blocksize = 128
+    a = 0.0
+    b = np.pi
+    dh = (b - a) / (blocksize - 1)
+
+    # Should integrate this well
+    input_vector = np.sin(np.linspace(a, b, blocksize))
+    test_vector = _two_point_difference(input_vector[1:-1]) / dh
+    correct_vector = np.cos(np.linspace(a, b, blocksize - 1))
+
+    # Pathetic error of 1e-2 :(
+    assert_allclose(test_vector, correct_vector, atol=1e-2)

@@ -38,3 +38,24 @@ def _trapezoidal(array_collection):
     return 0.5 * (padded_collection[..., :-1] + padded_collection[..., 1:])
 
 
+def _two_point_difference(array_collection):
+    """
+
+    Parameters
+    ----------
+    array_collection
+
+    Returns
+    -------
+
+    Note
+    ----
+    Not using numpy.pad for performance reasons
+    with pad : 23.3 µs ± 1.65 µs per loop
+    without pad (this version) : 8.3 µs ± 195 ns per loop
+
+    getting the array shape and ndim seems to add ±0.5 µs difference
+    """
+    zero_array = _get_zero_array(array_collection.shape[0], array_collection.ndim)
+    padded_collection = np.hstack((zero_array, array_collection, zero_array))
+    return padded_collection[..., 1:] - padded_collection[..., :-1]
