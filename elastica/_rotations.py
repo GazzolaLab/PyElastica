@@ -348,6 +348,7 @@ def _inv_rotate(director_collection):
     # Loses performance significantly because of this unavoidable condition
     # Not using utils.Tolerance.tol() because performance intensive loop
     # but it adds only 3-4 µs or so...
+    # TODO Understand how people resolve this singularity as lim x->0, x/sinx -> 1
     filter_idx = np.where(np.abs(theta_collection) < 1e-14)
 
     # Scale the vector collection by \theta/sin(\theta), from Rodrigues
