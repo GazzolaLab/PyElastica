@@ -1,0 +1,38 @@
+language: python
+notifications:
+        email: false
+
+jobs:
+    include:
+           # LINUX MACHINE #
+           - name: " Python 3.6 Linux "
+             python: 3.6
+           - name: " Python 3.7 Linux "
+             python: 3.7
+           
+           # macOSx MACHINE #
+           - name: " Python 3.6.5 macOSx 10.13"
+             os: osx
+             osx_image: xcode10.13 # Python 3.6.5 running on macOS 10.13
+             language: shell     # 'language python' is an error on Travis CI macOs
+           - name: " Python 3.7.3 macOSx 10.14"
+             os: osx 
+             osx_image: xcode11 # Python 3.7.3 runnning on macOsx 10.14
+             language: shell      # 'language python' is an error on Travis CI macOs
+            
+# command to install dependencies
+before_install:
+        - python3 --version
+        - pip3 install --upgrade pip
+        - pip3 install -r requirements.txt
+        - pip3 install -r tests/requirements.txt
+
+# command to run tests
+script:
+        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then python3 -m pytest --cov=elastica --cov-report=xml; else python3 -m pytest; fi
+        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then make ci; fi
+
+after_success:
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
+          codecov;
+      fi
