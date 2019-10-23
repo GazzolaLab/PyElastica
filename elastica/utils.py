@@ -84,3 +84,28 @@ class Tolerance:
         tol : library-wide set relative tolerance for kernels
         """
         return finfo(float64).eps * 10.0
+
+
+def perm_parity(lst):
+    """
+    Given a permutation of the digits 0..N in order as a list,
+    returns its parity (or sign): +1 for even parity; -1 for odd.
+
+    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
+    licensed with a MIT License
+
+    Parameters
+    ----------
+    lst
+
+    Returns
+    -------
+
+    """
+    parity = 1
+    for i in range(0, len(lst) - 1):
+        if lst[i] != i:
+            parity *= -1
+            mn = min(range(i, len(lst)), key=lst.__getitem__)
+            lst[i], lst[mn] = lst[mn], lst[i]
+    return parity
