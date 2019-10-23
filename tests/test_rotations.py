@@ -18,6 +18,7 @@ from elastica._rotations import (
     _skew_symmetrize_sq,  # noqa
     _get_rotation_matrix,  # noqa
     _rotate,
+    _inv_rotate,
 )
 
 from elastica.utils import Tolerance
@@ -214,6 +215,34 @@ def test_get_rotation_matrix_correctness_in_three_dimensions():
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
+def test_get_rotation_matrix_correctness_against_canned_example():
+    """
+    Computer test code at page 5-7 from
+
+    "Rotation, Reflection, and Frame Changes
+    Orthogonal tensors in computational engineering mechanics"
+    by Rebecca Brennen, 2018, IOP
+
+    Returns
+    -------
+
+    """
+    vector_collection = np.array([1, 3.2, 7])
+    vector_collection /= np.linalg.norm(vector_collection)
+    vector_collection = vector_collection.reshape(-1, 1)
+    theta = np.deg2rad(76.0)
+    test_rot_mat = _get_rotation_matrix(theta, vector_collection)
+    correct_rot_mat = np.array(
+        [
+            [0.254506, -0.834834, 0.488138],
+            [0.915374, 0.370785, 0.156873],
+            [-0.311957, 0.406903, 0.858552],
+        ]
+    ).reshape(3, 3, 1)
+
+    assert_allclose(test_rot_mat, correct_rot_mat, atol=1e-6)
+
+
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
 def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
     dim = 3
@@ -297,6 +326,77 @@ def test_rotate_correctness():
         correct_rotated_director_collection,
         atol=Tolerance.atol(),
     )
+
+
+def test_inv_rotate_correctness_simple_in_three_dimensions():
+    # A rotation of 120 degrees about x=y=z gives
+    # the permutation matrix P
+    # {\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}}
+    # Hence if we pass in I and P, the vector returned should be
+    # along [1.0, 1.0, 1.0] / sqrt(3.0) with a rotation of angle = 120/180 * pi
+    rotate_from_matrix = np.eye(3).reshape(3, 3, 1)
+    rotate_to_matrix = np.roll(np.eye(3), -1, axis=1).reshape(3, 3, 1)
+    input_director_collection = np.dstack((rotate_from_matrix, rotate_to_matrix))
+
+    correct_axis_collection = np.ones((3, 1)) / np.sqrt(3.0)
+    test_axis_collection = _inv_rotate(input_director_collection)
+
+    correct_angle = np.deg2rad(120)
+    test_angle = np.linalg.norm(test_axis_collection, axis=0)  # (3,1)
+    test_axis_collection /= test_angle
+
+    assert_allclose(
+        test_axis_collection, correct_axis_collection, atol=Tolerance.atol()
+    )
+    assert_allclose(test_angle, correct_angle, atol=Tolerance.atol())
+
+
+# TODO Resolve ambiguity with signs. TOP PRIORITY!!!!!!!!!!!!!!!
+@pytest.mark.xfail
+@pytest.mark.parametrize("blocksize", [32, 128, 512])
+def test_inv_rotate_correctness_across_blocksizes_in_two_dimensions(blocksize):
+    """ Construct a circle, which we know has constant curvature,
+    and see if inv_rotate gives us the correct axis of rotation and the angle
+    of change
+
+    Parameters
+    ----------
+    blocksize
+
+    Returns
+    -------
+
+    """
+    # FSAL start at 0. and proceeds counter-clockwise
+    theta_collection = np.linspace(0.0, 2.0 * np.pi, blocksize)
+    # rate of change, should correspond to frame rotation angles
+    dtheta_di = theta_collection[1] - theta_collection[0]
+
+    # +1 because last point should be same as first point
+    director_collection = np.zeros((3, 3, blocksize))
+
+    # First fill all d1 components
+    director_collection[0, 0, ...] = -np.cos(theta_collection)
+    director_collection[0, 1, ...] = -np.sin(theta_collection)
+
+    # Then all d2 components
+    director_collection[2, 0, ...] = -np.sin(theta_collection)
+    director_collection[2, 1, ...] = np.cos(theta_collection)
+
+    # Then all d3 components
+    director_collection[1, 2, ...] = 1.0
+
+    # blocksize - 1 to account for end effects
+    correct_axis_collection = np.tile(
+        np.array([0.0, 0.0, 1.0]).reshape(3, 1), blocksize - 1
+    )
+    test_axis_collection = _inv_rotate(director_collection)
+    test_scaling = np.linalg.norm(test_axis_collection, axis=0)
+    test_axis_collection /= test_scaling
+
+    assert test_axis_collection.shape == (3, blocksize - 1)
+    assert_allclose(test_axis_collection, correct_axis_collection)
+    assert_allclose(test_scaling, 0.0 * test_scaling + dtheta_di, atol=Tolerance.atol())
 
 
 ###############################################################################
