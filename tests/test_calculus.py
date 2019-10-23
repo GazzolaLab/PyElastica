@@ -77,8 +77,8 @@ def test_two_point_difference_integrity(Setup, ndim):
 
 def test_trapezoidal_correctness():
     """
-    Tests integral of a function f:[a,b]-> R,
-         \int_{a}^{b} f -> R
+    Tests integral of a function :math:`f : [a,b] \rightarrow \mathbb{R}`,
+         :math:`\int_{a}^{b} f \rightarrow \mathbb{R}`
     where f satisfies the conditions f(a) = f(b) = 0.0
     """
     blocksize = 32
