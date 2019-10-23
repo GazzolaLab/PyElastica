@@ -8,7 +8,7 @@ from elastica._rotations import _inv_skew_symmetrize, _skew_symmetrize
 from .utils import MaxDimension, isqrt
 
 
-# TODO Check feasiblity of Quaternions here
+# TODO Complete, but nicer interface, evolve it eventually
 
 
 def skew_symmetrize(vector):
