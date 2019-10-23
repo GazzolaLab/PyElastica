@@ -3,6 +3,7 @@ __doc__ = """ Quadrature and difference kernels """
 import numpy as np
 import functools
 
+
 # TODO Check feasiblity of other quadrature / difference rules
 
 
@@ -27,15 +28,22 @@ def _trapezoidal(array_collection):
 
     Note
     ----
-    Not using numpy.pad for performance reasons
+    Not using numpy.pad, numpy.hstack for performance reasons
     with pad : 23.3 µs ± 1.65 µs per loop
-    without pad (this version) : 9.73 µs ± 168 ns per loop
+    without pad (previous version, see git history) : 9.73 µs ± 168 ns per loop
+    without pad and hstack (this version) : 6.52 µs ± 118 ns per loop
 
-    getting the array shape and ndim seems to add ±0.5 µs difference
+    - Getting the array shape and manipulating them seems to add ±0.5 µs difference
+    - As an added bonus, this works for n-dimensions as long as last dimension
+    is preserved
     """
-    zero_array = _get_zero_array(array_collection.shape[0], array_collection.ndim)
-    padded_collection = np.hstack((zero_array, array_collection, zero_array))
-    return 0.5 * (padded_collection[..., :-1] + padded_collection[..., 1:])
+    temp_collection = np.empty(
+        array_collection.shape[:-1] + (array_collection.shape[-1] + 1,)
+    )
+    temp_collection[..., 0] = array_collection[..., 0]
+    temp_collection[..., -1] = array_collection[..., -1]
+    temp_collection[..., 1:-1] = array_collection[..., 1:] + array_collection[..., :-1]
+    return 0.5 * temp_collection
 
 
 def _two_point_difference(array_collection):
@@ -50,12 +58,24 @@ def _two_point_difference(array_collection):
 
     Note
     ----
-    Not using numpy.pad for performance reasons
+    Not using numpy.pad, numpy.diff, numpy.hstack for performance reasons
     with pad : 23.3 µs ± 1.65 µs per loop
-    without pad (this version) : 8.3 µs ± 195 ns per loop
+    without pad (previous version, see git history) : 8.3 µs ± 195 ns per loop
+    without pad, hstack (this version) : 5.73 µs ± 216 ns per loop
 
-    getting the array shape and ndim seems to add ±0.5 µs difference
+    - Getting the array shape and ndim seems to add ±0.5 µs difference
+    - Diff also seems to add only ±3.0 µs
+    - As an added bonus, this works for n-dimensions as long as last dimension
+    is preserved
     """
-    zero_array = _get_zero_array(array_collection.shape[0], array_collection.ndim)
-    padded_collection = np.hstack((zero_array, array_collection, zero_array))
-    return padded_collection[..., 1:] - padded_collection[..., :-1]
+    temp_collection = np.empty(
+        array_collection.shape[:-1] + (array_collection.shape[-1] + 1,)
+    )
+    temp_collection[..., 0] = array_collection[..., 0]
+    temp_collection[..., -1] = -array_collection[..., -1]
+    temp_collection[..., 1:-1] = array_collection[..., 1:] - array_collection[..., :-1]
+    return temp_collection
+
+
+quadrature_kernel = _trapezoidal
+difference_kernel = _two_point_difference
