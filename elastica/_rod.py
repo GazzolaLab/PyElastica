@@ -8,6 +8,7 @@ from ._rotations import _inv_rotate
 
 # TODO Add documentation for all functions
 
+
 @functools.lru_cache(maxsize=1)
 def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
@@ -53,6 +54,7 @@ class _LinearConstitutiveModel:
         self.internal_couple = _batch_matvec(
             self.bend_matrix, self.kappa - self.kappa_rest
         )
+
 
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
     def __init__(self):
@@ -120,8 +122,11 @@ class RodBase:
 
 
 class _CosseratRodBase(RodBase):
-    def __init__(self):
-        super(_CosseratRodBase, self).__init__()
+    def __init__(self, position, velocity, omega, directors):
+        self.position = position
+        self.velocity = velocity
+        self.omega = omega
+        self.directors = directors
 
     def _compute_geometry_from_state(self):
         """
@@ -256,5 +261,5 @@ class _CosseratRodBase(RodBase):
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(self, x):
-        super(CosseratRod, self).__init__()
+    def __init__(self, position, velocity, omega, directors):
+        super().__init__(position, velocity, omega, directors)
