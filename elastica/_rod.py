@@ -20,8 +20,10 @@ class _LinearConstitutiveModel:
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
-    def __init__(self):
-        pass
+    def __init__(self, rest_sigma, rest_kappa, shear_matrix, bend_matrix):
+        self.rest_sigma = rest_sigma
+        self.shear_matrix = shear_matrix
+        self.bend_matrix = bend_matrix
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -36,7 +38,7 @@ class _LinearConstitutiveModel:
         self._compute_shear_stetch_strains()  # concept : needs to compute sigma
         # TODO : the _batch_matvec kernel needs to depend on the representation of Shearmatrix
         self.internal_stress = _batch_matvec(
-            self.shear_matrix, self.sigma - self.sigma_rest
+            self.shear_matrix, self.sigma - self.rest_sigma
         )
 
     def _compute_internal_bending_twist_stresses_from_model(self):
@@ -52,7 +54,7 @@ class _LinearConstitutiveModel:
         self._compute_bending_twist_strains()  # concept : needs to compute kappa
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
         self.internal_couple = _batch_matvec(
-            self.bend_matrix, self.kappa - self.kappa_rest
+            self.bend_matrix, self.kappa - self.rest_kappa
         )
 
 
@@ -122,11 +124,18 @@ class RodBase:
 
 
 class _CosseratRodBase(RodBase):
-    def __init__(self, position, velocity, omega, directors):
+    # I'm assuming number of elements can be deduced from the size of the inputs
+    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
+                 mass_second_moment_of_inertia):
         self.position = position
         self.velocity = velocity
         self.omega = omega
         self.directors = directors
+        self.rest_lengths = rest_lengths
+        self.mass = mass
+        self.density = density
+        self.volume = self.mass / self.density
+        self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
 
     def _compute_geometry_from_state(self):
         """
@@ -134,13 +143,15 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
-        # Cmopute eq (3.3) from 2018 RSOS paper
+        # Compute eq (3.3) from 2018 RSOS paper
 
         # Note : we can use the two-point difference kernel, but it needs unnecessary padding
         # and hence will always be slower
         position_diff = self.position[..., 1:] - self.position[..., :-1]
         self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
         self.tangents = position_diff / self.lengths
+        # resize based on volume conservation
+        self.radius = np.sqrt(self.volume / self.lengths / np.pi)
 
     def _compute_all_dilatations(self):
         """
@@ -261,5 +272,10 @@ class _CosseratRodBase(RodBase):
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(self, position, velocity, omega, directors):
-        super().__init__(position, velocity, omega, directors)
+    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
+                 mass_second_moment_of_inertia, rest_sigma, rest_kappa, shear_matrix,
+                 bend_matrix):
+        _LinearConstitutiveModel.__init__(rest_sigma, rest_kappa, shear_matrix,
+                                          bend_matrix)
+        _CosseratRodBase.__init__(position, velocity, omega, directors, rest_lengths,
+                                  mass, density, mass_second_moment_of_inertia)
