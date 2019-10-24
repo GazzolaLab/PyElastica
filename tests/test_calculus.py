@@ -11,7 +11,7 @@ from elastica._calculus import _trapezoidal, _two_point_difference, _get_zero_ar
 
 def test_get_zero_array():
     assert_allclose(_get_zero_array(3, 1), 0.0)
-    assert_allclose(_get_zero_array(3, 2), 0.0 * np.random.randn(3,1))
+    assert_allclose(_get_zero_array(3, 2), 0.0 * np.random.randn(3, 1))
 
 
 class Trapezoidal:

@@ -298,8 +298,7 @@ def _rotate(director_collection, scale: float, axis_collection):
     # TODO Finish documentation
     """
     return _batch_matmul(
-        _get_rotation_matrix(scale, axis_collection),
-        director_collection,
+        _get_rotation_matrix(scale, axis_collection), director_collection
     )
 
 

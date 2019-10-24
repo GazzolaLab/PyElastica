@@ -8,6 +8,7 @@ from ._rotations import _inv_rotate
 
 # TODO Add documentation for all functions
 
+
 @functools.lru_cache(maxsize=1)
 def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
@@ -54,6 +55,7 @@ class _LinearConstitutiveModel:
             self.bend_matrix, self.kappa - self.kappa_rest
         )
 
+
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
     def __init__(self):
         super(_LinearConstitutiveModelWithStrainRate, self).__init__()
@@ -69,12 +71,12 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
 
         """
         # Calculates stress based purely on strain component
-        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_shear_stretch_stresses_from_model()
+        super(
+            _LinearConstitutiveModelWithStrainRate, self
+        )._compute_internal_shear_stretch_stresses_from_model()
         self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
         # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
-        self.internal_stress += _batch_matvec(
-            self.shear_strain_matrix, self.sigma_dot
-        )
+        self.internal_stress += _batch_matvec(self.shear_strain_matrix, self.sigma_dot)
 
     def _compute_internal_bending_twist_stresses_from_model(self):
         """
@@ -87,12 +89,12 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
 
         """
         # Calculates stress based purely on strain component
-        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_bending_twist_stresses_from_model()
+        super(
+            _LinearConstitutiveModelWithStrainRate, self
+        )._compute_internal_bending_twist_stresses_from_model()
         self._compute_bending_twist_strain_rates()  # concept : needs to compute kappa rate
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
-        self.internal_couple += _batch_matvec(
-            self.bend_matrix, self.kappa_dot
-        )
+        self.internal_couple += _batch_matvec(self.bend_matrix, self.kappa_dot)
 
 
 # The interface class, as seen from global scope
