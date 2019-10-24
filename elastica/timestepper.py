@@ -35,68 +35,103 @@ class ExplicitStepper(TimeStepper):
     def n_stages(self):
         return self._n_stages[0]
 
-    def do_step(self, System, Time, dt):
-        _time = self.__stages[0].__call__(self, System, Time, dt)
-        for stage in self.__stages[1:]:
-            _time = stage(self, System, _time, dt)
-        return _time
+    ### For stateless explicit steppers
+    def do_step(self, System, Memory, time : np.float64, dt : np.float64):
+        for stage in self.__stages:
+            time = stage(self, System, Memory, time, dt)
+        return time
 
-
-class StatefulRungeKutta4(ExplicitStepper):
-    """
-    Stores all states of Rk within the time-stepper. Works as long as the states
-    are all one big numpy array, made possible by carefully using views
-    """
+class StatefulExplicitStepper():
 
     def __init__(self):
+        pass
+
+    # For stateful steppes, bind memory to self
+    def do_step(self, System, time : np.float64, dt : np.float64):
+        return self.stepper.do_step(System, self, time, dt)
+
+class RungeKutta4(ExplicitStepper):
+    """
+    Stateless runge-kutta4. coordinates operations only, memory needs
+    to be externally managed and allocated.
+    """
+    def __init__(self):
+        super(RungeKutta4, self).__init__()
+
+    # These methods should be static, but because we need to enable automatic
+    # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
+    # For automatic discovery, the order of declaring stages here is very important
+    def _first_stage(self, System, Memory, time : np.float64, dt : np.float64):
+        Memory.initial_state = System.state.copy()
+        # self.initial_state = 1
+        Memory.k_1 = dt * System(time, dt)  # Don't update state yet
+
+        # prepare for next stage
+        System.state = Memory.initial_state + 0.5 * Memory.k_1
+        return time + 0.5 * dt
+
+
+    def _second_stage(self, System, Memory, time : np.float64, dt : np.float64):
+        Memory.k_2 = dt * System(time, dt)  # Don't update state yet
+
+        # prepare for next stage
+        System.state = Memory.initial_state + 0.5 * Memory.k_2
+        return time
+
+
+    def _third_stage(self, System, Memory, time : np.float64, dt : np.float64):
+        Memory.k_3 = dt * System(time, dt)  # Don't update state yet
+
+        # prepare for next stage
+        time += 0.5 * dt
+        System.state = Memory.initial_state + Memory.k_3
+        return time
+
+
+    def _fourth_stage(self, System, Memory, time : np.float64, dt : np.float64):
+        k_4 = dt * System(time, dt)  # Don't update state yet
+
+        # prepare for next stage
+        System.state = Memory.initial_state + (Memory.k_1 + 2. * Memory.k_2 + 2. * Memory.k_3 + k_4) / 6.0
+        return time
+
+
+class StatefulRungeKutta4(StatefulExplicitStepper):
+    """
+    Stores all states of Rk within the time-stepper. Works as long as the states
+    are all one big numpy array, made possible by carefully using views.
+
+    Convenience wrapper around Stateless that provides memory
+    """
+    def __init__(self):
         super(StatefulRungeKutta4, self).__init__()
+        self.stepper = RungeKutta4()
         self.initial_state = None
         self.k_1 = None
         self.k_2 = None
         self.k_3 = None
-        self.k_4 = None
 
-    def rk4(f, h, y0, t0):
-        k1 = f(t0, y0)
-        k2 = f(t0 + h / 2, y0 + h / 2 * k1)
-        k3 = f(t0 + h / 2, y0 + h / 2 * k2)
-        k4 = f(t0 + h, y0 + h * k3)
-        return y0 + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+"""
+Demonstration of constructing a staged-method 
+using EulerForward Timestepper
+"""
+class EulerForward(ExplicitStepper):
+    def __init__(self):
+        super(EulerForward, self).__init__()
 
-    # For automatic discovery, the order of declaring stages here is very important
-    def _first_stage(self, system, time, dt):
-        self.initial_state = system.state.copy()
-        # self.initial_state = 1
-        self.k_1 = dt * system(time, dt)  # Don't update state yet
+    def _first_stage(self, System, Memory, time, dt):
+        System.state += dt * System(time, dt)
+        return time + dt
 
-        # prepare for next stage
-        system.state = self.initial_state + 0.5 * self.k_1
-        return time + 0.5 * dt
+class StatefulEulerForward(StatefulExplicitStepper):
+    def __init__(self):
+        super(StatefulEulerForward, self).__init__()
+        self.stepper = EulerForward()
 
-    def _second_stage(self, system, time, dt):
-        self.k_2 = dt * system(time, dt)  # Don't update state yet
 
-        # prepare for next stage
-        system.state = self.initial_state + 0.5 * self.k_2
-        return time
-
-    def _third_stage(self, system, time, dt):
-        self.k_3 = dt * system(time, dt)  # Don't update state yet
-
-        # prepare for next stage
-        time += 0.5 * dt
-        system.state = self.initial_state + self.k_3
-        return time
-
-    def _fourth_stage(self, system, time, dt):
-        self.k_4 = dt * system(time, dt)  # Don't update state yet
-
-        # prepare for next stage
-        system.state = self.initial_state + (self.k_1 + 2. * self.k_2 + 2. * self.k_3 + self.k_4) / 6.0
-        return time
-
-def integrate(Stepper, System, final_time, n_steps=1000):
+# TODO Improve interface of this function to take args and kwargs for ease of use
+def integrate(StatefulStepper, System, final_time, n_steps=1000):
     dt = np.float64(final_time / n_steps)
     time = np.float64(0.0)
     while np.abs(final_time - time) > 1e5 * Tolerance.atol():
-        time = Stepper.do_step(System, time, dt)
+        time = StatefulStepper.do_step(System, time, dt)
