@@ -6,6 +6,7 @@ from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from ._calculus import quadrature_kernel, difference_kernel
 from ._rotations import _inv_rotate
 
+# TODO Add documentation for all functions
 
 @functools.lru_cache(maxsize=1)
 def _get_z_vector():
@@ -51,6 +52,46 @@ class _LinearConstitutiveModel:
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
         self.internal_couple = _batch_matvec(
             self.bend_matrix, self.kappa - self.kappa_rest
+        )
+
+class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
+    def __init__(self):
+        super(_LinearConstitutiveModelWithStrainRate, self).__init__()
+
+    def _compute_internal_shear_stretch_stresses_from_model(self):
+        """
+        Linear force functional
+        Operates on
+        S : (3,3,n) tensor and sigma (3,n)
+
+        Returns
+        -------
+
+        """
+        # Calculates stress based purely on strain component
+        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_shear_stretch_stresses_from_model()
+        self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
+        # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
+        self.internal_stress += _batch_matvec(
+            self.shear_strain_matrix, self.sigma_dot
+        )
+
+    def _compute_internal_bending_twist_stresses_from_model(self):
+        """
+        Linear force functional
+        Operates on
+        B : (3,3,n) tensor and curvature kappa (3,n)
+
+        Returns
+        -------
+
+        """
+        # Calculates stress based purely on strain component
+        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_bending_twist_stresses_from_model()
+        self._compute_bending_twist_strain_rates()  # concept : needs to compute kappa rate
+        # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
+        self.internal_couple += _batch_matvec(
+            self.bend_matrix, self.kappa_dot
         )
 
 
@@ -148,17 +189,6 @@ class _CosseratRodBase(RodBase):
     def _compute_bending_twist_strains(self):
         self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
 
-    def _compute_all_strains(self):
-        """
-        Should compute strain and curvature based on the present state, for convenience
-
-        Returns
-        -------
-
-        """
-        self._compute_shear_stetch_strains()
-        self._compute_bending_twist_strains()
-
     def _compute_internal_forces(self):
         # Compute n_l and cache it using internal_stress
         # Be careful about usage though
@@ -223,24 +253,6 @@ class _CosseratRodBase(RodBase):
             + lagrangian_transport
             + unsteady_dilatation
         )
-
-
-class BlaBla(_LinearConstitutiveModel):
-    def __init__(self):
-        pass
-
-    def _compute_internal_shear_stretch_stresses_from_model(self):
-        self.internal_stress = 0.0
-
-
-class CosseratRodbase:
-    def __init__(self, x, v, t, m, v, c, d, e):
-        self.x = x
-        self.v = v
-        self.t = t
-        self.d = d
-
-    # functions
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
