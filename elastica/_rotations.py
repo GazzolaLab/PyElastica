@@ -3,7 +3,7 @@ import functools
 from itertools import combinations
 
 import numpy as np
-
+from ._linalg import _batch_matmul
 
 # TODO Check feasiblity of Quaternions here
 
@@ -297,8 +297,7 @@ def _rotate(director_collection, scale: float, axis_collection):
 
     # TODO Finish documentation
     """
-    return np.einsum(
-        "ijk,jlk->ilk",
+    return _batch_matmul(
         _get_rotation_matrix(scale, axis_collection),
         director_collection,
     )
@@ -326,8 +325,12 @@ def _inv_rotate(director_collection):
     """
 
     # Q_{i+i}Q^T_{i} collection
+    # rotmat_collection = np.einsum(
+    #     "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+    # )
+    # Q^T_{i+i}Q_{i} collection
     rotmat_collection = np.einsum(
-        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+        "jik, jlk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
     )
 
     # Returns rate-of-change direction as a collection unit vectors
