@@ -2,20 +2,15 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.timestepper import (
+from elastica.timestepper import TimeStepper, integrate
+from elastica.timestepper.explicit_steppers import (
     StatefulRungeKutta4,
     StatefulEulerForward,
-    StatefulExplicitStepper,
-    TimeStepper,
     StatefulLinearExponentialIntegrator,
-    SymplecticStepper,
-    integrate,
-    PositionVerlet,
-    PEFRL,
 )
+from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.utils import Tolerance
 from elastica._rotations import _get_rotation_matrix
-from elastica._linalg import _batch_matmul
 
 
 class BaseStatefulSystem:
