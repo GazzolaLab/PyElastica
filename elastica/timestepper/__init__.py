@@ -2,8 +2,8 @@ __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 import numpy as np
 import functools
 
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
-from .utils import Tolerance
+from .._linalg import _batch_matmul, _batch_matvec, _batch_cross
+from ..utils import Tolerance
 
 
 class TimeStepper:
