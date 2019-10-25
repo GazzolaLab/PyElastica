@@ -8,7 +8,9 @@ from elastica.timestepper import (
     StatefulExplicitStepper,
     TimeStepper,
     StatefulLinearExponentialIntegrator,
+    SymplecticStepper,
     integrate,
+    PositionVerlet,
 )
 from elastica.utils import Tolerance
 from elastica._rotations import _get_rotation_matrix
@@ -26,6 +28,27 @@ class BaseStatefulSystem:
     @state.setter
     def state(self, new_state):
         self._state = new_state
+
+
+class BaseSymplecticSystem:
+    def __init__(self):
+        pass
+
+    @property
+    def kinematic_states(self):
+        return self._kin_state
+
+    @kinematic_states.setter
+    def kinematic_states(self, new_kin_state):
+        self._kin_state = new_kin_state
+
+    @property
+    def dynamic_states(self):
+        return self._dyn_state
+
+    @dynamic_states.setter
+    def dynamic_states(self, new_dyn_state):
+        self._dyn_state = new_dyn_state
 
 
 class BaseLinearStatefulSystem:
@@ -55,11 +78,12 @@ class ScalarExponentialDecaySystem(BaseStatefulSystem):
         return self.exponent * self._state
 
 
-class UndampedSimpleHarmonicOscillatorSystem(BaseStatefulSystem):
+class BaseUndampedSimpleHarmonicOscillatorSystem:
     def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
-        super(UndampedSimpleHarmonicOscillatorSystem, self).__init__()
+        super(BaseUndampedSimpleHarmonicOscillatorSystem, self).__init__()
         self.omega = omega
-        self.initial_value = self._state = init_val
+        self.initial_value = init_val.copy()
+        self._state = init_val.copy()
         self.A_matrix = np.array([[0.0, 1.0], [-self.omega ** 2, 0.0]])
 
     def analytical_solution(self, time):
@@ -78,7 +102,45 @@ class UndampedSimpleHarmonicOscillatorSystem(BaseStatefulSystem):
         return self.A_matrix @ self._state
 
 
-class DampedSimpleHarmonicOscillatorSystem(UndampedSimpleHarmonicOscillatorSystem):
+class UndampedSimpleHarmonicOscillatorSystem(
+    BaseUndampedSimpleHarmonicOscillatorSystem, BaseStatefulSystem
+):
+    def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
+        BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
+            self, omega=omega, init_val=init_val
+        )
+
+
+class SymplecticUndampedSimpleHarmonicOscillatorSystem(
+    BaseUndampedSimpleHarmonicOscillatorSystem, BaseSymplecticSystem
+):
+    def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
+        BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
+            self, omega=omega, init_val=init_val
+        )
+        self._kin_state = self._state[0:1]  # Create a view instead
+        self._dyn_state = self._state[1:2]  # Create a view instead
+
+    def __call__(self, *args, **kwargs):
+        return super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
+            *args, **kwargs
+        )[-1]
+
+    def compute_energy(self, time):
+        # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+        analytical_state = self.analytical_solution(time)
+
+        def energy(st):
+            return self.omega ** 2 * st[0] ** 2 + st[1] ** 2
+
+        anal_energy = energy(analytical_state)
+        current_energy = energy(self._state)
+        return current_energy, anal_energy
+
+
+class DampedSimpleHarmonicOscillatorSystem(
+    BaseUndampedSimpleHarmonicOscillatorSystem, BaseStatefulSystem
+):
     def __init__(self, damping=0.5, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
         super(DampedSimpleHarmonicOscillatorSystem, self).__init__(omega, init_val)
         self.zeta = 0.5 * damping
@@ -146,14 +208,16 @@ class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
 class TestExplicitSteppers:
     # Added automatic discovery of Stateful explicit integrators
     # ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
+    # SymplecticSteppers = SymplecticStepper.__subclasses__()
     ExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
+    SymplecticSteppers = [PositionVerlet]
 
     def test_no_base_access_error(self):
         with pytest.raises(NotImplementedError) as excinfo:
             TimeStepper().do_step()
         assert "not supposed to access" in str(excinfo.value)
 
-    @pytest.mark.parametrize("stepper", ExplicitSteppers)
+    @pytest.mark.parametrize("stepper", ExplicitSteppers + SymplecticSteppers)
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
 
@@ -215,3 +279,24 @@ class TestExplicitSteppers:
             system.analytical_solution(final_time),
             atol=1e-4,
         )
+
+    @pytest.mark.parametrize("stepper", SymplecticSteppers)
+    def test_symplectic_against_undamped_harmonic_oscillator(self, stepper):
+        system = SymplecticUndampedSimpleHarmonicOscillatorSystem()
+        final_time = 4.0 * np.pi
+        n_steps = 2000
+        integrate(stepper(), system, final_time=final_time, n_steps=n_steps)
+
+        # Symplectic systems conserve energy to a certain extent
+        assert_allclose(
+            *system.compute_energy(final_time),
+            rtol=Tolerance.rtol() * 1e1,
+            atol=Tolerance.atol(),
+        )
+
+        # assert_allclose(
+        #     system._state,
+        #     system.analytical_solution(final_time),
+        #     rtol=Tolerance.rtol(),
+        #     atol=Tolerance.atol(),
+        # )

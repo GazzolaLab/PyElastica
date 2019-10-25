@@ -102,7 +102,6 @@ class RungeKutta4(ExplicitStepper):
         Memory.k_3 = dt * System(time, dt)  # Don't update state yet
 
     def _third_update(self, System, Memory, time: np.float64, dt: np.float64):
-
         # prepare for next stage
         System.state = Memory.initial_state + Memory.k_3
         return time + 0.5 * dt
@@ -186,6 +185,44 @@ class StatefulLinearExponentialIntegrator(StatefulExplicitStepper):
         super(StatefulLinearExponentialIntegrator, self).__init__()
         self.stepper = LinearExponentialIntegrator()
         self.linear_operator = None
+
+
+class SymplecticStepper(TimeStepper):
+    def __init__(self):
+        super(SymplecticStepper, self).__init__()
+        self.__steps = [
+            v for (k, v) in self.__class__.__dict__.items() if k.endswith("step")
+        ]
+
+    @property
+    def n_stages(self):
+        return len(self.__steps)
+
+    ### For stateless explicit steppers
+    def do_step(self, System, time: np.float64, dt: np.float64):
+        for step in self.__steps:
+            time = step(self, System, time, dt)
+        return time
+
+
+class PositionVerlet(SymplecticStepper):
+    """
+    """
+
+    def __init__(self):
+        super(PositionVerlet, self).__init__()
+
+    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        System.kinematic_states += 0.5 * dt * System.dynamic_states
+        return time + 0.5 * dt
+
+    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        System.dynamic_states += dt * System(time, dt)
+        return time
+
+    def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        System.kinematic_states += 0.5 * dt * System.dynamic_states
+        return time + 0.5 * dt
 
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
