@@ -11,6 +11,7 @@ from elastica.timestepper import (
     SymplecticStepper,
     integrate,
     PositionVerlet,
+    PEFRL,
 )
 from elastica.utils import Tolerance
 from elastica._rotations import _get_rotation_matrix
@@ -210,7 +211,7 @@ class TestExplicitSteppers:
     # ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
     # SymplecticSteppers = SymplecticStepper.__subclasses__()
     ExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
-    SymplecticSteppers = [PositionVerlet]
+    SymplecticSteppers = [PositionVerlet, PEFRL]
 
     def test_no_base_access_error(self):
         with pytest.raises(NotImplementedError) as excinfo:
