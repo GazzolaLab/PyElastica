@@ -24,6 +24,10 @@ class _LinearConstitutiveModel:
         self.rest_sigma = rest_sigma
         self.shear_matrix = shear_matrix
         self.bend_matrix = bend_matrix
+        self.sigma = np.inf
+        self.kappa = np.inf
+        self.internal_stress = np.inf
+        self.internal_couple = np.inf
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
