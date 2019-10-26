@@ -140,6 +140,8 @@ class _CosseratRodBase(RodBase):
         self.density = density
         self.volume = self.mass / self.density
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
+        self.external_forces = 0 * self.position
+        self.external_torques = 0 * self.omega
 
     def _compute_geometry_from_state(self):
         """
