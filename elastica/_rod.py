@@ -21,13 +21,7 @@ class _LinearConstitutiveModel:
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
     def __init__(self, rest_sigma, rest_kappa, shear_matrix, bend_matrix):
-        self.rest_sigma = rest_sigma
-        self.shear_matrix = shear_matrix
-        self.bend_matrix = bend_matrix
-        self.sigma = np.inf
-        self.kappa = np.inf
-        self.internal_stress = np.inf
-        self.internal_couple = np.inf
+        pass
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -131,17 +125,7 @@ class _CosseratRodBase(RodBase):
     # I'm assuming number of elements can be deduced from the size of the inputs
     def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
                  mass_second_moment_of_inertia):
-        self.position = position
-        self.velocity = velocity
-        self.omega = omega
-        self.directors = directors
-        self.rest_lengths = rest_lengths
-        self.mass = mass
-        self.density = density
-        self.volume = self.mass / self.density
-        self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
-        self.external_forces = 0 * self.position
-        self.external_torques = 0 * self.omega
+        pass
 
     def _compute_geometry_from_state(self):
         """
@@ -281,7 +265,19 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
     def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
                  mass_second_moment_of_inertia, rest_sigma, rest_kappa, shear_matrix,
                  bend_matrix):
-        _LinearConstitutiveModel.__init__(rest_sigma, rest_kappa, shear_matrix,
-                                          bend_matrix)
-        _CosseratRodBase.__init__(position, velocity, omega, directors, rest_lengths,
-                                  mass, density, mass_second_moment_of_inertia)
+        self.rest_sigma = rest_sigma
+        self.rest_kappa = rest_kappa
+        self.shear_matrix = shear_matrix
+        self.bend_matrix = bend_matrix
+        self.position = position
+        self.velocity = velocity
+        self.omega = omega
+        self.directors = directors
+        self.rest_lengths = rest_lengths
+        self.mass = mass
+        self.density = density
+        self.volume = self.mass / self.density
+        self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
+        # will apply external force and torques externally
+        self.external_forces = 0 * self.position
+        self.external_torques = 0 * self.omega
