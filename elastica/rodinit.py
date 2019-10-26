@@ -16,7 +16,7 @@ def create_straight_rod(n, start, direction, normal, base_length, base_radius, d
     end = start + direction * base_length
     position = np.zeros((3, n + 1))
     for i in range(0, 3):
-        position[..., i] = np.linspace(start[i], end[i], num=n + 1)
+        position[i, ...] = np.linspace(start[i], end[i], num=n + 1)
 
     # set initial velocity and omega to be zero
     velocity = np.zeros((3, n + 1))
