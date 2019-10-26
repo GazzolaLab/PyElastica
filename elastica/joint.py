@@ -20,7 +20,7 @@ class FreeJoint:
     def apply_force(self):
         end_distance_vector = (self.rod_two.position[..., self.index_two]
                                - self.rod_one.position[..., self.index_one])
-        end_distance = np.sqrt(np.dot(end_distance_vector * end_distance_vector))
+        end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
         elastic_force = self.k * end_distance_vector
         relative_velocity = (self.rod_two.velocity[..., self.index_two]
                              - self.rod_one.velocity[..., self.index_one])
@@ -40,47 +40,73 @@ class FreeJoint:
 
 # this joint currently keeps rod one fixed and moves rod two
 # how couples act needs to be reconfirmed
-class HngeJoint(FreeJoint):
+class HingeJoint(FreeJoint):
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(self, k, nu, rod_one, rod_two, index_one, index_two, kt, normal_direction):
         super().__init__(k, nu, rod_one, rod_two, index_one, index_two)
         # normal direction of the constraing plane
         # for example for yz plane (1,0,0)
-        self.normal_direction = normal_direction
+        # unitize the normal vector
+        self.normal_direction = normal_direction/np.linalg.norm(normal_direction)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned emprically
         self.kt = kt
 
+    # Apply force is same as free joint
+    def apply_force(self):
+        return super().apply_force()
+
     def apply_torque(self):
         # current direction of the first element of link two
         # also NOTE: - rod two is hinged at first element
-        link_direction = (self.rod_two.position[..., self.index_two + 1] -
+        self.link_direction = (self.rod_two.position[..., self.index_two + 1] -
                           self.rod_two.position[..., self.index_two])
 
         # projection of the linkdirection onto the plane normal
-        force_direction = - np.dot(link_direction, self.normal_direction) * self.normal_direction
+        self.force_direction = - np.dot(self.link_direction, self.normal_direction) * self.normal_direction
 
         # compute the restoring torque
-        torque = self.kt * link_direction * force_direction
+        self.torque = self.kt * self.link_direction * self.force_direction
 
-        # The opposite torque will be applied on link one (no effect in this case since we assume
-        # link one is completely fixed.
-        self.rod_one.torques[..., self.index_one] -= self.rod_one.Q[self.index_one] * torque
-        self.rod_two.torques[..., self.index_two] += self.rod_two.Q[self.index_two] * torque
+        # The opposite torque will be applied on link one
+        self.rod_one.external_torques[..., self.index_one] -= np.dot(self.rod_one.directors[..., self.index_one] * self.torque)
+        self.rod_two.external_torques[..., self.index_two] += np.dot(self.rod_two.directors[..., self.index_two] * self.torque)
 
 
-# class FixedJoint(FreeJoint)
-#    def __init__(self, k, nu, rod_one, rod_two, index_one, index_two):
-#        super().__init__(k, nu, rod_one, rod_two, index_one, index_two)
-#
-#    def
-#
-#
-# class Run():
-#
-# hgjt = HingeJoint(1e8,1e-2,rod1,rod2,-1,0)
-# hgjt.apply_force
-# hgjt.apply_torque()
-#
-# spjt = SphericalJoint(1e8, 1e-2, rod1, rod2, -1, 0)
-# spjt.apply_force()
+class FixedJoint(FreeJoint):
+    def __init__(self, k, nu, rod_one, rod_two, index_one, index_two,kt):
+        super().__init__(k, nu, rod_one, rod_two, index_one, index_two)
+        # additional in-plane constraint through restoring torque
+        # stiffness of the restoring constraint -- tuned emprically
+        self.kt = kt
+
+    # Apply force is same as free joint
+    def apply_force(self):
+        return super().apply_force()
+
+    def apply_torque(self):
+        # current direction of the first element of link two
+        # also NOTE: - rod two is fixed at first element
+        link_direction = (self.rod_two.position[..., self.index_two + 1] -
+                          self.rod_two.position[..., self.index_two])
+
+        # To constrain the orientation of link two, the second node of link tow should align with
+        # the direction of link one. Thus, we compute the desired position of the second node of link two
+        # as check1, and the current position of the second node of link two as check2. Check1 and check2
+        # should overlap.
+
+        check1 = self.rod_one.position[..., self.index_one] + self.rod_two.reset_lengths[self.index_two] \
+                                    * self.rod_two.tangents[self.index_two]
+
+        check2 = self.rod_two.position[...,self.index_two]
+
+        # Compute the restoring torque
+        forcedirection = -self.kt * (check2 - check1)
+        torque = link_direction * forcedirection
+
+        # The opposite torque will be applied on link one
+        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] * torque
+        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] * torque
+
+
+
