@@ -18,72 +18,69 @@ class FreeJoint:
         self.index_two = index_two
 
     def apply_force(self):
-        self.end_distance_vector = (self.rod_two.position[..., self.index_two]
+        end_distance_vector = (self.rod_two.position[..., self.index_two]
                                - self.rod_one.position[..., self.index_one])
-        self.end_distance = np.sqrt(np.sum(self.end_distance_vector * self.end_distance_vector))
-        self.elastic_force = self.k * self.end_distance_vector
+        end_distance = np.sqrt(np.dot(end_distance_vector * end_distance_vector))
+        elastic_force = self.k * end_distance_vector
         relative_velocity = (self.rod_two.velocity[..., self.index_two]
                              - self.rod_one.velocity[..., self.index_one])
-        normal_relative_velocity = np.sum(relative_velocity * self.end_distance_vector) / self.end_distance
-        damping_force = -self.nu * normal_relative_velocity * self.end_distance_vector
-        contact_force = self.elastic_force + damping_force
+        normal_relative_velocity = np.dot(relative_velocity,
+                                          end_distance_vector) / end_distance
+        damping_force = (-self.nu * normal_relative_velocity
+                         * end_distance_vector) / end_distance
+        contact_force = elastic_force + damping_force
 
         self.rod_two.external_forces[..., self.index_two] -= contact_force
         self.rod_one.external_forces[..., self.index_one] += contact_force
         return
+
     def apply_torque(self):
         pass
 
 
-
-class HingeJoint(FreeJoint):
+# this joint currently keeps rod one fixed and moves rod two
+# how couples act needs to be reconfirmed
+class HngeJoint(FreeJoint):
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
-    def __init__(self, k, nu,rod_one, rod_two, index_one, index_two, kt, normaldirection):
+    def __init__(self, k, nu, rod_one, rod_two, index_one, index_two, kt, normal_direction):
         super().__init__(k, nu, rod_one, rod_two, index_one, index_two)
-
         # normal direction of the constraing plane
         # for example for yz plane (1,0,0)
-        self.normaldirection = normaldirection
-
+        self.normal_direction = normal_direction
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned emprically
         self.kt = kt
 
-    def apply_force(self):
-        return super().apply_force
-
     def apply_torque(self):
-
         # current direction of the first element of link two
-        linkdirection = rod_two.position[...,self.index_two + 1] - rod_two.position[...,self.index_two]
+        # also NOTE: - rod two is hinged at first element
+        link_direction = (self.rod_two.position[..., self.index_two + 1] -
+                          self.rod_two.position[..., self.index_two])
 
         # projection of the linkdirection onto the plane normal
-        forcedirection = - np.dot(linkdirection,self.normaldirection) * self.normaldirection
+        force_direction = - np.dot(link_direction, self.normal_direction) * self.normal_direction
 
         # compute the restoring torque
-        torque = self.kt * linkdirection * forcedirection
+        torque = self.kt * link_direction * force_direction
 
         # The opposite torque will be applied on link one (no effect in this case since we assume
         # link one is completely fixed.
-        self.rod_one.torques[...,self.index_one]  -= self.rod_one.Q[index_one] * torque
-        self.rod_two.torques[..., self.index_two] += self.rod_two.Q[index_two] * torque
+        self.rod_one.torques[..., self.index_one] -= self.rod_one.Q[self.index_one] * torque
+        self.rod_two.torques[..., self.index_two] += self.rod_two.Q[self.index_two] * torque
 
 
-
-
-
-#class FixedJoint(FreeJoint)
+# class FixedJoint(FreeJoint)
 #    def __init__(self, k, nu, rod_one, rod_two, index_one, index_two):
 #        super().__init__(k, nu, rod_one, rod_two, index_one, index_two)
 #
 #    def
 #
 #
-#class Run():
+# class Run():
 #
-#hgjt = HingeJoint(1e8,1e-2,rod1,rod2,-1,0)
-#hgjt.apply_force
-#hgjt.apply_torque()
+# hgjt = HingeJoint(1e8,1e-2,rod1,rod2,-1,0)
+# hgjt.apply_force
+# hgjt.apply_torque()
 #
-#spjt = SphericalJoint(1e8, 1e-2, rod1, rod2, -1, 0)
-#spjt.apply_force()
+# spjt = SphericalJoint(1e8, 1e-2, rod1, rod2, -1, 0)
+# spjt.apply_force()
