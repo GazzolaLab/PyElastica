@@ -21,6 +21,9 @@ class FreeJoint:
         end_distance_vector = (self.rod_two.position[..., self.index_two]
                                - self.rod_one.position[..., self.index_one])
         end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
+        # Below if check is not efficient find something else
+        if end_distance==0:
+            end_distance=1
         elastic_force = self.k * end_distance_vector
         relative_velocity = (self.rod_two.velocity[..., self.index_two]
                              - self.rod_one.velocity[..., self.index_one])
@@ -59,18 +62,18 @@ class HingeJoint(FreeJoint):
     def apply_torque(self):
         # current direction of the first element of link two
         # also NOTE: - rod two is hinged at first element
-        self.link_direction = (self.rod_two.position[..., self.index_two + 1] -
+        link_direction = (self.rod_two.position[..., self.index_two + 1] -
                           self.rod_two.position[..., self.index_two])
 
         # projection of the linkdirection onto the plane normal
-        self.force_direction = - np.dot(self.link_direction, self.normal_direction) * self.normal_direction
+        force_direction = - np.dot(link_direction, self.normal_direction) * self.normal_direction
 
         # compute the restoring torque
-        self.torque = self.kt * self.link_direction * self.force_direction
+        torque = self.kt * np.cross(link_direction,force_direction)
 
         # The opposite torque will be applied on link one
-        self.rod_one.external_torques[..., self.index_one] -= np.dot(self.rod_one.directors[..., self.index_one] * self.torque)
-        self.rod_two.external_torques[..., self.index_two] += np.dot(self.rod_two.directors[..., self.index_two] * self.torque)
+        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ torque
+        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ torque
 
 
 class FixedJoint(FreeJoint):
@@ -102,11 +105,11 @@ class FixedJoint(FreeJoint):
 
         # Compute the restoring torque
         forcedirection = -self.kt * (check2 - check1)
-        torque = link_direction * forcedirection
+        torque = np.cross(link_direction, forcedirection)
 
         # The opposite torque will be applied on link one
-        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] * torque
-        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] * torque
+        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ torque
+        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ torque
 
 
 
