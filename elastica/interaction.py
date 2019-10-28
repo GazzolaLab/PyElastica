@@ -48,13 +48,15 @@ class InteractionPlane:
         total_force_plane = normal_force_plane + elastic_force + damping_force
         rod.external_forces[..., :-1] += 0.5 * total_force_plane
         rod.external_forces[..., 1:] += 0.5 * total_force_plane
-        return normal_force_plane
+        return np.fabs(normal_force_plane)
 
 
 # class for anisotropic frictional plane
 # NOTE: friction coefficients are passed as arrays in the order
 # mu_forward : mu_backward : mu_sideways
 # head is at x[0] and forward means head to tail
+# same convention for kinetic and static
+# mu named as to which direction it opposes
 class AnistropicFrictionalPlane(InteractionPlane):
     def __init__(self, k, nu, origin_plane, normal_plane, slip_velocity_tol,
                  static_mu_array, kinetic_mu_array):
@@ -63,8 +65,9 @@ class AnistropicFrictionalPlane(InteractionPlane):
         self.static_mu_forward, self.static_mu_backward, self.static_mu_sideways = static_mu_array
         self.kinetic_mu_forward, self.kinetic_mu_backward, self.kinetic_mu_sideways = kinetic_mu_array
 
-# kinetic and static friction are separate functions
-    def apply_kinetic_friction(self, rod):
+# kinetic and static friction should separate functions
+# for now putting them together to figure out common variables
+    def apply_friction(self, rod):
         # calculate axial and rolling directions
         normal_force_plane = self.apply_normal_force(self, rod)
         normal_plane_array = np.outer(self.normal_plane, np.ones((1,
@@ -75,8 +78,9 @@ class AnistropicFrictionalPlane(InteractionPlane):
         # dot product
         axial_velocity = np.einsum('ijk,ijk->jk', element_v, axial_direction)
         axial_velocity_sign = np.sign(axial_velocity)
-        kinetic_mu = 0.5 * (self.kinetic_mu_forward * (1 - axial_velocity_sign)
-                            + self.kinetic_mu_backward * (1 + axial_velocity_sign))
+        # check top for sign convention
+        kinetic_mu = 0.5 * (self.kinetic_mu_forward * (1 + axial_velocity_sign)
+                            + self.kinetic_mu_backward * (1 - axial_velocity_sign))
         slip_function = (axial_velocity, self.slip_velocity_tol)
         axial_kinetic_friction_force = -((1.0 - slip_function) * kinetic_mu *
                                          normal_force_plane * axial_velocity_sign
@@ -106,3 +110,18 @@ class AnistropicFrictionalPlane(InteractionPlane):
         # torque = Q @ r @ Fr
         rod.external_torques += (_batch_matvec(rod.directors, _batch_cross(
                                  torque_arm, rolling_kinetic_friction_force)))
+
+        # now axial static friction
+        nodal_total_forces = rod.internal_forces + rod.external_forces
+        total_forces = 0.5 * (nodal_total_forces[..., :-1] + nodal_total_forces[..., 1:])
+        projection = np.einsum('ijk,ijk->jk', total_forces, axial_direction)
+        projection_sign = np.sign(projection)
+        # check top for sign convention
+        static_mu = 0.5 * (self.static_mu_forward * (1 + projection_sign)
+                           + self.static_mu_backward * (1 - projection_sign))
+        max_friction_force = static_mu * normal_force_plane
+        # friction = min(mu N, pushing force)
+        axial_static_friction_force = -(np.minimum(np.fabs(projection), max_friction_force) *
+                                        projection_sign * axial_direction)
+        rod.external_forces[..., :-1] += 0.5 * axial_static_friction_force
+        rod.external_forces[..., 1:] += 0.5 * axial_static_friction_force
