@@ -2,15 +2,16 @@ __doc__ = """ Rod initialiser"""
 
 import numpy as np
 
-from ._rod import *
+# from ._rod import CosseratRod
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 
 
 # for now writing only one function for uniform straight rod
 # with no strains or curvature
 # later need to think for a class version for different rod inits
-def create_straight_rod(n, start, direction, normal, base_length, base_radius, density,
-                        mass_second_moment_of_inertia, shear_matrix, bend_matrix):
+def create_straight_rod(n, start, direction, normal, base_length, base_radius,
+                        density, mass_second_moment_of_inertia, shear_matrix,
+                        bend_matrix):
     # n: number of elements
     # put asserts and sanity checks here
     end = start + direction * base_length
@@ -43,12 +44,16 @@ def create_straight_rod(n, start, direction, normal, base_length, base_radius, d
     rest_kappa = np.zeros((3, n - 1))
 
     # initialise moment of inertia, shear and bend matrices
-    inertia_collection = np.broadcast_to(mass_second_moment_of_inertia, (n, 3, 3)).reshape(3, 3, n)
-    shear_matrix_collection = np.broadcast_to(shear_matrix, (n, 3, 3)).reshape(3, 3, n)
-    bend_matrix_collection = np.broadcast_to(bend_matrix, (n - 1, 3, 3)).reshape(3, 3, n - 1)
+    inertia_collection = np.broadcast_to(mass_second_moment_of_inertia.T,
+                                         (n, 3, 3)).T.reshape(3, 3, n)
+    shear_matrix_collection = np.broadcast_to(shear_matrix.T,
+                                              (n, 3, 3)).T.reshape(3, 3, n)
+    bend_matrix_collection = (np.broadcast_to(bend_matrix.T,
+                              (n - 1, 3, 3)).T.reshape(3, 3, n - 1))
 
     # create rod
-    rod = CosseratRod(position, velocity, omega, directors, rest_lengths, mass, density,
-                      inertia_collection, rest_sigma, rest_kappa, shear_matrix_collection,
+    rod = CosseratRod(position, velocity, omega, directors, rest_lengths,
+                      mass, density, inertia_collection, rest_sigma,
+                      rest_kappa, shear_matrix_collection,
                       bend_matrix_collection)
     return rod
