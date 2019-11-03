@@ -196,6 +196,14 @@ class _CosseratRodBase(RodBase):
     def _compute_bending_twist_strains(self):
         self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
 
+    def _compute_damping_forces(self):
+        # Internal damping foces.
+        damping_force = self.nu * self.velocity
+        damping_force[0]  *= 0.5  # first and last nodes have half mass
+        damping_force[-1] *= 0.5  # first and last nodes have half mass
+
+        return damping_force
+
     def _compute_internal_forces(self):
         # Compute n_l and cache it using internal_stress
         # Be careful about usage though
@@ -206,7 +214,12 @@ class _CosseratRodBase(RodBase):
             np.einsum("jik, jk->ik", self.directors, self.internal_stress)
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
-        return difference_kernel(cosserat_internal_stress)
+        return difference_kernel(cosserat_internal_stress) - self.compute_damping_forces()
+
+    def _compute_damping_torque(self):
+        # Internal damping torques
+        damping_torque = self.nu * self.omega
+        return damping_torque
 
     def _compute_internal_torques(self):
         # Compute \tau_l and cache it using internal_couple
@@ -253,17 +266,20 @@ class _CosseratRodBase(RodBase):
         # (J \omega_L / e^2) . (de/dt)
         unsteady_dilatation = J_omega_upon_e * self.dilatation_rate / self.dilatation
 
+        damping_torque = self._compute_damping_torque()
+
         return (
             bend_twist_couple_2D
             + bend_twist_couple_3D
             + shear_stretch_couple
             + lagrangian_transport
             + unsteady_dilatation
+            - damping_torque
         )
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
+    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density, nu,
                  mass_second_moment_of_inertia, rest_sigma, rest_kappa, shear_matrix,
                  bend_matrix):
         self.rest_sigma = rest_sigma
@@ -282,10 +298,11 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         # will apply external force and torques externally
         self.external_forces = 0 * self.position
         self.external_torques = 0 * self.omega
+        self.nu = nu
 
     @classmethod
     def straight_rod(cls, n, start, direction, normal, base_length, base_radius,
-                     density, mass_second_moment_of_inertia, shear_matrix,
+                     density, nu, mass_second_moment_of_inertia, shear_matrix,
                      bend_matrix):
         # n: number of elements
         # put asserts and sanity checks here
@@ -328,5 +345,5 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
 
         # create rod
         return cls(position, velocity, omega, directors, rest_lengths,
-                   mass, density, inertia_collection, rest_sigma,
+                   mass, density, nu, inertia_collection, rest_sigma,
                    rest_kappa, shear_matrix_collection, bend_matrix_collection)

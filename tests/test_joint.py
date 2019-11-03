@@ -19,7 +19,7 @@ def test_freejoint():
     shear_matrix = np.zeros((3, 3))
     mass_second_moment_of_inertia = np.zeros((3, 3))
     bend_matrix = np.zeros((3, 3))
-
+    nu = 0.1
 
 
     # Origin of the rod
@@ -30,9 +30,9 @@ def test_freejoint():
     n = 4
 
     # create rod classes
-    rod1 = CosseratRod.straight_rod(n, origin1, direction, normal, base_length, base_radius, density,
+    rod1 = CosseratRod.straight_rod(n, origin1, direction, normal, base_length, base_radius, density, nu,
                               mass_second_moment_of_inertia, shear_matrix, bend_matrix)
-    rod2 = CosseratRod.straight_rod(n, origin2, direction, normal, base_length, base_radius, density,
+    rod2 = CosseratRod.straight_rod(n, origin2, direction, normal, base_length, base_radius, density, nu,
                                mass_second_moment_of_inertia, shear_matrix, bend_matrix)
 
 
@@ -89,6 +89,7 @@ def test_hingejoint():
      shear_matrix = np.zeros((3, 3))
      mass_second_moment_of_inertia = np.zeros((3, 3))
      bend_matrix = np.zeros((3, 3))
+     nu = 0.1
 
      # Origin of the rod
      origin1 = np.array([0.0,0.0,0.0])
@@ -98,9 +99,9 @@ def test_hingejoint():
      n = 2
 
      # create rod classes
-     rod1 = CosseratRod.straight_rod(n, origin1, direction, normal1, base_length, base_radius, density,
+     rod1 = CosseratRod.straight_rod(n, origin1, direction, normal1, base_length, base_radius, density, nu,
                                mass_second_moment_of_inertia, shear_matrix, bend_matrix)
-     rod2 = CosseratRod.straight_rod(n, origin2, direction2, normal2, base_length, base_radius, density,
+     rod2 = CosseratRod.straight_rod(n, origin2, direction2, normal2, base_length, base_radius, density, nu,
                                 mass_second_moment_of_inertia, shear_matrix, bend_matrix)
 
      # Rod velocity
@@ -159,6 +160,7 @@ def test_fixedjoint():
      shear_matrix = np.zeros((3, 3))
      mass_second_moment_of_inertia = np.zeros((3, 3))
      bend_matrix = np.zeros((3, 3))
+     nu = 0.1
 
      # Origin of the rod
      origin1 = np.array([0.0,0.0,0.0])
@@ -168,9 +170,9 @@ def test_fixedjoint():
      n = 2
 
      # create rod classes
-     rod1 = CosseratRod.straight_rod(n, origin1, direction, normal1, base_length, base_radius, density,
+     rod1 = CosseratRod.straight_rod(n, origin1, direction, normal1, base_length, base_radius, density, nu,
                                mass_second_moment_of_inertia, shear_matrix, bend_matrix)
-     rod2 = CosseratRod.straight_rod(n, origin2, direction2, normal2, base_length, base_radius, density,
+     rod2 = CosseratRod.straight_rod(n, origin2, direction2, normal2, base_length, base_radius, density, nu,
                                 mass_second_moment_of_inertia, shear_matrix, bend_matrix)
 
      # Rod velocity

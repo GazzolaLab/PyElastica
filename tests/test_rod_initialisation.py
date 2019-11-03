@@ -30,9 +30,10 @@ def test_straight_rod():
     shear_matrix = np.ones((3, 3))
     shear_matrix[0, 1] = 2
     bend_matrix = np.random.rand(3, 3)
+    nu = 0.1
 
     test_rod = (CosseratRod.straight_rod(n, start, direction, normal,
-                base_length, base_radius, density,
+                base_length, base_radius, density, nu,
                 mass_second_moment_of_inertia, shear_matrix,
                 bend_matrix))
     # checking origin and length of rod
@@ -53,6 +54,8 @@ def test_straight_rod():
     assert_allclose(test_rod.rest_kappa, np.zeros((3, n - 1)),
                     atol=Tolerance.atol())
     assert_allclose(test_rod.density, density,
+                    atol=Tolerance.atol())
+    assert_allclose(test_rod.nu,nu,
                     atol=Tolerance.atol())
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
