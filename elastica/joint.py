@@ -69,11 +69,11 @@ class HingeJoint(FreeJoint):
         force_direction = - np.dot(link_direction, self.normal_direction) * self.normal_direction
 
         # compute the restoring torque
-        torque = self.kt * np.cross(link_direction,force_direction)
+        self.torque = self.kt * np.cross(link_direction,force_direction)
 
         # The opposite torque will be applied on link one
-        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ torque
-        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ torque
+        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ self.torque
+        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ self.torque
 
 
 class FixedJoint(FreeJoint):
@@ -98,18 +98,22 @@ class FixedJoint(FreeJoint):
         # as check1, and the current position of the second node of link two as check2. Check1 and check2
         # should overlap.
 
-        check1 = self.rod_one.position[..., self.index_one] + self.rod_two.reset_lengths[self.index_two] \
-                                    * self.rod_two.tangents[self.index_two]
+        position_diff = self.rod_one.position[...,self.index_one]-self.rod_one.position[...,self.index_one-1]
+        length = np.sqrt(np.dot(position_diff,position_diff))
+        tangent = position_diff/length
 
-        check2 = self.rod_two.position[...,self.index_two]
+        check1 = self.rod_one.position[..., self.index_one] + self.rod_two.rest_lengths[self.index_two] \
+                                    * tangent # dl of rod 2 can be different than rod 1 so use restlengt of rod 2
+
+        check2 = self.rod_two.position[...,self.index_two+1] # second element of rod2
 
         # Compute the restoring torque
-        forcedirection = -self.kt * (check2 - check1)
-        torque = np.cross(link_direction, forcedirection)
+        forcedirection = -self.kt * (check2 - check1) # force direction is between rod2 2nd element and rod1
+        self.torque = np.cross(link_direction, forcedirection)
 
         # The opposite torque will be applied on link one
-        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ torque
-        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ torque
+        self.rod_one.external_torques[..., self.index_one] -= self.rod_one.directors[..., self.index_one] @ self.torque
+        self.rod_two.external_torques[..., self.index_two] += self.rod_two.directors[..., self.index_two] @ self.torque
 
 
 
