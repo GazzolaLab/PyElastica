@@ -4,8 +4,8 @@ __doc__ = """ Joint between rods test module """
 import numpy as np
 from elastica.joint import FreeJoint, HingeJoint, FixedJoint
 from numpy.testing import assert_allclose
+from elastica.utils import Tolerance
 from elastica._rod import CosseratRod
-
 def test_freejoint():
 
     # Some rod properties. We need them for constructer, they are not used.
