@@ -6,9 +6,9 @@ sys.path.append("..")
 import numpy as np
 from test_rod import TestRod
 from elastica.boundary_conditions import FreeRod, OneEndFixedRod, HelicalBucklingBC
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica._linalg import _batch_matmul, _batch_matvec, _batch_cross
+
 
 
 # tests free rod boundary conditions
