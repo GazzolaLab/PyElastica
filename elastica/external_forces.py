@@ -3,8 +3,6 @@ __doc__ = """ External forcing for rod """
 import numpy as np
 
 
-
-
 # the base class for rod external forcing
 # also the no forcing class
 class NoForces:
@@ -21,7 +19,7 @@ class NoForces:
 # apply gravity on the list of rod
 class GravityForces(NoForces):
     def __init__(self, rod, gravity):
-        self.rod = rod
+        NoForces.__init__(self, rod)
         self.gravity = gravity
 
     def apply_forces(self):
@@ -32,7 +30,7 @@ class GravityForces(NoForces):
 # can be modified for temporal variation
 class EndpointForces(NoForces):
     def __init__(self, rod, start_force, end_force):
-        self.rod = rod
+        NoForces.__init__(self, rod)
         self.start_force = start_force
         self.end_force = end_force
 
