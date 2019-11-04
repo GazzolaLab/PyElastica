@@ -197,7 +197,7 @@ class _CosseratRodBase(RodBase):
     def _compute_damping_forces(self):
         # Internal damping foces.
         damping_forces = self.nu * self.velocity
-        damping_forces[0]  *= 0.5  # first and last nodes have half mass
+        damping_forces[0] *= 0.5  # first and last nodes have half mass
         damping_forces[-1] *= 0.5  # first and last nodes have half mass
 
         return damping_forces
@@ -297,19 +297,18 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         self.nu = nu
 
     @classmethod
-    def straight_rod(cls, n, start, direction, normal, base_length, base_radius,
+    def straight_rod(cls, n_elements, start, direction, normal, base_length, base_radius,
                      density, nu, mass_second_moment_of_inertia, shear_matrix,
                      bend_matrix):
-        # n: number of elements
         # put asserts and sanity checks here
         end = start + direction * base_length
-        position = np.zeros((3, n + 1))
+        position = np.zeros((3, n_elements + 1))
         for i in range(0, 3):
-            position[i, ...] = np.linspace(start[i], end[i], num=n + 1)
+            position[i, ...] = np.linspace(start[i], end[i], num=n_elements + 1)
 
         # set initial velocity and omega to be zero
-        velocity = np.zeros((3, n + 1))
-        omega = np.zeros((3, n))
+        velocity = np.zeros((3, n_elements + 1))
+        omega = np.zeros((3, n_elements))
 
         # compute rest lengths and tangents
         position_diff = position[..., 1:] - position[..., :-1]
@@ -318,8 +317,8 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
 
         # set directors
         # check this order once
-        directors = np.zeros((3, 3, n))
-        normal_collection = np.broadcast_to(normal, (n, 3)).T
+        directors = np.zeros((3, 3, n_elements))
+        normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
         directors[0, ...] = normal_collection
         directors[1, ...] = tangents
         directors[2, ...] = _batch_cross(tangents, normal_collection)
@@ -328,16 +327,16 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         mass = density * np.pi * (base_radius ** 2) * rest_lengths
 
         # set initial strain and curvature to be zero
-        rest_sigma = np.zeros((3, n))
-        rest_kappa = np.zeros((3, n - 1))
+        rest_sigma = np.zeros((3, n_elements))
+        rest_kappa = np.zeros((3, n_elements - 1))
 
         # initialise moment of inertia, shear and bend matrices
-        inertia_collection = np.broadcast_to(mass_second_moment_of_inertia.T,
-                                             (n, 3, 3)).T.reshape(3, 3, n)
-        shear_matrix_collection = np.broadcast_to(shear_matrix.T,
-                                                  (n, 3, 3)).T.reshape(3, 3, n)
-        bend_matrix_collection = (np.broadcast_to(bend_matrix.T,
-                                  (n - 1, 3, 3)).T.reshape(3, 3, n - 1))
+        inertia_collection = np.repeat(mass_second_moment_of_inertia[:, :, np.newaxis],
+                                       n_elements, axis=2)
+        shear_matrix_collection = np.repeat(shear_matrix[:, :, np.newaxis],
+                                            n_elements, axis=2)
+        bend_matrix_collection = np.repeat(bend_matrix[:, :, np.newaxis],
+                                           n_elements - 1, axis=2)
 
         # create rod
         return cls(position, velocity, omega, directors, rest_lengths,
