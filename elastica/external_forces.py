@@ -2,8 +2,7 @@ __doc__ = """ External forcing for rod """
 
 import numpy as np
 
-from ._rod import *
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
+
 
 
 # the base class for rod external forcing

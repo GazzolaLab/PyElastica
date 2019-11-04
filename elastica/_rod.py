@@ -5,7 +5,6 @@ import functools
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from ._calculus import quadrature_kernel, difference_kernel
 from ._rotations import _inv_rotate
-from .rodinit import create_straight_rod
 
 # TODO Add documentation for all functions
 
@@ -198,11 +197,11 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_forces(self):
         # Internal damping foces.
-        damping_force = self.nu * self.velocity
-        damping_force[0]  *= 0.5  # first and last nodes have half mass
-        damping_force[-1] *= 0.5  # first and last nodes have half mass
+        damping_forces = self.nu * self.velocity
+        damping_forces[0]  *= 0.5  # first and last nodes have half mass
+        damping_forces[-1] *= 0.5  # first and last nodes have half mass
 
-        return damping_force
+        return damping_forces
 
     def _compute_internal_forces(self):
         # Compute n_l and cache it using internal_stress
@@ -214,12 +213,12 @@ class _CosseratRodBase(RodBase):
             np.einsum("jik, jk->ik", self.directors, self.internal_stress)
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
-        return difference_kernel(cosserat_internal_stress) - self.compute_damping_forces()
+        return difference_kernel(cosserat_internal_stress) - self._compute_damping_forces()
 
-    def _compute_damping_torque(self):
+    def _compute_damping_torques(self):
         # Internal damping torques
-        damping_torque = self.nu * self.omega
-        return damping_torque
+        damping_torques = self.nu * self.omega
+        return damping_torques
 
     def _compute_internal_torques(self):
         # Compute \tau_l and cache it using internal_couple
@@ -266,15 +265,13 @@ class _CosseratRodBase(RodBase):
         # (J \omega_L / e^2) . (de/dt)
         unsteady_dilatation = J_omega_upon_e * self.dilatation_rate / self.dilatation
 
-        damping_torque = self._compute_damping_torque()
-
         return (
             bend_twist_couple_2D
             + bend_twist_couple_3D
             + shear_stretch_couple
             + lagrangian_transport
             + unsteady_dilatation
-            - damping_torque
+            - self._compute_damping_torques()
         )
 
 
