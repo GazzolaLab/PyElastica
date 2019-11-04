@@ -5,7 +5,8 @@ import functools
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from .utils import Tolerance
 
-class TimeStepper():
+
+class TimeStepper:
     """ Interface classes for all time-steppers
     """
 
@@ -26,7 +27,9 @@ class ExplicitStepper(TimeStepper):
 
     def __init__(self):
         super(ExplicitStepper, self).__init__()
-        self.__stages = [v for (k, v) in self.__class__.__dict__.items() if k.endswith('stage')]
+        self.__stages = [
+            v for (k, v) in self.__class__.__dict__.items() if k.endswith("stage")
+        ]
 
         # Tuples are almost immutable
         self._n_stages = (len(self.__stages),)
@@ -92,8 +95,12 @@ class StatefulRungeKutta4(ExplicitStepper):
         self.k_4 = dt * system(time, dt)  # Don't update state yet
 
         # prepare for next stage
-        system.state = self.initial_state + (self.k_1 + 2. * self.k_2 + 2. * self.k_3 + self.k_4) / 6.0
+        system.state = (
+            self.initial_state
+            + (self.k_1 + 2.0 * self.k_2 + 2.0 * self.k_3 + self.k_4) / 6.0
+        )
         return time
+
 
 def integrate(Stepper, System, final_time, n_steps=1000):
     dt = np.float64(final_time / n_steps)

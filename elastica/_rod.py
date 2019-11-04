@@ -71,12 +71,12 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
 
         """
         # Calculates stress based purely on strain component
-        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_shear_stretch_stresses_from_model()
+        super(
+            _LinearConstitutiveModelWithStrainRate, self
+        )._compute_internal_shear_stretch_stresses_from_model()
         self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
         # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
-        self.internal_stress += _batch_matvec(
-            self.shear_strain_matrix, self.sigma_dot
-        )
+        self.internal_stress += _batch_matvec(self.shear_strain_matrix, self.sigma_dot)
 
     def _compute_internal_bending_twist_stresses_from_model(self):
         """
@@ -89,12 +89,12 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
 
         """
         # Calculates stress based purely on strain component
-        super(_LinearConstitutiveModelWithStrainRate, self)._compute_internal_bending_twist_stresses_from_model()
+        super(
+            _LinearConstitutiveModelWithStrainRate, self
+        )._compute_internal_bending_twist_stresses_from_model()
         self._compute_bending_twist_strain_rates()  # concept : needs to compute kappa rate
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
-        self.internal_couple += _batch_matvec(
-            self.bend_matrix, self.kappa_dot
-        )
+        self.internal_couple += _batch_matvec(self.bend_matrix, self.kappa_dot)
 
 
 # The interface class, as seen from global scope
@@ -212,7 +212,9 @@ class _CosseratRodBase(RodBase):
             np.einsum("jik, jk->ik", self.directors, self.internal_stress)
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
-        return difference_kernel(cosserat_internal_stress) - self._compute_damping_forces()
+        return (
+            difference_kernel(cosserat_internal_stress) - self._compute_damping_forces()
+        )
 
     def _compute_damping_torques(self):
         # Internal damping torques
@@ -275,9 +277,22 @@ class _CosseratRodBase(RodBase):
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density, nu,
-                 mass_second_moment_of_inertia, rest_sigma, rest_kappa, shear_matrix,
-                 bend_matrix):
+    def __init__(
+        self,
+        position,
+        velocity,
+        omega,
+        directors,
+        rest_lengths,
+        mass,
+        density,
+        nu,
+        mass_second_moment_of_inertia,
+        rest_sigma,
+        rest_kappa,
+        shear_matrix,
+        bend_matrix,
+    ):
         self.rest_sigma = rest_sigma
         self.rest_kappa = rest_kappa
         self.shear_matrix = shear_matrix
@@ -297,9 +312,20 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         self.nu = nu
 
     @classmethod
-    def straight_rod(cls, n_elements, start, direction, normal, base_length, base_radius,
-                     density, nu, mass_second_moment_of_inertia, shear_matrix,
-                     bend_matrix):
+    def straight_rod(
+        cls,
+        n_elements,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        mass_second_moment_of_inertia,
+        shear_matrix,
+        bend_matrix,
+    ):
         # put asserts and sanity checks here
         end = start + direction * base_length
         position = np.zeros((3, n_elements + 1))
@@ -331,14 +357,29 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         rest_kappa = np.zeros((3, n_elements - 1))
 
         # initialise moment of inertia, shear and bend matrices
-        inertia_collection = np.repeat(mass_second_moment_of_inertia[:, :, np.newaxis],
-                                       n_elements, axis=2)
-        shear_matrix_collection = np.repeat(shear_matrix[:, :, np.newaxis],
-                                            n_elements, axis=2)
-        bend_matrix_collection = np.repeat(bend_matrix[:, :, np.newaxis],
-                                           n_elements - 1, axis=2)
+        inertia_collection = np.repeat(
+            mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
+        )
+        shear_matrix_collection = np.repeat(
+            shear_matrix[:, :, np.newaxis], n_elements, axis=2
+        )
+        bend_matrix_collection = np.repeat(
+            bend_matrix[:, :, np.newaxis], n_elements - 1, axis=2
+        )
 
         # create rod
-        return cls(position, velocity, omega, directors, rest_lengths,
-                   mass, density, nu, inertia_collection, rest_sigma,
-                   rest_kappa, shear_matrix_collection, bend_matrix_collection)
+        return cls(
+            position,
+            velocity,
+            omega,
+            directors,
+            rest_lengths,
+            mass,
+            density,
+            nu,
+            inertia_collection,
+            rest_sigma,
+            rest_kappa,
+            shear_matrix_collection,
+            bend_matrix_collection,
+        )
