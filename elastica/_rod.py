@@ -20,7 +20,7 @@ class _LinearConstitutiveModel:
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
-    def __init__(self, rest_sigma, rest_kappa, shear_matrix, bend_matrix):
+    def __init__(self):
         pass
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
@@ -123,8 +123,7 @@ class RodBase:
 
 class _CosseratRodBase(RodBase):
     # I'm assuming number of elements can be deduced from the size of the inputs
-    def __init__(self, position, velocity, omega, directors, rest_lengths, mass, density,
-                 mass_second_moment_of_inertia):
+    def __init__():
         pass
 
     def _compute_geometry_from_state(self):
