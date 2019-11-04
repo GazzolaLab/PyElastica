@@ -1,14 +1,14 @@
 __doc__ = """ Boundary conditions for rod """
 
 import numpy as np
-
 from elastica._rotations import _get_rotation_matrix
+
 
 # the base class for rod boundary conditions
 # also the free rod class
 class FreeRod:
     def __init__(self, rod):
-        pass
+        self.rod = rod
 
     def dirichlet(self):
         pass
@@ -17,10 +17,9 @@ class FreeRod:
         pass
 
 
-# start of the rod fixed
 class OneEndFixedRod(FreeRod):
     def __init__(self, rod, start_position, start_directors):
-        self.rod = rod
+        FreeRod.__init__(self, rod)
         self.start_position = start_position
         self.start_directors = start_directors
 
@@ -32,10 +31,11 @@ class OneEndFixedRod(FreeRod):
         self.rod.velocity[..., 0] = 0.0
         self.rod.omega[..., 0] = 0.0
 
+
 # start of the helical buckling bc
 class HelicalBucklingBC(FreeRod):
     def __init__(self, rod, twisting_time, D, R, direction):
-        self.rod = rod
+        FreeRod.__init__(self, rod)
         self.twisting_time = twisting_time
         self.D = D
         self.R = R
