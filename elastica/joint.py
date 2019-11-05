@@ -27,11 +27,13 @@ class FreeJoint:
         # Below if check is not efficient find something else
         # We are checking if end of rod1 and start of rod2 are at the same point in space
         if end_distance <= Tolerance.atol():
-            end_distance = 1.0
+            normalized_end_distance_vector = np.array([0.0, 0.0, 0.0])
+        else:
+            normalized_end_distance_vector = end_distance_vector / end_distance
 
         elastic_force = self.k * end_distance_vector
 
-        normalized_end_distance_vector = end_distance_vector / end_distance
+        # normalized_end_distance_vector = end_distance_vector / end_distance
         relative_velocity = (
             self.rod_two.velocity[..., self.index_two]
             - self.rod_one.velocity[..., self.index_one]
