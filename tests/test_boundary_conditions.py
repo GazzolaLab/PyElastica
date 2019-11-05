@@ -1,19 +1,19 @@
 __doc__ = """ Boundary conditions for rod test module """
 import sys
 
-sys.path.append("..")
-
 # System imports
 import numpy as np
 from test_rod import TestRod
 from elastica.boundary_conditions import FreeRod, OneEndFixedRod, HelicalBucklingBC
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
+from pytest import main
+
+sys.path.append("..")
 
 
 # tests free rod boundary conditions
 def test_free_rod():
-
     test_rod = TestRod()
     free_rod = FreeRod(test_rod)
     test_position = np.random.rand(3, 20)
@@ -131,6 +131,4 @@ def test_helical_buckling_bc():
 
 
 if __name__ == "__main__":
-    from pytest import main
-
     main([__file__])
