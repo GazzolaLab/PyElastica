@@ -1,12 +1,14 @@
 __doc__ = """ Initialisation for rod test module """
 
 import sys
+
 # System imports
 import numpy as np
 from elastica._rod import CosseratRod
 from numpy.testing import assert_allclose, assert_array_equal
 from elastica.utils import Tolerance
 from pytest import main
+
 sys.path.append("..")
 
 

@@ -34,40 +34,43 @@ class OneEndFixedRod(FreeRod):
 
 # start of the helical buckling bc
 class HelicalBucklingBC(FreeRod):
-    def __init__(self, rod, twisting_time, D, R, direction):
+    def __init__(self, rod, twisting_time, slack, number_of_rotations):
         FreeRod.__init__(self, rod)
         self.twisting_time = twisting_time
-        self.D = D
-        self.R = R
-        self.angel_vel_scalar = (2.0 * R * np.pi / self.twisting_time) / 2.0
-        self.shrink_vel_scalar = self.D / (self.twisting_time * 2.0)
 
-        self.direction = direction
+        angel_vel_scalar = (
+            2.0 * number_of_rotations * np.pi / self.twisting_time
+        ) / 2.0
+        shrink_vel_scalar = slack / (self.twisting_time * 2.0)
 
-        self.final_startX = self.rod.position[..., 0] + self.D / 2.0 * self.direction
-        self.final_endX = self.rod.position[..., -1] - self.D / 2.0 * self.direction
+        direction = (
+            self.rod.position[..., -1] - self.rod.position[..., 0]
+        ) / np.linalg.norm(self.rod.position[..., -1] - self.rod.position[..., 0])
 
-        self.ang_vel = self.angel_vel_scalar * self.direction
-        self.shrink_vel = self.shrink_vel_scalar * self.direction
+        self.final_start_position = self.rod.position[..., 0] + slack / 2.0 * direction
+        self.final_end_position = self.rod.position[..., -1] - slack / 2.0 * direction
 
-        theta = R * np.pi
+        self.ang_vel = angel_vel_scalar * direction
+        self.shrink_vel = shrink_vel_scalar * direction
 
-        self.final_startQ = (
-            _get_rotation_matrix(theta, self.direction.reshape(3, 1)).reshape(3, 3)
+        theta = number_of_rotations * np.pi
+
+        self.final_start_directors = (
+            _get_rotation_matrix(theta, direction.reshape(3, 1)).reshape(3, 3)
             @ self.rod.directors[..., 0]
         )  # rotation_matrix wants vectors 3,1
-        self.final_endQ = (
-            _get_rotation_matrix(-theta, self.direction.reshape(3, 1)).reshape(3, 3)
+        self.final_end_directors = (
+            _get_rotation_matrix(-theta, direction.reshape(3, 1)).reshape(3, 3)
             @ self.rod.directors[..., -1]
         )  # rotation_matrix wants vectors 3,1
 
     def dirichlet(self, time):
         if time > self.twisting_time:
-            self.rod.position[..., 0] = self.final_startX
-            self.rod.position[..., -1] = self.final_endX
+            self.rod.position[..., 0] = self.final_start_position
+            self.rod.position[..., -1] = self.final_end_position
 
-            self.rod.directors[..., 0] = self.final_startQ
-            self.rod.directors[..., -1] = self.final_endQ
+            self.rod.directors[..., 0] = self.final_start_directors
+            self.rod.directors[..., -1] = self.final_end_directors
 
     def neumann(self, time):
         if time > self.twisting_time:
@@ -82,4 +85,4 @@ class HelicalBucklingBC(FreeRod):
             self.rod.omega[..., 0] = self.ang_vel
 
             self.rod.velocity[..., -1] = -self.shrink_vel
-            self.rod.velocity[..., -1] = -self.ang_vel
+            self.rod.omega[..., -1] = -self.ang_vel

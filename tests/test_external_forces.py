@@ -1,5 +1,6 @@
 __doc__ = """ External forcing for rod test module """
 import sys
+
 # System imports
 import numpy as np
 from test_rod import TestRod
@@ -7,6 +8,7 @@ from elastica.external_forces import NoForces, GravityForces, EndpointForces
 from numpy.testing import assert_allclose, assert_array_equal
 from elastica.utils import Tolerance
 from pytest import main
+
 sys.path.append("..")
 
 
