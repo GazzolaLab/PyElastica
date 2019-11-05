@@ -32,7 +32,7 @@ class OneEndFixedRod(FreeRod):
         self.rod.omega[..., 0] = 0.0
 
 
-# start of the helical buckling bc
+# start of the helical buckling BC
 class HelicalBucklingBC(FreeRod):
     def __init__(self, rod, twisting_time, slack, number_of_rotations):
         FreeRod.__init__(self, rod)
