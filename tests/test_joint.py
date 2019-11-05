@@ -23,7 +23,7 @@ def test_freejoint():
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
-    origin2 = np.array([1.1, 0.0, 0.0])
+    origin2 = np.array([1.0, 0.0, 0.0])
 
     # Number of elements
     n = 4
@@ -76,8 +76,8 @@ def test_freejoint():
     # Compute the free joint forces
     distance = rod2.position[..., rod2_index] - rod1.position[..., rod1_index]
     end_distance = np.linalg.norm(distance)
-    if end_distance == 0:
-        end_distance = 1
+    if end_distance <= Tolerance.atol():
+        end_distance = 1.0
     elasticforce = k * distance
     relative_vel = rod2.velocity[..., rod2_index] - rod1.velocity[..., rod1_index]
     normal_relative_vel = np.dot(relative_vel, distance) / end_distance
@@ -199,7 +199,19 @@ def test_hingejoint():
     forcedirection = np.dot(linkdirection, normal1) * normal1
     torque = -kt * np.cross(linkdirection, forcedirection)
 
-    assert_allclose(hgjt.torque, torque, atol=Tolerance.atol())
+    torque_rod1 = -rod1.directors[..., rod1_index] @ torque
+    torque_rod2 = rod2.directors[..., rod2_index] @ torque
+
+    assert_allclose(
+        hgjt.rod_one.external_torques[..., rod1_index],
+        torque_rod1,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        hgjt.rod_two.external_torques[..., rod2_index],
+        torque_rod2,
+        atol=Tolerance.atol(),
+    )
 
 
 def test_fixedjoint():
@@ -308,7 +320,19 @@ def test_fixedjoint():
     forcedirection = -kt * (check2 - check1)
     torque = np.cross(linkdirection, forcedirection)
 
-    assert_allclose(fxjt.torque, torque, atol=Tolerance.atol())
+    torque_rod1 = -rod1.directors[..., rod1_index] @ torque
+    torque_rod2 = rod2.directors[..., rod2_index] @ torque
+
+    assert_allclose(
+        fxjt.rod_one.external_torques[..., rod1_index],
+        torque_rod1,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        fxjt.rod_two.external_torques[..., rod2_index],
+        torque_rod2,
+        atol=Tolerance.atol(),
+    )
 
 
 if __name__ == "__main__":

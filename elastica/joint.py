@@ -1,8 +1,7 @@
 __doc__ = """ Joint between rods module """
 
 import numpy as np
-
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
+from elastica.utils import Tolerance
 
 
 class FreeJoint:
@@ -23,32 +22,42 @@ class FreeJoint:
             - self.rod_one.position[..., self.index_one]
         )
         end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
+        # 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
         # Below if check is not efficient find something else
-        if end_distance == 0:
-            end_distance = 1
+        # We are checking if end of rod1 and start of rod2 are at the same point in space
+        if end_distance <= Tolerance.atol():
+            end_distance = 1.0
+
         elastic_force = self.k * end_distance_vector
+
+        normalized_end_distance_vector = end_distance_vector / end_distance
         relative_velocity = (
             self.rod_two.velocity[..., self.index_two]
             - self.rod_one.velocity[..., self.index_one]
         )
         normal_relative_velocity = (
-            np.dot(relative_velocity, end_distance_vector) / end_distance
+            np.dot(relative_velocity, normalized_end_distance_vector)
+            * normalized_end_distance_vector
         )
-        damping_force = (
-            -self.nu * normal_relative_velocity * end_distance_vector
-        ) / end_distance
+        damping_force = -self.nu * normal_relative_velocity
+
         contact_force = elastic_force + damping_force
 
-        self.rod_two.external_forces[..., self.index_two] -= contact_force
         self.rod_one.external_forces[..., self.index_one] += contact_force
+        self.rod_two.external_forces[..., self.index_two] -= contact_force
+
         return
 
     def apply_torque(self):
         pass
 
 
-# this joint currently keeps rod one fixed and moves rod two
-# how couples act needs to be reconfirmed
+__doc__ = """ this joint currently keeps rod one fixed and moves rod two
+                how couples act needs to be reconfirmed
+        """
+
+
 class HingeJoint(FreeJoint):
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
@@ -81,14 +90,14 @@ class HingeJoint(FreeJoint):
         )
 
         # compute the restoring torque
-        self.torque = self.kt * np.cross(link_direction, force_direction)
+        torque = self.kt * np.cross(link_direction, force_direction)
 
         # The opposite torque will be applied on link one
         self.rod_one.external_torques[..., self.index_one] -= (
-            self.rod_one.directors[..., self.index_one] @ self.torque
+            self.rod_one.directors[..., self.index_one] @ torque
         )
         self.rod_two.external_torques[..., self.index_two] += (
-            self.rod_two.directors[..., self.index_two] @ self.torque
+            self.rod_two.directors[..., self.index_two] @ torque
         )
 
 
@@ -111,7 +120,7 @@ class FixedJoint(FreeJoint):
             - self.rod_two.position[..., self.index_two]
         )
 
-        # To constrain the orientation of link two, the second node of link tow should align with
+        # To constrain the orientation of link two, the second node of link two should align with
         # the direction of link one. Thus, we compute the desired position of the second node of link two
         # as check1, and the current position of the second node of link two as check2. Check1 and check2
         # should overlap.
@@ -136,12 +145,12 @@ class FixedJoint(FreeJoint):
         forcedirection = -self.kt * (
             check2 - check1
         )  # force direction is between rod2 2nd element and rod1
-        self.torque = np.cross(link_direction, forcedirection)
+        torque = np.cross(link_direction, forcedirection)
 
         # The opposite torque will be applied on link one
         self.rod_one.external_torques[..., self.index_one] -= (
-            self.rod_one.directors[..., self.index_one] @ self.torque
+            self.rod_one.directors[..., self.index_one] @ torque
         )
         self.rod_two.external_torques[..., self.index_two] += (
-            self.rod_two.directors[..., self.index_two] @ self.torque
+            self.rod_two.directors[..., self.index_two] @ torque
         )
