@@ -12,10 +12,10 @@ class FreeRod:
     def __init__(self, rod):
         self.rod = rod
 
-    def dirichlet(self):
+    def constrain_values(self):
         pass
 
-    def neumann(self):
+    def constrain_rates(self):
         pass
 
 
@@ -28,11 +28,11 @@ class OneEndFixedRod(FreeRod):
         self.start_position = start_position
         self.start_directors = start_directors
 
-    def dirichlet(self):
+    def constrain_values(self):
         self.rod.position[..., 0] = self.start_position
         self.rod.directors[..., 0] = self.start_directors
 
-    def neumann(self):
+    def constrain_rates(self):
         self.rod.velocity[..., 0] = 0.0
         self.rod.omega[..., 0] = 0.0
 
@@ -72,7 +72,7 @@ class HelicalBucklingBC(FreeRod):
             @ self.rod.directors[..., -1]
         )  # rotation_matrix wants vectors 3,1
 
-    def dirichlet(self, time):
+    def constrain_values(self, time):
         if time > self.twisting_time:
             self.rod.position[..., 0] = self.final_start_position
             self.rod.position[..., -1] = self.final_end_position
@@ -80,7 +80,7 @@ class HelicalBucklingBC(FreeRod):
             self.rod.directors[..., 0] = self.final_start_directors
             self.rod.directors[..., -1] = self.final_end_directors
 
-    def neumann(self, time):
+    def constrain_rates(self, time):
         if time > self.twisting_time:
             self.rod.velocity[..., 0] = 0.0
             self.rod.omega[..., 0] = 0.0
