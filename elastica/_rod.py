@@ -5,6 +5,7 @@ import functools
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from ._calculus import quadrature_kernel, difference_kernel
 from ._rotations import _inv_rotate
+from .utils import Tolerance
 
 # TODO Add documentation for all functions
 
@@ -25,6 +26,12 @@ class _LinearConstitutiveModel:
         # if found in kwargs modify (say for curved rod)
         self.rest_sigma = np.zeros((3, n_elements))
         self.rest_kappa = np.zeros((3, n_elements - 1))
+        # sanity checks here
+        # NOTE: assuming matrices to be diagonal here
+        for i in range(0, 3):
+            assert (shear_matrix[i, i] > Tolerance.atol())
+            assert (bend_matrix[i, i] > Tolerance.atol())
+
         self.shear_matrix = np.repeat(shear_matrix[:, :, np.newaxis],
                                       n_elements, axis=2)
         self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis],
@@ -179,7 +186,17 @@ class _CosseratRodBase(RodBase):
         *args,
         **kwargs
     ):
-        # put asserts and sanity checks here
+        # sanity checks here
+        assert (n_elements > 1)
+        assert (base_length > Tolerance.atol())
+        assert (base_radius > Tolerance.atol())
+        assert (density > Tolerance.atol())
+        assert (nu >= 0.0)
+        assert (np.sqrt(np.dot(normal, normal)) > Tolerance.atol())
+        assert (np.sqrt(np.dot(direction, direction)) > Tolerance.atol())
+        for i in range(0, 3):
+            assert (mass_second_moment_of_inertia[i, i] > Tolerance.atol())
+
         end = start + direction * base_length
         position = np.zeros((3, n_elements + 1))
         for i in range(0, 3):
@@ -189,6 +206,7 @@ class _CosseratRodBase(RodBase):
         position_diff = position[..., 1:] - position[..., :-1]
         rest_lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
         tangents = position_diff / rest_lengths
+        normal /= np.sqrt(np.dot(normal, normal))
 
         # set directors
         # check this order once
