@@ -16,9 +16,9 @@ def test_freejoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.zeros((3, 3))
-    mass_second_moment_of_inertia = np.zeros((3, 3))
-    bend_matrix = np.zeros((3, 3))
+    shear_matrix = np.identity(3)
+    mass_second_moment_of_inertia = np.identity(3)
+    bend_matrix = np.identity(3)
     nu = 0.1
 
     # Origin of the rod
@@ -111,9 +111,9 @@ def test_hingejoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.zeros((3, 3))
-    mass_second_moment_of_inertia = np.zeros((3, 3))
-    bend_matrix = np.zeros((3, 3))
+    shear_matrix = np.identity(3)
+    mass_second_moment_of_inertia = np.identity(3)
+    bend_matrix = np.identity(3)
     nu = 0.1
 
     # Origin of the rod
@@ -225,9 +225,9 @@ def test_fixedjoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.zeros((3, 3))
-    mass_second_moment_of_inertia = np.zeros((3, 3))
-    bend_matrix = np.zeros((3, 3))
+    shear_matrix = np.identity(3)
+    mass_second_moment_of_inertia = np.identity(3)
+    bend_matrix = np.identity(3)
     nu = 0.1
 
     # Origin of the rod

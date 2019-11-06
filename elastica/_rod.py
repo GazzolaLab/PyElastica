@@ -29,13 +29,15 @@ class _LinearConstitutiveModel:
         # sanity checks here
         # NOTE: assuming matrices to be diagonal here
         for i in range(0, 3):
-            assert (shear_matrix[i, i] > Tolerance.atol())
-            assert (bend_matrix[i, i] > Tolerance.atol())
+            assert shear_matrix[i, i] > Tolerance.atol()
+            assert bend_matrix[i, i] > Tolerance.atol()
 
-        self.shear_matrix = np.repeat(shear_matrix[:, :, np.newaxis],
-                                      n_elements, axis=2)
-        self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis],
-                                     n_elements - 1, axis=2)
+        self.shear_matrix = np.repeat(
+            shear_matrix[:, :, np.newaxis], n_elements, axis=2
+        )
+        self.bend_matrix = np.repeat(
+            bend_matrix[:, :, np.newaxis], n_elements - 1, axis=2
+        )
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -72,11 +74,13 @@ class _LinearConstitutiveModel:
 
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
     def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
-        _LinearConstitutiveModel.__init__(self, n_elements, shear_matrix,
-                                          bend_matrix, *args, **kwargs)
+        _LinearConstitutiveModel.__init__(
+            self, n_elements, shear_matrix, bend_matrix, *args, **kwargs
+        )
         if "shear_strain_matrix" in kwargs.keys():
-            self.shear_strain_matrix = np.repeat(kwargs["shear_strain_matrix"][:, :,
-                                                 np.newaxis], n_elements, axis=2)
+            self.shear_strain_matrix = np.repeat(
+                kwargs["shear_strain_matrix"][:, :, np.newaxis], n_elements, axis=2
+            )
         else:
             raise ValueError("shear strain matrix value missing!")
 
@@ -187,15 +191,15 @@ class _CosseratRodBase(RodBase):
         **kwargs
     ):
         # sanity checks here
-        assert (n_elements > 1)
-        assert (base_length > Tolerance.atol())
-        assert (base_radius > Tolerance.atol())
-        assert (density > Tolerance.atol())
-        assert (nu >= 0.0)
-        assert (np.sqrt(np.dot(normal, normal)) > Tolerance.atol())
-        assert (np.sqrt(np.dot(direction, direction)) > Tolerance.atol())
+        assert n_elements > 1
+        assert base_length > Tolerance.atol()
+        assert base_radius > Tolerance.atol()
+        assert density > Tolerance.atol()
+        assert nu >= 0.0
+        assert np.sqrt(np.dot(normal, normal)) > Tolerance.atol()
+        assert np.sqrt(np.dot(direction, direction)) > Tolerance.atol()
         for i in range(0, 3):
-            assert (mass_second_moment_of_inertia[i, i] > Tolerance.atol())
+            assert mass_second_moment_of_inertia[i, i] > Tolerance.atol()
 
         end = start + direction * base_length
         position = np.zeros((3, n_elements + 1))
@@ -387,12 +391,22 @@ class _CosseratRodBase(RodBase):
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
-        _LinearConstitutiveModel.__init__(self, n_elements, shear_matrix,
-                                          bend_matrix, *args, **kwargs)
-        _CosseratRodBase.__init__(self, n_elements, rod.position, rod.directors,
-                                  rod.rest_lengths, rod.mass, rod.density,
-                                  rod.mass_second_moment_of_inertia, rod.nu,
-                                  *args, **kwargs)
+        _LinearConstitutiveModel.__init__(
+            self, n_elements, shear_matrix, bend_matrix, *args, **kwargs
+        )
+        _CosseratRodBase.__init__(
+            self,
+            n_elements,
+            rod.position,
+            rod.directors,
+            rod.rest_lengths,
+            rod.mass,
+            rod.density,
+            rod.mass_second_moment_of_inertia,
+            rod.nu,
+            *args,
+            **kwargs
+        )
         del rod
 
     @classmethod
@@ -412,9 +426,17 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         *args,
         **kwargs
     ):
-        rod = _CosseratRodBase.straight_rod(n_elements, start, direction,
-                                            normal, base_length, base_radius,
-                                            density, nu,
-                                            mass_second_moment_of_inertia,
-                                            *args, **kwargs)
+        rod = _CosseratRodBase.straight_rod(
+            n_elements,
+            start,
+            direction,
+            normal,
+            base_length,
+            base_radius,
+            density,
+            nu,
+            mass_second_moment_of_inertia,
+            *args,
+            **kwargs
+        )
         return cls(n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs)
