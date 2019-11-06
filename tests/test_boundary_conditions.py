@@ -24,7 +24,7 @@ def test_free_rod():
     test_rod.directors = (
         test_directors.copy()
     )  # We need copy of the list not a reference to this array
-    free_rod.dirichlet()
+    free_rod.constrain_values()
     assert_allclose(test_position, test_rod.position, atol=Tolerance.atol())
     assert_allclose(test_directors, test_rod.directors, atol=Tolerance.atol())
 
@@ -36,7 +36,7 @@ def test_free_rod():
     test_rod.omega = (
         test_omega.copy()
     )  # We need copy of the list not a reference to this array
-    free_rod.neumann()
+    free_rod.constrain_rates()
     assert_allclose(test_velocity, test_rod.velocity, atol=Tolerance.atol())
     assert_allclose(test_omega, test_rod.omega, atol=Tolerance.atol())
 
@@ -55,7 +55,7 @@ def test_one_end_fixed_rod():
     test_rod.directors = (
         test_directors.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.dirichlet()
+    fixed_rod.constrain_values()
     test_position[..., 0] = start_position
     test_directors[..., 0] = start_directors
     assert_allclose(test_position, test_rod.position, atol=Tolerance.atol())
@@ -69,7 +69,7 @@ def test_one_end_fixed_rod():
     test_rod.omega = (
         test_omega.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.neumann()
+    fixed_rod.constrain_rates()
     test_velocity[..., 0] = np.array((0, 0, 0))
     test_omega[..., 0] = np.array((0, 0, 0))
     assert_allclose(test_velocity, test_rod.velocity, atol=Tolerance.atol())
@@ -118,7 +118,7 @@ def test_helical_buckling_bc():
     # time < twisting time
     time = twisting_time - 1.0
 
-    helicalbuckling_rod.neumann(time=time)
+    helicalbuckling_rod.constrain_rates(time=time)
     test_velocity[..., 0] = np.array([0.003, 0.0, 0.0])
     test_velocity[..., -1] = -np.array([0.003, 0.0, 0.0])
     test_omega[..., 0] = np.array([0.169646, 0.0, 0.0])
@@ -129,7 +129,7 @@ def test_helical_buckling_bc():
 
     # time > twisting time
     time = twisting_time + 1
-    helicalbuckling_rod.neumann(time=time)
+    helicalbuckling_rod.constrain_rates(time=time)
     test_velocity[..., 0] = np.array((0, 0, 0))
     test_velocity[..., -1] = np.array((0, 0, 0))
     test_omega[..., 0] = np.array((0, 0, 0))
@@ -139,7 +139,7 @@ def test_helical_buckling_bc():
 
     # Check Dirichlet BC
 
-    helicalbuckling_rod.dirichlet(time=time)
+    helicalbuckling_rod.constrain_values(time=time)
 
     test_position[..., 0] = np.array([1.5, 0.0, 0.0])
     test_position[..., -1] = np.array([98.5, 0.0, 0.0])
