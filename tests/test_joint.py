@@ -16,10 +16,12 @@ def test_freejoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.identity(3)
-    mass_second_moment_of_inertia = np.identity(3)
-    bend_matrix = np.identity(3)
     nu = 0.1
+
+    # Youngs Modulus [Pa]
+    E = 1e6
+    # poisson ratio
+    poisson_ratio = 0.5
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -38,9 +40,8 @@ def test_freejoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -51,9 +52,8 @@ def test_freejoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
 
     # Stiffness between points
@@ -111,10 +111,12 @@ def test_hingejoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.identity(3)
-    mass_second_moment_of_inertia = np.identity(3)
-    bend_matrix = np.identity(3)
     nu = 0.1
+
+    # Youngs Modulus [Pa]
+    E = 1e6
+    # poisson ratio
+    poisson_ratio = 0.5
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -133,9 +135,8 @@ def test_hingejoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -146,9 +147,8 @@ def test_hingejoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
 
     # Rod velocity
@@ -225,10 +225,12 @@ def test_fixedjoint():
     base_length = 1
     base_radius = 0.2
     density = 1
-    shear_matrix = np.identity(3)
-    mass_second_moment_of_inertia = np.identity(3)
-    bend_matrix = np.identity(3)
     nu = 0.1
+
+    # Youngs Modulus [Pa]
+    E = 1e6
+    # poisson ratio
+    poisson_ratio = 0.5
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -247,9 +249,8 @@ def test_fixedjoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -260,9 +261,8 @@ def test_fixedjoint():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
     )
 
     # Rod velocity
