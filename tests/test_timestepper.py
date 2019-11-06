@@ -381,22 +381,6 @@ class TestExplicitSteppers:
             atol=Tolerance.atol(),
         )
 
-    @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
-    def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
-        system = SecondOrderHybridSystem()
-        final_time = 1.0
-        n_steps = 2000
-        stepper = SymplecticCosseratRodStepper(symplectic_stepper=symplectic_stepper())
-        integrate(stepper, system, final_time=final_time, n_steps=n_steps)
-        print(system.final_solution(final_time))
-
-        assert_allclose(
-            system.final_solution(final_time),
-            system.analytical_solution(final_time),
-            rtol=Tolerance.rtol() * 1e2,
-            atol=Tolerance.atol(),
-        )
-
     @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers[:-1])
     def test_hybrid_explicit_against_analytical_system(self, explicit_stepper):
         system = SecondOrderHybridSystem()
@@ -404,7 +388,6 @@ class TestExplicitSteppers:
         n_steps = 2000
         integrate(explicit_stepper(), system, final_time=final_time, n_steps=n_steps)
 
-        print(system.final_solution(final_time))
         assert_allclose(
             system.final_solution(final_time),
             system.analytical_solution(final_time),

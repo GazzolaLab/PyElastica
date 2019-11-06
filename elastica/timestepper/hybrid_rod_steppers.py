@@ -34,10 +34,11 @@ class SymplecticCosseratRodStepper:
 
         """ We need to mix stepper and linear_stepper here,
         where linear_stepper "follows" the pattern set by stepper
-        
+        Pattern
+        -------
         Stepper : A B C D C B A
         LinearStepper : X
-        HybridStepper : X A B X C D X C B X A 
+        HybridStepper : X A B X C D X C B X A
         """
         # Adapted from https://stackoverflow.com/a/31040952
         # Interval to interleave LinearStepper into HybridStepper
