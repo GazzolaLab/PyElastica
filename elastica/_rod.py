@@ -64,7 +64,7 @@ class _LinearConstitutiveModel:
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
     def __init__(self, *args, **kwargs):
         super(_LinearConstitutiveModelWithStrainRate, self).__init__()
-        if "shear_strain_matrix" in kwargs:
+        if "shear_strain_matrix" in kwargs.keys():
             self.shear_strain_matrix = kwargs.get("shear_strain_matrix")
         else:
             raise ValueError("shear strain matrix value missing!")
