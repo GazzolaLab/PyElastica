@@ -29,6 +29,43 @@ class StatefulStepper:
         return self.stepper.n_stages
 
 
+class LinearExponentialIntegratorMixin:
+    def __init__(self):
+        pass
+
+    def _do_stage(self, System, Memory, time, dt):
+        # TODO : Make more general, system should not be calculating what the state
+        # transition matrix directly is, but rather it should just give
+        Memory.linear_operator = System.get_linear_state_transition_operator(time, dt)
+
+    def _do_update(self, System, Memory, time, dt):
+        # System.linearly_evolving_state = _batch_matmul(
+        #     System.linearly_evolving_state,
+        #     Memory.linear_operator
+        # )
+        System.linearly_evolving_state = np.einsum(
+            "ijk,ljk->ilk", System.linearly_evolving_state, Memory.linear_operator
+        )
+        return time + dt
+
+    # The below two function calls satisfy the SymplecticStepper requirement.
+    def _first_prefactor(self, dt):
+        return dt
+
+    # Code repeat!
+    # Easy to avoid, but keep for performance.
+    def _do_one_step(self, System, time, prefac):
+        System.linearly_evolving_state = np.einsum(
+            "ijk,ljk->ilk",
+            System.linearly_evolving_state,
+            System.get_linear_state_transition_operator(time, prefac),
+        )
+        return (
+            time
+        )  # TODO fix hack that treats time separately here. Shuold be time + dt
+        # return time + dt
+
+
 # TODO Improve interface of this function to take args and kwargs for ease of use
 def integrate(StatefulStepper, System, final_time, n_steps=1000):
     dt = np.float64(final_time / n_steps)

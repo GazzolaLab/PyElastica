@@ -1,20 +1,26 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 import numpy as np
 
-from . import TimeStepper, StatefulStepper
+from . import TimeStepper, StatefulStepper, LinearExponentialIntegratorMixin
 
 
 class ExplicitStepper(TimeStepper):
     """ Base class for all explicit steppers
+    Can also be used as a mixin with optional cls argument below
     """
 
-    def __init__(self):
+    def __init__(self, cls=None):
         super(ExplicitStepper, self).__init__()
+        take_methods_from = self if cls is None else cls()
         __stages = [
-            v for (k, v) in self.__class__.__dict__.items() if k.endswith("stage")
+            v
+            for (k, v) in take_methods_from.__class__.__dict__.items()
+            if k.endswith("stage")
         ]
         __updates = [
-            v for (k, v) in self.__class__.__dict__.items() if k.endswith("update")
+            v
+            for (k, v) in take_methods_from.__class__.__dict__.items()
+            if k.endswith("update")
         ]
 
         # Tuples are almost immutable
@@ -25,15 +31,15 @@ class ExplicitStepper(TimeStepper):
             _n_stages == _n_updates
         ), "Number of stages and updates should be equal to one another"
 
-        self.__stages_and_updates = tuple(zip(__stages, __updates))
+        self._stages_and_updates = tuple(zip(__stages, __updates))
 
     @property
     def n_stages(self):
-        return len(self.__stages_and_updates)
+        return len(self._stages_and_updates)
 
     ### For stateless explicit steppers
     def do_step(self, System, Memory, time: np.float64, dt: np.float64):
-        for stage, update in self.__stages_and_updates:
+        for stage, update in self._stages_and_updates:
             stage(self, System, Memory, time, dt)
             time = update(self, System, Memory, time, dt)
         return time
@@ -135,28 +141,16 @@ class StatefulEulerForward(StatefulStepper):
         self.stepper = EulerForward()
 
 
-class LinearExponentialIntegrator(ExplicitStepper):
+class ExplicitLinearExponentialIntegrator(
+    LinearExponentialIntegratorMixin, ExplicitStepper
+):
     def __init__(self):
-        super(LinearExponentialIntegrator, self).__init__()
-
-    def _do_stage(self, System, Memory, time, dt):
-        # TODO : Make more general, system should not be calculating what the state
-        # transition matrix directly is, but rather it should just give
-        Memory.linear_operator = System.get_linear_state_transition_operator(time, dt)
-
-    def _do_update(self, System, Memory, time, dt):
-        # System.linearly_evolving_state = _batch_matmul(
-        #     System.linearly_evolving_state,
-        #     Memory.linear_operator
-        # )
-        System.linearly_evolving_state = np.einsum(
-            "ijk,ljk->ilk", System.linearly_evolving_state, Memory.linear_operator
-        )
-        return time + dt
+        LinearExponentialIntegratorMixin.__init__(self)
+        ExplicitStepper.__init__(self, LinearExponentialIntegratorMixin)
 
 
 class StatefulLinearExponentialIntegrator(StatefulStepper):
     def __init__(self):
         super(StatefulLinearExponentialIntegrator, self).__init__()
-        self.stepper = LinearExponentialIntegrator()
+        self.stepper = ExplicitLinearExponentialIntegrator()
         self.linear_operator = None
