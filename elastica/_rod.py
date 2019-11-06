@@ -20,13 +20,15 @@ class _LinearConstitutiveModel:
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
-    def __init__(
-        self, rest_sigma, rest_kappa, shear_matrix, bend_matrix, *args, **kwargs
-    ):
-        self.rest_sigma = rest_sigma
-        self.rest_kappa = rest_kappa
-        self.shear_matrix = shear_matrix
-        self.bend_matrix = bend_matrix
+    def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
+        # set rest strains and curvature to be  zero at start
+        # if found in kwargs modify (say for curved rod)
+        self.rest_sigma = np.zeros((3, n_elements))
+        self.rest_kappa = np.zeros((3, n_elements - 1))
+        self.shear_matrix = np.repeat(shear_matrix[:, :, np.newaxis],
+                                      n_elements, axis=2)
+        self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis],
+                                     n_elements - 1, axis=2)
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -62,10 +64,12 @@ class _LinearConstitutiveModel:
 
 
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
-    def __init__(self, *args, **kwargs):
-        super(_LinearConstitutiveModelWithStrainRate, self).__init__()
+    def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
+        _LinearConstitutiveModel.__init__(self, n_elements, shear_matrix,
+                                          bend_matrix, *args, **kwargs)
         if "shear_strain_matrix" in kwargs.keys():
-            self.shear_strain_matrix = kwargs.get("shear_strain_matrix")
+            self.shear_strain_matrix = np.repeat(kwargs["shear_strain_matrix"][:, :,
+                                                 np.newaxis], n_elements, axis=2)
         else:
             raise ValueError("shear strain matrix value missing!")
 
@@ -134,9 +138,8 @@ class _CosseratRodBase(RodBase):
     # I'm assuming number of elements can be deduced from the size of the inputs
     def __init__(
         self,
+        n_elements,
         position,
-        velocity,
-        omega,
         directors,
         rest_lengths,
         mass,
@@ -147,9 +150,10 @@ class _CosseratRodBase(RodBase):
         **kwargs
     ):
         self.position = position
-        self.velocity = velocity
-        self.omega = omega
         self.directors = directors
+        # initial set to zero; if coming through kwargs then modify
+        self.velocity = np.zeros((3, n_elements + 1))
+        self.omega = np.zeros((3, n_elements))
         self.rest_lengths = rest_lengths
         self.mass = mass
         self.density = density
@@ -159,6 +163,59 @@ class _CosseratRodBase(RodBase):
         # will apply external force and torques externally
         self.external_forces = 0 * self.position
         self.external_torques = 0 * self.omega
+
+    @classmethod
+    def straight_rod(
+        cls,
+        n_elements,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        mass_second_moment_of_inertia,
+        *args,
+        **kwargs
+    ):
+        # put asserts and sanity checks here
+        end = start + direction * base_length
+        position = np.zeros((3, n_elements + 1))
+        for i in range(0, 3):
+            position[i, ...] = np.linspace(start[i], end[i], num=n_elements + 1)
+
+        # compute rest lengths and tangents
+        position_diff = position[..., 1:] - position[..., :-1]
+        rest_lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
+        tangents = position_diff / rest_lengths
+
+        # set directors
+        # check this order once
+        directors = np.zeros((3, 3, n_elements))
+        normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
+        directors[0, ...] = normal_collection
+        directors[1, ...] = tangents
+        directors[2, ...] = _batch_cross(tangents, normal_collection)
+
+        mass = density * np.pi * base_radius ** 2 * rest_lengths
+        inertia_collection = np.repeat(
+            mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
+        )
+
+        # create rod
+        return cls(
+            n_elements,
+            position,
+            directors,
+            rest_lengths,
+            mass,
+            density,
+            inertia_collection,
+            nu,
+            *args,
+            **kwargs
+        )
 
     def _compute_geometry_from_state(self):
         """
@@ -311,41 +368,14 @@ class _CosseratRodBase(RodBase):
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(
-        self,
-        position,
-        velocity,
-        omega,
-        directors,
-        rest_lengths,
-        mass,
-        density,
-        mass_second_moment_of_inertia,
-        nu,
-        rest_sigma,
-        rest_kappa,
-        shear_matrix,
-        bend_matrix,
-        *args,
-        **kwargs
-    ):
-        _LinearConstitutiveModel.__init__(
-            self, rest_sigma, rest_kappa, shear_matrix, bend_matrix, *args, **kwargs
-        )
-        _CosseratRodBase.__init__(
-            self,
-            position,
-            velocity,
-            omega,
-            directors,
-            rest_lengths,
-            mass,
-            density,
-            mass_second_moment_of_inertia,
-            nu,
-            *args,
-            **kwargs
-        )
+    def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
+        _LinearConstitutiveModel.__init__(self, n_elements, shear_matrix,
+                                          bend_matrix, *args, **kwargs)
+        _CosseratRodBase.__init__(self, n_elements, rod.position, rod.directors,
+                                  rod.rest_lengths, rod.mass, rod.density,
+                                  rod.mass_second_moment_of_inertia, rod.nu,
+                                  *args, **kwargs)
+        del rod
 
     @classmethod
     def straight_rod(
@@ -364,62 +394,9 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         *args,
         **kwargs
     ):
-        # put asserts and sanity checks here
-        end = start + direction * base_length
-        position = np.zeros((3, n_elements + 1))
-        for i in range(0, 3):
-            position[i, ...] = np.linspace(start[i], end[i], num=n_elements + 1)
-
-        # set initial velocity and omega to be zero
-        velocity = np.zeros((3, n_elements + 1))
-        omega = np.zeros((3, n_elements))
-
-        # compute rest lengths and tangents
-        position_diff = position[..., 1:] - position[..., :-1]
-        rest_lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
-        tangents = position_diff / rest_lengths
-
-        # set directors
-        # check this order once
-        directors = np.zeros((3, 3, n_elements))
-        normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
-        directors[0, ...] = normal_collection
-        directors[1, ...] = tangents
-        directors[2, ...] = _batch_cross(tangents, normal_collection)
-
-        # compute mass
-        mass = density * np.pi * (base_radius ** 2) * rest_lengths
-
-        # set initial strain and curvature to be zero
-        rest_sigma = np.zeros((3, n_elements))
-        rest_kappa = np.zeros((3, n_elements - 1))
-
-        # initialise moment of inertia, shear and bend matrices
-        inertia_collection = np.repeat(
-            mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
-        )
-        shear_matrix_collection = np.repeat(
-            shear_matrix[:, :, np.newaxis], n_elements, axis=2
-        )
-        bend_matrix_collection = np.repeat(
-            bend_matrix[:, :, np.newaxis], n_elements - 1, axis=2
-        )
-
-        # create rod
-        return cls(
-            position,
-            velocity,
-            omega,
-            directors,
-            rest_lengths,
-            mass,
-            density,
-            inertia_collection,
-            nu,
-            rest_sigma,
-            rest_kappa,
-            shear_matrix_collection,
-            bend_matrix_collection,
-            *args,
-            **kwargs
-        )
+        rod = _CosseratRodBase.straight_rod(n_elements, start, direction,
+                                            normal, base_length, base_radius,
+                                            density, nu,
+                                            mass_second_moment_of_inertia,
+                                            *args, **kwargs)
+        return cls(n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs)
