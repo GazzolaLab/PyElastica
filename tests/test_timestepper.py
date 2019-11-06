@@ -9,6 +9,7 @@ from elastica.timestepper.explicit_steppers import (
     StatefulLinearExponentialIntegrator,
 )
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.hybrid_rod_steppers import SymplecticCosseratRodStepper
 from elastica.utils import Tolerance
 from elastica._rotations import _get_rotation_matrix
 
@@ -29,6 +30,9 @@ class BaseStatefulSystem:
 class BaseSymplecticSystem:
     def __init__(self):
         pass
+
+    def kinematic_rates(self, *args):
+        return self._dyn_state
 
     @property
     def kinematic_states(self):
@@ -117,7 +121,7 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         self._kin_state = self._state[0:1]  # Create a view instead
         self._dyn_state = self._state[1:2]  # Create a view instead
 
-    def __call__(self, *args, **kwargs):
+    def dynamic_rates(self, *args, **kwargs):
         return super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
             *args, **kwargs
         )[-1]
@@ -196,6 +200,71 @@ class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
 
     def get_linear_state_transition_operator(self, time, dt):
         return _get_rotation_matrix(dt, self.omega)
+
+
+class SecondOrderHybridSystem:
+    """
+    Integrate a simple, non-linear ODE:
+        dx/dt = v
+        df/dt = -f * ω (f is short for frame, for lack of better notation)
+        dv/dt = -v**2
+        dω/dt = -ω**2
+    Dofs: [x, f, v, ω], with the convention that
+
+    _state in this case are [x, v, ω]
+    linear_states are [f]
+    _kin_state are [x], taken as a slice
+    _dyn_state are [v, ω], taken as a slice
+    """
+
+    def __init__(self, init_x=5.0, init_f=3.0, init_v=1.0, init_w=1.0):
+        """
+        """
+        # Contains initial_values for all dofs
+        self.initial_value = np.array([init_x, init_f, init_v, init_w])
+        self.state = self.initial_value.copy()
+        self.kinematic_states = self.state[0:1]  # Create a view instead
+        self.dynamic_states = self.state[2:4]  # Create a view instead
+        self.linearly_evolving_state = self.state[1].reshape(
+            -1, 1, 1
+        )  # Requirements of linear_stepper
+
+    def get_linear_state_transition_operator(self, time, prefac):
+        return np.array([np.exp(-self.state[3] * prefac)]).reshape(-1, 1, 1)
+
+    def analytical_solution(self, time):
+        # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+        # return _batch_matmul(self._state, _get_rotation_matrix(time, self.omega))
+        v_factor = 1.0 / self.initial_value[2]
+        w_factor = 1.0 / self.initial_value[3]
+        x = self.initial_value[0] + np.log(1.0 + time / v_factor)
+        f = self.initial_value[1] / (1.0 + time / w_factor)
+        v = 1.0 / (v_factor + time)
+        w = 1.0 / (w_factor + time)
+        return np.array([x, f, v, w])
+
+    def kinematic_rates(self, time, prefac):
+        return self.dynamic_states[0]  # dx/dt = v
+
+    def dynamic_rates(self, time, prefac):
+        return -self.dynamic_states ** 2  # d(v,w)/dt = -(v,w)**2
+
+    def final_solution(self, time):
+        if np.allclose(self.linearly_evolving_state[0, 0, 0], self.initial_value[1]):
+            val = self.state[1]
+        else:
+            val = self.linearly_evolving_state[0, 0, 0]
+        return np.array([self.state[0], val, self.state[2], self.state[3]])
+
+    def __call__(self, *args, **kwargs):
+        return np.array(
+            [
+                self.state[2],
+                -self.state[1] * self.state[3],
+                -self.state[2] ** 2,
+                -self.state[3] ** 2,
+            ]
+        )
 
 
 # Test cases with several simple ODE's with
@@ -296,3 +365,49 @@ class TestExplicitSteppers:
         #     rtol=Tolerance.rtol(),
         #     atol=Tolerance.atol(),
         # )
+
+    @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
+    def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
+        system = SecondOrderHybridSystem()
+        final_time = 1.0
+        n_steps = 2000
+        stepper = SymplecticCosseratRodStepper(symplectic_stepper=symplectic_stepper())
+        integrate(stepper, system, final_time=final_time, n_steps=n_steps)
+
+        assert_allclose(
+            system.final_solution(final_time),
+            system.analytical_solution(final_time),
+            rtol=Tolerance.rtol() * 1e2,
+            atol=Tolerance.atol(),
+        )
+
+    @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
+    def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
+        system = SecondOrderHybridSystem()
+        final_time = 1.0
+        n_steps = 2000
+        stepper = SymplecticCosseratRodStepper(symplectic_stepper=symplectic_stepper())
+        integrate(stepper, system, final_time=final_time, n_steps=n_steps)
+        print(system.final_solution(final_time))
+
+        assert_allclose(
+            system.final_solution(final_time),
+            system.analytical_solution(final_time),
+            rtol=Tolerance.rtol() * 1e2,
+            atol=Tolerance.atol(),
+        )
+
+    @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers[:-1])
+    def test_hybrid_explicit_against_analytical_system(self, explicit_stepper):
+        system = SecondOrderHybridSystem()
+        final_time = 1.0
+        n_steps = 2000
+        integrate(explicit_stepper(), system, final_time=final_time, n_steps=n_steps)
+
+        print(system.final_solution(final_time))
+        assert_allclose(
+            system.final_solution(final_time),
+            system.analytical_solution(final_time),
+            rtol=Tolerance.rtol() * 1e2,
+            atol=Tolerance.atol(),
+        )
