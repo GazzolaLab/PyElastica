@@ -22,7 +22,7 @@ class FreeRod:
 
 class OneEndFixedRod(FreeRod):
     """
-    the end of the rod fixed x[-1]
+    the end of the rod fixed x[0]
     """
 
     def __init__(self, rod, start_position, start_directors):
