@@ -8,6 +8,7 @@ class NoForces:
     the base class for rod external forcing
     also the no forcing class
     """
+
     def __init__(self, rod):
         self.rod = rod
 
@@ -22,6 +23,7 @@ class GravityForces(NoForces):
     """
     apply gravity on the list of rod
     """
+
     def __init__(self, rod, gravity):
         NoForces.__init__(self, rod)
         self.gravity = gravity
@@ -35,6 +37,7 @@ class EndpointForces(NoForces):
     puts constant forces on endpoints
     can be modified for temporal variation
     """
+
     def __init__(self, rod, start_force, end_force):
         NoForces.__init__(self, rod)
         self.start_force = start_force

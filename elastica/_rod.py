@@ -20,8 +20,9 @@ class _LinearConstitutiveModel:
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
-    def __init__(self, rest_sigma, rest_kappa, shear_matrix, bend_matrix,
-                 *args, **kwargs):
+    def __init__(
+        self, rest_sigma, rest_kappa, shear_matrix, bend_matrix, *args, **kwargs
+    ):
         self.rest_sigma = rest_sigma
         self.rest_kappa = rest_kappa
         self.shear_matrix = shear_matrix
@@ -63,8 +64,8 @@ class _LinearConstitutiveModel:
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
     def __init__(self, *args, **kwargs):
         super(_LinearConstitutiveModelWithStrainRate, self).__init__()
-        if 'shear_strain_matrix' in kwargs:
-            self.shear_strain_matrix = kwargs.get('shear_strain_matrix')
+        if "shear_strain_matrix" in kwargs:
+            self.shear_strain_matrix = kwargs.get("shear_strain_matrix")
         else:
             raise ValueError("shear strain matrix value missing!")
 
@@ -131,9 +132,20 @@ class RodBase:
 
 class _CosseratRodBase(RodBase):
     # I'm assuming number of elements can be deduced from the size of the inputs
-    def __init__(self, position, velocity, omega, directors, rest_lengths,
-                 mass, density, mass_second_moment_of_inertia, nu,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        position,
+        velocity,
+        omega,
+        directors,
+        rest_lengths,
+        mass,
+        density,
+        mass_second_moment_of_inertia,
+        nu,
+        *args,
+        **kwargs
+    ):
         self.position = position
         self.velocity = velocity
         self.omega = omega
@@ -299,22 +311,59 @@ class _CosseratRodBase(RodBase):
 
 
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
-    def __init__(self, position, velocity, omega, directors, rest_lengths,
-                 mass, density, mass_second_moment_of_inertia, nu,
-                 rest_sigma, rest_kappa, shear_matrix, bend_matrix,
-                 *args, **kwargs):
-        _LinearConstitutiveModel.__init__(self, rest_sigma, rest_kappa,
-                                          shear_matrix,
-                                          bend_matrix, *args, **kwargs)
-        _CosseratRodBase.__init__(self, position, velocity, omega, directors,
-                                  rest_lengths, mass, density,
-                                  mass_second_moment_of_inertia, nu,
-                                  *args, **kwargs)
+    def __init__(
+        self,
+        position,
+        velocity,
+        omega,
+        directors,
+        rest_lengths,
+        mass,
+        density,
+        mass_second_moment_of_inertia,
+        nu,
+        rest_sigma,
+        rest_kappa,
+        shear_matrix,
+        bend_matrix,
+        *args,
+        **kwargs
+    ):
+        _LinearConstitutiveModel.__init__(
+            self, rest_sigma, rest_kappa, shear_matrix, bend_matrix, *args, **kwargs
+        )
+        _CosseratRodBase.__init__(
+            self,
+            position,
+            velocity,
+            omega,
+            directors,
+            rest_lengths,
+            mass,
+            density,
+            mass_second_moment_of_inertia,
+            nu,
+            *args,
+            **kwargs
+        )
 
     @classmethod
-    def straight_rod(cls, n_elements, start, direction, normal, base_length,
-                     base_radius, density, nu, mass_second_moment_of_inertia,
-                     shear_matrix, bend_matrix, *args, **kwargs):
+    def straight_rod(
+        cls,
+        n_elements,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        mass_second_moment_of_inertia,
+        shear_matrix,
+        bend_matrix,
+        *args,
+        **kwargs
+    ):
         # put asserts and sanity checks here
         end = start + direction * base_length
         position = np.zeros((3, n_elements + 1))
@@ -357,7 +406,20 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         )
 
         # create rod
-        return cls(position, velocity, omega, directors, rest_lengths, mass,
-                   density, inertia_collection, nu, rest_sigma, rest_kappa,
-                   shear_matrix_collection, bend_matrix_collection,
-                   *args, **kwargs)
+        return cls(
+            position,
+            velocity,
+            omega,
+            directors,
+            rest_lengths,
+            mass,
+            density,
+            inertia_collection,
+            nu,
+            rest_sigma,
+            rest_kappa,
+            shear_matrix_collection,
+            bend_matrix_collection,
+            *args,
+            **kwargs
+        )
