@@ -21,11 +21,13 @@ class FreeJoint:
             self.rod_two.position[..., self.index_two]
             - self.rod_one.position[..., self.index_one]
         )
+        # Calculate norm of end_distance_vector
+        # this implementation timed: 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
         end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
-        # 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
         # Below if check is not efficient find something else
         # We are checking if end of rod1 and start of rod2 are at the same point in space
+        # If they are at the same point in space, it is a zero vector.
         if end_distance <= Tolerance.atol():
             normalized_end_distance_vector = np.array([0.0, 0.0, 0.0])
         else:
@@ -33,7 +35,6 @@ class FreeJoint:
 
         elastic_force = self.k * end_distance_vector
 
-        # normalized_end_distance_vector = end_distance_vector / end_distance
         relative_velocity = (
             self.rod_two.velocity[..., self.index_two]
             - self.rod_one.velocity[..., self.index_one]
@@ -55,12 +56,11 @@ class FreeJoint:
         pass
 
 
-__doc__ = """ this joint currently keeps rod one fixed and moves rod two
-                how couples act needs to be reconfirmed
-        """
-
-
 class HingeJoint(FreeJoint):
+    """ this joint currently keeps rod one fixed and moves rod two
+        how couples act needs to be reconfirmed
+    """
+
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
         self, k, nu, rod_one, rod_two, index_one, index_two, kt, normal_direction
@@ -134,18 +134,18 @@ class FixedJoint(FreeJoint):
         length = np.sqrt(np.dot(position_diff, position_diff))
         tangent = position_diff / length
 
-        check1 = (
+        tgt_destination = (
             self.rod_one.position[..., self.index_one]
             + self.rod_two.rest_lengths[self.index_two] * tangent
         )  # dl of rod 2 can be different than rod 1 so use restlengt of rod 2
 
-        check2 = self.rod_two.position[
+        curr_destination = self.rod_two.position[
             ..., self.index_two + 1
         ]  # second element of rod2
 
         # Compute the restoring torque
         forcedirection = -self.kt * (
-            check2 - check1
+            curr_destination - tgt_destination
         )  # force direction is between rod2 2nd element and rod1
         torque = np.cross(link_direction, forcedirection)
 
