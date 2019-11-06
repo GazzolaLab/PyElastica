@@ -24,12 +24,34 @@ def test_straight_rod():
     base_radius = np.random.rand(1)
     density = np.random.rand(1)
     mass = density * np.pi * base_radius ** 2 * base_length / n
-    mass_second_moment_of_inertia = np.random.rand(3, 3)
-    # shear_matrix = np.random.rand(3, 3)
-    shear_matrix = np.ones((3, 3))
-    shear_matrix[0, 1] = 2
-    bend_matrix = np.random.rand(3, 3)
+    # mass_second_moment_of_inertia = np.random.rand(3, 3)
+    # # shear_matrix = np.random.rand(3, 3)
+    # shear_matrix = np.ones((3, 3))
+    # shear_matrix[0, 1] = 2
+    # bend_matrix = np.random.rand(3, 3)
     nu = 0.1
+    # Youngs Modulus [Pa]
+    E = 1e6
+    # poisson ratio
+    poisson_ratio = 0.5
+    # Shear Modulus [Pa]
+    G = E / (1.0 + poisson_ratio)
+    # alpha c, constant for circular cross-sections
+    # Second moment of inertia
+    A0 = np.pi * base_radius * base_radius
+    I0_1 = A0 * A0 / (4.0 * np.pi)
+    I0_2 = I0_1
+    I0_3 = 2.0 * I0_2
+    I0 = np.array([I0_1, I0_2, I0_3])
+    # Mass second moment of inertia for disk cross-section
+    mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
+    np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length / n)
+    # Shear/Stretch matrix
+    shear_matrix = np.zeros((3, 3), np.float64)
+    np.fill_diagonal(shear_matrix, [4.0 * G * A0 / 3.0, 4.0 * G * A0 / 3.0, E * A0])
+    # Bend/Twist matrix
+    bend_matrix = np.zeros((3, 3), np.float64)
+    np.fill_diagonal(bend_matrix, [E * I0_1, E * I0_2, G * I0_3])
 
     test_rod = CosseratRod.straight_rod(
         n,
@@ -40,9 +62,11 @@ def test_straight_rod():
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        E,
+        poisson_ratio,
+        # mass_second_moment_of_inertia,
+        # shear_matrix,
+        # bend_matrix,
     )
     # checking origin and length of rod
     assert_allclose(test_rod.position[..., 0], start, atol=Tolerance.atol())

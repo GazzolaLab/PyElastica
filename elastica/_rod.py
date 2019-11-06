@@ -21,7 +21,7 @@ class _LinearConstitutiveModel:
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
     # maybe use __init__ to initialize if not found?
-    def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
+    def __init__(self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs):
         # set rest strains and curvature to be  zero at start
         # if found in kwargs modify (say for curved rod)
         self.rest_sigma = np.zeros((MaxDimension.value(), n_elements))
@@ -36,8 +36,16 @@ class _LinearConstitutiveModel:
             shear_matrix[:, :, np.newaxis], n_elements, axis=2
         )
         self.bend_matrix = np.repeat(
-            bend_matrix[:, :, np.newaxis], n_elements - 1, axis=2
+            bend_matrix[:, :, np.newaxis], n_elements, axis=2
         )
+
+        # Note : we can use trapezoidal kernel, but it has padding and will be slower
+        voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
+        # Compute bend matrix in Voroni Domain
+        self.bend_matrix = (self.bend_matrix[...,1:] * rest_lengths[1:] + \
+                             self.bend_matrix[...,:-1] * rest_lengths[0:-1]) \
+                             / (2.0 * voronoi_lengths)
+
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -392,7 +400,7 @@ class _CosseratRodBase(RodBase):
 class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
         _LinearConstitutiveModel.__init__(
-            self, n_elements, shear_matrix, bend_matrix, *args, **kwargs
+            self, n_elements, shear_matrix, bend_matrix, rod.rest_lengths, *args, **kwargs
         )
         _CosseratRodBase.__init__(
             self,
@@ -420,12 +428,38 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         base_radius,
         density,
         nu,
-        mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
+        youngs_modulus,
+        poisson_ratio,
+        alpha_c=4.0/3.0,
+        # mass_second_moment_of_inertia,
+        # shear_matrix,
+        # bend_matrix,
         *args,
         **kwargs
     ):
+
+        # Shear Modulus
+        shear_modulus = youngs_modulus/(poisson_ratio + 1.0)
+
+        # Second moment of inertia
+        A0 = np.pi * base_radius * base_radius
+        I0_1 = A0 * A0 / (4.0 * np.pi)
+        I0_2 = I0_1
+        I0_3 = 2.0 * I0_2
+        I0 = np.array([I0_1, I0_2, I0_3])
+
+        # Mass second moment of inertia for disk cross-section
+        mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
+        np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length / n_elements)
+
+        # Shear/Stretch matrix
+        shear_matrix = np.zeros((3, 3), np.float64)
+        np.fill_diagonal(shear_matrix, [alpha_c * shear_modulus * A0, alpha_c* shear_modulus * A0, youngs_modulus * A0])
+
+        # Bend/Twist matrix
+        bend_matrix = np.zeros((3, 3), np.float64)
+        np.fill_diagonal(bend_matrix, [youngs_modulus * I0_1, youngs_modulus * I0_2, shear_modulus * I0_3])
+
         rod = _CosseratRodBase.straight_rod(
             n_elements,
             start,
