@@ -9,8 +9,6 @@ from numpy.testing import assert_allclose, assert_array_equal
 from elastica.utils import Tolerance
 from pytest import main
 
-sys.path.append("..")
-
 
 # tests Initialisation of straight rod
 def test_straight_rod():

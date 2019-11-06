@@ -9,8 +9,6 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from pytest import main
 
-sys.path.append("..")
-
 
 # tests free rod boundary conditions
 def test_free_rod():
