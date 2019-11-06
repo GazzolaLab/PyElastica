@@ -5,7 +5,7 @@ import functools
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from ._calculus import quadrature_kernel, difference_kernel
 from ._rotations import _inv_rotate
-from .utils import Tolerance
+from .utils import MaxDimension, Tolerance
 
 # TODO Add documentation for all functions
 
@@ -24,11 +24,11 @@ class _LinearConstitutiveModel:
     def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
         # set rest strains and curvature to be  zero at start
         # if found in kwargs modify (say for curved rod)
-        self.rest_sigma = np.zeros((3, n_elements))
-        self.rest_kappa = np.zeros((3, n_elements - 1))
+        self.rest_sigma = np.zeros((MaxDimension.value(), n_elements))
+        self.rest_kappa = np.zeros((MaxDimension.value(), n_elements - 1))
         # sanity checks here
         # NOTE: assuming matrices to be diagonal here
-        for i in range(0, 3):
+        for i in range(0, MaxDimension.value()):
             assert shear_matrix[i, i] > Tolerance.atol()
             assert bend_matrix[i, i] > Tolerance.atol()
 
@@ -163,8 +163,8 @@ class _CosseratRodBase(RodBase):
         self.position = position
         self.directors = directors
         # initial set to zero; if coming through kwargs then modify
-        self.velocity = np.zeros((3, n_elements + 1))
-        self.omega = np.zeros((3, n_elements))
+        self.velocity = np.zeros((MaxDimension.value(), n_elements + 1))
+        self.omega = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
         self.mass = mass
         self.density = density
@@ -198,12 +198,12 @@ class _CosseratRodBase(RodBase):
         assert nu >= 0.0
         assert np.sqrt(np.dot(normal, normal)) > Tolerance.atol()
         assert np.sqrt(np.dot(direction, direction)) > Tolerance.atol()
-        for i in range(0, 3):
+        for i in range(0, MaxDimension.value()):
             assert mass_second_moment_of_inertia[i, i] > Tolerance.atol()
 
         end = start + direction * base_length
-        position = np.zeros((3, n_elements + 1))
-        for i in range(0, 3):
+        position = np.zeros((MaxDimension.value(), n_elements + 1))
+        for i in range(0, MaxDimension.value()):
             position[i, ...] = np.linspace(start[i], end[i], num=n_elements + 1)
 
         # compute rest lengths and tangents
@@ -214,7 +214,7 @@ class _CosseratRodBase(RodBase):
 
         # set directors
         # check this order once
-        directors = np.zeros((3, 3, n_elements))
+        directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
         directors[0, ...] = normal_collection
         directors[1, ...] = tangents
