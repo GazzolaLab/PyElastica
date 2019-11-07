@@ -64,13 +64,13 @@ def test_straight_rod():
         nu,
         E,
         poisson_ratio,
-        # mass_second_moment_of_inertia,
-        # shear_matrix,
-        # bend_matrix,
     )
     # checking origin and length of rod
     assert_allclose(test_rod.position[..., 0], start, atol=Tolerance.atol())
     rod_length = np.linalg.norm(test_rod.position[..., -1] - test_rod.position[..., 0])
+    rest_voronoi_lengths = 0.5 * (
+        base_length / n + base_length / n
+    )  # element lengths are equal for all rod.
     # checking velocities, omegas and rest strains
     # density and mass
     assert_allclose(rod_length, base_length, atol=Tolerance.atol())
@@ -80,6 +80,9 @@ def test_straight_rod():
     assert_allclose(test_rod.rest_kappa, np.zeros((3, n - 1)), atol=Tolerance.atol())
     assert_allclose(test_rod.density, density, atol=Tolerance.atol())
     assert_allclose(test_rod.nu, nu, atol=Tolerance.atol())
+    assert_allclose(
+        rest_voronoi_lengths, test_rod.rest_voronoi_lengths, atol=Tolerance.atol()
+    )
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
     for i in range(n):

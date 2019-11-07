@@ -92,15 +92,14 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         else:
             raise ValueError("shear rate matrix value missing!")
         if "bend_rate_matrix" in kwargs.keys():
-            self.bend_rate_matrix = np.repeat(kwargs["bend_rate_matrix"]
-                                              [:, :, np.newaxis], n_elements,
-                                              axis=2)
+            self.bend_rate_matrix = np.repeat(
+                kwargs["bend_rate_matrix"][:, :, np.newaxis], n_elements, axis=2
+            )
             # Compute bend rate matrix in Voronoi Domain
-            self.bend_rate_matrix = (self.bend_rate_matrix[..., 1:] *
-                                     rest_lengths[1:]
-                                     + self.bend_rate_matrix[..., :-1] *
-                                     rest_lengths[0:-1]) /\
-                (rest_lengths[1:] + rest_lengths[:-1])
+            self.bend_rate_matrix = (
+                self.bend_rate_matrix[..., 1:] * rest_lengths[1:]
+                + self.bend_rate_matrix[..., :-1] * rest_lengths[0:-1]
+            ) / (rest_lengths[1:] + rest_lengths[:-1])
         else:
             raise ValueError("bend rate matrix value missing!")
 
@@ -177,6 +176,7 @@ class _CosseratRodBase(RodBase):
         density,
         mass_second_moment_of_inertia,
         nu,
+        rest_voronoi_lengths,
         *args,
         **kwargs
     ):
@@ -191,6 +191,7 @@ class _CosseratRodBase(RodBase):
         self.volume = self.mass / self.density
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
         self.nu = nu
+        self.rest_voronoi_lengths = rest_voronoi_lengths
         # will apply external force and torques externally
         self.external_forces = 0 * self.position
         self.external_torques = 0 * self.omega
@@ -232,6 +233,9 @@ class _CosseratRodBase(RodBase):
         tangents = position_diff / rest_lengths
         normal /= np.sqrt(np.dot(normal, normal))
 
+        # Note : we can use trapezoidal kernel, but it has padding and will be slower
+        rest_voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
+
         # set directors
         # check this order once
         directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
@@ -255,6 +259,7 @@ class _CosseratRodBase(RodBase):
             density,
             inertia_collection,
             nu,
+            rest_voronoi_lengths,
             *args,
             **kwargs
         )
@@ -430,6 +435,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.density,
             rod.mass_second_moment_of_inertia,
             rod.nu,
+            rod.rest_voronoi_lengths,
             *args,
             **kwargs
         )
