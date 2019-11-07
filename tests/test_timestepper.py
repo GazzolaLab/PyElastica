@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+
 from elastica.timestepper import TimeStepper, integrate
 from elastica.timestepper.explicit_steppers import (
     StatefulRungeKutta4,
