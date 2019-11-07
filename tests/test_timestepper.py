@@ -282,7 +282,10 @@ class TestExplicitSteppers:
             TimeStepper().do_step()
         assert "not supposed to access" in str(excinfo.value)
 
-    @pytest.mark.parametrize("stepper", ExplicitSteppers + SymplecticSteppers + [SymplecticCosseratRodStepper])
+    @pytest.mark.parametrize(
+        "stepper",
+        ExplicitSteppers + SymplecticSteppers + [SymplecticCosseratRodStepper],
+    )
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
 
@@ -382,7 +385,7 @@ class TestExplicitSteppers:
         )
 
     @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers[:-1])
-    def test_hybrid_explicit_against_analytical_system(self, explicit_stepper):
+    def test_explicit_against_analytical_system(self, explicit_stepper):
         system = SecondOrderHybridSystem()
         final_time = 1.0
         n_steps = 2000

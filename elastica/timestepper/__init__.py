@@ -48,9 +48,21 @@ class LinearExponentialIntegratorMixin:
         )
         return time + dt
 
-    # The below two function calls satisfy the SymplecticStepper requirement.
     def _first_prefactor(self, dt):
-        return dt
+        """ Prefactor call to satisfy interface of SymplecticStepper. Should never
+        be used in actual code.
+
+        Parameters
+        ----------
+        dt : the time step of simulation
+
+        Raises
+        ------
+        RuntimeError
+        """
+        raise RuntimeError(
+            "Symplectic prefactor of LinearExponentialIntegrator should not be called!"
+        )
 
     # Code repeat!
     # Easy to avoid, but keep for performance.

@@ -92,7 +92,6 @@ class SymplecticCosseratRodStepper:
 
     def do_step(self, System, time: np.float64, dt: np.float64):
         """
-        2x SLOWER than expected because of mixed calls.
         Parameters
         ----------
         System
@@ -102,6 +101,9 @@ class SymplecticCosseratRodStepper:
         Returns
         -------
 
+        Caveats
+        -------
+        2x SLOWER than an equivalent symplectic stepper because of indirections.
         """
         # Peel over all steps and prefactors
         for (
