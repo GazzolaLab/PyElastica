@@ -75,7 +75,6 @@ class ScalarExponentialDecaySystem(BaseStatefulSystem):
         return self.exponent * self._state
 
 
-
 class BaseUndampedSimpleHarmonicOscillatorSystem:
     def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
         super(BaseUndampedSimpleHarmonicOscillatorSystem, self).__init__()
@@ -98,7 +97,6 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
 
     def __call__(self, *args, **kwargs):
         return self.A_matrix @ self._state
-
 
 
 class UndampedSimpleHarmonicOscillatorSystem(
@@ -180,7 +178,6 @@ class DampedSimpleHarmonicOscillatorSystem(
         return np.array([analytical_position, analytical_velocity])
 
 
-
 class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
     def __init__(self, n_frames=128):
         super(MultipleFrameRotationSystem, self).__init__()
@@ -202,7 +199,6 @@ class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
         return _get_rotation_matrix(dt, self.omega)
 
 
-
 # Test cases with several simple ODE's with
 # changing systems and states to test accuracy
 # of our stepper
@@ -221,7 +217,6 @@ class TestExplicitSteppers:
     @pytest.mark.parametrize("stepper", ExplicitSteppers + SymplecticSteppers)
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
-
 
     @pytest.mark.parametrize("stepper", ExplicitSteppers)
     def test_against_scalar_exponential(self, stepper):
@@ -250,7 +245,6 @@ class TestExplicitSteppers:
             rtol=Tolerance.rtol(),
             atol=Tolerance.atol(),
         )
-
 
     @pytest.mark.parametrize("stepper", ExplicitSteppers[:-1])
     def test_against_damped_harmonic_oscillator(self, stepper):
