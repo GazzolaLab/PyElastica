@@ -335,8 +335,8 @@ class _CosseratRodBase(RodBase):
     def _compute_damping_forces(self):
         # Internal damping foces.
         damping_forces = self.nu * self.velocity
-        damping_forces[0] *= 0.5  # first and last nodes have half mass
-        damping_forces[-1] *= 0.5  # first and last nodes have half mass
+        damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
+        damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
 
         return damping_forces
 
