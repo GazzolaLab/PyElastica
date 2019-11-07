@@ -39,13 +39,11 @@ class _LinearConstitutiveModel:
         )
         self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis], n_elements, axis=2)
 
-        # Note : we can use trapezoidal kernel, but it has padding and will be slower
-        voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
         # Compute bend matrix in Voroni Domain
         self.bend_matrix = (
             self.bend_matrix[..., 1:] * rest_lengths[1:]
             + self.bend_matrix[..., :-1] * rest_lengths[0:-1]
-        ) / (2.0 * voronoi_lengths)
+        ) / (rest_lengths[1:] + rest_lengths[:-1])
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -81,9 +79,11 @@ class _LinearConstitutiveModel:
 
 
 class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
-    def __init__(self, n_elements, shear_matrix, bend_matrix, *args, **kwargs):
+    def __init__(
+        self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
+    ):
         _LinearConstitutiveModel.__init__(
-            self, n_elements, shear_matrix, bend_matrix, *args, **kwargs
+            self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
         )
         if "shear_strain_matrix" in kwargs.keys():
             self.shear_strain_matrix = np.repeat(
@@ -437,9 +437,6 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         youngs_modulus,
         poisson_ratio,
         alpha_c=4.0 / 3.0,
-        # mass_second_moment_of_inertia,
-        # shear_matrix,
-        # bend_matrix,
         *args,
         **kwargs
     ):
@@ -455,13 +452,17 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         I0 = np.array([I0_1, I0_2, I0_3])
 
         # Mass second moment of inertia for disk cross-section
-        mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
+        mass_second_moment_of_inertia = np.zeros(
+            (MaxDimension.value(), MaxDimension.value()), np.float64
+        )
         np.fill_diagonal(
             mass_second_moment_of_inertia, I0 * density * base_length / n_elements
         )
 
         # Shear/Stretch matrix
-        shear_matrix = np.zeros((3, 3), np.float64)
+        shear_matrix = np.zeros(
+            (MaxDimension.value(), MaxDimension.value()), np.float64
+        )
         np.fill_diagonal(
             shear_matrix,
             [
@@ -472,7 +473,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         )
 
         # Bend/Twist matrix
-        bend_matrix = np.zeros((3, 3), np.float64)
+        bend_matrix = np.zeros((MaxDimension.value(), MaxDimension.value()), np.float64)
         np.fill_diagonal(
             bend_matrix,
             [youngs_modulus * I0_1, youngs_modulus * I0_2, shear_modulus * I0_3],
