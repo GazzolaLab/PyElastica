@@ -72,7 +72,7 @@ class Tolerance:
         -------
         atol : library-wide set absolute tolerance for kernels
         """
-        return finfo(float64).eps * 10.0
+        return finfo(float64).eps * 1e4
 
     @staticmethod
     def rtol():
@@ -83,7 +83,7 @@ class Tolerance:
         -------
         tol : library-wide set relative tolerance for kernels
         """
-        return finfo(float64).eps * 10.0
+        return finfo(float64).eps * 1e11
 
 
 def perm_parity(lst):

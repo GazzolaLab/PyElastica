@@ -198,7 +198,7 @@ class rod(object):
             k[far, 1] = theta_u[far, 0, -1] / self.D_org[far]
             k[far, 2] = theta_u[far, 1, 0] / self.D_org[far]
 
-        return k
+        return -k
 
     # Slower version, use inverse_rotate_v
     def inverse_rotate(self,):
@@ -282,7 +282,7 @@ class rod(object):
             c_angle = np.cos(theta)
             s_angle = np.sin(theta)
 
-            U_mat = np.array([skew_symmetrize(uu) for uu in unorm])
+            U_mat = np.array([-skew_symmetrize(uu) for uu in unorm])
             nrot_idx = np.sum(rot_idx)
             tmp_eye = np.array([np.eye(3) for i in range(nrot_idx)])
             rot_matrix[rot_idx] = tmp_eye + U_mat[rot_idx] @ (
@@ -341,7 +341,7 @@ class rod(object):
 
         tmp1 = (self.Q @ self.tangent[:, :, None]).transpose(0, 2, 1)[:, 0, :]
         tmp2 = self.S_org * self.shearStrain
-        shearstretch = -np.cross(tmp1, tmp2) * self.l_org[:, None]
+        shearstretch = np.cross(tmp1, tmp2) * self.l_org[:, None]
 
         lagrg_transport = np.cross(self.J_org * self.w / self.e[:, None], self.w)
         unsteady_dilatation = (
