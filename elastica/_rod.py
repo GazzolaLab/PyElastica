@@ -39,7 +39,7 @@ class _LinearConstitutiveModel:
         )
         self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis], n_elements, axis=2)
 
-        # Compute bend matrix in Voroni Domain
+        # Compute bend matrix in Voronoi Domain
         self.bend_matrix = (
             self.bend_matrix[..., 1:] * rest_lengths[1:]
             + self.bend_matrix[..., :-1] * rest_lengths[0:-1]
@@ -85,12 +85,24 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         _LinearConstitutiveModel.__init__(
             self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
         )
-        if "shear_strain_matrix" in kwargs.keys():
-            self.shear_strain_matrix = np.repeat(
-                kwargs["shear_strain_matrix"][:, :, np.newaxis], n_elements, axis=2
+        if "shear_rate_matrix" in kwargs.keys():
+            self.shear_rate_matrix = np.repeat(
+                kwargs["shear_rate_matrix"][:, :, np.newaxis], n_elements, axis=2
             )
         else:
-            raise ValueError("shear strain matrix value missing!")
+            raise ValueError("shear rate matrix value missing!")
+        if "bend_rate_matrix" in kwargs.keys():
+            self.bend_rate_matrix = np.repeat(kwargs["bend_rate_matrix"]
+                                              [:, :, np.newaxis], n_elements,
+                                              axis=2)
+            # Compute bend rate matrix in Voronoi Domain
+            self.bend_rate_matrix = (self.bend_rate_matrix[..., 1:] *
+                                     rest_lengths[1:]
+                                     + self.bend_rate_matrix[..., :-1] *
+                                     rest_lengths[0:-1]) /\
+                (rest_lengths[1:] + rest_lengths[:-1])
+        else:
+            raise ValueError("bend rate matrix value missing!")
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
@@ -108,7 +120,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         )._compute_internal_shear_stretch_stresses_from_model()
         self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
         # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
-        self.internal_stress += _batch_matvec(self.shear_strain_matrix, self.sigma_dot)
+        self.internal_stress += _batch_matvec(self.shear_rate_matrix, self.sigma_dot)
 
     def _compute_internal_bending_twist_stresses_from_model(self):
         """
@@ -126,7 +138,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         )._compute_internal_bending_twist_stresses_from_model()
         self._compute_bending_twist_strain_rates()  # concept : needs to compute kappa rate
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
-        self.internal_couple += _batch_matvec(self.bend_matrix, self.kappa_dot)
+        self.internal_couple += _batch_matvec(self.bend_rate_matrix, self.kappa_dot)
 
 
 # The interface class, as seen from global scope
