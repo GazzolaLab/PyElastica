@@ -9,6 +9,7 @@ from elastica.timestepper._stepper_interface import (
 
 
 class _SystemInstanceStepper:
+    # noinspection PyUnresolvedReferences
     def do_step(self, System, Memory, time: np.float64, dt: np.float64):
         for stage, update in self._stages_and_updates:
             stage(self, System, Memory, time, dt)
@@ -17,6 +18,7 @@ class _SystemInstanceStepper:
 
 
 class _SystemCollectionStepper:
+    # noinspection PyUnresolvedReferences
     def do_step(
         self, SystemCollection, MemoryCollection, time: np.float64, dt: np.float64
     ):

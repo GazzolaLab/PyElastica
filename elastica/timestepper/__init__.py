@@ -4,6 +4,7 @@ from ..utils import Tolerance, extend_instance
 
 from .explicit_steppers import ExplicitStepper
 from .symplectic_steppers import SymplecticStepper
+from .hybrid_rod_steppers import SymplecticCosseratRodStepper
 from ._stepper_interface import _StatefulStepper
 
 
@@ -25,6 +26,8 @@ def extend_stepper_interface(Stepper, System):
         )
     elif ExplicitStepper in ConcreteStepper.__class__.mro():
         from .explicit_steppers import _SystemInstanceStepper, _SystemCollectionStepper
+    elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
+        return  # hacky fix for now. remove HybridSteppers in a future version.
     else:
         raise NotImplementedError(
             "Only explicit and symplectic steppers are supported, given stepper is {}".format(
