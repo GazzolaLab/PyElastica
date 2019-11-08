@@ -46,6 +46,8 @@ def test_straight_rod():
     # Mass second moment of inertia for disk cross-section
     mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
     np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length / n)
+    # Inverse mass second of inertia
+    inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(shear_matrix, [4.0 * G * A0 / 3.0, 4.0 * G * A0 / 3.0, E * A0])
@@ -101,6 +103,11 @@ def test_straight_rod():
         assert_allclose(
             test_rod.mass_second_moment_of_inertia[..., i],
             mass_second_moment_of_inertia,
+            atol=Tolerance.atol(),
+        )
+        assert_allclose(
+            test_rod.inv_mass_second_moment_of_inertia[..., i],
+            inv_mass_second_moment_of_inertia,
             atol=Tolerance.atol(),
         )
     for i in range(n - 1):

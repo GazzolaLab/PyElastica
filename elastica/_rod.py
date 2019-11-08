@@ -175,6 +175,7 @@ class _CosseratRodBase(RodBase):
         mass,
         density,
         mass_second_moment_of_inertia,
+        inv_mass_second_moment_of_inertia,
         nu,
         rest_voronoi_lengths,
         *args,
@@ -190,6 +191,7 @@ class _CosseratRodBase(RodBase):
         self.density = density
         self.volume = self.mass / self.density
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
+        self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
         self.nu = nu
         self.rest_voronoi_lengths = rest_voronoi_lengths
         # will apply external force and torques externally
@@ -248,6 +250,10 @@ class _CosseratRodBase(RodBase):
         inertia_collection = np.repeat(
             mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
         )
+        inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
+        inv_inertia_collection = np.repeat(
+            inv_mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
+        )
 
         # create rod
         return cls(
@@ -258,6 +264,7 @@ class _CosseratRodBase(RodBase):
             mass,
             density,
             inertia_collection,
+            inv_inertia_collection,
             nu,
             rest_voronoi_lengths,
             *args,
@@ -434,6 +441,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.mass,
             rod.density,
             rod.mass_second_moment_of_inertia,
+            rod.inv_mass_second_moment_of_inertia,
             rod.nu,
             rod.rest_voronoi_lengths,
             *args,
