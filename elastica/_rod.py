@@ -161,7 +161,13 @@ class RodBase:
         return (self._compute_internal_forces() + self.external_forces) / self.mass
 
     def get_angular_acceleration(self):
-        return self._compute_internal_torques() + self.external_torques
+        return (
+            _batch_matvec(
+                self.inv_mass_second_moment_of_inertia,
+                (self._compute_internal_torques() + self.external_torques),
+            )
+            * self.dilatation
+        )
 
 
 class _CosseratRodBase(RodBase):
