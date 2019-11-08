@@ -23,7 +23,7 @@ class _SystemCollectionStepper:
         self, SystemCollection, MemoryCollection, time: np.float64, dt: np.float64
     ):
         for stage, update in self._stages_and_updates:
-
+            SystemCollection.synchronize(time)
             for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
                 stage(self, system, memory, time, dt)
                 _ = update(self, system, memory, time, dt)

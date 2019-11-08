@@ -1,6 +1,5 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 import numpy as np
-from ..utils import Tolerance, extend_instance
 
 from .explicit_steppers import ExplicitStepper
 from .symplectic_steppers import SymplecticStepper
@@ -9,6 +8,7 @@ from ._stepper_interface import _StatefulStepper
 
 
 def extend_stepper_interface(Stepper, System):
+    from ..utils import extend_instance
 
     # Check if system is a "collection" of smaller systems
     # by checking for the [] method
@@ -42,14 +42,20 @@ def extend_stepper_interface(Stepper, System):
 
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
-def integrate(StatefulStepper, System, final_time, n_steps=1000):
+def integrate(StatefulStepper, System, final_time: float, n_steps: int = 1000):
+    assert final_time > 0.0, "Final time is negative!"
+    assert n_steps > 0, "Number of integration steps is negative!"
+
+    from ..utils import Tolerance
+
     # Extend the stepper's interface after introspecting the properties
     # of the system. If system is a collection of small systems (whose
     # states cannot be aggregated), then stepper now loops over the system
     # state
     extend_stepper_interface(StatefulStepper, System)
 
-    dt = np.float64(final_time / n_steps)
+    dt = np.float64(float(final_time) / n_steps)
     time = np.float64(0.0)
-    while np.abs(final_time - time) > 1e5 * Tolerance.atol():
+    tol = Tolerance.atol()
+    while np.abs(final_time - time) > 1e5 * tol:
         time = StatefulStepper.do_step(System, time, dt)

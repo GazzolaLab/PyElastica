@@ -2,14 +2,19 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.timestepper import integrate
+from elastica.timestepper import integrate, extend_stepper_interface
 from elastica.timestepper._stepper_interface import _TimeStepper
 from elastica.timestepper.explicit_steppers import (
     StatefulRungeKutta4,
     StatefulEulerForward,
     StatefulLinearExponentialIntegrator,
+    ExplicitStepper,
 )
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.symplectic_steppers import (
+    PositionVerlet,
+    PEFRL,
+    SymplecticStepper,
+)
 from elastica.timestepper.hybrid_rod_steppers import SymplecticCosseratRodStepper
 from elastica.utils import Tolerance
 from elastica._rotations import _get_rotation_matrix
@@ -268,16 +273,135 @@ class SecondOrderHybridSystem:
         )
 
 
-# Test cases with several simple ODE's with
-# changing systems and states to test accuracy
-# of our stepper
-class TestExplicitSteppers:
-    # Added automatic discovery of Stateful explicit integrators
-    # ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
-    # SymplecticSteppers = SymplecticStepper.__subclasses__()
-    ExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
-    SymplecticSteppers = [PositionVerlet, PEFRL]
+class ExponentialDecayUndampedHarmonicOscillatorCollectiveSystem:
+    def __init__(self):
+        self.systems = []
+        self.systems.append(SymplecticUndampedSimpleHarmonicOscillatorSystem())
+        self.systems.append(
+            SymplecticUndampedSimpleHarmonicOscillatorSystem(
+                omega=4.0 * np.pi, init_val=np.array([1.0, 1.0])
+            )
+        )
 
+    def __getitem__(self, idx):
+        return self.systems[idx]
+
+    def __len__(self):
+        return len(self.systems)
+
+    def __iter__(self):
+        return self.systems.__iter__()
+
+    def synchronize(self, time):
+        pass
+
+
+class TestExtendStepperInterface:
+    """ TODO add documentation """
+
+    class MockSymplecticStepper(SymplecticStepper):
+        pass
+
+    class MockExplicitStepper(ExplicitStepper):
+        pass
+
+    from elastica.timestepper.symplectic_steppers import (
+        _SystemInstanceStepper as symplectic_instance_stepper,
+    )
+    from elastica.timestepper.symplectic_steppers import (
+        _SystemCollectionStepper as symplectic_collection_stepper,
+    )
+
+    from elastica.timestepper.explicit_steppers import (
+        _SystemInstanceStepper as explicit_instance_stepper,
+    )
+    from elastica.timestepper.explicit_steppers import (
+        _SystemCollectionStepper as explicit_collection_stepper,
+    )
+
+    # We cannot call a stepper on a system until both the stepper
+    # and system "see" one another (for performance reasons, mostly)
+    # So before "seeing" the system, the stepper should not have
+    # the interface (interface_cls). It should however have the interface
+    # after "seeing" the system, via extend_stepper_interface
+    @pytest.mark.parametrize(
+        "stepper_and_interface",
+        [
+            (MockSymplecticStepper, symplectic_instance_stepper),
+            (MockExplicitStepper, explicit_instance_stepper),
+        ],
+    )
+    def test_symplectic_stepper_interface_for_simple_systems(
+        self, stepper_and_interface
+    ):
+        system = ScalarExponentialDecaySystem()
+        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper = stepper_cls()
+
+        assert interface_cls not in stepper.__class__.__bases__
+
+        extend_stepper_interface(stepper, system)
+
+        assert interface_cls in stepper.__class__.__bases__
+
+    @pytest.mark.parametrize(
+        "stepper_and_interface",
+        [
+            (MockSymplecticStepper, symplectic_collection_stepper),
+            (MockExplicitStepper, explicit_collection_stepper),
+        ],
+    )
+    def test_symplectic_stepper_interface_for_collective_systems(
+        self, stepper_and_interface
+    ):
+        system = ExponentialDecayUndampedHarmonicOscillatorCollectiveSystem()
+        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper = stepper_cls()
+
+        assert interface_cls not in stepper.__class__.__bases__
+
+        extend_stepper_interface(stepper, system)
+
+        assert interface_cls in stepper.__class__.__bases__
+
+    class MockBadStepper:
+        pass
+
+    @pytest.mark.parametrize(
+        "stepper_and_interface", [(MockBadStepper, symplectic_collection_stepper)]
+    )
+    def test_symplectic_stepper_throws_for_bad_stepper(self, stepper_and_interface):
+        system = ScalarExponentialDecaySystem()
+        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper = stepper_cls()
+
+        assert interface_cls not in stepper.__class__.__bases__
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            extend_stepper_interface(stepper, system)
+        assert "steppers are supported" in str(excinfo.value)
+
+
+def test_integrate_throws_an_assert_for_negative_final_time():
+    with pytest.raises(AssertionError) as excinfo:
+        integrate([], [], -np.random.rand(1))
+    assert "time is negative" in str(excinfo.value)
+
+
+def test_integrate_throws_an_assert_for_negative_total_steps():
+    with pytest.raises(AssertionError) as excinfo:
+        integrate([], [], np.random.rand(1), -np.random.randint(100, 10000))
+    assert "steps is negative" in str(excinfo.value)
+
+
+# Added automatic discovery of Stateful explicit integrators
+# ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
+# SymplecticSteppers = SymplecticStepper.__subclasses__()
+ExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
+SymplecticSteppers = [PositionVerlet, PEFRL]
+
+
+class TestStepperInterface:
     def test_no_base_access_error(self):
         with pytest.raises(NotImplementedError) as excinfo:
             _TimeStepper().do_step()
@@ -290,6 +414,8 @@ class TestExplicitSteppers:
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
 
+
+class TestExplicitSteppers:
     @pytest.mark.parametrize("stepper", ExplicitSteppers)
     def test_against_scalar_exponential(self, stepper):
         system = ScalarExponentialDecaySystem(-1, 1)
@@ -349,6 +475,22 @@ class TestExplicitSteppers:
             atol=1e-4,
         )
 
+    @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers[:-1])
+    def test_explicit_against_analytical_system(self, explicit_stepper):
+        system = SecondOrderHybridSystem()
+        final_time = 1.0
+        n_steps = 2000
+        integrate(explicit_stepper(), system, final_time=final_time, n_steps=n_steps)
+
+        assert_allclose(
+            system.final_solution(final_time),
+            system.analytical_solution(final_time),
+            rtol=Tolerance.rtol() * 1e2,
+            atol=Tolerance.atol(),
+        )
+
+
+class TestSymplecticSteppers:
     @pytest.mark.parametrize("stepper", SymplecticSteppers)
     def test_symplectic_against_undamped_harmonic_oscillator(self, stepper):
         system = SymplecticUndampedSimpleHarmonicOscillatorSystem()
@@ -385,16 +527,22 @@ class TestExplicitSteppers:
             atol=Tolerance.atol(),
         )
 
-    @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers[:-1])
-    def test_explicit_against_analytical_system(self, explicit_stepper):
-        system = SecondOrderHybridSystem()
-        final_time = 1.0
-        n_steps = 2000
-        integrate(explicit_stepper(), system, final_time=final_time, n_steps=n_steps)
 
-        assert_allclose(
-            system.final_solution(final_time),
-            system.analytical_solution(final_time),
-            rtol=Tolerance.rtol() * 1e2,
-            atol=Tolerance.atol(),
-        )
+class TestSteppersAgainstCollectiveSystems:
+    @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
+    def test_explicit_steppers(self, symplectic_stepper):
+        collective_system = ExponentialDecayUndampedHarmonicOscillatorCollectiveSystem()
+        final_time = 1.0
+        n_steps = 500
+        stepper = symplectic_stepper()
+        integrate(stepper, collective_system, final_time=final_time, n_steps=n_steps)
+
+        for system in collective_system:
+            assert_allclose(
+                *system.compute_energy(final_time),
+                rtol=Tolerance.rtol() * 1e1,
+                atol=Tolerance.atol(),
+            )
+
+    # @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
+    # def test_symplectic_against_collective_system(self, symplectic_stepper):

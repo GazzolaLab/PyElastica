@@ -19,6 +19,7 @@ class _SystemCollectionStepper:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
         for prefactor_calculation, step in self._steps_and_prefactors:
             prefac = prefactor_calculation(self, dt)
+            SystemCollection.synchronize(time)
             for system in SystemCollection[:-1]:
                 _ = step(self, system, time, prefac)
             time = step(self, SystemCollection[-1], time, prefac)
