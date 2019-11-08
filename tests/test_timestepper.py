@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.timestepper import TimeStepper, integrate
+from elastica.timestepper import integrate
+from elastica.timestepper._stepper_interface import _TimeStepper
 from elastica.timestepper.explicit_steppers import (
     StatefulRungeKutta4,
     StatefulEulerForward,
@@ -279,7 +280,7 @@ class TestExplicitSteppers:
 
     def test_no_base_access_error(self):
         with pytest.raises(NotImplementedError) as excinfo:
-            TimeStepper().do_step()
+            _TimeStepper().do_step()
         assert "not supposed to access" in str(excinfo.value)
 
     @pytest.mark.parametrize(

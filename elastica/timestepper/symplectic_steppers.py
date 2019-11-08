@@ -1,12 +1,31 @@
-from numpy import float_
-
 __doc__ = """Symplectic timesteppers and concepts"""
 import numpy as np
 
-from . import TimeStepper, LinearExponentialIntegratorMixin
+from elastica.timestepper._stepper_interface import (
+    _TimeStepper,
+    _LinearExponentialIntegratorMixin,
+)
 
 
-class SymplecticStepper(TimeStepper):
+class _SystemInstanceStepper:
+    def do_step(self, System, time: np.float64, dt: np.float64):
+        for prefactor_calculation, step in self._steps_and_prefactors:
+            prefac = prefactor_calculation(self, dt)
+            time = step(self, System, time, prefac)
+        return time
+
+
+class _SystemCollectionStepper:
+    def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
+        for prefactor_calculation, step in self._steps_and_prefactors:
+            prefac = prefactor_calculation(self, dt)
+            for system in SystemCollection[:-1]:
+                _ = step(self, system, time, prefac)
+            time = step(self, SystemCollection[-1], time, prefac)
+        return time
+
+
+class SymplecticStepper(_TimeStepper):
     def __init__(self, cls=None):
         super(SymplecticStepper, self).__init__()
         take_methods_from = self if cls is None else cls()
@@ -55,12 +74,6 @@ class SymplecticStepper(TimeStepper):
     @property
     def n_stages(self):
         return len(self._steps_and_prefactors)
-
-    def do_step(self, System, time: np.float64, dt: np.float64):
-        for prefactor_calculation, step in self._steps_and_prefactors:
-            prefac = prefactor_calculation(self, dt)
-            time = step(self, System, time, prefac)
-        return time
 
 
 class PositionVerlet(SymplecticStepper):
@@ -166,8 +179,8 @@ class PEFRL(SymplecticStepper):
 
 
 class SymplecticLinearExponentialIntegrator(
-    LinearExponentialIntegratorMixin, SymplecticStepper
+    _LinearExponentialIntegratorMixin, SymplecticStepper
 ):
     def __init__(self):
-        LinearExponentialIntegratorMixin.__init__(self)
-        SymplecticStepper.__init__(self, LinearExponentialIntegratorMixin)
+        _LinearExponentialIntegratorMixin.__init__(self)
+        SymplecticStepper.__init__(self, _LinearExponentialIntegratorMixin)

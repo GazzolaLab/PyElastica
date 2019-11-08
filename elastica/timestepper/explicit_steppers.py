@@ -1,10 +1,37 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 import numpy as np
 
-from . import TimeStepper, StatefulStepper, LinearExponentialIntegratorMixin
+from elastica.timestepper._stepper_interface import (
+    _TimeStepper,
+    _LinearExponentialIntegratorMixin,
+    _StatefulStepper,
+)
 
 
-class ExplicitStepper(TimeStepper):
+class _SystemInstanceStepper:
+    def do_step(self, System, Memory, time: np.float64, dt: np.float64):
+        for stage, update in self._stages_and_updates:
+            stage(self, System, Memory, time, dt)
+            time = update(self, System, Memory, time, dt)
+        return time
+
+
+class _SystemCollectionStepper:
+    def do_step(
+        self, SystemCollection, MemoryCollection, time: np.float64, dt: np.float64
+    ):
+        for stage, update in self._stages_and_updates:
+
+            for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
+                stage(self, system, memory, time, dt)
+                _ = update(self, system, memory, time, dt)
+
+            stage(self, SystemCollection[-1], MemoryCollection[-1], time, dt)
+            time = update(self, SystemCollection[-1], MemoryCollection[-1], time, dt)
+        return time
+
+
+class ExplicitStepper(_TimeStepper):
     """ Base class for all explicit steppers
     Can also be used as a mixin with optional cls argument below
     """
@@ -36,13 +63,6 @@ class ExplicitStepper(TimeStepper):
     @property
     def n_stages(self):
         return len(self._stages_and_updates)
-
-    ### For stateless explicit steppers
-    def do_step(self, System, Memory, time: np.float64, dt: np.float64):
-        for stage, update in self._stages_and_updates:
-            stage(self, System, Memory, time, dt)
-            time = update(self, System, Memory, time, dt)
-        return time
 
 
 """
@@ -100,7 +120,7 @@ class RungeKutta4(ExplicitStepper):
         return time
 
 
-class StatefulRungeKutta4(StatefulStepper):
+class StatefulRungeKutta4(_StatefulStepper):
     """
     Stores all states of Rk within the time-stepper. Works as long as the states
     are all one big numpy array, made possible by carefully using views.
@@ -135,21 +155,21 @@ class EulerForward(ExplicitStepper):
         return time + dt
 
 
-class StatefulEulerForward(StatefulStepper):
+class StatefulEulerForward(_StatefulStepper):
     def __init__(self):
         super(StatefulEulerForward, self).__init__()
         self.stepper = EulerForward()
 
 
 class ExplicitLinearExponentialIntegrator(
-    LinearExponentialIntegratorMixin, ExplicitStepper
+    _LinearExponentialIntegratorMixin, ExplicitStepper
 ):
     def __init__(self):
-        LinearExponentialIntegratorMixin.__init__(self)
-        ExplicitStepper.__init__(self, LinearExponentialIntegratorMixin)
+        _LinearExponentialIntegratorMixin.__init__(self)
+        ExplicitStepper.__init__(self, _LinearExponentialIntegratorMixin)
 
 
-class StatefulLinearExponentialIntegrator(StatefulStepper):
+class StatefulLinearExponentialIntegrator(_StatefulStepper):
     def __init__(self):
         super(StatefulLinearExponentialIntegrator, self).__init__()
         self.stepper = ExplicitLinearExponentialIntegrator()
