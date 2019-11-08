@@ -55,7 +55,7 @@ class _LinearConstitutiveModel:
         -------
 
         """
-        self._compute_shear_stetch_strains()  # concept : needs to compute sigma
+        self._compute_shear_stretch_strains()  # concept : needs to compute sigma
         # TODO : the _batch_matvec kernel needs to depend on the representation of Shearmatrix
         self.internal_stress = _batch_matvec(
             self.shear_matrix, self.sigma - self.rest_sigma
@@ -117,7 +117,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         super(
             _LinearConstitutiveModelWithStrainRate, self
         )._compute_internal_shear_stretch_stresses_from_model()
-        self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
+        self._compute_shear_stretch_strains()  # concept : needs to compute sigma_dot
         # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
         self.internal_stress += _batch_matvec(self.shear_rate_matrix, self.sigma_dot)
 
