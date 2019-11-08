@@ -321,7 +321,7 @@ class _CosseratRodBase(RodBase):
             / self.rest_lengths
         )
 
-    def _compute_shear_stetch_strains(self):
+    def _compute_shear_stretch_strains(self):
         # Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant
         self._compute_all_dilatations()
         self.sigma = (
