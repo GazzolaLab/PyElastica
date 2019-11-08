@@ -49,11 +49,9 @@ def format_matrix_shape(matrix_collection):
     # check first two dimensions are same and matrix is square
     # other possibility is one dimension is dim**2 and other is blocksize,
     # we need to convert the matrix in that case.
-    def assert_proper_square(num1, num2=1):
-        sqrt_num = isqrt(num1 * num2)
-        assert (
-            sqrt_num ** 2 == num1 * num2
-        ), "Matrix dimension passed is not a perfect square"
+    def assert_proper_square(num1):
+        sqrt_num = isqrt(num1)
+        assert sqrt_num ** 2 == num1, "Matrix dimension passed is not a perfect square"
         return sqrt_num
 
     if n_dim == 1:
@@ -95,7 +93,7 @@ def format_matrix_shape(matrix_collection):
         ):
             matrix_collection = matrix_collection.T
 
-            # Given (dim, dim, bs) array, check if dimensions are equal
+        # Given (dim, dim, bs) array, check if dimensions are equal
         assert (
             matrix_collection.shape[0] == matrix_collection.shape[1]
         ), "Matrix shapes along 1 and 2 are not equal"
@@ -106,27 +104,14 @@ def format_matrix_shape(matrix_collection):
     elif n_dim > 3:
         raise RuntimeError("Matrix dimensions >3 are not supported")
 
-    assert dim == MaxDimension.value(), "Need dimension = 3"
+    assert (
+        dim == MaxDimension.value()
+    ), "Need matrix dimension = 3 for example (9,), (3,3), (3,3,1), (9,n), (3,3,n)"
 
     return matrix_collection
 
 
 def skew_symmetrize(vector):
-    # n_dim = vector.ndim
-    #
-    # if n_dim == 1:
-    #     # Shape is (dim,)
-    #     vector = np.expand_dims(vector, axis=1)
-    # elif n_dim == 2:
-    #     # First possibilty, shape is (blocksize, dim), with dim
-    #     # Soft fix : resize always so that first dimension is least
-    #     if vector.shape[0] > max(MaxDimension.value(), vector.shape[1]):
-    #         vector = vector.T
-    # elif n_dim > 2:
-    #     raise RuntimeError("Vector dimensions >2 are not supported")
-    #
-    # # Check for pure 3D cases for now
-    # assert vector.shape[0] == MaxDimension.value(), "Need first dimension = 3"
     vector = format_vector_shape(vector)
     return _skew_symmetrize(vector)
 
@@ -136,59 +121,6 @@ def inv_skew_symmetrize(matrix_collection):
     and formatting on type of matrix_collection using format_matrix_shape
     function.
     """
-    # n_dim = matrix_collection.ndim
-    #
-    # def assert_proper_square(num):
-    #     sqrt_num = isqrt(num)
-    #     assert sqrt_num ** 2 == num, "Matrix dimension passed is not a perfect square"
-    #     return sqrt_num
-    #
-    # if n_dim == 1:
-    #     # Shape is (dim**2, )
-    #     # Check if dim**2 is not a perfect square
-    #     dim = assert_proper_square(matrix_collection.shape[0])
-    #
-    #     # Now reshape matrix accordingly to fit (dim, dim, 1)
-    #     matrix_collection = np.atleast_3d(matrix_collection).reshape(dim, dim, 1)
-    #
-    # if n_dim == 2:
-    #     # First possibilty, shape is (blocksize, dim**2)
-    #     # Soft fix : resize always so that first dimension is least
-    #     if matrix_collection.shape[0] > max(
-    #         MaxDimension.value() ** 2, matrix_collection.shape[1]
-    #     ):
-    #         matrix_collection = matrix_collection.T
-    #
-    #     # Check if dim**2 is not a perfect square
-    #     dim = assert_proper_square(matrix_collection.shape[0])
-    #
-    #     # Expand to three dimensions
-    #     # inp : (dim**2, bs)
-    #     # op : (dim, dim, bs)
-    #     matrix_collection = matrix_collection.reshape(dim, dim, -1)
-    #
-    # if n_dim == 3:
-    #     # First possibilty, shape is (blocksize, dim, dim)
-    #     if matrix_collection.shape[0] > max(
-    #         MaxDimension.value() ** 2, matrix_collection.shape[1]
-    #     ) and matrix_collection.shape[0] > max(
-    #         MaxDimension.value() ** 2, matrix_collection.shape[2]
-    #     ):
-    #         matrix_collection = matrix_collection.T
-    #
-    #     # Given (dim, dim, bs) array, check if dimensions are equal
-    #     assert (
-    #         matrix_collection.shape[0] == matrix_collection.shape[1]
-    #     ), "Matrix shapes along 1 and 2 are not equal"
-    #
-    #     # Obtain dimensions for checking
-    #     dim = matrix_collection.shape[0]
-    #
-    # elif n_dim > 3:
-    #     raise RuntimeError("Matrix dimensions >3 are not supported")
-    #
-    # assert dim == MaxDimension.value(), "Need dimension = 3"
-
     # format matrix collection into correct shape
     matrix_collection = format_matrix_shape(matrix_collection)
     # No memory allocated
@@ -201,9 +133,9 @@ def inv_skew_symmetrize(matrix_collection):
         raise ValueError("matrix_collection passed is not skew-symmetric")
 
 
-def rotate_kernel(matrix, scale, axis):
+def rotate(matrix, scale, axis):
     """
-        This kernel takes single or multiple frames as matrix. Then rotates these frames
+        This function takes single or multiple frames as matrix. Then rotates these frames
         around a single axis for all frames, or can rotate each frame around its own
         rotation axis as defined by user. Scale determines how much frames rotates
         around this axis.
