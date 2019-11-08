@@ -88,12 +88,12 @@ def test_straight_rod():
     for i in range(n):
         assert_allclose(test_rod.mass[i], mass, atol=Tolerance.atol())
         assert_allclose(test_rod.directors[0, :, i], normal, atol=Tolerance.atol())
-        assert_allclose(test_rod.directors[1, :, i], direction, atol=Tolerance.atol())
         assert_allclose(
-            test_rod.directors[2, :, i],
+            test_rod.directors[1, :, i],
             np.cross(direction, normal),
             atol=Tolerance.atol(),
         )
+        assert_allclose(test_rod.directors[2, :, i], direction, atol=Tolerance.atol())
         assert_allclose(test_rod.rest_lengths, base_length / n, atol=Tolerance.atol())
         assert_allclose(
             test_rod.shear_matrix[..., i], shear_matrix, atol=Tolerance.atol()

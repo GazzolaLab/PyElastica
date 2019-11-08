@@ -241,8 +241,8 @@ class _CosseratRodBase(RodBase):
         directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
         directors[0, ...] = normal_collection
-        directors[1, ...] = tangents
-        directors[2, ...] = _batch_cross(tangents, normal_collection)
+        directors[1, ...] = _batch_cross(tangents, normal_collection)
+        directors[2, ...] = tangents
 
         mass = density * np.pi * base_radius ** 2 * rest_lengths
         inertia_collection = np.repeat(
