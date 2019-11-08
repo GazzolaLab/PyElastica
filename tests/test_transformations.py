@@ -306,7 +306,6 @@ def test_format_matrix_dim_dim_blocksize(blocksize):
     assert_allclose(test_matrix, input_matrix)
 
 
-## Test rotate_kernel ##
 @pytest.mark.parametrize("blocksize", [(10), (20), (30), (4), (32), (128)])
 def test_rotate(blocksize):
     dim = 3

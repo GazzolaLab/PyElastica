@@ -66,7 +66,6 @@ def format_matrix_shape(matrix_collection):
         # Check if we already have a square matrix or not, i.e. (3,3)
         if matrix_collection.shape[0] == matrix_collection.shape[1]:
             dim = matrix_collection.shape[0]
-            matrix_collection = matrix_collection.reshape(dim, dim, -1)
         else:
             # First possibilty, shape is (blocksize, dim**2)
             # Soft fix : resize always so that first dimension is least
@@ -83,7 +82,7 @@ def format_matrix_shape(matrix_collection):
             # Expand to three dimensions
             # inp : (dim**2, bs)
             # op : (dim, dim, bs)
-            matrix_collection = matrix_collection.reshape(dim, dim, -1)
+        matrix_collection = matrix_collection.reshape(dim, dim, -1)
     if n_dim == 3:
         # First possibilty, shape is (blocksize, dim, dim)
         if matrix_collection.shape[0] > max(
