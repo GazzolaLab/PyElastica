@@ -9,11 +9,11 @@ from ._stepper_interface import _StatefulStepper
 
 def extend_stepper_interface(Stepper, System):
     from ..utils import extend_instance
+    from ..systems import is_system_a_collection
 
     # Check if system is a "collection" of smaller systems
     # by checking for the [] method
-    __sys_get_item = getattr(System, "__getitem__", None)
-    is_system_a_collection = callable(__sys_get_item)
+    is_this_system_a_collection = is_system_a_collection(System)
 
     ConcreteStepper = (
         Stepper.stepper if _StatefulStepper in Stepper.__class__.mro() else Stepper
@@ -36,7 +36,9 @@ def extend_stepper_interface(Stepper, System):
         )
 
     ExtendClass = (
-        _SystemCollectionStepper if is_system_a_collection else _SystemInstanceStepper
+        _SystemCollectionStepper
+        if is_this_system_a_collection
+        else _SystemInstanceStepper
     )
     extend_instance(ConcreteStepper, ExtendClass)
 
