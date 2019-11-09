@@ -56,7 +56,7 @@ def format_matrix_shape(matrix_collection):
 
     if n_dim == 1:
         # Shape is (dim**2, )
-        # Check if dim**2 is not a perfect square
+        # Check if dim**2 is a perfect square
         dim = assert_proper_square(matrix_collection.shape[0])
 
         # Now reshape matrix accordingly to fit (dim, dim, 1)
