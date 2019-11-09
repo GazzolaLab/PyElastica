@@ -41,7 +41,7 @@ class _RodSymplecticStepperMixin:
         self.dynamic_rates = self.dynamic_states.dynamic_rates
 
 
-def _bootstrap_from_data(stepper_type: "str", n_elems, vector_states, matrix_states):
+def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
     n_nodes = n_elems + 1
     position = np.ndarray.view(vector_states[..., :n_nodes])
     directors = np.ndarray.view(matrix_states)
@@ -50,7 +50,7 @@ def _bootstrap_from_data(stepper_type: "str", n_elems, vector_states, matrix_sta
     if stepper_type == "explicit":
         v_w_states = np.ndarray.view(vector_states[..., n_nodes : 3 * n_nodes - 1])
         output += (
-            _State(n_elems, position, v_w_states, directors),
+            _State(n_elems, position, directors, v_w_states),
             _DerivativeState(n_elems, v_w_dvdt_dwdt),
         )
     elif stepper_type == "symplectic":
@@ -101,17 +101,6 @@ class _State:
         self.kinematic_rate_collection = kinematic_rate_collection_view  # v, w
         self.director_collection = director_collection_view  # Q
 
-    @classmethod
-    def bootstrap_from_states(cls, n_nodes, vector_states, matrix_states):
-        # vec_state = np.hstack((x, v, w, dvdt, dwdt))
-        # x
-        position = np.ndarray.view(vector_states[..., :n_nodes])
-        # v, w
-        v_w_states = np.ndarray.view(vector_states[..., n_nodes : 3 * n_nodes - 1])
-        # Q
-        Q_states = np.ndarray.view(matrix_states)
-        return cls(n_nodes, position, v_w_states, Q_states)
-
     def __iadd__(self, scaled_deriv_array):
         # scaled_deriv_array : dt * (v, w, dv_dt, dw_dt)
         # v
@@ -124,6 +113,7 @@ class _State:
         self.kinematic_rate_collection += scaled_deriv_array[
             ..., self.n_kinematic_rates :
         ]
+        return self
 
     def __add__(self, scaled_derivative_state):
         # scaled_derivative_state : (v, w, dv_dt, dw_dt)
