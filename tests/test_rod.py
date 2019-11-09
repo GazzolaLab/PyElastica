@@ -117,7 +117,7 @@ class TestExplicitStepperStateBehavior(LoadStates):
         test_derivative = dt * derivative
         assert_instance(test_derivative, np.ndarray)
         correct_derivative = dt * self.Vectors
-        assert np.all(np.in1d(test_derivative, correct_derivative))
+        assert np.all(np.in1d(test_derivative.ravel(), correct_derivative.ravel()))
 
     def test_state_add(self, load_states):
         state, derivative = load_states
@@ -134,14 +134,14 @@ class TestExplicitStepperStateBehavior(LoadStates):
         )
         assert np.all(
             np.in1d(
-                func(self.States["Velocity"], self.States["Acceleration"]),
-                test_state.kinematic_rate_collection,
+                func(self.States["Velocity"], self.States["Acceleration"]).ravel(),
+                test_state.kinematic_rate_collection.ravel(),
             )
         )
         assert np.all(
             np.in1d(
-                func(self.States["Omega"], self.States["Alpha"]),
-                test_state.kinematic_rate_collection,
+                func(self.States["Omega"], self.States["Alpha"]).ravel(),
+                test_state.kinematic_rate_collection.ravel(),
             )
         )
 
@@ -164,13 +164,74 @@ class TestExplicitStepperStateBehavior(LoadStates):
         )
         assert np.all(
             np.in1d(
-                func(self.States["Velocity"], self.States["Acceleration"]),
-                state.kinematic_rate_collection,
+                func(self.States["Velocity"], self.States["Acceleration"]).ravel(),
+                state.kinematic_rate_collection.ravel(),
             )
         )
         assert np.all(
             np.in1d(
-                func(self.States["Omega"], self.States["Alpha"]),
-                state.kinematic_rate_collection,
+                func(self.States["Omega"], self.States["Alpha"]).ravel(),
+                state.kinematic_rate_collection.ravel(),
             )
+        )
+
+
+class TestSymplecticStepperStateBehavior(LoadStates):
+    StepperType = "symplectic"
+
+    def test_dynamic_state_returns_correct_kinematic_rates(self, load_states):
+        kin_state, dyn_state = load_states
+        assert np.all(
+            np.in1d(
+                self.States["Velocity"].ravel(), dyn_state.kinematic_rates().ravel()
+            )
+        )
+        assert np.all(
+            np.in1d(self.States["Omega"].ravel(), dyn_state.kinematic_rates().ravel())
+        )
+
+    def test_dynamic_state_returns_correct_dynamic_rates(self, load_states):
+        kin_state, dyn_state = load_states
+        assert np.all(
+            np.in1d(
+                self.States["Acceleration"].ravel(), dyn_state.dynamic_rates().ravel()
+            )
+        )
+        assert np.all(
+            np.in1d(self.States["Alpha"].ravel(), dyn_state.dynamic_rates().ravel())
+        )
+
+    def test_dynamic_state_iadd(self, load_states):
+        _, dyn_state = load_states
+        scalar = 2.0
+
+        def inplace_func(x, y):
+            x.__iadd__(scalar * y.dynamic_rates())
+
+        def func(x, y):
+            return x + scalar * y
+
+        inplace_func(dyn_state, dyn_state)
+
+        temp = func(self.States["Velocity"], self.States["Acceleration"])
+        assert np.all(np.in1d(temp.ravel(), dyn_state.rate_collection.ravel()))
+
+        temp = func(self.States["Omega"], self.States["Alpha"])
+        assert np.all(np.in1d(temp.ravel(), dyn_state.rate_collection.ravel()))
+
+    def test_kinematic_state_iadd(self, load_states):
+        kin_state, dyn_state = load_states
+        scalar = 2.0
+
+        def inplace_func(x, y):
+            x.__iadd__(scalar * y.kinematic_rates())
+
+        def func(x, y):
+            return x + scalar * y
+
+        inplace_func(kin_state, dyn_state)
+
+        assert_allclose(
+            kin_state.position_collection,
+            func(self.States["Position"], self.States["Velocity"]),
         )

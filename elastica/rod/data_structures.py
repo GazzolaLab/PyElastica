@@ -188,7 +188,7 @@ class _DynamicState:
     def __iadd__(self, scaled_second_deriv_array):
         # Always goes in LHS : that means the update is on the rates alone
         # (v,w) += dt * (dv/dt, dw/dt) ->  self.dynamic_rates
-        self.other_states[..., : self.n_kinematic_rates] += scaled_second_deriv_array
+        self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
         return self
 
     def kinematic_rates(self):
