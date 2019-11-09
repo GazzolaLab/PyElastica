@@ -1,7 +1,8 @@
 black:
 	@black --version
-	@find . -maxdepth 3 -name '*.py'\
-		| while read -r src; do black "$$src"; done
+	@black elastica tests
+# 	@find . -maxdepth 3 -name '*.py'\
+# 		| while read -r src; do black "$$src"; done
 
 black_check:
 	@black --version
@@ -18,8 +19,9 @@ isort_check:
 
 flake8:
 	@flake8 --version
-	@find . -maxdepth 3 -name '*.py'\
-		| while read -r src; do flake8 "$$src"; done
+	@flake8 elastica tests
+# 	@find . -maxdepth 3 -name '*.py'\
+# 		| while read -r src; do flake8 "$$src"; done
 
 clean:
 	@jupyter nbconvert --version
