@@ -80,7 +80,7 @@ def format_matrix_shape(matrix_collection):
             )  # , matrix_collection.shape[1])i
 
             # Expand to three dimensions
-            # inp : (dim**2, bs)
+            # inp : (dim,dim) or (dim**2, bs)
             # op : (dim, dim, bs)
         matrix_collection = matrix_collection.reshape(dim, dim, -1)
     if n_dim == 3:
