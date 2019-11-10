@@ -92,15 +92,14 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         else:
             raise ValueError("shear rate matrix value missing!")
         if "bend_rate_matrix" in kwargs.keys():
-            self.bend_rate_matrix = np.repeat(kwargs["bend_rate_matrix"]
-                                              [:, :, np.newaxis], n_elements,
-                                              axis=2)
+            self.bend_rate_matrix = np.repeat(
+                kwargs["bend_rate_matrix"][:, :, np.newaxis], n_elements, axis=2
+            )
             # Compute bend rate matrix in Voronoi Domain
-            self.bend_rate_matrix = (self.bend_rate_matrix[..., 1:] *
-                                     rest_lengths[1:]
-                                     + self.bend_rate_matrix[..., :-1] *
-                                     rest_lengths[0:-1]) /\
-                (rest_lengths[1:] + rest_lengths[:-1])
+            self.bend_rate_matrix = (
+                self.bend_rate_matrix[..., 1:] * rest_lengths[1:]
+                + self.bend_rate_matrix[..., :-1] * rest_lengths[0:-1]
+            ) / (rest_lengths[1:] + rest_lengths[:-1])
         else:
             raise ValueError("bend rate matrix value missing!")
 

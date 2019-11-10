@@ -70,12 +70,16 @@ class AnistropicFrictionalPlane(InteractionPlane):
     ):
         InteractionPlane.__init__(self, k, nu, origin_plane, normal_plane)
         self.slip_velocity_tol = slip_velocity_tol
-        self.static_mu_forward, self.static_mu_backward, self.static_mu_sideways = (
-            static_mu_array
-        )
-        self.kinetic_mu_forward, self.kinetic_mu_backward, self.kinetic_mu_sideways = (
-            kinetic_mu_array
-        )
+        (
+            self.static_mu_forward,
+            self.static_mu_backward,
+            self.static_mu_sideways,
+        ) = static_mu_array
+        (
+            self.kinetic_mu_forward,
+            self.kinetic_mu_backward,
+            self.kinetic_mu_sideways,
+        ) = kinetic_mu_array
 
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
