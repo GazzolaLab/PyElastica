@@ -75,13 +75,11 @@ def format_matrix_shape(matrix_collection):
                 matrix_collection = matrix_collection.T
 
             # Check if dim**2 is not a perfect square
-            dim = assert_proper_square(
-                matrix_collection.shape[0]
-            )  # , matrix_collection.shape[1])i
+            dim = assert_proper_square(matrix_collection.shape[0])
 
-            # Expand to three dimensions
-            # inp : (dim,dim) or (dim**2, bs)
-            # op : (dim, dim, bs)
+        # Expand to three dimensions
+        # inp : (dim,dim) or (dim**2, bs)
+        # op : (dim, dim, bs)
         matrix_collection = matrix_collection.reshape(dim, dim, -1)
     if n_dim == 3:
         # First possibilty, shape is (blocksize, dim, dim)
