@@ -13,7 +13,7 @@ class _RodExplicitStepperMixin:
             self.velocity_collection,
             self.omega_collection,
             self.acceleration_collection,
-            self.alpha_collection,
+            self.alpha_collection,  # angular acceleration
         ) = _bootstrap_from_data(
             "explicit", self.n_elems, self._vector_states, self._matrix_states
         )
@@ -33,7 +33,7 @@ class _RodSymplecticStepperMixin:
             self.velocity_collection,
             self.omega_collection,
             self.acceleration_collection,
-            self.alpha_collection,
+            self.alpha_collection,  # angular acceleration
         ) = _bootstrap_from_data(
             "symplectic", self.n_elems, self._vector_states, self._matrix_states
         )
@@ -42,6 +42,34 @@ class _RodSymplecticStepperMixin:
 
 
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
+    """ Returns states wrapping numpy arrays based on the time-stepping algorithm
+
+    Convenience method that takes in rod internal (raw np.ndarray) data, create views
+    (references) from it, and outputs State classes that are used in the time-stepping
+    algorithm. This means that modifying the state modifies the internal data!
+
+    Parameters
+    ----------
+    stepper_type : str (likely to change in future), representing stepper type
+    Allowed parameters are ['explicit', 'symplectic']
+    n_elems : int, number of rod elements
+    vector_states : np.ndarray of shape (dim, *) with the following structure
+        `vector_states` = [`position`,`velocity`,`omega`,`acceleration`,`angular acceleration`]
+        `n_nodes = n_elems + 1`
+        `position = 0 -> n_nodes , size = n_nodes`
+        `velocity = n_nodes -> 2 * n_nodes, size = n_nodes`
+        `omega = 2 * n_nodes -> 2 * n_nodes + nelem, size = nelem`
+        `acceleration = 2 * n_nodes + nelem -> 3 * n_nodes + nelem, size = n_nodes`
+        `angular acceleration = 3 * n_nodes + nelem -> 3 * n_nodes + 2 * nelem, size = n_elems`
+    matrix_states : np.ndarray of shape (dim, dim, n_elems) containing the directors
+
+    Returns
+    -------
+    output : tuple of len 8 containing
+    (state, derivative_state, position, directors, velocity, omega, acceleration, alpha)
+    derivative_state carries rate information
+
+    """
     n_nodes = n_elems + 1
     position = np.ndarray.view(vector_states[..., :n_nodes])
     directors = np.ndarray.view(matrix_states)
@@ -82,51 +110,97 @@ Explicit stepper interface
 
 
 class _State:
-    """
-    Wraps state. Explicit stepper.
+    """ State for explicit steppers.
+
+    Wraps data as state, with overloaded methods for explicit steppers
+    (steppers that integrate all states in one-step/stage).
+    Allows for separating implementation of stepper from actual
+    addition/multiplication/other formulae used.
     """
 
     # TODO : args, kwargs instead of hardcoding types
     def __init__(
         self,
-        n_elems,
+        n_elems: int,
         position_collection_view,
         director_collection_view,
         kinematic_rate_collection_view,
     ):
+        """
+        Parameters
+        ----------
+        n_elems : int, number of rod elements
+        position_collection_view : view of positions (or) x
+        director_collection_view : view of directors (or) Q
+        kinematic_rate_collection_view : view of velocity and omega (or) (v,ω)
+        """
         super(_State, self).__init__()
         self.n_nodes = n_elems + 1
-        self.n_kinematic_rates = self.n_nodes + n_elems
-        self.position_collection = position_collection_view  # x
-        self.kinematic_rate_collection = kinematic_rate_collection_view  # v, w
-        self.director_collection = director_collection_view  # Q
+        self.n_kinematic_rates = self.n_nodes + n_elems  # start of (v,ω) in (x,Q,v,ω)
+        self.position_collection = position_collection_view
+        self.director_collection = director_collection_view
+        self.kinematic_rate_collection = kinematic_rate_collection_view
 
     def __iadd__(self, scaled_deriv_array):
-        # scaled_deriv_array : dt * (v, w, dv_dt, dw_dt)
-        # v
+        """ overloaded += operator
+
+        The add for directors is customized to reflect Rodrigues' rotation
+        formula.
+
+        Parameters
+        ----------
+        scaled_deriv_array : np.ndarray containing dt * (v, ω, dv/dt, dω/dt)
+        ,as returned from _DerivativeState's __mul__ method
+
+        Returns
+        -------
+        self : _State with inplace modified data
+
+        """
+        # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
-        # w
+        # TODO Q *= exp(w*dt)
         self.director_collection += scaled_deriv_array[
             ..., self.n_nodes : self.n_kinematic_rates
         ]
-        # dv_dt, dw_dt
+        # (v,ω) += (dv/dt, dω/dt)*dt
         self.kinematic_rate_collection += scaled_deriv_array[
             ..., self.n_kinematic_rates :
         ]
         return self
 
     def __add__(self, scaled_derivative_state):
-        # scaled_derivative_state : (v, w, dv_dt, dw_dt)
-        # v
+        """ overloaded + operator, useful in state.k1 = state + dt * deriv_state
+
+        The add for directors is customized to reflect Rodrigues' rotation
+        formula.
+
+        Parameters
+        ----------
+        scaled_derivative_state : np.ndarray with dt * (v, ω, dv/dt, dω/dt)
+        ,as returned from _DerivativeState's __mul__ method
+
+        Returns
+        -------
+        state : new _State object with modified data (copied)
+
+        Caveats
+        -------
+        Note that the argument is not a `other` _State object but is rather
+        assumed to be a `np.ndarray` from calling _DerivativeState's __mul__
+        method. This reflects the most common use-case in time-steppers
+
+        """
+        # x += v*dt
         position_collection = (
             self.position_collection + scaled_derivative_state[..., : self.n_nodes]
         )
-        # w
+        # TODO Q *= exp(w*dt)
         director_collection = (
             self.director_collection
             + scaled_derivative_state[..., self.n_nodes : self.n_kinematic_rates]
         )
-        # dv_dt, dw_dt
+        # (v,ω) += (dv/dt, dω/dt)*dt
         kinematic_rate_collection = (
             self.kinematic_rate_collection
             + scaled_derivative_state[..., self.n_kinematic_rates :]
@@ -140,19 +214,60 @@ class _State:
 
 
 class _DerivativeState:
-    def __init__(self, n_elems, rate_collection_view):
+    """ TimeDerivative of States for explicit steppers.
+
+    Wraps time-derivative data as state, with overloaded methods for
+    explicit steppers (steppers that integrate all states in one-step/stage).
+    Allows for separating implementation of stepper from actual addition
+    /multiplication used.
+    """
+
+    def __init__(self, _unused_n_elems: int, rate_collection_view):
+        """
+        Parameters
+        ----------
+        _unused_n_elems : int, number of elements (unused, kept for
+        compatibility with `_bootstrap_from_data`)
+        rate_collection_view : np.ndarray containing (v, ω, dv/dt, dω/dt)
+        """
         super(_DerivativeState, self).__init__()
-        # x, v, w, dvdt, dwdt -> v, w, dvdt, dwdt
-        # self.vector_states = np.ndarray.view(rate_collection_view[..., n_nodes: ])
         self.rate_collection = rate_collection_view
 
     def __rmul__(self, scalar):
-        """ normal mul at start"""
-        # We can return a State here with (v*dt, w*dt, dvdt*dt, dwdt*dt) as members
-        # but it's less efficient
+        """ overloaded scalar * self,
+
+        Parameters
+        ----------
+        scalar : float, typically dt (the time-step)
+
+        Returns
+        -------
+        output : np.ndarray containing (v*dt, ω*dt, dv/dt*dt, dω/dt*dt)
+
+        Caveats
+        -------
+        Returns a np.ndarray and not a State object (as one expects).
+        Returning a State here with (v*dt, ω*dt, dv/dt*dt, dω/dt*dt) as members
+        is possible but it's less efficient, especially because this is hot
+        piece of code
+        """
         return scalar * self.rate_collection
 
     def __mul__(self, scalar):
+        """ overloaded self * scalar
+
+        TODO Check if this pattern (forwarding to __mul__) has
+        any disdvantages apart from extra function call penalty
+
+        Parameters
+        ----------
+        scalar : float, typically dt (the time-step)
+
+        Returns
+        -------
+        output : np.ndarray containing (v*dt, ω*dt, dv/dt*dt, dω/dt*dt)
+
+        """
         return self.__rmul__(scalar)
 
 
@@ -162,43 +277,133 @@ Symplectic stepper interface
 
 
 class _KinematicState:
-    def __init__(self, n_elems, position_collection_view, director_collection_view):
+    """ State storing (x,Q) for symplectic steppers.
+
+    Wraps data as state, with overloaded methods for symplectic steppers.
+    Allows for separating implementation of stepper from actual
+    addition/multiplication/other formulae used.
+
+    Symplectic steppers rely only on in-place modifications to state and so
+    only these methods are provided.
+    """
+
+    def __init__(
+        self, n_elems: int, position_collection_view, director_collection_view
+    ):
+        """
+        Parameters
+        ----------
+        n_elems : int, number of rod elements
+        position_collection_view : view of positions (or) x
+        director_collection_view : view of directors (or) Q
+        """
         super(_KinematicState, self).__init__()
         self.n_nodes = n_elems + 1
-        # self.x = np.ndarray.view(vector_states[..., :n_nodes])
-        # self.Q = np.ndarray.view(matrix_states)
-        self.position_collection = position_collection_view  # x
-        self.director_collection = director_collection_view  # Q
+        self.position_collection = position_collection_view
+        self.director_collection = director_collection_view
 
     def __iadd__(self, scaled_deriv_array):
-        # scaled_derivative_state : dt * (v, w)
+        """ overloaded += operator
+
+        The add for directors is customized to reflect Rodrigues' rotation
+        formula.
+
+        Parameters
+        ----------
+        scaled_deriv_array : np.ndarray containing dt * (v, ω),
+        as retured from _DynamicState's `kinematic_rates` method
+
+        Returns
+        -------
+        self : _KinematicState instance with inplace modified data
+
+        Caveats
+        -------
+        Takes a np.ndarray and not a _KinematicState object (as one expects).
+        This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
+        method
+        """
+        # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
+        # TODO Q *= exp(w*dt)
         self.director_collection += scaled_deriv_array[..., self.n_nodes :]
         return self
 
 
 class _DynamicState:
-    def __init__(self, n_elems, rate_collection_view):
+    """ State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.
+
+    Wraps data as state, with overloaded methods for symplectic steppers.
+    Allows for separating implementation of stepper from actual
+    addition/multiplication/other formulae used.
+
+    Symplectic steppers rely only on in-place modifications to state and so
+    only these methods are provided.
+    """
+
+    def __init__(self, n_elems: int, rate_collection_view):
+        """
+
+        Parameters
+        ----------
+        n_elems : int, number of rod elements
+        rate_collection_view : np.ndarray containing (v, ω, dv/dt, dω/dt)
+        """
         super(_DynamicState, self).__init__()
-        # self.dynamic_states_limit = 2 * n_nodes - 1
+        # Limit at which (v, w) end
         self.n_kinematic_rates = 2 * n_elems + 1
-        # self.other_states = np.ndarray.view(vector_states[..., n_nodes:])
-        self.rate_collection = rate_collection_view  # v, w, dvdt, dwdt
+        self.rate_collection = rate_collection_view
 
     def __iadd__(self, scaled_second_deriv_array):
+        """ overloaded += operator, updating dynamic_rates
+
+        Parameters
+        ----------
+        scaled_second_deriv_array : np.ndarray containing dt * (dvdt, dωdt),
+        as retured from _DynamicState's `dynamic_rates` method
+
+        Returns
+        -------
+        self : _DynamicState instance with inplace modified data
+
+        Caveats
+        -------
+        Takes a np.ndarray and not a _DynamicState object (as one expects).
+        This is done for efficiency reasons, see `dynamic_rates`.
+        """
         # Always goes in LHS : that means the update is on the rates alone
-        # (v,w) += dt * (dv/dt, dw/dt) ->  self.dynamic_rates
+        # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
         self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
         return self
 
     def kinematic_rates(self):
+        """ Yields kinematic rates to interact with _KinematicState
+
+        Returns
+        -------
+        v_and_omega : np.ndarray consisting of (v,ω)
+
+        Caveats
+        -------
+        Doesn't return a _KinematicState with (dt*v, dt*w) as members,
+        as one expects the _Kinematic __add__ operator to interact
+        with another _KinematicState. This is done for efficiency purposes.
+        """
         # RHS functino call, gives v,w so that
-        #   Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
-        # We can return a _KinematicState with (dt*v, dt*w) as members, but its
-        # less efficient
+        # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
         return self.rate_collection[..., : self.n_kinematic_rates]
 
     def dynamic_rates(self):
-        # We can return a _DynamicState with (dt*dvdt, dt*dwdt) as members, but its
-        # less efficient
+        """ Yields dynamic rates to add to with _DynamicState
+
+        Returns
+        -------
+        acc_and_alpha : np.ndarray consisting of (dv/dt,dω/dt)
+
+        Caveats
+        -------
+        Doesn't return a _DynamicState with (dt*v, dt*w) as members,
+        as one expects the _Dynamic __add__ operator to interact
+        with another _DynamicState. This is done for efficiency purposes.
+        """
         return self.rate_collection[..., self.n_kinematic_rates :]
