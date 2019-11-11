@@ -2,6 +2,8 @@ __doc__ = "Data structure wrapper for rod components"
 
 import numpy as np
 
+from elastica._rotations import _get_rotation_matrix, _rotate
+
 
 class _RodExplicitStepperMixin:
     def __init__(self):
@@ -159,10 +161,20 @@ class _State:
         """
         # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
-        # TODO Q *= exp(w*dt)
-        self.director_collection += scaled_deriv_array[
-            ..., self.n_nodes : self.n_kinematic_rates
-        ]
+        # TODO Q *= exp(w*dt) , whats' the formua again?
+        # TODO the scale factor 1.0 does not seem to be necessary, although
+        # we perform more work in the present framework (muliply dt to entire vector, then take
+        # norm) rather than vector norm then multiple by dt (1/3 operation costs)
+        # TODO optimize (somehow) extra copy away : if we don't make a copy
+        # its even more slower, maybe due to aliasing effects
+        np.einsum(
+            "ijk,jlk->ilk",
+            _get_rotation_matrix(
+                1.0, scaled_deriv_array[..., self.n_nodes : self.n_kinematic_rates]
+            ),
+            self.director_collection.copy(),
+            out=self.director_collection,
+        )
         # (v,ω) += (dv/dt, dω/dt)*dt
         self.kinematic_rate_collection += scaled_deriv_array[
             ..., self.n_kinematic_rates :
@@ -196,9 +208,10 @@ class _State:
             self.position_collection + scaled_derivative_state[..., : self.n_nodes]
         )
         # TODO Q *= exp(w*dt)
-        director_collection = (
-            self.director_collection
-            + scaled_derivative_state[..., self.n_nodes : self.n_kinematic_rates]
+        director_collection = _rotate(
+            self.director_collection,
+            1.0,
+            scaled_derivative_state[..., self.n_nodes : self.n_kinematic_rates],
         )
         # (v,ω) += (dv/dt, dω/dt)*dt
         kinematic_rate_collection = (
@@ -326,7 +339,12 @@ class _KinematicState:
         # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
         # TODO Q *= exp(w*dt)
-        self.director_collection += scaled_deriv_array[..., self.n_nodes :]
+        np.einsum(
+            "ijk,jlk->ilk",
+            _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
+            self.director_collection.copy(),
+            out=self.director_collection,
+        )
         return self
 
 
