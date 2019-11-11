@@ -18,8 +18,12 @@ class TestRod:
 from elastica.rod.data_structures import _bootstrap_from_data
 
 
+# Choosing 15 and 31 as nelems to reflect common expected
+# use case of blocksize = 2*(k), k = int
+# https://docs.pytest.org/en/latest/fixture.html
 @pytest.fixture(scope="module", params=[15, 31])
 def load_data_for_bootstrapping_state(request):
+    """ Yield states for bootstrapping """
     n_elem = request.param
     n_nodes = n_elem + 1
     dim = 3
@@ -81,7 +85,12 @@ def test_bootstrapping_types_for_symplectic_steppers(load_data_for_bootstrapping
     assert_instance(all_states[1], _DynamicState)
 
 
+# TODO Add realistic example with states used in a real time-stepper to solve some ODE
 class LoadStates:
+    """ Mixin class for testing explicit and symplectic
+    stepper behaviors that manipulate state objects
+    """
+
     Vectors = None
     Directors = None
     States = {
@@ -98,13 +107,21 @@ class LoadStates:
         (n_elem, vectors, directors) = load_data_for_bootstrapping_state
         self.Vectors = vectors.copy()
         self.Directors = directors.copy()
+        # Stepper Type found in base-classes TestExplicitStepperStateBehavior
+        # and TestSymplecticStepperStateBehavior below.
         all_states = _bootstrap_from_data(
             self.StepperType, *load_data_for_bootstrapping_state
         )
 
+        # Create copies of states (position, velocity etc) into
+        # the states dictionary. We then do the SAME manipulation
+        # of self.States and all_states to check their correctness
         for src_state, tgt_key in zip(all_states[2:], self.States):
             self.States[tgt_key] = src_state.copy()
 
+        # all_states[0,1] here depends on the StepperType used above
+        # if TestExplicitStepperStateBehavior.StepperType, then [_State, _DerivativeState]
+        # if TestSymplecticStepperStateBehavior.StepperType, then [_KinematicState, _DynamicState]
         return all_states[0], all_states[1]
 
 
