@@ -113,6 +113,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         -------
 
         """
+        # TODO : test this function
         # Calculates stress based purely on strain component
         super(
             _LinearConstitutiveModelWithStrainRate, self
@@ -131,6 +132,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         -------
 
         """
+        # TODO : test this function
         # Calculates stress based purely on strain component
         super(
             _LinearConstitutiveModelWithStrainRate, self
@@ -180,6 +182,7 @@ class _CosseratRodBase(RodBase):
         rest_lengths,
         mass,
         density,
+        volume,
         mass_second_moment_of_inertia,
         inv_mass_second_moment_of_inertia,
         nu,
@@ -195,7 +198,7 @@ class _CosseratRodBase(RodBase):
         self.rest_lengths = rest_lengths
         self.mass = mass
         self.density = density
-        self.volume = self.mass / self.density
+        self.volume = volume
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
         self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
         self.nu = nu
@@ -252,7 +255,11 @@ class _CosseratRodBase(RodBase):
         directors[1, ...] = _batch_cross(tangents, normal_collection)
         directors[2, ...] = tangents
 
-        mass = density * np.pi * base_radius ** 2 * rest_lengths
+        volume = np.pi * base_radius ** 2 * rest_lengths
+        mass = np.zeros(n_elements + 1)
+        mass[0:-1] = density * volume
+        mass[0] *= 0.5
+        mass[-1] = 0.5 * mass[-2]
         inertia_collection = np.repeat(
             mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
         )
@@ -269,6 +276,7 @@ class _CosseratRodBase(RodBase):
             rest_lengths,
             mass,
             density,
+            volume,
             inertia_collection,
             inv_inertia_collection,
             nu,
@@ -446,6 +454,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.rest_lengths,
             rod.mass,
             rod.density,
+            rod.volume,
             rod.mass_second_moment_of_inertia,
             rod.inv_mass_second_moment_of_inertia,
             rod.nu,

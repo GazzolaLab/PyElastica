@@ -85,10 +85,15 @@ def test_straight_rod():
     assert_allclose(
         rest_voronoi_lengths, test_rod.rest_voronoi_lengths, atol=Tolerance.atol()
     )
+    # Check mass at each node. Note that, node masses is
+    # half of element mass at the first and last node.
+    for i in range(1, n):
+        assert_allclose(test_rod.mass[i], mass, atol=Tolerance.atol())
+    assert_allclose(test_rod.mass[0], 0.5 * mass, atol=Tolerance.atol())
+    assert_allclose(test_rod.mass[-1], 0.5 * mass, atol=Tolerance.atol())
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
     for i in range(n):
-        assert_allclose(test_rod.mass[i], mass, atol=Tolerance.atol())
         assert_allclose(test_rod.directors[0, :, i], normal, atol=Tolerance.atol())
         assert_allclose(
             test_rod.directors[1, :, i],
