@@ -17,6 +17,7 @@ def test_case_compress_straight_rod():
         _compute_all_dilatations
         _compute_dilatation_rate
         _compute_shear_stretch_strains
+        _compute_internal_shear_stretch_stresses_from_model
         _compute_internal_forces
 
     """
