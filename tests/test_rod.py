@@ -126,6 +126,7 @@ class LoadStates:
 
 
 class TestExplicitStepperStateBehavior(LoadStates):
+    # TODO : update tests after including Rodrigues rotation properly
     StepperType = "explicit"
 
     def test_derivative_rmul(self, load_states):
@@ -194,6 +195,7 @@ class TestExplicitStepperStateBehavior(LoadStates):
 
 
 class TestSymplecticStepperStateBehavior(LoadStates):
+    # TODO : update tests after including Rodrigues rotation properly
     StepperType = "symplectic"
 
     def test_dynamic_state_returns_correct_kinematic_rates(self, load_states):
