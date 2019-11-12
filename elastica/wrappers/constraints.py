@@ -29,7 +29,7 @@ class Constraints:
             # index might have some problems : https://stackoverflow.com/a/176921
             try:
                 sys_idx = self._systems.index(system)
-            except:
+            except ValueError:
                 raise ValueError(
                     "Rod {} was not found, did you append it to the system?".format(
                         system

@@ -30,7 +30,7 @@ class TestConstraint:
     )
     def test_using_with_legal_constraint(self, load_constraint, legal_constraint):
         constraint = load_constraint
-        constraint.using(legal_constraint, 3, 4.0, "5", k=1, l="2", j=3.0)
+        constraint.using(legal_constraint, 3, 4.0, "5", k=1, l_var="2", j=3.0)
 
         assert constraint._bc_cls == legal_constraint
         assert constraint._args == (3, 4.0, "5")
@@ -59,7 +59,7 @@ class TestConstraint:
         MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
 
         constraint = load_constraint
-        constraint.using(MockBC, 3.9, 4.0, "5", k=1, l="2", j=3.0)
+        constraint.using(MockBC, 3.9, 4.0, "5", k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
         mock_bc = constraint(None)  # None is Fake rod
@@ -84,7 +84,7 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 3.9, 4.0, positions=position_indices, k=1, l="2", j=3.0
+            MockBC, 3.9, 4.0, positions=position_indices, k=1, l_var="2", j=3.0
         )
 
         # Actual test is here, this should not throw
@@ -109,7 +109,7 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 3.9, 4.0, directors=director_indices, k=1, l="2", j=3.0
+            MockBC, 3.9, 4.0, directors=director_indices, k=1, l_var="2", j=3.0
         )
 
         # Actual test is here, this should not throw
@@ -143,7 +143,7 @@ class TestConstraint:
             positions=dof_indices,
             directors=dof_indices,
             k=1,
-            l="2",
+            l_var="2",
             j=3.0,
         )
 
@@ -179,13 +179,19 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 4.0, positions=dof_indices, directors=dof_indices, k=1, l="2", j=3.0
+            MockBC,
+            4.0,
+            positions=dof_indices,
+            directors=dof_indices,
+            k=1,
+            l_var="2",
+            j=3.0,
         )  # The user thinks 4.0 goes to nu, but we don't accept it
 
         mock_rod = self.MockRod()
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            mock_bc = constraint(mock_rod)
+            _ = constraint(mock_rod)
         assert "Unable to construct" in str(excinfo.value)
 
 
