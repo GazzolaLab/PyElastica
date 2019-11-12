@@ -30,7 +30,11 @@ class Constraints:
             try:
                 sys_idx = self._systems.index(system)
             except:
-                raise ValueError("Rod {} was not found, did you append it to the system?".format(system))
+                raise ValueError(
+                    "Rod {} was not found, did you append it to the system?".format(
+                        system
+                    )
+                )
         else:
             raise TypeError("argument {} is not a rod index/object".format(system))
         # END

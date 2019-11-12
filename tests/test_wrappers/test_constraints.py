@@ -2,18 +2,19 @@
 test_constraints
 ----------------
 """
-from elastica.wrappers.constraints import Constraints, _Constraint
 import numpy as np
 from numpy.testing import assert_allclose
 import pytest
 
-
-@pytest.fixture(scope="function")
-def load_constraint(request):
-    return _Constraint(100)  # This is the id for some reason
+from elastica.wrappers import Constraints
+from elastica.wrappers.constraints import _Constraint
 
 
 class TestConstraint:
+    @pytest.fixture(scope="function")
+    def load_constraint(self, request):
+        return _Constraint(100)  # This is the id for some reason
+
     @pytest.mark.parametrize("illegal_constraint", [int, list])
     def test_using_with_illegal_constraint_throws_assertion_error(
         self, load_constraint, illegal_constraint
@@ -123,9 +124,10 @@ class TestConstraint:
             )
         assert mock_bc.k == 1
 
-
     @pytest.mark.parametrize("dof_indices", [(4,), (0, 3), (0, 1, 5)])
-    def test_call_with_positions_and_directors_kwargs(self, load_constraint, dof_indices):
+    def test_call_with_positions_and_directors_kwargs(
+        self, load_constraint, dof_indices
+    ):
         def mock_init(self, *args, **kwargs):
             self.start_pos = args
             self.k = kwargs.get("k")
@@ -135,7 +137,14 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 3.9, 4.0, positions=dof_indices, directors=dof_indices, k=1, l="2", j=3.0
+            MockBC,
+            3.9,
+            4.0,
+            positions=dof_indices,
+            directors=dof_indices,
+            k=1,
+            l="2",
+            j=3.0,
         )
 
         # Actual test is here, this should not throw
@@ -171,7 +180,7 @@ class TestConstraint:
         constraint = load_constraint
         constraint.using(
             MockBC, 4.0, positions=dof_indices, directors=dof_indices, k=1, l="2", j=3.0
-        ) # The user thinks 4.0 goes to nu, but we don't accept it
+        )  # The user thinks 4.0 goes to nu, but we don't accept it
 
         mock_rod = self.MockRod()
         # Actual test is here, this should not throw
@@ -182,7 +191,8 @@ class TestConstraint:
 
 class TestConstraintsMixin:
     from elastica.wrappers import BaseSystemCollection
-    class SystemCollectionWithConstraintsMixedin(BaseSystemCollection,Constraints):
+
+    class SystemCollectionWithConstraintsMixedin(BaseSystemCollection, Constraints):
         pass
 
     # TODO fix link after new PR
@@ -197,7 +207,7 @@ class TestConstraintsMixin:
         n_sys = request.param
         sys_coll_with_constraints = self.SystemCollectionWithConstraintsMixedin()
         for i_sys in range(n_sys):
-            sys_coll_with_constraints.append(self.MockRod(2,3,4,5))
+            sys_coll_with_constraints.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_constraints
 
     def test_constrain_with_illegal_index_throws(self, load_system_with_constraints):
@@ -211,11 +221,13 @@ class TestConstraintsMixin:
             scwc.constrain(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_constrain_with_unregistered_system_throws(self, load_system_with_constraints):
+    def test_constrain_with_unregistered_system_throws(
+        self, load_system_with_constraints
+    ):
         scwc = load_system_with_constraints
 
         # Don't register this rod
-        mock_rod = self.MockRod(2,3,4,5)
+        mock_rod = self.MockRod(2, 3, 4, 5)
 
         with pytest.raises(ValueError) as excinfo:
             scwc.constrain(mock_rod)
@@ -225,17 +237,18 @@ class TestConstraintsMixin:
         scwc = load_system_with_constraints
 
         # Don't register this rod
-        mock_rod = [1,2,3,5]
+        mock_rod = [1, 2, 3, 5]
 
         with pytest.raises(TypeError) as excinfo:
             scwc.constrain(mock_rod)
         assert "not a rod" in str(excinfo.value)
 
-
-    def test_constrain_registers_and_returns_Constraint(self, load_system_with_constraints):
+    def test_constrain_registers_and_returns_Constraint(
+        self, load_system_with_constraints
+    ):
         scwc = load_system_with_constraints
 
-        mock_rod = self.MockRod(2,3,4,5)
+        mock_rod = self.MockRod(2, 3, 4, 5)
         scwc.append(mock_rod)
 
         _mock_constraint = scwc.constrain(mock_rod)
@@ -243,11 +256,12 @@ class TestConstraintsMixin:
         assert _mock_constraint.__class__ == _Constraint
 
     from elastica.boundary_conditions import FreeRod
+
     @pytest.fixture
     def load_rod_with_constraints(self, load_system_with_constraints):
         scwc = load_system_with_constraints
 
-        mock_rod = self.MockRod(2,3,4,5)
+        mock_rod = self.MockRod(2, 3, 4, 5)
         scwc.append(mock_rod)
 
         def mock_init(self, *args, **kwargs):
@@ -257,9 +271,9 @@ class TestConstraintsMixin:
         MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
 
         # Constrain any and all systems
-        scwc.constrain(1).using(MockBC, 2, 42) # index based constraint
-        scwc.constrain(0).using(MockBC, 1, 2) # index based constraint
-        scwc.constrain(mock_rod).using(MockBC, 2, 3) # system based constraint
+        scwc.constrain(1).using(MockBC, 2, 42)  # index based constraint
+        scwc.constrain(0).using(MockBC, 1, 2)  # index based constraint
+        scwc.constrain(mock_rod).using(MockBC, 2, 3)  # system based constraint
 
         return scwc, MockBC
 
@@ -268,7 +282,7 @@ class TestConstraintsMixin:
 
         scwc._finalize()
 
-        for (x,y) in scwc._constraints:
+        for (x, y) in scwc._constraints:
             assert type(x) is int
             assert type(y) is bc_cls
 

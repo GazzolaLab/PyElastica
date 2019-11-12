@@ -6,6 +6,7 @@ basic coordinating multiple, smaller systems that have an independently integrab
 interface (ie. works with symplectic or explicit routines `timestepper.py`.)
 """
 from collections.abc import MutableSequence
+
 from elastica._rod import RodBase
 
 
@@ -26,7 +27,7 @@ class BaseSystemCollection(MutableSequence):
         # List of systems to be integrated
         self._systems = []
 
-    def check_type(self, sys_to_be_added):
+    def _check_type(self, sys_to_be_added):
         assert issubclass(sys_to_be_added.__class__, self.allowed_sys_types), (
             "{0} is not a valid system that can be added into "
             "BaseSystem. If you are sure that {0} satisfies all"
@@ -44,21 +45,21 @@ class BaseSystemCollection(MutableSequence):
         del self._systems[idx]
 
     def __setitem__(self, idx, system):
-        self.check_type(system)
+        self._check_type(system)
         self._systems[idx] = system
 
     def insert(self, idx, system):
-        self.check_type(system)
+        self._check_type(system)
         self._systems.insert(idx, system)
 
     def __str__(self):
         return str(self._systems)
 
-    def override_allowed_types(self, allowed_types):
-        self.allowed_sys_types = allowed_types
-
     def extend_allowed_types(self, additional_types):
         self.allowed_sys_types += additional_types
+
+    def override_allowed_types(self, allowed_types):
+        self.allowed_sys_types = allowed_types
 
     def synchronize(self, time):
         pass
