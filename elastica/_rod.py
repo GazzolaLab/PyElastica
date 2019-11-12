@@ -180,7 +180,6 @@ class _CosseratRodBase(RodBase):
         position,
         directors,
         rest_lengths,
-        mass,
         density,
         volume,
         mass_second_moment_of_inertia,
@@ -194,10 +193,15 @@ class _CosseratRodBase(RodBase):
         self.velocity = np.zeros((MaxDimension.value(), n_elements + 1))
         self.omega = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
-        self.mass = mass
         self.density = density
         self.volume = volume
+
+        self.mass = np.zeros(n_elements + 1)
+        self.mass[:-1] += 0.5 * self.density * self.volume
+        self.mass[1:] += 0.5 * self.density * self.volume
+
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
+
         self.inv_mass_second_moment_of_inertia = np.zeros(
             (MaxDimension.value(), MaxDimension.value(), n_elements)
         )
@@ -210,6 +214,7 @@ class _CosseratRodBase(RodBase):
             self.inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
                 mass_second_moment_of_inertia[..., i]
             )
+
         self.nu = nu
         self.rest_voronoi_lengths = 0.5 * (
             self.rest_lengths[1:] + self.rest_lengths[:-1]
@@ -264,10 +269,7 @@ class _CosseratRodBase(RodBase):
         directors[2, ...] = tangents
 
         volume = np.pi * base_radius ** 2 * rest_lengths
-        mass = np.zeros(n_elements + 1)
-        mass[0:-1] = density * volume
-        mass[0] *= 0.5
-        mass[-1] = 0.5 * mass[-2]
+
         inertia_collection = np.repeat(
             mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
         )
@@ -278,7 +280,6 @@ class _CosseratRodBase(RodBase):
             position,
             directors,
             rest_lengths,
-            mass,
             density,
             volume,
             inertia_collection,
@@ -454,7 +455,6 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.position,
             rod.directors,
             rod.rest_lengths,
-            rod.mass,
             rod.density,
             rod.volume,
             rod.mass_second_moment_of_inertia,
