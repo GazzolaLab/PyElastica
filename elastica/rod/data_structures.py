@@ -161,6 +161,37 @@ class _State:
         """
         # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
+        # TODO : Verify the math in this note
+        """
+        Developer Note
+        --------------
+        Here the overloaded `+=` operator is exploited to perform
+        matrix multiplication for the directors, which is counter-
+        intutive at first. While this provides a stable interface
+        to interact the rod states with the timesteppers and the
+        rest of the world, the reasons behind including it here also has
+        a depper mathematical significance.
+
+        Firstly, position lies in the vector space corresponding to R^{3}
+        and update is done this space (with the + and * operators defined
+        as usual), hence the `+=` operator (or `__iadd__`) is reflected
+        as `+=` operator in the position update (line 163 above).
+
+        For directors rather, which lie in a restricteed R^{3} \otimes
+        R^{3} tensorial space, the space with Q^T.Q = Q.Q^T = I, the +
+        operator can be thought of as an equivalent `*=` update for a
+        'exponential' multiplication with a rotation matrix (e^{At}).
+        . This does not correspond to the position update. However, if
+        we view this in a logarithmic space the `*=` becomse the '+='
+        operator once again! After performing this `+=` operation, we
+        bring it back into its original space using the exponential
+        operator. So we are still indirectly doing the '+='
+        update.
+
+        To avoid all this hassle with the operators and spaces, we simply define
+        '+=' or '__iadd__' in the case of directors as an equivalent
+        '*=' (matrix multiply) with the RHS below.
+        """
         # TODO Q *= exp(w*dt) , whats' the formua again?
         # TODO the scale factor 1.0 does not seem to be necessary, although
         # we perform more work in the present framework (muliply dt to entire vector, then take
@@ -207,7 +238,7 @@ class _State:
         position_collection = (
             self.position_collection + scaled_derivative_state[..., : self.n_nodes]
         )
-        # TODO Q *= exp(w*dt)
+        # Devs : see `_State.__iadd__` for reasons why we do matmul here
         director_collection = _rotate(
             self.director_collection,
             1.0,
@@ -263,6 +294,34 @@ class _DerivativeState:
         Returning a State here with (v*dt, ω*dt, dv/dt*dt, dω/dt*dt) as members
         is possible but it's less efficient, especially because this is hot
         piece of code
+        """
+        """
+        Developer Note
+        --------------
+
+        Q : Why do we need to overload operators here?
+
+        The Derivative class naturally doesn't have a `mul` overloaded
+        operator. That means if this method is not present,
+        doing something like
+        ```
+        ds = _DerivativeState(...)
+        new_state = 2 * ds
+        ```
+        will throw an error. Note that you can do something like
+        ```
+        ds = _DerivativeState(...)
+        new_state = 2 * ds.rate_collection
+        ```
+        but this is hacky, as we are exposing the members outside,
+        in the calling scope (defeats encapsulation and hiding).
+        The point of having this class is that it works
+        well with the time-stepper (where we only use `+` and `*`
+        operations on the State/DerivativeState like above,
+        i.e. `state = dt * derivative_state`  and not something like
+        `state = dt * derivative_state.rate_collection`).
+        It also provides an interface for anything outside
+        the `Rod` system as a whole.
         """
         return scalar * self.rate_collection
 
@@ -338,7 +397,8 @@ class _KinematicState:
         """
         # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
-        # TODO Q *= exp(w*dt)
+        # TODO Avoid code repeat
+        # Devs : see `_State.__iadd__` for reasons why we do matmul here
         np.einsum(
             "ijk,jlk->ilk",
             _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
