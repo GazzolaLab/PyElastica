@@ -184,9 +184,7 @@ class _CosseratRodBase(RodBase):
         density,
         volume,
         mass_second_moment_of_inertia,
-        inv_mass_second_moment_of_inertia,
         nu,
-        rest_voronoi_lengths,
         *args,
         **kwargs
     ):
@@ -200,9 +198,22 @@ class _CosseratRodBase(RodBase):
         self.density = density
         self.volume = volume
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
-        self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
+        self.inv_mass_second_moment_of_inertia = np.zeros(
+            (MaxDimension.value(), MaxDimension.value(), n_elements)
+        )
+        for i in range(n_elements):
+            # Check rank of mass moment of inertia matrix to see if it is invertible
+            assert (
+                np.linalg.matrix_rank(mass_second_moment_of_inertia[..., i])
+                == MaxDimension.value()
+            )
+            self.inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
+                mass_second_moment_of_inertia[..., i]
+            )
         self.nu = nu
-        self.rest_voronoi_lengths = rest_voronoi_lengths
+        self.rest_voronoi_lengths = 0.5 * (
+            self.rest_lengths[1:] + self.rest_lengths[:-1]
+        )
         # will apply external force and torques externally
         self.external_forces = 0 * self.position
         self.external_torques = 0 * self.omega
@@ -244,9 +255,6 @@ class _CosseratRodBase(RodBase):
         tangents = position_diff / rest_lengths
         normal /= np.sqrt(np.dot(normal, normal))
 
-        # Note : we can use trapezoidal kernel, but it has padding and will be slower
-        rest_voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
-
         # set directors
         # check this order once
         directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
@@ -263,10 +271,6 @@ class _CosseratRodBase(RodBase):
         inertia_collection = np.repeat(
             mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
         )
-        inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
-        inv_inertia_collection = np.repeat(
-            inv_mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
-        )
 
         # create rod
         return cls(
@@ -278,9 +282,7 @@ class _CosseratRodBase(RodBase):
             density,
             volume,
             inertia_collection,
-            inv_inertia_collection,
             nu,
-            rest_voronoi_lengths,
             *args,
             **kwargs
         )
@@ -456,9 +458,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.density,
             rod.volume,
             rod.mass_second_moment_of_inertia,
-            rod.inv_mass_second_moment_of_inertia,
             rod.nu,
-            rod.rest_voronoi_lengths,
             *args,
             **kwargs
         )
