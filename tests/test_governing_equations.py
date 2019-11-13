@@ -1,4 +1,4 @@
-__doc__ = """ Test Cosserat rod governing equations   """
+__doc__ = """ Test Cosserat rod governing equations"""
 
 # System imports
 import numpy as np
@@ -12,13 +12,17 @@ from pytest import main
 
 def test_case_compress_straight_rod():
     """
-    This test function tests
-        _compute_geometry_from_state
-        _compute_all_dilatations
-        _compute_dilatation_rate
-        _compute_shear_stretch_strains
-        _compute_internal_shear_stretch_stresses_from_model
-        _compute_internal_forces
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation of dilatations, strains, stresses and
+        forces on the rod. We compare them with analytical calculations.
+        This test function tests
+            _compute_geometry_from_state
+            _compute_all_dilatations
+            _compute_dilatation_rate
+            _compute_shear_stretch_strains
+            _compute_internal_shear_stretch_stresses_from_model
+            _compute_internal_forces
 
     """
     n = 10
@@ -143,9 +147,13 @@ def test_case_compress_straight_rod():
 
 def test_compute_damping_forces_torques():
     """
-    This test function tests
-        _compute_damping_forces
-        _compute_damping_torques
+        In this test case, we initialize a straight rod and modify
+        velocities of nodes and angular velocities of elements.
+        By doing that we can test damping forces on nodes and
+        damping torques on elements.
+        This test function tests
+            _compute_damping_forces
+            _compute_damping_torques
      """
     n = 10
     start = np.array([0.0, 0.0, 0.0])
@@ -192,9 +200,15 @@ def test_compute_damping_forces_torques():
 
 def test_case_bend_straight_rod():
     """
-    This test function tests
-        _compute_bending_twist_strains
-        _compute_internal_torques
+        In this test case we initialize a straight rod with 2 elements
+        and numerically bend the rod. We modify node positions and directors
+        to make a isosceles right triangle. Then first we compute curvature
+        between two elements and compute the angle between them, which is
+        90 degree for isosceles right triangle. Finally, we compute bend
+        twist couples and compare with correct solution.
+        This test function tests
+            _compute_bending_twist_strains
+            _compute_internal_torques
             only bend_twist_couple terms.
     """
     n = 2
@@ -239,9 +253,9 @@ def test_case_bend_straight_rod():
     test_rod._compute_all_dilatations()
     test_rod._compute_dilatation_rate()
     # Change the coordinates of nodes, artificially bend the rod.
-    #           /\
-    # --- ==>  /  \
-    #         /    \
+    #              /\
+    # ------ ==>  /  \
+    #            /    \
     # Here I chose a isosceles right triangle.
 
     position[..., 0] = np.array([0.0, 0.0, 0.0])
@@ -304,9 +318,16 @@ def test_case_bend_straight_rod():
 
 def test_case_shear_torque():
     """
+        In this test case we initialize a straight rod with two elements
+        and set bending matrix to zero. This gives us opportunity decouple
+        shear torque from twist and bending torques in internal torques
+        equation. Then we modify node positions of second element and
+        introduce artificial bending. Finally, we compute shear torque
+        using internal torque function and compare with analytical value.
         This test case is for testing shear torque term,
         in internal torques equation.
-        Tested function _compute_internal_torques
+        Tested function
+            _compute_internal_torques
 
     """
     n = 2
@@ -376,13 +397,21 @@ def test_case_shear_torque():
 
 def test_case_lagrange_transport_unsteady_dilatation():
     """
-   This test function tests
-       _compute_internal_torques
-       only lagrange transport and
-       unsteady dilatation terms, tested numerically.
-       Note that, viscous dissipation set to 0,
-       since we don't want any contribution from
-       damping torque.
+        In this test case, we initialize a straight rod. Then we modify
+        angular velocity of elements and set mass moment of inertia
+        to identity matrix. By doing this we need to get zero torque
+        due lagrangian transport term, because of Jwxw, J=I, wxw=0.
+        Next we test unsteady dilatation contribution to internal
+        torques, by setting dilatation rate to 1 and recover initialized
+        angular velocity back, de/dt * Jw = w , de/dt=1 J=I.
+
+        This test function tests
+            _compute_internal_torques
+        only lagrange transport and
+        unsteady dilatation terms, tested numerically.
+        Note that, viscous dissipation set to 0,
+        since we don't want any contribution from
+        damping torque.
    """
     n = 2
     start = np.array([0.0, 0.0, 0.0])
@@ -466,11 +495,24 @@ def test_case_lagrange_transport_unsteady_dilatation():
 
 def test_get_functions():
     """
+        In this test case, we initialize a straight rod. First
+        we set velocity and angular velocity to random values,
+        and we recover back initialized values using `get_velocity`
+        and `get_angular_velocity` functions. Then, we set random
+        external forces and torques. We compute translational
+        accelerations and angular accelerations based on external
+        forces and torques. Finally we use `get_acceleration` and
+        `get_angular_acceleration` functions and compare returned
+        translational acceleration and angular acceleration with
+        analytically computed ones.
         This test case tests,
             get_velocity
             get_angular_velocity
             get_acceleration
             get_angular_acceleration
+        Note that, viscous dissipation set to 0,
+        since we don't want any contribution from
+        damping torque.
     """
 
     n = 2
