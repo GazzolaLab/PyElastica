@@ -25,7 +25,7 @@ def test_case_compress_straight_rod():
             _compute_internal_forces
 
     """
-    n = 10
+    n_elem = 10
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([1.0, 0.0, 0.0])
@@ -37,7 +37,7 @@ def test_case_compress_straight_rod():
     poisson_ratio = 0.5
 
     test_rod = CosseratRod.straight_rod(
-        n,
+        n_elem,
         start,
         direction,
         normal,
@@ -52,18 +52,18 @@ def test_case_compress_straight_rod():
     # Consturct position array using start and direction vectors.
     # This position array will be our reference for test cases
     end = start + direction * base_length
-    position = np.zeros((MaxDimension.value(), n + 1))
+    position = np.zeros((MaxDimension.value(), n_elem + 1))
     for i in range(0, MaxDimension.value()):
-        position[i, ...] = np.linspace(start[i], end[i], num=n + 1)
+        position[i, ...] = np.linspace(start[i], end[i], num=n_elem + 1)
 
     # Compute geometry
     # length of each element is same we dont need to use position array for calculation of lengths
-    rest_lengths = np.repeat(base_length / n, n)
+    rest_lengths = np.repeat(base_length / n_elem, n_elem)
     rest_voronoi_lengths = np.repeat(
-        base_length / n, n - 1
+        base_length / n_elem, n_elem - 1
     )  # n-1 elements in voronoi domain
-    tangents = np.repeat(direction[:, np.newaxis], n, axis=1)
-    radius = np.repeat(base_radius, n)
+    tangents = np.repeat(direction[:, np.newaxis], n_elem, axis=1)
+    radius = np.repeat(base_radius, n_elem)
     # Compute geometry from state
     test_rod._compute_geometry_from_state()
 
@@ -155,7 +155,7 @@ def test_compute_damping_forces_torques():
             _compute_damping_forces
             _compute_damping_torques
      """
-    n = 10
+    n_elem = 10
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([0.0, 1.0, 0.0])
@@ -166,7 +166,7 @@ def test_compute_damping_forces_torques():
     E = 1
     poisson_ratio = 0.5
     test_rod = CosseratRod.straight_rod(
-        n,
+        n_elem,
         start,
         direction,
         normal,
@@ -183,12 +183,12 @@ def test_compute_damping_forces_torques():
     test_rod.omega[:] = 1.0
     # Compute damping forces and torques
     damping_forces = (
-        np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n + 1, axis=1) * nu
+        np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1) * nu
     )
     damping_forces[..., 0] *= 0.5
     damping_forces[..., -1] *= 0.5
     damping_torques = (
-        np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n, axis=1) * nu
+        np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1) * nu
     )
     # Compute damping forces and torques using in class functions
     test_damping_forces = test_rod._compute_damping_forces()
@@ -211,7 +211,7 @@ def test_case_bend_straight_rod():
             _compute_internal_torques
             only bend_twist_couple terms.
     """
-    n = 2
+    n_elem = 2
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([1.0, 0.0, 0.0])
@@ -223,7 +223,7 @@ def test_case_bend_straight_rod():
     poisson_ratio = 0.5
 
     test_rod = CosseratRod.straight_rod(
-        n,
+        n_elem,
         start,
         direction,
         normal,
@@ -239,14 +239,14 @@ def test_case_bend_straight_rod():
     # in this test case, rest voronoi length can be easily computed
     # dividing base length to number of elements.
 
-    rest_voronoi_length = base_length / n
+    rest_voronoi_length = base_length / n_elem
 
     # Consturct position array using start and direction arrays.
     # This position array will be our reference for test cases
     end = start + direction * base_length
-    position = np.zeros((MaxDimension.value(), n + 1))
+    position = np.zeros((MaxDimension.value(), n_elem + 1))
     for i in range(0, MaxDimension.value()):
-        position[i, ...] = np.linspace(start[i], end[i], num=n + 1)
+        position[i, ...] = np.linspace(start[i], end[i], num=n_elem + 1)
 
     # Now compute geometry and dilatation, which we need for curvature calculations.
     test_rod._compute_geometry_from_state()
@@ -265,11 +265,11 @@ def test_case_bend_straight_rod():
     test_rod.position = position
 
     # Update directors
-    directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n))
+    directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elem))
     position_diff = position[..., 1:] - position[..., :-1]
     lengths = np.linalg.norm(position_diff, axis=0)
     tangents = position_diff / lengths
-    normal_collection = np.repeat(normal[:, np.newaxis], n, axis=1)
+    normal_collection = np.repeat(normal[:, np.newaxis], n_elem, axis=1)
     directors[0, ...] = normal_collection
     directors[1, ...] = _batch_cross(tangents, normal_collection)
     directors[2, ...] = tangents
@@ -292,14 +292,18 @@ def test_case_bend_straight_rod():
     # Now lets test bending stress terms in internal torques equation.
     # Here we will test bend twist couple 2D and bend twist couple 3D terms of the
     # internal torques equation. Set the bending matrix to identity matrix for simplification.
-    test_rod.bend_matrix[:] = np.repeat(np.identity(3)[:, :, np.newaxis], n - 1, axis=2)
+    test_rod.bend_matrix[:] = np.repeat(
+        np.identity(3)[:, :, np.newaxis], n_elem - 1, axis=2
+    )
 
     # We need to compute shear stress, for internal torque equation.
     # Shear stress is not used in this test case. In order to make sure shear
     # stress do not contribute to the total torque we use assert check.
     test_rod._compute_internal_shear_stretch_stresses_from_model()
     assert_allclose(
-        test_rod.internal_stress, np.zeros(3 * n).reshape(3, n), atol=Tolerance.atol()
+        test_rod.internal_stress,
+        np.zeros(3 * n_elem).reshape(3, n_elem),
+        atol=Tolerance.atol(),
     )
 
     # Make sure voronoi dilatation is 1
@@ -330,7 +334,7 @@ def test_case_shear_torque():
             _compute_internal_torques
 
     """
-    n = 2
+    n_elem = 2
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([1.0, 0.0, 0.0])
@@ -342,7 +346,7 @@ def test_case_shear_torque():
     poisson_ratio = 0.5
 
     test_rod = CosseratRod.straight_rod(
-        n,
+        n_elem,
         start,
         direction,
         normal,
@@ -357,7 +361,7 @@ def test_case_shear_torque():
     # We can use compute geometry from state, because it is tested in previous tests.
     test_rod._compute_geometry_from_state()
 
-    position = np.zeros((MaxDimension.value(), n + 1))
+    position = np.zeros((MaxDimension.value(), n_elem + 1))
     position[..., 0] = np.array([0.0, 0.0, 0.0])
     position[..., 1] = np.array([0.0, 0.0, 0.5])
     position[..., 2] = np.array([0.0, -0.3, 0.9])
@@ -369,13 +373,13 @@ def test_case_shear_torque():
 
     # Simplify the computations, and chose shear matrix as identity matrix.
     test_rod.shear_matrix[:] = np.repeat(
-        np.identity(3)[:, :, np.newaxis], n - 1, axis=2
+        np.identity(3)[:, :, np.newaxis], n_elem - 1, axis=2
     )
 
     # Internal shear stress function is tested previously
     test_rod._compute_internal_shear_stretch_stresses_from_model()
 
-    correct_shear_torques = np.zeros((MaxDimension.value(), n))
+    correct_shear_torques = np.zeros((MaxDimension.value(), n_elem))
     # Correct shear torques can be computed easily.
     # Procedure:
     #       1) Q = [1., 0., 0.; 0., 1., 0.; 0., 0., 1.]
@@ -515,7 +519,7 @@ def test_get_functions():
         damping torque.
     """
 
-    n = 2
+    n_elem = 2
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([1.0, 0.0, 0.0])
@@ -527,7 +531,7 @@ def test_get_functions():
     poisson_ratio = 0.5
 
     test_rod = CosseratRod.straight_rod(
-        n,
+        n_elem,
         start,
         direction,
         normal,
@@ -541,16 +545,16 @@ def test_get_functions():
 
     mass = test_rod.mass
 
-    velocity = np.zeros(3 * (n + 1)).reshape(3, n + 1)
-    external_forces = np.zeros(3 * (n + 1)).reshape(3, n + 1)
-    omega = np.zeros(3 * n).reshape(3, n)
-    external_torques = np.zeros(3 * n).reshape(3, n)
+    velocity = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
+    external_forces = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
+    omega = np.zeros(3 * n_elem).reshape(3, n_elem)
+    external_torques = np.zeros(3 * n_elem).reshape(3, n_elem)
 
-    for i in range(0, n):
+    for i in range(0, n_elem):
         omega[..., i] = np.random.rand(3)
         external_torques[..., i] = np.random.rand(3)
 
-    for i in range(0, n + 1):
+    for i in range(0, n_elem + 1):
         velocity[..., i] = np.random.rand(3)
         external_forces[..., i] = np.random.rand(3)
 
@@ -571,7 +575,7 @@ def test_get_functions():
     )
 
     # No dilatation in the rods
-    dilatations = np.ones(n)
+    dilatations = np.ones(n_elem)
 
     # Set angular velocity zero, so that we dont have any
     # contribution from lagrangian transport and unsteady dilatation.
@@ -579,7 +583,9 @@ def test_get_functions():
     test_rod.omega[:] = 0.0
     # Set mass moment of inertia matrix to identity matrix for convenience.
     # Inverse of identity = identity
-    inv_mass_moment_of_inertia = np.repeat(np.identity(3)[:, :, np.newaxis], n, axis=2)
+    inv_mass_moment_of_inertia = np.repeat(
+        np.identity(3)[:, :, np.newaxis], n_elem, axis=2
+    )
     test_rod.inv_mass_second_moment_of_inertia = inv_mass_moment_of_inertia
 
     correct_angular_acceleration = (
