@@ -1,4 +1,4 @@
-__doc__ = """ Test Cosserat rod governing equations"""
+__doc__ = """Test Cosserat rod governing equations"""
 
 # System imports
 import numpy as np
@@ -23,7 +23,6 @@ def test_case_compress_straight_rod():
             _compute_shear_stretch_strains
             _compute_internal_shear_stretch_stresses_from_model
             _compute_internal_forces
-
     """
     n_elem = 10
     start = np.array([0.0, 0.0, 0.0])
@@ -72,14 +71,14 @@ def test_case_compress_straight_rod():
     assert_allclose(test_rod.radius, radius, atol=Tolerance.atol())
 
     # Move the nodes of the rod and compress the rod to see dilatation
-    coefficient = np.array([1.0, 1.0, 0.5]).reshape(3, 1)
-    test_rod.position = test_rod.position * coefficient
+    dilatation = 0.5
+    dilatation_collection = np.repeat(dilatation, n_elem, axis=0)
+    test_rod.position *= dilatation
 
     # Compute dilatation
-    lengths = rest_lengths * coefficient[2]
-    dilatation = lengths / rest_lengths
+    lengths = rest_lengths * dilatation
     # Compute voronoi dilatation
-    voronoi_lengths = rest_voronoi_lengths * coefficient[2]
+    voronoi_lengths = rest_voronoi_lengths * dilatation
     voronoi_dilatation = voronoi_lengths / rest_voronoi_lengths
 
     # Compute dilatation using compute_all_dilatations
@@ -87,7 +86,7 @@ def test_case_compress_straight_rod():
     test_rod._compute_geometry_from_state()
     test_rod._compute_all_dilatations()
 
-    assert_allclose(test_rod.dilatation, dilatation, atol=Tolerance.atol())
+    assert_allclose(test_rod.dilatation, dilatation_collection, atol=Tolerance.atol())
     assert_allclose(
         test_rod.voronoi_dilatation, voronoi_dilatation, atol=Tolerance.atol()
     )
@@ -97,7 +96,7 @@ def test_case_compress_straight_rod():
     # position which is the rest_position, here take dt = 1.0 . Here we multiply
     # with tangents because velocity is a vector.
     position_rest = position.copy()  # Here take a copy before modifying position
-    position = position * coefficient  # Change the position of the nodes
+    position *= dilatation  # Change the position of the nodes
     velocity = position - position_rest
     velocity_difference = velocity[..., 1:] - velocity[..., :-1]
     # Hard coded, here since we know there is only velocity along the rod (d3),
