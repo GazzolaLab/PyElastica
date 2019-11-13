@@ -132,14 +132,17 @@ def test_case_compress_straight_rod():
     # computes damping forces and forces due to stress together.
     # In order to decouple these two forces. We set velocity zero.
     # We will check damping forces in another test in this file.
-
-    cosserat_internal_stress = (
-        _batch_matvec(test_rod.directors, internal_stress) / dilatation
-    )
-    internal_forces = difference_kernel(cosserat_internal_stress)
-
     velocity = velocity[:] = np.array([0.0, 0.0, 0.0]).reshape(3, 1)
     test_rod.velocity = velocity
+
+    # Internal forces in between elements have to be zero, because
+    # we compress every element by same amount. Thus we only need
+    # to compute forces at the first and last nodes. We know that
+    # forces at the first and last node have to be in opposite direction
+    # thus we multiply forces on last node with -1.0.
+    internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
+    internal_forces[..., 0] = internal_stress[..., 0] / dilatation
+    internal_forces[..., -1] = -1.0 * internal_stress[..., 0] / dilatation
 
     test_internal_forces = test_rod._compute_internal_forces()
 
