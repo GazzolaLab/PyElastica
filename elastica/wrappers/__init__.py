@@ -9,9 +9,5 @@ functionality to the simulation, such as adding an environment, joints
 
 
 from .base_system import BaseSystemCollection
-
-try:
-    from .connectionsss import Connections
-except ImportError:
-    pass
+from .connections import Connections
 from .constraints import Constraints
