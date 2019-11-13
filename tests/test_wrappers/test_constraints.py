@@ -34,7 +34,7 @@ class TestConstraint:
 
         assert constraint._bc_cls == legal_constraint
         assert constraint._args == (3, 4.0, "5")
-        assert constraint._kwargs == {"k": 1, "l": "2", "j": 3.0}
+        assert constraint._kwargs == {"k": 1, "l_var": "2", "j": 3.0}
 
     def test_id(self, load_constraint):
         # This is purely for coverage purposes, no actual test
