@@ -39,6 +39,7 @@ class _LinearExponentialIntegratorMixin:
         Memory.linear_operator = System.get_linear_state_transition_operator(time, dt)
 
     def _do_update(self, System, Memory, time, dt):
+        # FIXME What's the right formula when doing update?
         # System.linearly_evolving_state = _batch_matmul(
         #     System.linearly_evolving_state,
         #     Memory.linear_operator

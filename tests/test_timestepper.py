@@ -40,17 +40,17 @@ class TestExtendStepperInterface:
         pass
 
     from elastica.timestepper.symplectic_steppers import (
-        _SystemInstanceStepper as symplectic_instance_stepper,
+        _SystemInstanceStepperMixin as symplectic_instance_stepper,
     )
     from elastica.timestepper.symplectic_steppers import (
-        _SystemCollectionStepper as symplectic_collection_stepper,
+        _SystemCollectionStepperMixin as symplectic_collection_stepper,
     )
 
     from elastica.timestepper.explicit_steppers import (
-        _SystemInstanceStepper as explicit_instance_stepper,
+        _SystemInstanceStepperMixin as explicit_instance_stepper,
     )
     from elastica.timestepper.explicit_steppers import (
-        _SystemCollectionStepper as explicit_collection_stepper,
+        _SystemCollectionStepperMixin as explicit_collection_stepper,
     )
 
     # We cannot call a stepper on a system until both the stepper

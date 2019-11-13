@@ -21,11 +21,14 @@ def extend_stepper_interface(Stepper, System):
 
     if SymplecticStepper in ConcreteStepper.__class__.mro():
         from .symplectic_steppers import (
-            _SystemInstanceStepper,
-            _SystemCollectionStepper,
+            _SystemInstanceStepperMixin,
+            _SystemCollectionStepperMixin,
         )
     elif ExplicitStepper in ConcreteStepper.__class__.mro():
-        from .explicit_steppers import _SystemInstanceStepper, _SystemCollectionStepper
+        from .explicit_steppers import (
+            _SystemInstanceStepperMixin,
+            _SystemCollectionStepperMixin,
+        )
     elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
         return  # hacky fix for now. remove HybridSteppers in a future version.
     else:
@@ -36,9 +39,9 @@ def extend_stepper_interface(Stepper, System):
         )
 
     ExtendClass = (
-        _SystemCollectionStepper
+        _SystemCollectionStepperMixin
         if is_this_system_a_collection
-        else _SystemInstanceStepper
+        else _SystemInstanceStepperMixin
     )
     extend_instance(ConcreteStepper, ExtendClass)
 

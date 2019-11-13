@@ -7,8 +7,56 @@ from elastica.timestepper._stepper_interface import (
     _StatefulStepper,
 )
 
+"""
+Developer Note
+--------------
+## Motivation for choosing _Mixin classes below
 
-class _SystemInstanceStepper:
+The constraint/problem is that we do not know what
+`System` we are integrating apriori. For a single
+standalone `System` (which defines a `__call__`
+operator and has its own states), we should just
+step it like a single system.
+
+Instead if we get a `SystemCollection` made up of
+bunch of smaller systems (like Cosserat Rods), we now
+need to loop over all these smaller systems and perform
+state updates there. Not only that we may also need
+to communicate between such smaller systems.
+
+One way to solve this issue is to give the integrator
+two methods:
+
+- `do_step`, which does the time-stepping for only a
+`System`
+- `do_system_step` which does the time-stepping for
+a `SystemCollection`
+
+The problem with this approach is that
+1. We have more methods than we actually use
+(indeed we can only integrate either a `System` or
+a `SystemCollection` but not both)
+2. From an interface point of view, its ugly and not
+graceful (at least IMO).
+
+The second approach is what I have chosen here,
+which is to create two mixin classes : one for
+integrating `System` and one for integrating
+`SystemCollection`. And then depending upon the runtime
+type of the object to be integrated, we can dynamically
+mixin the required class.
+
+This approach overcomes the disadvantages of the
+previous approach (as there's only one `do_step` method
+associated with a Stepper at any given point of time),
+at the expense of being a tad bit harder to understand
+(which this documentation will hopefully fix). In essence,
+we "smartly" use a mixin class to define the necessary
+`do_step` method, which the `integrate` function then uses.
+"""
+
+
+class _SystemInstanceStepperMixin:
     # noinspection PyUnresolvedReferences
     def do_step(self, System, Memory, time: np.float64, dt: np.float64):
         for stage, update in self._stages_and_updates:
@@ -17,7 +65,7 @@ class _SystemInstanceStepper:
         return time
 
 
-class _SystemCollectionStepper:
+class _SystemCollectionStepperMixin:
     # noinspection PyUnresolvedReferences
     def do_step(
         self, SystemCollection, MemoryCollection, time: np.float64, dt: np.float64

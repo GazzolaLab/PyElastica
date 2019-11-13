@@ -6,8 +6,16 @@ from elastica.timestepper._stepper_interface import (
     _LinearExponentialIntegratorMixin,
 )
 
+"""
+Developer Note
+--------------
 
-class _SystemInstanceStepper:
+For the reasons why we define Mixin classes here, the developer
+is referred to the same section on `explicit_steppers.py`.
+"""
+
+
+class _SystemInstanceStepperMixin:
     def do_step(self, System, time: np.float64, dt: np.float64):
         for prefactor_calculation, step in self._steps_and_prefactors:
             prefac = prefactor_calculation(self, dt)
@@ -15,7 +23,7 @@ class _SystemInstanceStepper:
         return time
 
 
-class _SystemCollectionStepper:
+class _SystemCollectionStepperMixin:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
         for prefactor_calculation, step in self._steps_and_prefactors:
             prefac = prefactor_calculation(self, dt)
