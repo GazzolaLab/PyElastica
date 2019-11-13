@@ -311,6 +311,7 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
+        self._compute_geometry_from_state()
         # Caveat : Needs already set rest_lengths and rest voronoi domain lengths
         # Put in initialization
 
@@ -354,6 +355,7 @@ class _CosseratRodBase(RodBase):
         )
 
     def _compute_bending_twist_strains(self):
+        # Note: dilatations are computed previously inside ` _compute_all_dilatations `
         self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
 
     def _compute_damping_forces(self):
