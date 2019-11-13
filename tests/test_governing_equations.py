@@ -82,7 +82,7 @@ def test_case_compress_straight_rod():
 
     # Compute dilatation using compute_all_dilatations
     # Compute geometry again because node positions changed.
-    test_rod._compute_geometry_from_state()
+    # But compute geometry will be done inside compute_all_dilatations.
     test_rod._compute_all_dilatations()
 
     assert_allclose(test_rod.dilatation, dilatation_collection, atol=Tolerance.atol())
@@ -280,7 +280,6 @@ def test_case_bend_straight_rod(alpha):
     rest_voronoi_length = base_length / n_elem
 
     # Now compute geometry and dilatation, which we need for curvature calculations.
-    test_rod._compute_geometry_from_state()
     test_rod._compute_all_dilatations()
     test_rod._compute_dilatation_rate()
 
@@ -379,18 +378,12 @@ def test_case_shear_torque():
         poisson_ratio,
     )
 
-    # We can use compute geometry from state, because it is tested in previous tests.
-    test_rod._compute_geometry_from_state()
-
     position = np.zeros((MaxDimension.value(), n_elem + 1))
     position[..., 0] = np.array([0.0, 0.0, 0.0])
     position[..., 1] = np.array([0.0, 0.0, 0.5])
     position[..., 2] = np.array([0.0, -0.3, 0.9])
 
     test_rod.position = position
-
-    # Compute new geometry, based on new node positions.
-    test_rod._compute_geometry_from_state()
 
     # Simplify the computations, and chose shear matrix as identity matrix.
     test_rod.shear_matrix[:] = np.repeat(
@@ -461,12 +454,6 @@ def test_case_lagrange_transport_unsteady_dilatation():
         E,
         poisson_ratio,
     )
-
-    # Compute geometry from state, dilatations and dilatation rate.
-    # These are required for computing internal torques.
-    test_rod._compute_geometry_from_state()
-    test_rod._compute_all_dilatations()
-    test_rod._compute_dilatation_rate()
 
     # TODO: find one more test in which you dont set J=I, may be some analytical test
     # Set the mass moment of inertia matrix to identity matrix for simplification.
@@ -582,8 +569,6 @@ def test_get_functions():
 
     test_rod.velocity = velocity
     test_rod.omega = omega
-
-    test_rod._compute_geometry_from_state()
 
     assert_allclose(test_rod.get_velocity(), velocity, atol=Tolerance.atol())
     assert_allclose(test_rod.get_angular_velocity(), omega, atol=Tolerance.atol())
