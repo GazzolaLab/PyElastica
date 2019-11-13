@@ -481,7 +481,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         *args,
         **kwargs
     ):
-
+        # FIXME: Make sure G=E/(poisson_ratio+1.0) in wikipedia it is different
         # Shear Modulus
         shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
