@@ -5,9 +5,8 @@ import numpy as np
 from elastica._rod import CosseratRod
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._calculus import difference_kernel
-from elastica._linalg import _batch_cross, _batch_matvec
-from pytest import main
+from elastica._linalg import _batch_matvec
+import pytest
 
 
 def test_case_compress_straight_rod():
@@ -204,14 +203,16 @@ def test_compute_damping_forces_torques():
     assert_allclose(test_damping_torques, damping_torques, atol=Tolerance.atol())
 
 
-def test_case_bend_straight_rod():
+# alpha is base angle of isosceles triangle
+@pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
+def test_case_bend_straight_rod(alpha):
     """
         In this test case we initialize a straight rod with 2 elements
         and numerically bend the rod. We modify node positions and directors
-        to make a isosceles right triangle. Then first we compute curvature
-        between two elements and compute the angle between them, which is
-        90 degree for isosceles right triangle. Finally, we compute bend
-        twist couples and compare with correct solution.
+        to make a isosceles triangle. Then first we compute curvature
+        between two elements and compute the angle between them.
+        Finally, we compute bend twist couples and compare with
+        correct solution.
         This test function tests
             _compute_bending_twist_strains
             _compute_internal_torques
@@ -241,57 +242,68 @@ def test_case_bend_straight_rod():
         poisson_ratio,
     )
 
+    # Change the coordinates of nodes, artificially bend the rod.
+    #              /\
+    # ------ ==>  /  \
+    #            /    \
+    # Here I chose a isosceles triangle.
+
+    length = base_length / n_elem
+    position = np.zeros((MaxDimension.value(), n_elem + 1))
+    position[..., 0] = np.array([0.0, 0.0, 0.0])
+    position[..., 1] = length * np.array([0.0, np.sin(alpha), np.cos(alpha)])
+    position[..., 2] = length * np.array([0.0, 0.0, 2 * np.cos(alpha)])
+    test_rod.position = position
+
+    # Set the directors manually. This is easy since we have two elements.
+    directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elem))
+    directors[..., 0] = np.array(
+        (
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(alpha), -np.sin(alpha)],
+            [0.0, np.sin(alpha), np.cos(alpha)],
+        )
+    )
+    directors[..., -1] = np.array(
+        (
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(alpha), np.sin(alpha)],
+            [0, -np.sin(alpha), np.cos(alpha)],
+        )
+    )
+    test_rod.directors = directors
+
     # Compute voronoi rest length. Since elements lengths are equal
     # in this test case, rest voronoi length can be easily computed
     # dividing base length to number of elements.
 
     rest_voronoi_length = base_length / n_elem
 
-    # Consturct position array using start and direction arrays.
-    # This position array will be our reference for test cases
-    end = start + direction * base_length
-    position = np.zeros((MaxDimension.value(), n_elem + 1))
-    for i in range(0, MaxDimension.value()):
-        position[i, ...] = np.linspace(start[i], end[i], num=n_elem + 1)
-
     # Now compute geometry and dilatation, which we need for curvature calculations.
     test_rod._compute_geometry_from_state()
     test_rod._compute_all_dilatations()
     test_rod._compute_dilatation_rate()
-    # Change the coordinates of nodes, artificially bend the rod.
-    #              /\
-    # ------ ==>  /  \
-    #            /    \
-    # Here I chose a isosceles right triangle.
-
-    position[..., 0] = np.array([0.0, 0.0, 0.0])
-    position[..., 1] = np.array([0.0, np.sqrt(2) / 4.0, np.sqrt(2) / 4.0])
-    position[..., 2] = np.array([0.0, 0.0, np.sqrt(2) / 2.0])
-
-    test_rod.position = position
-
-    # Update directors
-    directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elem))
-    position_diff = position[..., 1:] - position[..., :-1]
-    lengths = np.linalg.norm(position_diff, axis=0)
-    tangents = position_diff / lengths
-    normal_collection = np.repeat(normal[:, np.newaxis], n_elem, axis=1)
-    directors[0, ...] = normal_collection
-    directors[1, ...] = _batch_cross(tangents, normal_collection)
-    directors[2, ...] = tangents
-
-    test_rod._compute_geometry_from_state()
-
-    test_rod.directors = directors
 
     test_rod._compute_bending_twist_strains()
 
     # Generalized rotation per unit length is given by rest_D_i * Kappa_i.
     # Thus in order to get the angle between two elements, we need to multiply
-    # kappa with rest_D_i .  We know that correct angle is 90 degrees since
-    # it is isosceles triangle.
+    # kappa with rest_D_i .  But this will give the exterior vertex angle of the
+    # triangle. Think as, we rotate element 1 clockwise direction and align with
+    # the element 2.
+    #
+    #               \
+    #     /\         \ 1
+    #  1 /  \ 2  ==>  \
+    #   /    \         \
+    #                   \ 2
+    #                    \
+    #
+    # So for this transformation we use exterior vertex angle of isosceles triangle.
+    # Exterior vertex angle can be computed easily, it is the sum of base angles
+    # , since this is isosceles triangle it is 2*base_angle
 
-    correct_angle = np.array([90.0, 0.0, 0.0]).reshape(3, 1)
+    correct_angle = np.degrees(np.array([2 * alpha, 0.0, 0.0]).reshape(3, 1))
     test_angle = np.degrees(test_rod.kappa * test_rod.rest_voronoi_lengths)
     assert_allclose(test_angle, correct_angle, atol=Tolerance.atol())
 
@@ -319,7 +331,10 @@ def test_case_bend_straight_rod():
     correct_kappa = np.radians(correct_angle / rest_voronoi_length)
     # We only need to compute bend twist couple 2D term for comparison,
     # because bend twist couple 3D term is already zero, due to cross product.
-    correct_torques = difference_kernel(correct_kappa)
+
+    correct_torques = np.zeros((MaxDimension.value(), n_elem))
+    correct_torques[..., 0] = correct_kappa[..., 0]
+    correct_torques[..., -1] = -1.0 * correct_kappa[..., -1]
 
     test_torques = test_rod._compute_internal_torques()
 
@@ -453,6 +468,7 @@ def test_case_lagrange_transport_unsteady_dilatation():
     test_rod._compute_all_dilatations()
     test_rod._compute_dilatation_rate()
 
+    # TODO: find one more test in which you dont set J=I, may be some analytical test
     # Set the mass moment of inertia matrix to identity matrix for simplification.
     # When lagrangian transport tested, total torque computed by the function has
     # to be zero, because (J.w/e)xw if J=I then wxw/e = 0.
@@ -606,4 +622,6 @@ def test_get_functions():
 
 
 if __name__ == "__main__":
+    from pytest import main
+
     main([__file__])
