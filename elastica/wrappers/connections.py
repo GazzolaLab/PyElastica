@@ -29,12 +29,19 @@ class Connections:
                     -n_systems <= sys < n_systems
                 ), "Rod index {} exceeds number of registered systems".format(sys)
                 sys_idx[i_sys] = sys
-            elif issubclass(sys, RodBase):
+            elif issubclass(sys.__class__, RodBase):
                 # 2. If they are sys objects (most likely), lookup indices
                 # index might have some problems : https://stackoverflow.com/a/176921
-                sys_idx[i_sys] = self._systems.index(sys)
+                try:
+                    sys_idx[i_sys] = self._systems.index(sys)
+                except ValueError:
+                    raise ValueError(
+                        "Rod {} was not found, did you append it to the system?".format(
+                            sys
+                        )
+                    )
             else:
-                raise RuntimeError("argument {} is not a sys index/object".format(sys))
+                raise TypeError("argument {} is not a sys index/object".format(sys))
         # END
 
         # For each system identified, get max dofs
@@ -100,6 +107,8 @@ class _Connect:
         self._connect_cls = None
         self._args = ()
         self._kwargs = {}
+        self.first_sys_connection_idx = None
+        self.second_sys_connection_idx = None
 
     def set_index(self, first_idx: int, second_idx: int):
         # TODO assert range
@@ -114,8 +123,8 @@ class _Connect:
             self._second_sys_n_lim
         )
 
-        self.first_rod_connection_idx = first_idx
-        self.second_rod_connection_idx = second_idx
+        self.first_sys_connection_idx = first_idx
+        self.second_sys_connection_idx = second_idx
 
     def using(self, connect_cls, *args, **kwargs):
         assert issubclass(
@@ -132,8 +141,8 @@ class _Connect:
         return (
             self._first_sys_idx,
             self._second_sys_idx,
-            self.first_rod_connection_idx,
-            self.second_rod_connection_idx,
+            self.first_sys_connection_idx,
+            self.second_sys_connection_idx,
         )
 
     def __call__(self, *args, **kwargs):
@@ -141,15 +150,15 @@ class _Connect:
             raise RuntimeError(
                 "No connections provided to link rod id {0} (at {1}) and {2} (at {3})".format(
                     self._first_sys_idx,
-                    self.first_rod_connection_idx,
+                    self.first_sys_connection_idx,
                     self._second_sys_idx,
-                    self.second_rod_connection_idx,
+                    self.second_sys_connection_idx,
                 )
             )
 
         try:
             return self._connect_cls(*self._args, **self._kwargs)
-        except TypeError:
+        except:
             raise TypeError(
                 r"Unable to construct connnection class.\n"
                 r"Did you provide all necessary joint properties?"

@@ -242,7 +242,7 @@ class TestConstraintsMixin:
     def test_constrain_with_illegal_system_throws(self, load_system_with_constraints):
         scwc = load_system_with_constraints
 
-        # Don't register this rod
+        # Not a rod, but a list!
         mock_rod = [1, 2, 3, 5]
 
         with pytest.raises(TypeError) as excinfo:
