@@ -132,7 +132,7 @@ def test_case_compress_straight_rod():
     # computes damping forces and forces due to stress together.
     # In order to decouple these two forces. We set velocity zero.
     # We will check damping forces in another test in this file.
-    velocity = velocity[:] = np.array([0.0, 0.0, 0.0]).reshape(3, 1)
+    velocity[:] = np.array([0.0, 0.0, 0.0]).reshape(3, 1)
     test_rod.velocity = velocity
 
     # Internal forces in between elements have to be zero, because
