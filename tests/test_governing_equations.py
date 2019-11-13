@@ -49,7 +49,7 @@ def test_case_compress_straight_rod():
         poisson_ratio,
     )
 
-    # Consturct position array using start and direction vectors.
+    # Construct position array using start and direction vectors.
     # This position array will be our reference for test cases
     end = start + direction * base_length
     position = np.zeros((MaxDimension.value(), n_elem + 1))
