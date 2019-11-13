@@ -159,6 +159,8 @@ def test_compute_damping_forces_torques():
             _compute_damping_forces
             _compute_damping_torques
      """
+    # This is an artificial test, this part exists just to
+    # keep our coverage percentage.
     n_elem = 10
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([0.0, 0.0, 1.0])
