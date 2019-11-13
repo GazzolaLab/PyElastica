@@ -96,7 +96,10 @@ def test_case_compress_straight_rod():
     # position which is the rest_position, here take dt = 1.0 .
     position_rest = position.copy()  # Here take a copy before modifying position
     position *= dilatation  # Change the position of the nodes
+    # TODO: Find a better way to set velocity, which we use for dilatation rate
+    # v = (x[new]-x[old])/dt, dt = 1.0
     velocity = position - position_rest
+    # velocity_difference = v[i+1]-v[i]
     velocity_difference = velocity[..., 1:] - velocity[..., :-1]
     # Hard coded, here since we know there is only velocity along the rod (d3),
     # just use those values to compute dilatation rate.
