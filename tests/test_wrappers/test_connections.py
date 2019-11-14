@@ -130,6 +130,13 @@ class TestConnectionsMixin:
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects
 
+    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    and are here because of legacy reasons. I have not removed them because there
+    are Connections require testing against multiple indices, which is still use
+    ful to cross-verify against.
+    
+    START
+    """
     @pytest.mark.parametrize("sys_idx",
                              [(12, 3), (3, 12), (-12, 3), (-3, 12), (12, -3), (-12, -3), (3, -12), (-3, -12)])
     def test_connect_with_illegal_index_throws(self, load_system_with_connects, sys_idx):
@@ -181,6 +188,10 @@ class TestConnectionsMixin:
         with pytest.raises(TypeError) as excinfo:
             scwc.connect(mock_rod_registered, mock_rod)
         assert "not a sys" in str(excinfo.value)
+
+    """
+    END of testing BaseSystem calls
+    """
 
     def test_connect_registers_and_returns_Connect(
             self, load_system_with_connects
