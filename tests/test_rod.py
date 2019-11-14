@@ -140,7 +140,7 @@ class TestExplicitStepperStateBehavior(LoadStates):
         state, derivative = load_states
 
         def func(x, y):
-            x + 1.0 * y
+            return x + 1.0 * y
 
         test_state = func(state, derivative)
 
