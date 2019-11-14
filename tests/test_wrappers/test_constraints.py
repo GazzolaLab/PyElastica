@@ -216,6 +216,13 @@ class TestConstraintsMixin:
             sys_coll_with_constraints.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_constraints
 
+    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    and are here because of legacy reasons. I have not removed them because there
+    are Connections require testing against multiple indices, which is still use
+    ful to cross-verify against.
+
+    START
+    """
     def test_constrain_with_illegal_index_throws(self, load_system_with_constraints):
         scwc = load_system_with_constraints
 
@@ -247,7 +254,11 @@ class TestConstraintsMixin:
 
         with pytest.raises(TypeError) as excinfo:
             scwc.constrain(mock_rod)
-        assert "not a rod" in str(excinfo.value)
+        assert "not a system" in str(excinfo.value)
+
+    """
+    END of testing BaseSystem calls
+    """
 
     def test_constrain_registers_and_returns_Constraint(
         self, load_system_with_constraints
