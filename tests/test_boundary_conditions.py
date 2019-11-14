@@ -107,10 +107,18 @@ def test_helical_buckling_bc():
     test_rod.omega = (
         test_omega.copy()
     )  # We need copy of the list not a reference to this array
-    position = np.vstack((test_rod.position[..., 0], test_rod.position[..., -1]))
-    directors = np.dstack((test_rod.directors[..., 0], test_rod.directors[..., -1]))
+    position_start = test_rod.position[..., 0]
+    position_end = test_rod.position[..., -1]
+    director_start = test_rod.directors[..., 0]
+    director_end = test_rod.directors[..., -1]
     helicalbuckling_rod = HelicalBucklingBC(
-        position, directors, twisting_time, slack, number_of_rotations
+        position_start,
+        position_end,
+        director_start,
+        director_end,
+        twisting_time,
+        slack,
+        number_of_rotations,
     )
 
     # Check Neumann BC

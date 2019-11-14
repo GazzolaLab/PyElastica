@@ -45,7 +45,16 @@ class HelicalBucklingBC(FreeRod):
     controlled twisting of the ends
     """
 
-    def __init__(self, position, director, twisting_time, slack, number_of_rotations):
+    def __init__(
+        self,
+        position_start,
+        position_end,
+        director_start,
+        director_end,
+        twisting_time,
+        slack,
+        number_of_rotations,
+    ):
         FreeRod.__init__(self)
         self.twisting_time = twisting_time
 
@@ -54,12 +63,12 @@ class HelicalBucklingBC(FreeRod):
         ) / 2.0
         shrink_vel_scalar = slack / (self.twisting_time * 2.0)
 
-        direction = (position[1] - position[0]) / np.linalg.norm(
-            position[1] - position[0]
+        direction = (position_end - position_start) / np.linalg.norm(
+            position_end - position_start
         )
 
-        self.final_start_position = position[0] + slack / 2.0 * direction
-        self.final_end_position = position[1] - slack / 2.0 * direction
+        self.final_start_position = position_start + slack / 2.0 * direction
+        self.final_end_position = position_end - slack / 2.0 * direction
 
         self.ang_vel = angel_vel_scalar * direction
         self.shrink_vel = shrink_vel_scalar * direction
@@ -68,11 +77,11 @@ class HelicalBucklingBC(FreeRod):
 
         self.final_start_directors = (
             _get_rotation_matrix(theta, direction.reshape(3, 1)).reshape(3, 3)
-            @ director[..., 0]
+            @ director_start
         )  # rotation_matrix wants vectors 3,1
         self.final_end_directors = (
             _get_rotation_matrix(-theta, direction.reshape(3, 1)).reshape(3, 3)
-            @ director[..., 1]
+            @ director_end
         )  # rotation_matrix wants vectors 3,1
 
     def constrain_values(self, rod, time):
