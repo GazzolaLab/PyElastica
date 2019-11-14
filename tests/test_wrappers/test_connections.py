@@ -18,20 +18,28 @@ class TestConnect:
 
     # idx between -100 and 99 passes,
     # test combinations for first and second rod
-    @pytest.mark.parametrize("illegal_idx",
-                             [(120, 120), (120, 50), (50, 120), (-120, -120), (-120, -50), (-50, -120), (-120, 50),
-                              (50, -120)])
-    def test_set_index_with_illegal_idx_throws(
-            self, load_connect, illegal_idx
-    ):
+    @pytest.mark.parametrize(
+        "illegal_idx",
+        [
+            (120, 120),
+            (120, 50),
+            (50, 120),
+            (-120, -120),
+            (-120, -50),
+            (-50, -120),
+            (-120, 50),
+            (50, -120),
+        ],
+    )
+    def test_set_index_with_illegal_idx_throws(self, load_connect, illegal_idx):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.set_index(*illegal_idx)
         assert "Connection index of" in str(excinfo.value)
 
-    @pytest.mark.parametrize("legal_idx", [(80, 80), (0, 50), (50, 0), (-20, -20), (-20, 50), (-50, -20)])
-    def test_set_index_with_legal_idx(
-            self, load_connect, legal_idx
-    ):
+    @pytest.mark.parametrize(
+        "legal_idx", [(80, 80), (0, 50), (50, 0), (-20, -20), (-20, 50), (-50, -20)]
+    )
+    def test_set_index_with_legal_idx(self, load_connect, legal_idx):
         connect = load_connect
         connect.set_index(*legal_idx)
 
@@ -40,7 +48,7 @@ class TestConnect:
 
     @pytest.mark.parametrize("illegal_connect", [int, list])
     def test_using_with_illegal_connect_throws_assertion_error(
-            self, load_connect, illegal_connect
+        self, load_connect, illegal_connect
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.using(illegal_connect)
@@ -48,9 +56,7 @@ class TestConnect:
 
     from elastica.joint import FreeJoint, FixedJoint, HingeJoint
 
-    @pytest.mark.parametrize(
-        "legal_connect", [FreeJoint, HingeJoint, FixedJoint]
-    )
+    @pytest.mark.parametrize("legal_connect", [FreeJoint, HingeJoint, FixedJoint])
     def test_using_with_legal_connect(self, load_connect, legal_connect):
         connect = load_connect
         connect.using(legal_connect, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -66,9 +72,7 @@ class TestConnect:
         # since its a simple return
         assert connect.id() == (15, 23, 20, -20)
 
-    def test_call_without_setting_connect_throws_runtime_error(
-            self, load_connect
-    ):
+    def test_call_without_setting_connect_throws_runtime_error(self, load_connect):
         connect = load_connect
 
         with pytest.raises(RuntimeError) as excinfo:
@@ -86,17 +90,15 @@ class TestConnect:
             self.k = kwargs.get("k")
 
         # in place class
-        MockConnect = type("MockConnect", (self.FreeJoint, object), {"__init__": mock_init})
+        MockConnect = type(
+            "MockConnect", (self.FreeJoint, object), {"__init__": mock_init}
+        )
 
         # The user thinks 4.0 goes to nu, but we don't accept it because of error in
         # construction og a Connect class
         connect = load_connect
         connect.using(
-            MockConnect,
-            4.0,
-            k=1,
-            l_var="2",
-            j=3.0,
+            MockConnect, 4.0, k=1, l_var="2", j=3.0,
         )
 
         # Actual test is here, this should not throw
@@ -120,7 +122,7 @@ class TestConnectionsMixin:
 
         # Connections assume that this promise is met
         def __len__(self):
-            return 2 # a random number
+            return 2  # a random number
 
     @pytest.fixture(scope="function", params=[2, 10])
     def load_system_with_connects(self, request):
@@ -130,9 +132,22 @@ class TestConnectionsMixin:
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects
 
-    @pytest.mark.parametrize("sys_idx",
-                             [(12, 3), (3, 12), (-12, 3), (-3, 12), (12, -3), (-12, -3), (3, -12), (-3, -12)])
-    def test_connect_with_illegal_index_throws(self, load_system_with_connects, sys_idx):
+    @pytest.mark.parametrize(
+        "sys_idx",
+        [
+            (12, 3),
+            (3, 12),
+            (-12, 3),
+            (-3, 12),
+            (12, -3),
+            (-12, -3),
+            (3, -12),
+            (-3, -12),
+        ],
+    )
+    def test_connect_with_illegal_index_throws(
+        self, load_system_with_connects, sys_idx
+    ):
         scwc = load_system_with_connects
 
         with pytest.raises(AssertionError) as excinfo:
@@ -143,9 +158,7 @@ class TestConnectionsMixin:
             scwc.connect(*[np.int_(x) for x in sys_idx])
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_connect_with_unregistered_system_throws(
-            self, load_system_with_connects
-    ):
+    def test_connect_with_unregistered_system_throws(self, load_system_with_connects):
         scwc = load_system_with_connects
 
         # Register this rod
@@ -182,9 +195,7 @@ class TestConnectionsMixin:
             scwc.connect(mock_rod_registered, mock_rod)
         assert "not a sys" in str(excinfo.value)
 
-    def test_connect_registers_and_returns_Connect(
-            self, load_system_with_connects
-    ):
+    def test_connect_registers_and_returns_Connect(self, load_system_with_connects):
         scwc = load_system_with_connects
 
         mock_rod_one = self.MockRod(2, 3, 4, 5)
@@ -214,12 +225,18 @@ class TestConnectionsMixin:
             pass
 
         # in place class
-        MockConnect = type("MockConnect", (self.FreeJoint, object), {"__init__": mock_init})
+        MockConnect = type(
+            "MockConnect", (self.FreeJoint, object), {"__init__": mock_init}
+        )
 
         # Constrain any and all systems
         scwc.connect(0, 1).using(MockConnect, 2, 42)  # index based connect
-        scwc.connect(mock_rod_one, mock_rod_two).using(MockConnect, 2, 3)  # system based connect
-        scwc.connect(0, mock_rod_one).using(MockConnect, 1, 2)  # index/system based connect
+        scwc.connect(mock_rod_one, mock_rod_two).using(
+            MockConnect, 2, 3
+        )  # system based connect
+        scwc.connect(0, mock_rod_one).using(
+            MockConnect, 1, 2
+        )  # index/system based connect
 
         return scwc, MockConnect
 
@@ -238,4 +255,3 @@ class TestConnectionsMixin:
     def test_connect_call_on_systems(self):
         # TODO Finish after the architecture is complete
         pass
-    
