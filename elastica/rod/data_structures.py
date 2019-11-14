@@ -162,7 +162,7 @@ class _State:
         # x += v*dt
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
         # TODO : Verify the math in this note
-        """
+        r"""
         Developer Note
         --------------
         Here the overloaded `+=` operator is exploited to perform

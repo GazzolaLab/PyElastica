@@ -4,6 +4,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
+from elastica.rod.data_structures import _bootstrap_from_data
+
 
 class TestRod:
     def __init__(self):
@@ -13,9 +15,6 @@ class TestRod:
         self.omega = 0
         self.mass = 0
         self.external_forces = 0
-
-
-from elastica.rod.data_structures import _bootstrap_from_data
 
 
 # Choosing 15 and 31 as nelems to reflect common expected
@@ -139,7 +138,10 @@ class TestExplicitStepperStateBehavior(LoadStates):
 
     def test_state_add(self, load_states):
         state, derivative = load_states
-        func = lambda x, y: x + 1.0 * y
+
+        def func(x, y):
+            x + 1.0 * y
+
         test_state = func(state, derivative)
 
         from elastica.rod.data_structures import _State, _DerivativeState

@@ -158,7 +158,7 @@ class _Connect:
 
         try:
             return self._connect_cls(*self._args, **self._kwargs)
-        except:
+        except:  # noqa : E722
             raise TypeError(
                 r"Unable to construct connnection class.\n"
                 r"Did you provide all necessary joint properties?"
