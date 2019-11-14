@@ -3,7 +3,6 @@ test_forcings
 ----------------
 """
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
 
 from elastica.wrappers import Forcing
@@ -17,7 +16,7 @@ class TestExtForceTorque:
 
     @pytest.mark.parametrize("illegal_forcing", [int, list])
     def test_using_with_illegal_forcing_throws_assertion_error(
-            self, load_forcing, illegal_forcing
+        self, load_forcing, illegal_forcing
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_forcing.using(illegal_forcing)
@@ -25,9 +24,7 @@ class TestExtForceTorque:
 
     from elastica.external_forces import NoForces, EndpointForces, GravityForces
 
-    @pytest.mark.parametrize(
-        "legal_forcing", [NoForces, EndpointForces, GravityForces]
-    )
+    @pytest.mark.parametrize("legal_forcing", [NoForces, EndpointForces, GravityForces])
     def test_using_with_legal_forcing(self, load_forcing, legal_forcing):
         forcing = load_forcing
         forcing.using(legal_forcing, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -41,9 +38,7 @@ class TestExtForceTorque:
         # since its a simple return
         assert load_forcing.id() == 100
 
-    def test_call_without_setting_forcing_throws_runtime_error(
-            self, load_forcing
-    ):
+    def test_call_without_setting_forcing_throws_runtime_error(self, load_forcing):
         forcing = load_forcing
 
         with pytest.raises(RuntimeError) as excinfo:
@@ -74,6 +69,7 @@ class TestExtForceTorque:
         with pytest.raises(TypeError) as excinfo:
             _ = forcing()
         assert "Unable to construct" in str(excinfo.value)
+
 
 class TestForcingMixin:
     from elastica.wrappers import BaseSystemCollection
@@ -115,9 +111,7 @@ class TestForcingMixin:
             scwf.add_forcing_to(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_constrain_with_unregistered_system_throws(
-            self, load_system_with_forcings
-    ):
+    def test_constrain_with_unregistered_system_throws(self, load_system_with_forcings):
         scwf = load_system_with_forcings
 
         # Don't register this rod
@@ -142,7 +136,7 @@ class TestForcingMixin:
     """
 
     def test_constrain_registers_and_returns_ExtForceTorque(
-            self, load_system_with_forcings
+        self, load_system_with_forcings
     ):
         scwf = load_system_with_forcings
 
@@ -166,7 +160,9 @@ class TestForcingMixin:
             pass
 
         # in place class
-        MockForcing = type("MockForcing", (self.NoForces, object), {"__init__": mock_init})
+        MockForcing = type(
+            "MockForcing", (self.NoForces, object), {"__init__": mock_init}
+        )
 
         # Constrain any and all systems
         scwf.add_forcing_to(1).using(MockForcing, 2, 42)  # index based forcing

@@ -3,7 +3,6 @@ test_connections
 ----------------
 """
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
 
 from elastica.wrappers import Connections
@@ -79,12 +78,10 @@ class TestConnect:
             connect()
         assert "No connections provided" in str(excinfo.value)
 
-    @pytest.mark.parametrize("dof_indices", [(4,), (0, 3)])
-    def test_call_improper_args_throws(self, load_connect, dof_indices):
+    def test_call_improper_args_throws(self, load_connect):
         # Example of bad initiailization function
-        # Init should always have rod-based arguments first
-        # For example
-        # def __init__(self, pos_one, pos_two, dir_one, *args)
+        # This needs at least four args which the user might
+        # forget to pass later on
         def mock_init(self, *args, **kwargs):
             self.nu = args[3]  # Need at least four args
             self.k = kwargs.get("k")
