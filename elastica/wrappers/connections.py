@@ -56,14 +56,14 @@ class Connections:
         ) in self._connections:
             connection.apply_force(
                 self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
                 first_connect_idx,
+                self._systems[second_sys_idx],
                 second_connect_idx,
             )
             connection.apply_torque(
                 self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
                 first_connect_idx,
+                self._systems[second_sys_idx],
                 second_connect_idx,
             )
 
