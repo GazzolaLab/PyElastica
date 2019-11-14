@@ -10,13 +10,13 @@ class FreeRod:
     also the free rod class
     """
 
-    def __init__(self, rod):
-        self.rod = rod
-
-    def constrain_values(self):
+    def __init__(self):
         pass
 
-    def constrain_rates(self):
+    def constrain_values(self, rod, time):
+        pass
+
+    def constrain_rates(self, rod, time):
         pass
 
 
@@ -25,18 +25,18 @@ class OneEndFixedRod(FreeRod):
     the end of the rod fixed x[0]
     """
 
-    def __init__(self, rod, start_position, start_directors):
-        FreeRod.__init__(self, rod)
-        self.start_position = start_position
-        self.start_directors = start_directors
+    def __init__(self, fixed_position, fixed_directors):
+        FreeRod.__init__(self)
+        self.fixed_position = fixed_position
+        self.fixed_directors = fixed_directors
 
-    def constrain_values(self):
-        self.rod.position[..., 0] = self.start_position
-        self.rod.directors[..., 0] = self.start_directors
+    def constrain_values(self, rod, time):
+        rod.position[..., 0] = self.fixed_position
+        rod.directors[..., 0] = self.fixed_directors
 
-    def constrain_rates(self):
-        self.rod.velocity[..., 0] = 0.0
-        self.rod.omega[..., 0] = 0.0
+    def constrain_rates(self, rod, time):
+        rod.velocity[..., 0] = 0.0
+        rod.omega[..., 0] = 0.0
 
 
 class HelicalBucklingBC(FreeRod):
@@ -45,8 +45,8 @@ class HelicalBucklingBC(FreeRod):
     controlled twisting of the ends
     """
 
-    def __init__(self, rod, twisting_time, slack, number_of_rotations):
-        FreeRod.__init__(self, rod)
+    def __init__(self, position, director, twisting_time, slack, number_of_rotations):
+        FreeRod.__init__(self)
         self.twisting_time = twisting_time
 
         angel_vel_scalar = (
@@ -54,12 +54,12 @@ class HelicalBucklingBC(FreeRod):
         ) / 2.0
         shrink_vel_scalar = slack / (self.twisting_time * 2.0)
 
-        direction = (
-            self.rod.position[..., -1] - self.rod.position[..., 0]
-        ) / np.linalg.norm(self.rod.position[..., -1] - self.rod.position[..., 0])
+        direction = (position[1] - position[0]) / np.linalg.norm(
+            position[1] - position[0]
+        )
 
-        self.final_start_position = self.rod.position[..., 0] + slack / 2.0 * direction
-        self.final_end_position = self.rod.position[..., -1] - slack / 2.0 * direction
+        self.final_start_position = position[0] + slack / 2.0 * direction
+        self.final_end_position = position[1] - slack / 2.0 * direction
 
         self.ang_vel = angel_vel_scalar * direction
         self.shrink_vel = shrink_vel_scalar * direction
@@ -68,32 +68,32 @@ class HelicalBucklingBC(FreeRod):
 
         self.final_start_directors = (
             _get_rotation_matrix(theta, direction.reshape(3, 1)).reshape(3, 3)
-            @ self.rod.directors[..., 0]
+            @ director[..., 0]
         )  # rotation_matrix wants vectors 3,1
         self.final_end_directors = (
             _get_rotation_matrix(-theta, direction.reshape(3, 1)).reshape(3, 3)
-            @ self.rod.directors[..., -1]
+            @ director[..., 1]
         )  # rotation_matrix wants vectors 3,1
 
-    def constrain_values(self, time):
+    def constrain_values(self, rod, time):
         if time > self.twisting_time:
-            self.rod.position[..., 0] = self.final_start_position
-            self.rod.position[..., -1] = self.final_end_position
+            rod.position[..., 0] = self.final_start_position
+            rod.position[..., -1] = self.final_end_position
 
-            self.rod.directors[..., 0] = self.final_start_directors
-            self.rod.directors[..., -1] = self.final_end_directors
+            rod.directors[..., 0] = self.final_start_directors
+            rod.directors[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, time):
+    def constrain_rates(self, rod, time):
         if time > self.twisting_time:
-            self.rod.velocity[..., 0] = 0.0
-            self.rod.omega[..., 0] = 0.0
+            rod.velocity[..., 0] = 0.0
+            rod.omega[..., 0] = 0.0
 
-            self.rod.velocity[..., -1] = 0.0
-            self.rod.omega[..., -1] = 0.0
+            rod.velocity[..., -1] = 0.0
+            rod.omega[..., -1] = 0.0
 
         else:
-            self.rod.velocity[..., 0] = self.shrink_vel
-            self.rod.omega[..., 0] = self.ang_vel
+            rod.velocity[..., 0] = self.shrink_vel
+            rod.omega[..., 0] = self.ang_vel
 
-            self.rod.velocity[..., -1] = -self.shrink_vel
-            self.rod.omega[..., -1] = -self.ang_vel
+            rod.velocity[..., -1] = -self.shrink_vel
+            rod.omega[..., -1] = -self.ang_vel
