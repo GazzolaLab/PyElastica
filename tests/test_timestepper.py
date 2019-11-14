@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+
 from elastica.systems.analytical import (
     ScalarExponentialDecaySystem,
     UndampedSimpleHarmonicOscillatorSystem,
@@ -14,6 +15,7 @@ from elastica.systems.analytical import (
 )
 from elastica.timestepper import integrate, extend_stepper_interface
 from elastica.timestepper._stepper_interface import _TimeStepper
+
 from elastica.timestepper.explicit_steppers import (
     RungeKutta4,
     StatefulRungeKutta4,

@@ -354,7 +354,8 @@ def _inv_rotate(director_collection):
     filter_idx = np.where(np.abs(theta_collection) < 1e-14)
 
     # Scale the vector collection by \theta/sin(\theta), from Rodrigues
-    vector_collection *= 0.5 * theta_collection / np.sin(theta_collection)
+    # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
+    vector_collection *= 0.5 * theta_collection / np.sin(theta_collection + 1e-14)
 
     # Set filter_idx locations to 0.0
     vector_collection[..., filter_idx] = 0.0
