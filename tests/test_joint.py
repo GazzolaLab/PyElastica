@@ -7,6 +7,8 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica._rod import CosseratRod
 
+# TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
+
 
 def test_freejoint():
 
@@ -84,19 +86,15 @@ def test_freejoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    frjt = FreeJoint(k, nu, rod1, rod2, rod1_index, rod2_index)
-
-    frjt.apply_force()
+    frjt = FreeJoint(k, nu)
+    frjt.apply_force(rod1, rod1_index, rod2, rod2_index)
+    frjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        frjt.rod_one.external_forces[..., rod1_index],
-        contactforce,
-        atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
     )
     assert_allclose(
-        frjt.rod_two.external_forces[..., rod2_index],
-        -1 * contactforce,
-        atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
     )
 
 
@@ -179,20 +177,16 @@ def test_hingejoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    hgjt = HingeJoint(k, nu, rod1, rod2, rod1_index, rod2_index, kt, normal1)
+    hgjt = HingeJoint(k, nu, kt, normal1)
 
-    hgjt.apply_force()
-    hgjt.apply_torque()
+    hgjt.apply_force(rod1, rod1_index, rod2, rod2_index)
+    hgjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        hgjt.rod_one.external_forces[..., rod1_index],
-        contactforce,
-        atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
     )
     assert_allclose(
-        hgjt.rod_two.external_forces[..., rod2_index],
-        -1 * contactforce,
-        atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
     )
 
     linkdirection = rod2.position[..., rod2_index + 1] - rod2.position[..., rod2_index]
@@ -203,14 +197,10 @@ def test_hingejoint():
     torque_rod2 = rod2.directors[..., rod2_index] @ torque
 
     assert_allclose(
-        hgjt.rod_one.external_torques[..., rod1_index],
-        torque_rod1,
-        atol=Tolerance.atol(),
+        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol(),
     )
     assert_allclose(
-        hgjt.rod_two.external_torques[..., rod2_index],
-        torque_rod2,
-        atol=Tolerance.atol(),
+        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol(),
     )
 
 
@@ -293,20 +283,16 @@ def test_fixedjoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    fxjt = FixedJoint(k, nu, rod1, rod2, rod1_index, rod2_index, kt)
+    fxjt = FixedJoint(k, nu, kt)
 
-    fxjt.apply_force()
-    fxjt.apply_torque()
+    fxjt.apply_force(rod1, rod1_index, rod2, rod2_index)
+    fxjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        fxjt.rod_one.external_forces[..., rod1_index],
-        contactforce,
-        atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
     )
     assert_allclose(
-        fxjt.rod_two.external_forces[..., rod2_index],
-        -1 * contactforce,
-        atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
     )
 
     linkdirection = rod2.position[..., rod2_index + 1] - rod2.position[..., rod2_index]
@@ -324,14 +310,10 @@ def test_fixedjoint():
     torque_rod2 = rod2.directors[..., rod2_index] @ torque
 
     assert_allclose(
-        fxjt.rod_one.external_torques[..., rod1_index],
-        torque_rod1,
-        atol=Tolerance.atol(),
+        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol(),
     )
     assert_allclose(
-        fxjt.rod_two.external_torques[..., rod2_index],
-        torque_rod2,
-        atol=Tolerance.atol(),
+        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol(),
     )
 
 
