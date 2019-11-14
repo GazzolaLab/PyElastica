@@ -76,12 +76,12 @@ class SymplecticCosseratRodStepper:
 
         self._prefactors = self.stepper._prefactors.copy()
         prefactor_group_size = (
-            2
-        )  # One prefactor for kin. + exp. step, one for dyn. step
+            2  # One prefactor for kin. + exp. step, one for dyn. step
+        )
         self._prefactors = list(grouper(self._prefactors, prefactor_group_size))
 
         # Last step is one prefactor (prefaca, ) for (A, X) so we pop it
-        self._last_kin_prefactor, = self._prefactors.pop()
+        (self._last_kin_prefactor,) = self._prefactors.pop()
         # self._prefactors = tuple(self._prefactors)
 
         self._steps_and_prefactors = tuple(zip(self._prefactors, self._steps))

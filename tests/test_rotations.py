@@ -289,7 +289,6 @@ def test_get_rotation_matrix_gives_unit_determinant():
 
 
 def test_rotate_correctness():
-    dim = 3
     blocksize = 16
 
     def get_aligned_director_collection(theta_collection):

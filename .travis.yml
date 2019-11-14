@@ -30,7 +30,7 @@ before_install:
 # command to run tests
 script:
         - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then python3 -m pytest --cov=elastica --cov-report=xml; else python3 -m pytest; fi
-        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then make ci; fi
+        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then black elastica tests; flake8 elastica tests; fi
 
 after_success:
     - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then

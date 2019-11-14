@@ -4,7 +4,7 @@ __doc__ = """Test utility scripts"""
 
 import pytest
 
-from elastica.utils import isqrt, perm_parity, grouper
+from elastica.utils import isqrt, perm_parity, grouper, extend_instance
 from itertools import chain
 from numpy.random import randint
 
@@ -96,3 +96,18 @@ def test_grouper_correctness_for_imperfect_sequences(chunksize):
     test_seq = list(grouper(list(chain(*correct_seq)), chunksize))
 
     assert test_seq == correct_seq
+
+
+class TestExtendInstance:
+    A = type("A", (), {})
+    Aext = type("Aext", (), {})
+    B = type("B", (), {})
+    Bext = type("Bext", (), {})
+
+    @pytest.mark.parametrize("class_and_extension", [(A, Aext), (B, Bext)])
+    def test_extend_instance_correctness(self, class_and_extension):
+        (cls, ext_cls) = class_and_extension
+        cls_obj = cls()
+        assert ext_cls not in cls_obj.__class__.__bases__
+        extend_instance(cls_obj, ext_cls)
+        assert ext_cls in cls_obj.__class__.__bases__

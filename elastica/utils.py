@@ -140,3 +140,25 @@ def grouper(iterable, n):
         if not group:
             break
         yield group
+
+
+def extend_instance(obj, cls):
+    """ Apply mixins to a class instance after creation
+    Parameters
+    ----------
+    obj : object (not class!) targeted for interface extension
+          Interface carries throughout its lifetime.
+    cls : class (not object!) to dynamically mixin
+
+    Returns
+    -------
+    None
+
+    Credits
+    -------
+    https://stackoverflow.com/a/31075641
+    """
+    base_cls = obj.__class__
+    base_cls_name = obj.__class__.__name__
+    # Putting class first to override default behavior
+    obj.__class__ = type(base_cls_name, (cls, base_cls), {})
