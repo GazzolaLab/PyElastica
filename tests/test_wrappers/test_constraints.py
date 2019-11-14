@@ -223,6 +223,7 @@ class TestConstraintsMixin:
 
     START
     """
+
     def test_constrain_with_illegal_index_throws(self, load_system_with_constraints):
         scwc = load_system_with_constraints
 

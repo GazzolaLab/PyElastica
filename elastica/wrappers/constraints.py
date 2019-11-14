@@ -79,9 +79,7 @@ class _Constraint:
             raise RuntimeError(
                 "No boundary condition provided to constrain rod"
                 "id {0} at {1}, but a BC was intended. Did you"
-                "forget to call the `using` method?".format(
-                    self.id(), rod
-                )
+                "forget to call the `using` method?".format(self.id(), rod)
             )
 
         # If there is position, director in kwargs, deal with it first

@@ -102,6 +102,7 @@ class TestBaseSystemCollection:
 
     def test_invalid_idx_in_get_sys_index_throws(self, load_collection):
         from elastica._rod import RodBase
+
         bsc = load_collection
         bsc.override_allowed_types((RodBase,))
         with pytest.raises(AssertionError) as excinfo:
@@ -112,7 +113,9 @@ class TestBaseSystemCollection:
             load_collection._get_sys_idx_if_valid(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_unregistered_system_in_get_sys_index_throws(self, load_collection, mock_rod):
+    def test_unregistered_system_in_get_sys_index_throws(
+        self, load_collection, mock_rod
+    ):
         # Don't register this rod
         my_mock_rod = mock_rod
 

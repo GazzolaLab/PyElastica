@@ -30,15 +30,15 @@ class BaseSystemCollection(MutableSequence):
     def _check_type(self, sys_to_be_added):
         if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
             raise TypeError(
-            "{0}\n"
-            "is not a system passing validity\n"
-            "checks, that can be added into BaseSystem. If you are sure that\n"
-            "{0}\n"
-            "satisfies all criteria for being a system, please add\n"
-            "it using BaseSystem.extend_allowed_types.\n"
-            "The allowed types are\n"
-            "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
-        )
+                "{0}\n"
+                "is not a system passing validity\n"
+                "checks, that can be added into BaseSystem. If you are sure that\n"
+                "{0}\n"
+                "satisfies all criteria for being a system, please add\n"
+                "it using BaseSystem.extend_allowed_types.\n"
+                "The allowed types are\n"
+                "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
+            )
         return True
 
     def __len__(self):
@@ -75,8 +75,10 @@ class BaseSystemCollection(MutableSequence):
         if isinstance(sys_to_be_added, (int, npint)):
             # 1. If they are indices themselves, check range
             assert (
-                    -n_systems <= sys_to_be_added < n_systems
-            ), "Rod index {} exceeds number of registered rodtems".format(sys_to_be_added)
+                -n_systems <= sys_to_be_added < n_systems
+            ), "Rod index {} exceeds number of registered rodtems".format(
+                sys_to_be_added
+            )
             sys_idx = sys_to_be_added
         elif self._check_type(sys_to_be_added):
             # 2. If they are rod objects (most likely), lookup indices

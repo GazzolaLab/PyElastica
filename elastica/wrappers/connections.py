@@ -127,14 +127,12 @@ class _Connect:
                 "No connections provided to link rod id {0}"
                 "(at {2}) and {1} (at {3}), but a Connection"
                 "was intended as per code. Did you forget to"
-                "call the `using` method?".format(
-                    *self.id()
-                )
+                "call the `using` method?".format(*self.id())
             )
 
         try:
             return self._connect_cls(*self._args, **self._kwargs)
-        except:
+        except (TypeError, IndexError):
             raise TypeError(
                 r"Unable to construct connection class.\n"
                 r"Did you provide all necessary joint properties?"
