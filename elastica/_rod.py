@@ -55,7 +55,7 @@ class _LinearConstitutiveModel:
         -------
 
         """
-        self._compute_shear_stetch_strains()  # concept : needs to compute sigma
+        self._compute_shear_stretch_strains()  # concept : needs to compute sigma
         # TODO : the _batch_matvec kernel needs to depend on the representation of Shearmatrix
         self.internal_stress = _batch_matvec(
             self.shear_matrix, self.sigma - self.rest_sigma
@@ -113,11 +113,12 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         -------
 
         """
+        # TODO : test this function
         # Calculates stress based purely on strain component
         super(
             _LinearConstitutiveModelWithStrainRate, self
         )._compute_internal_shear_stretch_stresses_from_model()
-        self._compute_shear_stetch_strain_rates()  # concept : needs to compute sigma_dot
+        self._compute_shear_stretch_strains_rates()  # concept : needs to compute sigma_dot
         # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
         self.internal_stress += _batch_matvec(self.shear_rate_matrix, self.sigma_dot)
 
@@ -131,6 +132,7 @@ class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
         -------
 
         """
+        # TODO : test this function
         # Calculates stress based purely on strain component
         super(
             _LinearConstitutiveModelWithStrainRate, self
@@ -161,7 +163,13 @@ class RodBase:
         return (self._compute_internal_forces() + self.external_forces) / self.mass
 
     def get_angular_acceleration(self):
-        return self._compute_internal_torques() + self.external_torques
+        return (
+            _batch_matvec(
+                self.inv_mass_second_moment_of_inertia,
+                (self._compute_internal_torques() + self.external_torques),
+            )
+            * self.dilatation
+        )
 
 
 class _CosseratRodBase(RodBase):
@@ -172,8 +180,8 @@ class _CosseratRodBase(RodBase):
         position,
         directors,
         rest_lengths,
-        mass,
         density,
+        volume,
         mass_second_moment_of_inertia,
         nu,
         *args,
@@ -185,11 +193,32 @@ class _CosseratRodBase(RodBase):
         self.velocity = np.zeros((MaxDimension.value(), n_elements + 1))
         self.omega = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
-        self.mass = mass
         self.density = density
-        self.volume = self.mass / self.density
+        self.volume = volume
+
+        self.mass = np.zeros(n_elements + 1)
+        self.mass[:-1] += 0.5 * self.density * self.volume
+        self.mass[1:] += 0.5 * self.density * self.volume
+
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
+
+        self.inv_mass_second_moment_of_inertia = np.zeros(
+            (MaxDimension.value(), MaxDimension.value(), n_elements)
+        )
+        for i in range(n_elements):
+            # Check rank of mass moment of inertia matrix to see if it is invertible
+            assert (
+                np.linalg.matrix_rank(mass_second_moment_of_inertia[..., i])
+                == MaxDimension.value()
+            )
+            self.inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
+                mass_second_moment_of_inertia[..., i]
+            )
+
         self.nu = nu
+        self.rest_voronoi_lengths = 0.5 * (
+            self.rest_lengths[1:] + self.rest_lengths[:-1]
+        )
         # will apply external force and torques externally
         self.external_forces = 0 * self.position
         self.external_torques = 0 * self.omega
@@ -236,10 +265,11 @@ class _CosseratRodBase(RodBase):
         directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
         directors[0, ...] = normal_collection
-        directors[1, ...] = tangents
-        directors[2, ...] = _batch_cross(tangents, normal_collection)
+        directors[1, ...] = _batch_cross(tangents, normal_collection)
+        directors[2, ...] = tangents
 
-        mass = density * np.pi * base_radius ** 2 * rest_lengths
+        volume = np.pi * base_radius ** 2 * rest_lengths
+
         inertia_collection = np.repeat(
             mass_second_moment_of_inertia[:, :, np.newaxis], n_elements, axis=2
         )
@@ -250,8 +280,8 @@ class _CosseratRodBase(RodBase):
             position,
             directors,
             rest_lengths,
-            mass,
             density,
+            volume,
             inertia_collection,
             nu,
             *args,
@@ -281,6 +311,7 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
+        self._compute_geometry_from_state()
         # Caveat : Needs already set rest_lengths and rest voronoi domain lengths
         # Put in initialization
 
@@ -315,7 +346,7 @@ class _CosseratRodBase(RodBase):
             / self.rest_lengths
         )
 
-    def _compute_shear_stetch_strains(self):
+    def _compute_shear_stretch_strains(self):
         # Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant
         self._compute_all_dilatations()
         self.sigma = (
@@ -324,13 +355,14 @@ class _CosseratRodBase(RodBase):
         )
 
     def _compute_bending_twist_strains(self):
+        # Note: dilatations are computed previously inside ` _compute_all_dilatations `
         self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
 
     def _compute_damping_forces(self):
         # Internal damping foces.
         damping_forces = self.nu * self.velocity
-        damping_forces[0] *= 0.5  # first and last nodes have half mass
-        damping_forces[-1] *= 0.5  # first and last nodes have half mass
+        damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
+        damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
 
         return damping_forces
 
@@ -425,8 +457,8 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             rod.position,
             rod.directors,
             rod.rest_lengths,
-            rod.mass,
             rod.density,
+            rod.volume,
             rod.mass_second_moment_of_inertia,
             rod.nu,
             *args,
@@ -451,7 +483,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         *args,
         **kwargs
     ):
-
+        # FIXME: Make sure G=E/(poisson_ratio+1.0) in wikipedia it is different
         # Shear Modulus
         shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 

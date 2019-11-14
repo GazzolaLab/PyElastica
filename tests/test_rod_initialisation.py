@@ -46,6 +46,8 @@ def test_straight_rod():
     # Mass second moment of inertia for disk cross-section
     mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
     np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length / n)
+    # Inverse mass second of inertia
+    inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(shear_matrix, [4.0 * G * A0 / 3.0, 4.0 * G * A0 / 3.0, E * A0])
@@ -64,13 +66,13 @@ def test_straight_rod():
         nu,
         E,
         poisson_ratio,
-        # mass_second_moment_of_inertia,
-        # shear_matrix,
-        # bend_matrix,
     )
     # checking origin and length of rod
     assert_allclose(test_rod.position[..., 0], start, atol=Tolerance.atol())
     rod_length = np.linalg.norm(test_rod.position[..., -1] - test_rod.position[..., 0])
+    rest_voronoi_lengths = 0.5 * (
+        base_length / n + base_length / n
+    )  # element lengths are equal for all rod.
     # checking velocities, omegas and rest strains
     # density and mass
     assert_allclose(rod_length, base_length, atol=Tolerance.atol())
@@ -80,17 +82,25 @@ def test_straight_rod():
     assert_allclose(test_rod.rest_kappa, np.zeros((3, n - 1)), atol=Tolerance.atol())
     assert_allclose(test_rod.density, density, atol=Tolerance.atol())
     assert_allclose(test_rod.nu, nu, atol=Tolerance.atol())
+    assert_allclose(
+        rest_voronoi_lengths, test_rod.rest_voronoi_lengths, atol=Tolerance.atol()
+    )
+    # Check mass at each node. Note that, node masses is
+    # half of element mass at the first and last node.
+    for i in range(1, n):
+        assert_allclose(test_rod.mass[i], mass, atol=Tolerance.atol())
+    assert_allclose(test_rod.mass[0], 0.5 * mass, atol=Tolerance.atol())
+    assert_allclose(test_rod.mass[-1], 0.5 * mass, atol=Tolerance.atol())
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
     for i in range(n):
-        assert_allclose(test_rod.mass[i], mass, atol=Tolerance.atol())
         assert_allclose(test_rod.directors[0, :, i], normal, atol=Tolerance.atol())
-        assert_allclose(test_rod.directors[1, :, i], direction, atol=Tolerance.atol())
         assert_allclose(
-            test_rod.directors[2, :, i],
+            test_rod.directors[1, :, i],
             np.cross(direction, normal),
             atol=Tolerance.atol(),
         )
+        assert_allclose(test_rod.directors[2, :, i], direction, atol=Tolerance.atol())
         assert_allclose(test_rod.rest_lengths, base_length / n, atol=Tolerance.atol())
         assert_allclose(
             test_rod.shear_matrix[..., i], shear_matrix, atol=Tolerance.atol()
@@ -98,6 +108,11 @@ def test_straight_rod():
         assert_allclose(
             test_rod.mass_second_moment_of_inertia[..., i],
             mass_second_moment_of_inertia,
+            atol=Tolerance.atol(),
+        )
+        assert_allclose(
+            test_rod.inv_mass_second_moment_of_inertia[..., i],
+            inv_mass_second_moment_of_inertia,
             atol=Tolerance.atol(),
         )
     for i in range(n - 1):
