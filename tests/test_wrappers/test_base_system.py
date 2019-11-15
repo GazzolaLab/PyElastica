@@ -43,7 +43,7 @@ class TestBaseSystemCollection:
 
     @pytest.fixture(scope="function")
     def mock_rod(self):
-        from elastica._rod import RodBase
+        from elastica.rod.cosserat_rod import RodBase
 
         MockRod = type("MockRod", (RodBase,), {})
         return MockRod()
@@ -66,7 +66,7 @@ class TestBaseSystemCollection:
         bsc = load_collection
         bsc.extend_allowed_types((int, float, str))
 
-        from elastica._rod import RodBase
+        from elastica.rod.cosserat_rod import RodBase
 
         assert bsc.allowed_sys_types == (RodBase, int, float, str)
 
@@ -101,7 +101,7 @@ class TestBaseSystemCollection:
         bsc._check_type("whats the point of doing a PhD?")  # a str object
 
     def test_invalid_idx_in_get_sys_index_throws(self, load_collection):
-        from elastica._rod import RodBase
+        from elastica.rod.cosserat_rod import RodBase
 
         bsc = load_collection
         bsc.override_allowed_types((RodBase,))

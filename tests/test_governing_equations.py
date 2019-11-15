@@ -2,7 +2,7 @@ __doc__ = """Test Cosserat rod governing equations"""
 
 # System imports
 import numpy as np
-from elastica._rod import CosseratRod
+from elastica.rod.cosserat_rod import CosseratRod
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_matvec
@@ -132,7 +132,7 @@ def compute_stress_analytically(n_elem, dilatation):
     initial = BaseClass(n_elem)
     strain = compute_strain_analytically(n_elem, dilatation)
     # Compute Internal stress. Actually, below computation has a unit of force
-    # but in RSoS 2018 paper and in _rod.py, it is called stress.
+    # but in RSoS 2018 paper and in cosserat_rod.py, it is called stress.
     # It is basically, shear_matrix * strain
     stress = (initial.base_radius * initial.base_radius * np.pi) * initial.E * strain
     return stress

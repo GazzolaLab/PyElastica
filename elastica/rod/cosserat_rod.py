@@ -2,10 +2,10 @@ __doc__ = """ Rod base classes and implementation details that need to be hidden
 import numpy as np
 import functools
 
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
-from ._calculus import quadrature_kernel, difference_kernel
-from ._rotations import _inv_rotate
-from .utils import MaxDimension, Tolerance
+from elastica._linalg import _batch_matmul, _batch_matvec, _batch_cross
+from elastica._calculus import quadrature_kernel, difference_kernel
+from elastica._rotations import _inv_rotate
+from elastica.utils import MaxDimension, Tolerance
 
 # TODO Add documentation for all functions
 

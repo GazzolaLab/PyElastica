@@ -30,8 +30,9 @@ def is_system_a_collection(system):
     evolve as the interface evolves. Then we can add those
     requirements on the interface here.
     """
+    from elastica.wrappers import BaseSystemCollection
     __sys_get_item = getattr(system, "__getitem__", None)
-    return callable(__sys_get_item)
+    return issubclass(system.__class__, BaseSystemCollection) or callable(__sys_get_item)
 
 
 def make_memory_for_explicit_stepper(stepper, system):

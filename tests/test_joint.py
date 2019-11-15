@@ -5,7 +5,7 @@ import numpy as np
 from elastica.joint import FreeJoint, HingeJoint, FixedJoint
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica._rod import CosseratRod
+from elastica.rod.cosserat_rod import CosseratRod
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
