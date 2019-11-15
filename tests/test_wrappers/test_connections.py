@@ -136,7 +136,6 @@ class TestConnectionsMixin:
 
     START
     """
-
     @pytest.mark.parametrize(
         "sys_idx",
         [

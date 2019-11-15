@@ -3,6 +3,7 @@
 __all__ = ["isqrt"]
 import functools
 from numpy import finfo, float64
+from itertools import islice
 
 
 # Slower than the python3.8 isqrt implementation for small ints
@@ -91,9 +92,6 @@ def perm_parity(lst):
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
 
-    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
-    licensed with a MIT License
-
     Parameters
     ----------
     lst
@@ -101,6 +99,10 @@ def perm_parity(lst):
     Returns
     -------
 
+    Credits
+    -------
+    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
+    licensed with a MIT License
     """
     parity = 1
     for i in range(0, len(lst) - 1):
@@ -109,3 +111,54 @@ def perm_parity(lst):
             mn = min(range(i, len(lst)), key=lst.__getitem__)
             lst[i], lst[mn] = lst[mn], lst[i]
     return parity
+
+
+def grouper(iterable, n):
+    """ Collect data into fixed-length chunks or blocks"
+
+    Parameters
+    ----------
+    iterable : input collection
+    n : size of chunk
+
+    Returns
+    -------
+
+    Example
+    -------
+    grouper('ABCDEFG', 3) --> ABC DEF G"
+
+    Credits
+    -------
+    https://docs.python.org/3/library/itertools.html#itertools-recipes
+    https://stackoverflow.com/a/10791887
+    """
+
+    it = iter(iterable)
+    while True:
+        group = tuple(islice(it, None, n))
+        if not group:
+            break
+        yield group
+
+
+def extend_instance(obj, cls):
+    """ Apply mixins to a class instance after creation
+    Parameters
+    ----------
+    obj : object (not class!) targeted for interface extension
+          Interface carries throughout its lifetime.
+    cls : class (not object!) to dynamically mixin
+
+    Returns
+    -------
+    None
+
+    Credits
+    -------
+    https://stackoverflow.com/a/31075641
+    """
+    base_cls = obj.__class__
+    base_cls_name = obj.__class__.__name__
+    # Putting class first to override default behavior
+    obj.__class__ = type(base_cls_name, (cls, base_cls), {})

@@ -1,20 +1,103 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 import numpy as np
 
-from . import TimeStepper, StatefulStepper
+from elastica.timestepper._stepper_interface import (
+    _TimeStepper,
+    _LinearExponentialIntegratorMixin,
+    _StatefulStepper,
+)
+
+"""
+Developer Note
+--------------
+## Motivation for choosing _Mixin classes below
+
+The constraint/problem is that we do not know what
+`System` we are integrating apriori. For a single
+standalone `System` (which defines a `__call__`
+operator and has its own states), we should just
+step it like a single system.
+
+Instead if we get a `SystemCollection` made up of
+bunch of smaller systems (like Cosserat Rods), we now
+need to loop over all these smaller systems and perform
+state updates there. Not only that we may also need
+to communicate between such smaller systems.
+
+One way to solve this issue is to give the integrator
+two methods:
+
+- `do_step`, which does the time-stepping for only a
+`System`
+- `do_system_step` which does the time-stepping for
+a `SystemCollection`
+
+The problem with this approach is that
+1. We have more methods than we actually use
+(indeed we can only integrate either a `System` or
+a `SystemCollection` but not both)
+2. From an interface point of view, its ugly and not
+graceful (at least IMO).
+
+The second approach is what I have chosen here,
+which is to create two mixin classes : one for
+integrating `System` and one for integrating
+`SystemCollection`. And then depending upon the runtime
+type of the object to be integrated, we can dynamically
+mixin the required class.
+
+This approach overcomes the disadvantages of the
+previous approach (as there's only one `do_step` method
+associated with a Stepper at any given point of time),
+at the expense of being a tad bit harder to understand
+(which this documentation will hopefully fix). In essence,
+we "smartly" use a mixin class to define the necessary
+`do_step` method, which the `integrate` function then uses.
+"""
 
 
-class ExplicitStepper(TimeStepper):
+class _SystemInstanceStepperMixin:
+    # noinspection PyUnresolvedReferences
+    def do_step(self, System, Memory, time: np.float64, dt: np.float64):
+        for stage, update in self._stages_and_updates:
+            stage(self, System, Memory, time, dt)
+            time = update(self, System, Memory, time, dt)
+        return time
+
+
+class _SystemCollectionStepperMixin:
+    # noinspection PyUnresolvedReferences
+    def do_step(
+        self, SystemCollection, MemoryCollection, time: np.float64, dt: np.float64
+    ):
+        for stage, update in self._stages_and_updates:
+            SystemCollection.synchronize(time)
+            for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
+                stage(self, system, memory, time, dt)
+                _ = update(self, system, memory, time, dt)
+
+            stage(self, SystemCollection[-1], MemoryCollection[-1], time, dt)
+            time = update(self, SystemCollection[-1], MemoryCollection[-1], time, dt)
+        return time
+
+
+class ExplicitStepper(_TimeStepper):
     """ Base class for all explicit steppers
+    Can also be used as a mixin with optional cls argument below
     """
 
-    def __init__(self):
+    def __init__(self, cls=None):
         super(ExplicitStepper, self).__init__()
+        take_methods_from = self if cls is None else cls()
         __stages = [
-            v for (k, v) in self.__class__.__dict__.items() if k.endswith("stage")
+            v
+            for (k, v) in take_methods_from.__class__.__dict__.items()
+            if k.endswith("stage")
         ]
         __updates = [
-            v for (k, v) in self.__class__.__dict__.items() if k.endswith("update")
+            v
+            for (k, v) in take_methods_from.__class__.__dict__.items()
+            if k.endswith("update")
         ]
 
         # Tuples are almost immutable
@@ -25,18 +108,11 @@ class ExplicitStepper(TimeStepper):
             _n_stages == _n_updates
         ), "Number of stages and updates should be equal to one another"
 
-        self.__stages_and_updates = tuple(zip(__stages, __updates))
+        self._stages_and_updates = tuple(zip(__stages, __updates))
 
     @property
     def n_stages(self):
-        return len(self.__stages_and_updates)
-
-    ### For stateless explicit steppers
-    def do_step(self, System, Memory, time: np.float64, dt: np.float64):
-        for stage, update in self.__stages_and_updates:
-            stage(self, System, Memory, time, dt)
-            time = update(self, System, Memory, time, dt)
-        return time
+        return len(self._stages_and_updates)
 
 
 """
@@ -94,7 +170,7 @@ class RungeKutta4(ExplicitStepper):
         return time
 
 
-class StatefulRungeKutta4(StatefulStepper):
+class StatefulRungeKutta4(_StatefulStepper):
     """
     Stores all states of Rk within the time-stepper. Works as long as the states
     are all one big numpy array, made possible by carefully using views.
@@ -129,34 +205,22 @@ class EulerForward(ExplicitStepper):
         return time + dt
 
 
-class StatefulEulerForward(StatefulStepper):
+class StatefulEulerForward(_StatefulStepper):
     def __init__(self):
         super(StatefulEulerForward, self).__init__()
         self.stepper = EulerForward()
 
 
-class LinearExponentialIntegrator(ExplicitStepper):
+class ExplicitLinearExponentialIntegrator(
+    _LinearExponentialIntegratorMixin, ExplicitStepper
+):
     def __init__(self):
-        super(LinearExponentialIntegrator, self).__init__()
-
-    def _do_stage(self, System, Memory, time, dt):
-        # TODO : Make more general, system should not be calculating what the state
-        # transition matrix directly is, but rather it should just give
-        Memory.linear_operator = System.get_linear_state_transition_operator(time, dt)
-
-    def _do_update(self, System, Memory, time, dt):
-        # System.linearly_evolving_state = _batch_matmul(
-        #     System.linearly_evolving_state,
-        #     Memory.linear_operator
-        # )
-        System.linearly_evolving_state = np.einsum(
-            "ijk,ljk->ilk", System.linearly_evolving_state, Memory.linear_operator
-        )
-        return time + dt
+        _LinearExponentialIntegratorMixin.__init__(self)
+        ExplicitStepper.__init__(self, _LinearExponentialIntegratorMixin)
 
 
-class StatefulLinearExponentialIntegrator(StatefulStepper):
+class StatefulLinearExponentialIntegrator(_StatefulStepper):
     def __init__(self):
         super(StatefulLinearExponentialIntegrator, self).__init__()
-        self.stepper = LinearExponentialIntegrator()
+        self.stepper = ExplicitLinearExponentialIntegrator()
         self.linear_operator = None
