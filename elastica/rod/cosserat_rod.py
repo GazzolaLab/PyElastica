@@ -33,11 +33,11 @@ class _CosseratRodBase(RodBase):
         *args,
         **kwargs
     ):
-        self.position = position
-        self.directors = directors
+        self.position_collection = position
+        self.director_collection = directors
         # initial set to zero; if coming through kwargs then modify
-        self.velocity = np.zeros((MaxDimension.value(), n_elements + 1))
-        self.omega = np.zeros((MaxDimension.value(), n_elements))
+        self.velocity_collection = np.zeros((MaxDimension.value(), n_elements + 1))
+        self.omega_collection = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
         self.density = density
         self.volume = volume
@@ -66,8 +66,8 @@ class _CosseratRodBase(RodBase):
             self.rest_lengths[1:] + self.rest_lengths[:-1]
         )
         # will apply external force and torques externally
-        self.external_forces = 0 * self.position
-        self.external_torques = 0 * self.omega
+        self.external_forces = 0 * self.position_collection
+        self.external_torques = 0 * self.omega_collection
 
     @classmethod
     def straight_rod(
@@ -144,7 +144,7 @@ class _CosseratRodBase(RodBase):
 
         # Note : we can use the two-point difference kernel, but it needs unnecessary padding
         # and hence will always be slower
-        position_diff = self.position[..., 1:] - self.position[..., :-1]
+        position_diff = self.position_collection[..., 1:] - self.position_collection[..., :-1]
         self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
         self.tangents = position_diff / self.lengths
         # resize based on volume conservation
@@ -179,12 +179,12 @@ class _CosseratRodBase(RodBase):
 
         """
         # self.lengths = l_i = |r^{i+1} - r^{i}|
-        r_dot_v = np.einsum("ij,ij->j", self.position, self.velocity)
+        r_dot_v = np.einsum("ij,ij->j", self.position_collection, self.velocity_collection)
         r_plus_one_dot_v = np.einsum(
-            "ij, ij->j", self.position[..., 1:], self.velocity[..., :-1]
+            "ij, ij->j", self.position_collection[..., 1:], self.velocity_collection[..., :-1]
         )
         r_dot_v_plus_one = np.einsum(
-            "ij, ij->j", self.position[..., :-1], self.velocity[..., 1:]
+            "ij, ij->j", self.position_collection[..., :-1], self.velocity_collection[..., 1:]
         )
         self.dilatation_rate = (
             (r_dot_v[..., :-1] + r_dot_v[..., 1:] - r_dot_v_plus_one - r_plus_one_dot_v)
@@ -196,17 +196,17 @@ class _CosseratRodBase(RodBase):
         # Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant
         self._compute_all_dilatations()
         self.sigma = (
-            self.dilatation * _batch_matvec(self.directors, self.tangents)
+            self.dilatation * _batch_matvec(self.director_collection, self.tangents)
             - _get_z_vector()
         )
 
     def _compute_bending_twist_strains(self):
         # Note: dilatations are computed previously inside ` _compute_all_dilatations `
-        self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
+        self.kappa = _inv_rotate(self.director_collection) / self.rest_voronoi_lengths
 
     def _compute_damping_forces(self):
         # Internal damping foces.
-        damping_forces = self.nu * self.velocity
+        damping_forces = self.nu * self.velocity_collection
         damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
         damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
 
@@ -219,7 +219,7 @@ class _CosseratRodBase(RodBase):
         # Signifies Q^T n_L / e
         # Not using batch matvec as I don't want to take directors.T here
         cosserat_internal_stress = (
-            np.einsum("jik, jk->ik", self.directors, self.internal_stress)
+            np.einsum("jik, jk->ik", self.director_collection, self.internal_stress)
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
         return (
@@ -228,7 +228,7 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_torques(self):
         # Internal damping torques
-        damping_torques = self.nu * self.omega
+        damping_torques = self.nu * self.omega_collection
         return damping_torques
 
     def _compute_internal_torques(self):
@@ -253,7 +253,7 @@ class _CosseratRodBase(RodBase):
         # (Qt x n_L) * \hat{l}
         shear_stretch_couple = (
             _batch_cross(
-                _batch_matvec(self.directors, self.tangents), self.internal_stress
+                _batch_matvec(self.director_collection, self.tangents), self.internal_stress
             )
             * self.rest_lengths
         )
@@ -262,14 +262,14 @@ class _CosseratRodBase(RodBase):
         # terms
         # TODO : the _batch_matvec kernel needs to depend on the representation of J, and should be coded as such
         J_omega_upon_e = (
-            _batch_matvec(self.mass_second_moment_of_inertia, self.omega)
+            _batch_matvec(self.mass_second_moment_of_inertia, self.omega_collection)
             / self.dilatation
         )
 
         # (J \omega_L / e) x \omega_L
         # Warning : Do not do micro-optimization here : you can ignore dividing by dilatation as we later multiply by it
         # but this causes confusion and violates SRP
-        lagrangian_transport = _batch_cross(J_omega_upon_e, self.omega)
+        lagrangian_transport = _batch_cross(J_omega_upon_e, self.omega_collection)
 
         # Note : in the computation of dilatation_rate, there is an optimization opportunity as dilatation rate has
         # a dilatation-like term in the numerator, which we cancel here
@@ -300,8 +300,8 @@ class CosseratRod(_LinearConstitutiveModelMixin, _CosseratRodBase):
         _CosseratRodBase.__init__(
             self,
             n_elements,
-            rod.position,
-            rod.directors,
+            rod.position_collection,
+            rod.director_collection,
             rod.rest_lengths,
             rod.density,
             rod.volume,

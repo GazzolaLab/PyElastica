@@ -14,10 +14,10 @@ class RodBase:
         pass
 
     def get_velocity(self):
-        return self.velocity
+        return self.velocity_collection
 
     def get_angular_velocity(self):
-        return self.omega
+        return self.omega_collection
 
     def get_acceleration(self):
         return (self._compute_internal_forces() + self.external_forces) / self.mass

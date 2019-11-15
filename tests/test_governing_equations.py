@@ -196,7 +196,7 @@ class TestingClass:
             rest_voronoi_lengths,
         ) = compute_all_dilatations_analytically(n_elem, dilatation)
 
-        test_rod.position *= dilatation
+        test_rod.position_collection *= dilatation
         # Compute dilatation using compute_all_dilatations
         # Compute geometry again because node positions changed.
         # But compute geometry will be done inside compute_all_dilatations.
@@ -233,7 +233,7 @@ class TestingClass:
         )
         # Set velocity vector in test_rod to the computed velocity vector above,
         # since we need to initialize velocity for dilatation_rate
-        test_rod.velocity = velocity
+        test_rod.velocity_collection = velocity
         test_rod._compute_all_dilatations()
         test_rod._compute_dilatation_rate()
 
@@ -252,7 +252,7 @@ class TestingClass:
                 _compute_shear_stretch_strains
         """
         initial, test_rod = constructor(n_elem)
-        test_rod.position *= dilatation
+        test_rod.position_collection *= dilatation
 
         strain = compute_strain_analytically(n_elem, dilatation)
         test_rod._compute_shear_stretch_strains()
@@ -273,7 +273,7 @@ class TestingClass:
         """
 
         initial, test_rod = constructor(n_elem)
-        test_rod.position *= dilatation
+        test_rod.position_collection *= dilatation
         internal_stress = compute_stress_analytically(n_elem, dilatation)
 
         test_rod._compute_internal_shear_stretch_stresses_from_model()
@@ -293,7 +293,7 @@ class TestingClass:
                 _compute_internal_shear_stretch_stresses_from_model
         """
         initial, test_rod = constructor(n_elem)
-        test_rod.position *= dilatation
+        test_rod.position_collection *= dilatation
         internal_forces = compute_forces_analytically(n_elem, dilatation)
         test_internal_forces = test_rod._compute_internal_forces()
         assert_allclose(test_internal_forces, internal_forces, atol=Tolerance.atol())
@@ -315,8 +315,8 @@ class TestingClass:
 
         initial, test_rod = constructor(n_elem, nu)
         # Construct velocity and omega
-        test_rod.velocity[:] = 1.0
-        test_rod.omega[:] = 1.0
+        test_rod.velocity_collection[:] = 1.0
+        test_rod.omega_collection[:] = 1.0
         # Compute damping forces and torques
         damping_forces = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1) * nu
@@ -363,7 +363,7 @@ class TestingClass:
         position[..., 0] = np.array([0.0, 0.0, 0.0])
         position[..., 1] = length * np.array([0.0, np.sin(alpha), np.cos(alpha)])
         position[..., 2] = length * np.array([0.0, 0.0, 2 * np.cos(alpha)])
-        test_rod.position = position
+        test_rod.position_collection = position
 
         # Set the directors manually. This is easy since we have two elements.
         directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elem))
@@ -381,7 +381,7 @@ class TestingClass:
                 [0, -np.sin(alpha), np.cos(alpha)],
             )
         )
-        test_rod.directors = directors
+        test_rod.director_collection = directors
 
         # Compute voronoi rest length. Since elements lengths are equal
         # in this test case, rest voronoi length can be easily computed
@@ -472,7 +472,7 @@ class TestingClass:
         position[..., 1] = np.array([0.0, 0.0, 0.5])
         position[..., 2] = np.array([0.0, -0.3, 0.9])
 
-        test_rod.position = position
+        test_rod.position_collection = position
 
         # Simplify the computations, and chose shear matrix as identity matrix.
         test_rod.shear_matrix[:] = np.repeat(
@@ -541,7 +541,7 @@ class TestingClass:
         for i in range(0, n_elem):
             omega[..., i] = np.random.rand(3)
 
-        test_rod.omega = omega
+        test_rod.omega_collection = omega
         test_torques = test_rod._compute_internal_torques()
 
         # computed internal torques has to be zero. Internal torques created by Lagrangian
@@ -559,8 +559,8 @@ class TestingClass:
         )  # check if dilatation rate is 0
 
         # Now set velocity such that to set dilatation rate to 1.
-        test_rod.velocity[..., 0] = np.ones(3) * -0.5
-        test_rod.velocity[..., -1] = np.ones(3) * 0.5
+        test_rod.velocity_collection[..., 0] = np.ones(3) * -0.5
+        test_rod.velocity_collection[..., -1] = np.ones(3) * 0.5
 
         test_rod._compute_dilatation_rate()
 
@@ -613,8 +613,8 @@ class TestingClass:
             velocity[..., i] = np.random.rand(3)
             external_forces[..., i] = np.random.rand(3)
 
-        test_rod.velocity = velocity
-        test_rod.omega = omega
+        test_rod.velocity_collection = velocity
+        test_rod.omega_collection = omega
 
         assert_allclose(test_rod.get_velocity(), velocity, atol=Tolerance.atol())
         assert_allclose(test_rod.get_angular_velocity(), omega, atol=Tolerance.atol())
@@ -633,7 +633,7 @@ class TestingClass:
         # Set angular velocity zero, so that we dont have any
         # contribution from lagrangian transport and unsteady dilatation.
 
-        test_rod.omega[:] = 0.0
+        test_rod.omega_collection[:] = 0.0
         # Set mass moment of inertia matrix to identity matrix for convenience.
         # Inverse of identity = identity
         inv_mass_moment_of_inertia = np.repeat(

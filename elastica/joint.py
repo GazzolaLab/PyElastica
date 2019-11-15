@@ -18,7 +18,7 @@ class FreeJoint:
 
     def apply_force(self, rod_one, index_one, rod_two, index_two):
         end_distance_vector = (
-            rod_two.position[..., index_two] - rod_one.position[..., index_one]
+            rod_two.position_collection[..., index_two] - rod_one.position_collection[..., index_one]
         )
         # Calculate norm of end_distance_vector
         # this implementation timed: 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
@@ -35,7 +35,7 @@ class FreeJoint:
         elastic_force = self.k * end_distance_vector
 
         relative_velocity = (
-            rod_two.velocity[..., index_two] - rod_one.velocity[..., index_one]
+            rod_two.velocity_collection[..., index_two] - rod_one.velocity_collection[..., index_one]
         )
         normal_relative_velocity = (
             np.dot(relative_velocity, normalized_end_distance_vector)
@@ -78,7 +78,7 @@ class HingeJoint(FreeJoint):
         # current direction of the first element of link two
         # also NOTE: - rod two is hinged at first element
         link_direction = (
-            rod_two.position[..., index_two + 1] - rod_two.position[..., index_two]
+            rod_two.position_collection[..., index_two + 1] - rod_two.position_collection[..., index_two]
         )
 
         # projection of the linkdirection onto the plane normal
@@ -91,10 +91,10 @@ class HingeJoint(FreeJoint):
 
         # The opposite torque will be applied on link one
         rod_one.external_torques[..., index_one] -= (
-            rod_one.directors[..., index_one] @ torque
+            rod_one.director_collection[..., index_one] @ torque
         )
         rod_two.external_torques[..., index_two] += (
-            rod_two.directors[..., index_two] @ torque
+            rod_two.director_collection[..., index_two] @ torque
         )
 
 
@@ -113,7 +113,7 @@ class FixedJoint(FreeJoint):
         # current direction of the first element of link two
         # also NOTE: - rod two is fixed at first element
         link_direction = (
-            rod_two.position[..., index_two + 1] - rod_two.position[..., index_two]
+            rod_two.position_collection[..., index_two + 1] - rod_two.position_collection[..., index_two]
         )
 
         # To constrain the orientation of link two, the second node of link two should align with
@@ -122,16 +122,16 @@ class FixedJoint(FreeJoint):
         # should overlap.
 
         position_diff = (
-            rod_one.position[..., index_one] - rod_one.position[..., index_one - 1]
+            rod_one.position_collection[..., index_one] - rod_one.position_collection[..., index_one - 1]
         )
         length = np.sqrt(np.dot(position_diff, position_diff))
         tangent = position_diff / length
 
         tgt_destination = (
-            rod_one.position[..., index_one] + rod_two.rest_lengths[index_two] * tangent
+            rod_one.position_collection[..., index_one] + rod_two.rest_lengths[index_two] * tangent
         )  # dl of rod 2 can be different than rod 1 so use restlengt of rod 2
 
-        curr_destination = rod_two.position[
+        curr_destination = rod_two.position_collection[
             ..., index_two + 1
         ]  # second element of rod2
 
@@ -143,8 +143,8 @@ class FixedJoint(FreeJoint):
 
         # The opposite torque will be applied on link one
         rod_one.external_torques[..., index_one] -= (
-            rod_one.directors[..., index_one] @ torque
+            rod_one.director_collection[..., index_one] @ torque
         )
         rod_two.external_torques[..., index_two] += (
-            rod_two.directors[..., index_two] @ torque
+            rod_two.director_collection[..., index_two] @ torque
         )

@@ -62,16 +62,16 @@ def test_straight_rod():
         poisson_ratio,
     )
     # checking origin and length of rod
-    assert_allclose(test_rod.position[..., 0], start, atol=Tolerance.atol())
-    rod_length = np.linalg.norm(test_rod.position[..., -1] - test_rod.position[..., 0])
+    assert_allclose(test_rod.position_collection[..., 0], start, atol=Tolerance.atol())
+    rod_length = np.linalg.norm(test_rod.position_collection[..., -1] - test_rod.position_collection[..., 0])
     rest_voronoi_lengths = 0.5 * (
         base_length / n + base_length / n
     )  # element lengths are equal for all rod.
     # checking velocities, omegas and rest strains
     # density and mass
     assert_allclose(rod_length, base_length, atol=Tolerance.atol())
-    assert_allclose(test_rod.velocity, np.zeros((3, n + 1)), atol=Tolerance.atol())
-    assert_allclose(test_rod.omega, np.zeros((3, n)), atol=Tolerance.atol())
+    assert_allclose(test_rod.velocity_collection, np.zeros((3, n + 1)), atol=Tolerance.atol())
+    assert_allclose(test_rod.omega_collection, np.zeros((3, n)), atol=Tolerance.atol())
     assert_allclose(test_rod.rest_sigma, np.zeros((3, n)), atol=Tolerance.atol())
     assert_allclose(test_rod.rest_kappa, np.zeros((3, n - 1)), atol=Tolerance.atol())
     assert_allclose(test_rod.density, density, atol=Tolerance.atol())
@@ -88,13 +88,13 @@ def test_straight_rod():
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
     for i in range(n):
-        assert_allclose(test_rod.directors[0, :, i], normal, atol=Tolerance.atol())
+        assert_allclose(test_rod.director_collection[0, :, i], normal, atol=Tolerance.atol())
         assert_allclose(
-            test_rod.directors[1, :, i],
+            test_rod.director_collection[1, :, i],
             np.cross(direction, normal),
             atol=Tolerance.atol(),
         )
-        assert_allclose(test_rod.directors[2, :, i], direction, atol=Tolerance.atol())
+        assert_allclose(test_rod.director_collection[2, :, i], direction, atol=Tolerance.atol())
         assert_allclose(test_rod.rest_lengths, base_length / n, atol=Tolerance.atol())
         assert_allclose(
             test_rod.shear_matrix[..., i], shear_matrix, atol=Tolerance.atol()
