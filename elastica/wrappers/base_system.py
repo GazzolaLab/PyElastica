@@ -28,12 +28,18 @@ class BaseSystemCollection(MutableSequence):
         self._systems = []
 
     def _check_type(self, sys_to_be_added):
-        assert issubclass(sys_to_be_added.__class__, self.allowed_sys_types), (
-            "{0} is not a valid system that can be added into "
-            "BaseSystem. If you are sure that {0} satisfies all"
-            "promises of a system, add it using "
-            "BaseSystem.extend_allowed_types".format(sys_to_be_added.__class__)
-        )
+        if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
+            raise TypeError(
+                "{0}\n"
+                "is not a system passing validity\n"
+                "checks, that can be added into BaseSystem. If you are sure that\n"
+                "{0}\n"
+                "satisfies all criteria for being a system, please add\n"
+                "it using BaseSystem.extend_allowed_types.\n"
+                "The allowed types are\n"
+                "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
+            )
+        return True
 
     def __len__(self):
         return len(self._systems)
@@ -60,6 +66,33 @@ class BaseSystemCollection(MutableSequence):
 
     def override_allowed_types(self, allowed_types):
         self.allowed_sys_types = allowed_types
+
+    def _get_sys_idx_if_valid(self, sys_to_be_added):
+        from numpy import int_ as npint
+
+        n_systems = len(self._systems)  # Total number of systems from mixed-in class
+
+        if isinstance(sys_to_be_added, (int, npint)):
+            # 1. If they are indices themselves, check range
+            assert (
+                -n_systems <= sys_to_be_added < n_systems
+            ), "Rod index {} exceeds number of registered rodtems".format(
+                sys_to_be_added
+            )
+            sys_idx = sys_to_be_added
+        elif self._check_type(sys_to_be_added):
+            # 2. If they are rod objects (most likely), lookup indices
+            # index might have some problems : https://stackoverflow.com/a/176921
+            try:
+                sys_idx = self._systems.index(sys_to_be_added)
+            except ValueError:
+                raise ValueError(
+                    "Rod {} was not found, did you append it to the system?".format(
+                        sys_to_be_added
+                    )
+                )
+
+        return sys_idx
 
     def synchronize(self, time):
         pass

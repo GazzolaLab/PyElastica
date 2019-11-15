@@ -16,33 +16,9 @@ class Connections:
     def connect(
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
     ):
-        # START: Should be in its own function
-        from elastica._rod import RodBase
-        from numpy import int_ as npint
-
-        n_systems = len(self._systems)  # Total number of systems from mixed-in class
         sys_idx = [None] * 2
         for i_sys, sys in enumerate((first_rod, second_rod)):
-            if isinstance(sys, (int, npint)):
-                # 1. If they are indices themselves, check range
-                assert (
-                    -n_systems <= sys < n_systems
-                ), "Rod index {} exceeds number of registered systems".format(sys)
-                sys_idx[i_sys] = sys
-            elif issubclass(sys.__class__, RodBase):
-                # 2. If they are sys objects (most likely), lookup indices
-                # index might have some problems : https://stackoverflow.com/a/176921
-                try:
-                    sys_idx[i_sys] = self._systems.index(sys)
-                except ValueError:
-                    raise ValueError(
-                        "Rod {} was not found, did you append it to the system?".format(
-                            sys
-                        )
-                    )
-            else:
-                raise TypeError("argument {} is not a sys index/object".format(sys))
-        # END
+            sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
 
         # For each system identified, get max dofs
         sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
@@ -80,14 +56,14 @@ class Connections:
         ) in self._connections:
             connection.apply_force(
                 self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
                 first_connect_idx,
+                self._systems[second_sys_idx],
                 second_connect_idx,
             )
-            connection.apply_torue(
+            connection.apply_torque(
                 self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
                 first_connect_idx,
+                self._systems[second_sys_idx],
                 second_connect_idx,
             )
 
@@ -148,18 +124,16 @@ class _Connect:
     def __call__(self, *args, **kwargs):
         if not self._connect_cls:
             raise RuntimeError(
-                "No connections provided to link rod id {0} (at {1}) and {2} (at {3})".format(
-                    self._first_sys_idx,
-                    self.first_sys_connection_idx,
-                    self._second_sys_idx,
-                    self.second_sys_connection_idx,
-                )
+                "No connections provided to link rod id {0}"
+                "(at {2}) and {1} (at {3}), but a Connection"
+                "was intended as per code. Did you forget to"
+                "call the `using` method?".format(*self.id())
             )
 
         try:
             return self._connect_cls(*self._args, **self._kwargs)
-        except:
+        except (TypeError, IndexError):
             raise TypeError(
-                r"Unable to construct connnection class.\n"
+                r"Unable to construct connection class.\n"
                 r"Did you provide all necessary joint properties?"
             )

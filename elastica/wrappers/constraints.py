@@ -13,31 +13,7 @@ class Constraints:
         self._constraints = []
 
     def constrain(self, system):
-        # START: Should be in its own function
-        from elastica._rod import RodBase
-        from numpy import int_ as npint
-
-        n_systems = len(self._systems)  # Total number of systems from mixed-in class
-        if isinstance(system, (int, npint)):
-            # 1. If they are indices themselves, check range
-            assert (
-                -n_systems <= system < n_systems
-            ), "Rod index {} exceeds number of registered rodtems".format(system)
-            sys_idx = system
-        elif issubclass(system.__class__, RodBase):
-            # 2. If they are rod objects (most likely), lookup indices
-            # index might have some problems : https://stackoverflow.com/a/176921
-            try:
-                sys_idx = self._systems.index(system)
-            except ValueError:
-                raise ValueError(
-                    "Rod {} was not found, did you append it to the system?".format(
-                        system
-                    )
-                )
-        else:
-            raise TypeError("argument {} is not a rod index/object".format(system))
-        # END
+        sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user
         _constraint = _Constraint(sys_idx)
@@ -101,9 +77,9 @@ class _Constraint:
         """
         if not self._bc_cls:
             raise RuntimeError(
-                "No boundary condition provided to constrain rod id {0} at {1}".format(
-                    self._sys_idx, rod
-                )
+                "No boundary condition provided to constrain rod"
+                "id {0} at {1}, but a BC was intended. Did you"
+                "forget to call the `using` method?".format(self.id(), rod)
             )
 
         # If there is position, director in kwargs, deal with it first
