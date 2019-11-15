@@ -7,7 +7,7 @@ interface (ie. works with symplectic or explicit routines `timestepper.py`.)
 """
 from collections.abc import MutableSequence
 
-from elastica.rod.cosserat_rod import RodBase
+from elastica.rod import RodBase
 
 
 class BaseSystemCollection(MutableSequence):

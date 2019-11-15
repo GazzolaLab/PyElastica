@@ -111,7 +111,7 @@ class TestConnectionsMixin:
         pass
 
     # TODO fix link after new PR
-    from elastica.rod.cosserat_rod import RodBase
+    from elastica.rod import RodBase
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
