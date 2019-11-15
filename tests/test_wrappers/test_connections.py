@@ -3,7 +3,6 @@ test_connections
 ----------------
 """
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
 
 from elastica.wrappers import Connections
@@ -79,12 +78,10 @@ class TestConnect:
             connect()
         assert "No connections provided" in str(excinfo.value)
 
-    @pytest.mark.parametrize("dof_indices", [(4,), (0, 3)])
-    def test_call_improper_args_throws(self, load_connect, dof_indices):
+    def test_call_improper_args_throws(self, load_connect):
         # Example of bad initiailization function
-        # Init should always have rod-based arguments first
-        # For example
-        # def __init__(self, pos_one, pos_two, dir_one, *args)
+        # This needs at least four args which the user might
+        # forget to pass later on
         def mock_init(self, *args, **kwargs):
             self.nu = args[3]  # Need at least four args
             self.k = kwargs.get("k")
@@ -132,6 +129,13 @@ class TestConnectionsMixin:
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects
 
+    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    and are here because of legacy reasons. I have not removed them because there
+    are Connections require testing against multiple indices, which is still use
+    ful to cross-verify against.
+
+    START
+    """
     @pytest.mark.parametrize(
         "sys_idx",
         [
@@ -194,6 +198,10 @@ class TestConnectionsMixin:
         with pytest.raises(TypeError) as excinfo:
             scwc.connect(mock_rod_registered, mock_rod)
         assert "not a sys" in str(excinfo.value)
+
+    """
+    END of testing BaseSystem calls
+    """
 
     def test_connect_registers_and_returns_Connect(self, load_system_with_connects):
         scwc = load_system_with_connects

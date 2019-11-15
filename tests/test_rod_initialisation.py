@@ -21,14 +21,10 @@ def test_straight_rod():
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.rand(1)
-    density = np.random.rand(1)
+    base_radius = np.random.uniform(1,10)
+    density = np.random.uniform(1,10)
     mass = density * np.pi * base_radius ** 2 * base_length / n
-    # mass_second_moment_of_inertia = np.random.rand(3, 3)
-    # # shear_matrix = np.random.rand(3, 3)
-    # shear_matrix = np.ones((3, 3))
-    # shear_matrix[0, 1] = 2
-    # bend_matrix = np.random.rand(3, 3)
+
     nu = 0.1
     # Youngs Modulus [Pa]
     E = 1e6
