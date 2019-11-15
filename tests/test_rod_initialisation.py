@@ -21,8 +21,8 @@ def test_straight_rod():
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1,10)
-    density = np.random.uniform(1,10)
+    base_radius = np.random.uniform(1, 10)
+    density = np.random.uniform(1, 10)
     mass = density * np.pi * base_radius ** 2 * base_length / n
 
     nu = 0.1

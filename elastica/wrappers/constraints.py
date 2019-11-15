@@ -105,7 +105,7 @@ class _Constraint:
         )
         try:
             return self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
-        except TypeError:
+        except (TypeError, IndexError):
             raise TypeError(
                 r"Unable to construct boundary condition class. Note that:\n"
                 r"1. Any rod properties needed should be placed first\n"

@@ -9,7 +9,7 @@ import pytest
 from elastica.external_forces import NoForces, GravityForces, EndpointForces
 from elastica.utils import Tolerance
 
-# from .test_rod import TestRod
+
 def mock_rod_init(self):
     self.external_forces = 0.0
     self.external_torques = 0.0
