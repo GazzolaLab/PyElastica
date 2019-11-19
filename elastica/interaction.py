@@ -7,8 +7,7 @@ from elastica.utils import MaxDimension
 
 # interpolator for slip velocity for kinetic friction
 def linear_interpolation_slip(velocity_slip, velocity_threshold):
-    abs_velocity_slip = np.fabs(velocity_slip)
-    # velocity_threshold_array = velocity_threshold * np.array((3, velocity_slip.shape[1]))
+    abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
     slip_function = np.ones((1, velocity_slip.shape[1]))
     slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
     slip_function[0, slip_points] = np.fabs(
@@ -119,7 +118,9 @@ class AnistropicFrictionalPlane(InteractionPlane):
             self.kinetic_mu_forward * (1 + axial_velocity_sign)
             + self.kinetic_mu_backward * (1 - axial_velocity_sign)
         )
-        axial_slip_function = (axial_velocity, self.slip_velocity_tol)
+        axial_slip_function = linear_interpolation_slip(
+            axial_velocity, self.slip_velocity_tol
+        )
         axial_kinetic_friction_force = -(
             (1.0 - axial_slip_function)
             * kinetic_mu
