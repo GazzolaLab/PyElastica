@@ -3,7 +3,7 @@ __doc__ = """ Interaction module """
 import numpy as np
 
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
-
+from elastica.utils import MaxDimension
 
 # interpolator for slip velocity for kinetic friction
 def linear_interpolation_slip(velocity_slip, velocity_threshold):
@@ -17,8 +17,20 @@ def linear_interpolation_slip(velocity_slip, velocity_threshold):
     return slip_function
 
 
+# TODO: node_to_elements only used in friction, so that it is located here, we can change it.
+# Converting forces on nodes to elements
+def nodes_to_elements(input):
+    # TODO: find a way with out initialzing output vector
+    output = np.zeros((MaxDimension.value(), input.shape[1] - 1))
+    output[..., :-1] += 0.5 * input[..., 1:-1]
+    output[..., 1:] += 0.5 * input[..., 1:-1]
+    output[..., 0] += input[..., 0]
+    output[..., -1] += input[..., -1]
+    return output
+
+
 # base class for interaction
-# only applies normal force no firctoon
+# only applies normal force no friction
 class InteractionPlane:
     def __init__(self, k, nu, origin_plane, normal_plane):
         self.k = k
@@ -29,22 +41,29 @@ class InteractionPlane:
 
     def apply_normal_force(self, rod):
         element_x = 0.5 * (rod.position[..., :-1] + rod.position[..., 1:])
-        distance_from_plane = self.normal_plane @ (element_x - self.origin_plane)
-        no_contact_pts = np.where(distance_from_plane > self.surface_tol)
-        nodal_total_forces = rod.internal_forces + rod.external_forces
-        total_forces = 0.5 * (
-            nodal_total_forces[..., :-1] + nodal_total_forces[..., 1:]
+        distance_from_plane = np.einsum(
+            "i, ij->j", self.normal_plane, (element_x - self.origin_plane.reshape(3, 1))
         )
-        forces_normal_direction = self.normal_plane @ total_forces
-        forces_normal = np.outer(self.normal_plane, forces_normal_direction)
+        no_contact_pts = np.where(distance_from_plane - rod.radius > self.surface_tol)
+        # TODO: How should we compute internal forces here? Call _compute_internal_forces?
+        nodal_total_forces = rod.internal_forces + rod.external_forces
+        total_forces = nodes_to_elements(nodal_total_forces)
+
+        forces_normal_direction = np.einsum("i, ij->j", self.normal_plane, total_forces)
+        forces_normal = np.einsum(
+            "i, j->ij", self.normal_plane, forces_normal_direction
+        )
         forces_normal[..., np.where(forces_normal_direction > 0)] = 0
-        plane_penetration = np.minimum(distance_from_plane - rod.r, 0.0)
-        elastic_force = -self.k * np.outer(self.normal_plane, plane_penetration)
+        plane_penetration = np.minimum(distance_from_plane - rod.radius, 0.0)
+        # elastic_force = -self.k * np.outer(self.normal_plane, plane_penetration)
+        elastic_force = -self.k * np.einsum(
+            "i, j->ij", self.normal_plane, plane_penetration
+        )
         element_v = 0.5 * (rod.velocity[..., :-1] + rod.velocity[..., 1:])
-        normal_v = self.normal_plane @ element_v
-        damping_force = -self.nu * np.outer(self.normal_plane, normal_v)
+        normal_v = np.einsum("i, ij->j", self.normal_plane, element_v)
+        damping_force = -self.nu * np.einsum("i, j->ij", self.normal_plane, normal_v)
         normal_force_plane = -forces_normal
-        normal_force_plane[..., no_contact_pts[1]] = 0
+        normal_force_plane[..., no_contact_pts[:]] = 0
         total_force_plane = normal_force_plane + elastic_force + damping_force
         rod.external_forces[..., :-1] += 0.5 * total_force_plane
         rod.external_forces[..., 1:] += 0.5 * total_force_plane
