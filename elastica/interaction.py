@@ -5,6 +5,7 @@ import numpy as np
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
 
+
 # interpolator for slip velocity for kinetic friction
 def linear_interpolation_slip(velocity_slip, velocity_threshold):
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
