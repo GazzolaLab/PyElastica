@@ -9,11 +9,7 @@ from elastica.utils import MaxDimension
 def linear_interpolation_slip(velocity_slip, velocity_threshold):
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
     slip_function = np.ones((1, velocity_slip.shape[1]))
-    # slip_function = np.ones(velocity_slip.shape[1])
     slip_points = np.array(np.where(np.fabs(abs_velocity_slip) > velocity_threshold))
-    # slip_function[0, slip_points] = np.fabs(
-    #     1.0 - np.minimum(1.0, abs_velocity_slip / velocity_threshold - 1.0)
-    # )
     if not slip_points.size == 0:
         slip_function[0, slip_points] = np.fabs(
             1.0 - np.minimum(1.0, abs_velocity_slip / velocity_threshold - 1.0)
@@ -59,7 +55,6 @@ class InteractionPlane:
         )
         forces_normal[..., np.where(forces_normal_direction > 0)] = 0
         plane_penetration = np.minimum(distance_from_plane - rod.radius, 0.0)
-        # elastic_force = -self.k * np.outer(self.normal_plane, plane_penetration)
         elastic_force = -self.k * np.einsum(
             "i, j->ij", self.normal_plane, plane_penetration
         )
@@ -71,7 +66,7 @@ class InteractionPlane:
         total_force_plane = normal_force_plane + elastic_force + damping_force
         rod.external_forces[..., :-1] += 0.5 * total_force_plane
         rod.external_forces[..., 1:] += 0.5 * total_force_plane
-        # return np.fabs(normal_force_plane)
+
         return np.sqrt(np.einsum("ij, ij->j", normal_force_plane, normal_force_plane))
 
 
@@ -110,14 +105,12 @@ class AnistropicFrictionalPlane(InteractionPlane):
     def apply_friction(self, rod):
         # calculate axial and rolling directions
         normal_force_plane = self.apply_normal_force(rod)
-        # normal_plane_array = np.outer(
-        #     self.normal_plane, np.ones((1, normal_force_plane.shape[0]))
-        # )
         normal_plane_array = np.repeat(
             self.normal_plane.reshape(3, 1), normal_force_plane.shape[0], axis=1
         )
         axial_direction = rod.tangents
         element_v = 0.5 * (rod.velocity[..., :-1] + rod.velocity[..., 1:])
+
         # first apply axial kinetic friction
         # dot product
         axial_velocity_mag = np.einsum("ij,ij->j", element_v, axial_direction)
@@ -196,28 +189,29 @@ class AnistropicFrictionalPlane(InteractionPlane):
         rod.external_forces[..., :-1] += 0.5 * axial_static_friction_force
         rod.external_forces[..., 1:] += 0.5 * axial_static_friction_force
 
-        # # now rolling static friction
-        # # there is some normal, tangent and rolling directions inconsitency from Elastica
-        # total_torques = _batch_matvec(
-        #     directors_transpose, (rod.internal_torques + rod.external_torques)
-        # )
-        # # Elastica has opposite defs of tangents in interaction.h and rod.cpp
-        # tangential_torques = np.einsum("ijk,ijk->jk", total_torques, rod.tangents)
-        # projection = np.einsum("ijk,ijk->jk", total_forces, rolling_direction)
-        # noslip_force = -(
-        #     (rod.radius * projection - 2.0 * tangential_torques) / 3.0 / rod.radius
-        # )
-        # max_friction_force = (
-        #     rolling_slip_function * self.static_mu_sideways * normal_force_plane
-        # )
-        # noslip_force_sign = np.sign(noslip_force)
-        # rolling_static_friction_force = (
-        #     np.minimum(np.fabs(noslip_force), max_friction_force)
-        #     * noslip_force_sign
-        #     * rolling_direction
-        # )
-        # rod.external_forces[..., :-1] += 0.5 * rolling_static_friction_force
-        # rod.external_forces[..., 1:] += 0.5 * rolling_static_friction_force
-        # rod.external_torques += _batch_matvec(
-        #     rod.directors, _batch_cross(torque_arm, rolling_static_friction_force)
-        # )
+        # now rolling static friction
+        # there is some normal, tangent and rolling directions inconsitency from Elastica
+        # TODO: Make sure when we are here internal torques already computed
+        total_torques = _batch_matvec(
+            directors_transpose, (rod.internal_torques + rod.external_torques)
+        )
+        # Elastica has opposite defs of tangents in interaction.h and rod.cpp
+        tangential_torques = np.einsum("ij,ij->j", total_torques, rod.tangents)
+        projection = np.einsum("ij,ij->j", total_forces, rolling_direction)
+        noslip_force = -(
+            (rod.radius * projection - 2.0 * tangential_torques) / 3.0 / rod.radius
+        )
+        max_friction_force = (
+            rolling_slip_function * self.static_mu_sideways * normal_force_plane
+        )
+        noslip_force_sign = np.sign(noslip_force)
+        rolling_static_friction_force = (
+            np.minimum(np.fabs(noslip_force), max_friction_force)
+            * noslip_force_sign
+            * rolling_direction
+        )
+        rod.external_forces[..., :-1] += 0.5 * rolling_static_friction_force
+        rod.external_forces[..., 1:] += 0.5 * rolling_static_friction_force
+        rod.external_torques += _batch_matvec(
+            rod.directors, _batch_cross(torque_arm, rolling_static_friction_force)
+        )
