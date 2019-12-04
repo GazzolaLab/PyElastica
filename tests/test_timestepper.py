@@ -304,9 +304,6 @@ class TestSteppersAgainstCollectiveSystems:
         while np.abs(final_time - time) > 1e5 * tol:
             time = stepper.do_step(collective_system, memory_collection, time, dt)
 
-        for memory in memory_collection:
-            print(memory.k_1)
-
         for system in collective_system:
             assert_allclose(
                 system.state,
@@ -317,3 +314,64 @@ class TestSteppersAgainstCollectiveSystems:
 
     # @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     # def test_symplectic_against_collective_system(self, symplectic_stepper):
+
+class TestSteppersAgainstRodLikeSystems:
+    """ The rods compose specific data-structures that
+    act as an interface to timesteppers (see `rod/data_structures.py`)
+    """
+    # TODO : Figure out a way of integrating rods with explicit timesteppers
+    @pytest.mark.xfail
+    @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
+    def test_explicit_against_ellipse_motion(self, explicit_stepper):
+        from elastica.systems.analytical import SimpleSystemWithPositionsDirectors
+        rod_like_system = SimpleSystemWithPositionsDirectors(np.array([0., 0., 0.]), np.random.randn(3,3,1))
+        final_time = 1.0
+        n_steps = 500
+        stepper = explicit_stepper()
+
+        integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
+
+        assert_allclose(
+            rod_like_system.position_collection,
+            rod_like_system.analytical_solution("Positions", final_time),
+            rtol=Tolerance.rtol() * 1e1,
+            atol=Tolerance.atol(),
+        )
+
+
+    @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
+    def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
+        from elastica.systems.analytical import SimpleSystemWithPositionsDirectors
+
+        random_start_position = np.random.randn(3,1)
+        random_end_position = np.random.randn(3,1)
+        random_directors, _ = np.linalg.qr(np.random.randn(3,3))
+        random_directors = random_directors.reshape(3,3,1)
+
+        rod_like_system = SimpleSystemWithPositionsDirectors(random_start_position, random_end_position, random_directors)
+        final_time = 1.0
+        n_steps = 1000
+        stepper = symplectic_stepper()
+
+        integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
+
+        assert_allclose(
+            rod_like_system.position_collection,
+            rod_like_system.analytical_solution( "Positions", final_time),
+            rtol=Tolerance.rtol() * 1e1,
+            atol=Tolerance.atol(),
+        )
+
+        assert_allclose(
+            rod_like_system.velocity_collection,
+            rod_like_system.analytical_solution( "Velocity", final_time),
+            rtol=Tolerance.rtol() * 1e1,
+            atol=Tolerance.atol(),
+        )
+
+        assert_allclose(
+            rod_like_system.director_collection,
+            rod_like_system.analytical_solution( "Directors", final_time),
+            rtol=Tolerance.rtol() * 1e1,
+            atol=Tolerance.atol(),
+        )
