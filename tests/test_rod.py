@@ -75,6 +75,13 @@ def test_bootstrapping_types_for_explicit_steppers(load_data_for_bootstrapping_s
     assert_instance(all_states[0], _State)
     assert_instance(all_states[1], _DerivativeState)
 
+    test_states = all_states[0]
+    test_derivatives = all_states[1]
+
+    assert np.shares_memory(
+        test_states.kinematic_rate_collection, test_derivatives.rate_collection
+    ), "Explicit states does not share memory"
+
 
 def test_bootstrapping_types_for_symplectic_steppers(load_data_for_bootstrapping_state):
     all_states = _bootstrap_from_data("symplectic", *load_data_for_bootstrapping_state)
@@ -128,10 +135,16 @@ class TestExplicitStepperStateBehavior(LoadStates):
     # TODO : update tests after including Rodrigues rotation properly
     StepperType = "explicit"
 
-    def test_derivative_rmul(self, load_states):
+    @pytest.mark.parametrize("mul_type", ["Pre multiply", "Post multiply"])
+    def test_derivative_rmul(self, load_states, mul_type):
         _, derivative = load_states
         dt = np.random.randn()
-        test_derivative = dt * derivative
+        if mul_type == "Pre multiply":
+            test_derivative = dt * derivative
+        elif mul_type == "Post multiply":
+            test_derivative = derivative * dt
+        else:
+            raise RuntimeError("Shouldn't be here")
         assert_instance(test_derivative, np.ndarray)
         correct_derivative = dt * self.Vectors
         assert np.all(np.in1d(test_derivative.ravel(), correct_derivative.ravel()))
@@ -148,10 +161,12 @@ class TestExplicitStepperStateBehavior(LoadStates):
 
         assert_instance(test_state, _State)
 
+        assert test_state.n_nodes == state.n_nodes, "Nodes unequal"
         assert_allclose(
             test_state.position_collection,
             func(self.States["Position"], self.States["Velocity"]),
         )
+        # FIXME How to test directors again?
         assert np.all(
             np.in1d(
                 func(self.States["Velocity"], self.States["Acceleration"]).ravel(),
@@ -204,22 +219,22 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         kin_state, dyn_state = load_states
         assert np.all(
             np.in1d(
-                self.States["Velocity"].ravel(), dyn_state.kinematic_rates().ravel()
+                self.States["Velocity"].ravel(), dyn_state.kinematic_rates(time=0.0).ravel()
             )
         )
         assert np.all(
-            np.in1d(self.States["Omega"].ravel(), dyn_state.kinematic_rates().ravel())
+            np.in1d(self.States["Omega"].ravel(), dyn_state.kinematic_rates(time=0.0).ravel())
         )
 
     def test_dynamic_state_returns_correct_dynamic_rates(self, load_states):
         kin_state, dyn_state = load_states
         assert np.all(
             np.in1d(
-                self.States["Acceleration"].ravel(), dyn_state.dynamic_rates().ravel()
+                self.States["Acceleration"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel()
             )
         )
         assert np.all(
-            np.in1d(self.States["Alpha"].ravel(), dyn_state.dynamic_rates().ravel())
+            np.in1d(self.States["Alpha"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel())
         )
 
     def test_dynamic_state_iadd(self, load_states):
@@ -227,7 +242,7 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         scalar = 2.0
 
         def inplace_func(x, y):
-            x.__iadd__(scalar * y.dynamic_rates())
+            x.__iadd__(scalar * y.dynamic_rates(time=0.0))
 
         def func(x, y):
             return x + scalar * y
@@ -245,7 +260,7 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         scalar = 2.0
 
         def inplace_func(x, y):
-            x.__iadd__(scalar * y.kinematic_rates())
+            x.__iadd__(scalar * y.kinematic_rates(time=0.0))
 
         def func(x, y):
             return x + scalar * y
@@ -256,3 +271,4 @@ class TestSymplecticStepperStateBehavior(LoadStates):
             kin_state.position_collection,
             func(self.States["Position"], self.States["Velocity"]),
         )
+        # FIXME How to test directors?
