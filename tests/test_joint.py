@@ -76,12 +76,18 @@ def test_freejoint():
     rod2.velocity_collection = np.tile(v2, (1, n + 1))
 
     # Compute the free joint forces
-    distance = rod2.position_collection[..., rod2_index] - rod1.position_collection[..., rod1_index]
+    distance = (
+        rod2.position_collection[..., rod2_index]
+        - rod1.position_collection[..., rod1_index]
+    )
     end_distance = np.linalg.norm(distance)
     if end_distance <= Tolerance.atol():
         end_distance = 1.0
     elasticforce = k * distance
-    relative_vel = rod2.velocity_collection[..., rod2_index] - rod1.velocity_collection[..., rod1_index]
+    relative_vel = (
+        rod2.velocity_collection[..., rod2_index]
+        - rod1.velocity_collection[..., rod1_index]
+    )
     normal_relative_vel = np.dot(relative_vel, distance) / end_distance
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
@@ -167,12 +173,18 @@ def test_hingejoint():
     rod2_index = 0
 
     # Compute the free joint forces
-    distance = rod2.position_collection[..., rod2_index] - rod1.position_collection[..., rod1_index]
+    distance = (
+        rod2.position_collection[..., rod2_index]
+        - rod1.position_collection[..., rod1_index]
+    )
     end_distance = np.linalg.norm(distance)
     if end_distance == 0:
         end_distance = 1
     elasticforce = k * distance
-    relative_vel = rod2.velocity_collection[..., rod2_index] - rod1.velocity_collection[..., rod1_index]
+    relative_vel = (
+        rod2.velocity_collection[..., rod2_index]
+        - rod1.velocity_collection[..., rod1_index]
+    )
     normal_relative_vel = np.dot(relative_vel, distance) / end_distance
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
@@ -189,7 +201,10 @@ def test_hingejoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
     )
 
-    linkdirection = rod2.position_collection[..., rod2_index + 1] - rod2.position_collection[..., rod2_index]
+    linkdirection = (
+        rod2.position_collection[..., rod2_index + 1]
+        - rod2.position_collection[..., rod2_index]
+    )
     forcedirection = np.dot(linkdirection, normal1) * normal1
     torque = -kt * np.cross(linkdirection, forcedirection)
 
@@ -273,12 +288,18 @@ def test_fixedjoint():
     rod2_index = 0
 
     # Compute the free joint forces
-    distance = rod2.position_collection[..., rod2_index] - rod1.position_collection[..., rod1_index]
+    distance = (
+        rod2.position_collection[..., rod2_index]
+        - rod1.position_collection[..., rod1_index]
+    )
     end_distance = np.linalg.norm(distance)
     if end_distance == 0:
         end_distance = 1
     elasticforce = k * distance
-    relative_vel = rod2.velocity_collection[..., rod2_index] - rod1.velocity_collection[..., rod1_index]
+    relative_vel = (
+        rod2.velocity_collection[..., rod2_index]
+        - rod1.velocity_collection[..., rod1_index]
+    )
     normal_relative_vel = np.dot(relative_vel, distance) / end_distance
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
@@ -295,13 +316,22 @@ def test_fixedjoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
     )
 
-    linkdirection = rod2.position_collection[..., rod2_index + 1] - rod2.position_collection[..., rod2_index]
+    linkdirection = (
+        rod2.position_collection[..., rod2_index + 1]
+        - rod2.position_collection[..., rod2_index]
+    )
 
-    positiondiff = rod1.position_collection[..., rod1_index] - rod1.position_collection[..., rod1_index - 1]
+    positiondiff = (
+        rod1.position_collection[..., rod1_index]
+        - rod1.position_collection[..., rod1_index - 1]
+    )
     tangent = positiondiff / np.sqrt(np.dot(positiondiff, positiondiff))
 
     # rod 2 has to be alligned with rod 1
-    check1 = rod1.position_collection[..., rod1_index] + rod2.rest_lengths[rod2_index] * tangent
+    check1 = (
+        rod1.position_collection[..., rod1_index]
+        + rod2.rest_lengths[rod2_index] * tangent
+    )
     check2 = rod2.position_collection[..., rod2_index + 1]
     forcedirection = -kt * (check2 - check1)
     torque = np.cross(linkdirection, forcedirection)

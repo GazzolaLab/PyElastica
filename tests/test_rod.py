@@ -219,22 +219,29 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         kin_state, dyn_state = load_states
         assert np.all(
             np.in1d(
-                self.States["Velocity"].ravel(), dyn_state.kinematic_rates(time=0.0).ravel()
+                self.States["Velocity"].ravel(),
+                dyn_state.kinematic_rates(time=0.0).ravel(),
             )
         )
         assert np.all(
-            np.in1d(self.States["Omega"].ravel(), dyn_state.kinematic_rates(time=0.0).ravel())
+            np.in1d(
+                self.States["Omega"].ravel(),
+                dyn_state.kinematic_rates(time=0.0).ravel(),
+            )
         )
 
     def test_dynamic_state_returns_correct_dynamic_rates(self, load_states):
         kin_state, dyn_state = load_states
         assert np.all(
             np.in1d(
-                self.States["Acceleration"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel()
+                self.States["Acceleration"].ravel(),
+                dyn_state.dynamic_rates(time=0.0).ravel(),
             )
         )
         assert np.all(
-            np.in1d(self.States["Alpha"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel())
+            np.in1d(
+                self.States["Alpha"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel()
+            )
         )
 
     def test_dynamic_state_iadd(self, load_states):

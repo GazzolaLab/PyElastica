@@ -144,7 +144,9 @@ class _CosseratRodBase(RodBase):
 
         # Note : we can use the two-point difference kernel, but it needs unnecessary padding
         # and hence will always be slower
-        position_diff = self.position_collection[..., 1:] - self.position_collection[..., :-1]
+        position_diff = (
+            self.position_collection[..., 1:] - self.position_collection[..., :-1]
+        )
         self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
         self.tangents = position_diff / self.lengths
         # resize based on volume conservation
@@ -179,12 +181,18 @@ class _CosseratRodBase(RodBase):
 
         """
         # self.lengths = l_i = |r^{i+1} - r^{i}|
-        r_dot_v = np.einsum("ij,ij->j", self.position_collection, self.velocity_collection)
+        r_dot_v = np.einsum(
+            "ij,ij->j", self.position_collection, self.velocity_collection
+        )
         r_plus_one_dot_v = np.einsum(
-            "ij, ij->j", self.position_collection[..., 1:], self.velocity_collection[..., :-1]
+            "ij, ij->j",
+            self.position_collection[..., 1:],
+            self.velocity_collection[..., :-1],
         )
         r_dot_v_plus_one = np.einsum(
-            "ij, ij->j", self.position_collection[..., :-1], self.velocity_collection[..., 1:]
+            "ij, ij->j",
+            self.position_collection[..., :-1],
+            self.velocity_collection[..., 1:],
         )
         self.dilatation_rate = (
             (r_dot_v[..., :-1] + r_dot_v[..., 1:] - r_dot_v_plus_one - r_plus_one_dot_v)
@@ -253,7 +261,8 @@ class _CosseratRodBase(RodBase):
         # (Qt x n_L) * \hat{l}
         shear_stretch_couple = (
             _batch_cross(
-                _batch_matvec(self.director_collection, self.tangents), self.internal_stress
+                _batch_matvec(self.director_collection, self.tangents),
+                self.internal_stress,
             )
             * self.rest_lengths
         )

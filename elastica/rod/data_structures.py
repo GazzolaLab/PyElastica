@@ -31,10 +31,12 @@ class _RodExplicitStepperMixin:
         # print("KRC", self.state.kinematic_rate_collection)
         # print("DEr", self.__deriv_state.rate_collection)
         if np.shares_memory(
-            self.state.kinematic_rate_collection, self.velocity_collection
-                #self.__deriv_state.rate_collection
-        ) : print("Shares memory")
-        else :
+            self.state.kinematic_rate_collection,
+            self.velocity_collection
+            # self.__deriv_state.rate_collection
+        ):
+            print("Shares memory")
+        else:
             print("Explicit states does not share memory")
         return self.__deriv_state
 
@@ -64,9 +66,9 @@ class _RodSymplecticStepperMixin:
 
         """
         The following block of code is a test to ensure that
-        the time-integrator always updates the view of the 
+        the time-integrator always updates the view of the
         collection variables, and not an independent variable
-        (aka no copy is made). It exists only for legacy 
+        (aka no copy is made). It exists only for legacy
         purposes and will be either refactored or removed once
         testing is done.
         """

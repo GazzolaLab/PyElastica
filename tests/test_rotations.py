@@ -433,10 +433,13 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions(blocksize):
     assert_allclose(test_axis_collection, correct_axis_collection)
     assert_allclose(test_scaling, 0.0 * test_scaling + dtheta_di, atol=Tolerance.atol())
 
+
 # TODO Resolve ambiguity with signs. TOP PRIORITY!!!!!!!!!!!!!!!
 @pytest.mark.xfail
 @pytest.mark.parametrize("blocksize", [32, 128])
-def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_directors(blocksize):
+def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_directors(
+    blocksize,
+):
     """ Construct a unit circle, which we know has constant curvature,
     and see if inv_rotate gives us the correct axis of rotation and
     the angle of change
