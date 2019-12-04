@@ -292,3 +292,44 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         ).__init__()
         self.systems.append(ScalarExponentialDecaySystem())
         self.systems.append(DampedSimpleHarmonicOscillatorSystem())
+
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
+class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
+    def __init__(self, start_position, end_position, start_director):
+        self.a = 0.5
+        self.b = 1
+        self.c = 2
+        self.n_elems = 1
+        self.init_pos = start_position.reshape(3, self.n_elems)
+        # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
+        self.final_pos = end_position.reshape(3, self.n_elems)
+        all_positions = np.hstack((self.init_pos, self.final_pos))
+        velocities = 1.0/np.pi + 0.0 * all_positions
+        accelerations = 0.0 * all_positions
+        omegas = 0.0 * self.init_pos
+        # For omega, don't start with exactly 0.0 as we divide by magnitude
+        # at the start of the get_rotate_matrix routine
+        self.omega_value = 1.0 * np.pi
+        omegas[2, ...] = self.omega_value
+        angular_accelerations = 0.0 * omegas
+        self._vector_states = np.hstack((all_positions, velocities, omegas, accelerations, angular_accelerations))
+        self.init_dir = start_director.copy()
+        self._matrix_states = start_director.copy()
+
+        # Givees position, director etc.
+        super(SimpleSystemWithPositionsDirectors, self).__init__()
+
+    def update_accelerations(self, time):
+        np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
+        np.copyto(self.alpha_collection, 0.0)
+
+    def analytical_solution(self, type, time):
+        if type == "Positions":
+            analytical_solution = np.hstack((self.init_pos, self.final_pos)) + np.sin(np.pi * time) / np.pi ** 2
+        elif type == "Velocity":
+            analytical_solution = 0.0 * np.hstack((self.init_pos, self.final_pos)) + np.cos(np.pi * time) / np.pi
+        elif type == "Directors":
+            from elastica._rotations import _rotate
+            axis = np.array([0., 0., 1.]).reshape(3,1) # There is only one director
+            analytical_solution = _rotate(self.init_dir, self.omega_value * time, axis)
+        return analytical_solution
