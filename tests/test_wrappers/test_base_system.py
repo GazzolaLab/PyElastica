@@ -125,6 +125,5 @@ class TestBaseSystemCollection:
 
     def test_get_sys_index_returns_correct_idx(self, load_collection):
         assert load_collection._get_sys_idx_if_valid(1) == 1
-        print(load_collection)
 
     # TODO : Check synchronize calls
