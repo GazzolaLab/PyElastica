@@ -188,7 +188,7 @@ class TestForcingMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwf._forcings:
+        for (x, _) in scwf._ext_forces_torques:
             assert num < x
             num = x
 
