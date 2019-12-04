@@ -44,7 +44,6 @@ skewmap_correctness_data = [(2, [(1, 1, 0)]), (3, [(2, 1, 0), (1, 0, 2), (0, 2, 
 
 @pytest.mark.parametrize("dim, correct_list", skewmap_correctness_data)
 def test_skewmap_correctness(dim, correct_list):
-    print(_generate_skew_map(3))
     assert _generate_skew_map(dim) == correct_list
 
 
@@ -154,10 +153,17 @@ def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     vector_collection = np.array([0.0, 0.0, zcomp]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = zcomp * dt
+    # Notice that the correct_rot_mat seems to be a transpose
+    # ie if you take a vector v, and do Rv, it seems to do a
+    # rotation be -test_theta.
+    # The catch in this case is that our directors (d_1, d_2, d_3)
+    # are all aligned row-wise rather than columnwise. Thus we need
+    # to multiply them by a R.transpose, which is equivalent to
+    # multiplying by a R(-theta).
     correct_rot_mat = np.array(
         [
-            [np.cos(test_theta), -np.sin(test_theta), 0.0],
-            [np.sin(test_theta), np.cos(test_theta), 0.0],
+            [np.cos(test_theta), np.sin(test_theta), 0.0],
+            [-np.sin(test_theta), np.cos(test_theta), 0.0],
             [0.0, 0.0, 1.0],
         ]
     ).reshape(3, 3, 1)
@@ -172,11 +178,12 @@ def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     vector_collection = np.array([0.0, ycomp, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = ycomp * dt
+    # Transpose for similar reasons mentioned before
     correct_rot_mat = np.array(
         [
-            [np.cos(test_theta), 0.0, np.sin(test_theta)],
+            [np.cos(test_theta), 0.0, -np.sin(test_theta)],
             [0.0, 1.0, 0.0],
-            [-np.sin(test_theta), 0.0, np.cos(test_theta)],
+            [np.sin(test_theta), 0.0, np.cos(test_theta)],
         ]
     ).reshape(3, 3, 1)
 
@@ -190,11 +197,12 @@ def test_get_rotation_matrix_correct_rotation_about_x(xcomp, dt):
     vector_collection = np.array([xcomp, 0.0, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
     test_theta = xcomp * dt
+    # Transpose for similar reasons mentioned before
     correct_rot_mat = np.array(
         [
             [1.0, 0.0, 0.0],
-            [0.0, np.cos(test_theta), -np.sin(test_theta)],
-            [0.0, np.sin(test_theta), np.cos(test_theta)],
+            [0.0, np.cos(test_theta), np.sin(test_theta)],
+            [0.0, -np.sin(test_theta), np.cos(test_theta)],
         ]
     ).reshape(3, 3, 1)
 
@@ -206,11 +214,18 @@ def test_get_rotation_matrix_correctness_in_three_dimensions():
     # A rotation of 120 degrees about x=y=z gives
     # the permutation matrix P
     # {\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}}
+    # Basically x becomes y, y becomes z, z becomes x
+    # For our case then (with directors aligned on the rows,
+    # rather than columns)
+    # we have
+    # {\begin{bmatrix}0&1&0\\0&0&1\\1&0&0\end{bmatrix}}
     vector_collection = np.array([1.0, 1.0, 1.0]) / np.sqrt(3.0)
     vector_collection = vector_collection.reshape(-1, 1)
     theta = np.deg2rad(120.0)
     test_rot_mat = _get_rotation_matrix(theta, vector_collection)
-    correct_rot_mat = np.roll(np.eye(3), -1, axis=1).reshape(3, 3, 1)
+    # previous correct matrix
+    # correct_rot_mat = np.roll(np.eye(3), -1, axis=1).reshape(3, 3, 1)
+    correct_rot_mat = np.roll(np.eye(3), 1, axis=1).reshape(3, 3, 1)
 
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
@@ -232,6 +247,8 @@ def test_get_rotation_matrix_correctness_against_canned_example():
     vector_collection = vector_collection.reshape(-1, 1)
     theta = np.deg2rad(76.0)
     test_rot_mat = _get_rotation_matrix(theta, vector_collection)
+    # Previous correct matrix, which did not have a transpose
+    """
     correct_rot_mat = np.array(
         [
             [0.254506, -0.834834, 0.488138],
@@ -239,6 +256,15 @@ def test_get_rotation_matrix_correctness_against_canned_example():
             [-0.311957, 0.406903, 0.858552],
         ]
     ).reshape(3, 3, 1)
+    """
+    # Transpose for similar reasons mentioned before
+    correct_rot_mat = np.array(
+        [
+            [0.254506, -0.834834, 0.488138],
+            [0.915374, 0.370785, 0.156873],
+            [-0.311957, 0.406903, 0.858552],
+        ]
+    ).T.reshape(3, 3, 1)
 
     assert_allclose(test_rot_mat, correct_rot_mat, atol=1e-6)
 
@@ -297,8 +323,12 @@ def test_rotate_correctness():
         # Get basic director out, then modify it as you like
         dir = np.tile(np.eye(3).reshape(3, 3, 1), blocksize)
         dir[0, 0, ...] = coss
-        dir[0, 1, ...] = -sins
-        dir[1, 0, ...] = sins
+        # Flip signs on [0,1] and [1,0] to go from our row-wise
+        # representation to the more commonly used
+        # columnwise representation, for similar reasons metioned
+        # before
+        dir[0, 1, ...] = sins
+        dir[1, 0, ...] = -sins
         dir[1, 1, ...] = coss
 
         return dir
@@ -308,7 +338,6 @@ def test_rotate_correctness():
     rotated_about = np.array([0.0, 0.0, 1.0]).reshape(-1, 1)
 
     director_collection = get_aligned_director_collection(base_angle)
-    # print(director_collection.shape)
     axis_collection = np.tile(rotated_about, blocksize)
     axis_collection *= rotated_by
     dt = 1.0
@@ -356,10 +385,12 @@ def test_inv_rotate_correctness_simple_in_three_dimensions():
 # TODO Resolve ambiguity with signs. TOP PRIORITY!!!!!!!!!!!!!!!
 @pytest.mark.xfail
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
-def test_inv_rotate_correctness_across_blocksizes_in_two_dimensions(blocksize):
-    """ Construct a circle, which we know has constant curvature,
-    and see if inv_rotate gives us the correct axis of rotation and the angle
-    of change
+def test_inv_rotate_correctness_on_circle_in_two_dimensions(blocksize):
+    """ Construct a unit circle, which we know has constant curvature,
+    and see if inv_rotate gives us the correct axis of rotation and
+    the angle of change
+
+    Do this when d3 = z for first check, as it generates less confusion
 
     Parameters
     ----------
@@ -378,19 +409,76 @@ def test_inv_rotate_correctness_across_blocksizes_in_two_dimensions(blocksize):
     director_collection = np.zeros((3, 3, blocksize))
 
     # First fill all d1 components
+    # normal direction
     director_collection[0, 0, ...] = -np.cos(theta_collection)
     director_collection[0, 1, ...] = -np.sin(theta_collection)
 
     # Then all d2 components
-    director_collection[2, 0, ...] = -np.sin(theta_collection)
-    director_collection[2, 1, ...] = np.cos(theta_collection)
+    # tangential direction
+    director_collection[1, 0, ...] = -np.sin(theta_collection)
+    director_collection[1, 1, ...] = np.cos(theta_collection)
 
     # Then all d3 components
-    director_collection[1, 2, ...] = 1.0
+    director_collection[2, 2, ...] = -1.0
 
     # blocksize - 1 to account for end effects
     correct_axis_collection = np.tile(
-        np.array([0.0, 0.0, 1.0]).reshape(3, 1), blocksize - 1
+        np.array([0.0, 0.0, -1.0]).reshape(3, 1), blocksize - 1
+    )
+    test_axis_collection = _inv_rotate(director_collection)
+    test_scaling = np.linalg.norm(test_axis_collection, axis=0)
+    test_axis_collection /= test_scaling
+
+    assert test_axis_collection.shape == (3, blocksize - 1)
+    assert_allclose(test_axis_collection, correct_axis_collection)
+    assert_allclose(test_scaling, 0.0 * test_scaling + dtheta_di, atol=Tolerance.atol())
+
+# TODO Resolve ambiguity with signs. TOP PRIORITY!!!!!!!!!!!!!!!
+@pytest.mark.xfail
+@pytest.mark.parametrize("blocksize", [32, 128])
+def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_directors(blocksize):
+    """ Construct a unit circle, which we know has constant curvature,
+    and see if inv_rotate gives us the correct axis of rotation and
+    the angle of change
+
+    Here d3 is not z axis, so the `inv_rotate` formula returns the
+    curvature but with components in the local axis, i.e. it gives
+    [K1, K2, K3] in kappa_l = K1 . d1 + K2 . d2 + K3 . d3
+
+    Parameters
+    ----------
+    blocksize
+
+    Returns
+    -------
+
+    """
+    # FSAL start at 0. and proceeds counter-clockwise
+    theta_collection = np.linspace(0.0, 2.0 * np.pi, blocksize)
+    # rate of change, should correspond to frame rotation angles
+    dtheta_di = theta_collection[1] - theta_collection[0]
+
+    # +1 because last point should be same as first point
+    director_collection = np.zeros((3, 3, blocksize))
+
+    # First fill all d3 components
+    # tangential direction
+    director_collection[2, 0, ...] = -np.sin(theta_collection)
+    director_collection[2, 1, ...] = np.cos(theta_collection)
+
+    # Then all d2 components
+    # normal direction
+    director_collection[1, 0, ...] = -np.cos(theta_collection)
+    director_collection[1, 1, ...] = -np.sin(theta_collection)
+
+    # Then all d1 components
+    # binormal = d2 x d3
+    director_collection[0, 2, ...] = -1.0
+
+    # blocksize - 1 to account for end effects
+    # returned curvature is in local coordinates!
+    correct_axis_collection = np.tile(
+        np.array([-1.0, 0.0, 0.0]).reshape(3, 1), blocksize - 1
     )
     test_axis_collection = _inv_rotate(director_collection)
     test_scaling = np.linalg.norm(test_axis_collection, axis=0)

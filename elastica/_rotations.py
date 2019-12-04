@@ -267,7 +267,7 @@ def _get_rotation_matrix(scale: float, axis_collection):
     u_sq_prefix = 1.0 - np.cos(theta)
 
     # Start rotate_mat minus the \delta_ij
-    rot_mat = u_prefix * u + u_sq_prefix * u_sq
+    rot_mat = -u_prefix * u + u_sq_prefix * u_sq
 
     """Both these versions are almost equivalent, both in time and memory
     keeping second for ease of us"""
@@ -297,6 +297,9 @@ def _rotate(director_collection, scale: float, axis_collection):
 
     # TODO Finish documentation
     """
+    # return _batch_matmul(
+    #     director_collection, _get_rotation_matrix(scale, axis_collection)
+    # )
     return _batch_matmul(
         _get_rotation_matrix(scale, axis_collection), director_collection
     )
@@ -324,13 +327,13 @@ def _inv_rotate(director_collection):
     """
 
     # Q_{i+i}Q^T_{i} collection
-    # rotmat_collection = np.einsum(
-    #     "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
-    # )
-    # Q^T_{i+i}Q_{i} collection
     rotmat_collection = np.einsum(
-        "jik, jlk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
     )
+    # Q^T_{i+i}Q_{i} collection
+    # rotmat_collection = np.einsum(
+    #     "jik, jlk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+    # )
 
     # Returns rate-of-change direction as a collection unit vectors
     #  unit vector              skew-symmetrize the collection
@@ -360,4 +363,4 @@ def _inv_rotate(director_collection):
     # Set filter_idx locations to 0.0
     vector_collection[..., filter_idx] = 0.0
 
-    return vector_collection
+    return -vector_collection
