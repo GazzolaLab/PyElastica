@@ -1,3 +1,5 @@
+import numpy as np
+
 from elastica._linalg import _batch_matvec
 
 
@@ -12,21 +14,9 @@ class RodBase:
 
     def __init__(self):
         pass
-
-    def get_velocity(self):
-        return self.velocity_collection
-
-    def get_angular_velocity(self):
-        return self.omega_collection
-
-    def get_acceleration(self):
-        return (self._compute_internal_forces() + self.external_forces) / self.mass
-
-    def get_angular_acceleration(self):
-        return (
-            _batch_matvec(
-                self.inv_mass_second_moment_of_inertia,
-                (self._compute_internal_torques() + self.external_torques),
-            )
-            * self.dilatation
-        )
+        # self.position_collection = NotImplemented
+        # self.omega_collection = NotImplemented
+        # self.acceleration_collection = NotImplemented
+        # self.alpha_collection = NotImplemented
+        # self.external_forces = NotImplemented
+        # self.external_torques = NotImplemented

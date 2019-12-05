@@ -9,6 +9,7 @@ from elastica.utils import MaxDimension, Tolerance
 
 from elastica.rod import RodBase
 from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 # TODO Add documentation for all functions
 
@@ -33,11 +34,16 @@ class _CosseratRodBase(RodBase):
         *args,
         **kwargs
     ):
-        self.position_collection = position
-        self.director_collection = directors
+        velocities = np.zeros((MaxDimension.value(), n_elements + 1))
+        omegas = np.zeros((MaxDimension.value(), n_elements))  # + 1e-16
+        accelerations = 0.0 * velocities
+        angular_accelerations = 0.0 * omegas
+        self.n_elems = n_elements
+        self._vector_states = np.hstack(
+            (position, velocities, omegas, accelerations, angular_accelerations)
+        )
+        self._matrix_states = directors.copy()
         # initial set to zero; if coming through kwargs then modify
-        self.velocity_collection = np.zeros((MaxDimension.value(), n_elements + 1))
-        self.omega_collection = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
         self.density = density
         self.volume = volume
@@ -66,8 +72,18 @@ class _CosseratRodBase(RodBase):
             self.rest_lengths[1:] + self.rest_lengths[:-1]
         )
         # will apply external force and torques externally
-        self.external_forces = 0 * self.position_collection
-        self.external_torques = 0 * self.omega_collection
+        self.external_forces = 0 * accelerations
+        self.external_torques = 0 * angular_accelerations
+
+        # calculated in `compute_geometry_from_state`
+        self.lengths = NotImplemented
+        self.tangents = NotImplemented
+        self.radius = NotImplemented
+
+        # calculated in `compute_all_dilatatation`
+        self.dilatation = NotImplemented
+        self.voronoi_dilatation = NotImplemented
+        self.dilatation_rate = NotImplemented
 
     @classmethod
     def straight_rod(
@@ -180,6 +196,7 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
+        # TODO Use the vector formula rather than separating it out
         # self.lengths = l_i = |r^{i+1} - r^{i}|
         r_dot_v = np.einsum(
             "ij,ij->j", self.position_collection, self.velocity_collection
@@ -294,8 +311,39 @@ class _CosseratRodBase(RodBase):
             - self._compute_damping_torques()
         )
 
+    # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
+    def update_accelerations(self, time):
+        """ TODO Do we need to make the collection members abstract?
 
-class CosseratRod(_LinearConstitutiveModelMixin, _CosseratRodBase):
+        Parameters
+        ----------
+        time
+
+        Returns
+        -------
+
+        """
+        np.copyto(
+            self.acceleration_collection,
+            (self._compute_internal_forces() + self.external_forces) / self.mass,
+        )
+        np.copyto(
+            self.alpha_collection,
+            _batch_matvec(
+                self.inv_mass_second_moment_of_inertia,
+                (self._compute_internal_torques() + self.external_torques),
+            )
+            * self.dilatation,
+        )
+        # Reset forces and torques
+        self.external_forces *= 0.0
+        self.external_torques *= 0.0
+
+# TODO Fix this classmethod weirdness to a more scalable and maintainable solution
+# TODO Fix the SymplecticStepperMixin interface class as it does not belong here
+class CosseratRod(
+    _LinearConstitutiveModelMixin, _CosseratRodBase, _RodSymplecticStepperMixin
+):
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
         _LinearConstitutiveModelMixin.__init__(
             self,
@@ -309,8 +357,8 @@ class CosseratRod(_LinearConstitutiveModelMixin, _CosseratRodBase):
         _CosseratRodBase.__init__(
             self,
             n_elements,
-            rod.position_collection,
-            rod.director_collection,
+            rod._vector_states.copy()[..., : n_elements + 1],
+            rod._matrix_states.copy(),
             rod.rest_lengths,
             rod.density,
             rod.volume,
@@ -319,6 +367,7 @@ class CosseratRod(_LinearConstitutiveModelMixin, _CosseratRodBase):
             *args,
             **kwargs
         )
+        _RodSymplecticStepperMixin.__init__(self)
         del rod
 
     @classmethod
