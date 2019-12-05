@@ -12,6 +12,7 @@ from elastica.joint import FreeJoint
 class Connections:
     def __init__(self):
         self._connections = []
+        super(Connections, self).__init__()
 
     def connect(
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
