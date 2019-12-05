@@ -6,6 +6,7 @@ basic coordinating multiple, smaller systems that have an independently integrab
 interface (ie. works with symplectic or explicit routines `timestepper.py`.)
 """
 from collections.abc import MutableSequence
+from itertools import chain
 
 from elastica.rod import RodBase
 
@@ -26,6 +27,10 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = (RodBase,)
         # List of systems to be integrated
         self._systems = []
+        # List of feature calls, such as those coming
+        # from Controllers, Environments which are
+        # tacked on to the SystemCollection in a sim.
+        self._features = NotImplemented
 
     def _check_type(self, sys_to_be_added):
         if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
@@ -94,5 +99,29 @@ class BaseSystemCollection(MutableSequence):
 
         return sys_idx
 
+    def finalize(self):
+        """
+        Finalizes all feature class methods
+
+        Returns
+        -------
+
+        """
+
+        def get_methods_from_feature_classes(method_name: str):
+            methods = [
+                [v for (k, v) in cls.__dict__.items() if k.endswith(method_name)]
+                for cls in self.__class__.__bases__
+            ]
+            return list(chain.from_iterable(methods))
+
+        self._features = get_methods_from_feature_classes("__call__")
+        finalize_methods = get_methods_from_feature_classes("_finalize")
+
+        for finalize in finalize_methods:
+            finalize(self)
+
     def synchronize(self, time):
-        pass
+        # Calls all constraints, connections, controls etc.
+        for feature in self._features:
+            feature(self, time)
