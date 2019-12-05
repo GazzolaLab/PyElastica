@@ -9,6 +9,7 @@ Add forces and torques to rod (external point force, b-spline torques etc).
 class Forcing:
     def __init__(self):
         self._ext_forces_torques = []
+        super(Forcing, self).__init__()
 
     def add_forcing_to(self, system):
         sys_idx = self._get_sys_idx_if_valid(system)
@@ -36,7 +37,8 @@ class Forcing:
 
     def __call__(self, time, *args, **kwargs):
         for sys_id, ext_force_torque in self._ext_forces_torques:
-            ext_force_torque.apply_force(self._systems[sys_id], time, *args, **kwargs)
+            ext_force_torque.apply_forces(self._systems[sys_id], time, *args, **kwargs)
+            ext_force_torque.apply_torques(self._systems[sys_id], time, *args, **kwargs)
             # TODO Apply torque, see if necessary
 
 
