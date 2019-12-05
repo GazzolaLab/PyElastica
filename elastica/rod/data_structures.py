@@ -61,11 +61,32 @@ class _RodSymplecticStepperMixin:
         # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
+    """
+    The following commented block of code is a test to ensure that
+    the time-integrator always updates the view of the
+    collection variables, and not an independent variable
+    (aka no copy is made). It exists only for legacy
+    purposes and will be either refactored or removed once
+    testing is done.
+    """
+    # def kinematic_rates(self, time, *args, **kwargs):
+    #     def shmem(a, b):
+    #         if np.shares_memory(
+    #                 a, b
+    #         ) : print("Shares memory ools")
+    #         else :
+    #             print("Explicit states does not share memory")
+    #
+    #     shmem(self.kinematic_states.position_collection, self.position_collection)
+    #     shmem(self.kinematic_states.director_collection, self.director_collection)
+    #
+    #     return self.dynamic_states.kinematic_rates(time, *args, **kwargs)
+
     def dynamic_rates(self, time, *args, **kwargs):
         self.update_accelerations(time)
 
         """
-        The following block of code is a test to ensure that
+        The following commented block of code is a test to ensure that
         the time-integrator always updates the view of the
         collection variables, and not an independent variable
         (aka no copy is made). It exists only for legacy
