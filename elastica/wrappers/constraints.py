@@ -11,6 +11,7 @@ from elastica.boundary_conditions import FreeRod
 class Constraints:
     def __init__(self):
         self._constraints = []
+        super(Constraints, self).__init__()
 
     def constrain(self, system):
         sys_idx = self._get_sys_idx_if_valid(system)
@@ -35,6 +36,10 @@ class Constraints:
 
         # Sort from lowest id to highest id for potentially better memory access
         self._constraints.sort()
+
+        # At t=0.0, constrain all the boundary conditions (for compatability with
+        # initial conditions)
+        self.__call__(time=0.0)
 
     def __call__(self, time, *args, **kwargs):
         for sys_id, constraint in self._constraints:
@@ -94,12 +99,12 @@ class _Constraint:
         # If pos_indices is not None, construct list else empty list
         # IMPORTANT : do copy for memory-safe operations
         positions = (
-            [rod.position[..., idx].copy() for idx in pos_indices]
+            [rod.position_collection[..., idx].copy() for idx in pos_indices]
             if pos_indices
             else []
         )
         directors = (
-            [rod.directors[..., idx].copy() for idx in director_indices]
+            [rod.director_collection[..., idx].copy() for idx in director_indices]
             if director_indices
             else []
         )
@@ -107,10 +112,10 @@ class _Constraint:
             return self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
         except (TypeError, IndexError):
             raise TypeError(
-                r"Unable to construct boundary condition class. Note that:\n"
-                r"1. Any rod properties needed should be placed first\n"
-                r"in the boundary_condition __init__ like so (pos_one, pos_two, <other_args>)\n"
-                r"2. Number of requested position and directors such as (1, 2) should match\n"
-                r"the __init__ method. eg MyBC.__init__(pos_one, director_one, director_two)\n"
-                r"should have the `using` call as .using(MyBC, position=(1,), director=(1,-1))\n"
+                "Unable to construct boundary condition class. Note that:\n"
+                "1. Any rod properties needed should be placed first\n"
+                "in the boundary_condition __init__ like so (pos_one, pos_two, <other_args>)\n"
+                "2. Number of requested position and directors such as (1, 2) should match\n"
+                "the __init__ method. eg MyBC.__init__(pos_one, director_one, director_two)\n"
+                "should have the `using` call as .using(MyBC, positions=(1,), directors=(1,-1))\n"
             )
