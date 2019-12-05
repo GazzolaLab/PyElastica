@@ -31,12 +31,12 @@ class OneEndFixedRod(FreeRod):
         self.fixed_directors = fixed_directors
 
     def constrain_values(self, rod, time):
-        rod.position[..., 0] = self.fixed_position
-        rod.directors[..., 0] = self.fixed_directors
+        rod.position_collection[..., 0] = self.fixed_position
+        rod.director_collection[..., 0] = self.fixed_directors
 
     def constrain_rates(self, rod, time):
-        rod.velocity[..., 0] = 0.0
-        rod.omega[..., 0] = 0.0
+        rod.velocity_collection[..., 0] = 0.0
+        rod.omega_collection[..., 0] = 0.0
 
 
 class HelicalBucklingBC(FreeRod):
@@ -86,23 +86,23 @@ class HelicalBucklingBC(FreeRod):
 
     def constrain_values(self, rod, time):
         if time > self.twisting_time:
-            rod.position[..., 0] = self.final_start_position
-            rod.position[..., -1] = self.final_end_position
+            rod.position_collection[..., 0] = self.final_start_position
+            rod.position_collection[..., -1] = self.final_end_position
 
-            rod.directors[..., 0] = self.final_start_directors
-            rod.directors[..., -1] = self.final_end_directors
+            rod.director_collection[..., 0] = self.final_start_directors
+            rod.director_collection[..., -1] = self.final_end_directors
 
     def constrain_rates(self, rod, time):
         if time > self.twisting_time:
-            rod.velocity[..., 0] = 0.0
-            rod.omega[..., 0] = 0.0
+            rod.velocity_collection[..., 0] = 0.0
+            rod.omega_collection[..., 0] = 0.0
 
-            rod.velocity[..., -1] = 0.0
-            rod.omega[..., -1] = 0.0
+            rod.velocity_collection[..., -1] = 0.0
+            rod.omega_collection[..., -1] = 0.0
 
         else:
-            rod.velocity[..., 0] = self.shrink_vel
-            rod.omega[..., 0] = self.ang_vel
+            rod.velocity_collection[..., 0] = self.shrink_vel
+            rod.omega_collection[..., 0] = self.ang_vel
 
-            rod.velocity[..., -1] = -self.shrink_vel
-            rod.omega[..., -1] = -self.ang_vel
+            rod.velocity_collection[..., -1] = -self.shrink_vel
+            rod.omega_collection[..., -1] = -self.ang_vel
