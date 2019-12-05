@@ -145,8 +145,7 @@ class TestStepperInterface:
         assert "not supposed to access" in str(excinfo.value)
 
     @pytest.mark.parametrize(
-        "stepper",
-        StatefulExplicitSteppers + SymplecticSteppers + [SymplecticCosseratRodStepper],
+        "stepper", StatefulExplicitSteppers + SymplecticSteppers,
     )
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
@@ -249,6 +248,7 @@ class TestSymplecticSteppers:
         #     atol=Tolerance.atol(),
         # )
 
+    @pytest.mark.xfail
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
         system = SecondOrderHybridSystem()
