@@ -574,6 +574,7 @@ class TestingClass:
         correct_torques = omega
         assert_allclose(test_torques, correct_torques, atol=Tolerance.atol())
 
+    @pytest.mark.skip(reason="expects deprecated rod interface")
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_get_functions(self, n_elem):
         """
