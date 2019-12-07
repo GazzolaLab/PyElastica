@@ -324,7 +324,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
 
     def update_accelerations(self, time):
         np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
-        np.copyto(self.alpha_collection, 0.0)
+        np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
 
     def analytical_solution(self, type, time):
         if type == "Positions":
@@ -340,6 +340,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         elif type == "Directors":
             from elastica._rotations import _rotate
 
+            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
             axis = np.array([0.0, 0.0, 1.0]).reshape(3, 1)  # There is only one director
-            analytical_solution = _rotate(self.init_dir, self.omega_value * time, axis)
+            analytical_solution = _rotate(self.init_dir, final_angle, axis)
         return analytical_solution
