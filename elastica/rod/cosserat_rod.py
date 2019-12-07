@@ -264,16 +264,16 @@ class _CosseratRodBase(RodBase):
         # in internal_stresses
         self._compute_dilatation_rate()
 
-        voronoi_dilatation_cube_cached = 1.0 / self.voronoi_dilatation ** 3
+        voronoi_dilatation_inv_cube_cached = 1.0 / self.voronoi_dilatation ** 3
         # Delta(\tau_L / \Epsilon^3)
         bend_twist_couple_2D = difference_kernel(
-            self.internal_couple * voronoi_dilatation_cube_cached
+            self.internal_couple * voronoi_dilatation_inv_cube_cached
         )
-        # \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epislon^3 ]
+        # \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epsilon^3 ]
         bend_twist_couple_3D = quadrature_kernel(
             _batch_cross(self.kappa, self.internal_couple)
             * self.rest_voronoi_lengths
-            * voronoi_dilatation_cube_cached
+            * voronoi_dilatation_inv_cube_cached
         )
         # (Qt x n_L) * \hat{l}
         shear_stretch_couple = (
@@ -338,6 +338,7 @@ class _CosseratRodBase(RodBase):
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
+
 
 # TODO Fix this classmethod weirdness to a more scalable and maintainable solution
 # TODO Fix the SymplecticStepperMixin interface class as it does not belong here
