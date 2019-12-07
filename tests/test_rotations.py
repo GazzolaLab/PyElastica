@@ -385,12 +385,15 @@ def test_inv_rotate_correctness_simple_in_three_dimensions():
 # TODO Resolve ambiguity with signs. TOP PRIORITY!!!!!!!!!!!!!!!
 @pytest.mark.xfail
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
-def test_inv_rotate_correctness_on_circle_in_two_dimensions(blocksize):
+@pytest.mark.parametrize("point_distribution", ["anticlockwise", "clockwise"])
+def test_inv_rotate_correctness_on_circle_in_two_dimensions(
+    blocksize, point_distribution
+):
     """ Construct a unit circle, which we know has constant curvature,
     and see if inv_rotate gives us the correct axis of rotation and
     the angle of change
 
-    Do this when d3 = z for first check, as it generates less confusion
+    Do this when d3 = z and d3= -z to cover both cases
 
     Parameters
     ----------
@@ -401,9 +404,15 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions(blocksize):
 
     """
     # FSAL start at 0. and proceeds counter-clockwise
-    theta_collection = np.linspace(0.0, 2.0 * np.pi, blocksize)
+    if point_distribution == "anticlockwise":
+        theta_collection = np.linspace(0.0, 2.0 * np.pi, blocksize)
+    elif point_distribution == "clockwise":
+        theta_collection = np.linspace(2.0 * np.pi, 0.0, blocksize)
+    else:
+        raise NotImplementedError
+
     # rate of change, should correspond to frame rotation angles
-    dtheta_di = theta_collection[1] - theta_collection[0]
+    dtheta_di = np.abs(theta_collection[1] - theta_collection[0])
 
     # +1 because last point should be same as first point
     director_collection = np.zeros((3, 3, blocksize))
@@ -422,9 +431,15 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions(blocksize):
     director_collection[2, 2, ...] = -1.0
 
     # blocksize - 1 to account for end effects
-    correct_axis_collection = np.tile(
-        np.array([0.0, 0.0, -1.0]).reshape(3, 1), blocksize - 1
-    )
+    if point_distribution == "anticlockwise":
+        axis_of_rotation = np.array([0.0, 0.0, -1.0])
+    elif point_distribution == "clockwise":
+        axis_of_rotation = np.array([0.0, 0.0, 1.0])
+    else:
+        raise NotImplementedError
+
+    correct_axis_collection = np.tile(axis_of_rotation.reshape(3, 1), blocksize - 1)
+
     test_axis_collection = _inv_rotate(director_collection)
     test_scaling = np.linalg.norm(test_axis_collection, axis=0)
     test_axis_collection /= test_scaling
