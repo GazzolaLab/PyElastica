@@ -22,7 +22,7 @@ def linear_interpolation_slip(velocity_slip, velocity_threshold):
 # Converting forces on nodes to elements
 def nodes_to_elements(input):
     # TODO: find a way with out initialzing output vector
-    output = np.zeros((MaxDimension.value(), input.shape[1] - 1))
+    output = np.zeros((input.shape[0], input.shape[1] - 1))
     output[..., :-1] += 0.5 * input[..., 1:-1]
     output[..., 1:] += 0.5 * input[..., 1:-1]
     output[..., 0] += input[..., 0]
