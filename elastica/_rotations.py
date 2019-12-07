@@ -253,7 +253,11 @@ def _get_rotation_matrix(scale: float, axis_collection):
     # Get skew symmetric U and U * U
     # Comes first before theta gets multiplied by scale, see rationale
     # in the block comment below
-    u, u_sq = _get_skew_symmetric_pair(axis_collection / theta)
+    # filter_idx = np.where(np.abs(theta) < 1e-14)
+    # theta[filter_idx] = 1e-14
+    # u, u_sq = _get_skew_symmetric_pair(axis_collection / theta)
+    # TODO Verify that this tolerance is sufficient for normalization
+    u, u_sq = _get_skew_symmetric_pair(axis_collection / (theta + 1e-14))
 
     # Nasty bug, as it changes the state of a passed in variable
     # This gets transmitted back to the user scope
@@ -347,20 +351,26 @@ def _inv_rotate(director_collection):
     #  theta vector              Rodrigues formula from trace invariance Tr(R) = 1 + 2cos(\theta)
     #       |         angle from trace                 trace calculation
     #       |              |                                  |
-    theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
+    # theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
+    # TODO Verify if this tolerance value is accurate
+    theta_collection = np.arccos(
+        0.5 * np.einsum("iij->j", rotmat_collection) - 0.5 - 1e-12
+    )
 
     # Get filter of entities that are close to 0.0
     # Loses performance significantly because of this unavoidable condition
     # Not using utils.Tolerance.tol() because performance intensive loop
     # but it adds only 3-4 µs or so...
     # TODO Understand how people resolve this singularity as lim x->0, x/sinx -> 1
-    filter_idx = np.where(np.abs(theta_collection) < 1e-14)
+    # TODO Verify that this step is unneeded because of tolerance above
+    # filter_idx = np.where(np.abs(theta_collection) < 1e-14)
 
     # Scale the vector collection by \theta/sin(\theta), from Rodrigues
     # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
     vector_collection *= 0.5 * theta_collection / np.sin(theta_collection + 1e-14)
 
     # Set filter_idx locations to 0.0
-    vector_collection[..., filter_idx] = 0.0
+    # TODO Verify that this step is unneeded because of adding tolerance above
+    # vector_collection[..., filter_idx] = 0.0
 
     return -vector_collection
