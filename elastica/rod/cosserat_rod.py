@@ -231,11 +231,16 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_forces(self):
         # Internal damping foces.
-        damping_forces = self.nu * self.velocity_collection
-        damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
-        damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
+        # damping_forces = self.nu * self.velocity_collection
+        # damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
+        # damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
+        #
+        # return damping_forces
 
-        return damping_forces
+        elemental_velocities = 0.5 * (self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:])
+        elemental_damping_forces = self.nu * elemental_velocities * self.lengths
+        nodal_damping_forces = quadrature_kernel(elemental_damping_forces)
+        return nodal_damping_forces
 
     def _compute_internal_forces(self):
         # Compute n_l and cache it using internal_stress
@@ -253,7 +258,7 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_torques(self):
         # Internal damping torques
-        damping_torques = self.nu * self.omega_collection
+        damping_torques = self.nu * self.omega_collection * self.lengths
         return damping_torques
 
     def _compute_internal_torques(self):
