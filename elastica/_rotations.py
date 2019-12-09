@@ -354,7 +354,7 @@ def _inv_rotate(director_collection):
     # theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
     # TODO Verify if this tolerance value is accurate
     theta_collection = np.arccos(
-        0.5 * np.einsum("iij->j", rotmat_collection) - 0.5 - 1e-12
+        0.5 * np.einsum("iij->j", rotmat_collection) - 0.5 - 1e-10
     )
 
     # Get filter of entities that are close to 0.0
