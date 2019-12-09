@@ -58,7 +58,7 @@ helicalbuckling_sim.constrain(shearable_rod).using(HelicalBucklingBC, positions=
 
 helicalbuckling_sim.finalize()
 timestepper = PositionVerlet()
-shearable_rod.velocity_collection[...,int((n_elem)/2)] += 1e-6# np.array([0, 1e-6, 0.])
+shearable_rod.velocity_collection[...,int((n_elem)/2)] += np.array([0, 1e-7, 0.])
 # # timestepper = PEFRL()
 
 positions_over_time = []
@@ -77,6 +77,7 @@ plt.axes(projection="3d")
 plt.plot(shearable_rod.position_collection[0, ...], shearable_rod.position_collection[1,...], shearable_rod.position_collection[2,...])
 plt.xlim([-10,10])
 plt.ylim([-10,10])
+plt.savefig("HelicalBuckling_3d")
 plt.show()
 
 # Compute envelope
@@ -89,6 +90,7 @@ phi = (argumentAcos - np.cos(phiMax))/(1-np.cos(phiMax))
 # fig = plt.figure(figsize=(10, 8))
 plt.figure()#(figsize=(10, 8))#fig.add_subplot(111)
 plt.plot(np.linspace(0.,base_length,n_elem),phi)
+plt.savefig("HelicalBuckling_Envelope")
 plt.show()
 # #### Plots for to debugg
 # fig = plt.figure(figsize=(10, 8))
