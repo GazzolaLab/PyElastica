@@ -42,13 +42,43 @@ class BaseRodClass(TestRod):
 
 class TestInteractionPlane:
     def initializer(
-        self, n_elem, origin_plane=np.array([0.0, -0.25, 0.0]), k_w=0.0, nu_w=0.0,
+        self, n_elem, shift=0.0, k_w=0.0, nu_w=0.0,
     ):
         rod = BaseRodClass(n_elem)
         interaction_plane = InteractionPlane(
-            k_w, nu_w, origin_plane, normal_plane=np.array([0.0, 1.0, 0.0]),
+            k_w,
+            nu_w,
+            origin_plane=np.array([0.0, -rod.radius[0] + shift, 0.0]),
+            normal_plane=np.array([0.0, 1.0, 0.0]),
         )
-        return rod, interaction_plane
+
+        external_forces = np.repeat(
+            np.array([0.0, -10.0 * np.random.random_sample(1), 0.0]).reshape(3, 1),
+            n_elem + 1,
+            axis=1,
+        )
+        external_forces[..., 0] *= 0.5
+        external_forces[..., -1] *= 0.5
+        rod.external_forces = external_forces.copy()
+
+        return rod, interaction_plane, external_forces
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_interaction_without_contact(self, n_elem):
+        """
+        This test case tests the forces on rod, when there is no
+        contact between rod and the plane.
+        :param n_elem:
+        :return:
+        """
+
+        shift = -1.0 * np.random.random_sample(1)  # we move plane away from rod
+
+        [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
+
+        interaction_plane.apply_normal_force(rod)
+        correct_forces = external_forces  # since no contact
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_interaction_plane_without_k_and_nu(self, n_elem):
@@ -59,15 +89,7 @@ class TestInteractionPlane:
         :param n_elem:
         :return:
         """
-        [rod, interaction_plane] = self.initializer(n_elem)
-
-        external_forces = np.repeat(
-            np.array([0.0, -10.0, 0.0]).reshape(3, 1), n_elem + 1, axis=1
-        )
-        external_forces[..., 0] *= 0.5
-        external_forces[..., -1] *= 0.5
-
-        rod.external_forces = external_forces.copy()
+        [rod, interaction_plane, external_forces] = self.initializer(n_elem)
 
         interaction_plane.apply_normal_force(rod)
 
@@ -76,19 +98,19 @@ class TestInteractionPlane:
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
-    def test_interaction_plane_with_k_and_without_nu(self, n_elem, k_w):
+    def test_interaction_plane_with_k_without_nu(self, n_elem, k_w):
         """
-        This function tests wall response  on the rod. Here
-        wall stiffness coefficient changed parametrically
+        Here wall stiffness coefficient changed parametrically
         and damping coefficient set to zero .
         :param n_elem:
         :return:
         """
-        [rod, interaction_plane] = self.initializer(
-            n_elem, np.array([0.0, -0.24, 0.0]), k_w
+        shift = np.random.random_sample(1)  # we move plane towards to rod
+        [rod, interaction_plane, external_forces] = self.initializer(
+            n_elem, shift=shift, k_w=k_w
         )
         correct_forces = k_w * np.repeat(
-            np.array([0.0, 0.01, 0.0]).reshape(3, 1), n_elem + 1, axis=1
+            np.array([0.0, shift, 0.0]).reshape(3, 1), n_elem + 1, axis=1
         )
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
@@ -98,51 +120,39 @@ class TestInteractionPlane:
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2.0, 10.0])
     @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
-    def test_interaction_plane_with_k_and_nu(self, n_elem, k_w, nu_w):
+    def test_interaction_plane_without_k_with_nu(self, n_elem, nu_w):
         """
-        This function tests wall response on the rod. Here
-        wall stiffness coefficient and damping coefficient are
-        changed parametrically.
+        Here wall damping coefficient are changed parametrically and
+        wall response functions tested.
         :param n_elem:
-        :param k_w:
         :param nu_w:
         :return:
         """
 
-        [rod, interaction_plane] = self.initializer(
-            n_elem, np.array([0.0, -0.24, 0.0]), k_w, nu_w
-        )
-        correct_forces = np.zeros((MaxDimension.value(), n_elem + 1))
-        correct_forces[..., 1:-1] = np.repeat(
-            np.array([0.0, -10.0, 0.0]).reshape(3, 1), n_elem - 1, axis=1
-        )
-        correct_forces[..., 0] = 0.5 * correct_forces[..., 1]
-        correct_forces[..., -1] = 0.5 * correct_forces[..., -2]
+        [rod, interaction_plane, external_forces] = self.initializer(n_elem, nu_w=nu_w)
 
-        rod.velocity[..., :] += np.array([0.0, -1.0, 0.0]).reshape(3, 1)
-        correct_external_forces = np.repeat(
-            (
-                k_w * np.array([0.0, 0.01, 0.0]) + nu_w * np.array([0.0, 1.0, 0.0])
-            ).reshape(3, 1),
+        normal_velocity = np.random.random_sample(1)
+        rod.velocity[..., :] += np.array([0.0, -normal_velocity, 0.0]).reshape(3, 1)
+
+        correct_forces = np.repeat(
+            (nu_w * np.array([0.0, normal_velocity, 0.0])).reshape(3, 1),
             n_elem + 1,
             axis=1,
         )
-        correct_external_forces[..., 0] *= 0.5
-        correct_external_forces[..., -1] *= 0.5
+
+        correct_forces[..., 0] *= 0.5
+        correct_forces[..., -1] *= 0.5
 
         interaction_plane.apply_normal_force(rod)
 
-        assert_allclose(
-            correct_external_forces, rod.external_forces, atol=Tolerance.atol()
-        )
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
 
 class TestAuxiliaryFunctions:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_linear_interpolation_slip(self, n_elem):
-        velocity_threshold = 1
+        velocity_threshold = 1.0
 
         # if slip velocity larger than threshold
         velocity_slip = np.repeat(
@@ -158,6 +168,22 @@ class TestAuxiliaryFunctions:
         )
         slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
         correct_slip_function = np.repeat(np.array([[1]]), n_elem, axis=1)
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if slip velocity smaller than threshold but very close to threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 1.0 - 1e-6]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        correct_slip_function = np.repeat(np.array([[1.0]]), n_elem, axis=1)
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if slip velocity larger than threshold but very close to threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 1.0 + 1e-6]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        correct_slip_function = np.repeat(np.array([[1.0 - 1e-6]]), n_elem, axis=1)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
@@ -178,7 +204,8 @@ class TestAnisotropicFriction:
         n_elem,
         static_mu_array=np.array([0.0, 0.0, 0.0]),
         kinetic_mu_array=np.array([0.0, 0.0, 0.0]),
-        external_forces=np.array([0.0, -10.0, 0.0]),
+        force_mag_long=0.0,  # forces along the rod
+        force_mag_side=0.0,  # side forces on the rod
     ):
 
         rod = BaseRodClass(n_elem)
@@ -195,6 +222,11 @@ class TestAnisotropicFriction:
             static_mu_array,  # forward, backward, sideways
             kinetic_mu_array,  # forward, backward, sideways
         )
+        fnormal = (10.0 - 5.0) * np.random.random_sample(
+            1
+        ) + 5.0  # generates random numbers [5.0,10)
+        external_forces = np.array([force_mag_side, -fnormal, force_mag_long])
+
         external_forces_collection = np.repeat(
             external_forces.reshape(3, 1), n_elem + 1, axis=1
         )
@@ -260,9 +292,7 @@ class TestAnisotropicFriction:
         :return:
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem,
-            static_mu_array=np.array([1.0, 1.0, 0.0]),
-            external_forces=np.array([0.0, -10.0, force_mag]),
+            n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
         )
 
         frictionplane.apply_friction(rod)
@@ -283,9 +313,7 @@ class TestAnisotropicFriction:
         :return:
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem,
-            static_mu_array=np.array([1.0, 1.0, 0.0]),
-            external_forces=np.array([0.0, -10.0, force_mag]),
+            n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
         )
 
         frictionplane.apply_friction(rod)
@@ -360,9 +388,7 @@ class TestAnisotropicFriction:
         """
 
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem,
-            static_mu_array=np.array([0.0, 0.0, 1.0]),
-            external_forces=np.array([force_mag, -10.0, 0.0]),
+            n_elem, static_mu_array=np.array([0.0, 0.0, 10.0]), force_mag_side=force_mag
         )
 
         frictionplane.apply_friction(rod)
@@ -397,9 +423,7 @@ class TestAnisotropicFriction:
         :return:
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem,
-            static_mu_array=np.array([0.0, 0.0, 1.0]),
-            external_forces=np.array([force_mag, -10.0, 0.0]),
+            n_elem, static_mu_array=np.array([0.0, 0.0, 1.0]), force_mag_side=force_mag
         )
 
         frictionplane.apply_friction(rod)
@@ -435,7 +459,7 @@ class TestAnisotropicFriction:
         :return:
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem, static_mu_array=np.array([0.0, 0.0, 1.0])
+            n_elem, static_mu_array=np.array([0.0, 0.0, 10.0])
         )
 
         external_torques = np.zeros((3, n_elem))
