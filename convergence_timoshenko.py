@@ -152,6 +152,7 @@ if __name__ == "__main__":
     convergence_elements = list(range(5, 10))
     # 10, 20, ... , 100
     convergence_elements.extend([10 * x for x in range(1,11)])
+    convergence_elements.extend([200])
 
     # Convergence study
     # for n_elem in [5, 6, 7, 8, 9, 10]
@@ -162,16 +163,18 @@ if __name__ == "__main__":
     # results is a dict containing entries needed for post_processing
     for n_elem, result in zip(convergence_elements, results):
         print("final velocity norm at {} is {}".format(n_elem, np.linalg.norm(result['rod'].velocity_collection)))
-        errors['l1'].append(np.linalg.norm(result['error'], 1))
-        errors['l2'].append(np.linalg.norm(result['error'], 2))
+        errors['l1'].append(np.linalg.norm(result['error'], 1)/n_elem)
+        errors['l2'].append(np.linalg.norm(result['error'], 2)/n_elem)
         errors['linf'].append(np.linalg.norm(result['error'], np.inf))
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    ax.grid()
+    ax.grid(b=True, which='minor', color='k', linestyle='--')
+    ax.grid(b=True, which='major', color='k', linestyle='-')
     ax.loglog(convergence_elements, errors['l1'], marker='o', ms=10, c=to_rgb("xkcd:bluish"), lw=2, label="l1")
     ax.loglog(convergence_elements, errors['l2'], marker='o', ms=10, c=to_rgb("xkcd:reddish"), lw=2, label="l2")
     ax.loglog(convergence_elements, errors['linf'], marker='o', ms=10, c='k', lw=2, label="linf")
-    fig.legend()
+    fig.legend(prop={'size':20})
     fig.show()
     fig.savefig("Timoshenko_convergence_test")
+
