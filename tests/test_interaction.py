@@ -51,11 +51,9 @@ class TestInteractionPlane:
             origin_plane=np.array([0.0, -rod.radius[0] + shift, 0.0]),
             normal_plane=np.array([0.0, 1.0, 0.0]),
         )
-
+        fnormal = -10.0 * np.random.random_sample(1).item()
         external_forces = np.repeat(
-            np.array([0.0, -10.0 * np.random.random_sample(1), 0.0]).reshape(3, 1),
-            n_elem + 1,
-            axis=1,
+            np.array([0.0, fnormal, 0.0]).reshape(3, 1), n_elem + 1, axis=1,
         )
         external_forces[..., 0] *= 0.5
         external_forces[..., -1] *= 0.5
@@ -63,24 +61,24 @@ class TestInteractionPlane:
 
         return rod, interaction_plane, external_forces
 
-    # @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    # def test_interaction_without_contact(self, n_elem):
-    #     """
-    #     This test case tests the forces on rod, when there is no
-    #     contact between rod and the plane.
-    #     :param n_elem:
-    #     :return:
-    #     """
-    #
-    #     shift = -(
-    #         (2.0 - 1.0) * np.random.random_sample(1) + 1.0
-    #     )  # we move plane away from rod
-    #
-    #     [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
-    #
-    #     interaction_plane.apply_normal_force(rod)
-    #     correct_forces = external_forces  # since no contact
-    #     assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_interaction_without_contact(self, n_elem):
+        """
+        This test case tests the forces on rod, when there is no
+        contact between rod and the plane.
+        :param n_elem:
+        :return:
+        """
+
+        shift = -(
+            (2.0 - 1.0) * np.random.random_sample(1) + 1.0
+        ).item()  # we move plane away from rod
+
+        [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
+
+        interaction_plane.apply_normal_force(rod)
+        correct_forces = external_forces  # since no contact
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_interaction_plane_without_k_and_nu(self, n_elem):
@@ -107,7 +105,7 @@ class TestInteractionPlane:
         :param n_elem:
         :return:
         """
-        shift = np.random.random_sample(1)  # we move plane towards to rod
+        shift = np.random.random_sample(1).item()  # we move plane towards to rod
         [rod, interaction_plane, external_forces] = self.initializer(
             n_elem, shift=shift, k_w=k_w
         )
@@ -134,7 +132,7 @@ class TestInteractionPlane:
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem, nu_w=nu_w)
 
-        normal_velocity = np.random.random_sample(1)
+        normal_velocity = np.random.random_sample(1).item()
         rod.velocity[..., :] += np.array([0.0, -normal_velocity, 0.0]).reshape(3, 1)
 
         correct_forces = np.repeat(
@@ -226,7 +224,7 @@ class TestAnisotropicFriction:
         )
         fnormal = (10.0 - 5.0) * np.random.random_sample(
             1
-        ) + 5.0  # generates random numbers [5.0,10)
+        ).item() + 5.0  # generates random numbers [5.0,10)
         external_forces = np.array([force_mag_side, -fnormal, force_mag_long])
 
         external_forces_collection = np.repeat(
