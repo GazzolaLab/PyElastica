@@ -52,11 +52,15 @@ class _SystemCollectionStepperMixin:
 
             # BoCos, External forces, controls etc.
             SystemCollection.synchronize(time)
-
+            # TODO: remove below line, it should be some other function synchronizeBC
+            SystemCollection.synchronizeBC(time)
             prefac = dyn_prefactor(self, dt)
             for system in SystemCollection[:-1]:
                 _ = dyn_step(self, system, time, prefac)
             time = dyn_step(self, SystemCollection[-1], time, prefac)
+
+            # TODO: remove below line, it should be some other function synchronizeBC
+            SystemCollection.synchronizeBC(time)
 
         # Peel the last kinematic step and prefactor alone
         last_kin_prefactor = self._steps_and_prefactors[-1][0]
