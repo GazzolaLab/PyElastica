@@ -72,7 +72,9 @@ class TestInteractionPlane:
         :return:
         """
 
-        shift = -1.0 * np.random.random_sample(1)  # we move plane away from rod
+        shift = -(
+            (2.0 - 1.0) * np.random.random_sample(1) + 1.0
+        )  # we move plane away from rod
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
 
