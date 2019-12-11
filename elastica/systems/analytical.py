@@ -274,6 +274,10 @@ class CollectiveSystem:
     def synchronize(self, time):
         pass
 
+    # TODO: remove synchronizeBC below
+    def synchronizeBC(self, time):
+        pass
+
 
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
