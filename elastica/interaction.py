@@ -41,11 +41,15 @@ class InteractionPlane:
         self.surface_tol = 1e-4
 
     def apply_normal_force(self, system):
-        element_x = 0.5 * (system.position_collection[..., :-1] + system.position_collection[..., 1:])
+        element_x = 0.5 * (
+            system.position_collection[..., :-1] + system.position_collection[..., 1:]
+        )
         distance_from_plane = np.einsum(
             "i, ij->j", self.normal_plane, (element_x - self.origin_plane.reshape(3, 1))
         )
-        no_contact_pts = np.where(distance_from_plane - system.radius > self.surface_tol)
+        no_contact_pts = np.where(
+            distance_from_plane - system.radius > self.surface_tol
+        )
         # TODO: How should we compute internal forces here? Call _compute_internal_forces?
         # nodal_total_forces = system.internal_forces + system.external_forces
         nodal_total_forces = system._compute_internal_forces() + system.external_forces
@@ -60,7 +64,9 @@ class InteractionPlane:
         elastic_force = -self.k * np.einsum(
             "i, j->ij", self.normal_plane, plane_penetration
         )
-        element_v = 0.5 * (system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:])
+        element_v = 0.5 * (
+            system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
+        )
         normal_v = np.einsum("i, ij->j", self.normal_plane, element_v)
         damping_force = -self.nu * np.einsum("i, j->ij", self.normal_plane, normal_v)
         normal_force_plane = -forces_normal
@@ -111,7 +117,9 @@ class AnistropicFrictionalPlane(InteractionPlane):
             self.normal_plane.reshape(3, 1), normal_force_plane.shape[0], axis=1
         )
         axial_direction = system.tangents
-        element_v = 0.5 * (system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:])
+        element_v = 0.5 * (
+            system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
+        )
 
         # first apply axial kinetic friction
         # dot product
@@ -144,7 +152,10 @@ class AnistropicFrictionalPlane(InteractionPlane):
         # v_rot = Q.T @ omega @ Q @ r
         rotation_velocity = _batch_matvec(
             directors_transpose,
-            _batch_cross(system.omega_collection, _batch_matvec(system.director_collection, torque_arm)),
+            _batch_cross(
+                system.omega_collection,
+                _batch_matvec(system.director_collection, torque_arm),
+            ),
         )
         rolling_rotation_velocity = np.einsum(
             "ij,ij->j", rotation_velocity, rolling_direction
@@ -168,7 +179,8 @@ class AnistropicFrictionalPlane(InteractionPlane):
         system.external_forces[..., 1:] += 0.5 * rolling_kinetic_friction_force
         # torque = Q @ r @ Fr
         system.external_torques += _batch_matvec(
-            system.director_collection, _batch_cross(torque_arm, rolling_kinetic_friction_force)
+            system.director_collection,
+            _batch_cross(torque_arm, rolling_kinetic_friction_force),
         )
 
         # now axial static friction
@@ -200,13 +212,16 @@ class AnistropicFrictionalPlane(InteractionPlane):
         #     directors_transpose, (system.internal_torques + system.external_torques)
         # )
         total_torques = _batch_matvec(
-            directors_transpose, (system._compute_internal_torques() + system.external_torques)
+            directors_transpose,
+            (system._compute_internal_torques() + system.external_torques),
         )
         # Elastica has opposite defs of tangents in interaction.h and rod.cpp
         tangential_torques = np.einsum("ij,ij->j", total_torques, system.tangents)
         projection = np.einsum("ij,ij->j", total_forces, rolling_direction)
         noslip_force = -(
-            (system.radius * projection - 2.0 * tangential_torques) / 3.0 / system.radius
+            (system.radius * projection - 2.0 * tangential_torques)
+            / 3.0
+            / system.radius
         )
         max_friction_force = (
             rolling_slip_function * self.static_mu_sideways * normal_force_plane
@@ -220,5 +235,6 @@ class AnistropicFrictionalPlane(InteractionPlane):
         system.external_forces[..., :-1] += 0.5 * rolling_static_friction_force
         system.external_forces[..., 1:] += 0.5 * rolling_static_friction_force
         system.external_torques += _batch_matvec(
-            system.director_collection, _batch_cross(torque_arm, rolling_static_friction_force)
+            system.director_collection,
+            _batch_cross(torque_arm, rolling_static_friction_force),
         )
