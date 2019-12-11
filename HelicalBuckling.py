@@ -88,10 +88,10 @@ phi = (argumentAcos - np.cos(phiMax))/(1-np.cos(phiMax))
 
 # Plot the envelope
 # fig = plt.figure(figsize=(10, 8))
-plt.figure()#(figsize=(10, 8))#fig.add_subplot(111)
-plt.plot(np.linspace(0.,base_length,n_elem),phi)
-plt.savefig("HelicalBuckling_Envelope")
-plt.show()
+# plt.figure()#(figsize=(10, 8))#fig.add_subplot(111)
+# plt.plot(np.linspace(0.,base_length,n_elem),phi)
+# plt.savefig("HelicalBuckling_Envelope")
+# plt.show()
 # #### Plots for to debugg
 # fig = plt.figure(figsize=(10, 8))
 # cx = fig.add_subplot(111)
@@ -201,6 +201,7 @@ phi_analytical_envelope = analytical_solution(base_length)
 plt.figure()
 plt.plot(phi_analytical_envelope[0],phi_analytical_envelope[1],label='analytical')
 plt.plot(np.linspace(0.,base_length,n_elem),phi, label='n=100')
+plt.savefig("HelicalBuckling_Envelope")
 plt.legend()
 plt.show()
 
