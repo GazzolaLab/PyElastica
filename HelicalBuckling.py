@@ -16,7 +16,7 @@ class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
 helicalbuckling_sim = HelicalBucklingSimulator()
 
 # setting up test params
-n_elem = 200
+n_elem = 100
 start = np.zeros((3,))
 direction = np.array([0., 0., 1.])
 normal = np.array([0., 1., 0.])
@@ -58,7 +58,7 @@ helicalbuckling_sim.constrain(shearable_rod).using(HelicalBucklingBC, positions=
 
 helicalbuckling_sim.finalize()
 timestepper = PositionVerlet()
-shearable_rod.velocity_collection[...,int((n_elem)/2)] += np.array([0, 1e-7, 0.])
+shearable_rod.velocity_collection[...,int((n_elem)/2)] += np.array([0, 1e-6, 0.])
 # # timestepper = PEFRL()
 
 positions_over_time = []
