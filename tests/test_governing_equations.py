@@ -82,12 +82,7 @@ def compute_all_dilatations_analytically(n_elem, dilatation):
     voronoi_lengths = rest_voronoi_lengths * dilatation
     voronoi_dilatation = voronoi_lengths / rest_voronoi_lengths
 
-    return (
-        dilatation_collection,
-        voronoi_dilatation,
-        lengths,
-        rest_voronoi_lengths,
-    )
+    return (dilatation_collection, voronoi_dilatation, lengths, rest_voronoi_lengths)
 
 
 # @pytest.fixture  # (scope="function")
@@ -215,9 +210,7 @@ class TestingClass:
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
-    def test_case_compute_dilatation_rate(
-        self, n_elem, dilatation,
-    ):
+    def test_case_compute_dilatation_rate(self, n_elem, dilatation):
         """
         This test case tests compute_dilatation_rate
         function by comparing with analytical calculation.
@@ -319,12 +312,16 @@ class TestingClass:
         test_rod.omega_collection[:] = 1.0
         # Compute damping forces and torques
         damping_forces = (
-            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1) * nu * (1.0/n_elem)
+            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1)
+            * nu
+            * (1.0 / n_elem)
         )
         damping_forces[..., 0] *= 0.5
         damping_forces[..., -1] *= 0.5
         damping_torques = (
-            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1) * nu * (1.0/n_elem)
+            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1)
+            * nu
+            * (1.0 / n_elem)
         )
         # Compute geometry from state
         test_rod._compute_geometry_from_state()

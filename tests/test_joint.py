@@ -97,10 +97,10 @@ def test_freejoint():
     frjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
 
@@ -195,10 +195,10 @@ def test_hingejoint():
     hgjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
     linkdirection = (
@@ -212,10 +212,10 @@ def test_hingejoint():
     torque_rod2 = rod2.director_collection[..., rod2_index] @ torque
 
     assert_allclose(
-        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol(),
+        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol(),
+        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
 
 
@@ -310,10 +310,10 @@ def test_fixedjoint():
     fxjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
-        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol(),
+        rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol(),
+        rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
     linkdirection = (
@@ -340,10 +340,10 @@ def test_fixedjoint():
     torque_rod2 = rod2.director_collection[..., rod2_index] @ torque
 
     assert_allclose(
-        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol(),
+        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol(),
+        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
 
 

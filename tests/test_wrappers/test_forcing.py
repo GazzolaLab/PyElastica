@@ -61,9 +61,7 @@ class TestExtForceTorque:
         # The user thinks 4.0 goes to nu, but we don't accept it because of error in
         # construction og a Forcing class
         forcing = load_forcing
-        forcing.using(
-            MockForcing, 4.0, k=1, l_var="2", j=3.0,
-        )
+        forcing.using(MockForcing, 4.0, k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:

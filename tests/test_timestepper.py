@@ -144,9 +144,7 @@ class TestStepperInterface:
             _TimeStepper().do_step()
         assert "not supposed to access" in str(excinfo.value)
 
-    @pytest.mark.parametrize(
-        "stepper", StatefulExplicitSteppers + SymplecticSteppers,
-    )
+    @pytest.mark.parametrize("stepper", StatefulExplicitSteppers + SymplecticSteppers)
     def test_correct_orders(self, stepper):
         assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
 
