@@ -172,7 +172,7 @@ class TestAuxiliaryFunctions:
             np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1
         )
         slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
-        correct_slip_function = np.repeat(np.array([[0]]), n_elem, axis=1)
+        correct_slip_function = np.zeros(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
         # if slip velocity smaller than threshold
@@ -180,7 +180,7 @@ class TestAuxiliaryFunctions:
             np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1
         )
         slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
-        correct_slip_function = np.repeat(np.array([[1]]), n_elem, axis=1)
+        correct_slip_function = np.ones(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
         # if slip velocity smaller than threshold but very close to threshold
@@ -188,7 +188,7 @@ class TestAuxiliaryFunctions:
             np.array([0.0, 0.0, 1.0 - 1e-6]).reshape(3, 1), n_elem, axis=1
         )
         slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
-        correct_slip_function = np.repeat(np.array([[1.0]]), n_elem, axis=1)
+        correct_slip_function = np.ones(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
         # if slip velocity larger than threshold but very close to threshold
@@ -196,19 +196,31 @@ class TestAuxiliaryFunctions:
             np.array([0.0, 0.0, 1.0 + 1e-6]).reshape(3, 1), n_elem, axis=1
         )
         slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
-        correct_slip_function = np.repeat(np.array([[1.0 - 1e-6]]), n_elem, axis=1)
+        correct_slip_function = np.ones(n_elem) - 1e-6
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if half of the array slip velocity is larger than threshold and half of it
+        # smaller than threshold
+        velocity_slip = np.hstack(
+            (
+                np.repeat(np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1),
+                np.repeat(np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1),
+            )
+        )
+        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        correct_slip_function = np.hstack((np.zeros(n_elem), np.ones(n_elem)))
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_nodes_to_elements(self, n_elem):
-        input = np.repeat(np.array([1.0, 3.0, 4.0]).reshape(3, 1), n_elem + 1, axis=1)
+        random_vector = np.random.rand(3).reshape(3, 1)
+        input = np.repeat(random_vector, n_elem + 1, axis=1)
         input[..., 0] *= 0.5
         input[..., -1] *= 0.5
-        correct_output = np.repeat(
-            np.array([1.0, 3.0, 4.0]).reshape(3, 1), n_elem, axis=1
-        )
+        correct_output = np.repeat(random_vector, n_elem, axis=1)
         output = nodes_to_elements(input)
         assert_allclose(correct_output, output, atol=Tolerance.atol())
+        assert_allclose(np.sum(correct_output), np.sum(output), atol=Tolerance.atol())
 
 
 class TestAnisotropicFriction:

@@ -6,15 +6,22 @@ from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
 
 
-# interpolator for slip velocity for kinetic friction
 def linear_interpolation_slip(velocity_slip, velocity_threshold):
+    """
+    This function takes the velocity of elements and checks if they are
+    larger than the threshold velocity. If velocity of elements larger than
+    threshold velocity then slip occurs.
+    :param velocity_slip:
+    :param velocity_threshold:
+    :return:
+    """
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
-    slip_function = np.ones((1, velocity_slip.shape[1]))
-    slip_points = np.array(np.where(np.fabs(abs_velocity_slip) > velocity_threshold))
-    if not slip_points.size == 0:
-        slip_function[0, slip_points] = np.fabs(
-            1.0 - np.minimum(1.0, abs_velocity_slip / velocity_threshold - 1.0)
-        )
+    slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
+    slip_function = np.ones((velocity_slip.shape[1]))
+    slip_function[slip_points[:]] = np.fabs(
+        1.0
+        - np.minimum(1.0, abs_velocity_slip[slip_points[:]] / velocity_threshold - 1.0)
+    )
     return slip_function
 
 
