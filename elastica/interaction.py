@@ -43,46 +43,70 @@ class InteractionPlane:
     def __init__(self, k, nu, origin_plane, normal_plane):
         self.k = k
         self.nu = nu
-        self.origin_plane = origin_plane
-        self.normal_plane = normal_plane
+        self.origin_plane = origin_plane.reshape(3, 1)
+        self.normal_plane = normal_plane.reshape(3)
         self.surface_tol = 1e-4
 
     def apply_normal_force(self, system):
-        element_x = 0.5 * (
+        """
+        This function computes the plane force response on the element, in the
+        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+        is used.
+        :param system:
+        :return: magnitude of the plane response
+        """
+        element_position = 0.5 * (
             system.position_collection[..., :-1] + system.position_collection[..., 1:]
         )
         distance_from_plane = np.einsum(
-            "i, ij->j", self.normal_plane, (element_x - self.origin_plane.reshape(3, 1))
+            "i, ij->j", self.normal_plane, (element_position - self.origin_plane)
         )
-        no_contact_pts = np.where(
-            distance_from_plane - system.radius > self.surface_tol
+        no_contact_point_idx = np.where(
+            (distance_from_plane - system.radius) > self.surface_tol
         )
         # TODO: How should we compute internal forces here? Call _compute_internal_forces?
         # nodal_total_forces = system.internal_forces + system.external_forces
         nodal_total_forces = system._compute_internal_forces() + system.external_forces
         total_forces = nodes_to_elements(nodal_total_forces)
 
-        forces_normal_direction = np.einsum("i, ij->j", self.normal_plane, total_forces)
-        forces_normal = np.einsum(
-            "i, j->ij", self.normal_plane, forces_normal_direction
+        force_component_along_normal_direction = np.einsum(
+            "i, ij->j", self.normal_plane, total_forces
         )
-        forces_normal[..., np.where(forces_normal_direction > 0)] = 0
+        forces_along_normal_direction = np.einsum(
+            "i, j->ij", self.normal_plane, force_component_along_normal_direction
+        )
+        # If the total force component along the plane normal direction is greater than zero that means,
+        # total force is pushing rod away from the plane not towards the surface. Thus, response force
+        # applied by the surface has to be zero.
+        forces_along_normal_direction[
+            ..., np.where(force_component_along_normal_direction > 0)
+        ] = 0.0
         plane_penetration = np.minimum(distance_from_plane - system.radius, 0.0)
         elastic_force = -self.k * np.einsum(
             "i, j->ij", self.normal_plane, plane_penetration
         )
-        element_v = 0.5 * (
+        element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
         )
-        normal_v = np.einsum("i, ij->j", self.normal_plane, element_v)
-        damping_force = -self.nu * np.einsum("i, j->ij", self.normal_plane, normal_v)
-        normal_force_plane = -forces_normal
-        normal_force_plane[..., no_contact_pts[:]] = 0
-        total_force_plane = normal_force_plane + elastic_force + damping_force
-        system.external_forces[..., :-1] += 0.5 * total_force_plane
-        system.external_forces[..., 1:] += 0.5 * total_force_plane
+        normal_component_of_element_velocity = np.einsum(
+            "i, ij->j", self.normal_plane, element_velocity
+        )
+        damping_force = -self.nu * np.einsum(
+            "i, j->ij", self.normal_plane, normal_component_of_element_velocity
+        )
+        plane_response_force = -forces_along_normal_direction
+        # If rod element does not have any contact with plane, plane cannot apply response force on the
+        # element. Thus lets set plane response force to 0.0 for the no contact points.
+        plane_response_force[..., no_contact_point_idx] = 0.0
+        plane_response_force_total = (
+            plane_response_force + elastic_force + damping_force
+        )
+        system.external_forces[..., :-1] += 0.5 * plane_response_force_total
+        system.external_forces[..., 1:] += 0.5 * plane_response_force_total
 
-        return np.sqrt(np.einsum("ij, ij->j", normal_force_plane, normal_force_plane))
+        return np.sqrt(
+            np.einsum("ij, ij->j", plane_response_force, plane_response_force)
+        )
 
 
 # class for anisotropic frictional plane
@@ -119,9 +143,9 @@ class AnistropicFrictionalPlane(InteractionPlane):
     # for now putting them together to figure out common variables
     def apply_force(self, system):
         # calculate axial and rolling directions
-        normal_force_plane = self.apply_normal_force(system)
+        plane_response_force_mag = self.apply_normal_force(system)
         normal_plane_array = np.repeat(
-            self.normal_plane.reshape(3, 1), normal_force_plane.shape[0], axis=1
+            self.normal_plane.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
         axial_direction = system.tangents
         element_v = 0.5 * (
@@ -144,7 +168,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         axial_kinetic_friction_force = -(
             (1.0 - axial_slip_function)
             * kinetic_mu
-            * normal_force_plane
+            * plane_response_force_mag
             * axial_velocity_sign
             * axial_direction
         )
@@ -178,7 +202,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         rolling_kinetic_friction_force = -(
             (1.0 - rolling_slip_function)
             * self.kinetic_mu_sideways
-            * normal_force_plane
+            * plane_response_force_mag
             * rolling_slip_velocity_sign
             * rolling_direction
         )
@@ -202,7 +226,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
             self.static_mu_forward * (1 + projection_sign)
             + self.static_mu_backward * (1 - projection_sign)
         )
-        max_friction_force = axial_slip_function * static_mu * normal_force_plane
+        max_friction_force = axial_slip_function * static_mu * plane_response_force_mag
         # friction = min(mu N, pushing force)
         axial_static_friction_force = -(
             np.minimum(np.fabs(projection), max_friction_force)
@@ -231,7 +255,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
             / system.radius
         )
         max_friction_force = (
-            rolling_slip_function * self.static_mu_sideways * normal_force_plane
+            rolling_slip_function * self.static_mu_sideways * plane_response_force_mag
         )
         noslip_force_sign = np.sign(noslip_force)
         rolling_static_friction_force = (
