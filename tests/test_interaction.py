@@ -59,8 +59,8 @@ class TestInteractionPlane:
         interaction_plane = InteractionPlane(
             k_w,
             nu_w,
-            origin_plane=np.array([0.0, -rod.radius[0] + shift, 0.0]),
-            normal_plane=np.array([0.0, 1.0, 0.0]),
+            plane_origin=np.array([0.0, -rod.radius[0] + shift, 0.0]),
+            plane_normal=np.array([0.0, 1.0, 0.0]),
         )
         fnormal = -10.0 * np.random.random_sample(1).item()
         external_forces = np.repeat(
