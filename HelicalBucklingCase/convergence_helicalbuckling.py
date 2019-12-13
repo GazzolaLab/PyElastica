@@ -1,7 +1,9 @@
 import numpy as np
+
 # FIXME without appending sys.path make it more generic
 import sys
-sys.path.append('../')
+
+sys.path.append("../")
 from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import HelicalBucklingBC
@@ -12,6 +14,7 @@ from HelicalBucklingCase.helicalbuckling_postprocessing import (
     calculate_error_norm,
     plot_convergence_helicalbuckling,
 )
+
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
     pass
