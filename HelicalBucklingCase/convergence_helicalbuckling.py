@@ -10,10 +10,12 @@ from elastica.boundary_conditions import HelicalBucklingBC
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 from HelicalBucklingCase.helicalbuckling_postprocessing import (
+    analytical_solution,
+    envelope,
     plot_helicalbuckling,
     calculate_error_norm,
-    plot_convergence_helicalbuckling,
 )
+from convergence_functions import plot_convergence
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
@@ -21,8 +23,8 @@ class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
 
 
 # Options
-PLOT_FIGURE = False
-SAVE_FIGURE = False
+PLOT_FIGURE = True
+SAVE_FIGURE = True
 SAVE_RESULTS = False
 
 
@@ -98,7 +100,13 @@ def simulate_helicalbucklin_beam_with(
     )
 
     # calculate errors and norms
-    error, l1, l2, linf = calculate_error_norm(shearable_rod)
+    # Since we need to evaluate analytical solution only on nodes, n_nodes = n_elems+1
+    phi_analytical_envelope = analytical_solution(base_length, n_elem + 1)
+    phi_computed_envelope = envelope(shearable_rod.position_collection)
+
+    error, l1, l2, linf = calculate_error_norm(
+        phi_analytical_envelope, phi_computed_envelope, n_elem
+    )
 
     if PLOT_FIGURE:
         plot_helicalbuckling(shearable_rod, SAVE_FIGURE)
@@ -126,7 +134,8 @@ if __name__ == "__main__":
         results = pool.map(simulate_helicalbucklin_beam_with, convergence_elements)
 
     if PLOT_FIGURE:
-        plot_convergence_helicalbuckling(results, SAVE_FIGURE)
+        filename = "HelicalBuckling_convergence_test.png"
+        plot_convergence(results, SAVE_FIGURE, filename)
 
     if SAVE_RESULTS:
         import pickle
