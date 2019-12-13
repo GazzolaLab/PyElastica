@@ -104,7 +104,7 @@ def simulate_helicalbucklin_beam_with(
     phi_computed_envelope = envelope(shearable_rod.position_collection)
 
     error, l1, l2, linf = calculate_error_norm(
-        phi_analytical_envelope, phi_computed_envelope, n_elem
+        phi_analytical_envelope[1], phi_computed_envelope[1], n_elem
     )
 
     if PLOT_FIGURE:

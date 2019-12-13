@@ -6,8 +6,8 @@ from scipy.linalg import norm
 
 
 def calculate_error_norm(true_solution, computed_solution, n_elem):
-    assert true_solution[1].shape == computed_solution[1].shape, "Shape of computed and true solution does not match"
-    error = true_solution[1] - computed_solution[1]
+    assert true_solution.shape == computed_solution.shape, "Shape of computed and true solution does not match"
+    error = true_solution - computed_solution
     l1 = norm(error, 1) / n_elem
     l2 = norm(error, 2) / n_elem
     linf = norm(error, np.inf) / n_elem
