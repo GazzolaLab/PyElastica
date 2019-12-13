@@ -86,9 +86,6 @@ def simulate_helicalbucklin_beam_with(
     )
     # # timestepper = PEFRL()
 
-    positions_over_time = []
-    directors_over_time = []
-    velocities_over_time = []
     final_time = 10500
     dl = base_length / n_elem
     dt = 1e-3 * dl

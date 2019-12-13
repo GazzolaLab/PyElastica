@@ -77,9 +77,6 @@ timestepper = PositionVerlet()
 shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 0.0])
 # # timestepper = PEFRL()
 
-positions_over_time = []
-directors_over_time = []
-velocities_over_time = []
 final_time = 10500.0
 dl = base_length / n_elem
 dt = 1e-3 * dl
