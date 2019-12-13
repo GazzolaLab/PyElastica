@@ -6,21 +6,34 @@ from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
 
 
-def linear_interpolation_slip(velocity_slip, velocity_threshold):
+def find_slipping_elements(velocity_slip, velocity_threshold):
     """
-    This function takes the velocity of elements and checks if they are
-    larger than the threshold velocity. If velocity of elements larger than
-    threshold velocity then slip occurs.
-    :param velocity_slip:
-    :param velocity_threshold:
-    :return:
+    This function takes the velocity of elements and checks if they are larger
+    than the threshold velocity. If velocity of elements are larger than
+    threshold velocity, that means those elements are slipping, in other words
+    kinetic friction will be acting on those elements not static friction. This
+    function output an array called slip function, this array has a size of number
+    of elements. If velocity of element is smaller than the threshold velocity slip
+    function value for that element is 1, which means static friction is acting on
+    that element. If velocity of element is larger than the threshold velocity slip
+    function value for that element is between 0 and 1, which means kinetic friction
+    is acting on that element.
+
+    Parameters
+    ----------
+    velocity_slip
+    velocity_threshold
+
+    Returns
+    -------
+    slip function
+
     """
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
     slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
     slip_function = np.ones((velocity_slip.shape[1]))
-    slip_function[slip_points[:]] = np.fabs(
-        1.0
-        - np.minimum(1.0, abs_velocity_slip[slip_points[:]] / velocity_threshold - 1.0)
+    slip_function[slip_points] = np.fabs(
+        1.0 - np.minimum(1.0, abs_velocity_slip[slip_points] / velocity_threshold - 1.0)
     )
     return slip_function
 
@@ -52,23 +65,20 @@ class InteractionPlane:
         This function computes the plane force response on the element, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
         is used.
-        :param system:
-        :return: magnitude of the plane response
+        Parameters
+        ----------
+        system
+
+        Returns
+        -------
+        magnitude of the plane response
         """
-        element_position = 0.5 * (
-            system.position_collection[..., :-1] + system.position_collection[..., 1:]
-        )
-        distance_from_plane = np.einsum(
-            "i, ij->j", self.plane_normal, (element_position - self.plane_origin)
-        )
-        no_contact_point_idx = np.where(
-            (distance_from_plane - system.radius) > self.surface_tol
-        )
+
+        # Compute plane response force
         # TODO: How should we compute internal forces here? Call _compute_internal_forces?
         # nodal_total_forces = system.internal_forces + system.external_forces
         nodal_total_forces = system._compute_internal_forces() + system.external_forces
         element_total_forces = nodes_to_elements(nodal_total_forces)
-
         force_component_along_normal_direction = np.einsum(
             "i, ij->j", self.plane_normal, element_total_forces
         )
@@ -81,10 +91,24 @@ class InteractionPlane:
         forces_along_normal_direction[
             ..., np.where(force_component_along_normal_direction > 0)
         ] = 0.0
+        # Compute response force on the element. Plane response force
+        # has to be away from the surface and towards the element. Thus
+        # multiply forces along normal direction with negative sign.
+        plane_response_force = -forces_along_normal_direction
+
+        # Elastic force response due to penetration
+        element_position = 0.5 * (
+            system.position_collection[..., :-1] + system.position_collection[..., 1:]
+        )
+        distance_from_plane = np.einsum(
+            "i, ij->j", self.plane_normal, (element_position - self.plane_origin)
+        )
         plane_penetration = np.minimum(distance_from_plane - system.radius, 0.0)
         elastic_force = -self.k * np.einsum(
             "i, j->ij", self.plane_normal, plane_penetration
         )
+
+        # Damping force response due to velocity towards the plane
         element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
         )
@@ -94,13 +118,21 @@ class InteractionPlane:
         damping_force = -self.nu * np.einsum(
             "i, j->ij", self.plane_normal, normal_component_of_element_velocity
         )
-        plane_response_force = -forces_along_normal_direction
-        # If rod element does not have any contact with plane, plane cannot apply response force on the
-        # element. Thus lets set plane response force to 0.0 for the no contact points.
-        plane_response_force[..., no_contact_point_idx] = 0.0
+
+        # Compute total plane response force
         plane_response_force_total = (
             plane_response_force + elastic_force + damping_force
         )
+
+        # Check if the rod elements are in contact with plane.
+        no_contact_point_idx = np.where(
+            (distance_from_plane - system.radius) > self.surface_tol
+        )
+        # If rod element does not have any contact with plane, plane cannot apply response
+        # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
+        plane_response_force[..., no_contact_point_idx] = 0.0
+        plane_response_force_total[..., no_contact_point_idx] = 0.0
+
         system.external_forces[..., :-1] += 0.5 * plane_response_force_total
         system.external_forces[..., 1:] += 0.5 * plane_response_force_total
 
@@ -170,7 +202,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
             + self.kinetic_mu_backward * (1 - velocity_sign_along_axial_direction)
         )
         # Call slip function to check if elements slipping or not
-        slip_function_along_axial_direction = linear_interpolation_slip(
+        slip_function_along_axial_direction = find_slipping_elements(
             velocity_along_axial_direction, self.slip_velocity_tol
         )
         kinetic_friction_force_along_axial_direction = -(
@@ -214,7 +246,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         slip_velocity_sign_along_rolling_direction = np.sign(
             slip_velocity_mag_along_rolling_direction
         )
-        slip_function_along_rolling_direction = linear_interpolation_slip(
+        slip_function_along_rolling_direction = find_slipping_elements(
             slip_velocity_along_rolling_direction, self.slip_velocity_tol
         )
         kinetic_friction_force_along_rolling_direction = -(

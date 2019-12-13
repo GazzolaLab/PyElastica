@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
 from elastica.interaction import (
     InteractionPlane,
-    linear_interpolation_slip,
+    find_slipping_elements,
     AnistropicFrictionalPlane,
     nodes_to_elements,
 )
@@ -53,16 +53,17 @@ class BaseRodClass(TestRod):
 
 class TestInteractionPlane:
     def initializer(
-        self, n_elem, shift=0.0, k_w=0.0, nu_w=0.0,
+        self,
+        n_elem,
+        shift=0.0,
+        k_w=0.0,
+        nu_w=0.0,
+        plane_normal=np.array([0.0, 1.0, 0.0]),
     ):
         rod = BaseRodClass(n_elem)
-        interaction_plane = InteractionPlane(
-            k_w,
-            nu_w,
-            plane_origin=np.array([0.0, -rod.radius[0] + shift, 0.0]),
-            plane_normal=np.array([0.0, 1.0, 0.0]),
-        )
-        fnormal = -10.0 * np.random.random_sample(1).item()
+        plane_origin = np.array([0.0, -rod.radius[0] + shift, 0.0])
+        interaction_plane = InteractionPlane(k_w, nu_w, plane_origin, plane_normal,)
+        fnormal = -10.0 * np.sign(plane_normal[1]) * np.random.random_sample(1).item()
         external_forces = np.repeat(
             np.array([0.0, fnormal, 0.0]).reshape(3, 1), n_elem + 1, axis=1,
         )
@@ -161,6 +162,36 @@ class TestInteractionPlane:
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_interaction_when_rod_is_under_plane(self, n_elem):
+        """
+        This test case tests plane response forces on the rod
+        in the case rod is under the plane and pushed towards
+        the plane.
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        # we move plane on top of the rod. Note that 0.25 is radius of the rod.
+        shift = 2.0 * 0.25
+
+        # plane normal changed, it is towards the negative direction, because rod
+        # is under the rod.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [rod, interaction_plane, external_forces] = self.initializer(
+            n_elem, shift, plane_normal=plane_normal
+        )
+
+        interaction_plane.apply_normal_force(rod)
+        correct_forces = np.zeros((3, n_elem + 1))
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
+
 
 class TestAuxiliaryFunctions:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
@@ -171,7 +202,7 @@ class TestAuxiliaryFunctions:
         velocity_slip = np.repeat(
             np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1
         )
-        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
         correct_slip_function = np.zeros(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
@@ -179,7 +210,7 @@ class TestAuxiliaryFunctions:
         velocity_slip = np.repeat(
             np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1
         )
-        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
         correct_slip_function = np.ones(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
@@ -187,7 +218,7 @@ class TestAuxiliaryFunctions:
         velocity_slip = np.repeat(
             np.array([0.0, 0.0, 1.0 - 1e-6]).reshape(3, 1), n_elem, axis=1
         )
-        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
         correct_slip_function = np.ones(n_elem)
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
@@ -195,7 +226,7 @@ class TestAuxiliaryFunctions:
         velocity_slip = np.repeat(
             np.array([0.0, 0.0, 1.0 + 1e-6]).reshape(3, 1), n_elem, axis=1
         )
-        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
         correct_slip_function = np.ones(n_elem) - 1e-6
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
@@ -207,7 +238,7 @@ class TestAuxiliaryFunctions:
                 np.repeat(np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1),
             )
         )
-        slip_function = linear_interpolation_slip(velocity_slip, velocity_threshold)
+        slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
         correct_slip_function = np.hstack((np.zeros(n_elem), np.ones(n_elem)))
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
