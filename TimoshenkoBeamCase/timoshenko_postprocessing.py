@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 
 
-
 def analytical_shearable(arg_rod, arg_end_force, n_elem=500):
     base_length = np.sum(arg_rod.rest_lengths)
     arg_s = np.linspace(0.0, base_length, n_elem)
