@@ -201,3 +201,9 @@ stretching_rod.py
 bent_butterfly_rod.py
 timoshenko_beam.py
 sample_prog.py
+
+# Figures and pictures
+*.png
+
+# data files
+*.dat
