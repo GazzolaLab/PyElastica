@@ -84,7 +84,7 @@ def simulate_helicalbucklin_beam_with(
     positions_over_time = []
     directors_over_time = []
     velocities_over_time = []
-    final_time = 1
+    final_time = 10500
     dl = base_length / n_elem
     dt = 1e-3 * dl
     total_steps = int(final_time / dt)
@@ -114,7 +114,7 @@ def simulate_helicalbucklin_beam_with(
 if __name__ == "__main__":
     import multiprocessing as mp
 
-    convergence_elements = list([100, 200, 400])
+    convergence_elements = list([100, 200, 400, 800])
 
     # Convergence study
     # for n_elem in [5, 6, 7, 8, 9, 10]
