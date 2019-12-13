@@ -18,7 +18,9 @@ class BaseRodClass(TestRod):
         """
         This class initialize a straight rod,
         which is for testing interaction functions.
-        :param n_elem:
+        Parameters
+        ----------
+        n_elem
         """
         base_length = 1.0
         direction = np.array([0.0, 0.0, 1.0])
@@ -78,8 +80,13 @@ class TestInteractionPlane:
         """
         This test case tests the forces on rod, when there is no
         contact between rod and the plane.
-        :param n_elem:
-        :return:
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
         """
 
         shift = -(
@@ -98,9 +105,16 @@ class TestInteractionPlane:
         This function tests wall response  on the rod. Here
         wall stiffness coefficient and damping coefficient set
         to zero to check only sum of all forces on the rod.
-        :param n_elem:
-        :return:
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
         """
+
         [rod, interaction_plane, external_forces] = self.initializer(n_elem)
 
         interaction_plane.apply_normal_force(rod)
@@ -114,9 +128,16 @@ class TestInteractionPlane:
         """
         Here wall stiffness coefficient changed parametrically
         and damping coefficient set to zero .
-        :param n_elem:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        k_w
+
+        Returns
+        -------
+
         """
+
         shift = np.random.random_sample(1).item()  # we move plane towards to rod
         [rod, interaction_plane, external_forces] = self.initializer(
             n_elem, shift=shift, k_w=k_w
@@ -137,9 +158,14 @@ class TestInteractionPlane:
         """
         Here wall damping coefficient are changed parametrically and
         wall response functions tested.
-        :param n_elem:
-        :param nu_w:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        nu_w
+
+        Returns
+        -------
+
         """
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem, nu_w=nu_w)
@@ -178,18 +204,111 @@ class TestInteractionPlane:
         """
 
         # we move plane on top of the rod. Note that 0.25 is radius of the rod.
-        shift = 2.0 * 0.25
+        offset_of_plane_with_respect_to_rod = 2.0 * 0.25
 
         # plane normal changed, it is towards the negative direction, because rod
         # is under the rod.
         plane_normal = np.array([0.0, -1.0, 0.0])
 
         [rod, interaction_plane, external_forces] = self.initializer(
-            n_elem, shift, plane_normal=plane_normal
+            n_elem, shift=offset_of_plane_with_respect_to_rod, plane_normal=plane_normal
         )
 
         interaction_plane.apply_normal_force(rod)
         correct_forces = np.zeros((3, n_elem + 1))
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
+    def test_interaction_when_rod_is_under_plane_with_k_without_nu(self, n_elem, k_w):
+        """
+        In this test case we move the rod under the plane.
+        Here wall stiffness coefficient changed parametrically
+        and damping coefficient set to zero .
+        Parameters
+        ----------
+        n_elem
+        k_w
+
+        Returns
+        -------
+
+        """
+        # we move plane on top of the rod. Note that 0.25 is radius of the rod.
+        offset_of_plane_with_respect_to_rod = 2.0 * 0.25
+
+        # we move plane towards to rod by random distance
+        shift = offset_of_plane_with_respect_to_rod - np.random.random_sample(1).item()
+
+        # plane normal changed, it is towards the negative direction, because rod
+        # is under the rod.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [rod, interaction_plane, external_forces] = self.initializer(
+            n_elem, shift=shift, k_w=k_w, plane_normal=plane_normal
+        )
+
+        # we have to substract rod offset because top part
+        correct_forces = k_w * np.repeat(
+            np.array([0.0, shift - offset_of_plane_with_respect_to_rod, 0.0]).reshape(
+                3, 1
+            ),
+            n_elem + 1,
+            axis=1,
+        )
+        correct_forces[..., 0] *= 0.5
+        correct_forces[..., -1] *= 0.5
+
+        interaction_plane.apply_normal_force(rod)
+
+        assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
+    def test_interaction_when_rod_is_under_plane_without_k_with_nu(self, n_elem, nu_w):
+        """
+        In this test case we move under the plane and test damping force.
+        Here wall damping coefficient are changed parametrically and
+        wall response functions tested.
+        Parameters
+        ----------
+        n_elem
+        nu_w
+
+        Returns
+        -------
+
+        """
+        # we move plane on top of the rod. Note that 0.25 is radius of the rod.
+        offset_of_plane_with_respect_to_rod = 2.0 * 0.25
+
+        # plane normal changed, it is towards the negative direction, because rod
+        # is under the rod.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [rod, interaction_plane, external_forces] = self.initializer(
+            n_elem,
+            shift=offset_of_plane_with_respect_to_rod,
+            nu_w=nu_w,
+            plane_normal=plane_normal,
+        )
+
+        normal_velocity = np.random.random_sample(1).item()
+        rod.velocity_collection[..., :] += np.array(
+            [0.0, -normal_velocity, 0.0]
+        ).reshape(3, 1)
+
+        correct_forces = np.repeat(
+            (nu_w * np.array([0.0, normal_velocity, 0.0])).reshape(3, 1),
+            n_elem + 1,
+            axis=1,
+        )
+
+        correct_forces[..., 0] *= 0.5
+        correct_forces[..., -1] *= 0.5
+
+        interaction_plane.apply_normal_force(rod)
+
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
 
@@ -251,7 +370,7 @@ class TestAuxiliaryFunctions:
         correct_output = np.repeat(random_vector, n_elem, axis=1)
         output = nodes_to_elements(input)
         assert_allclose(correct_output, output, atol=Tolerance.atol())
-        assert_allclose(np.sum(correct_output), np.sum(output), atol=Tolerance.atol())
+        assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
 
 
 class TestAnisotropicFriction:
@@ -316,9 +435,14 @@ class TestAnisotropicFriction:
         """
         This function tests kinetic friction in forward and backward direction.
         All other friction coefficients set to zero.
-        :param n_elem:
-        :param velocity:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        velocity
+
+        Returns
+        -------
+
         """
 
         [rod, friction_plane, external_forces_collection] = self.initializer(
@@ -349,9 +473,14 @@ class TestAnisotropicFriction:
         This test is for static friction when total forces applied
         on the rod is smaller than the static friction force.
         Fx < F_normal*mu_s
-        :param n_elem:
-        :param force_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        force_mag
+
+        Returns
+        -------
+
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
             n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
@@ -370,10 +499,16 @@ class TestAnisotropicFriction:
         This test is for static friction when total forces applied
         on the rod is larger than the static friction force.
         Fx > F_normal*mu_s
-        :param n_elem:
-        :param force_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        force_mag
+
+        Returns
+        -------
+
         """
+
         [rod, frictionplane, external_forces_collection] = self.initializer(
             n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
         )
@@ -401,10 +536,15 @@ class TestAnisotropicFriction:
         we compute the final external forces and torques on the rod
         using apply friction function and compare results with
         analytical solutions.
-        :param n_elem:
-        :param velocity:
-        :param omega:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        velocity
+        omega
+
+        Returns
+        -------
+
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
             n_elem, kinetic_mu_array=np.array([0.0, 0.0, 1.0]),
@@ -444,9 +584,14 @@ class TestAnisotropicFriction:
         zero and only changed the force in rolling direction. In this test case, total force in rolling direction
         is smaller than static friction force in rolling direction. Next test case will check what happens if
         total forces in rolling direction larger than static friction force.
-        :param n_elem:
-        :param force_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        force_mag
+
+        Returns
+        -------
+
         """
 
         [rod, frictionplane, external_forces_collection] = self.initializer(
@@ -480,10 +625,16 @@ class TestAnisotropicFriction:
         In this test case static rolling friction force is tested. We set external and internal torques to
         zero and only changed the force in rolling direction. In this test case, total force in rolling direction
         is larger than static friction force in rolling direction.
-        :param n_elem:
-        :param force_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        force_mag
+
+        Returns
+        -------
+
         """
+
         [rod, frictionplane, external_forces_collection] = self.initializer(
             n_elem, static_mu_array=np.array([0.0, 0.0, 1.0]), force_mag_side=force_mag
         )
@@ -516,10 +667,16 @@ class TestAnisotropicFriction:
         In this test case, static rolling friction force tested with zero internal and external force and
         with non-zero external torque. Here torque magnitude chosen such that total rolling force is
         always smaller than the static friction force.
-        :param n_elem:
-        :param torque_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        torque_mag
+
+        Returns
+        -------
+
         """
+
         [rod, frictionplane, external_forces_collection] = self.initializer(
             n_elem, static_mu_array=np.array([0.0, 0.0, 10.0])
         )
@@ -550,10 +707,14 @@ class TestAnisotropicFriction:
         with non-zero external torque. Here torque magnitude chosen such that total rolling force is
         always larger than the static friction force. Thus, lateral friction force will be equal to static
         friction force.
-        :param self:
-        :param n_elem:
-        :param torque_mag:
-        :return:
+        Parameters
+        ----------
+        n_elem
+        torque_mag
+
+        Returns
+        -------
+
         """
 
         [rod, frictionplane, external_forces_collection] = self.initializer(
