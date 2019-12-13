@@ -13,9 +13,8 @@ from HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
     plot_helicalbuckling,
-    calculate_error_norm,
 )
-from convergence_functions import plot_convergence
+from convergence_functions import plot_convergence, calculate_error_norm
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
