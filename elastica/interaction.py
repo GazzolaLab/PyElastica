@@ -86,7 +86,7 @@ class InteractionPlane:
             "i, j->ij", self.plane_normal, force_component_along_normal_direction
         )
         # If the total force component along the plane normal direction is greater than zero that means,
-        # total force is pushing rod away from the plane not towards the surface. Thus, response force
+        # total force is pushing rod away from the plane not towards the plane. Thus, response force
         # applied by the surface has to be zero.
         forces_along_normal_direction[
             ..., np.where(force_component_along_normal_direction > 0)
@@ -179,7 +179,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         normal_plane_collection = np.repeat(
             self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
-        axial_direction = system.tangents.view()
+        axial_direction = system.tangents
         element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
         )
