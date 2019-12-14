@@ -10,7 +10,7 @@ def calculate_error_norm(true_solution, computed_solution, n_elem):
     error = true_solution - computed_solution
     l1 = norm(error, 1) / n_elem
     l2 = norm(error, 2) / n_elem
-    linf = norm(error, np.inf) / n_elem
+    linf = norm(error, np.inf)
 
     return error, l1, l2, linf
 
