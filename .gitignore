@@ -207,3 +207,6 @@ sample_prog.py
 
 # data files
 *.dat
+
+# Operating System Files
+*.DS_Store
