@@ -116,6 +116,8 @@ class BaseSystemCollection(MutableSequence):
             return list(chain.from_iterable(methods))
 
         self._features = get_methods_from_feature_classes("__call__")
+        # TODO: we may need to remove featureBC below
+        self._featuresBC = get_methods_from_feature_classes("_callBC")
         finalize_methods = get_methods_from_feature_classes("_finalize")
 
         for finalize in finalize_methods:
@@ -124,4 +126,10 @@ class BaseSystemCollection(MutableSequence):
     def synchronize(self, time):
         # Calls all constraints, connections, controls etc.
         for feature in self._features:
+            feature(self, time)
+
+    # TODO: remove synchronizeBC below
+    def synchronizeBC(self, time):
+        # Calls all constraints, connections, controls etc.
+        for feature in self._featuresBC:
             feature(self, time)

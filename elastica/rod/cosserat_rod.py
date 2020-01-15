@@ -237,7 +237,9 @@ class _CosseratRodBase(RodBase):
         #
         # return damping_forces
 
-        elemental_velocities = 0.5 * (self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:])
+        elemental_velocities = 0.5 * (
+            self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
+        )
         elemental_damping_forces = self.nu * elemental_velocities * self.lengths
         nodal_damping_forces = quadrature_kernel(elemental_damping_forces)
         return nodal_damping_forces
