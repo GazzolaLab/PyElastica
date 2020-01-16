@@ -451,7 +451,7 @@ class TestAnisotropicFriction:
 
         rod.velocity_collection += np.array([0.0, 0.0, velocity]).reshape(3, 1)
 
-        friction_plane.apply_force(rod)
+        friction_plane.apply_forces(rod)
 
         direction_collection = np.repeat(
             np.array([0.0, 0.0, 1.0]).reshape(3, 1), n_elem + 1, axis=1
@@ -486,7 +486,7 @@ class TestAnisotropicFriction:
             n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
         )
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
         correct_forces = np.zeros((3, n_elem + 1))
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -513,7 +513,7 @@ class TestAnisotropicFriction:
             n_elem, static_mu_array=np.array([1.0, 1.0, 0.0]), force_mag_long=force_mag
         )
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
         correct_forces = np.zeros((3, n_elem + 1))
         if np.sign(force_mag) < 0:
             correct_forces[2] = (
@@ -553,7 +553,7 @@ class TestAnisotropicFriction:
         rod.velocity_collection += np.array([velocity, 0.0, 0.0]).reshape(3, 1)
         rod.omega_collection += np.array([0.0, 0.0, omega]).reshape(3, 1)
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         correct_forces[0] = (
@@ -598,7 +598,7 @@ class TestAnisotropicFriction:
             n_elem, static_mu_array=np.array([0.0, 0.0, 10.0]), force_mag_side=force_mag
         )
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         correct_forces[0] = 2.0 / 3.0 * external_forces_collection[0]
@@ -639,7 +639,7 @@ class TestAnisotropicFriction:
             n_elem, static_mu_array=np.array([0.0, 0.0, 1.0]), force_mag_side=force_mag
         )
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         correct_forces[0] = external_forces_collection[0] - np.sign(
@@ -685,7 +685,7 @@ class TestAnisotropicFriction:
         external_torques[2] = torque_mag
         rod.external_torques = external_torques.copy()
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         correct_forces[0, :-1] += external_torques[2] / (3.0 * rod.radius)
@@ -725,7 +725,7 @@ class TestAnisotropicFriction:
         external_torques[2] = torque_mag
         rod.external_torques = external_torques.copy()
 
-        frictionplane.apply_force(rod)
+        frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         correct_forces[0] = np.sign(torque_mag) * np.fabs(external_forces_collection[1])
