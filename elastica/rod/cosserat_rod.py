@@ -346,6 +346,24 @@ class _CosseratRodBase(RodBase):
         self.external_forces *= 0.0
         self.external_torques *= 0.0
 
+    def compute_translational_energy(self):
+        return (
+            0.5
+            * (
+                self.mass
+                * np.einsum(
+                    "ij, ij-> j", self.velocity_collection, self.velocity_collection
+                )
+            ).sum()
+        )
+
+    def compute_rotational_energy(self):
+        J_omega_upon_e = (
+            _batch_matvec(self.mass_second_moment_of_inertia, self.omega_collection)
+            / self.dilatation
+        )
+        return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
+
 
 # TODO Fix this classmethod weirdness to a more scalable and maintainable solution
 # TODO Fix the SymplecticStepperMixin interface class as it does not belong here

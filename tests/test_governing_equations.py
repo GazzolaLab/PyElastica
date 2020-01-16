@@ -651,6 +651,75 @@ class TestingClass:
             atol=Tolerance.atol(),
         )
 
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_case_compute_translational_energy(self, n_elem, nu=0):
+        """
+        This function tests compute translational energy function. We
+        take an initial input energy for the rod and compute the velocity and
+        set the velocity of rod elements. We call compute_translational_energy
+        function and compare the result with output energy.
+        Note here we are only setting the y velocity of the rod, x and z velocity
+        are zero.
+        Parameters
+        ----------
+        n_elem
+        nu
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem, nu)
+        base_length = 1.0
+        base_radius = 0.25
+        density = 1.0
+        mass = base_length * np.pi * base_radius * base_radius * density
+
+        input_energy = 10
+        velocity = np.sqrt(2 * input_energy / mass)
+
+        test_rod.velocity_collection[1, :] = velocity
+
+        output_energy = test_rod.compute_translational_energy()
+
+        assert_allclose(output_energy, input_energy, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_case_compute_rotational_energy(self, n_elem, nu=0):
+        """
+        This function tests compute rotational energy function. We
+        take an initial input energy for the rod and compute the angular velocity and
+        set the angular velocity of rod elements. We call compute_rotational_energy
+        function and compare the result with output energy. Here we are using mass
+        moment of inertia corresponding to z velocity.
+        Note here we are only setting the z velocity of the rod, y and x velocity
+        are zero.
+        Parameters
+        ----------
+        n_elem
+        nu
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem, nu)
+        input_energy = 10
+        omega = np.sqrt(
+            2
+            * input_energy
+            / (test_rod.mass_second_moment_of_inertia[2, 2, 0] * n_elem)
+        )
+
+        test_rod.omega_collection[..., :] = np.array([0.0, 0.0, omega]).reshape(3, 1)
+        test_rod._compute_all_dilatations()
+
+        output_energy = test_rod.compute_rotational_energy()
+
+        assert_allclose(output_energy, input_energy, atol=Tolerance.atol())
+
 
 if __name__ == "__main__":
     from pytest import main
