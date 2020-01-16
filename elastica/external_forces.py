@@ -53,7 +53,7 @@ class GravityForces(NoForces):
     """ Applies a constant gravity on the entire rod
     """
 
-    def __init__(self, acc_gravity=np.array([0.0, 0.0, -9.80665])):
+    def __init__(self, acc_gravity=np.array([0.0, -9.80665, 0.0])):
         super(GravityForces, self).__init__()
         self.acc_gravity = acc_gravity
 
