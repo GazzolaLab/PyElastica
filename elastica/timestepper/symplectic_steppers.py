@@ -17,20 +17,60 @@ is referred to the same section on `explicit_steppers.py`.
 
 class _SystemInstanceStepperMixin:
     def do_step(self, System, time: np.float64, dt: np.float64):
-        for prefactor_calculation, step in self._steps_and_prefactors:
-            prefac = prefactor_calculation(self, dt)
-            time = step(self, System, time, prefac)
+        for (
+            kin_prefactor,
+            kin_step,
+            dyn_prefactor,
+            dyn_step,
+        ) in self._steps_and_prefactors[:-1]:
+            prefac = kin_prefactor(self, dt)
+            time = kin_step(self, System, time, prefac)
+            prefac = dyn_prefactor(self, dt)
+            time = dyn_step(self, System, time, prefac)
+
+        # Peel the last kinematic step and prefactor alone
+        last_kin_prefactor = self._steps_and_prefactors[-1][0]
+        last_kin_step = self._steps_and_prefactors[-1][1]
+
+        prefac = last_kin_prefactor(self, dt)
+        time = last_kin_step(self, System, time, prefac)
         return time
 
 
 class _SystemCollectionStepperMixin:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
-        for prefactor_calculation, step in self._steps_and_prefactors:
-            prefac = prefactor_calculation(self, dt)
-            SystemCollection.synchronize(time)
+        for (
+            kin_prefactor,
+            kin_step,
+            dyn_prefactor,
+            dyn_step,
+        ) in self._steps_and_prefactors[:-1]:
+            prefac = kin_prefactor(self, dt)
             for system in SystemCollection[:-1]:
-                _ = step(self, system, time, prefac)
-            time = step(self, SystemCollection[-1], time, prefac)
+                _ = kin_step(self, system, time, prefac)
+            time = kin_step(self, SystemCollection[-1], time, prefac)
+
+            # BoCos, External forces, controls etc.
+            SystemCollection.synchronize(time)
+            # TODO: remove below line, it should be some other function synchronizeBC
+            SystemCollection.synchronizeBC(time)
+            prefac = dyn_prefactor(self, dt)
+            for system in SystemCollection[:-1]:
+                _ = dyn_step(self, system, time, prefac)
+            time = dyn_step(self, SystemCollection[-1], time, prefac)
+
+            # TODO: remove below line, it should be some other function synchronizeBC
+            SystemCollection.synchronizeBC(time)
+
+        # Peel the last kinematic step and prefactor alone
+        last_kin_prefactor = self._steps_and_prefactors[-1][0]
+        last_kin_step = self._steps_and_prefactors[-1][1]
+
+        prefac = last_kin_prefactor(self, dt)
+        for system in SystemCollection[:-1]:
+            _ = last_kin_step(self, system, time, prefac)
+        time = last_kin_step(self, SystemCollection[-1], time, prefac)
+
         return time
 
 
@@ -78,7 +118,30 @@ class SymplecticStepper(_TimeStepper):
             self._prefactors
         ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
 
-        self._steps_and_prefactors = tuple(zip(self._prefactors, self._steps))
+        self._kinematic_steps = self._steps[::2]
+        self._dynamic_steps = self._steps[1::2]
+        self._kinematic_prefactors = self._prefactors[::2]
+        self._dynamic_prefactors = self._prefactors[1::2]
+
+        # Avoid this check for MockClasses
+        if len(self._kinematic_steps) > 0:
+            assert (
+                len(self._kinematic_steps) == len(self._dynamic_steps) + 1
+            ), "Size mismatch in the number of kinematic and dynamic steps provided for a Symplectic Stepper!"
+            assert (
+                len(self._kinematic_prefactors) == len(self._dynamic_prefactors) + 1
+            ), "Size mismatch in the number of kinematic and dynamic prefactors provided for a Symplectic Stepper!"
+
+        from itertools import zip_longest
+
+        self._steps_and_prefactors = tuple(
+            zip_longest(
+                self._kinematic_prefactors,
+                self._kinematic_steps,
+                self._dynamic_prefactors,
+                self._dynamic_steps,
+            )
+        )
 
     @property
     def n_stages(self):

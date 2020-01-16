@@ -65,11 +65,18 @@ class EndpointForces(NoForces):
     """ Applies constant forces on endpoints
     """
 
-    def __init__(self, start_force, end_force):
+    def __init__(self, start_force, end_force, rampupTime=0.0):
         super(EndpointForces, self).__init__()
         self.start_force = start_force
         self.end_force = end_force
+        assert rampupTime >= 0.0
+        if rampupTime == 0:
+            self.rampupTime = 1e-14
+        else:
+            self.rampupTime = rampupTime
 
     def apply_forces(self, system, time=0.0):
-        system.external_forces[..., 0] += self.start_force
-        system.external_forces[..., -1] += self.end_force
+        factor = min(1.0, time / self.rampupTime)
+
+        system.external_forces[..., 0] += self.start_force * factor
+        system.external_forces[..., -1] += self.end_force * factor

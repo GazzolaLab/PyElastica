@@ -1,6 +1,6 @@
 black:
 	@black --version
-	@black elastica tests
+	@black elastica tests HelicalBucklingCase TimoshenkoBeamCase
 
 black_check:
 	@black --version
@@ -17,7 +17,7 @@ isort_check:
 
 flake8:
 	@flake8 --version
-	@flake8 elastica tests
+	@flake8 elastica tests HelicalBucklingCase TimoshenkoBeamCase
 
 clean_notebooks:
     # This finds Ipython jupyter notebooks in the code

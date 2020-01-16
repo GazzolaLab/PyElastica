@@ -2,10 +2,14 @@ __doc__ = """ Rod base classes and implementation details that need to be hidden
 import numpy as np
 import functools
 
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
-from ._calculus import quadrature_kernel, difference_kernel
-from ._rotations import _inv_rotate
-from .utils import MaxDimension, Tolerance
+from elastica._linalg import _batch_matvec, _batch_cross
+from elastica._calculus import quadrature_kernel, difference_kernel
+from elastica._rotations import _inv_rotate
+from elastica.utils import MaxDimension, Tolerance
+
+from elastica.rod import RodBase
+from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 # TODO Add documentation for all functions
 
@@ -13,163 +17,6 @@ from .utils import MaxDimension, Tolerance
 @functools.lru_cache(maxsize=1)
 def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
-
-
-# First the constitutive laws, only simple linear for now
-class _LinearConstitutiveModel:
-
-    # Needs
-    # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
-    # maybe use __init__ to initialize if not found?
-    def __init__(
-        self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
-    ):
-        # set rest strains and curvature to be  zero at start
-        # if found in kwargs modify (say for curved rod)
-        self.rest_sigma = np.zeros((MaxDimension.value(), n_elements))
-        self.rest_kappa = np.zeros((MaxDimension.value(), n_elements - 1))
-        # sanity checks here
-        # NOTE: assuming matrices to be diagonal here
-        for i in range(0, MaxDimension.value()):
-            assert shear_matrix[i, i] > Tolerance.atol()
-            assert bend_matrix[i, i] > Tolerance.atol()
-
-        self.shear_matrix = np.repeat(
-            shear_matrix[:, :, np.newaxis], n_elements, axis=2
-        )
-        self.bend_matrix = np.repeat(bend_matrix[:, :, np.newaxis], n_elements, axis=2)
-
-        # Compute bend matrix in Voronoi Domain
-        self.bend_matrix = (
-            self.bend_matrix[..., 1:] * rest_lengths[1:]
-            + self.bend_matrix[..., :-1] * rest_lengths[0:-1]
-        ) / (rest_lengths[1:] + rest_lengths[:-1])
-
-    def _compute_internal_shear_stretch_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        S : (3,3,n) tensor and sigma (3,n)
-
-        Returns
-        -------
-
-        """
-        self._compute_shear_stretch_strains()  # concept : needs to compute sigma
-        # TODO : the _batch_matvec kernel needs to depend on the representation of Shearmatrix
-        self.internal_stress = _batch_matvec(
-            self.shear_matrix, self.sigma - self.rest_sigma
-        )
-
-    def _compute_internal_bending_twist_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        B : (3,3,n) tensor and curvature kappa (3,n)
-
-        Returns
-        -------
-
-        """
-        self._compute_bending_twist_strains()  # concept : needs to compute kappa
-        # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
-        self.internal_couple = _batch_matvec(
-            self.bend_matrix, self.kappa - self.rest_kappa
-        )
-
-
-class _LinearConstitutiveModelWithStrainRate(_LinearConstitutiveModel):
-    def __init__(
-        self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
-    ):
-        _LinearConstitutiveModel.__init__(
-            self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
-        )
-        if "shear_rate_matrix" in kwargs.keys():
-            self.shear_rate_matrix = np.repeat(
-                kwargs["shear_rate_matrix"][:, :, np.newaxis], n_elements, axis=2
-            )
-        else:
-            raise ValueError("shear rate matrix value missing!")
-        if "bend_rate_matrix" in kwargs.keys():
-            self.bend_rate_matrix = np.repeat(
-                kwargs["bend_rate_matrix"][:, :, np.newaxis], n_elements, axis=2
-            )
-            # Compute bend rate matrix in Voronoi Domain
-            self.bend_rate_matrix = (
-                self.bend_rate_matrix[..., 1:] * rest_lengths[1:]
-                + self.bend_rate_matrix[..., :-1] * rest_lengths[0:-1]
-            ) / (rest_lengths[1:] + rest_lengths[:-1])
-        else:
-            raise ValueError("bend rate matrix value missing!")
-
-    def _compute_internal_shear_stretch_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        S : (3,3,n) tensor and sigma (3,n)
-
-        Returns
-        -------
-
-        """
-        # TODO : test this function
-        # Calculates stress based purely on strain component
-        super(
-            _LinearConstitutiveModelWithStrainRate, self
-        )._compute_internal_shear_stretch_stresses_from_model()
-        self._compute_shear_stretch_strains_rates()  # concept : needs to compute sigma_dot
-        # TODO : the _batch_matvec kernel needs to depend on the representation of ShearStrainmatrix
-        self.internal_stress += _batch_matvec(self.shear_rate_matrix, self.sigma_dot)
-
-    def _compute_internal_bending_twist_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        B : (3,3,n) tensor and curvature kappa (3,n)
-
-        Returns
-        -------
-
-        """
-        # TODO : test this function
-        # Calculates stress based purely on strain component
-        super(
-            _LinearConstitutiveModelWithStrainRate, self
-        )._compute_internal_bending_twist_stresses_from_model()
-        self._compute_bending_twist_strain_rates()  # concept : needs to compute kappa rate
-        # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
-        self.internal_couple += _batch_matvec(self.bend_rate_matrix, self.kappa_dot)
-
-
-# The interface class, as seen from global scope
-# Can be made common to all entities in the code
-class RodBase:
-    """
-    Base class for all rods
-    # TODO : What needs to be ported here?
-    """
-
-    def __init__(self):
-        pass
-
-    def get_velocity(self):
-        return self.velocity
-
-    def get_angular_velocity(self):
-        return self.omega
-
-    def get_acceleration(self):
-        return (self._compute_internal_forces() + self.external_forces) / self.mass
-
-    def get_angular_acceleration(self):
-        return (
-            _batch_matvec(
-                self.inv_mass_second_moment_of_inertia,
-                (self._compute_internal_torques() + self.external_torques),
-            )
-            * self.dilatation
-        )
 
 
 class _CosseratRodBase(RodBase):
@@ -187,11 +34,16 @@ class _CosseratRodBase(RodBase):
         *args,
         **kwargs
     ):
-        self.position = position
-        self.directors = directors
+        velocities = np.zeros((MaxDimension.value(), n_elements + 1))
+        omegas = np.zeros((MaxDimension.value(), n_elements))  # + 1e-16
+        accelerations = 0.0 * velocities
+        angular_accelerations = 0.0 * omegas
+        self.n_elems = n_elements
+        self._vector_states = np.hstack(
+            (position, velocities, omegas, accelerations, angular_accelerations)
+        )
+        self._matrix_states = directors.copy()
         # initial set to zero; if coming through kwargs then modify
-        self.velocity = np.zeros((MaxDimension.value(), n_elements + 1))
-        self.omega = np.zeros((MaxDimension.value(), n_elements))
         self.rest_lengths = rest_lengths
         self.density = density
         self.volume = volume
@@ -220,8 +72,18 @@ class _CosseratRodBase(RodBase):
             self.rest_lengths[1:] + self.rest_lengths[:-1]
         )
         # will apply external force and torques externally
-        self.external_forces = 0 * self.position
-        self.external_torques = 0 * self.omega
+        self.external_forces = 0 * accelerations
+        self.external_torques = 0 * angular_accelerations
+
+        # calculated in `compute_geometry_from_state`
+        self.lengths = NotImplemented
+        self.tangents = NotImplemented
+        self.radius = NotImplemented
+
+        # calculated in `compute_all_dilatatation`
+        self.dilatation = NotImplemented
+        self.voronoi_dilatation = NotImplemented
+        self.dilatation_rate = NotImplemented
 
     @classmethod
     def straight_rod(
@@ -298,7 +160,9 @@ class _CosseratRodBase(RodBase):
 
         # Note : we can use the two-point difference kernel, but it needs unnecessary padding
         # and hence will always be slower
-        position_diff = self.position[..., 1:] - self.position[..., :-1]
+        position_diff = (
+            self.position_collection[..., 1:] - self.position_collection[..., :-1]
+        )
         self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
         self.tangents = position_diff / self.lengths
         # resize based on volume conservation
@@ -332,13 +196,20 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
+        # TODO Use the vector formula rather than separating it out
         # self.lengths = l_i = |r^{i+1} - r^{i}|
-        r_dot_v = np.einsum("ij,ij->j", self.position, self.velocity)
+        r_dot_v = np.einsum(
+            "ij,ij->j", self.position_collection, self.velocity_collection
+        )
         r_plus_one_dot_v = np.einsum(
-            "ij, ij->j", self.position[..., 1:], self.velocity[..., :-1]
+            "ij, ij->j",
+            self.position_collection[..., 1:],
+            self.velocity_collection[..., :-1],
         )
         r_dot_v_plus_one = np.einsum(
-            "ij, ij->j", self.position[..., :-1], self.velocity[..., 1:]
+            "ij, ij->j",
+            self.position_collection[..., :-1],
+            self.velocity_collection[..., 1:],
         )
         self.dilatation_rate = (
             (r_dot_v[..., :-1] + r_dot_v[..., 1:] - r_dot_v_plus_one - r_plus_one_dot_v)
@@ -350,21 +221,28 @@ class _CosseratRodBase(RodBase):
         # Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant
         self._compute_all_dilatations()
         self.sigma = (
-            self.dilatation * _batch_matvec(self.directors, self.tangents)
+            self.dilatation * _batch_matvec(self.director_collection, self.tangents)
             - _get_z_vector()
         )
 
     def _compute_bending_twist_strains(self):
         # Note: dilatations are computed previously inside ` _compute_all_dilatations `
-        self.kappa = _inv_rotate(self.directors) / self.rest_voronoi_lengths
+        self.kappa = _inv_rotate(self.director_collection) / self.rest_voronoi_lengths
 
     def _compute_damping_forces(self):
         # Internal damping foces.
-        damping_forces = self.nu * self.velocity
-        damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
-        damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
+        # damping_forces = self.nu * self.velocity_collection
+        # damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
+        # damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
+        #
+        # return damping_forces
 
-        return damping_forces
+        elemental_velocities = 0.5 * (
+            self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
+        )
+        elemental_damping_forces = self.nu * elemental_velocities * self.lengths
+        nodal_damping_forces = quadrature_kernel(elemental_damping_forces)
+        return nodal_damping_forces
 
     def _compute_internal_forces(self):
         # Compute n_l and cache it using internal_stress
@@ -373,7 +251,7 @@ class _CosseratRodBase(RodBase):
         # Signifies Q^T n_L / e
         # Not using batch matvec as I don't want to take directors.T here
         cosserat_internal_stress = (
-            np.einsum("jik, jk->ik", self.directors, self.internal_stress)
+            np.einsum("jik, jk->ik", self.director_collection, self.internal_stress)
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
         return (
@@ -382,7 +260,7 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_torques(self):
         # Internal damping torques
-        damping_torques = self.nu * self.omega
+        damping_torques = self.nu * self.omega_collection * self.lengths
         return damping_torques
 
     def _compute_internal_torques(self):
@@ -393,21 +271,22 @@ class _CosseratRodBase(RodBase):
         # in internal_stresses
         self._compute_dilatation_rate()
 
-        voronoi_dilatation_cube_cached = 1.0 / self.voronoi_dilatation ** 3
+        voronoi_dilatation_inv_cube_cached = 1.0 / self.voronoi_dilatation ** 3
         # Delta(\tau_L / \Epsilon^3)
         bend_twist_couple_2D = difference_kernel(
-            self.internal_couple * voronoi_dilatation_cube_cached
+            self.internal_couple * voronoi_dilatation_inv_cube_cached
         )
-        # \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epislon^3 ]
+        # \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epsilon^3 ]
         bend_twist_couple_3D = quadrature_kernel(
             _batch_cross(self.kappa, self.internal_couple)
             * self.rest_voronoi_lengths
-            * voronoi_dilatation_cube_cached
+            * voronoi_dilatation_inv_cube_cached
         )
         # (Qt x n_L) * \hat{l}
         shear_stretch_couple = (
             _batch_cross(
-                _batch_matvec(self.directors, self.tangents), self.internal_stress
+                _batch_matvec(self.director_collection, self.tangents),
+                self.internal_stress,
             )
             * self.rest_lengths
         )
@@ -416,14 +295,14 @@ class _CosseratRodBase(RodBase):
         # terms
         # TODO : the _batch_matvec kernel needs to depend on the representation of J, and should be coded as such
         J_omega_upon_e = (
-            _batch_matvec(self.mass_second_moment_of_inertia, self.omega)
+            _batch_matvec(self.mass_second_moment_of_inertia, self.omega_collection)
             / self.dilatation
         )
 
         # (J \omega_L / e) x \omega_L
         # Warning : Do not do micro-optimization here : you can ignore dividing by dilatation as we later multiply by it
         # but this causes confusion and violates SRP
-        lagrangian_transport = _batch_cross(J_omega_upon_e, self.omega)
+        lagrangian_transport = _batch_cross(J_omega_upon_e, self.omega_collection)
 
         # Note : in the computation of dilatation_rate, there is an optimization opportunity as dilatation rate has
         # a dilatation-like term in the numerator, which we cancel here
@@ -439,10 +318,42 @@ class _CosseratRodBase(RodBase):
             - self._compute_damping_torques()
         )
 
+    # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
+    def update_accelerations(self, time):
+        """ TODO Do we need to make the collection members abstract?
 
-class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
+        Parameters
+        ----------
+        time
+
+        Returns
+        -------
+
+        """
+        np.copyto(
+            self.acceleration_collection,
+            (self._compute_internal_forces() + self.external_forces) / self.mass,
+        )
+        np.copyto(
+            self.alpha_collection,
+            _batch_matvec(
+                self.inv_mass_second_moment_of_inertia,
+                (self._compute_internal_torques() + self.external_torques),
+            )
+            * self.dilatation,
+        )
+        # Reset forces and torques
+        self.external_forces *= 0.0
+        self.external_torques *= 0.0
+
+
+# TODO Fix this classmethod weirdness to a more scalable and maintainable solution
+# TODO Fix the SymplecticStepperMixin interface class as it does not belong here
+class CosseratRod(
+    _LinearConstitutiveModelMixin, _CosseratRodBase, _RodSymplecticStepperMixin
+):
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
-        _LinearConstitutiveModel.__init__(
+        _LinearConstitutiveModelMixin.__init__(
             self,
             n_elements,
             shear_matrix,
@@ -454,8 +365,8 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
         _CosseratRodBase.__init__(
             self,
             n_elements,
-            rod.position,
-            rod.directors,
+            rod._vector_states.copy()[..., : n_elements + 1],
+            rod._matrix_states.copy(),
             rod.rest_lengths,
             rod.density,
             rod.volume,
@@ -464,6 +375,7 @@ class CosseratRod(_LinearConstitutiveModel, _CosseratRodBase):
             *args,
             **kwargs
         )
+        _RodSymplecticStepperMixin.__init__(self)
         del rod
 
     @classmethod

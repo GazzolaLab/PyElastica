@@ -61,9 +61,7 @@ class TestExtForceTorque:
         # The user thinks 4.0 goes to nu, but we don't accept it because of error in
         # construction og a Forcing class
         forcing = load_forcing
-        forcing.using(
-            MockForcing, 4.0, k=1, l_var="2", j=3.0,
-        )
+        forcing.using(MockForcing, 4.0, k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
@@ -78,7 +76,7 @@ class TestForcingMixin:
         pass
 
     # TODO fix link after new PR
-    from elastica._rod import RodBase
+    from elastica.rod import RodBase
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
@@ -188,7 +186,7 @@ class TestForcingMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwf._forcings:
+        for (x, _) in scwf._ext_forces_torques:
             assert num < x
             num = x
 

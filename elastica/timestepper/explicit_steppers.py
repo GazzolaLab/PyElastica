@@ -1,5 +1,6 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 import numpy as np
+from copy import copy
 
 from elastica.timestepper._stepper_interface import (
     _TimeStepper,
@@ -133,8 +134,7 @@ class RungeKutta4(ExplicitStepper):
     # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
     # For automatic discovery, the order of declaring stages here is very important
     def _first_stage(self, System, Memory, time: np.float64, dt: np.float64):
-        Memory.initial_state = System.state.copy()
-        # self.initial_state = 1
+        Memory.initial_state = copy(System.state)
         Memory.k_1 = dt * System(time, dt)  # Don't update state yet
 
     def _first_update(self, System, Memory, time: np.float64, dt: np.float64):

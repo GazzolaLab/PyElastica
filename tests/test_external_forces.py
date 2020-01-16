@@ -77,19 +77,28 @@ def test_gravity_forces(n_elem):
 
 # The minimum number of nodes in a system is 2
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
-def test_endpoint_forces(n_elem):
+@pytest.mark.parametrize("rampupTime", [5, 10, 15])
+@pytest.mark.parametrize("time", [0, 8, 20])
+def test_endpoint_forces(n_elem, rampupTime, time):
     dim = 3
 
     mock_rod = MockRod()
     mock_rod.external_forces = np.zeros((dim, n_elem))
 
+    if rampupTime > time:
+        factor = time / rampupTime
+    elif rampupTime <= time:
+        factor = 1.0
+
     start_force = np.random.rand(dim)
     end_force = np.random.rand(dim)
 
-    ext_endpt_forces = EndpointForces(start_force, end_force)
-    ext_endpt_forces.apply_forces(mock_rod)
+    ext_endpt_forces = EndpointForces(start_force, end_force, rampupTime)
+    ext_endpt_forces.apply_forces(mock_rod, time)
 
     assert_allclose(
-        mock_rod.external_forces[..., 0], start_force, atol=Tolerance.atol()
+        mock_rod.external_forces[..., 0], start_force * factor, atol=Tolerance.atol()
     )
-    assert_allclose(mock_rod.external_forces[..., -1], end_force, atol=Tolerance.atol())
+    assert_allclose(
+        mock_rod.external_forces[..., -1], end_force * factor, atol=Tolerance.atol()
+    )

@@ -196,3 +196,17 @@ fabric.properties
 
 # My TODO list
 TODO.md
+my_sim.py
+stretching_rod.py
+bent_butterfly_rod.py
+timoshenko_beam.py
+sample_prog.py
+
+# Figures and pictures
+*.png
+
+# data files
+*.dat
+
+# Operating System Files
+*.DS_Store

@@ -70,8 +70,8 @@ class TestConstraint:
 
     class MockRod:
         def __init__(self):
-            self.position = np.random.randn(3, 8)
-            self.directors = np.random.randn(3, 3, 7)
+            self.position_collection = np.random.randn(3, 8)
+            self.director_collection = np.random.randn(3, 3, 7)
 
     @pytest.mark.parametrize("position_indices", [(0,), (1, 2), (0, 3, 6)])
     def test_call_with_positions_kwargs(self, load_constraint, position_indices):
@@ -94,7 +94,8 @@ class TestConstraint:
         # More tests reinforcing the first
         for pos_idx_in_rod, pos_idx_in_bc in zip(position_indices, range(3)):
             assert_allclose(
-                mock_rod.position[..., pos_idx_in_rod], mock_bc.start_pos[pos_idx_in_bc]
+                mock_rod.position_collection[..., pos_idx_in_rod],
+                mock_bc.start_pos[pos_idx_in_bc],
             )
         assert mock_bc.k == 1
 
@@ -119,7 +120,7 @@ class TestConstraint:
         # More tests reinforcing the first
         for dir_idx_in_rod, dir_idx_in_bc in zip(director_indices, range(3)):
             assert_allclose(
-                mock_rod.directors[..., dir_idx_in_rod],
+                mock_rod.director_collection[..., dir_idx_in_rod],
                 mock_bc.start_pos[dir_idx_in_bc],
             )
         assert mock_bc.k == 1
@@ -155,11 +156,11 @@ class TestConstraint:
         pos_dir_offset = len(dof_indices)
         for dof_idx_in_rod, dof_idx_in_bc in zip(dof_indices, range(3)):
             assert_allclose(
-                mock_rod.position[..., dof_idx_in_rod],
+                mock_rod.position_collection[..., dof_idx_in_rod],
                 mock_bc.start_pos[dof_idx_in_bc],
             )
             assert_allclose(
-                mock_rod.directors[..., dof_idx_in_rod],
+                mock_rod.director_collection[..., dof_idx_in_rod],
                 mock_bc.start_pos[dof_idx_in_bc + pos_dir_offset],
             )
         assert mock_bc.k == 1
@@ -202,7 +203,7 @@ class TestConstraintsMixin:
         pass
 
     # TODO fix link after new PR
-    from elastica._rod import RodBase
+    from elastica.rod import RodBase
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):

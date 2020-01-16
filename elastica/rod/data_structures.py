@@ -5,6 +5,8 @@ import numpy as np
 from elastica._rotations import _get_rotation_matrix, _rotate
 
 
+# FIXME : Explicit Stepper doesn't work as States lose the
+# views they initially had when working with a timestepper.
 class _RodExplicitStepperMixin:
     def __init__(self):
         (
@@ -20,8 +22,22 @@ class _RodExplicitStepperMixin:
             "explicit", self.n_elems, self._vector_states, self._matrix_states
         )
 
-    def __call__(self, *args, **kwargs):
-        self.update_accelerations()  # Internal, external
+    # def __setattr__(self, name, value):
+    #     np.copy(self.__dict__[name], value)
+
+    def __call__(self, time, *args, **kwargs):
+        self.update_accelerations(time)  # Internal, external
+
+        # print("KRC", self.state.kinematic_rate_collection)
+        # print("DEr", self.__deriv_state.rate_collection)
+        if np.shares_memory(
+            self.state.kinematic_rate_collection,
+            self.velocity_collection
+            # self.__deriv_state.rate_collection
+        ):
+            print("Shares memory")
+        else:
+            print("Explicit states does not share memory")
         return self.__deriv_state
 
 
@@ -39,8 +55,55 @@ class _RodSymplecticStepperMixin:
         ) = _bootstrap_from_data(
             "symplectic", self.n_elems, self._vector_states, self._matrix_states
         )
+        # Expose rate returning functions in the interface
+        # to be used by the time-stepping algorithm
+        # dynamic rates needs to call update_accelerations and henc
+        # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
-        self.dynamic_rates = self.dynamic_states.dynamic_rates
+
+    """
+    The following commented block of code is a test to ensure that
+    the time-integrator always updates the view of the
+    collection variables, and not an independent variable
+    (aka no copy is made). It exists only for legacy
+    purposes and will be either refactored or removed once
+    testing is done.
+    """
+    # def kinematic_rates(self, time, *args, **kwargs):
+    #     def shmem(a, b):
+    #         if np.shares_memory(
+    #                 a, b
+    #         ) : print("Shares memory ools")
+    #         else :
+    #             print("Explicit states does not share memory")
+    #
+    #     shmem(self.kinematic_states.position_collection, self.position_collection)
+    #     shmem(self.kinematic_states.director_collection, self.director_collection)
+    #
+    #     return self.dynamic_states.kinematic_rates(time, *args, **kwargs)
+
+    def dynamic_rates(self, time, *args, **kwargs):
+        self.update_accelerations(time)
+
+        """
+        The following commented block of code is a test to ensure that
+        the time-integrator always updates the view of the
+        collection variables, and not an independent variable
+        (aka no copy is made). It exists only for legacy
+        purposes and will be either refactored or removed once
+        testing is done.
+        """
+        # def shmem(x):
+        #     if np.shares_memory(
+        #             self.dynamic_states.rate_collection, x
+        #     ) : print("Shares memory")
+        #     else :
+        #         print("Explicit states does not share memory")
+        # shmem(self.velocity_collection)
+        # shmem(self.acceleration_collection)
+        # shmem(self.omega_collection)
+        # shmem(self.alpha_collection)
+        return self.dynamic_states.dynamic_rates(time, *args, **kwargs)
 
 
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
@@ -250,7 +313,7 @@ class _State:
             + scaled_derivative_state[..., self.n_kinematic_rates :]
         )
         return _State(
-            self.n_nodes,
+            self.n_nodes - 1,
             position_collection,
             director_collection,
             kinematic_rate_collection,
@@ -399,6 +462,7 @@ class _KinematicState:
         self.position_collection += scaled_deriv_array[..., : self.n_nodes]
         # TODO Avoid code repeat
         # Devs : see `_State.__iadd__` for reasons why we do matmul here
+        # print(_get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]))
         np.einsum(
             "ijk,jlk->ilk",
             _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
@@ -454,7 +518,7 @@ class _DynamicState:
         self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
         return self
 
-    def kinematic_rates(self):
+    def kinematic_rates(self, time, *args, **kwargs):
         """ Yields kinematic rates to interact with _KinematicState
 
         Returns
@@ -471,7 +535,7 @@ class _DynamicState:
         # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
         return self.rate_collection[..., : self.n_kinematic_rates]
 
-    def dynamic_rates(self):
+    def dynamic_rates(self, time, *args, **kwargs):
         """ Yields dynamic rates to add to with _DynamicState
 
         Returns

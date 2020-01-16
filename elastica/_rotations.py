@@ -253,7 +253,11 @@ def _get_rotation_matrix(scale: float, axis_collection):
     # Get skew symmetric U and U * U
     # Comes first before theta gets multiplied by scale, see rationale
     # in the block comment below
-    u, u_sq = _get_skew_symmetric_pair(axis_collection / theta)
+    # filter_idx = np.where(np.abs(theta) < 1e-14)
+    # theta[filter_idx] = 1e-14
+    # u, u_sq = _get_skew_symmetric_pair(axis_collection / theta)
+    # TODO Verify that this tolerance is sufficient for normalization
+    u, u_sq = _get_skew_symmetric_pair(axis_collection / (theta + 1e-14))
 
     # Nasty bug, as it changes the state of a passed in variable
     # This gets transmitted back to the user scope
@@ -267,7 +271,7 @@ def _get_rotation_matrix(scale: float, axis_collection):
     u_sq_prefix = 1.0 - np.cos(theta)
 
     # Start rotate_mat minus the \delta_ij
-    rot_mat = u_prefix * u + u_sq_prefix * u_sq
+    rot_mat = -u_prefix * u + u_sq_prefix * u_sq
 
     """Both these versions are almost equivalent, both in time and memory
     keeping second for ease of us"""
@@ -297,6 +301,9 @@ def _rotate(director_collection, scale: float, axis_collection):
 
     # TODO Finish documentation
     """
+    # return _batch_matmul(
+    #     director_collection, _get_rotation_matrix(scale, axis_collection)
+    # )
     return _batch_matmul(
         _get_rotation_matrix(scale, axis_collection), director_collection
     )
@@ -324,13 +331,13 @@ def _inv_rotate(director_collection):
     """
 
     # Q_{i+i}Q^T_{i} collection
-    # rotmat_collection = np.einsum(
-    #     "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
-    # )
-    # Q^T_{i+i}Q_{i} collection
     rotmat_collection = np.einsum(
-        "jik, jlk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
     )
+    # Q^T_{i+i}Q_{i} collection
+    # rotmat_collection = np.einsum(
+    #     "jik, jlk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
+    # )
 
     # Returns rate-of-change direction as a collection unit vectors
     #  unit vector              skew-symmetrize the collection
@@ -344,20 +351,26 @@ def _inv_rotate(director_collection):
     #  theta vector              Rodrigues formula from trace invariance Tr(R) = 1 + 2cos(\theta)
     #       |         angle from trace                 trace calculation
     #       |              |                                  |
-    theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
+    # theta_collection = np.arccos(0.5 * np.einsum("iij->j", rotmat_collection) - 0.5)
+    # TODO Verify if this tolerance value is accurate
+    theta_collection = np.arccos(
+        0.5 * np.einsum("iij->j", rotmat_collection) - 0.5 - 1e-10
+    )
 
     # Get filter of entities that are close to 0.0
     # Loses performance significantly because of this unavoidable condition
     # Not using utils.Tolerance.tol() because performance intensive loop
     # but it adds only 3-4 µs or so...
     # TODO Understand how people resolve this singularity as lim x->0, x/sinx -> 1
-    filter_idx = np.where(np.abs(theta_collection) < 1e-14)
+    # TODO Verify that this step is unneeded because of tolerance above
+    # filter_idx = np.where(np.abs(theta_collection) < 1e-14)
 
     # Scale the vector collection by \theta/sin(\theta), from Rodrigues
     # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
     vector_collection *= 0.5 * theta_collection / np.sin(theta_collection + 1e-14)
 
     # Set filter_idx locations to 0.0
-    vector_collection[..., filter_idx] = 0.0
+    # TODO Verify that this step is unneeded because of adding tolerance above
+    # vector_collection[..., filter_idx] = 0.0
 
-    return vector_collection
+    return -vector_collection
