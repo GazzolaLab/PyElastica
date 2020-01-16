@@ -6,6 +6,7 @@ from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
 from elastica.external_forces import NoForces
 
+
 def find_slipping_elements(velocity_slip, velocity_threshold):
     """
     This function takes the velocity of elements and checks if they are larger
@@ -147,7 +148,7 @@ class InteractionPlane:
 # head is at x[0] and forward means head to tail
 # same convention for kinetic and static
 # mu named as to which direction it opposes
-class AnistropicFrictionalPlane(NoForces,InteractionPlane):
+class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     def __init__(
         self,
         k,
