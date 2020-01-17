@@ -43,8 +43,8 @@ class BaseRodClass(TestRod):
         self.omega_collection = np.zeros((MaxDimension.value(), n_elem))
         self.external_forces = np.zeros((MaxDimension.value(), n_elem + 1))
         self.external_torques = np.zeros((MaxDimension.value(), n_elem))
-        # self.internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
-        # self.internal_torques = np.zeros((MaxDimension.value(), n_elem))
+        self.internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
+        self.internal_torques = np.zeros((MaxDimension.value(), n_elem))
 
     def _compute_internal_forces(self):
         return np.zeros((MaxDimension.value(), self.n_elem + 1))
