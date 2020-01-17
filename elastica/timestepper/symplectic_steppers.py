@@ -255,6 +255,11 @@ class PEFRL(SymplecticStepper):
         System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
         return time + prefac
 
+    # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
+    def _update_internal_forces_torques(self, System, time: np.float64):
+        System.update_internal_forces_and_torques(time)
+        return time
+
     # Note : we don't need the second half of the calls as it simply forwards
     # to its equivalent first half. This is taken care in the base class
 
