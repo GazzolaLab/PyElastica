@@ -76,9 +76,7 @@ class InteractionPlane:
         """
 
         # Compute plane response force
-        # TODO: How should we compute internal forces here? Call _compute_internal_forces?
-        # nodal_total_forces = system.internal_forces + system.external_forces
-        nodal_total_forces = system._compute_internal_forces() + system.external_forces
+        nodal_total_forces = system.internal_forces + system.external_forces
         element_total_forces = nodes_to_elements(nodal_total_forces)
         force_component_along_normal_direction = np.einsum(
             "i, ij->j", self.plane_normal, element_total_forces
@@ -270,9 +268,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         )
 
         # now axial static friction
-        # TODO: How should we compute internal forces here? Call _compute_internal_forces? But they are already computed in update acceleration?
-        # nodal_total_forces = system.internal_forces + system.external_forces
-        nodal_total_forces = system._compute_internal_forces() + system.external_forces
+        nodal_total_forces = system.internal_forces + system.external_forces
         element_total_forces = nodes_to_elements(nodal_total_forces)
         force_component_along_axial_direction = np.einsum(
             "ij,ij->j", element_total_forces, axial_direction
@@ -305,13 +301,8 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
 
         # now rolling static friction
         # there is some normal, tangent and rolling directions inconsitency from Elastica
-        # TODO: Make sure when we are here internal torques already computed
-        # total_torques = _batch_matvec(
-        #     directors_transpose, (system.internal_torques + system.external_torques)
-        # )
         total_torques = _batch_matvec(
-            directors_transpose,
-            (system._compute_internal_torques() + system.external_torques),
+            directors_transpose, (system.internal_torques + system.external_torques)
         )
         # Elastica has opposite defs of tangents in interaction.h and rod.cpp
         total_torques_along_axial_direction = np.einsum(

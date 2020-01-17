@@ -50,6 +50,15 @@ class _SystemCollectionStepperMixin:
                 _ = kin_step(self, system, time, prefac)
             time = kin_step(self, SystemCollection[-1], time, prefac)
 
+            # TODO: remove below lines and try to find a better call option to compute internal forces and torques
+            # We need internal forces and torques because they are used by interaction module.
+            update_internal_forces_torques = self._update_internal_forces_torques[
+                0
+            ]  # here 0 because you have one item in list
+            for system in SystemCollection[:-1]:
+                _ = update_internal_forces_torques(self, system, time)
+            time = update_internal_forces_torques(self, SystemCollection[-1], time)
+
             # BoCos, External forces, controls etc.
             SystemCollection.synchronize(time)
             # TODO: remove below line, it should be some other function synchronizeBC
@@ -93,6 +102,14 @@ class SymplecticStepper(_TimeStepper):
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("prefactor")
+        ]
+
+        # We are getting function named as _update_internal_forces_torques from dictionary,
+        # it turns a list.
+        self._update_internal_forces_torques = [
+            v
+            for (k, v) in take_methods_from.__class__.__dict__.items()
+            if k.endswith("forces_torques")
         ]
 
         def mirror(in_list):
@@ -169,6 +186,11 @@ class PositionVerlet(SymplecticStepper):
         System.dynamic_states += prefac * System.dynamic_rates(
             time, prefac
         )  # TODO : Why should we pass dt into System again?
+        return time
+
+    # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
+    def _update_internal_forces_torques(self, System, time: np.float64):
+        System.update_internal_forces_and_torques(time)
         return time
 
     # Note : we don't need the second half of the calls as it simply forwards

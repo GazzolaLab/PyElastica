@@ -71,6 +71,10 @@ class _CosseratRodBase(RodBase):
         self.rest_voronoi_lengths = 0.5 * (
             self.rest_lengths[1:] + self.rest_lengths[:-1]
         )
+        # calculated in `_compute_internal_forces_and_torques`
+        self.internal_forces = 0 * accelerations
+        self.external_torques = 0 * angular_accelerations
+
         # will apply external force and torques externally
         self.external_forces = 0 * accelerations
         self.external_torques = 0 * angular_accelerations
@@ -318,6 +322,23 @@ class _CosseratRodBase(RodBase):
             - self._compute_damping_torques()
         )
 
+    def _compute_internal_forces_and_torques(self, time):
+        """
+        Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
+        they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
+        one time and use them. Previously, we were computing internal forces and torques multiple times in interaction.
+        Saving internal forces and torques in a variable take some memory, but we will gain speed up.
+        Parameters
+        ----------
+        time
+
+        Returns
+        -------
+
+        """
+        self.internal_forces = self._compute_internal_forces()
+        self.internal_torques = self._compute_internal_torques()
+
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
     def update_accelerations(self, time):
         """ TODO Do we need to make the collection members abstract?
@@ -330,18 +351,32 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
+        # np.copyto(
+        #     self.acceleration_collection,
+        #     (self._compute_internal_forces() + self.external_forces) / self.mass,
+        # )
+        # np.copyto(
+        #     self.alpha_collection,
+        #     _batch_matvec(
+        #         self.inv_mass_second_moment_of_inertia,
+        #         (self._compute_internal_torques() + self.external_torques),
+        #     )
+        #     * self.dilatation,
+        # )
+        #
         np.copyto(
             self.acceleration_collection,
-            (self._compute_internal_forces() + self.external_forces) / self.mass,
+            (self.internal_forces + self.external_forces) / self.mass,
         )
         np.copyto(
             self.alpha_collection,
             _batch_matvec(
                 self.inv_mass_second_moment_of_inertia,
-                (self._compute_internal_torques() + self.external_torques),
+                (self.internal_torques + self.external_torques),
             )
             * self.dilatation,
         )
+
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
