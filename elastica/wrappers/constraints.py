@@ -35,7 +35,7 @@ class Constraints:
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
-        self._constraints.sort()
+        self._constraints.sort(key=lambda x: x[0])
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)

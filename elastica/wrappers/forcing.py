@@ -33,7 +33,8 @@ class Forcing:
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
-        self._ext_forces_torques.sort()
+        # TODO: BELOW sort is not working, do we need it?
+        self._ext_forces_torques.sort(key=lambda x: x[0])
 
     def __call__(self, time, *args, **kwargs):
         for sys_id, ext_force_torque in self._ext_forces_torques:
