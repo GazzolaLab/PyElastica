@@ -688,12 +688,12 @@ class TestAnisotropicFriction:
         frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
-        correct_forces[0, :-1] += external_torques[2] / (3.0 * rod.radius)
-        correct_forces[0, 1:] += external_torques[2] / (3.0 * rod.radius)
+        correct_forces[0, :-1] -= external_torques[2] / (3.0 * rod.radius)
+        correct_forces[0, 1:] -= external_torques[2] / (3.0 * rod.radius)
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
         correct_torques = np.zeros((3, n_elem))
-        correct_torques[2] += external_torques[2] + 2.0 / 3.0 * external_torques[2]
+        correct_torques[2] += external_torques[2] - 2.0 / 3.0 * external_torques[2]
 
         assert_allclose(correct_torques, rod.external_torques, atol=Tolerance.atol())
 
@@ -728,12 +728,14 @@ class TestAnisotropicFriction:
         frictionplane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
-        correct_forces[0] = np.sign(torque_mag) * np.fabs(external_forces_collection[1])
+        correct_forces[0] = (
+            -1.0 * np.sign(torque_mag) * np.fabs(external_forces_collection[1])
+        )
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
         forces_on_elements = nodes_to_elements(external_forces_collection)
         correct_torques = external_torques
-        correct_torques[2] += (
+        correct_torques[2] += -(
             np.sign(torque_mag) * np.fabs(forces_on_elements[1]) * rod.radius
         )
 

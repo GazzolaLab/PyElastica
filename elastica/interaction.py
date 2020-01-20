@@ -219,7 +219,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         )
 
         # Now rolling kinetic friction
-        rolling_direction = _batch_cross(normal_plane_collection, axial_direction)
+        rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
         torque_arm = -system.radius * normal_plane_collection
         velocity_along_rolling_direction = np.einsum(
             "ij ,ij ->j ", element_velocity, rolling_direction
