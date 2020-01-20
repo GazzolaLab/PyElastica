@@ -66,8 +66,9 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
     shearable_rod.shear_matrix = shear_matrix
-    # change the mass moment of inertia matrix
+    # change the mass moment of inertia matrix and its inverse
     shearable_rod.mass_second_moment_of_inertia *= IFactor
+    shearable_rod.inv_mass_second_moment_of_inertia /= IFactor
 
     # set initial velocity of 1m/s to rod elements in the slip direction
     Vs = 1.0
@@ -103,7 +104,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     rolling_friction_initial_velocity_sim.finalize()
     timestepper = PositionVerlet()
 
-    final_time = 2
+    final_time = 2.0
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
@@ -137,7 +138,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 if __name__ == "__main__":
     import multiprocessing as mp
 
-    IFactor = list([float(x) / 100.0 for x in range(20, 60, 10)])
+    IFactor = list([float(x) / 100.0 for x in range(20, 200, 10)])
 
     with mp.Pool(mp.cpu_count()) as pool:
         results = pool.map(simulate_rolling_friction_initial_velocity_with, IFactor)

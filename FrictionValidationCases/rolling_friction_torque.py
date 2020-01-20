@@ -23,8 +23,8 @@ class RollingFrictionTorqueSimulator(BaseSystemCollection, Constraints, Forcing)
 
 # Options
 PLOT_FIGURE = True
-SAVE_FIGURE = False
-SAVE_RESULTS = False
+SAVE_FIGURE = True
+SAVE_RESULTS = True
 
 
 def simulate_rolling_friction_torque_with(C_s=0.0):
@@ -100,7 +100,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     rolling_friction_torque_sim.finalize()
     timestepper = PositionVerlet()
 
-    final_time = 0.01
+    final_time = 1.0
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
@@ -113,7 +113,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     rotational_energy = shearable_rod.compute_rotational_energy()
 
     # compute translational and rotational energy using analytical equations
-    force_slip = static_mu_array[0] * mass * gravitational_acc
+    force_slip = static_mu_array[2] * mass * gravitational_acc
     force_noslip = 2.0 * C_s / (3.0 * base_radius)
 
     mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
@@ -129,10 +129,10 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
         )
     else:
         analytical_translational_energy = (
-            mass * (kinetic_mu_array[0] * gravitational_acc * final_time) ** 2 / 2.0
+            mass * (kinetic_mu_array[2] * gravitational_acc * final_time) ** 2 / 2.0
         )
         analytical_rotational_energy = (
-            (C_s - kinetic_mu_array[0] * mass * np.abs(gravitational_acc) * base_radius)
+            (C_s - kinetic_mu_array[2] * mass * np.abs(gravitational_acc) * base_radius)
             ** 2
             * final_time ** 2
             / (2.0 * mass_moment_of_inertia)
@@ -154,10 +154,10 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
 if __name__ == "__main__":
     import multiprocessing as mp
 
-    C_s = list([float(x) / 1000.0 for x in range(0, 140, 5)])
+    C_s = list([float(x) / 1000.0 for x in range(0, 140, 10)])
 
     # across jump
-    C_s.extend([float(x) / 1000.0 for x in range(140, 190, 5)])
+    C_s.extend([float(x) / 1000.0 for x in range(140, 190, 10)])
 
     with mp.Pool(mp.cpu_count()) as pool:
         results = pool.map(simulate_rolling_friction_torque_with, C_s)
