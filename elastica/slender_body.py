@@ -1,14 +1,10 @@
-_doc__ = """ Slender body module """
-
+__doc__ = """ Slender body module """
 import numpy as np
-
-from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
-from elastica.external_forces import NoForces
 import numba
-from numba import njit
+from elastica.external_forces import NoForces
 
 
-@njit
+@numba.njit
 def sum_over_elements(input):
     """
     This function sums all elements of input array,
@@ -38,7 +34,7 @@ def sum_over_elements(input):
     return output
 
 
-@njit
+@numba.njit
 def node_to_element_velocity(node_velocity):
     """
     This function computes to velocity on the elements.
@@ -64,7 +60,7 @@ def node_to_element_velocity(node_velocity):
     return element_velocity
 
 
-@njit
+@numba.njit
 def slender_body_forces(
     tangents, velocity_collection, dynamic_viscosity, lengths, radius
 ):
@@ -91,13 +87,11 @@ def slender_body_forces(
     3 dimensional.
     """
 
-    l = tangents.shape[0]
-    m = tangents.shape[1]
-    f = np.empty((l, m))
+    f = np.empty((tangents.shape[0], tangents.shape[1]))
     total_length = sum_over_elements(lengths)
     element_velocity = node_to_element_velocity(velocity_collection)
 
-    for k in range(m):
+    for k in range(tangents.shape[1]):
         # compute the entries of t`t. a[#][#] are the the
         # entries of t`t matrix
         a11 = tangents[0, k] * tangents[0, k]
