@@ -93,8 +93,10 @@ class TestAuxiliaryFunctions:
         -------
 
         """
-        input_variable = np.ones((3, n_elem + 1))
-        correct_output = np.ones((3, n_elem))
+        random = np.random.rand() # Adding some random numbers
+        input_variable = random * np.ones((3, n_elem + 1))
+        correct_output = random * np.ones((3, n_elem))
+
         output = node_to_element_velocity(input_variable)
         assert_allclose(correct_output, output, atol=Tolerance.atol())
 
@@ -125,8 +127,9 @@ class TestSlenderBody:
         """
 
         [rod, slender_body_theory] = self.initializer(n_elem, dynamic_viscosity)
-
-        factor = -4 * np.pi * dynamic_viscosity / np.log(1 / 0.25) * rod.lengths[0]
+        length = rod.lengths.sum()
+        radius = rod.radius[0]
+        factor = -4 * np.pi * dynamic_viscosity / np.log(length / radius) * rod.lengths[0]
         correct_forces = np.ones((3, n_elem + 1)) * factor
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5

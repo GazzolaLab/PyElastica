@@ -3,3 +3,4 @@ scipy
 matplotlib
 jupyterlab
 tqdm
+numba

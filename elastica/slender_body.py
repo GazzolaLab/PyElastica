@@ -70,6 +70,9 @@ def slender_body_forces(
 ):
     """
     This function computes hydrodynamic forces on body using slender body theory.
+    Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS 2018 paper.
+
+    Fh = - 4*pi*mu/ln(L/r) * ((I - 0.5 * t`t) * v)
 
     Parameters
     ----------
@@ -84,7 +87,8 @@ def slender_body_forces(
     Faster than numpy einsum implementation for blocksize 100
     numpy: 39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
     this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-
+    Unrolling loops show better performance. Also since we are working in 3D everything is
+    3 dimensional.
     """
 
     l = tangents.shape[0]
@@ -94,6 +98,8 @@ def slender_body_forces(
     element_velocity = node_to_element_velocity(velocity_collection)
 
     for k in range(m):
+        # compute the entries of t`t. a[#][#] are the the
+        # entries of t`t matrix
         a11 = tangents[0, k] * tangents[0, k]
         a12 = tangents[0, k] * tangents[1, k]
         a13 = tangents[0, k] * tangents[2, k]
@@ -106,6 +112,7 @@ def slender_body_forces(
         a32 = tangents[2, k] * tangents[1, k]
         a33 = tangents[2, k] * tangents[2, k]
 
+        # factor = - 4*pi*mu/ln(L/r)
         factor = (
             -4.0
             * np.pi
@@ -114,6 +121,7 @@ def slender_body_forces(
             * lengths[k]
         )
 
+        # Fh = factor * ((I - 0.5 * a) * v)
         f[0, k] = factor * (
             (1.0 - 0.5 * a11) * element_velocity[0, k]
             + (0.0 - 0.5 * a12) * element_velocity[1, k]
