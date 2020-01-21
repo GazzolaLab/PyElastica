@@ -93,7 +93,7 @@ class TestAuxiliaryFunctions:
         -------
 
         """
-        random = np.random.rand() # Adding some random numbers
+        random = np.random.rand()  # Adding some random numbers
         input_variable = random * np.ones((3, n_elem + 1))
         correct_output = random * np.ones((3, n_elem))
 
@@ -129,7 +129,9 @@ class TestSlenderBody:
         [rod, slender_body_theory] = self.initializer(n_elem, dynamic_viscosity)
         length = rod.lengths.sum()
         radius = rod.radius[0]
-        factor = -4 * np.pi * dynamic_viscosity / np.log(length / radius) * rod.lengths[0]
+        factor = (
+            -4 * np.pi * dynamic_viscosity / np.log(length / radius) * rod.lengths[0]
+        )
         correct_forces = np.ones((3, n_elem + 1)) * factor
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
