@@ -351,19 +351,6 @@ class _CosseratRodBase(RodBase):
         -------
 
         """
-        # np.copyto(
-        #     self.acceleration_collection,
-        #     (self._compute_internal_forces() + self.external_forces) / self.mass,
-        # )
-        # np.copyto(
-        #     self.alpha_collection,
-        #     _batch_matvec(
-        #         self.inv_mass_second_moment_of_inertia,
-        #         (self._compute_internal_torques() + self.external_torques),
-        #     )
-        #     * self.dilatation,
-        # )
-        #
         np.copyto(
             self.acceleration_collection,
             (self.internal_forces + self.external_forces) / self.mass,
