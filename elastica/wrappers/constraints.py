@@ -35,6 +35,11 @@ class Constraints:
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
+        # _constraints contains list of tuples. First element of tuple is rod number and
+        # following elements are the type of boundary condition such as
+        # [(0, FreeRod, OneEndFixedRod), (1, HelicalBucklingBC), ... ]
+        # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
+        # to sort constraints.
         self._constraints.sort(key=lambda x: x[0])
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
