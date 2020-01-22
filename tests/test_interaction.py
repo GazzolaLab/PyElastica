@@ -748,64 +748,6 @@ class TestAnisotropicFriction:
 
 # Slender Body Theory Unit Tests
 
-
-# import numpy as np
-# import pytest
-# from numpy.testing import assert_allclose
-# from elastica.utils import Tolerance, MaxDimension
-#
-# from elastica.slender_body import (
-#     sum_over_elements,
-#     node_to_element_velocity,
-#     SlenderBodyTheory,
-# )
-
-# from test_rod import TestRod
-#
-#
-# class BaseRodClass(TestRod):
-#     def __init__(self, n_elem):
-#         """
-#         This class initialize a straight rod,
-#         which is for testing interaction functions.
-#         Parameters
-#         ----------
-#         n_elem
-#         """
-#         base_length = 1.0
-#         direction = np.array([0.0, 0.0, 1.0])
-#         start = np.array([0.0, 0.0, 0.0])
-#
-#         end = start + direction * base_length
-#         self.n_elem = n_elem
-#         self.position_collection = np.zeros((MaxDimension.value(), n_elem + 1))
-#         for i in range(0, MaxDimension.value()):
-#             self.position_collection[i, ...] = np.linspace(
-#                 start[i], end[i], num=n_elem + 1
-#             )
-#
-#         self.director_collection = np.repeat(
-#             np.identity(3)[:, :, np.newaxis], n_elem, axis=2
-#         )
-#         self.radius = np.repeat(np.array([0.25]), n_elem, axis=0)
-#         self.tangents = np.repeat(direction[:, np.newaxis], n_elem, axis=1)
-#         self.velocity_collection = np.zeros((MaxDimension.value(), n_elem + 1))
-#         self.omega_collection = np.zeros((MaxDimension.value(), n_elem))
-#         self.external_forces = np.zeros((MaxDimension.value(), n_elem + 1))
-#         self.external_torques = np.zeros((MaxDimension.value(), n_elem))
-#         # self.internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
-#         # self.internal_torques = np.zeros((MaxDimension.value(), n_elem))
-#
-#         self.lengths = np.ones(n_elem) * base_length / n_elem
-#
-#     def _compute_internal_forces(self):
-#         return np.zeros((MaxDimension.value(), self.n_elem + 1))
-#
-#     def _compute_internal_torques(self):
-#         return np.zeros((MaxDimension.value(), self.n_elem))
-#
-
-
 class TestAuxiliaryFunctionsForSlenderBodyTheory:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_sum_over_elements(self, n_elem):
