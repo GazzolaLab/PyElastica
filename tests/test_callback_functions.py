@@ -11,7 +11,7 @@ import pytest
 
 def mock_rod_init(self):
     self.n_elems = 0.0
-    self.positon_collection = 0.0
+    self.position_collection = 0.0
     self.velocity_collection = 0.0
     self.director_collection = 0.0
     self.external_forces = 0.0
@@ -63,13 +63,13 @@ class TestMyCallBackClass:
 
         time = np.random.rand(10)
         current_step = list(range(10))
-        positon_collection = np.random.rand(3, 10)
+        position_collection = np.random.rand(3, 10)
         velocity_collection = np.random.rand(3, 10)
         director_collection = np.random.rand(3, 3, 10)
 
         # set arrays in mock rod
         mock_rod.n_elems = n_elem
-        mock_rod.position_collection = positon_collection
+        mock_rod.position_collection = position_collection
         mock_rod.velocity_collection = velocity_collection
         mock_rod.director_collection = director_collection
 
@@ -95,7 +95,7 @@ class TestMyCallBackClass:
 
             list_correct["time"].append(time[i])
             list_correct["step"].append(current_step[i])
-            list_correct["position"].append(positon_collection)
+            list_correct["position"].append(position_collection)
             list_correct["velocity"].append(velocity_collection)
             list_correct["directors"].append(director_collection)
 
