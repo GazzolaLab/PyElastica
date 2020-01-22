@@ -80,6 +80,9 @@ class _SystemCollectionStepperMixin:
             _ = last_kin_step(self, system, time, prefac)
         time = last_kin_step(self, SystemCollection[-1], time, prefac)
 
+        # Call back function, will call the user defined call back functions and store data
+        SystemCollection.callBack(time, int(time / dt))
+
         return time
 
 

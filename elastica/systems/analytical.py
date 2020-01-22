@@ -281,6 +281,9 @@ class CollectiveSystem:
     def synchronizeBC(self, time):
         pass
 
+    def callBack(self, time, current_step: int):
+        pass
+
 
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
