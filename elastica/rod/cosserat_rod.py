@@ -418,6 +418,10 @@ class CosseratRod(
         _RodSymplecticStepperMixin.__init__(self)
         del rod
 
+        # This below two lines are for initializing sigma and kappa
+        self._compute_shear_stretch_strains()
+        self._compute_bending_twist_strains()
+
     @classmethod
     def straight_rod(
         cls,
