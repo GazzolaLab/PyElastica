@@ -10,7 +10,6 @@ from elastica.wrappers import CallBacks
 from elastica.wrappers.callbacks import _CallBack
 
 
-
 class TestCallBacks:
     @pytest.fixture(scope="function")
     def load_callback(self, request):
@@ -26,9 +25,7 @@ class TestCallBacks:
 
     from elastica.callback_functions import CallBackBaseClass, MyCallBack
 
-    @pytest.mark.parametrize(
-        "legal_callback", [CallBackBaseClass, MyCallBack]
-    )
+    @pytest.mark.parametrize("legal_callback", [CallBackBaseClass, MyCallBack])
     def test_using_with_legal_constraint(self, load_callback, legal_callback):
         callback = load_callback
         callback.using(legal_callback, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -157,7 +154,9 @@ class TestConstraintsMixin:
             pass
 
         # in place class
-        MockCallBack = type("MockCallBack", (self.CallBackBaseClass, object), {"__init__": mock_init})
+        MockCallBack = type(
+            "MockCallBack", (self.CallBackBaseClass, object), {"__init__": mock_init}
+        )
 
         # Constrain any and all systems
         scwc.callback_of(1).using(MockCallBack, 2, 42)  # index based constraint
@@ -186,4 +185,3 @@ class TestConstraintsMixin:
         for (x, _) in scwc._callbacks:
             assert num < x
             num = x
-
