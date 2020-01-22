@@ -748,6 +748,7 @@ class TestAnisotropicFriction:
 
 # Slender Body Theory Unit Tests
 
+
 class TestAuxiliaryFunctionsForSlenderBodyTheory:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_sum_over_elements(self, n_elem):
