@@ -1,7 +1,7 @@
 __doc__ = """ Interaction module """
 
 import numpy as np
-
+import numba
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
 from elastica.external_forces import NoForces
@@ -343,9 +343,6 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
 
 
 # Slender body module
-import numba
-
-
 @numba.njit
 def sum_over_elements(input):
     """
