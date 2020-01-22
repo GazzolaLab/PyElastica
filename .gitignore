@@ -210,3 +210,6 @@ sample_prog.py
 
 # Operating System Files
 *.DS_Store
+
+# txt files
+*.txt
