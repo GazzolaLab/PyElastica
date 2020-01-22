@@ -1,6 +1,7 @@
 __doc__ = """ External forcing for rod """
 
 import numpy as np
+from elastica._linalg import _batch_matvec
 
 
 class NoForces:
@@ -80,3 +81,38 @@ class EndpointForces(NoForces):
 
         system.external_forces[..., 0] += self.start_force * factor
         system.external_forces[..., -1] += self.end_force * factor
+
+
+class UniformTorques(NoForces):
+    """
+    Applies uniform torque to entire rod
+    """
+
+    def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
+        super(UniformTorques, self).__init__()
+        self.torque = (torque * direction).reshape(3, 1)
+
+    def apply_torques(self, system, time: np.float = 0.0):
+        torque_on_one_element = self.torque / system.n_elems
+        system.external_torques += _batch_matvec(
+            system.director_collection, torque_on_one_element
+        )
+
+
+class UniformForces(NoForces):
+    """
+    Applies uniform forces to entire rod
+    """
+
+    def __init__(self, force, direction=np.array([0.0, 0.0, 0.0])):
+        super(UniformForces, self).__init__()
+        self.force = (force * direction).reshape(3, 1)
+
+    def apply_forces(self, system, time: np.float = 0.0):
+        force_on_one_element = self.force / system.n_elems
+
+        system.external_forces += force_on_one_element
+
+        # Because mass of first and last node is half
+        system.external_forces[..., 0] -= 0.5 * force_on_one_element[:, 0]
+        system.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]

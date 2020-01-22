@@ -33,7 +33,12 @@ class Forcing:
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
-        self._ext_forces_torques.sort()
+        # _ext_forces_torques contains list of tuples. First element of tuple is
+        # rod number and following elements are the type of boundary condition such as
+        # [(0, NoForces, GravityForces), (1, UniformTorques), ... ]
+        # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
+        # to sort _ext_forces_torques.
+        self._ext_forces_torques.sort(key=lambda x: x[0])
 
     def __call__(self, time, *args, **kwargs):
         for sys_id, ext_force_torque in self._ext_forces_torques:

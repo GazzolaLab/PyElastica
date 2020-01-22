@@ -6,13 +6,21 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 import pytest
 
-from elastica.external_forces import NoForces, GravityForces, EndpointForces
+from elastica.external_forces import (
+    NoForces,
+    GravityForces,
+    EndpointForces,
+    UniformTorques,
+    UniformForces,
+)
 from elastica.utils import Tolerance
 
 
 def mock_rod_init(self):
+    self.n_elems = 0.0
     self.external_forces = 0.0
     self.external_torques = 0.0
+    self.director_collection = 0.0
 
 
 MockRod = type("MockRod", (object,), {"__init__": mock_rod_init})
@@ -102,3 +110,44 @@ def test_endpoint_forces(n_elem, rampupTime, time):
     assert_allclose(
         mock_rod.external_forces[..., -1], end_force * factor, atol=Tolerance.atol()
     )
+
+
+# The minimum number of nodes in a system is 2
+@pytest.mark.parametrize("n_elem", [2, 4, 16])
+@pytest.mark.parametrize("torques", [5, 10, 15])
+def test_uniform_torques(n_elem, torques, time=0.0):
+    dim = 3
+
+    mock_rod = MockRod()
+    mock_rod.external_torques = np.zeros((dim, n_elem))
+    mock_rod.n_elems = n_elem
+    mock_rod.director_collection = np.repeat(
+        np.identity(3)[:, :, np.newaxis], n_elem, axis=2
+    )
+
+    torque = np.random.rand()
+    direction = np.array([1.0, 0.0, 0.0])
+
+    uniform_torques = UniformTorques(torque, direction)
+    uniform_torques.apply_torques(mock_rod, time)
+
+    assert_allclose(mock_rod.external_torques.sum(), torque, atol=Tolerance.atol())
+
+
+# The minimum number of nodes in a system is 2
+@pytest.mark.parametrize("n_elem", [2, 4, 16])
+@pytest.mark.parametrize("forces", [5, 10, 15])
+def test_uniform_forces(n_elem, forces, time=0.0):
+    dim = 3
+
+    mock_rod = MockRod()
+    mock_rod.external_forces = np.zeros((dim, n_elem + 1))
+    mock_rod.n_elems = n_elem
+
+    force = np.random.rand()
+    direction = np.array([0.0, 1.0, 0.0])
+
+    uniform_forces = UniformForces(force, direction)
+    uniform_forces.apply_forces(mock_rod, time)
+
+    assert_allclose(mock_rod.external_forces.sum(), force, atol=Tolerance.atol())

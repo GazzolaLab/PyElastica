@@ -1,9 +1,10 @@
 __doc__ = """ Interaction module """
 
 import numpy as np
-
+import numba
 from ._linalg import _batch_matmul, _batch_matvec, _batch_cross
 from elastica.utils import MaxDimension
+from elastica.external_forces import NoForces
 
 
 def find_slipping_elements(velocity_slip, velocity_threshold):
@@ -75,9 +76,7 @@ class InteractionPlane:
         """
 
         # Compute plane response force
-        # TODO: How should we compute internal forces here? Call _compute_internal_forces?
-        # nodal_total_forces = system.internal_forces + system.external_forces
-        nodal_total_forces = system._compute_internal_forces() + system.external_forces
+        nodal_total_forces = system.internal_forces + system.external_forces
         element_total_forces = nodes_to_elements(nodal_total_forces)
         force_component_along_normal_direction = np.einsum(
             "i, ij->j", self.plane_normal, element_total_forces
@@ -147,7 +146,7 @@ class InteractionPlane:
 # head is at x[0] and forward means head to tail
 # same convention for kinetic and static
 # mu named as to which direction it opposes
-class AnistropicFrictionalPlane(InteractionPlane):
+class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     def __init__(
         self,
         k,
@@ -173,7 +172,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
 
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
-    def apply_force(self, system):
+    def apply_forces(self, system, time=0.0):
         # calculate axial and rolling directions
         plane_response_force_mag = self.apply_normal_force(system)
         normal_plane_collection = np.repeat(
@@ -220,7 +219,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         )
 
         # Now rolling kinetic friction
-        rolling_direction = _batch_cross(normal_plane_collection, axial_direction)
+        rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
         torque_arm = -system.radius * normal_plane_collection
         velocity_along_rolling_direction = np.einsum(
             "ij ,ij ->j ", element_velocity, rolling_direction
@@ -269,9 +268,7 @@ class AnistropicFrictionalPlane(InteractionPlane):
         )
 
         # now axial static friction
-        # TODO: How should we compute internal forces here? Call _compute_internal_forces? But they are already computed in update acceleration?
-        # nodal_total_forces = system.internal_forces + system.external_forces
-        nodal_total_forces = system._compute_internal_forces() + system.external_forces
+        nodal_total_forces = system.internal_forces + system.external_forces
         element_total_forces = nodes_to_elements(nodal_total_forces)
         force_component_along_axial_direction = np.einsum(
             "ij,ij->j", element_total_forces, axial_direction
@@ -304,13 +301,8 @@ class AnistropicFrictionalPlane(InteractionPlane):
 
         # now rolling static friction
         # there is some normal, tangent and rolling directions inconsitency from Elastica
-        # TODO: Make sure when we are here internal torques already computed
-        # total_torques = _batch_matvec(
-        #     directors_transpose, (system.internal_torques + system.external_torques)
-        # )
         total_torques = _batch_matvec(
-            directors_transpose,
-            (system._compute_internal_torques() + system.external_torques),
+            directors_transpose, (system.internal_torques + system.external_torques)
         )
         # Elastica has opposite defs of tangents in interaction.h and rod.cpp
         total_torques_along_axial_direction = np.einsum(
@@ -348,3 +340,168 @@ class AnistropicFrictionalPlane(InteractionPlane):
             system.director_collection,
             _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
         )
+
+
+# Slender body module
+@numba.njit
+def sum_over_elements(input):
+    """
+    This function sums all elements of input array,
+    using a numba jit decorator shows better performance
+    compared to python sum(), .sum() and np.sum()
+
+    Parameters
+    ----------
+    input
+
+    Returns
+    -------
+
+    Faster than sum(), .sum() and np.sum()
+
+    For blocksize = 200
+    sum(): 36.9 µs ± 3.99 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    .sum(): 3.17 µs ± 90.1 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    np.sum(): 5.17 µs ± 364 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+    """
+
+    output = 0.0
+    for i in range(input.shape[0]):
+        output += input[i]
+
+    return output
+
+
+@numba.njit
+def node_to_element_velocity(node_velocity):
+    """
+    This function computes to velocity on the elements.
+    Here we define a seperate function because benchmark results
+    showed that using numba, we get almost 3 times faster calculation
+
+    Parameters
+    ----------
+    node_velocity
+
+    Returns
+    -------
+    element_velocity
+
+    Note
+    ___
+    Faster than pure python for blocksize 100
+    python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+
+    """
+    element_velocity = 0.5 * (node_velocity[..., :-1] + node_velocity[..., 1:])
+    return element_velocity
+
+
+@numba.njit
+def slender_body_forces(
+    tangents, velocity_collection, dynamic_viscosity, lengths, radius
+):
+    """
+    This function computes hydrodynamic forces on body using slender body theory.
+    Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS 2018 paper.
+
+    Fh = - 4*pi*mu/ln(L/r) * ((I - 0.5 * t`t) * v)
+
+    Parameters
+    ----------
+    tangents
+    velocity_collection
+    dynamic_viscosity
+    length
+    radius
+
+    Returns
+    -------
+    Faster than numpy einsum implementation for blocksize 100
+    numpy: 39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    Unrolling loops show better performance. Also since we are working in 3D everything is
+    3 dimensional.
+    """
+
+    f = np.empty((tangents.shape[0], tangents.shape[1]))
+    total_length = sum_over_elements(lengths)
+    element_velocity = node_to_element_velocity(velocity_collection)
+
+    for k in range(tangents.shape[1]):
+        # compute the entries of t`t. a[#][#] are the the
+        # entries of t`t matrix
+        a11 = tangents[0, k] * tangents[0, k]
+        a12 = tangents[0, k] * tangents[1, k]
+        a13 = tangents[0, k] * tangents[2, k]
+
+        a21 = tangents[1, k] * tangents[0, k]
+        a22 = tangents[1, k] * tangents[1, k]
+        a23 = tangents[1, k] * tangents[2, k]
+
+        a31 = tangents[2, k] * tangents[0, k]
+        a32 = tangents[2, k] * tangents[1, k]
+        a33 = tangents[2, k] * tangents[2, k]
+
+        # factor = - 4*pi*mu/ln(L/r)
+        factor = (
+            -4.0
+            * np.pi
+            * dynamic_viscosity
+            / np.log(total_length / radius[k])
+            * lengths[k]
+        )
+
+        # Fh = factor * ((I - 0.5 * a) * v)
+        f[0, k] = factor * (
+            (1.0 - 0.5 * a11) * element_velocity[0, k]
+            + (0.0 - 0.5 * a12) * element_velocity[1, k]
+            + (0.0 - 0.5 * a13) * element_velocity[2, k]
+        )
+        f[1, k] = factor * (
+            (0.0 - 0.5 * a21) * element_velocity[0, k]
+            + (1.0 - 0.5 * a22) * element_velocity[1, k]
+            + (0.0 - 0.5 * a23) * element_velocity[2, k]
+        )
+        f[2, k] = factor * (
+            (0.0 - 0.5 * a31) * element_velocity[0, k]
+            + (0.0 - 0.5 * a32) * element_velocity[1, k]
+            + (1.0 - 0.5 * a33) * element_velocity[2, k]
+        )
+
+    return f
+
+
+# slender body theory
+class SlenderBodyTheory(NoForces):
+    def __init__(self, dynamic_viscosity):
+        super(SlenderBodyTheory, self).__init__()
+        self.dynamic_viscosity = dynamic_viscosity
+
+    def apply_forces(self, system, time=0.0):
+        """
+        This function applies hydrodynamic forces on body
+        using the slender body theory given in
+        Eq. 4.13 Gazzola et. al. RSoS 2018 paper
+
+        Parameters
+        ----------
+        system
+
+        Returns
+        -------
+
+        """
+
+        stokes_force = slender_body_forces(
+            system.tangents,
+            system.velocity_collection,
+            self.dynamic_viscosity,
+            system.lengths,
+            system.radius,
+        )
+
+        system.external_forces[..., :-1] += 0.5 * stokes_force
+        system.external_forces[..., 1:] += 0.5 * stokes_force
