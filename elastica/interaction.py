@@ -178,7 +178,25 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         normal_plane_collection = np.repeat(
             self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
-        axial_direction = system.tangents
+        # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
+        # axial direction has to be in plane, it cannot be out of plane.
+        tangent_along_normal_direction = np.einsum(
+            "ij, ij->j", system.tangents, normal_plane_collection
+        )
+        tangent_perpendicular_to_normal_direction = system.tangents - np.einsum(
+            "j, ij->ij", tangent_along_normal_direction, normal_plane_collection
+        )
+        tangent_perpendicular_to_normal_direction_mag = np.einsum(
+            "ij, ij->j",
+            tangent_perpendicular_to_normal_direction,
+            tangent_perpendicular_to_normal_direction,
+        )
+        axial_direction = np.einsum(
+            "ij, j-> ij",
+            tangent_perpendicular_to_normal_direction,
+            1 / tangent_perpendicular_to_normal_direction_mag,
+        )
+        # axial_direction = system.tangents
         element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
         )
@@ -306,7 +324,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         )
         # Elastica has opposite defs of tangents in interaction.h and rod.cpp
         total_torques_along_axial_direction = np.einsum(
-            "ij,ij->j", total_torques, system.tangents
+            "ij,ij->j", total_torques, axial_direction
         )
         force_component_along_rolling_direction = np.einsum(
             "ij,ij->j", element_total_forces, rolling_direction
