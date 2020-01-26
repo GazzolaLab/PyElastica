@@ -213,3 +213,6 @@ sample_prog.py
 
 # txt files
 *.txt
+
+# movie or video file formats
+*.mp4
