@@ -182,12 +182,15 @@ def test_muscle_torques(n_elem):
     # we will make torque as function of position only nothing else!
     period = 8.0
     wave_length = 2.0 * np.pi
+    wave_number = 2.0 * np.pi / (wave_length)
     phase_shift = np.pi / 4
     rampupTime = 0.5  # this has to be smaller than 1. Since I will set t equal to 1
     time = 1.0
 
     position = np.linspace(0, base_length, n_elem + 1)
     torque = np.array([np.cos(position), np.cos(position), np.cos(position)])[..., 1:-1]
+    # Torque function is opposite direction in elastica cpp. Thus we need to invert the torque profile.
+    torque = torque[..., ::-1]
     correct_torque = np.zeros((dim, n_elem))
     correct_torque[..., :-1] -= torque
     correct_torque[..., 1:] += torque
@@ -200,7 +203,7 @@ def test_muscle_torques(n_elem):
         base_length,
         b_coeff,
         period,
-        wave_length,
+        wave_number,
         phase_shift,
         rampupTime,
         direction,

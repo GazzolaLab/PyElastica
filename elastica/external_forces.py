@@ -130,7 +130,7 @@ class MuscleTorques(NoForces):
         base_length,
         b_coeff,
         period,
-        wave_length,
+        wave_number,
         phase_shift,
         rampupTime,
         direction,
@@ -140,7 +140,7 @@ class MuscleTorques(NoForces):
 
         self.direction = direction.reshape(3, 1)  # Direction torque applied
         self.angular_frequency = 2.0 * np.pi / period
-        self.wave_number = 2.0 * np.pi / (wave_length)
+        self.wave_number = wave_number
         self.phase_shift = phase_shift
 
         assert rampupTime >= 0.0
@@ -177,29 +177,28 @@ class MuscleTorques(NoForces):
 
         # Ramp up the muscle torque
         factor = min(1.0, time / self.rampupTime)
-
         # From the node 1 to node nelem-1
         # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
         # torques applied by first and last node on elements.
-        s = np.cumsum(system.rest_lengths)[:-1]
-
+        s = np.cumsum(system.rest_lengths)[:]
+        torque_mag = np.zeros(system.n_elems)
         # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
         # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in
         # front of wave number is positive, in Elastica cpp it is negative.
-        torque_mag = (
+        torque_mag += (
             factor
             * self.my_spline(s)
             * np.sin(
                 self.angular_frequency * time - self.wave_number * s + self.phase_shift
             )
         )
-
-        torque = np.einsum("j,ij->ij", torque_mag, self.direction)
-
+        # Head and tail of the snake is opposite compared to elastica cpp. We need to iterate torque_mag
+        # from last to first element.
+        torque = np.einsum("j,ij->ij", torque_mag[::-1], self.direction)
         # TODO: Find a way without doing tow batch_matvec product
-        system.external_torques[..., :-1] -= _batch_matvec(
-            system.director_collection[..., :-1], torque
-        )
         system.external_torques[..., 1:] += _batch_matvec(
-            system.director_collection[..., 1:], torque
+            system.director_collection, torque
+        )[..., 1:]
+        system.external_torques[..., :-1] -= _batch_matvec(
+            system.director_collection[..., :-1], torque[..., 1:]
         )
