@@ -179,7 +179,8 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
         # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
-        # axial direction has to be in plane, it cannot be out of plane.
+        # axial direction has to be in plane, it cannot be out of plane. We are projecting rod element tangent vector in
+        # to the plane. So friction forces can only be in plane forces and not out of plane.
         tangent_along_normal_direction = np.einsum(
             "ij, ij->j", system.tangents, normal_plane_collection
         )
@@ -196,7 +197,6 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             tangent_perpendicular_to_normal_direction,
             1 / tangent_perpendicular_to_normal_direction_mag,
         )
-        # axial_direction = system.tangents
         element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
         )
