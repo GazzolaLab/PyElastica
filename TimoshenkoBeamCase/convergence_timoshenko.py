@@ -67,7 +67,7 @@ def simulate_timoshenko_beam_with(
     )
     end_force = np.array([-15.0, 0.0, 0.0])
     timoshenko_sim.add_forcing_to(shearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
     )
 
     if ADD_UNSHEARABLE_ROD:
@@ -92,7 +92,7 @@ def simulate_timoshenko_beam_with(
             OneEndFixedRod, positions=(0,), directors=(0,)
         )
         timoshenko_sim.add_forcing_to(unshearable_rod).using(
-            EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+            EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
         )
 
     timoshenko_sim.finalize()
