@@ -132,9 +132,9 @@ class MuscleTorques(NoForces):
         period,
         wave_number,
         phase_shift,
-        rampupTime,
+        ramp_up_time,
         direction,
-        WithSpline=False,
+        with_spline=False,
     ):
         super(MuscleTorques, self).__init__()
 
@@ -143,13 +143,13 @@ class MuscleTorques(NoForces):
         self.wave_number = wave_number
         self.phase_shift = phase_shift
 
-        assert rampupTime >= 0.0
-        if rampupTime == 0:
-            self.rampupTime = 1e-14
+        assert ramp_up_time >= 0.0
+        if ramp_up_time == 0:
+            self.ramp_up_time = 1e-14
         else:
-            self.rampupTime = rampupTime
+            self.ramp_up_time = ramp_up_time
 
-        if WithSpline:
+        if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
             self.my_spline, ctr_pts, ctr_coeffs = _bspline(
                 b_coeff, base_length, keep_pts=True
@@ -176,16 +176,19 @@ class MuscleTorques(NoForces):
     def apply_torques(self, system, time: np.float = 0.0):
 
         # Ramp up the muscle torque
-        factor = min(1.0, time / self.rampupTime)
+        factor = min(1.0, time / self.ramp_up_time)
         # From the node 1 to node nelem-1
         # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
-        # torques applied by first and last node on elements.
-        s = np.cumsum(system.rest_lengths)[:]
-        torque_mag = np.zeros(system.n_elems)
+        # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
+        # infinitesimal segment at the beginning and end of rod, because there is no additional element
+        # (at element=-1 or element=n_elem+1) to provide internal torques to cancel out an external
+        # torque. This coupled with the requirement that the sum of all muscle torques has
+        # to be zero results in this condition.
+        s = np.cumsum(system.rest_lengths)
         # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
         # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in
         # front of wave number is positive, in Elastica cpp it is negative.
-        torque_mag += (
+        torque_mag = (
             factor
             * self.my_spline(s)
             * np.sin(

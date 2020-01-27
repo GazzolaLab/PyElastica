@@ -184,7 +184,7 @@ def test_muscle_torques(n_elem):
     wave_length = 2.0 * np.pi
     wave_number = 2.0 * np.pi / (wave_length)
     phase_shift = np.pi / 4
-    rampupTime = 0.5  # this has to be smaller than 1. Since I will set t equal to 1
+    ramp_up_time = 0.5  # this has to be smaller than 1. Since I will set t equal to 1
     time = 1.0
 
     position = np.linspace(0, base_length, n_elem + 1)
@@ -205,9 +205,9 @@ def test_muscle_torques(n_elem):
         period,
         wave_number,
         phase_shift,
-        rampupTime,
+        ramp_up_time,
         direction,
-        WithSpline=False,
+        with_spline=False,
     )
     muscletorques.apply_torques(mock_rod, time)
 
