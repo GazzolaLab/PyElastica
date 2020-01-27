@@ -197,7 +197,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         axial_direction = np.einsum(
             "ij, j-> ij",
             tangent_perpendicular_to_normal_direction,
-            1 / (tangent_perpendicular_to_normal_direction_mag + 1e-10),
+            1 / (tangent_perpendicular_to_normal_direction_mag + 1e-14),
         )
         element_velocity = 0.5 * (
             system.velocity_collection[..., :-1] + system.velocity_collection[..., 1:]
