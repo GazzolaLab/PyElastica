@@ -71,6 +71,8 @@ class ContinuumSnakeCallBack(CallBackBaseClass):
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["velocity"].append(system.velocity_collection.copy())
-            self.callback_params["avg_velocity"].append(system.compute_velocity_center_of_mass())
+            self.callback_params["avg_velocity"].append(
+                system.compute_velocity_center_of_mass()
+            )
 
             return

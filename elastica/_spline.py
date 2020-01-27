@@ -69,6 +69,6 @@ def __bspline_impl__(x_pts, t_c, b_head, b_tail, t_k):
     # Middle knot locations correspond to x_locations
     knots_updated[t_k - 1 : n_upd - (t_k - 1)] = x_pts
     # Fix first degree-1 knots into tail
-    knots_updated[n_upd - (t_k - 1):] = x_last
+    knots_updated[n_upd - (t_k - 1) :] = x_last
 
     return BSpline(knots_updated, t_c, t_k, extrapolate=False), x_pts, t_c
