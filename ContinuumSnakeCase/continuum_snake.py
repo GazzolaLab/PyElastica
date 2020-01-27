@@ -5,6 +5,8 @@ import sys
 
 sys.path.append("../")
 
+import os
+
 from elastica.wrappers import (
     BaseSystemCollection,
     Connections,
@@ -16,7 +18,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import FreeRod
 from elastica.external_forces import GravityForces, MuscleTorques
 from elastica.interaction import AnistropicFrictionalPlane
-from elastica.callback_functions import ContinuumSnakeCallBack
+from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 from ContinuumSnakeCase.continuum_snake_postprocessing import (
@@ -75,8 +77,13 @@ snake_sim.add_forcing_to(shearable_rod).using(
 )
 
 # Add muscle forces on the rod
-t_coeff_optimized = np.genfromtxt("optimized_coefficients.txt", delimiter=",")
+if os.path.exists("optimized_coefficients.txt"):
+    t_coeff_optimized = np.genfromtxt("optimized_coefficients.txt", delimiter=",")
+else:
+    t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7])
 period = 1.0
+# TODO: wave_length is also part of optimization, when we integrate with CMA-ES
+# remove wave_length from here.
 wave_length = 0.97 * base_length
 snake_sim.add_forcing_to(shearable_rod).using(
     MuscleTorques,
@@ -85,9 +92,9 @@ snake_sim.add_forcing_to(shearable_rod).using(
     period=period,
     wave_number=2.0 * np.pi / (wave_length),
     phase_shift=0.0,
-    rampupTime=period,
+    ramp_up_time=period,
     direction=normal,
-    WithSpline=True,
+    with_spline=True,
 )
 
 
@@ -95,8 +102,8 @@ snake_sim.add_forcing_to(shearable_rod).using(
 origin_plane = np.array([0.0, -base_radius, 0.0])
 normal_plane = normal
 slip_velocity_tol = 1e-8
-Froude = 0.1
-mu = base_length / (period * period * np.abs(gravitational_acc) * Froude)
+froude = 0.1
+mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
 static_mu_array = np.array(
     [1.0 * 2.0 * mu, 1.0 * 3.0 * mu, 4.0 * mu]
 )  # [forward, backward, sideways]
@@ -116,9 +123,34 @@ snake_sim.add_forcing_to(shearable_rod).using(
 )
 
 # Add call backs
+class ContinuumSnakeCallBack(CallBackBaseClass):
+    """
+    Call back function for continuum snake
+    """
+
+    def __init__(self, step_skip: int, callback_params):
+        CallBackBaseClass.__init__(self)
+        self.every = step_skip
+        self.callback_params = callback_params
+
+    def make_callback(self, system, time, current_step: int):
+
+        if current_step % self.every == 0:
+
+            self.callback_params["time"].append(time)
+            self.callback_params["step"].append(current_step)
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["velocity"].append(system.velocity_collection.copy())
+            self.callback_params["avg_velocity"].append(
+                system.compute_velocity_center_of_mass()
+            )
+
+            return
+
+
 pp_list = {"time": [], "step": [], "position": [], "velocity": [], "avg_velocity": []}
 snake_sim.callback_of(shearable_rod).using(
-    ContinuumSnakeCallBack, step_skip=200, list=pp_list
+    ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list
 )
 
 snake_sim.finalize()
