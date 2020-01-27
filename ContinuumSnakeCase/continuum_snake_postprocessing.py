@@ -42,7 +42,7 @@ def plot_video(
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     fig = plt.figure()
     plt.axis("equal")
-    with writer.saving(fig, video_name, 100):
+    with writer.saving(fig, video_name, dpi=100):
         for time in range(1, len(list_input["time"])):
             x = positions_over_time[time][2]
             y = positions_over_time[time][0]
