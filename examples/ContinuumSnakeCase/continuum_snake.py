@@ -161,6 +161,7 @@ final_time = (11.0 + 0.01) * period
 dt = 1.0e-5 * period
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
+# FIXME: remove integrate outputs, we have call back functions now, we dont need them.
 positions_over_time, directors_over_time, velocities_over_time = integrate(
     timestepper, snake_sim, final_time, total_steps
 )

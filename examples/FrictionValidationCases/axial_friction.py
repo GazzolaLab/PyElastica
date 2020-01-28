@@ -105,6 +105,7 @@ def simulate_axial_friction_with(force=0.0):
     dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
+    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
     positions_over_time, directors_over_time, velocities_over_time = integrate(
         timestepper, axial_friction_sim, final_time, total_steps
     )
