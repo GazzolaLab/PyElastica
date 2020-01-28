@@ -135,8 +135,9 @@ class InteractionPlane:
         system.external_forces[..., :-1] += 0.5 * plane_response_force_total
         system.external_forces[..., 1:] += 0.5 * plane_response_force_total
 
-        return np.sqrt(
-            np.einsum("ij, ij->j", plane_response_force, plane_response_force)
+        return (
+            np.sqrt(np.einsum("ij, ij->j", plane_response_force, plane_response_force)),
+            no_contact_point_idx,
         )
 
 
@@ -174,7 +175,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     # for now putting them together to figure out common variables
     def apply_forces(self, system, time=0.0):
         # calculate axial and rolling directions
-        plane_response_force_mag = self.apply_normal_force(system)
+        plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
         normal_plane_collection = np.repeat(
             self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
@@ -231,6 +232,9 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             * velocity_sign_along_axial_direction
             * axial_direction
         )
+        # If rod element does not have any contact with plane, plane cannot apply friction
+        # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+        kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
         system.external_forces[..., :-1] += (
             0.5 * kinetic_friction_force_along_axial_direction
         )
@@ -275,6 +279,9 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             * slip_velocity_sign_along_rolling_direction
             * rolling_direction
         )
+        # If rod element does not have any contact with plane, plane cannot apply friction
+        # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+        kinetic_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
         system.external_forces[..., :-1] += (
             0.5 * kinetic_friction_force_along_rolling_direction
         )
@@ -312,6 +319,9 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             * force_component_sign_along_axial_direction
             * axial_direction
         )
+        # If rod element does not have any contact with plane, plane cannot apply friction
+        # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
+        static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
         system.external_forces[..., :-1] += (
             0.5 * static_friction_force_along_axial_direction
         )
@@ -350,6 +360,9 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             * noslip_force_sign
             * rolling_direction
         )
+        # If rod element does not have any contact with plane, plane cannot apply friction
+        # force on the element. Thus lets set plane static friction force to 0.0 for the no contact points.
+        static_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
         system.external_forces[..., :-1] += (
             0.5 * static_friction_force_along_rolling_direction
         )
