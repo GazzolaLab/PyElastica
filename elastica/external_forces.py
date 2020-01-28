@@ -151,9 +151,7 @@ class MuscleTorques(NoForces):
 
         if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
-            self.my_spline, ctr_pts, ctr_coeffs = _bspline(
-                b_coeff, base_length, keep_pts=True
-            )
+            self.my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
 
         else:
 

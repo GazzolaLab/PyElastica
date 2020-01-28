@@ -2,7 +2,7 @@ __doc__ = """ Spline for muscle torques acting on rod """
 import numpy as np
 
 
-def _bspline(t_coeff, l_centerline=1.0, keep_pts=False):
+def _bspline(t_coeff, l_centerline=1.0):
     """ Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
     default and keep_pts for keeping record of control points
@@ -14,10 +14,6 @@ def _bspline(t_coeff, l_centerline=1.0, keep_pts=False):
         and the last values are set to zero by default.
     l_centreline : float
         The length of the centerline in meters.
-    keep_pts : boolean, optional
-        If True, we keep record of control point and coefficients at those points
-        by returned as a (3, ) tuple. If False, returns only the splibe object.
-        Defaults to False.
 
     Returns
     -------
@@ -36,11 +32,7 @@ def _bspline(t_coeff, l_centerline=1.0, keep_pts=False):
     beta_head = 0.0
     beta_tail = 0.0
 
-    if keep_pts:
-        # Keep record of control point and coefficient at those points
-        return __bspline_impl__(control_pts, t_coeff, beta_head, beta_tail, degree)
-    else:
-        return __bspline_impl__(control_pts, t_coeff, beta_head, beta_tail, degree)[0]
+    return __bspline_impl__(control_pts, t_coeff, beta_head, beta_tail, degree)
 
 
 def __bspline_impl__(x_pts, t_c, b_head, b_tail, t_k):
