@@ -141,6 +141,7 @@ final_time = (10.0 + 0.01) * period
 dt = 2.5e-5 * period
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
+# FIXME: remove integrate outputs, we have call back functions now, we dont need them.
 positions_over_time, directors_over_time, velocities_over_time = integrate(
     timestepper, flagella_sim, final_time, total_steps
 )
