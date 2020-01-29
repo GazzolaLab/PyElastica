@@ -11,7 +11,7 @@ from elastica.boundary_conditions import OneEndFixedRod, FreeRod
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
+from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):

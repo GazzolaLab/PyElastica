@@ -12,7 +12,7 @@ from elastica.external_forces import GravityForces, UniformTorques
 from elastica.interaction import AnistropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from FrictionValidationCases.friction_validation_postprocessing import (
+from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )
 

@@ -9,7 +9,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import HelicalBucklingBC
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from HelicalBucklingCase.helicalbuckling_postprocessing import (
+from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
     plot_helicalbuckling,
