@@ -747,6 +747,33 @@ class TestingClass:
 
         assert_allclose(output_velocity, correct_velocity, atol=Tolerance.atol())
 
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_case_compute_position_center_of_mass(self, n_elem, nu=0.0):
+        """
+        This function tests compute position center of mass function. We initialize a
+        random position vector and copy this vector to position_collection array. We call
+        the compute_position_center_of_mass function and compare the output vector with
+        our correct position vector which we initialize at the beginning.
+        randomly the a vector for position
+        Parameters
+        ----------
+        n_elem
+        nu
+
+        Returns
+        -------
+
+        """
+
+        correct_position = np.random.rand(3) / (n_elem + 1)
+
+        initial, test_rod = constructor(n_elem, nu)
+
+        test_rod.position_collection[..., :] = np.array(correct_position).reshape(3, 1)
+        output_position = test_rod.compute_position_center_of_mass()
+
+        assert_allclose(output_position, correct_position, atol=Tolerance.atol())
+
 
 if __name__ == "__main__":
     from pytest import main
