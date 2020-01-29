@@ -98,10 +98,7 @@ dl = base_length / n_elem
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-# FIXME: remove integrate outputs, we have call back functions now, we dont need them.
-positions_over_time, directors_over_time, velocities_over_time = integrate(
-    timestepper, timoshenko_sim, final_time, total_steps
-)
+integrate(timestepper, timoshenko_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     plot_timoshenko(shearable_rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD)

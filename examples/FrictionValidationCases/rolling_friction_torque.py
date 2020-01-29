@@ -104,10 +104,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, rolling_friction_torque_sim, final_time, total_steps
-    )
+    integrate(timestepper, rolling_friction_torque_sim, final_time, total_steps)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()
@@ -141,9 +138,6 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "sweep": C_s,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,

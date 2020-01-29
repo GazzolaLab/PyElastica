@@ -13,7 +13,6 @@ from elastica.interaction import AnistropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
-    plot_friction_validation,
     plot_axial_friction_validation,
 )
 
@@ -105,10 +104,7 @@ def simulate_axial_friction_with(force=0.0):
     dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, axial_friction_sim, final_time, total_steps
-    )
+    integrate(timestepper, axial_friction_sim, final_time, total_steps)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()
@@ -148,9 +144,6 @@ def simulate_axial_friction_with(force=0.0):
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "sweep": force,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,

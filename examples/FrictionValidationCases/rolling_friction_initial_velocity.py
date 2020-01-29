@@ -108,8 +108,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
+    integrate(
         timestepper, rolling_friction_initial_velocity_sim, final_time, total_steps
     )
 
@@ -125,9 +124,6 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "sweep": IFactor / 2.0,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,

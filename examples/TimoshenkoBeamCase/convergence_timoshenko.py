@@ -33,7 +33,7 @@ def simulate_timoshenko_beam_with(
     elements=10, PLOT_FIGURE=False, ADD_UNSHEARABLE_ROD=False
 ):
     timoshenko_sim = TimoshenkoBeamSimulator()
-    final_time = 5000.0
+    final_time = 5000
     # setting up test params
     n_elem = elements
     start = np.zeros((3,))
@@ -103,10 +103,7 @@ def simulate_timoshenko_beam_with(
     dt = 0.01 * dl
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, timoshenko_sim, final_time, total_steps
-    )
+    integrate(timestepper, timoshenko_sim, final_time, total_steps)
 
     if PLOT_FIGURE:
         plot_timoshenko(shearable_rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD)
@@ -120,9 +117,6 @@ def simulate_timoshenko_beam_with(
     )
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "error": error,
         "l1": l1,
         "l2": l2,
