@@ -216,3 +216,9 @@ sample_prog.py
 
 # movie or video file formats
 *.mp4
+
+# CMA-ES output files
+outcmaes/*
+
+# line profiling outputs
+*.lprof
