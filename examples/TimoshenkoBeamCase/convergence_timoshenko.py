@@ -11,7 +11,7 @@ from elastica.boundary_conditions import OneEndFixedRod, FreeRod
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from TimoshenkoBeamCase.timoshenko_postprocessing import (
+from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
@@ -67,7 +67,7 @@ def simulate_timoshenko_beam_with(
     )
     end_force = np.array([-15.0, 0.0, 0.0])
     timoshenko_sim.add_forcing_to(shearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
     )
 
     if ADD_UNSHEARABLE_ROD:
@@ -92,7 +92,7 @@ def simulate_timoshenko_beam_with(
             OneEndFixedRod, positions=(0,), directors=(0,)
         )
         timoshenko_sim.add_forcing_to(unshearable_rod).using(
-            EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+            EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
         )
 
     timoshenko_sim.finalize()
@@ -103,6 +103,7 @@ def simulate_timoshenko_beam_with(
     dt = 0.01 * dl
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
+    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
     positions_over_time, directors_over_time, velocities_over_time = integrate(
         timestepper, timoshenko_sim, final_time, total_steps
     )

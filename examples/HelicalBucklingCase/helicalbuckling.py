@@ -10,7 +10,9 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import HelicalBucklingBC
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from HelicalBucklingCase.helicalbuckling_postprocessing import plot_helicalbuckling
+from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
+    plot_helicalbuckling,
+)
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
@@ -82,6 +84,7 @@ dl = base_length / n_elem
 dt = 1e-3 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
+# FIXME: remove integrate outputs, we have call back functions now, we dont need them.
 positions_over_time, directors_over_time, velocities_over_time = integrate(
     timestepper, helicalbuckling_sim, final_time, total_steps
 )

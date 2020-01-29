@@ -12,26 +12,24 @@ from elastica.external_forces import GravityForces, UniformTorques
 from elastica.interaction import AnistropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from FrictionValidationCases.friction_validation_postprocessing import (
+from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
 
-class RollingFrictionInitialVelocitySimulator(
-    BaseSystemCollection, Constraints, Forcing
-):
+class RollingFrictionTorqueSimulator(BaseSystemCollection, Constraints, Forcing):
     pass
 
 
 # Options
 PLOT_FIGURE = True
-SAVE_FIGURE = False
-SAVE_RESULTS = False
+SAVE_FIGURE = True
+SAVE_RESULTS = True
 
 
-def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
+def simulate_rolling_friction_torque_with(C_s=0.0):
 
-    rolling_friction_initial_velocity_sim = RollingFrictionInitialVelocitySimulator()
+    rolling_friction_torque_sim = RollingFrictionTorqueSimulator()
 
     # setting up test params
     n_elem = 50
@@ -66,31 +64,29 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
     shearable_rod.shear_matrix = shear_matrix
-    # change the mass moment of inertia matrix and its inverse
-    shearable_rod.mass_second_moment_of_inertia *= IFactor
-    shearable_rod.inv_mass_second_moment_of_inertia /= IFactor
 
-    # set initial velocity of 1m/s to rod elements in the slip direction
-    Vs = 1.0
-    shearable_rod.velocity_collection[0, :] += Vs
-
-    rolling_friction_initial_velocity_sim.append(shearable_rod)
-    rolling_friction_initial_velocity_sim.constrain(shearable_rod).using(FreeRod)
+    rolling_friction_torque_sim.append(shearable_rod)
+    rolling_friction_torque_sim.constrain(shearable_rod).using(FreeRod)
 
     # Add gravitational forces
     gravitational_acc = -9.80665
-    rolling_friction_initial_velocity_sim.add_forcing_to(shearable_rod).using(
+    rolling_friction_torque_sim.add_forcing_to(shearable_rod).using(
         GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+    )
+
+    # Add Uniform torque on the rod
+    rolling_friction_torque_sim.add_forcing_to(shearable_rod).using(
+        UniformTorques, torque=1.0 * C_s, direction=direction
     )
 
     # Add friction forces
     origin_plane = np.array([0.0, -base_radius, 0.0])
     normal_plane = np.array([0.0, 1.0, 0.0])
-    slip_velocity_tol = 1e-6
+    slip_velocity_tol = 1e-4
     static_mu_array = np.array([0.4, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
 
-    rolling_friction_initial_velocity_sim.add_forcing_to(shearable_rod).using(
+    rolling_friction_torque_sim.add_forcing_to(shearable_rod).using(
         AnistropicFrictionalPlane,
         k=10.0,
         nu=1e-4,
@@ -101,15 +97,16 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
         kinetic_mu_array=kinetic_mu_array,
     )
 
-    rolling_friction_initial_velocity_sim.finalize()
+    rolling_friction_torque_sim.finalize()
     timestepper = PositionVerlet()
 
-    final_time = 2.0
+    final_time = 1.0
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
+    # FIXME: remove integrate outputs, we have call back functions now, we dont need them.
     positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, rolling_friction_initial_velocity_sim, final_time, total_steps
+        timestepper, rolling_friction_torque_sim, final_time, total_steps
     )
 
     # compute translational and rotational energy
@@ -117,17 +114,37 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     rotational_energy = shearable_rod.compute_rotational_energy()
 
     # compute translational and rotational energy using analytical equations
-    analytical_translational_energy = 0.5 * mass * Vs ** 2 / (1.0 + IFactor / 2) ** 2
-    analytical_rotational_energy = (
-        0.5 * mass * Vs ** 2 * (IFactor / 2.0) / (1.0 + IFactor / 2) ** 2
-    )
+    force_slip = static_mu_array[2] * mass * gravitational_acc
+    force_noslip = 2.0 * C_s / (3.0 * base_radius)
+
+    mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
+
+    if np.abs(force_noslip) <= np.abs(force_slip):
+        analytical_translational_energy = (
+            2.0 / mass * (final_time * C_s / (3.0 * base_radius)) ** 2
+        )
+        analytical_rotational_energy = (
+            2.0
+            * mass_moment_of_inertia
+            * (final_time * C_s / (3.0 * base_radius ** 2 * mass)) ** 2
+        )
+    else:
+        analytical_translational_energy = (
+            mass * (kinetic_mu_array[2] * gravitational_acc * final_time) ** 2 / 2.0
+        )
+        analytical_rotational_energy = (
+            (C_s - kinetic_mu_array[2] * mass * np.abs(gravitational_acc) * base_radius)
+            ** 2
+            * final_time ** 2
+            / (2.0 * mass_moment_of_inertia)
+        )
 
     return {
         "rod": shearable_rod,
         "position_history": positions_over_time,
         "velocity_history": velocities_over_time,
         "director_history": directors_over_time,
-        "sweep": IFactor / 2.0,
+        "sweep": C_s,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,
         "analytical_translational_energy": analytical_translational_energy,
@@ -138,19 +155,22 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 if __name__ == "__main__":
     import multiprocessing as mp
 
-    IFactor = list([float(x) / 100.0 for x in range(20, 200, 10)])
+    C_s = list([float(x) / 1000.0 for x in range(0, 140, 10)])
+
+    # across jump
+    C_s.extend([float(x) / 1000.0 for x in range(140, 190, 10)])
 
     with mp.Pool(mp.cpu_count()) as pool:
-        results = pool.map(simulate_rolling_friction_initial_velocity_with, IFactor)
+        results = pool.map(simulate_rolling_friction_torque_with, C_s)
 
     if PLOT_FIGURE:
-        filename = "rolling_friction_initial_velocity.png"
+        filename = "rolling_friction_torque.png"
         plot_friction_validation(results, SAVE_FIGURE, filename)
 
     if SAVE_RESULTS:
         import pickle
 
-        filename = "rolling_friction_initial_velocity.dat"
+        filename = "rolling_friction_torque.dat"
         file = open(filename, "wb")
         pickle.dump([results], file)
         file.close()
