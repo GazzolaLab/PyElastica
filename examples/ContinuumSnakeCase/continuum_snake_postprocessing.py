@@ -8,6 +8,63 @@ def plot_snake_velocity(
 ):
     time_per_period = np.array(list_input["time"]) / period
     avg_velocity = np.array(list_input["avg_velocity"])
+
+    [
+        velocity_in_direction_of_rod,
+        velocity_in_rod_roll_dir,
+        _,
+        _,
+    ] = compute_projected_velocity(list_input, period)
+
+    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
+    ax = fig.add_subplot(111)
+    ax.grid(b=True, which="minor", color="k", linestyle="--")
+    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.plot(
+        time_per_period[:], velocity_in_direction_of_rod[:, 2], "r-", label="forward"
+    )
+    ax.plot(
+        time_per_period[:],
+        velocity_in_rod_roll_dir[:, 0],
+        c=to_rgb("xkcd:bluish"),
+        label="lateral",
+    )
+    ax.plot(time_per_period[:], avg_velocity[:, 1], "k-", label="normal")
+    fig.legend(prop={"size": 20})
+    plt.show()
+
+    if SAVE_FIGURE:
+        fig.savefig(filename)
+
+
+def plot_video(
+    list_input, video_name="video.mp4", margin=0.2, fps=15
+):  # (time step, x/y/z, node)
+    import matplotlib.animation as manimation
+
+    positions_over_time = np.array(list_input["position"])
+
+    print("plot video")
+    FFMpegWriter = manimation.writers["ffmpeg"]
+    metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
+    writer = FFMpegWriter(fps=fps, metadata=metadata)
+    fig = plt.figure()
+    plt.axis("equal")
+    with writer.saving(fig, video_name, dpi=100):
+        for time in range(1, len(list_input["time"])):
+            x = positions_over_time[time][2]
+            y = positions_over_time[time][0]
+            fig.clf()
+            plt.plot(x, y, "o")
+            plt.xlim([0 - margin, 10 + margin])
+            plt.ylim([-5 - margin, 5 + margin])
+            writer.grab_frame()
+
+
+def compute_projected_velocity(list_input, period):
+
+    time_per_period = np.array(list_input["time"]) / period
+    avg_velocity = np.array(list_input["avg_velocity"])
     center_of_mass = np.array(list_input["center_of_mass"])
 
     # Compute rod velocity in rod direction. We need to compute that because,
@@ -62,46 +119,19 @@ def plot_snake_velocity(
     # velocity in the direction of rod
     velocity_in_rod_roll_dir = avg_velocity - velocity_in_direction_of_rod
 
-    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
-    ax.plot(
-        time_per_period[:], velocity_in_direction_of_rod[:, 2], "r-", label="forward"
+    # Compute the average velocity over the simulation, this can be used for optimizing snake
+    # for fastest forward velocity. We start after first period, because of the ramping up happens
+    # in first period.
+    average_forward_velocity_over_simulation = np.mean(
+        velocity_in_direction_of_rod[period_step * 2 :, 2]
     )
-    ax.plot(
-        time_per_period[:],
-        velocity_in_rod_roll_dir[:, 0],
-        c=to_rgb("xkcd:bluish"),
-        label="lateral",
+    average_lateral_velocity_over_simulation = np.mean(
+        velocity_in_rod_roll_dir[period_step * 2 :, 0]
     )
-    ax.plot(time_per_period[:], avg_velocity[:, 1], "k-", label="normal")
-    fig.legend(prop={"size": 20})
-    plt.show()
 
-    if SAVE_FIGURE:
-        fig.savefig(filename)
-
-
-def plot_video(
-    list_input, video_name="video.mp4", margin=0.2, fps=15
-):  # (time step, x/y/z, node)
-    import matplotlib.animation as manimation
-
-    positions_over_time = np.array(list_input["position"])
-
-    print("plot video")
-    FFMpegWriter = manimation.writers["ffmpeg"]
-    metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
-    writer = FFMpegWriter(fps=fps, metadata=metadata)
-    fig = plt.figure()
-    plt.axis("equal")
-    with writer.saving(fig, video_name, dpi=100):
-        for time in range(1, len(list_input["time"])):
-            x = positions_over_time[time][2]
-            y = positions_over_time[time][0]
-            fig.clf()
-            plt.plot(x, y, "o")
-            plt.xlim([0 - margin, 10 + margin])
-            plt.ylim([-5 - margin, 5 + margin])
-            writer.grab_frame()
+    return (
+        velocity_in_direction_of_rod,
+        velocity_in_rod_roll_dir,
+        average_forward_velocity_over_simulation,
+        average_lateral_velocity_over_simulation,
+    )
