@@ -21,7 +21,7 @@ from elastica.interaction import AnistropicFrictionalPlane
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from ContinuumSnakeCase.continuum_snake_postprocessing import (
+from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
 )
@@ -128,10 +128,13 @@ class ContinuumSnakeCallBack(CallBackBaseClass):
     Call back function for continuum snake
     """
 
-    def __init__(self, step_skip: int, callback_params):
+    def __init__(self, step_skip: int, callback_params, direction, normal):
         CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
+        self.direction = direction
+        self.normal = normal
+        self.roll_direction = np.cross(direction, normal)
 
     def make_callback(self, system, time, current_step: int):
 
@@ -145,12 +148,27 @@ class ContinuumSnakeCallBack(CallBackBaseClass):
                 system.compute_velocity_center_of_mass()
             )
 
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
+
             return
 
 
-pp_list = {"time": [], "step": [], "position": [], "velocity": [], "avg_velocity": []}
+pp_list = {
+    "time": [],
+    "step": [],
+    "position": [],
+    "velocity": [],
+    "avg_velocity": [],
+    "center_of_mass": [],
+}
 snake_sim.callback_of(shearable_rod).using(
-    ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list
+    ContinuumSnakeCallBack,
+    step_skip=200,
+    callback_params=pp_list,
+    direction=direction,
+    normal=normal,
 )
 
 snake_sim.finalize()
