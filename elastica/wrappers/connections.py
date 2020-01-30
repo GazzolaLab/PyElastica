@@ -55,13 +55,13 @@ class Connections:
             second_connect_idx,
             connection,
         ) in self._connections:
-            connection.apply_force(
+            connection.apply_forces(
                 self._systems[first_sys_idx],
                 first_connect_idx,
                 self._systems[second_sys_idx],
                 second_connect_idx,
             )
-            connection.apply_torque(
+            connection.apply_torques(
                 self._systems[first_sys_idx],
                 first_connect_idx,
                 self._systems[second_sys_idx],
