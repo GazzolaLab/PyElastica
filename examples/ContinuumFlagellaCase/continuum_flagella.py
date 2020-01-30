@@ -9,14 +9,12 @@ import os
 
 from elastica.wrappers import (
     BaseSystemCollection,
-    Connections,
     Constraints,
     Forcing,
     CallBacks,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import FreeRod
-from elastica.external_forces import GravityForces, MuscleTorques
+from elastica.external_forces import MuscleTorques
 from elastica.interaction import SlenderBodyTheory
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
@@ -65,16 +63,13 @@ def run_flagella(
     )
 
     flagella_sim.append(shearable_rod)
-    flagella_sim.constrain(shearable_rod).using(FreeRod)
 
     period = 1.0
-    # TODO: wave_length is also part of optimization, when we integrate with CMA-ES
-    # remove wave_length from here.
-    wave_length = 0.3866575573648976 * base_length  # wave number is 16.25
+    wave_length = b_coeff[-1]
     flagella_sim.add_forcing_to(shearable_rod).using(
         MuscleTorques,
         base_length=base_length,
-        b_coeff=b_coeff,
+        b_coeff=b_coeff[:-1],
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
@@ -99,7 +94,7 @@ def run_flagella(
         Call back function for continuum snake
         """
 
-        def __init__(self, step_skip: int, callback_params):
+        def __init__(self, step_skip: int, callback_params: dict):
             CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
@@ -125,7 +120,7 @@ def run_flagella(
 
                 return
 
-    pp_list = {
+    defaultdict = {
         "time": [],
         "step": [],
         "position": [],
@@ -133,8 +128,8 @@ def run_flagella(
         "avg_velocity": [],
         "center_of_mass": [],
     }
-    flagella_sim.callback_of(shearable_rod).using(
-        ContinuumFlagellaCallBack, step_skip=200, callback_params=pp_list
+    flagella_sim.collect_diagnostics(shearable_rod).using(
+        ContinuumFlagellaCallBack, step_skip=200, callback_params=defaultdict
     )
 
     flagella_sim.finalize()
@@ -149,24 +144,24 @@ def run_flagella(
 
     if PLOT_FIGURE:
         filename_plot = "continuum_flagella_velocity.png"
-        plot_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        plot_velocity(defaultdict, period, filename_plot, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_flagella.mp4"
-            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=500)
+            plot_video(defaultdict, video_name=filename_video, margin=0.2, fps=200)
 
     if SAVE_RESULTS:
         import pickle
 
         filename = "continuum_flagella.dat"
         file = open(filename, "wb")
-        pickle.dump(pp_list, file)
+        pickle.dump(defaultdict, file)
         file.close()
 
     # Compute the average forward velocity. These will be used for optimization.
-    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(pp_list, period)
+    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(defaultdict, period)
 
-    return avg_forward, avg_lateral, pp_list
+    return avg_forward, avg_lateral, defaultdict
 
 
 if __name__ == "__main__":
@@ -210,11 +205,15 @@ if __name__ == "__main__":
             t_coeff_optimized = np.genfromtxt(
                 "optimized_coefficients.txt", delimiter=","
             )
+            wave_length = (
+                0.3866575573648976 * 1.0
+            )  # 1.0 is base length, wave number is 16.25
+            t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
         else:
-            t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7])
+            t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.38])
 
         # run the simulation
-        [avg_forward, avg_lateral, pp_list] = run_flagella(
+        [avg_forward, avg_lateral, defaultdict] = run_flagella(
             t_coeff_optimized, PLOT_FIGURE, SAVE_FIGURE, SAVE_VIDEO, SAVE_RESULTS
         )
 

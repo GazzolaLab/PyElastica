@@ -4,18 +4,21 @@ from matplotlib.colors import to_rgb
 
 
 def plot_velocity(
-    list_input, period, filename="continuum_flagella_velocity.png", SAVE_FIGURE=False
+    plot_params: dict,
+    period,
+    filename="continuum_flagella_velocity.png",
+    SAVE_FIGURE=False,
 ):
 
-    time_per_period = np.array(list_input["time"]) / period
-    avg_velocity = np.array(list_input["avg_velocity"])
+    time_per_period = np.array(plot_params["time"]) / period
+    avg_velocity = np.array(plot_params["avg_velocity"])
 
     [
         velocity_in_direction_of_rod,
         velocity_in_rod_roll_dir,
         _,
         _,
-    ] = compute_projected_velocity(list_input, period)
+    ] = compute_projected_velocity(plot_params, period)
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
@@ -39,11 +42,11 @@ def plot_velocity(
 
 
 def plot_video(
-    list_input, video_name="video.mp4", margin=0.2, fps=15
+    plot_params: dict, video_name="video.mp4", margin=0.2, fps=15
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    positions_over_time = np.array(list_input["position"])
+    positions_over_time = np.array(plot_params["position"])
 
     print("plot video")
     FFMpegWriter = manimation.writers["ffmpeg"]
@@ -52,7 +55,7 @@ def plot_video(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(list_input["time"])):
+        for time in range(1, len(plot_params["time"])):
             x = positions_over_time[time][2]
             y = positions_over_time[time][0]
             fig.clf()
@@ -62,11 +65,11 @@ def plot_video(
             writer.grab_frame()
 
 
-def compute_projected_velocity(list_input, period):
+def compute_projected_velocity(plot_params: dict, period):
 
-    time_per_period = np.array(list_input["time"]) / period
-    avg_velocity = np.array(list_input["avg_velocity"])
-    center_of_mass = np.array(list_input["center_of_mass"])
+    time_per_period = np.array(plot_params["time"]) / period
+    avg_velocity = np.array(plot_params["avg_velocity"])
+    center_of_mass = np.array(plot_params["center_of_mass"])
 
     # Compute rod velocity in rod direction. We need to compute that because,
     # after snake starts to move it chooses an arbitrary direction, which does not
@@ -82,30 +85,15 @@ def compute_projected_velocity(list_input, period):
     # Center of mass position averaged in one period
     center_of_mass_averaged_over_one_period = np.zeros((number_of_period - 2, 3))
     for i in range(1, number_of_period - 1):
-        # position of center of mass in rolling direction averaged over one period
-        center_of_mass_averaged_over_one_period[i - 1, 0] = np.mean(
-            center_of_mass[(i + 1) * period_step : (i + 2) * period_step, 0]
-            - center_of_mass[(i + 0) * period_step : (i + 1) * period_step, 0]
-        )
-        # position of center of mass in normal direction averaged over one period
-        center_of_mass_averaged_over_one_period[i - 1, 1] = np.mean(
-            center_of_mass[(i + 1) * period_step : (i + 2) * period_step, 1]
-            - center_of_mass[(i + 0) * period_step : (i + 1) * period_step, 1]
-        )
-        # position of center of mass in normal direction averaged over one period
-        center_of_mass_averaged_over_one_period[i - 1, 2] = np.mean(
-            center_of_mass[(i + 1) * period_step : (i + 2) * period_step, 2]
-            - center_of_mass[(i + 0) * period_step : (i + 1) * period_step, 2]
+        # position of center of mass averaged over one period
+        center_of_mass_averaged_over_one_period[i - 1] = np.mean(
+            center_of_mass[(i + 1) * period_step : (i + 2) * period_step]
+            - center_of_mass[(i + 0) * period_step : (i + 1) * period_step],
+            axis=0,
         )
 
     # Average the rod directions over multiple periods and get the direction of the rod.
-    direction_of_rod = np.array(
-        [
-            np.mean(center_of_mass_averaged_over_one_period[:, 0]),
-            np.mean(center_of_mass_averaged_over_one_period[:, 1]),
-            np.mean(center_of_mass_averaged_over_one_period[:, 2]),
-        ]
-    )
+    direction_of_rod = np.mean(center_of_mass_averaged_over_one_period, axis=0)
     direction_of_rod /= np.linalg.norm(direction_of_rod, ord=2)
 
     # Compute the projected rod velocity in the direction of the rod
@@ -123,16 +111,13 @@ def compute_projected_velocity(list_input, period):
     # Compute the average velocity over the simulation, this can be used for optimizing snake
     # for fastest forward velocity. We start after first period, because of the ramping up happens
     # in first period.
-    average_forward_velocity_over_simulation = np.mean(
-        velocity_in_direction_of_rod[period_step * 2 :, 2]
-    )
-    average_lateral_velocity_over_simulation = np.mean(
-        velocity_in_rod_roll_dir[period_step * 2 :, 0]
+    average_velocity_over_simulation = np.mean(
+        velocity_in_direction_of_rod[period_step * 2 :], axis=0
     )
 
     return (
         velocity_in_direction_of_rod,
         velocity_in_rod_roll_dir,
-        average_forward_velocity_over_simulation,
-        average_lateral_velocity_over_simulation,
+        average_velocity_over_simulation[2],
+        average_velocity_over_simulation[0],
     )

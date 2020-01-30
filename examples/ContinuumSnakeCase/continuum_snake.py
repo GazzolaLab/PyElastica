@@ -9,13 +9,11 @@ import os
 
 from elastica.wrappers import (
     BaseSystemCollection,
-    Connections,
     Constraints,
     Forcing,
     CallBacks,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import FreeRod
 from elastica.external_forces import GravityForces, MuscleTorques
 from elastica.interaction import AnistropicFrictionalPlane
 from elastica.callback_functions import CallBackBaseClass
@@ -65,7 +63,6 @@ def run_snake(
     )
 
     snake_sim.append(shearable_rod)
-    snake_sim.constrain(shearable_rod).using(FreeRod)
 
     # Add gravitational forces
     gravitational_acc = -9.80665
@@ -74,13 +71,11 @@ def run_snake(
     )
 
     period = 1.0
-    # TODO: wave_length is also part of optimization, when we integrate with CMA-ES
-    # remove wave_length from here.
-    wave_length = 0.97 * base_length
+    wave_length = b_coeff[-1]
     snake_sim.add_forcing_to(shearable_rod).using(
         MuscleTorques,
         base_length=base_length,
-        b_coeff=b_coeff,
+        b_coeff=b_coeff[:-1],
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
@@ -95,13 +90,10 @@ def run_snake(
     slip_velocity_tol = 1e-8
     froude = 0.1
     mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
-    static_mu_array = np.array(
-        [1.0 * 2.0 * mu, 1.0 * 3.0 * mu, 4.0 * mu]
-    )  # [forward, backward, sideways]
     kinetic_mu_array = np.array(
-        [1.0 * mu, 1.0 * 1.5 * mu, 2.0 * mu]
+        [mu, 1.5 * mu, 2.0 * mu]
     )  # [forward, backward, sideways]
-
+    static_mu_array = 2 * kinetic_mu_array
     snake_sim.add_forcing_to(shearable_rod).using(
         AnistropicFrictionalPlane,
         k=1.0,
@@ -119,13 +111,10 @@ def run_snake(
         Call back function for continuum snake
         """
 
-        def __init__(self, step_skip: int, callback_params, direction, normal):
+        def __init__(self, step_skip: int, callback_params: dict):
             CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
-            self.direction = direction
-            self.normal = normal
-            self.roll_direction = np.cross(direction, normal)
 
         def make_callback(self, system, time, current_step: int):
 
@@ -149,7 +138,7 @@ def run_snake(
 
                 return
 
-    pp_list = {
+    defaultdict = {
         "time": [],
         "step": [],
         "position": [],
@@ -157,12 +146,8 @@ def run_snake(
         "avg_velocity": [],
         "center_of_mass": [],
     }
-    snake_sim.callback_of(shearable_rod).using(
-        ContinuumSnakeCallBack,
-        step_skip=200,
-        callback_params=pp_list,
-        direction=direction,
-        normal=normal,
+    snake_sim.collect_diagnostics(shearable_rod).using(
+        ContinuumSnakeCallBack, step_skip=200, callback_params=defaultdict,
     )
 
     snake_sim.finalize()
@@ -177,24 +162,24 @@ def run_snake(
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
-        plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        plot_snake_velocity(defaultdict, period, filename_plot, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_snake.mp4"
-            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=500)
+            plot_video(defaultdict, video_name=filename_video, margin=0.2, fps=500)
 
     if SAVE_RESULTS:
         import pickle
 
         filename = "continuum_snake.dat"
         file = open(filename, "wb")
-        pickle.dump(pp_list, file)
+        pickle.dump(defaultdict, file)
         file.close()
 
     # Compute the average forward velocity. These will be used for optimization.
-    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(pp_list, period)
+    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(defaultdict, period)
 
-    return avg_forward, avg_lateral, pp_list
+    return avg_forward, avg_lateral, defaultdict
 
 
 if __name__ == "__main__":
@@ -238,11 +223,14 @@ if __name__ == "__main__":
             t_coeff_optimized = np.genfromtxt(
                 "optimized_coefficients.txt", delimiter=","
             )
+            wave_length = 0.97 * 1.0  # 1.0 is base length
+            t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
+
         else:
-            t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7])
+            t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
 
         # run the simulation
-        [avg_forward, avg_lateral, pp_list] = run_snake(
+        [avg_forward, avg_lateral, defaultdict] = run_snake(
             t_coeff_optimized, PLOT_FIGURE, SAVE_FIGURE, SAVE_VIDEO, SAVE_RESULTS
         )
 
