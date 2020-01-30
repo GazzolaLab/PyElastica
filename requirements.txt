@@ -1,7 +1,6 @@
 numpy
 scipy
 matplotlib
-jupyterlab
 tqdm
 numba
 cma
