@@ -22,7 +22,8 @@ class Connections:
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
 
         # For each system identified, get max dofs
-        sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
+        # sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
+        sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
 
         # Create _Connect object, cache it and return to user
         _connector = _Connect(*sys_idx, *sys_dofs)

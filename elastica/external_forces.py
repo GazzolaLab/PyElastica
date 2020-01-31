@@ -214,8 +214,8 @@ class EndpointForcesSinusoidal(NoForces):
         start_force_mag,
         end_force_mag,
         ramp_up_time=0.0,
+        tangent_direction=np.array([0, 0, 1]),
         normal_direction=np.array([0, 1, 0]),
-        roll_direction = np.array([-1,0,0])
     ):
         super(EndpointForcesSinusoidal, self).__init__()
         # Start force
@@ -224,7 +224,8 @@ class EndpointForcesSinusoidal(NoForces):
 
         # Applied force directions
         self.normal_direction = normal_direction
-        self.roll_direction = roll_direction
+        # self.roll_direction = np.cross(tangent_direction, normal_direction)
+        self.roll_direction = np.cross(normal_direction,tangent_direction)
 
         assert ramp_up_time >= 0.0
         if ramp_up_time == 0:
@@ -237,8 +238,8 @@ class EndpointForcesSinusoidal(NoForces):
         if time < self.ramp_up_time:
             # When time smaller than ramp up time apply the force in normal direction
             # First pull the rod upward or downward direction some time.
-            start_force = self.start_force_mag * self.normal_direction
-            end_force = self.end_force_mag * self.normal_direction
+            start_force = -2.0*self.start_force_mag * self.normal_direction
+            end_force = -2.0*self.end_force_mag * self.normal_direction
 
             system.external_forces[..., 0] += start_force
             system.external_forces[..., -1] += end_force
