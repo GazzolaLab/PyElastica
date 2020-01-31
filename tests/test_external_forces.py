@@ -235,8 +235,8 @@ def test_endpoint_forces_sinusoidal(n_elem, ramp_up_time, time):
     normal = np.array([0, 1, 0])
 
     if ramp_up_time > time:
-        start_force = -2.0*np.array([0, start_force_mag, 0])
-        end_force = -2.0*np.array([0, end_force_mag, 0])
+        start_force = -2.0 * np.array([0, start_force_mag, 0])
+        end_force = -2.0 * np.array([0, end_force_mag, 0])
     else:
         start_force = start_force_mag * np.array(
             [
