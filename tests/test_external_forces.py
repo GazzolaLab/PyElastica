@@ -221,9 +221,9 @@ def test_muscle_torques(n_elem):
 
 # The minimum number of nodes in a system is 2
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
-@pytest.mark.parametrize("rampupTime", [5, 10, 15])
+@pytest.mark.parametrize("ramp_up_time", [5, 10, 15])
 @pytest.mark.parametrize("time", [0, 8, 20])
-def test_endpoint_forces_sinusoidal(n_elem, rampupTime, time):
+def test_endpoint_forces_sinusoidal(n_elem, ramp_up_time, time):
     dim = 3
 
     mock_rod = MockRod()
@@ -233,21 +233,28 @@ def test_endpoint_forces_sinusoidal(n_elem, rampupTime, time):
 
     direction = np.array([0, 0, 1])
     normal = np.array([0, 1, 0])
-    roll = np.cross(direction, normal)
 
-    if rampupTime > time:
-        start_force = np.array([0, start_force_mag, 0])
-        end_force = np.array([0, end_force_mag, 0])
+    if ramp_up_time > time:
+        start_force = -2.0*np.array([0, start_force_mag, 0])
+        end_force = -2.0*np.array([0, end_force_mag, 0])
     else:
         start_force = start_force_mag * np.array(
-            [-np.cos(0.5 * np.pi * (time - rampupTime)), np.sin(0.5 *  np.pi * (time - rampupTime)), 0]
+            [
+                np.cos(0.5 * np.pi * (time - ramp_up_time)),
+                np.sin(0.5 * np.pi * (time - ramp_up_time)),
+                0,
+            ]
         )
         end_force = end_force_mag * np.array(
-            [-np.cos(0.5 *  np.pi * (time - rampupTime)), np.sin(0.5 *  np.pi * (time - rampupTime)), 0]
+            [
+                np.cos(0.5 * np.pi * (time - ramp_up_time)),
+                np.sin(0.5 * np.pi * (time - ramp_up_time)),
+                0,
+            ]
         )
 
     ext_endpt_forces = EndpointForcesSinusoidal(
-        start_force_mag, end_force_mag, rampupTime, normal, roll
+        start_force_mag, end_force_mag, ramp_up_time, direction, normal
     )
     ext_endpt_forces.apply_forces(mock_rod, time)
 
