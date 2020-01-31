@@ -22,6 +22,7 @@ class Connections:
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
 
         # For each system identified, get max dofs
+        # FIXME: Revert back to len, it should be able to take, systems without elements!
         # sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
         sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
 
