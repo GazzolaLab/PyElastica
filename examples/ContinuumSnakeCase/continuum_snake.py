@@ -138,14 +138,6 @@ def run_snake(
 
                 return
 
-    # defaultdict = {
-    #     "time": [],
-    #     "step": [],
-    #     "position": [],
-    #     "velocity": [],
-    #     "avg_velocity": [],
-    #     "center_of_mass": [],
-    # }
     pp_list = defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
         ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list,
