@@ -12,7 +12,7 @@ from elastica.external_forces import GravityForces
 from elastica.interaction import AnistropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from FrictionValidationCases.friction_validation_postprocessing import (
+from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -103,7 +103,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
+    integrate(
         timestepper, rolling_friction_on_inclined_plane_sim, final_time, total_steps
     )
 
@@ -148,9 +148,6 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "sweep": alpha_s,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,
@@ -163,7 +160,6 @@ if __name__ == "__main__":
     import multiprocessing as mp
 
     # 0.05, 0.1, 0.2, 0.25
-    # list([0.05, 0.1, 0.15, 0.2, 0.25])
     alpha_s = list([float(x) / 100.0 for x in range(5, 26, 5)])
 
     # across jump 0.26 0.29

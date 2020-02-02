@@ -9,7 +9,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import HelicalBucklingBC
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from HelicalBucklingCase.helicalbuckling_postprocessing import (
+from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
     plot_helicalbuckling,
@@ -84,16 +84,14 @@ def simulate_helicalbucklin_beam_with(
     shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array(
         [0, 1e-6, 0.0]
     )
-    # # timestepper = PEFRL()
+    # timestepper = PEFRL()
 
     final_time = 10500
     dl = base_length / n_elem
     dt = 1e-3 * dl
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, helicalbuckling_sim, final_time, total_steps
-    )
+    integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
 
     # calculate errors and norms
     # Since we need to evaluate analytical solution only on nodes, n_nodes = n_elems+1
@@ -109,9 +107,6 @@ def simulate_helicalbucklin_beam_with(
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "error": error,
         "l1": l1,
         "l2": l2,

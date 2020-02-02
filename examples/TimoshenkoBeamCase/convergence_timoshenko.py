@@ -11,7 +11,7 @@ from elastica.boundary_conditions import OneEndFixedRod, FreeRod
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from TimoshenkoBeamCase.timoshenko_postprocessing import (
+from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
@@ -33,7 +33,7 @@ def simulate_timoshenko_beam_with(
     elements=10, PLOT_FIGURE=False, ADD_UNSHEARABLE_ROD=False
 ):
     timoshenko_sim = TimoshenkoBeamSimulator()
-    final_time = 5000.0
+    final_time = 5000
     # setting up test params
     n_elem = elements
     start = np.zeros((3,))
@@ -67,7 +67,7 @@ def simulate_timoshenko_beam_with(
     )
     end_force = np.array([-15.0, 0.0, 0.0])
     timoshenko_sim.add_forcing_to(shearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
     )
 
     if ADD_UNSHEARABLE_ROD:
@@ -92,7 +92,7 @@ def simulate_timoshenko_beam_with(
             OneEndFixedRod, positions=(0,), directors=(0,)
         )
         timoshenko_sim.add_forcing_to(unshearable_rod).using(
-            EndpointForces, 0.0 * end_force, end_force, rampupTime=final_time / 2
+            EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2
         )
 
     timoshenko_sim.finalize()
@@ -103,9 +103,7 @@ def simulate_timoshenko_beam_with(
     dt = 0.01 * dl
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
-        timestepper, timoshenko_sim, final_time, total_steps
-    )
+    integrate(timestepper, timoshenko_sim, final_time, total_steps)
 
     if PLOT_FIGURE:
         plot_timoshenko(shearable_rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD)
@@ -119,9 +117,6 @@ def simulate_timoshenko_beam_with(
     )
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "error": error,
         "l1": l1,
         "l2": l2,

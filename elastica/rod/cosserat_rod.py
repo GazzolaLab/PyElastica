@@ -386,6 +386,18 @@ class _CosseratRodBase(RodBase):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
 
+    def compute_velocity_center_of_mass(self):
+        mass_times_velocity = np.einsum("j,ij->ij", self.mass, self.velocity_collection)
+        sum_mass_times_velocity = np.einsum("ij->i", mass_times_velocity)
+
+        return sum_mass_times_velocity / self.mass.sum()
+
+    def compute_position_center_of_mass(self):
+        mass_times_position = np.einsum("j,ij->ij", self.mass, self.position_collection)
+        sum_mass_times_position = np.einsum("ij->i", mass_times_position)
+
+        return sum_mass_times_position / self.mass.sum()
+
 
 # TODO Fix this classmethod weirdness to a more scalable and maintainable solution
 # TODO Fix the SymplecticStepperMixin interface class as it does not belong here

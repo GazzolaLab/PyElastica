@@ -13,7 +13,7 @@ class CallBacks:
         self._callbacks = []
         super(CallBacks, self).__init__()
 
-    def callback_of(self, system):
+    def collect_diagnostics(self, system):
         sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user

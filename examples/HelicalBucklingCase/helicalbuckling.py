@@ -10,7 +10,9 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import HelicalBucklingBC
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from HelicalBucklingCase.helicalbuckling_postprocessing import plot_helicalbuckling
+from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
+    plot_helicalbuckling,
+)
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
@@ -75,16 +77,14 @@ helicalbuckling_sim.constrain(shearable_rod).using(
 helicalbuckling_sim.finalize()
 timestepper = PositionVerlet()
 shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 0.0])
-# # timestepper = PEFRL()
+# timestepper = PEFRL()
 
 final_time = 10500.0
 dl = base_length / n_elem
 dt = 1e-3 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-positions_over_time, directors_over_time, velocities_over_time = integrate(
-    timestepper, helicalbuckling_sim, final_time, total_steps
-)
+integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     plot_helicalbuckling(shearable_rod, SAVE_FIGURE)

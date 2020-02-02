@@ -96,11 +96,11 @@ class TestConstraintsMixin:
         scwc = load_system_with_callbacks
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.callback_of(100)
+            scwc.collect_diagnostics(100)
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.callback_of(np.int_(100))
+            scwc.collect_diagnostics(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_constrain_with_unregistered_system_throws(
@@ -112,7 +112,7 @@ class TestConstraintsMixin:
         mock_rod = self.MockRod(2, 3, 4, 5)
 
         with pytest.raises(ValueError) as excinfo:
-            scwc.callback_of(mock_rod)
+            scwc.collect_diagnostics(mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
     def test_constrain_with_illegal_system_throws(self, load_system_with_callbacks):
@@ -122,7 +122,7 @@ class TestConstraintsMixin:
         mock_rod = [1, 2, 3, 5]
 
         with pytest.raises(TypeError) as excinfo:
-            scwc.callback_of(mock_rod)
+            scwc.collect_diagnostics(mock_rod)
         assert "not a system" in str(excinfo.value)
 
     """
@@ -137,7 +137,7 @@ class TestConstraintsMixin:
         mock_rod = self.MockRod(2, 3, 4, 5)
         scwc.append(mock_rod)
 
-        _mock_callback = scwc.callback_of(mock_rod)
+        _mock_callback = scwc.collect_diagnostics(mock_rod)
         assert _mock_callback in scwc._callbacks
         assert _mock_callback.__class__ == _CallBack
 
@@ -159,9 +159,11 @@ class TestConstraintsMixin:
         )
 
         # Constrain any and all systems
-        scwc.callback_of(1).using(MockCallBack, 2, 42)  # index based constraint
-        scwc.callback_of(0).using(MockCallBack, 1, 2)  # index based constraint
-        scwc.callback_of(mock_rod).using(MockCallBack, 2, 3)  # system based constraint
+        scwc.collect_diagnostics(1).using(MockCallBack, 2, 42)  # index based constraint
+        scwc.collect_diagnostics(0).using(MockCallBack, 1, 2)  # index based constraint
+        scwc.collect_diagnostics(mock_rod).using(
+            MockCallBack, 2, 3
+        )  # system based constraint
 
         return scwc, MockCallBack
 

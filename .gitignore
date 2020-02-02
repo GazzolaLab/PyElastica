@@ -210,3 +210,15 @@ sample_prog.py
 
 # Operating System Files
 *.DS_Store
+
+# txt files
+*.txt
+
+# movie or video file formats
+*.mp4
+
+# CMA-ES output files
+outcmaes/*
+
+# line profiling outputs
+*.lprof

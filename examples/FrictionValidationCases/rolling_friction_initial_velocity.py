@@ -12,7 +12,7 @@ from elastica.external_forces import GravityForces, UniformTorques
 from elastica.interaction import AnistropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
-from FrictionValidationCases.friction_validation_postprocessing import (
+from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -108,7 +108,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    positions_over_time, directors_over_time, velocities_over_time = integrate(
+    integrate(
         timestepper, rolling_friction_initial_velocity_sim, final_time, total_steps
     )
 
@@ -124,9 +124,6 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 
     return {
         "rod": shearable_rod,
-        "position_history": positions_over_time,
-        "velocity_history": velocities_over_time,
-        "director_history": directors_over_time,
         "sweep": IFactor / 2.0,
         "translational_energy": translational_energy,
         "rotational_energy": rotational_energy,
