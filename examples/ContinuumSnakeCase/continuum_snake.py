@@ -6,7 +6,7 @@ import sys
 sys.path.append("../")
 
 import os
-
+from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
     Constraints,
@@ -138,16 +138,17 @@ def run_snake(
 
                 return
 
-    defaultdict = {
-        "time": [],
-        "step": [],
-        "position": [],
-        "velocity": [],
-        "avg_velocity": [],
-        "center_of_mass": [],
-    }
+    # defaultdict = {
+    #     "time": [],
+    #     "step": [],
+    #     "position": [],
+    #     "velocity": [],
+    #     "avg_velocity": [],
+    #     "center_of_mass": [],
+    # }
+    pp_list = defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
-        ContinuumSnakeCallBack, step_skip=200, callback_params=defaultdict,
+        ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list,
     )
 
     snake_sim.finalize()
@@ -162,24 +163,24 @@ def run_snake(
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
-        plot_snake_velocity(defaultdict, period, filename_plot, SAVE_FIGURE)
+        plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_snake.mp4"
-            plot_video(defaultdict, video_name=filename_video, margin=0.2, fps=500)
+            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=500)
 
     if SAVE_RESULTS:
         import pickle
 
         filename = "continuum_snake.dat"
         file = open(filename, "wb")
-        pickle.dump(defaultdict, file)
+        pickle.dump(pp_list, file)
         file.close()
 
     # Compute the average forward velocity. These will be used for optimization.
-    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(defaultdict, period)
+    [_, _, avg_forward, avg_lateral] = compute_projected_velocity(pp_list, period)
 
-    return avg_forward, avg_lateral, defaultdict
+    return avg_forward, avg_lateral, pp_list
 
 
 if __name__ == "__main__":
@@ -230,7 +231,7 @@ if __name__ == "__main__":
             t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
 
         # run the simulation
-        [avg_forward, avg_lateral, defaultdict] = run_snake(
+        [avg_forward, avg_lateral, pp_list] = run_snake(
             t_coeff_optimized, PLOT_FIGURE, SAVE_FIGURE, SAVE_VIDEO, SAVE_RESULTS
         )
 
