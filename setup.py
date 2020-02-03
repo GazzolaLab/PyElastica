@@ -15,7 +15,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",  # This is important!
     url="https://github.com/mattialabteam/elastica-python",
-    author="Arman Tekinalp, Tejaswin Parthasarathy, Yashraj Bhosale",
+    author="Mattia-lab",
     download_url="https://github.com/mattialab/elastica-python/archive/master.zip",
     install_requires=['numpy','matplotlib','scipy']
 )
