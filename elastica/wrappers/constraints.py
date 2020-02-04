@@ -97,10 +97,10 @@ class _Constraint:
         # If there is position, director in kwargs, deal with it first
         # Returns None if not found
         pos_indices = self._kwargs.pop(
-            "positions", None
+            "constrained_position_idx", None
         )  # calculate position indices as a tuple
         director_indices = self._kwargs.pop(
-            "directors", None
+            "constrained_director_idx", None
         )  # calculate director indices as a tuple
 
         # If pos_indices is not None, construct list else empty list

@@ -72,8 +72,8 @@ def simulate_helicalbucklin_beam_with(
     helicalbuckling_sim.append(shearable_rod)
     helicalbuckling_sim.constrain(shearable_rod).using(
         HelicalBucklingBC,
-        positions=(0, -1),
-        directors=(0, -1),
+        constrained_position_idx=(0, -1),
+        constrained_director_idx=(0, -1),
         twisting_time=500,
         slack=slack,
         number_of_rotations=number_of_rotations,
