@@ -84,7 +84,13 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 3.9, 4.0, positions=position_indices, k=1, l_var="2", j=3.0
+            MockBC,
+            3.9,
+            4.0,
+            constrained_position_idx=position_indices,
+            k=1,
+            l_var="2",
+            j=3.0,
         )
 
         # Actual test is here, this should not throw
@@ -110,7 +116,13 @@ class TestConstraint:
 
         constraint = load_constraint
         constraint.using(
-            MockBC, 3.9, 4.0, directors=director_indices, k=1, l_var="2", j=3.0
+            MockBC,
+            3.9,
+            4.0,
+            constrained_director_idx=director_indices,
+            k=1,
+            l_var="2",
+            j=3.0,
         )
 
         # Actual test is here, this should not throw
@@ -141,8 +153,8 @@ class TestConstraint:
             MockBC,
             3.9,
             4.0,
-            positions=dof_indices,
-            directors=dof_indices,
+            constrained_position_idx=dof_indices,
+            constrained_director_idx=dof_indices,
             k=1,
             l_var="2",
             j=3.0,
@@ -182,8 +194,8 @@ class TestConstraint:
         constraint.using(
             MockBC,
             4.0,
-            positions=dof_indices,
-            directors=dof_indices,
+            constrained_position_idx=dof_indices,
+            constrained_director_idx=dof_indices,
             k=1,
             l_var="2",
             j=3.0,
