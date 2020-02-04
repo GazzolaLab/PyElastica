@@ -143,7 +143,7 @@ hinge_joint_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
-final_time = 5
+final_time = 10
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
