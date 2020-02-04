@@ -110,10 +110,16 @@ def test_two_point_difference_correctness():
     b = np.pi
     dh = (b - a) / (blocksize - 1)
 
+    # Sampling for the analytical derivative needs to be done
+    # one a grid that lies in between the actual function for
+    # second-order accuracy!
+    interior_a = a + 0.5 * dh
+    interior_b = b - 0.5 * dh
+
     # Should integrate this well
     input_vector = np.sin(np.linspace(a, b, blocksize))
     test_vector = _two_point_difference(input_vector[1:-1]) / dh
-    correct_vector = np.cos(np.linspace(a, b, blocksize - 1))
+    correct_vector = np.cos(np.linspace(interior_a, interior_b, blocksize - 1))
 
     # Pathetic error of 1e-2 :(
-    assert_allclose(test_vector, correct_vector, atol=1e-2)
+    assert_allclose(test_vector, correct_vector, atol=1e-4)
