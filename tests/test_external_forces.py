@@ -13,9 +13,11 @@ from elastica.external_forces import (
     UniformTorques,
     UniformForces,
     MuscleTorques,
-    EndpointForcesSinusoidal,
 )
 from elastica.utils import Tolerance
+from examples.JointCases.external_force_class_for_joint_test import (
+    EndpointForcesSinusoidal,
+)
 
 
 def mock_rod_init(self):
@@ -206,8 +208,8 @@ def test_muscle_torques(n_elem):
         period,
         wave_number,
         phase_shift,
-        ramp_up_time,
         direction,
+        ramp_up_time,
         with_spline=False,
     )
     muscletorques.apply_torques(mock_rod, time)

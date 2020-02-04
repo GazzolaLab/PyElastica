@@ -17,10 +17,12 @@ from elastica.wrappers import (
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import OneEndFixedRod
 from elastica.joint import FreeJoint, HingeJoint
-from elastica.external_forces import EndpointForcesSinusoidal
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
+from examples.JointCases.external_force_class_for_joint_test import (
+    EndpointForcesSinusoidal,
+)
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
@@ -83,7 +85,9 @@ rod2 = CosseratRod.straight_rod(
 hinge_joint_sim.append(rod2)
 
 # Apply boundary conditions to rod1.
-hinge_joint_sim.constrain(rod1).using(OneEndFixedRod, positions=(0,), directors=(0,))
+hinge_joint_sim.constrain(rod1).using(
+    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+)
 
 # Connect rod 1 and rod 2
 hinge_joint_sim.connect(
@@ -139,7 +143,7 @@ hinge_joint_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
-final_time = 10
+final_time = 5
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
@@ -148,7 +152,7 @@ integrate(timestepper, hinge_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False
-PLOT_VIDEO = True
+PLOT_VIDEO = False
 
 # plotting results
 if PLOT_FIGURE:
