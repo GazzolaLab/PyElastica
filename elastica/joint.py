@@ -84,7 +84,7 @@ class HingeJoint(FreeJoint):
             - rod_two.position_collection[..., index_two]
         )
 
-        # projection of the linkdirection onto the plane normal
+        # projection of the link direction onto the plane normal
         force_direction = (
             -np.dot(link_direction, self.normal_direction) * self.normal_direction
         )
@@ -105,7 +105,7 @@ class FixedJoint(FreeJoint):
     def __init__(self, k, nu, kt):
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
-        # stiffness of the restoring constraint -- tuned emprically
+        # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
 
     # Apply force is same as free joint
@@ -125,17 +125,18 @@ class FixedJoint(FreeJoint):
         # as check1, and the current position of the second node of link two as check2. Check1 and check2
         # should overlap.
 
-        position_diff = (
-            rod_one.position_collection[..., index_one]
-            - rod_one.position_collection[..., index_one - 1]
-        )
-        length = np.sqrt(np.dot(position_diff, position_diff))
-        tangent = position_diff / length
+        # position_diff = (
+        #     rod_one.position_collection[..., index_one]
+        #     - rod_one.position_collection[..., index_one - 1]
+        # )
+        # length = np.sqrt(np.dot(position_diff, position_diff))
+        # tangent = position_diff / length
+        # tangent = rod_one.tangents[..., index_one]
 
         tgt_destination = (
             rod_one.position_collection[..., index_one]
-            + rod_two.rest_lengths[index_two] * tangent
-        )  # dl of rod 2 can be different than rod 1 so use restlengt of rod 2
+            + rod_two.rest_lengths[index_two] * rod_one.tangents[..., index_one]
+        )  # dl of rod 2 can be different than rod 1 so use rest length of rod 2
 
         curr_destination = rod_two.position_collection[
             ..., index_two + 1
