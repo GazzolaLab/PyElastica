@@ -125,14 +125,6 @@ class FixedJoint(FreeJoint):
         # as check1, and the current position of the second node of link two as check2. Check1 and check2
         # should overlap.
 
-        # position_diff = (
-        #     rod_one.position_collection[..., index_one]
-        #     - rod_one.position_collection[..., index_one - 1]
-        # )
-        # length = np.sqrt(np.dot(position_diff, position_diff))
-        # tangent = position_diff / length
-        # tangent = rod_one.tangents[..., index_one]
-
         tgt_destination = (
             rod_one.position_collection[..., index_one]
             + rod_two.rest_lengths[index_two] * rod_one.tangents[..., index_one]
