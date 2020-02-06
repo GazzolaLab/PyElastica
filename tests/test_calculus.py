@@ -106,6 +106,7 @@ def test_trapezoidal_correctness():
     assert_allclose(np.sum(test_vector), 2.0, atol=1e-3)
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
+
 def test_two_point_difference_correctness():
     """
     Tests difference of a function f:[a,b]-> R, i.e
