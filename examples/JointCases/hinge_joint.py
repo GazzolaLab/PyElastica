@@ -110,7 +110,7 @@ hinge_joint_sim.add_forcing_to(rod2).using(
 # Add call backs
 class TestJoints(CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Call back function for testing joints
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
