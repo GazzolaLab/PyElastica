@@ -56,7 +56,7 @@ shearable_rod = CosseratRod.straight_rod(
 
 timoshenko_sim.append(shearable_rod)
 timoshenko_sim.constrain(shearable_rod).using(
-    OneEndFixedRod, positions=(0,), directors=(0,)
+    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force = np.array([-15.0, 0.0, 0.0])
@@ -84,7 +84,7 @@ if ADD_UNSHEARABLE_ROD:
 
     timoshenko_sim.append(unshearable_rod)
     timoshenko_sim.constrain(unshearable_rod).using(
-        OneEndFixedRod, positions=(0,), directors=(0,)
+        OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
         EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0

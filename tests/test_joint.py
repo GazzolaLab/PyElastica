@@ -93,8 +93,8 @@ def test_freejoint():
     contactforce = elasticforce - dampingforce
 
     frjt = FreeJoint(k, nu)
-    frjt.apply_force(rod1, rod1_index, rod2, rod2_index)
-    frjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
+    frjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
+    frjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
         rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()
@@ -191,8 +191,8 @@ def test_hingejoint():
 
     hgjt = HingeJoint(k, nu, kt, normal1)
 
-    hgjt.apply_force(rod1, rod1_index, rod2, rod2_index)
-    hgjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
+    hgjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
+    hgjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
         rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()
@@ -306,8 +306,8 @@ def test_fixedjoint():
 
     fxjt = FixedJoint(k, nu, kt)
 
-    fxjt.apply_force(rod1, rod1_index, rod2, rod2_index)
-    fxjt.apply_torque(rod1, rod1_index, rod2, rod2_index)
+    fxjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
+    fxjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
 
     assert_allclose(
         rod1.external_forces[..., rod1_index], contactforce, atol=Tolerance.atol()

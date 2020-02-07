@@ -72,10 +72,7 @@ class EndpointForces(NoForces):
         self.start_force = start_force
         self.end_force = end_force
         assert ramp_up_time >= 0.0
-        if ramp_up_time == 0:
-            self.ramp_up_time = 1e-14
-        else:
-            self.ramp_up_time = ramp_up_time
+        self.ramp_up_time = ramp_up_time
 
     def apply_forces(self, system, time=0.0):
         factor = min(1.0, time / self.ramp_up_time)
@@ -132,8 +129,8 @@ class MuscleTorques(NoForces):
         period,
         wave_number,
         phase_shift,
-        ramp_up_time,
         direction,
+        ramp_up_time=0.0,
         with_spline=False,
     ):
         super(MuscleTorques, self).__init__()
@@ -144,10 +141,7 @@ class MuscleTorques(NoForces):
         self.phase_shift = phase_shift
 
         assert ramp_up_time >= 0.0
-        if ramp_up_time == 0:
-            self.ramp_up_time = 1e-14
-        else:
-            self.ramp_up_time = ramp_up_time
+        self.ramp_up_time = ramp_up_time
 
         if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"

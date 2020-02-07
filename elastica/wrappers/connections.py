@@ -22,7 +22,9 @@ class Connections:
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
 
         # For each system identified, get max dofs
-        sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
+        # FIXME: Revert back to len, it should be able to take, systems without elements!
+        # sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
+        sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
 
         # Create _Connect object, cache it and return to user
         _connector = _Connect(*sys_idx, *sys_dofs)
@@ -55,13 +57,13 @@ class Connections:
             second_connect_idx,
             connection,
         ) in self._connections:
-            connection.apply_force(
+            connection.apply_forces(
                 self._systems[first_sys_idx],
                 first_connect_idx,
                 self._systems[second_sys_idx],
                 second_connect_idx,
             )
-            connection.apply_torque(
+            connection.apply_torques(
                 self._systems[first_sys_idx],
                 first_connect_idx,
                 self._systems[second_sys_idx],
