@@ -1,6 +1,27 @@
 """ Axial stretching test-case
 
-   isort:skip_file
+    Assume we have a rod lying aligned in the x-direction, with high internal
+    damping.
+
+    We fix one end (say, the left end) of the rod to a wall. On the right
+    end we apply a force directed axially pulling the rods tip. Linear
+    theory (assuming small displacements) predict that the net displacement
+    experienced by the rod tip is Δx = FL/AE where the symbols carry their
+    usual meaning (the rod is just a linear spring). We compare our results
+    with the above result.
+
+    We can "improve" the theory by having a better estimate for the rod's
+    spring constant by assuming that it equilibriates under the new position,
+    with
+    Δx = F * (L + Δx)/ (A * E)
+    which results in Δx = (F*l)/(A*E - F). Our rod reaches equilibrium wrt to
+    this position.
+
+    Note that if the damping is not high, the rod oscillates about the eventual
+    resting position (and this agrees with the theoretical predictions without
+    any damping : we should see the rod oscillating simple-harmonically in time).
+
+    isort:skip_file
 """
 # FIXME without appending sys.path make it more generic
 import sys
@@ -26,12 +47,12 @@ class StretchingBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBa
 
 
 stretch_sim = StretchingBeamSimulator()
-final_time = 2.0
+final_time = 20.0
 
 # Options
 PLOT_FIGURE = True
-SAVE_FIGURE = True
-SAVE_RESULTS = True
+SAVE_FIGURE = False
+SAVE_RESULTS = False
 
 # setting up test params
 n_elem = 19
@@ -72,7 +93,7 @@ stretch_sim.add_forcing_to(stretchable_rod).using(
 )
 
 # Add call backs
-class ContinuumSnakeCallBack(CallBackBaseClass):
+class AxialStretchingCallBack(CallBackBaseClass):
     """
     Call back function for continuum snake
     """
@@ -94,9 +115,9 @@ class ContinuumSnakeCallBack(CallBackBaseClass):
             return
 
 
-pp_list = defaultdict(list)
+recorded_history = defaultdict(list)
 stretch_sim.collect_diagnostics(stretchable_rod).using(
-    ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list,
+    AxialStretchingCallBack, step_skip=200, callback_params=recorded_history,
 )
 
 stretch_sim.finalize()
@@ -119,7 +140,7 @@ if PLOT_FIGURE:
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    ax.plot(pp_list["time"], pp_list["position"], lw=2.0)
+    ax.plot(recorded_history["time"], recorded_history["position"], lw=2.0)
     ax.hlines(base_length + expected_tip_disp, 0.0, final_time, "k", "dashdot", lw=1.0)
     ax.hlines(
         base_length + expected_tip_disp_improved, 0.0, final_time, "k", "dashed", lw=2.0
