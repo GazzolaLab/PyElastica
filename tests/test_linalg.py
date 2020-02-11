@@ -66,7 +66,8 @@ def test_levi_civita_correctness(dim):
     assert_allclose(test_tensor, correct_tensor)
 
 
-@pytest.mark.parametrize("dim", [2, 3])
+# @pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("dim", [3])
 @pytest.mark.parametrize("blocksize", [8, 32])
 def test_batch_matvec(dim, blocksize):
     for iteration in range(3):
@@ -86,7 +87,8 @@ def test_batch_matvec(dim, blocksize):
         assert_allclose(test_vector_collection, correct_vector_collection)
 
 
-@pytest.mark.parametrize("dim", [2, 3])
+# @pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("dim", [3])
 @pytest.mark.parametrize("blocksize", [8, 32])
 def test_batch_matmul(dim, blocksize):
     for iteration in range(3):

@@ -406,29 +406,41 @@ def sum_over_elements(input):
     return output
 
 
-@numba.njit
+# @numba.njit
+# def node_to_element_velocity(node_velocity):
+#     """
+#     This function computes to velocity on the elements.
+#     Here we define a seperate function because benchmark results
+#     showed that using numba, we get almost 3 times faster calculation
+#
+#     Parameters
+#     ----------
+#     node_velocity
+#
+#     Returns
+#     -------
+#     element_velocity
+#
+#     Note
+#     ___
+#     Faster than pure python for blocksize 100
+#     python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+#     this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+#
+#     """
+#     element_velocity = 0.5 * (node_velocity[..., :-1] + node_velocity[..., 1:])
+#     return element_velocity
+
+
+@numba.njit()
 def node_to_element_velocity(node_velocity):
-    """
-    This function computes to velocity on the elements.
-    Here we define a seperate function because benchmark results
-    showed that using numba, we get almost 3 times faster calculation
+    n_elem = node_velocity.shape[1] - 1
+    element_velocity = np.empty((3, n_elem))
+    for k in range(n_elem):
+        element_velocity[0, k] = 0.5 * (node_velocity[0, k + 1] + node_velocity[0, k])
+        element_velocity[1, k] = 0.5 * (node_velocity[1, k + 1] + node_velocity[1, k])
+        element_velocity[2, k] = 0.5 * (node_velocity[2, k + 1] + node_velocity[2, k])
 
-    Parameters
-    ----------
-    node_velocity
-
-    Returns
-    -------
-    element_velocity
-
-    Note
-    ___
-    Faster than pure python for blocksize 100
-    python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
-
-    """
-    element_velocity = 0.5 * (node_velocity[..., :-1] + node_velocity[..., 1:])
     return element_velocity
 
 

@@ -2,8 +2,13 @@ __doc__ = """ Rod base classes and implementation details that need to be hidden
 import numpy as np
 import functools
 
-from elastica._linalg import _batch_matvec, _batch_cross
-from elastica._calculus import quadrature_kernel, difference_kernel
+from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
+from elastica._calculus import (
+    quadrature_kernel,
+    difference_kernel,
+    position_difference_kernel,
+    position_average,
+)
 from elastica._rotations import _inv_rotate
 from elastica.utils import MaxDimension, Tolerance
 
@@ -11,7 +16,10 @@ from elastica.rod import RodBase
 from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
+from ..interaction import node_to_element_velocity
+
 # TODO Add documentation for all functions
+import numba
 
 
 @functools.lru_cache(maxsize=1)
@@ -164,10 +172,12 @@ class _CosseratRodBase(RodBase):
 
         # Note : we can use the two-point difference kernel, but it needs unnecessary padding
         # and hence will always be slower
-        position_diff = (
-            self.position_collection[..., 1:] - self.position_collection[..., :-1]
-        )
-        self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
+        # position_diff = (
+        #     self.position_collection[..., 1:] - self.position_collection[..., :-1]
+        # )
+        position_diff = position_difference_kernel(self.position_collection)
+        # self.lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
+        self.lengths = _batch_norm(position_diff)
         self.tangents = position_diff / self.lengths
         # resize based on volume conservation
         self.radius = np.sqrt(self.volume / self.lengths / np.pi)
@@ -188,7 +198,8 @@ class _CosseratRodBase(RodBase):
         # Cmopute eq (3.4) from 2018 RSOS paper
 
         # Note : we can use trapezoidal kernel, but it has padding and will be slower
-        voronoi_lengths = 0.5 * (self.lengths[1:] + self.lengths[:-1])
+        # voronoi_lengths = 0.5 * (self.lengths[1:] + self.lengths[:-1])
+        voronoi_lengths = position_average(self.lengths)
 
         # Cmopute eq (3.45 from 2018 RSOS paper
         self.voronoi_dilatation = voronoi_lengths / self.rest_voronoi_lengths
@@ -202,21 +213,30 @@ class _CosseratRodBase(RodBase):
         """
         # TODO Use the vector formula rather than separating it out
         # self.lengths = l_i = |r^{i+1} - r^{i}|
-        r_dot_v = np.einsum(
-            "ij,ij->j", self.position_collection, self.velocity_collection
+        # r_dot_v = np.einsum(
+        #     "ij,ij->j", self.position_collection, self.velocity_collection
+        # )
+        # r_plus_one_dot_v = np.einsum(
+        #     "ij, ij->j",
+        #     self.position_collection[..., 1:],
+        #     self.velocity_collection[..., :-1],
+        # )
+        # r_dot_v_plus_one = np.einsum(
+        #     "ij, ij->j",
+        #     self.position_collection[..., :-1],
+        #     self.velocity_collection[..., 1:],
+        # )
+
+        r_dot_v = _batch_dot(self.position_collection, self.velocity_collection)
+        r_plus_one_dot_v = _batch_dot(
+            self.position_collection[..., 1:], self.velocity_collection[..., :-1]
         )
-        r_plus_one_dot_v = np.einsum(
-            "ij, ij->j",
-            self.position_collection[..., 1:],
-            self.velocity_collection[..., :-1],
+        r_dot_v_plus_one = _batch_dot(
+            self.position_collection[..., :-1], self.velocity_collection[..., 1:]
         )
-        r_dot_v_plus_one = np.einsum(
-            "ij, ij->j",
-            self.position_collection[..., :-1],
-            self.velocity_collection[..., 1:],
-        )
+
         self.dilatation_rate = (
-            (r_dot_v[..., :-1] + r_dot_v[..., 1:] - r_dot_v_plus_one - r_plus_one_dot_v)
+            (r_dot_v[:-1] + r_dot_v[1:] - r_dot_v_plus_one - r_plus_one_dot_v)
             / self.lengths
             / self.rest_lengths
         )
@@ -241,10 +261,12 @@ class _CosseratRodBase(RodBase):
         #
         # return damping_forces
 
-        elemental_velocities = 0.5 * (
-            self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
-        )
+        # elemental_velocities = 0.5 * (
+        #     self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
+        # )
+        elemental_velocities = node_to_element_velocity(self.velocity_collection)
         elemental_damping_forces = self.nu * elemental_velocities * self.lengths
+
         nodal_damping_forces = quadrature_kernel(elemental_damping_forces)
         return nodal_damping_forces
 
@@ -264,9 +286,11 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_torques(self):
         # Internal damping torques
-        damping_torques = self.nu * self.omega_collection * self.lengths
-        return damping_torques
+        # damping_torques = self.nu * self.omega_collection * self.lengths
+        # return damping_torques
+        return self.nu * self.omega_collection * self.lengths
 
+    # @profile
     def _compute_internal_torques(self):
         # Compute \tau_l and cache it using internal_couple
         # Be careful about usage though
@@ -339,6 +363,7 @@ class _CosseratRodBase(RodBase):
         self.internal_forces = self._compute_internal_forces()
         self.internal_torques = self._compute_internal_torques()
 
+    # @profile
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
     def update_accelerations(self, time):
         """ TODO Do we need to make the collection members abstract?
@@ -367,6 +392,18 @@ class _CosseratRodBase(RodBase):
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
+
+        # _update_accelerations(
+        #     self.acceleration_collection,
+        #     self.internal_forces,
+        #     self.external_forces,
+        #     self.mass,
+        #     self.alpha_collection,
+        #     self.inv_mass_second_moment_of_inertia,
+        #     self.internal_torques,
+        #     self.external_torques,
+        #     self.dilatation,
+        # )
 
     def compute_translational_energy(self):
         return (
@@ -398,6 +435,47 @@ class _CosseratRodBase(RodBase):
 
         return sum_mass_times_position / self.mass.sum()
 
+
+############################################################################################
+################################ NUMBA FUNCTIONS ###########################################
+@numba.njit()
+def _update_accelerations(
+    acceleration_collection,
+    internal_forces,
+    external_forces,
+    mass,
+    alpha_collection,
+    inv_mass_second_moment_of_inertia,
+    internal_torques,
+    external_torques,
+    dilatation,
+):
+
+    blocksize_acc = internal_forces.shape[1]
+    blocksize_alpha = internal_torques.shape[1]
+
+    for i in range(3):
+        for k in range(blocksize_acc):
+            acceleration_collection[i, k] = (
+                internal_forces[i, k] + external_forces[i, k]
+            ) / mass[k]
+
+    alpha_collection *= 0.0
+    for i in range(3):
+        for j in range(3):
+            for k in range(blocksize_alpha):
+                alpha_collection[i, k] += (
+                    inv_mass_second_moment_of_inertia[i, j, k]
+                    * (internal_torques[j, k] + external_torques[j, k])
+                ) * dilatation[k]
+
+    # Reset forces and torques
+    external_forces *= 0.0
+    external_torques *= 0.0
+
+
+################################ NUMBA FUNCTIONS ###########################################
+############################################################################################
 
 # TODO Fix this classmethod weirdness to a more scalable and maintainable solution
 # TODO Fix the SymplecticStepperMixin interface class as it does not belong here

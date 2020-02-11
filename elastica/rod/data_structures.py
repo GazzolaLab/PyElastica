@@ -3,7 +3,8 @@ __doc__ = "Data structure wrapper for rod components"
 import numpy as np
 
 from elastica._rotations import _get_rotation_matrix, _rotate
-
+import numba
+from numba import njit, jitclass, int64, float64
 
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
@@ -413,8 +414,13 @@ class _DerivativeState:
 """
 Symplectic stepper interface
 """
+# spec = [
+#     ('n_nodes', int64),               # a simple scalar field
+#     ('position_collection', float64[:,:]),
+#     ('director_collection', float64[:,:,:])# an array field
+# ]
 
-
+# @jitclass(spec)
 class _KinematicState:
     """ State storing (x,Q) for symplectic steppers.
 
@@ -436,11 +442,12 @@ class _KinematicState:
         position_collection_view : view of positions (or) x
         director_collection_view : view of directors (or) Q
         """
-        super(_KinematicState, self).__init__()
+        # super(_KinematicState, self).__init__()
         self.n_nodes = n_elems + 1
         self.position_collection = position_collection_view
         self.director_collection = director_collection_view
 
+    # @profile
     def __iadd__(self, scaled_deriv_array):
         """ overloaded += operator
 
