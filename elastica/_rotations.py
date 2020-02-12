@@ -474,6 +474,8 @@ def _inv_rotate(director_collection):
         # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
         theta = arccos(0.5 * trace - 0.5 - 1e-10)
 
-        vector_collection *= 0.5 * theta / sin(theta + 1e-14)
+        vector_collection[0, k] *= -0.5 * theta / sin(theta + 1e-14)
+        vector_collection[1, k] *= -0.5 * theta / sin(theta + 1e-14)
+        vector_collection[2, k] *= -0.5 * theta / sin(theta + 1e-14)
 
-        return -vector_collection
+    return vector_collection
