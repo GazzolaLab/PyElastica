@@ -56,12 +56,12 @@ class Constraints:
             constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
 
     def _constrain_values(self, time, *args, **kwargs):
-        for sys_id, constraint in self._constraints: constraint.constrain_values(self._systems[sys_id], time, *args,
-                                                                                 **kwargs)
+        for sys_id, constraint in self._constraints:
+            constraint.constrain_values(self._systems[sys_id], time, *args, **kwargs)
 
     def _constrain_rates(self, time, *args, **kwargs):
-        for sys_id, constraint in self._constraints: constraint.constrain_rates(self._systems[sys_id], time, *args,
-                                                                                **kwargs)
+        for sys_id, constraint in self._constraints:
+            constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
 
 
 class _Constraint:

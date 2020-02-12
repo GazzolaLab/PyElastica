@@ -18,11 +18,7 @@ is referred to the same section on `explicit_steppers.py`.
 
 class _SystemInstanceStepperMixin:
     def do_step(self, System, time: np.float64, dt: np.float64):
-        for (
-                kin_prefactor,
-                kin_step,
-                dyn_step,
-        ) in self._steps_and_prefactors[:-1]:
+        for (kin_prefactor, kin_step, dyn_step,) in self._steps_and_prefactors[:-1]:
             kin_step(self, System, time, dt)
             time += kin_prefactor(self, dt)
             dyn_step(self, System, time, dt)
@@ -37,13 +33,10 @@ class _SystemInstanceStepperMixin:
 
 class _SystemCollectionStepperMixin:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
-        for (
-                kin_prefactor,
-                kin_step,
-                dyn_step,
-        ) in self._steps_and_prefactors[:-1]:
+        for (kin_prefactor, kin_step, dyn_step,) in self._steps_and_prefactors[:-1]:
 
-            for system in SystemCollection : kin_step(self, system, time, dt)
+            for system in SystemCollection:
+                kin_step(self, system, time, dt)
 
             time += kin_prefactor(self, dt)
 
@@ -53,12 +46,14 @@ class _SystemCollectionStepperMixin:
             SystemCollection.constrain_values(time)
 
             # We need internal forces and torques because they are used by interaction module.
-            for system in SystemCollection : system.update_internal_forces_and_torques(time)
+            for system in SystemCollection:
+                system.update_internal_forces_and_torques(time)
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)
 
-            for system in SystemCollection: dyn_step(self, system, time, dt)
+            for system in SystemCollection:
+                dyn_step(self, system, time, dt)
 
             # TODO: remove below line, it should be some other function synchronizeBC
             # Constrain only rates
@@ -130,9 +125,9 @@ class SymplecticStepper(_TimeStepper):
         mirror(self._steps)
         mirror(self._prefactors)
 
-        assert len(self._steps) == 2 * len(
-            self._prefactors
-        ) - 1, "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
+        assert (
+            len(self._steps) == 2 * len(self._prefactors) - 1
+        ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
 
         self._kinematic_steps = self._steps[::2]
         self._dynamic_steps = self._steps[1::2]
@@ -140,7 +135,7 @@ class SymplecticStepper(_TimeStepper):
         # Avoid this check for MockClasses
         if len(self._kinematic_steps) > 0:
             assert (
-                    len(self._kinematic_steps) == len(self._dynamic_steps) + 1
+                len(self._kinematic_steps) == len(self._dynamic_steps) + 1
             ), "Size mismatch in the number of kinematic and dynamic steps provided for a Symplectic Stepper!"
 
         from itertools import zip_longest
@@ -153,7 +148,7 @@ class SymplecticStepper(_TimeStepper):
                 self._prefactors,
                 self._kinematic_steps,
                 self._dynamic_steps,
-                fillvalue=NoOp
+                fillvalue=NoOp,
             )
         )
 

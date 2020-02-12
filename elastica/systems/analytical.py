@@ -277,11 +277,13 @@ class CollectiveSystem:
     def synchronize(self, time):
         pass
 
-    # TODO: remove synchronizeBC below
-    def synchronizeBC(self, time):
+    def constrain_values(self, time):
         pass
 
-    def callBack(self, time, current_step: int):
+    def constrain_rates(self, time):
+        pass
+
+    def apply_callbacks(self, time, current_step: int):
         pass
 
 

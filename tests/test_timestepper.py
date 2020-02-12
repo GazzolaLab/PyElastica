@@ -38,8 +38,10 @@ class TestExtendStepperInterface:
     class MockSymplecticStepper(SymplecticStepper):
         def _first_prefactor(self):
             pass
+
         def _first_kinematic_step(self):
             pass
+
         def _first_dynamic_step(self):
             pass
 
