@@ -1,4 +1,5 @@
 __doc__ = """Symplectic timesteppers and concepts"""
+
 import numpy as np
 
 from elastica.timestepper._stepper_interface import (
@@ -18,70 +19,62 @@ is referred to the same section on `explicit_steppers.py`.
 class _SystemInstanceStepperMixin:
     def do_step(self, System, time: np.float64, dt: np.float64):
         for (
-            kin_prefactor,
-            kin_step,
-            dyn_prefactor,
-            dyn_step,
+                kin_prefactor,
+                kin_step,
+                dyn_step,
         ) in self._steps_and_prefactors[:-1]:
-            prefac = kin_prefactor(self, dt)
-            time = kin_step(self, System, time, prefac)
-            prefac = dyn_prefactor(self, dt)
-            time = dyn_step(self, System, time, prefac)
+            kin_step(self, System, time, dt)
+            time += kin_prefactor(self, dt)
+            dyn_step(self, System, time, dt)
 
         # Peel the last kinematic step and prefactor alone
         last_kin_prefactor = self._steps_and_prefactors[-1][0]
         last_kin_step = self._steps_and_prefactors[-1][1]
 
-        prefac = last_kin_prefactor(self, dt)
-        time = last_kin_step(self, System, time, prefac)
-        return time
+        last_kin_step(self, System, time, dt)
+        return time + last_kin_prefactor(self, dt)
 
 
 class _SystemCollectionStepperMixin:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
         for (
-            kin_prefactor,
-            kin_step,
-            dyn_prefactor,
-            dyn_step,
+                kin_prefactor,
+                kin_step,
+                dyn_step,
         ) in self._steps_and_prefactors[:-1]:
-            prefac = kin_prefactor(self, dt)
-            for system in SystemCollection[:-1]:
-                _ = kin_step(self, system, time, prefac)
-            time = kin_step(self, SystemCollection[-1], time, prefac)
 
-            # TODO: remove below lines and try to find a better call option to compute internal forces and torques
+            for system in SystemCollection : kin_step(self, system, time, dt)
+
+            time += kin_prefactor(self, dt)
+
+            # TODO: remove below line, it should be some other function synchronizeBC
+            # SystemCollection.synchronizeBC(time)
+            # Constrain only values
+            SystemCollection.constrain_values(time)
+
             # We need internal forces and torques because they are used by interaction module.
-            update_internal_forces_torques = self._update_internal_forces_torques[
-                0
-            ]  # here 0 because you have one item in list
-            for system in SystemCollection[:-1]:
-                _ = update_internal_forces_torques(self, system, time)
-            time = update_internal_forces_torques(self, SystemCollection[-1], time)
+            for system in SystemCollection : system.update_internal_forces_and_torques(time)
 
-            # BoCos, External forces, controls etc.
+            # Add external forces, controls etc.
             SystemCollection.synchronize(time)
-            # TODO: remove below line, it should be some other function synchronizeBC
-            SystemCollection.synchronizeBC(time)
-            prefac = dyn_prefactor(self, dt)
-            for system in SystemCollection[:-1]:
-                _ = dyn_step(self, system, time, prefac)
-            time = dyn_step(self, SystemCollection[-1], time, prefac)
+
+            for system in SystemCollection: dyn_step(self, system, time, dt)
 
             # TODO: remove below line, it should be some other function synchronizeBC
-            SystemCollection.synchronizeBC(time)
+            # Constrain only rates
+            SystemCollection.constrain_rates(time)
 
         # Peel the last kinematic step and prefactor alone
         last_kin_prefactor = self._steps_and_prefactors[-1][0]
         last_kin_step = self._steps_and_prefactors[-1][1]
 
-        prefac = last_kin_prefactor(self, dt)
-        for system in SystemCollection[:-1]:
-            _ = last_kin_step(self, system, time, prefac)
-        time = last_kin_step(self, SystemCollection[-1], time, prefac)
+        for system in SystemCollection:
+            last_kin_step(self, system, time, dt)
+        time += last_kin_prefactor(self, dt)
+        SystemCollection.constrain_values(time)
 
         # Call back function, will call the user defined call back functions and store data
-        SystemCollection.callBack(time, int(time / dt))
+        SystemCollection.apply_callbacks(time, int(time / dt))
 
         return time
 
@@ -107,13 +100,13 @@ class SymplecticStepper(_TimeStepper):
             if k.endswith("prefactor")
         ]
 
-        # We are getting function named as _update_internal_forces_torques from dictionary,
-        # it turns a list.
-        self._update_internal_forces_torques = [
-            v
-            for (k, v) in take_methods_from.__class__.__dict__.items()
-            if k.endswith("forces_torques")
-        ]
+        # # We are getting function named as _update_internal_forces_torques from dictionary,
+        # # it turns a list.
+        # self._update_internal_forces_torques = [
+        #     v
+        #     for (k, v) in take_methods_from.__class__.__dict__.items()
+        #     if k.endswith("forces_torques")
+        # ]
 
         def mirror(in_list):
             """ Mirrors an input list ignoring the last element
@@ -129,37 +122,38 @@ class SymplecticStepper(_TimeStepper):
 
             """
             #  syntax is very ugly
-            in_list.extend(in_list[-2::-1])
+            if len(in_list) > 1:
+                in_list.extend(in_list[-2::-1])
+            elif in_list:
+                in_list.append(in_list[0])
 
         mirror(self._steps)
         mirror(self._prefactors)
 
-        assert len(self._steps) == len(
+        assert len(self._steps) == 2 * len(
             self._prefactors
-        ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
+        ) - 1, "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
 
         self._kinematic_steps = self._steps[::2]
         self._dynamic_steps = self._steps[1::2]
-        self._kinematic_prefactors = self._prefactors[::2]
-        self._dynamic_prefactors = self._prefactors[1::2]
 
         # Avoid this check for MockClasses
         if len(self._kinematic_steps) > 0:
             assert (
-                len(self._kinematic_steps) == len(self._dynamic_steps) + 1
+                    len(self._kinematic_steps) == len(self._dynamic_steps) + 1
             ), "Size mismatch in the number of kinematic and dynamic steps provided for a Symplectic Stepper!"
-            assert (
-                len(self._kinematic_prefactors) == len(self._dynamic_prefactors) + 1
-            ), "Size mismatch in the number of kinematic and dynamic prefactors provided for a Symplectic Stepper!"
 
         from itertools import zip_longest
 
+        def NoOp(*args):
+            pass
+
         self._steps_and_prefactors = tuple(
             zip_longest(
-                self._kinematic_prefactors,
+                self._prefactors,
                 self._kinematic_steps,
-                self._dynamic_prefactors,
                 self._dynamic_steps,
+                fillvalue=NoOp
             )
         )
 
@@ -175,26 +169,21 @@ class PositionVerlet(SymplecticStepper):
     def __init__(self):
         super(PositionVerlet, self).__init__()
 
-    def _first_kinematic_prefactor(self, dt):
+    def _first_prefactor(self, dt):
         return 0.5 * dt
 
-    def _first_kinematic_step(self, System, time: np.float64, prefac: np.float64):
+    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._first_prefactor(dt)
         System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-        return time + prefac
 
-    def _first_dynamic_prefactor(self, dt):
-        return dt
-
-    def _first_dynamic_step(self, System, time: np.float64, prefac: np.float64):
-        System.dynamic_states += prefac * System.dynamic_rates(
-            time, prefac
+    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        System.dynamic_states += dt * System.dynamic_rates(
+            time, dt
         )  # TODO : Why should we pass dt into System again?
-        return time
 
-    # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
-    def _update_internal_forces_torques(self, System, time: np.float64):
-        System.update_internal_forces_and_torques(time)
-        return time
+    # # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
+    # def _update_internal_forces_torques(self, System, time: np.float64):
+    #     System.update_internal_forces_and_torques(time)
 
     # Note : we don't need the second half of the calls as it simply forwards
     # to its equivalent first half. This is taken care in the base class
@@ -225,43 +214,36 @@ class PEFRL(SymplecticStepper):
     def _first_kinematic_prefactor(self, dt):
         return self.ξ * dt
 
-    def _first_kinematic_step(self, System, time: np.float64, prefac: np.float64):
+    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._first_kinematic_prefactor(dt)
         System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-        return time + prefac
 
-    def _first_dynamic_prefactor(self, dt):
-        return self.lambda_dash_coeff * dt
-
-    def _first_dynamic_step(self, System, time: np.float64, prefac: np.float64):
+    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self.lambda_dash_coeff * dt
         System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
-        return time
 
     def _second_kinematic_prefactor(self, dt):
         return self.χ * dt
 
-    def _second_kinematic_step(self, System, time: np.float64, prefac: np.float64):
+    def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._second_kinematic_prefactor(dt)
         System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-        return time + prefac
 
-    def _second_dynamic_prefactor(self, dt):
-        return self.λ * dt
-
-    def _second_dynamic_step(self, System, time: np.float64, prefac: np.float64):
+    def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self.λ * dt
         System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
-        return time
 
     def _third_kinematic_prefactor(self, dt):
         return self.xi_chi_dash_coeff * dt
 
-    def _third_kinematic_step(self, System, time: np.float64, prefac: np.float64):
+    def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._third_kinematic_prefactor(dt)
         # Need to fill in
         System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-        return time + prefac
 
-    # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
-    def _update_internal_forces_torques(self, System, time: np.float64):
-        System.update_internal_forces_and_torques(time)
-        return time
+    # # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
+    # def _update_internal_forces_torques(self, System, time: np.float64):
+    #     System.update_internal_forces_and_torques(time)
 
     # Note : we don't need the second half of the calls as it simply forwards
     # to its equivalent first half. This is taken care in the base class

@@ -3,7 +3,7 @@ import numpy as np
 
 from .explicit_steppers import ExplicitStepper
 from .symplectic_steppers import SymplecticStepper
-from .hybrid_rod_steppers import SymplecticCosseratRodStepper
+#from .hybrid_rod_steppers import SymplecticCosseratRodStepper
 from ._stepper_interface import _StatefulStepper
 
 
@@ -29,8 +29,8 @@ def extend_stepper_interface(Stepper, System):
             _SystemInstanceStepperMixin,
             _SystemCollectionStepperMixin,
         )
-    elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
-        return  # hacky fix for now. remove HybridSteppers in a future version.
+    #elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
+    #    return  # hacky fix for now. remove HybridSteppers in a future version.
     else:
         raise NotImplementedError(
             "Only explicit and symplectic steppers are supported, given stepper is {}".format(
