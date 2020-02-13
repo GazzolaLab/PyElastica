@@ -758,7 +758,7 @@ def compute_internal_shear_stretch_stresses_from_model(
     internal_stress[:] = _batch_matvec(shear_matrix, sigma - rest_sigma)
 
 
-@numba.njit()
+@numba.njit(fastmath=True)
 def compute_internal_forces(
     position_collection,
     volume,
@@ -893,7 +893,7 @@ def compute_damping_torques(nu, omega_collection, lengths, damping_forces):
             damping_forces[i, k] = nu * omega_collection[i, k] * lengths[k]
 
 
-@numba.njit()
+@numba.njit(fastmath=True)
 def compute_internal_torques(
     position_collection,
     velocity_collection,
