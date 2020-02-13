@@ -3,8 +3,10 @@ __doc__ = "Data structure wrapper for rod components"
 import numpy as np
 
 from elastica._rotations import _get_rotation_matrix, _rotate
+from elastica._linalg import _batch_matmul
 import numba
 from numba import njit, jitclass, int64, float64
+
 
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
@@ -469,18 +471,58 @@ class _KinematicState:
         This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
         method
         """
-        # x += v*dt
-        self.position_collection += scaled_deriv_array[..., : self.n_nodes]
-        # TODO Avoid code repeat
-        # Devs : see `_State.__iadd__` for reasons why we do matmul here
-        # print(_get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]))
-        np.einsum(
-            "ijk,jlk->ilk",
-            _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
-            self.director_collection.copy(),
-            out=self.director_collection,
+        # # x += v*dt
+        # self.position_collection += scaled_deriv_array[..., : self.n_nodes]
+        # # TODO Avoid code repeat
+        # # Devs : see `_State.__iadd__` for reasons why we do matmul here
+        # # print(_get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]))
+        # np.einsum(
+        #     "ijk,jlk->ilk",
+        #     _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
+        #     self.director_collection.copy(),
+        #     out=self.director_collection,
+        # )
+        overload_operator_kinematic_numba(
+            self.n_nodes,
+            self.position_collection,
+            self.director_collection,
+            scaled_deriv_array,
         )
         return self
+
+
+@njit()
+def overload_operator_kinematic_numba(
+    n_nodes, position_collection, director_collection, scaled_deriv_array
+):
+    """ overloaded += operator
+
+    The add for directors is customized to reflect Rodrigues' rotation
+    formula.
+
+    Parameters
+    ----------
+    scaled_deriv_array : np.ndarray containing dt * (v, ω),
+    as retured from _DynamicState's `kinematic_rates` method
+
+    Returns
+    -------
+    self : _KinematicState instance with inplace modified data
+
+    Caveats
+    -------
+    Takes a np.ndarray and not a _KinematicState object (as one expects).
+    This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
+    method
+    """
+    # x += v*dt
+    for i in range(3):
+        for k in range(n_nodes):
+            position_collection[i, k] += scaled_deriv_array[i, k]
+    rotation_matrix = _get_rotation_matrix(1.0, scaled_deriv_array[..., n_nodes:])
+    director_collection[:] = _batch_matmul(rotation_matrix, director_collection)
+
+    return
 
 
 class _DynamicState:
@@ -526,7 +568,10 @@ class _DynamicState:
         """
         # Always goes in LHS : that means the update is on the rates alone
         # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
-        self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
+        # self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
+        overload_operator_dynamic_numba(
+            self.n_kinematic_rates, self.rate_collection, scaled_second_deriv_array
+        )
         return self
 
     def kinematic_rates(self, time, *args, **kwargs):
@@ -560,3 +605,34 @@ class _DynamicState:
         with another _DynamicState. This is done for efficiency purposes.
         """
         return self.rate_collection[..., self.n_kinematic_rates :]
+
+
+@njit()
+def overload_operator_dynamic_numba(
+    n_kinematic_rates, rate_collection, scaled_second_deriv_array
+):
+    """ overloaded += operator, updating dynamic_rates
+
+    Parameters
+    ----------
+    scaled_second_deriv_array : np.ndarray containing dt * (dvdt, dωdt),
+    as retured from _DynamicState's `dynamic_rates` method
+
+    Returns
+    -------
+    self : _DynamicState instance with inplace modified data
+
+    Caveats
+    -------
+    Takes a np.ndarray and not a _DynamicState object (as one expects).
+    This is done for efficiency reasons, see `dynamic_rates`.
+    """
+    # Always goes in LHS : that means the update is on the rates alone
+    # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
+    # rate_collection[..., : n_kinematic_rates] += scaled_second_deriv_array
+
+    for i in range(3):
+        for k in range(n_kinematic_rates):
+            rate_collection[i, k] += scaled_second_deriv_array[i, k]
+
+    return
