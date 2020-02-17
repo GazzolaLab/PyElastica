@@ -886,11 +886,11 @@ def compute_internal_bending_twist_stresses_from_model(
 
 
 @numba.njit()
-def compute_damping_torques(nu, omega_collection, lengths, damping_forces):
-    blocksize = damping_forces.shape[1]
+def compute_damping_torques(nu, omega_collection, lengths, damping_torques):
+    blocksize = damping_torques.shape[1]
     for i in range(3):
         for k in range(blocksize):
-            damping_forces[i, k] = nu * omega_collection[i, k] * lengths[k]
+            damping_torques[i, k] = nu * omega_collection[i, k] * lengths[k]
 
 
 @numba.njit(fastmath=True)
