@@ -16,29 +16,39 @@ is referred to the same section on `explicit_steppers.py`.
 """
 
 
-class _SystemInstanceStepperMixin:
-    def do_step(self, System, time: np.float64, dt: np.float64):
-        for (kin_prefactor, kin_step, dyn_step,) in self._steps_and_prefactors[:-1]:
-            kin_step(self, System, time, dt)
-            time += kin_prefactor(self, dt)
-            dyn_step(self, System, time, dt)
+class _SystemInstanceStepper:
+    @staticmethod
+    def do_step(
+        TimeStepper, _steps_and_prefactors, System, time: np.float64, dt: np.float64
+    ):
+        for (kin_prefactor, kin_step, dyn_step,) in _steps_and_prefactors[:-1]:
+            kin_step(TimeStepper, System, time, dt)
+            time += kin_prefactor(TimeStepper, dt)
+            dyn_step(TimeStepper, System, time, dt)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor = self._steps_and_prefactors[-1][0]
-        last_kin_step = self._steps_and_prefactors[-1][1]
+        last_kin_prefactor = _steps_and_prefactors[-1][0]
+        last_kin_step = _steps_and_prefactors[-1][1]
 
-        last_kin_step(self, System, time, dt)
-        return time + last_kin_prefactor(self, dt)
+        last_kin_step(TimeStepper, System, time, dt)
+        return time + last_kin_prefactor(TimeStepper, dt)
 
 
-class _SystemCollectionStepperMixin:
-    def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
-        for (kin_prefactor, kin_step, dyn_step,) in self._steps_and_prefactors[:-1]:
+class _SystemCollectionStepper:
+    @staticmethod
+    def do_step(
+        TimeStepper,
+        _steps_and_prefactors,
+        SystemCollection,
+        time: np.float64,
+        dt: np.float64,
+    ):
+        for (kin_prefactor, kin_step, dyn_step,) in _steps_and_prefactors[:-1]:
 
             for system in SystemCollection:
-                kin_step(self, system, time, dt)
+                kin_step(TimeStepper, system, time, dt)
 
-            time += kin_prefactor(self, dt)
+            time += kin_prefactor(TimeStepper, dt)
 
             # TODO: remove below line, it should be some other function synchronizeBC
             # SystemCollection.synchronizeBC(time)
@@ -53,19 +63,19 @@ class _SystemCollectionStepperMixin:
             SystemCollection.synchronize(time)
 
             for system in SystemCollection:
-                dyn_step(self, system, time, dt)
+                dyn_step(TimeStepper, system, time, dt)
 
             # TODO: remove below line, it should be some other function synchronizeBC
             # Constrain only rates
             SystemCollection.constrain_rates(time)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor = self._steps_and_prefactors[-1][0]
-        last_kin_step = self._steps_and_prefactors[-1][1]
+        last_kin_prefactor = _steps_and_prefactors[-1][0]
+        last_kin_step = _steps_and_prefactors[-1][1]
 
         for system in SystemCollection:
-            last_kin_step(self, system, time, dt)
-        time += last_kin_prefactor(self, dt)
+            last_kin_step(TimeStepper, system, time, dt)
+        time += last_kin_prefactor(TimeStepper, dt)
         SystemCollection.constrain_values(time)
 
         # Call back function, will call the user defined call back functions and store data
@@ -74,10 +84,9 @@ class _SystemCollectionStepperMixin:
         return time
 
 
-class SymplecticStepper(_TimeStepper):
-    def __init__(self, cls=None):
-        super(SymplecticStepper, self).__init__()
-        take_methods_from = self if cls is None else cls()
+class SymplecticStepperMethods:
+    def __init__(self, timestepper_instance):
+        take_methods_from = timestepper_instance
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry). What we do is collect
         # the first n + 1 entries down in _steps and _prefac below, and then
@@ -152,114 +161,200 @@ class SymplecticStepper(_TimeStepper):
             )
         )
 
+    def step_methods(self):
+        return self._steps_and_prefactors
+
     @property
     def n_stages(self):
         return len(self._steps_and_prefactors)
 
 
-class PositionVerlet(SymplecticStepper):
-    """
-    """
+try:
+    from numba import jitclass
 
-    def __init__(self):
-        super(PositionVerlet, self).__init__()
-
-    def _first_prefactor(self, dt):
-        return 0.5 * dt
-
-    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self._first_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-
-    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
-        System.dynamic_states += dt * System.dynamic_rates(
-            time, dt
-        )  # TODO : Why should we pass dt into System again?
-
-    # # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
-    # def _update_internal_forces_torques(self, System, time: np.float64):
-    #     System.update_internal_forces_and_torques(time)
-
-    # Note : we don't need the second half of the calls as it simply forwards
-    # to its equivalent first half. This is taken care in the base class
-
-    # def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
-    #     return self._first_kinematic_step(System, time, dt)
+    @jitclass([])
+    class SymplecticStepperTag:
+        def __init__(self):
+            pass
 
 
-class PEFRL(SymplecticStepper):
-    """
-    Position Extended Forest-Ruth Like Algorithm of
-    I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
-    http://arxiv.org/abs/cond-mat/0110585
-    """
+except ImportError:
 
-    # xi and chi are confusing, but be careful!
-    ξ = np.float64(0.1786178958448091e0)  # ξ
-    λ = -np.float64(0.2123418310626054e0)  # λ
-    χ = -np.float64(0.6626458266981849e-1)  # χ
-
-    # Pre-calculate other coefficients
-    lambda_dash_coeff = 0.5 * (1.0 - 2.0 * λ)
-    xi_chi_dash_coeff = 1.0 - 2.0 * (ξ + χ)
-
-    def __init__(self):
-        super(PEFRL, self).__init__()
-
-    def _first_kinematic_prefactor(self, dt):
-        return self.ξ * dt
-
-    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self._first_kinematic_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-
-    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self.lambda_dash_coeff * dt
-        System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
-
-    def _second_kinematic_prefactor(self, dt):
-        return self.χ * dt
-
-    def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self._second_kinematic_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-
-    def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self.λ * dt
-        System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
-
-    def _third_kinematic_prefactor(self, dt):
-        return self.xi_chi_dash_coeff * dt
-
-    def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
-        prefac = self._third_kinematic_prefactor(dt)
-        # Need to fill in
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-
-    # # TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!
-    # def _update_internal_forces_torques(self, System, time: np.float64):
-    #     System.update_internal_forces_and_torques(time)
-
-    # Note : we don't need the second half of the calls as it simply forwards
-    # to its equivalent first half. This is taken care in the base class
-
-    # def _third_dynamic_step(self, System, time: np.float64, dt: np.float64):
-    #     return self._second_dynamic_step(System, time, dt)
-    #
-    # def _fourth_kinematic_step(self, System, time: np.float64, dt: np.float64):
-    #     return self._second_kinematic_step(System, time, dt)
-    #
-    # def _fourth_dynamic_step(self, System, time: np.float64, dt: np.float64):
-    #     return self._first_dynamic_step(System, time, dt)
-    #
-    # def _fifth_kinematic_step(self, System, time: np.float64, dt: np.float64):
-    #     return self._first_kinematic_step(System, time, dt)
-    #     # return time + dt # To avoid numerical precision errors
+    class SymplecticStepperTag:
+        def __init__(self):
+            pass
 
 
+try:
+    from numba import jitclass
+
+    pv_spec = [("Tag", SymplecticStepperTag.class_type.instance_type)]
+
+    @jitclass(pv_spec)
+    class PositionVerlet:
+        """
+        """
+
+        def __init__(self):
+            self.Tag = SymplecticStepperTag()
+
+        def _first_prefactor(self, dt):
+            return 0.5 * dt
+
+        def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._first_prefactor(dt)
+            System.kinematic_states.iadd(prefac * System.kinematic_rates(time))
+
+        def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            System.dynamic_states.iadd(dt * System.dynamic_rates(time))
+
+
+except ImportError:
+
+    class PositionVerlet:
+        """
+        """
+
+        Tag = SymplecticStepperTag()
+
+        def __init__(self):
+            pass
+
+        def _first_prefactor(self, dt):
+            return 0.5 * dt
+
+        def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._first_prefactor(dt)
+            System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+        def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            System.dynamic_states += dt * System.dynamic_rates(
+                time, dt
+            )  # TODO : Why should we pass dt into System again?
+
+
+try:
+    from numba import jitclass, float64
+
+    pefrl_spec = [
+        ("Tag", SymplecticStepperTag.class_type.instance_type),
+        ("ξ", float64),
+        ("λ", float64),
+        ("χ", float64),
+        ("lambda_dash_coeff", float64),
+        ("xi_chi_dash_coeff", float64),
+    ]
+
+    @jitclass(pefrl_spec)
+    class PEFRL:
+        """
+        Position Extended Forest-Ruth Like Algorithm of
+        I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
+        http://arxiv.org/abs/cond-mat/0110585
+        """
+
+        def __init__(self):
+            self.Tag = SymplecticStepperTag()
+
+            # xi and chi are confusing, but be careful!
+            self.ξ = np.float64(0.1786178958448091e0)  # ξ
+            self.λ = -np.float64(0.2123418310626054e0)  # λ
+            self.χ = -np.float64(0.6626458266981849e-1)  # χ
+
+            # Pre-calculate other coefficients
+            self.lambda_dash_coeff = 0.5 * (1.0 - 2.0 * self.λ)
+            self.xi_chi_dash_coeff = 1.0 - 2.0 * (self.ξ + self.χ)
+
+        def _first_kinematic_prefactor(self, dt):
+            return self.ξ * dt
+
+        def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._first_kinematic_prefactor(dt)
+            System.kinematic_states.iadd(prefac * System.kinematic_rates(time))
+
+        def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self.lambda_dash_coeff * dt
+            System.dynamic_states.iadd(prefac * System.dynamic_rates(time))
+
+        def _second_kinematic_prefactor(self, dt):
+            return self.χ * dt
+
+        def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._second_kinematic_prefactor(dt)
+            System.kinematic_states.iadd(prefac * System.kinematic_rates(time))
+
+        def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self.λ * dt
+            System.dynamic_states.iadd(prefac * System.dynamic_rates(time))
+
+        def _third_kinematic_prefactor(self, dt):
+            return self.xi_chi_dash_coeff * dt
+
+        def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._third_kinematic_prefactor(dt)
+            # Need to fill in
+            System.kinematic_states.iadd(prefac * System.kinematic_rates(time))
+
+
+except ImportError:
+
+    class PEFRL:
+        """
+        Position Extended Forest-Ruth Like Algorithm of
+        I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
+        http://arxiv.org/abs/cond-mat/0110585
+        """
+
+        # xi and chi are confusing, but be careful!
+        ξ = np.float64(0.1786178958448091e0)  # ξ
+        λ = -np.float64(0.2123418310626054e0)  # λ
+        χ = -np.float64(0.6626458266981849e-1)  # χ
+
+        # Pre-calculate other coefficients
+        lambda_dash_coeff = 0.5 * (1.0 - 2.0 * λ)
+        xi_chi_dash_coeff = 1.0 - 2.0 * (ξ + χ)
+
+        Tag = SymplecticStepperTag()
+
+        def __init__(self):
+            pass
+
+        def _first_kinematic_prefactor(self, dt):
+            return self.ξ * dt
+
+        def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._first_kinematic_prefactor(dt)
+            System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+        def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self.lambda_dash_coeff * dt
+            System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+
+        def _second_kinematic_prefactor(self, dt):
+            return self.χ * dt
+
+        def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._second_kinematic_prefactor(dt)
+            System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+        def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self.λ * dt
+            System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+
+        def _third_kinematic_prefactor(self, dt):
+            return self.xi_chi_dash_coeff * dt
+
+        def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
+            prefac = self._third_kinematic_prefactor(dt)
+            # Need to fill in
+            System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+
+"""
 class SymplecticLinearExponentialIntegrator(
     _LinearExponentialIntegratorMixin, SymplecticStepper
 ):
     def __init__(self):
         _LinearExponentialIntegratorMixin.__init__(self)
         SymplecticStepper.__init__(self, _LinearExponentialIntegratorMixin)
+"""

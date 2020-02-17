@@ -1,4 +1,5 @@
 __doc__ = "Analytically integrable systems, used primarily for testing time-steppers"
+
 import numpy as np
 
 from elastica._rotations import _get_rotation_matrix
@@ -71,7 +72,6 @@ class ScalarExponentialDecaySystem(BaseStatefulSystem):
 
 class BaseUndampedSimpleHarmonicOscillatorSystem:
     def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
-        super(BaseUndampedSimpleHarmonicOscillatorSystem, self).__init__()
         self.omega = omega
         self.initial_value = init_val.copy()
         self._state = init_val.copy()
@@ -89,7 +89,7 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         )
         return np.array([analytical_position, analytical_velocity])
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, time):
         return self.A_matrix @ self._state
 
 
@@ -102,34 +102,114 @@ class UndampedSimpleHarmonicOscillatorSystem(
         )
 
 
-class SymplecticUndampedSimpleHarmonicOscillatorSystem(
-    BaseUndampedSimpleHarmonicOscillatorSystem, BaseSymplecticSystem
-):
-    def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
-        BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
-            self, omega=omega, init_val=init_val
-        )
-        self._kin_state = self._state[0:1]  # Create a view instead
-        self._dyn_state = self._state[1:2]  # Create a view instead
+try:
+    from numba import jitclass, float64
 
-    def dynamic_rates(self, *args, **kwargs):
-        return super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
-            *args, **kwargs
-        )[-1]
+    ks_spec = [("kin_state_view", float64[:])]
 
-    def compute_energy(self, time):
-        # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
-        analytical_state = self.analytical_solution(time)
+    @jitclass(ks_spec)
+    class KinematicStateForAnalyticalSystems:
+        def __init__(self, kin_state_view):
+            self.kin_state_view = kin_state_view
 
-        def energy(st):
-            return self.omega ** 2 * st[0] ** 2 + st[1] ** 2
+        def iadd(self, scaled_other_deriv):
+            self.kin_state_view += scaled_other_deriv
+            return self
 
-        anal_energy = energy(analytical_state)
-        current_energy = energy(self._state)
-        return current_energy, anal_energy
+    ds_spec = [("dyn_state_view", float64[:])]
 
-    def update_internal_forces_and_torques(self, time):
-        pass
+    @jitclass(ds_spec)
+    class DynamicStateForAnalyticalSystems:
+        def __init__(self, dyn_state_view):
+            self.dyn_state_view = dyn_state_view
+
+        def iadd(self, scaled_other_deriv):
+            self.dyn_state_view += scaled_other_deriv
+            return self
+
+    # Spec for the base
+    busho_spec = [
+        ("omega", float64),
+        ("initial_value", float64[:]),
+        ("_state", float64[:]),
+        ("A_matrix", float64[:, :]),
+    ]
+
+    susho_spec = [
+        (
+            "kinematic_states",
+            KinematicStateForAnalyticalSystems.class_type.instance_type,
+        ),
+        ("dynamic_states", DynamicStateForAnalyticalSystems.class_type.instance_type),
+    ]
+
+    @jitclass(busho_spec + susho_spec)
+    class SymplecticUndampedSimpleHarmonicOscillatorSystem(
+        BaseUndampedSimpleHarmonicOscillatorSystem
+    ):
+        __init__BUSHO = BaseUndampedSimpleHarmonicOscillatorSystem.__init__
+
+        def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
+            self.__init__BUSHO(omega=omega, init_val=init_val)
+            self.kinematic_states = KinematicStateForAnalyticalSystems(
+                self._state[0:1]
+            )  # Create a view instead
+            self.dynamic_states = DynamicStateForAnalyticalSystems(
+                self._state[1:2]
+            )  # Create a view instead
+
+        def kinematic_rates(self, time):
+            return self._state[1:2]
+
+        def dynamic_rates(self, time):
+            return (self.A_matrix @ self._state)[1]
+            # return BaseUndampedSimpleHarmonicOscillatorSystem.__call__(time)[-1]
+
+        def compute_energy(self, time):
+            # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+            analytical_state = self.analytical_solution(time)
+
+            def energy(st):
+                return self.omega ** 2 * st[0] ** 2 + st[1] ** 2
+
+            anal_energy = energy(analytical_state)
+            current_energy = energy(self._state)
+            return current_energy, anal_energy
+
+        def update_internal_forces_and_torques(self, time):
+            pass
+
+
+except ImportError:
+
+    class SymplecticUndampedSimpleHarmonicOscillatorSystem(
+        BaseUndampedSimpleHarmonicOscillatorSystem, BaseSymplecticSystem
+    ):
+        def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
+            BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
+                self, omega=omega, init_val=init_val
+            )
+            self._kin_state = self._state[0:1]  # Create a view instead
+            self._dyn_state = self._state[1:2]  # Create a view instead
+
+        def dynamic_rates(self, *args, **kwargs):
+            return super(
+                SymplecticUndampedSimpleHarmonicOscillatorSystem, self
+            ).__call__(*args, **kwargs)[-1]
+
+        def compute_energy(self, time):
+            # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+            analytical_state = self.analytical_solution(time)
+
+            def energy(st):
+                return self.omega ** 2 * st[0] ** 2 + st[1] ** 2
+
+            anal_energy = energy(analytical_state)
+            current_energy = energy(self._state)
+            return current_energy, anal_energy
+
+        def update_internal_forces_and_torques(self, time):
+            pass
 
 
 class DampedSimpleHarmonicOscillatorSystem(
@@ -290,10 +370,14 @@ class CollectiveSystem:
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
         super(SymplecticUndampedHarmonicOscillatorCollectiveSystem, self).__init__()
-        self.systems.append(SymplecticUndampedSimpleHarmonicOscillatorSystem())
         self.systems.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
-                omega=4.0 * np.pi, init_val=np.array([1.0, 1.0])
+                omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])
+            )
+        )
+        self.systems.append(
+            SymplecticUndampedSimpleHarmonicOscillatorSystem(
+                omega=1.0 * np.pi, init_val=np.array([0.0, 0.5])
             )
         )
 
@@ -307,52 +391,146 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         self.systems.append(DampedSimpleHarmonicOscillatorSystem())
 
 
-class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
-    def __init__(self, start_position, end_position, start_director):
-        self.a = 0.5
-        self.b = 1
-        self.c = 2
-        self.n_elems = 1
-        self.init_pos = start_position.reshape(3, self.n_elems)
-        # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
-        self.final_pos = end_position.reshape(3, self.n_elems)
-        all_positions = np.hstack((self.init_pos, self.final_pos))
-        velocities = 1.0 / np.pi + 0.0 * all_positions
-        accelerations = 0.0 * all_positions
-        omegas = 0.0 * self.init_pos
-        # For omega, don't start with exactly 0.0 as we divide by magnitude
-        # at the start of the get_rotate_matrix routine
-        self.omega_value = 1.0 * np.pi
-        omegas[2, ...] = self.omega_value
-        angular_accelerations = 0.0 * omegas
-        self._vector_states = np.hstack(
-            (all_positions, velocities, omegas, accelerations, angular_accelerations)
-        )
-        self.init_dir = start_director.copy()
-        self._matrix_states = start_director.copy()
+try:
+    from numba import jitclass, float64, uint64
 
-        # Givees position, director etc.
-        super(SimpleSystemWithPositionsDirectors, self).__init__()
+    mixin_spec = [
+        ("position_collection", float64[:, :]),
+        ("velocity_collection", float64[:, :]),
+        ("acceleration_collection", float64[:, :]),
+        ("director_collection", float64[:, :, :]),
+        ("omega_collection", float64[:, :]),
+        ("alpha_collection", float64[:, :]),
+    ]
+    sspd_spec = [
+        ("a", float64),
+        ("b", float64),
+        ("c", float64),
+        ("n_elems", uint64),
+        ("init_pos", float64[:]),
+        ("final_pos", float64[:]),
+        ("omega_value", float64),
+        ("_vector_states", float64[:, :]),
+        ("_matrix_states", float64[:, :, :]),
+        ("init_dir", float64[:, :, :]),
+    ]
 
-    def update_accelerations(self, time):
-        np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
-        np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
-
-    def analytical_solution(self, type, time):
-        if type == "Positions":
-            analytical_solution = (
-                np.hstack((self.init_pos, self.final_pos))
-                + np.sin(np.pi * time) / np.pi ** 2
+    @jitclass(mixin_spec + sspd_spec)
+    class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
+        def __init__(self, start_position, end_position, start_director):
+            self.a = 0.5
+            self.b = 1
+            self.c = 2
+            self.n_elems = 1
+            self.init_pos = start_position.reshape(3, self.n_elems)
+            # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
+            self.final_pos = end_position.reshape(3, self.n_elems)
+            all_positions = np.hstack((self.init_pos, self.final_pos))
+            velocities = 1.0 / np.pi + 0.0 * all_positions
+            accelerations = 0.0 * all_positions
+            omegas = 0.0 * self.init_pos
+            # For omega, don't start with exactly 0.0 as we divide by magnitude
+            # at the start of the get_rotate_matrix routine
+            self.omega_value = 1.0 * np.pi
+            omegas[2, ...] = self.omega_value
+            angular_accelerations = 0.0 * omegas
+            self._vector_states = np.hstack(
+                (
+                    all_positions,
+                    velocities,
+                    omegas,
+                    accelerations,
+                    angular_accelerations,
+                )
             )
-        elif type == "Velocity":
-            analytical_solution = (
-                0.0 * np.hstack((self.init_pos, self.final_pos))
-                + np.cos(np.pi * time) / np.pi
-            )
-        elif type == "Directors":
-            from elastica._rotations import _rotate
+            self.init_dir = start_director.copy()
+            self._matrix_states = start_director.copy()
 
-            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
-            axis = np.array([0.0, 0.0, 1.0]).reshape(3, 1)  # There is only one director
-            analytical_solution = _rotate(self.init_dir, final_angle, axis)
-        return analytical_solution
+            # Givees position, director etc.
+            super(SimpleSystemWithPositionsDirectors, self).__init__()
+
+        def update_accelerations(self, time):
+            np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
+            np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
+
+        def analytical_solution(self, type, time):
+            if type == "Positions":
+                analytical_solution = (
+                    np.hstack((self.init_pos, self.final_pos))
+                    + np.sin(np.pi * time) / np.pi ** 2
+                )
+            elif type == "Velocity":
+                analytical_solution = (
+                    0.0 * np.hstack((self.init_pos, self.final_pos))
+                    + np.cos(np.pi * time) / np.pi
+                )
+            elif type == "Directors":
+                from elastica._rotations import _rotate
+
+                final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
+                axis = np.array([0.0, 0.0, 1.0]).reshape(
+                    3, 1
+                )  # There is only one director
+                analytical_solution = _rotate(self.init_dir, final_angle, axis)
+            return analytical_solution
+
+
+except ImportError:
+
+    class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
+        def __init__(self, start_position, end_position, start_director):
+            self.a = 0.5
+            self.b = 1
+            self.c = 2
+            self.n_elems = 1
+            self.init_pos = start_position.reshape(3, self.n_elems)
+            # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
+            self.final_pos = end_position.reshape(3, self.n_elems)
+            all_positions = np.hstack((self.init_pos, self.final_pos))
+            velocities = 1.0 / np.pi + 0.0 * all_positions
+            accelerations = 0.0 * all_positions
+            omegas = 0.0 * self.init_pos
+            # For omega, don't start with exactly 0.0 as we divide by magnitude
+            # at the start of the get_rotate_matrix routine
+            self.omega_value = 1.0 * np.pi
+            omegas[2, ...] = self.omega_value
+            angular_accelerations = 0.0 * omegas
+            self._vector_states = np.hstack(
+                (
+                    all_positions,
+                    velocities,
+                    omegas,
+                    accelerations,
+                    angular_accelerations,
+                )
+            )
+            self.init_dir = start_director.copy()
+            self._matrix_states = start_director.copy()
+
+            # Givees position, director etc.
+            super(SimpleSystemWithPositionsDirectors, self).__init__()
+
+        def update_accelerations(self, time):
+            np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
+            np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
+
+        def analytical_solution(self, type, time):
+            if type == "Positions":
+                analytical_solution = (
+                    np.hstack((self.init_pos, self.final_pos))
+                    + np.sin(np.pi * time) / np.pi ** 2
+                )
+            elif type == "Velocity":
+                analytical_solution = (
+                    0.0 * np.hstack((self.init_pos, self.final_pos))
+                    + np.cos(np.pi * time) / np.pi
+                )
+            elif type == "Directors":
+                from elastica._rotations import _rotate
+
+                final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
+                axis = np.array([0.0, 0.0, 1.0]).reshape(
+                    3, 1
+                )  # There is only one director
+                analytical_solution = _rotate(self.init_dir, final_angle, axis)
+            return analytical_solution
