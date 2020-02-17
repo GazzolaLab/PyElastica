@@ -109,6 +109,7 @@ class _RodSymplecticStepperMixin:
         # shmem(self.alpha_collection)
         return self.dynamic_states.dynamic_rates(time, *args, **kwargs)
 
+
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
     """ Returns states wrapping numpy arrays based on the time-stepping algorithm
 
@@ -481,6 +482,7 @@ try:
             )
             return self
 
+
 except ImportError:
 
     class _KinematicState:
@@ -495,7 +497,7 @@ except ImportError:
         """
 
         def __init__(
-                self, n_elems: int, position_collection_view, director_collection_view
+            self, n_elems: int, position_collection_view, director_collection_view
         ):
             """
             Parameters
@@ -538,7 +540,7 @@ except ImportError:
             # # print(_get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]))
             np.einsum(
                 "ijk,jlk->ilk",
-                _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]),
+                _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
                 self.director_collection.copy(),  # FIXME : Extra copy?
                 out=self.director_collection,
             )
@@ -605,7 +607,7 @@ try:
                     self.rate_collection[i, k] += scaled_second_deriv_array[i, k]
             return self
 
-        def kinematic_rates(self, time, *args, **kwargs):
+        def kinematic_rates(self, time):
             """ Yields kinematic rates to interact with _KinematicState
 
             Returns
@@ -622,7 +624,7 @@ try:
             # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
             return self.rate_collection[..., : self.n_kinematic_rates]
 
-        def dynamic_rates(self, time, *args, **kwargs):
+        def dynamic_rates(self, time):
             """ Yields dynamic rates to add to with _DynamicState
 
             Returns
@@ -639,6 +641,7 @@ try:
 
 
 except ImportError:
+
     class _DynamicState:
         """ State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.
 
@@ -682,7 +685,9 @@ except ImportError:
             """
             # Always goes in LHS : that means the update is on the rates alone
             # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
-            self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
+            self.rate_collection[
+                ..., : self.n_kinematic_rates
+            ] += scaled_second_deriv_array
             return self
 
         def kinematic_rates(self, time, *args, **kwargs):
@@ -715,4 +720,4 @@ except ImportError:
             as one expects the _Dynamic __add__ operator to interact
             with another _DynamicState. This is done for efficiency purposes.
             """
-            return self.rate_collection[..., self.n_kinematic_rates:]
+            return self.rate_collection[..., self.n_kinematic_rates :]

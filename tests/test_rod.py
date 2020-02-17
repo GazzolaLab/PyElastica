@@ -221,39 +221,47 @@ class TestSymplecticStepperStateBehavior(LoadStates):
 
     def test_dynamic_state_returns_correct_kinematic_rates(self, load_states):
         kin_state, dyn_state = load_states
+        # 0.0 in the function parameter is time=0.0
+        # numba complains if this is included
         assert np.all(
             np.in1d(
-                self.States["Velocity"].ravel(),
-                dyn_state.kinematic_rates(time=0.0).ravel(),
+                self.States["Velocity"].ravel(), dyn_state.kinematic_rates(0.0).ravel(),
             )
         )
         assert np.all(
             np.in1d(
-                self.States["Omega"].ravel(),
-                dyn_state.kinematic_rates(time=0.0).ravel(),
+                self.States["Omega"].ravel(), dyn_state.kinematic_rates(0.0).ravel(),
             )
         )
 
     def test_dynamic_state_returns_correct_dynamic_rates(self, load_states):
         kin_state, dyn_state = load_states
+        # 0.0 in the function parameter is time=0.0
+        # numba complains if this is included
         assert np.all(
             np.in1d(
                 self.States["Acceleration"].ravel(),
-                dyn_state.dynamic_rates(time=0.0).ravel(),
+                dyn_state.dynamic_rates(0.0).ravel(),
             )
         )
         assert np.all(
-            np.in1d(
-                self.States["Alpha"].ravel(), dyn_state.dynamic_rates(time=0.0).ravel()
-            )
+            np.in1d(self.States["Alpha"].ravel(), dyn_state.dynamic_rates(0.0).ravel())
         )
 
     def test_dynamic_state_iadd(self, load_states):
         _, dyn_state = load_states
         scalar = 2.0
 
-        def inplace_func(x, y):
-            x.__iadd__(scalar * y.dynamic_rates(time=0.0))
+        try:
+            import numba
+
+            def inplace_func(x, y):
+                x.iadd(scalar * y.dynamic_rates(0.0))
+
+        except ImportError:
+            # numba doesn't support __iadd__ because its pure python
+            def inplace_func(x, y):
+                x.__iadd__(scalar * y.dynamic_rates(time=0.0))
 
         def func(x, y):
             return x + scalar * y
@@ -270,8 +278,16 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         kin_state, dyn_state = load_states
         scalar = 2.0
 
-        def inplace_func(x, y):
-            x.__iadd__(scalar * y.kinematic_rates(time=0.0))
+        try:
+            import numba
+
+            def inplace_func(x, y):
+                x.iadd(scalar * y.kinematic_rates(0.0))
+
+        except ImportError:
+            # numba doesn't support __iadd__ because its pure python
+            def inplace_func(x, y):
+                x.__iadd__(scalar * y.kinematic_rates(time=0.0))
 
         def func(x, y):
             return x + scalar * y

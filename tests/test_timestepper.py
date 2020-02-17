@@ -366,14 +366,17 @@ class TestSteppersAgainstRodLikeSystems:
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
-        from elastica.systems.analytical import SimpleSystemWithPositionsDirectors
+        from elastica.systems.analytical import (
+            make_simple_system_with_positions_directors,
+            SimpleSystemWithPositionsDirectors,
+        )
 
         random_start_position = np.random.randn(3, 1)
         random_end_position = np.random.randn(3, 1)
         random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
         random_directors = random_directors.reshape(3, 3, 1)
 
-        rod_like_system = SimpleSystemWithPositionsDirectors(
+        rod_like_system = make_simple_system_with_positions_directors(
             random_start_position, random_end_position, random_directors
         )
         final_time = 1.0
@@ -396,8 +399,10 @@ class TestSteppersAgainstRodLikeSystems:
             atol=Tolerance.atol(),
         )
 
+        # Reshaping done in the director collection to prevent numba from
+        # complaining about returning multiple types
         assert_allclose(
-            rod_like_system.director_collection,
+            rod_like_system.director_collection.reshape(-1, 1),
             rod_like_system.analytical_solution("Directors", final_time),
             rtol=Tolerance.rtol() * 1e1,
             atol=Tolerance.atol(),

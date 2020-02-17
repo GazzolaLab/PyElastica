@@ -4,6 +4,7 @@ import numpy as np
 
 from elastica._rotations import _get_rotation_matrix
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
+from elastica.rod.data_structures import _bootstrap_from_data
 
 
 class BaseStatefulSystem:
@@ -162,7 +163,7 @@ try:
             return self._state[1:2]
 
         def dynamic_rates(self, time):
-            return (self.A_matrix @ self._state)[1]
+            return np.dot(self.A_matrix, self._state)[1]
             # return BaseUndampedSimpleHarmonicOscillatorSystem.__call__(time)[-1]
 
         def compute_energy(self, time):
@@ -393,6 +394,9 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
 
 try:
     from numba import jitclass, float64, uint64
+    from elastica.rod.data_structures import _KinematicState, _DynamicState
+    from elastica._rotations import _get_rotation_matrix
+    from elastica._linalg import _batch_matmul
 
     mixin_spec = [
         ("position_collection", float64[:, :]),
@@ -401,57 +405,154 @@ try:
         ("director_collection", float64[:, :, :]),
         ("omega_collection", float64[:, :]),
         ("alpha_collection", float64[:, :]),
+        ("kinematic_states", _KinematicState.class_type.instance_type),
+        ("dynamic_states", _DynamicState.class_type.instance_type),
     ]
     sspd_spec = [
         ("a", float64),
         ("b", float64),
         ("c", float64),
         ("n_elems", uint64),
-        ("init_pos", float64[:]),
-        ("final_pos", float64[:]),
+        ("init_pos", float64[:, :]),
+        ("final_pos", float64[:, :]),
         ("omega_value", float64),
         ("_vector_states", float64[:, :]),
         ("_matrix_states", float64[:, :, :]),
         ("init_dir", float64[:, :, :]),
     ]
 
+    def make_simple_system_with_positions_directors(
+        start_position, end_position, start_director
+    ):
+        a = 0.5
+        b = 1
+        c = 2
+        n_elems = 1
+        init_pos = start_position.reshape(3, n_elems)
+        # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
+        final_pos = end_position.reshape(3, n_elems)
+        all_positions = np.hstack((init_pos, final_pos))
+        velocities = 1.0 / np.pi + 0.0 * all_positions
+        accelerations = 0.0 * all_positions
+        omegas = 0.0 * init_pos
+        # For omega, don't start with exactly 0.0 as we divide by magnitude
+        # at the start of the get_rotate_matrix routine
+        omega_value = 1.0 * np.pi
+        omegas[2, ...] = omega_value
+        angular_accelerations = 0.0 * omegas
+        _vector_states = np.hstack(
+            (all_positions, velocities, omegas, accelerations, angular_accelerations,)
+        )
+        init_dir = start_director.copy()
+        _matrix_states = start_director.copy()
+
+        (
+            kinematic_states,
+            dynamic_states,
+            position_collection,
+            director_collection,
+            velocity_collection,
+            omega_collection,
+            acceleration_collection,
+            alpha_collection,  # angular acceleration
+        ) = _bootstrap_from_data("symplectic", n_elems, _vector_states, _matrix_states)
+
+        return SimpleSystemWithPositionsDirectors(
+            a,
+            b,
+            c,
+            n_elems,
+            init_pos,
+            final_pos,
+            omega_value,
+            _vector_states,
+            init_dir,
+            _matrix_states,
+            kinematic_states,
+            dynamic_states,
+            position_collection,
+            director_collection,
+            velocity_collection,
+            omega_collection,
+            acceleration_collection,
+            alpha_collection,
+        )
+
     @jitclass(mixin_spec + sspd_spec)
-    class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
-        def __init__(self, start_position, end_position, start_director):
-            self.a = 0.5
-            self.b = 1
-            self.c = 2
-            self.n_elems = 1
-            self.init_pos = start_position.reshape(3, self.n_elems)
+    class SimpleSystemWithPositionsDirectors:
+        def __init__(
+            self,
+            a,
+            b,
+            c,
+            n_elems,
+            init_pos,
+            final_pos,
+            omega_value,
+            _vector_states,
+            init_dir,
+            _matrix_states,
+            kinematic_states,
+            dynamic_states,
+            position_collection,
+            director_collection,
+            velocity_collection,
+            omega_collection,
+            acceleration_collection,
+            alpha_collection,
+        ):
+            self.a = a
+            self.b = b
+            self.c = c
+            self.n_elems = n_elems
+            self.init_pos = init_pos
             # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
-            self.final_pos = end_position.reshape(3, self.n_elems)
-            all_positions = np.hstack((self.init_pos, self.final_pos))
-            velocities = 1.0 / np.pi + 0.0 * all_positions
-            accelerations = 0.0 * all_positions
-            omegas = 0.0 * self.init_pos
+            self.final_pos = final_pos
             # For omega, don't start with exactly 0.0 as we divide by magnitude
             # at the start of the get_rotate_matrix routine
-            self.omega_value = 1.0 * np.pi
-            omegas[2, ...] = self.omega_value
-            angular_accelerations = 0.0 * omegas
-            self._vector_states = np.hstack(
-                (
-                    all_positions,
-                    velocities,
-                    omegas,
-                    accelerations,
-                    angular_accelerations,
-                )
-            )
-            self.init_dir = start_director.copy()
-            self._matrix_states = start_director.copy()
+            self.omega_value = omega_value
+            self._vector_states = _vector_states
+            self.init_dir = init_dir
+            self._matrix_states = _matrix_states
 
-            # Givees position, director etc.
-            super(SimpleSystemWithPositionsDirectors, self).__init__()
+            self.kinematic_states = kinematic_states
+            self.dynamic_states = dynamic_states
+            self.position_collection = position_collection
+            self.director_collection = director_collection
+            self.velocity_collection = velocity_collection
+            self.omega_collection = omega_collection
+            self.acceleration_collection = acceleration_collection
+            self.alpha_collection = alpha_collection
+
+        def kinematic_rates(self, time):
+            return self.dynamic_states.kinematic_rates(time)
+
+        def dynamic_rates(self, time):
+            self.update_accelerations(time)
+
+            """
+            The following commented block of code is a test to ensure that
+            the time-integrator always updates the view of the
+            collection variables, and not an independent variable
+            (aka no copy is made). It exists only for legacy
+            purposes and will be either refactored or removed once
+            testing is done.
+            """
+            # def shmem(x):
+            #     if np.shares_memory(
+            #             self.dynamic_states.rate_collection, x
+            #     ) : print("Shares memory")
+            #     else :
+            #         print("Explicit states does not share memory")
+            # shmem(self.velocity_collection)
+            # shmem(self.acceleration_collection)
+            # shmem(self.omega_collection)
+            # shmem(self.alpha_collection)
+            return self.dynamic_states.dynamic_rates(time)
 
         def update_accelerations(self, time):
-            np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
-            np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
+            self.acceleration_collection[...] = -np.sin(np.pi * time)
+            self.alpha_collection[2, ...] = 0.1 * np.pi
 
         def analytical_solution(self, type, time):
             if type == "Positions":
@@ -465,17 +566,29 @@ try:
                     + np.cos(np.pi * time) / np.pi
                 )
             elif type == "Directors":
-                from elastica._rotations import _rotate
-
                 final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
                 axis = np.array([0.0, 0.0, 1.0]).reshape(
                     3, 1
                 )  # There is only one director
-                analytical_solution = _rotate(self.init_dir, final_angle, axis)
+                rot_mat = _get_rotation_matrix(final_angle, axis)
+                # Reshaping done to prevent numba from complaining about how we cannot merge
+                # array2D and array3D as return types
+                analytical_solution = _batch_matmul(rot_mat, self.init_dir).reshape(
+                    -1, 1
+                )
+                # analytical_solution = _rotate(self.init_dir, final_angle, axis)
             return analytical_solution
 
 
 except ImportError:
+    from elastica._rotations import _rotate
+
+    def make_simple_system_with_positions_directors(
+        start_position, end_position, start_director
+    ):
+        return SimpleSystemWithPositionsDirectors(
+            start_position, end_position, start_director
+        )
 
     class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         def __init__(self, start_position, end_position, start_director):
@@ -526,11 +639,14 @@ except ImportError:
                     + np.cos(np.pi * time) / np.pi
                 )
             elif type == "Directors":
-                from elastica._rotations import _rotate
-
                 final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
                 axis = np.array([0.0, 0.0, 1.0]).reshape(
                     3, 1
                 )  # There is only one director
-                analytical_solution = _rotate(self.init_dir, final_angle, axis)
+                # Reshaping done to prevent numba equivalent to complain
+                # While we can prevent it here, its' done to make the front end testing scripts "look"
+                # nicer and cleaner
+                analytical_solution = _rotate(self.init_dir, final_angle, axis).reshape(
+                    -1, 1
+                )
             return analytical_solution
