@@ -8,6 +8,7 @@ jobs:
            - name: " Python 3.6 Linux "
              python: 3.6
              env: NUMBA_DISABLE_JIT=1
+             env: TEST_SUITE= " Python 3.6 Linux "
            - name: " Python 3.7 Linux "
              python: 3.7
            
@@ -33,7 +34,7 @@ before_install:
 script:
         #        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export NUMBA_DISABLE_JIT=1; python3 -m pytest --cov=elastica --cov-report=xml; else python3 -m pytest; fi
         #        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then black --version && black --check elastica tests; flake8 --version && flake8 elastica tests; fi
-        - if [[ $TRAVIS_NAME == " Python 3.6 Linux "]]; pip3 install -r optional-requirements.txt; python3 -m pytest;
+        - if [[ $TEST_SUITE == " Python 3.6 Linux "]]; pip3 install -r optional-requirements.txt; python3 -m pytest;
 
 after_success:
     - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
