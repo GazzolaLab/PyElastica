@@ -8,7 +8,7 @@ jobs:
            - name: " Python 3.6 Linux "
              python: 3.6
              env: 
-                - NUMBA_DISABLE_JIT=1
+                     #                - NUMBA_DISABLE_JIT=1
                 - TEST_SUITE=1
     #           - name: " Python 3.7 Linux "
     #             python: 3.7
