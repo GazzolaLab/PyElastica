@@ -35,7 +35,7 @@ before_install:
 script:
         #        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export NUMBA_DISABLE_JIT=1; python3 -m pytest --cov=elastica --cov-report=xml; else python3 -m pytest; fi
         #        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then black --version && black --check elastica tests; flake8 --version && flake8 elastica tests; fi
-        - if [[ $TEST_SUITE == test_without_numba]]; python3 -m pytest; fi
+        - if [[ $TEST_SUITE == test_without_numba]]; then python3 -m pytest; fi
 
 after_success:
     - if [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
