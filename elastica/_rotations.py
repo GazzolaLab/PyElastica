@@ -471,6 +471,7 @@ def _inv_rotate(director_collection):
                 + director_collection[2, 2, k + 1] * director_collection[2, 2, k]
             )
         )
+
         # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
         theta = arccos(0.5 * trace - 0.5 - 1e-10)
 

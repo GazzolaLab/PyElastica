@@ -117,25 +117,36 @@ class BaseSystemCollection(MutableSequence):
 
         self._features = get_methods_from_feature_classes("__call__")
         # TODO: we may need to remove featureBC below
-        self._featuresBC = get_methods_from_feature_classes("_callBC")
-        self._featuresCallBack = get_methods_from_feature_classes("_callBack")
+        # self._featuresBC = get_methods_from_feature_classes("_callBC")
+        self._features_that_constrain_values = get_methods_from_feature_classes(
+            "_constrain_values"
+        )
+        self._features_that_constrain_rates = get_methods_from_feature_classes(
+            "_constrain_rates"
+        )
+        self._callback_features = get_methods_from_feature_classes("_callBack")
         finalize_methods = get_methods_from_feature_classes("_finalize")
 
         for finalize in finalize_methods:
             finalize(self)
 
     def synchronize(self, time):
-        # Calls all constraints, connections, controls etc.
+        # Calls all , connections, controls etc.
         for feature in self._features:
             feature(self, time)
 
     # TODO: remove synchronizeBC below
-    def synchronizeBC(self, time):
+    def constrain_values(self, time):
         # Calls all constraints, connections, controls etc.
-        for feature in self._featuresBC:
+        for feature in self._features_that_constrain_values:
             feature(self, time)
 
-    def callBack(self, time, current_step: int):
+    def constrain_rates(self, time):
+        # Calls all constraints, connections, controls etc.
+        for feature in self._features_that_constrain_rates:
+            feature(self, time)
+
+    def apply_callbacks(self, time, current_step: int):
         # Calls call back functions at the end of time-step
-        for feature in self._featuresCallBack:
+        for feature in self._callback_features:
             feature(self, time, current_step)

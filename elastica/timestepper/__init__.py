@@ -1,9 +1,13 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
+
 import numpy as np
 
-from .explicit_steppers import ExplicitStepper
-from .symplectic_steppers import SymplecticStepper
-from .hybrid_rod_steppers import SymplecticCosseratRodStepper
+# from .explicit_steppers import ExplicitStepper
+# from .symplectic_steppers import SymplecticStepper
+from .explicit_steppers import ExplicitStepperTag
+from .symplectic_steppers import SymplecticStepperTag
+
+# from .hybrid_rod_steppers import SymplecticCosseratRodStepper
 from ._stepper_interface import _StatefulStepper
 
 
@@ -18,32 +22,56 @@ def extend_stepper_interface(Stepper, System):
     ConcreteStepper = (
         Stepper.stepper if _StatefulStepper in Stepper.__class__.mro() else Stepper
     )
+    try:
+        from numba import typeof
 
-    if SymplecticStepper in ConcreteStepper.__class__.mro():
-        from .symplectic_steppers import (
-            _SystemInstanceStepperMixin,
-            _SystemCollectionStepperMixin,
-        )
-    elif ExplicitStepper in ConcreteStepper.__class__.mro():
-        from .explicit_steppers import (
-            _SystemInstanceStepperMixin,
-            _SystemCollectionStepperMixin,
-        )
-    elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
-        return  # hacky fix for now. remove HybridSteppers in a future version.
-    else:
-        raise NotImplementedError(
-            "Only explicit and symplectic steppers are supported, given stepper is {}".format(
-                ConcreteStepper.__class__.__name__
+        if typeof(ConcreteStepper.Tag) == SymplecticStepperTag.class_type.instance_type:
+            from .symplectic_steppers import (
+                _SystemInstanceStepper,
+                _SystemCollectionStepper,
+                SymplecticStepperMethods as StepperMethodCollector,
             )
-        )
+        elif typeof(ConcreteStepper.Tag) == ExplicitStepperTag.class_type.instance_type:
+            from .explicit_steppers import (
+                _SystemInstanceStepper,
+                _SystemCollectionStepper,
+                ExplicitStepperMethods as StepperMethodCollector,
+            )
+        else:
+            raise NotImplementedError(
+                "Only explicit and symplectic steppers are supported, given stepper is {}".format(
+                    ConcreteStepper.__class__.__name__
+                )
+            )
+    except ImportError:
+        if type(ConcreteStepper.Tag) == SymplecticStepperTag:
+            from .symplectic_steppers import (
+                _SystemInstanceStepper,
+                _SystemCollectionStepper,
+                SymplecticStepperMethods as StepperMethodCollector,
+            )
+        elif type(ConcreteStepper.Tag) == ExplicitStepperTag:
+            from .explicit_steppers import (
+                _SystemInstanceStepper,
+                _SystemCollectionStepper,
+                ExplicitStepperMethods as StepperMethodCollector,
+            )
+        # elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
+        #    return  # hacky fix for now. remove HybridSteppers in a future version.
+        else:
+            raise NotImplementedError(
+                "Only explicit and symplectic steppers are supported, given stepper is {}".format(
+                    ConcreteStepper.__class__.__name__
+                )
+            )
 
-    ExtendClass = (
-        _SystemCollectionStepperMixin
+    stepper_methods = StepperMethodCollector(ConcreteStepper)
+    do_step_method = (
+        _SystemCollectionStepper.do_step
         if is_this_system_a_collection
-        else _SystemInstanceStepperMixin
+        else _SystemInstanceStepper.do_step
     )
-    extend_instance(ConcreteStepper, ExtendClass)
+    return do_step_method, stepper_methods.step_methods()
 
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
@@ -57,7 +85,8 @@ def integrate(
     # of the system. If system is a collection of small systems (whose
     # states cannot be aggregated), then stepper now loops over the system
     # state
-    extend_stepper_interface(StatefulStepper, System)
+    do_step, stages_and_updates = extend_stepper_interface(StatefulStepper, System)
+    print(stages_and_updates)
 
     dt = np.float64(float(final_time) / n_steps)
     time = np.float64(0.0)
@@ -65,7 +94,7 @@ def integrate(
     from tqdm import tqdm
 
     for i in tqdm(range(n_steps)):
-        time = StatefulStepper.do_step(System, time, dt)
+        time = do_step(StatefulStepper, stages_and_updates, System, time, dt)
 
     print("Final time of simulation is : ", time)
     return
