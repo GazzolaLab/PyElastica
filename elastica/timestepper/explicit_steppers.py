@@ -156,7 +156,14 @@ Classical RK4 follows
 try:
     from numba import jitclass
 
-    rk_spec = [("Tag", ExplicitStepperTag.class_type.instance_type)]
+    rk_spec = [
+        (
+            "Tag",
+            ExplicitStepperTag.class_type.instance_type
+            if hasattr(ExplicitStepperTag, "class_type")
+            else ExplicitStepperTag,
+        )
+    ]
 
     @jitclass(rk_spec)
     class RungeKutta4:
@@ -207,7 +214,14 @@ try:
             )
             return time
 
-    euler_fwd_spec = [("Tag", ExplicitStepperTag.class_type.instance_type)]
+    euler_fwd_spec = [
+        (
+            "Tag",
+            ExplicitStepperTag.class_type.instance_type
+            if hasattr(ExplicitStepperTag, "class_type")
+            else ExplicitStepperTag,
+        )
+    ]
 
     @jitclass(euler_fwd_spec)
     class EulerForward:

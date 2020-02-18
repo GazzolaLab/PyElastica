@@ -139,9 +139,16 @@ try:
     susho_spec = [
         (
             "kinematic_states",
-            KinematicStateForAnalyticalSystems.class_type.instance_type,
+            KinematicStateForAnalyticalSystems
+            if not hasattr(KinematicStateForAnalyticalSystems, "class_type")
+            else KinematicStateForAnalyticalSystems.class_type.instance_type,
         ),
-        ("dynamic_states", DynamicStateForAnalyticalSystems.class_type.instance_type),
+        (
+            "dynamic_states",
+            DynamicStateForAnalyticalSystems
+            if not hasattr(DynamicStateForAnalyticalSystems, "class_type")
+            else DynamicStateForAnalyticalSystems.class_type.instance_type,
+        ),
     ]
 
     @jitclass(busho_spec + susho_spec)
@@ -405,8 +412,18 @@ try:
         ("director_collection", float64[:, :, :]),
         ("omega_collection", float64[:, :]),
         ("alpha_collection", float64[:, :]),
-        ("kinematic_states", _KinematicState.class_type.instance_type),
-        ("dynamic_states", _DynamicState.class_type.instance_type),
+        (
+            "kinematic_states",
+            _KinematicState.class_type.instance_type
+            if hasattr(_KinematicState, "class_type")
+            else _KinematicState,
+        ),
+        (
+            "dynamic_states",
+            _DynamicState.class_type.instance_type
+            if hasattr(_DynamicState, "class_type")
+            else _DynamicState,
+        ),
     ]
     sspd_spec = [
         ("a", float64),

@@ -188,7 +188,14 @@ except ImportError:
 try:
     from numba import jitclass
 
-    pv_spec = [("Tag", SymplecticStepperTag.class_type.instance_type)]
+    pv_spec = [
+        (
+            "Tag",
+            SymplecticStepperTag.class_type.instance_type
+            if hasattr(SymplecticStepperTag, "class_type")
+            else SymplecticStepperTag,
+        )
+    ]
 
     @jitclass(pv_spec)
     class PositionVerlet:
@@ -237,7 +244,12 @@ try:
     from numba import jitclass, float64
 
     pefrl_spec = [
-        ("Tag", SymplecticStepperTag.class_type.instance_type),
+        (
+            "Tag",
+            SymplecticStepperTag.class_type.instance_type
+            if hasattr(SymplecticStepperTag, "class_type")
+            else SymplecticStepperTag,
+        ),
         ("ξ", float64),
         ("λ", float64),
         ("χ", float64),
