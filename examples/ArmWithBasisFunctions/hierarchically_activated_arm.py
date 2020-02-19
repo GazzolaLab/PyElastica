@@ -42,7 +42,7 @@ def main():
     arm_muscle_with_basis_functions_sim = ArmBasisSimulator()
 
     # setting up test params
-    n_elem = 30
+    n_elem = 200
     start = np.zeros((3,))
     direction = np.array([0.0, -1.0, 0.0])  # np.array([0.0, 0.0, 1.0])
     normal = np.array([0.0, 0.0, 1.0])  # np.array([0.0, 1.0, 0.0])
@@ -75,6 +75,7 @@ def main():
     )
 
     # Setup the profile that we want
+    """
     # First pack of hierarchical muscles
     first_muscle_segment = SpatiallyInvariantSplineHierarchy(
         Union(Gaussian(0.15), Gaussian(0.05), Gaussian(0.05))
@@ -88,15 +89,76 @@ def main():
         Union(Gaussian(0.12), Gaussian(0.06), Gaussian(0.03))
     )
     # apply filters to change magnitude
-    second_muscle_segment.apply_filter(0, ScalingFilter, 16)
-    second_muscle_segment.apply_filter(1, ScalingFilter, 8)
-    second_muscle_segment.apply_filter(2, ScalingFilter, 4)
+    # second_muscle_segment.apply_filter(0, ScalingFilter, 16)
+    # second_muscle_segment.apply_filter(1, ScalingFilter, 8)
+    # second_muscle_segment.apply_filter(2, ScalingFilter, 4)
+    second_muscle_segment.apply_filter(0, ScalingFilter, 20)
+    second_muscle_segment.apply_filter(1, ScalingFilter, 10)
+    second_muscle_segment.apply_filter(2, ScalingFilter, 5)
 
     first_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
         first_muscle_segment, (0.1, 0.4)
     )
     second_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
-        second_muscle_segment, (0.6, 0.9)
+        # second_muscle_segment, (0.6, 0.9)
+        second_muscle_segment, (0.7, 0.9)
+    )
+    """
+
+    """
+    # First pack of hierarchical muscles
+    first_muscle_segment = SpatiallyInvariantSplineHierarchy(
+        Union(Gaussian(0.15), Gaussian(0.09), Gaussian(0.05))
+    )
+    # apply filters to change magnitude
+    first_muscle_segment.apply_filter(0, ScalingFilter, 16)
+    first_muscle_segment.apply_filter(1, ScalingFilter, 8)
+    first_muscle_segment.apply_filter(2, ScalingFilter, 4)
+
+    second_muscle_segment = SpatiallyInvariantSplineHierarchy(
+        Union(Gaussian(0.10), Gaussian(0.05), Gaussian(0.03))
+    )
+    # apply filters to change magnitude
+    # second_muscle_segment.apply_filter(0, ScalingFilter, 16)
+    # second_muscle_segment.apply_filter(1, ScalingFilter, 8)
+    # second_muscle_segment.apply_filter(2, ScalingFilter, 4)
+    second_muscle_segment.apply_filter(0, ScalingFilter, 20)
+    second_muscle_segment.apply_filter(1, ScalingFilter, 10)
+    second_muscle_segment.apply_filter(2, ScalingFilter, 5)
+
+    first_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
+        first_muscle_segment, (0.35, 0.65)
+    )
+    second_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
+        second_muscle_segment, (0.75, 0.95)
+    )
+    """
+
+    # First pack of hierarchical muscles
+    first_muscle_segment = SpatiallyInvariantSplineHierarchy(
+        Union(Gaussian(0.20), Gaussian(0.08), Gaussian(0.05))
+    )
+    # apply filters to change magnitude
+    first_muscle_segment.apply_filter(0, ScalingFilter, 32)
+    first_muscle_segment.apply_filter(1, ScalingFilter, 8)
+    first_muscle_segment.apply_filter(2, ScalingFilter, 2)
+
+    second_muscle_segment = SpatiallyInvariantSplineHierarchy(
+        Union(Gaussian(0.10), Gaussian(0.05), Gaussian(0.03))
+    )
+    # apply filters to change magnitude
+    # second_muscle_segment.apply_filter(0, ScalingFilter, 16)
+    # second_muscle_segment.apply_filter(1, ScalingFilter, 8)
+    # second_muscle_segment.apply_filter(2, ScalingFilter, 4)
+    second_muscle_segment.apply_filter(0, ScalingFilter, 20)
+    second_muscle_segment.apply_filter(1, ScalingFilter, 10)
+    second_muscle_segment.apply_filter(2, ScalingFilter, 3)
+
+    first_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
+        first_muscle_segment, (0.35, 0.65)
+    )
+    second_muscle_mapper = SpatiallyInvariantSplineHierarchyMapper(
+        second_muscle_segment, (0.75, 0.95)
     )
 
     segments_of_muscle_hierarchies = SplineHierarchySegments(
@@ -165,6 +227,8 @@ def main():
     activation_function_list = defaultdict(list)
     torque_profile_list = defaultdict(list)
 
+    step_skip = 200
+
     # Apply torques
     arm_muscle_with_basis_functions_sim.add_forcing_to(shearable_rod).using(
         HierarchicalMuscleTorques,
@@ -174,6 +238,7 @@ def main():
         else two_segment_activation,
         direction=np.array([-1.0, 0.0, 0.0]),
         ramp_up_time=1.0,
+        step_skip=step_skip,
         activation_function_recorder=activation_function_list,
         torque_profile_recorder=torque_profile_list,
     )
@@ -211,20 +276,20 @@ def main():
 
     pp_list = defaultdict(list)
     arm_muscle_with_basis_functions_sim.collect_diagnostics(shearable_rod).using(
-        ArmMuscleBasisCallBack, step_skip=200, callback_params=pp_list,
+        ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=pp_list,
     )
 
     arm_muscle_with_basis_functions_sim.finalize()
     timestepper = PositionVerlet()
 
-    final_time = 2.0  # 11.0 + 0.01)
+    final_time = 3.0  # 11.0 + 0.01)
     dt = 1.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, arm_muscle_with_basis_functions_sim, final_time, total_steps)
 
     filename_video = "arm_simulation.mp4"
-    plot_video(pp_list, video_name=filename_video, margin=0.2, fps=20)
+    plot_video(pp_list, video_name=filename_video, margin=0.2, fps=20, step=10)
 
     filename_activation_muscle_torque_video = "arm_activation_muscle_torque.mp4"
     plot_video_actiavation_muscle(
@@ -233,8 +298,21 @@ def main():
         video_name=filename_activation_muscle_torque_video,
         margin=0.2,
         fps=20,
-        step=1e3,
+        step=10,
     )
+
+    try:
+        import moviepy.editor as mpy
+
+        # We use the GIFs generated earlier to avoid recomputing the animations.
+        clip_mayavi = mpy.VideoFileClip(filename_video)
+        clip_mpl = mpy.VideoFileClip(filename_activation_muscle_torque_video).resize(
+            height=clip_mayavi.h
+        )
+        animation = mpy.clips_array([[clip_mpl, clip_mayavi]])
+        animation.write_videofile("combined.mp4", fps=20)
+    except ImportError:
+        print("Whatsup!")
 
     # Save arm position
     # saved file order is (time,x,y,z)
@@ -255,32 +333,40 @@ def main():
 
     # Save activation function
     # saved file order is (time, and basis functions)
-    filename_activation = "activation_function"
     time = np.array(activation_function_list["time"])
-    activation = np.array(activation_function_list["activation_signal"])
-    activation_matrix = np.zeros((time.shape[0], int(activation.shape[1] + 1)))
+    if "activation_signal" in activation_function_list:
+        filename_activation = "activation_function"
+        activation = np.array(activation_function_list["activation_signal"])
+        # activation_matrix = np.zeros((time.shape[0], int(activation.shape[1] + 1)))
+        np.save(filename_activation, activation)
+    else:
+        first_activation = np.array(activation_function_list["first_activation_signal"])
+        filename_first_activation = "first_activation_function"
+        np.save(filename_first_activation, first_activation)
+        second_activation = np.array(
+            activation_function_list["second_activation_signal"]
+        )
+        filename_second_activation = "second_activation_function"
+        np.save(filename_second_activation, second_activation)
 
-    np.save(filename_activation, activation_matrix)
-
-    for k in range(time.shape[0]):
-        activation_matrix[k, 0] = time[k]
-        activation_matrix[k, 1:] = activation[k, :]
+    # for k in range(time.shape[0]):
+    #     activation_matrix[k, 0] = time[k]
+    #     activation_matrix[k, 1:] = activation[k, :]
 
     # Save muscle functions
-    filename_muscle_function = "muscle_torque"
     time = np.array(torque_profile_list["time"])
-    muscle_torque = np.array(torque_profile_list["torque"])
-    muscle_torque_matrix = np.zeros((time.shape[0], 2, muscle_torque.shape[2]))
-
-    for k in range(time.shape[0]):
-        muscle_torque_matrix[k, 0, :] = time[k]
-        muscle_torque_matrix[k, 1, :] = muscle_torque[k, 1, :]
-
-    np.save(filename_muscle_function, muscle_torque_matrix)
+    if "torque_mag" in activation_function_list:
+        muscle_torque_mag = np.array(torque_profile_list["torque_mag"])
+        filename_muscle_function = "muscle_torque"
+        np.save(filename_muscle_function, muscle_torque_mag)
+    else:
+        first_muscle_torque_mag = np.array(torque_profile_list["first_torque_mag"])
+        filename_first_muscle_torque_mag = "first_muscle_torque_mag_function"
+        np.save(filename_first_muscle_torque_mag, first_muscle_torque_mag)
+        second_muscle_torque_mag = np.array(torque_profile_list["second_torque_mag"])
+        filename_second_muscle_torque_mag = "second_muscle_torque_mag_function"
+        np.save(filename_second_muscle_torque_mag, second_muscle_torque_mag)
 
 
 if __name__ == "__main__":
-    from os import sys, path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     main()
