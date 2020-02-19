@@ -57,7 +57,8 @@ class _SystemCollectionStepper:
 
             # We need internal forces and torques because they are used by interaction module.
             for system in SystemCollection:
-                system.update_internal_forces_and_torques(time)
+                # system.update_internal_forces_and_torques(time)
+                system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)

@@ -33,17 +33,17 @@ class BaseSystemCollection(MutableSequence):
         self._features = NotImplemented
 
     def _check_type(self, sys_to_be_added):
-        if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
-            raise TypeError(
-                "{0}\n"
-                "is not a system passing validity\n"
-                "checks, that can be added into BaseSystem. If you are sure that\n"
-                "{0}\n"
-                "satisfies all criteria for being a system, please add\n"
-                "it using BaseSystem.extend_allowed_types.\n"
-                "The allowed types are\n"
-                "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
-            )
+        # if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
+        #     raise TypeError(
+        #         "{0}\n"
+        #         "is not a system passing validity\n"
+        #         "checks, that can be added into BaseSystem. If you are sure that\n"
+        #         "{0}\n"
+        #         "satisfies all criteria for being a system, please add\n"
+        #         "it using BaseSystem.extend_allowed_types.\n"
+        #         "The allowed types are\n"
+        #         "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
+        #     )
         return True
 
     def __len__(self):

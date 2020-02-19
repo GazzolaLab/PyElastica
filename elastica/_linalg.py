@@ -1,7 +1,6 @@
 __doc__ = """ Convenient linear algebra kernels """
 import numpy as np
-
-# from numpy import sqrt
+from numpy import sqrt
 # import numba
 # from numba import njit
 # import functools

@@ -25,7 +25,8 @@ from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 # from ..interaction import node_to_element_velocity
 from elastica.interaction import node_to_element_velocity
-
+from elastica.rod.data_structures import _KinematicState, _DynamicState
+from elastica.rod.data_structures import _bootstrap_from_data
 
 class FactoryClass:
     def __init__(self):
@@ -240,36 +241,47 @@ class FactoryClass:
         internal_stress = np.zeros((MaxDimension.value(), n_elements))
         internal_couple = np.zeros((MaxDimension.value(), n_elements - 1))
 
-        # TODO: Remove below part and find a better solution
-        n_nodes = n_elems + 1
-        position_collection = np.ndarray.view(_vector_states[..., :n_nodes])
-        directors = np.ndarray.view(_matrix_states)
+        (
+            kinematic_states,
+            dynamic_states,
+            position_collection,
+            director_collection,
+            velocity_collection,
+            omega_collection,
+            acceleration_collection,
+            alpha_collection,  # angular acceleration
+        ) = _bootstrap_from_data("symplectic", n_elems, _vector_states, _matrix_states)
 
-        # Set the states depending on the stepper type
-        if stepper_type == "explicit":
-            v_w_states = np.ndarray.view(_vector_states[..., n_nodes : 3 * n_nodes - 1])
-            v_w_dvdt_dwdt = np.ndarray.view(vector_states[..., n_nodes:])
-        elif stepper_type == "symplectic":
-            kinematic_rate = np.ndarray.view(
-                _vector_states[..., n_nodes : 3 * n_nodes - 1]
-            )
-            dynamic_rate = np.ndarray.view(_vector_states[..., 3 * n_nodes :])
-        else:
-            return
-
-        n_velocity_end = n_nodes + n_nodes
-        velocity = np.ndarray.view(_vector_states[..., n_nodes:n_velocity_end])
-
-        n_omega_end = n_velocity_end + n_elems
-        omega = np.ndarray.view(_vector_states[..., n_velocity_end:n_omega_end])
-
-        n_acceleration_end = n_omega_end + n_nodes
-        acceleration = np.ndarray.view(
-            _vector_states[..., n_omega_end:n_acceleration_end]
-        )
-
-        n_alpha_end = n_acceleration_end + n_elems
-        alpha = np.ndarray.view(_vector_states[..., n_acceleration_end:n_alpha_end])
+        # # TODO: Remove below part and find a better solution
+        # n_nodes = n_elems + 1
+        # position_collection = np.ndarray.view(_vector_states[..., :n_nodes])
+        # directors = np.ndarray.view(_matrix_states)
+        #
+        # # Set the states depending on the stepper type
+        # if stepper_type == "explicit":
+        #     v_w_states = np.ndarray.view(_vector_states[..., n_nodes : 3 * n_nodes - 1])
+        #     v_w_dvdt_dwdt = np.ndarray.view(_vector_states[..., n_nodes:])
+        # elif stepper_type == "symplectic":
+        #     kinematic_rate = np.ndarray.view(
+        #         _vector_states[..., n_nodes : 3 * n_nodes - 1]
+        #     )
+        #     dynamic_rate = np.ndarray.view(_vector_states[..., 3 * n_nodes :])
+        # else:
+        #     return
+        #
+        # n_velocity_end = n_nodes + n_nodes
+        # velocity = np.ndarray.view(_vector_states[..., n_nodes:n_velocity_end])
+        #
+        # n_omega_end = n_velocity_end + n_elems
+        # omega = np.ndarray.view(_vector_states[..., n_velocity_end:n_omega_end])
+        #
+        # n_acceleration_end = n_omega_end + n_nodes
+        # acceleration = np.ndarray.view(
+        #     _vector_states[..., n_omega_end:n_acceleration_end]
+        # )
+        #
+        # n_alpha_end = n_acceleration_end + n_elems
+        # alpha = np.ndarray.view(_vector_states[..., n_acceleration_end:n_alpha_end])
 
         cosserat_rod_spec = [
             ("n_elems", int32),
@@ -309,27 +321,30 @@ class FactoryClass:
             ("omega_collection", float64[:, :]),
             ("acceleration_collection", float64[:, :]),
             ("alpha_collection", float64[:, :]),
-            ("v_w_states", float64[:, :]),
-            ("v_w_dvdt_dwdt", float64[:, :]),
-            ("kinematic_rate", float64[:, :]),
-            ("dynamic_rate", float64[:, :]),
-            ("stepper_condition", int32),
+            # ("v_w_states", float64[:, :]),
+            # ("v_w_dvdt_dwdt", float64[:, :]),
+            # ("kinematic_rates", float64[:, :]),
+            ("kinematic_states", _KinematicState.class_type.instance_type),
+            ("dynamic_states",_DynamicState.class_type.instance_type),
+            # ("dynamic_rate", float64[:, :]),
+            # ("stepper_condition", int32),
         ]
 
         # Depending on the time stepper, set the arrays for CosseratRod JitClass
-        stepper_condition = 0
-        if stepper_type == "explicit":
-            stepper_condition = 0
-            rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
-            v_w_states_or_kinematic_rate = v_w_states
-            v_w_dvdt_dwdt_or_dynamic_rate = v_w_dvdt_dwdt
-
-        elif stepper_type == "symplectic":
-            stepper_condition = 1
-            rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
-            v_w_states_or_kinematic_rate = kinematic_rate
-            v_w_dvdt_dwdt_or_dynamic_rate = dynamic_rate
-
+        # stepper_condition = 0
+        # if stepper_type == "explicit":
+        #     stepper_condition = 0
+        #     rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
+        #     v_w_states_or_kinematic_rate = v_w_states
+        #     v_w_dvdt_dwdt_or_dynamic_rate = v_w_dvdt_dwdt
+        #
+        # elif stepper_type == "symplectic":
+        #     stepper_condition = 1
+        #     rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
+        #     v_w_states_or_kinematic_rate = kinematic_rate
+        #     v_w_dvdt_dwdt_or_dynamic_rate = dynamic_rate
+        # rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
+        rodclass = CosseratRodJIT
         return rodclass(
             n_elems,
             _vector_states,
@@ -363,14 +378,16 @@ class FactoryClass:
             internal_stress,
             internal_couple,
             position_collection,
-            directors,
-            velocity,
-            omega,
-            acceleration,
-            alpha,
-            stepper_condition,
-            v_w_states_or_kinematic_rate,
-            v_w_dvdt_dwdt_or_dynamic_rate,
+            director_collection,
+            velocity_collection,
+            omega_collection,
+            acceleration_collection,
+            alpha_collection,
+            kinematic_states,
+            dynamic_states,
+            # stepper_condition,
+            # v_w_states_or_kinematic_rate,
+            # v_w_dvdt_dwdt_or_dynamic_rate,
         )
 
 
@@ -414,9 +431,11 @@ class CosseratRodJIT:
         omega_collection,
         acceleration_collection,
         alpha_collection,
-        stepper_condition,
-        v_w_states_or_kinematic_rate,
-        v_w_dvdt_dwdt_or_dynamic_rate,
+        kinematic_states,
+        dynamic_states,
+        # stepper_condition,
+        # v_w_states_or_kinematic_rate,
+        # v_w_dvdt_dwdt_or_dynamic_rate,
     ):
 
         self.n_elems = n_elems
@@ -451,6 +470,15 @@ class CosseratRodJIT:
         self.internal_stress = internal_stress
         self.internal_couple = internal_couple
 
+        # self.position_collection = position_collection
+        # self.director_collection = director_collection
+        # self.velocity_collection = velocity_collection
+        # self.omega_collection = omega_collection
+        # self.acceleration_collection = acceleration_collection
+        # self.alpha_collection = alpha_collection
+
+        self.kinematic_states = kinematic_states
+        self.dynamic_states = dynamic_states
         self.position_collection = position_collection
         self.director_collection = director_collection
         self.velocity_collection = velocity_collection
@@ -458,16 +486,43 @@ class CosseratRodJIT:
         self.acceleration_collection = acceleration_collection
         self.alpha_collection = alpha_collection
 
-        self.stepper_condition = stepper_condition
-        if self.stepper_condition == 0:
+        # self.stepper_condition = stepper_condition
+        # if self.stepper_condition == 0:
+        #
+        #     self.v_w_states = v_w_states_or_kinematic_rate
+        #     self.v_w_dvdt_dwdt = v_w_dvdt_dwdt_or_dynamic_rate
+        #
+        # elif self.stepper_condition == 1:
+        #
+        #     self.kinematic_rates = v_w_states_or_kinematic_rate
+        #     self.dynamic_rate = v_w_dvdt_dwdt_or_dynamic_rate
 
-            self.v_w_states = v_w_states_or_kinematic_rate
-            self.v_w_dvdt_dwdt = v_w_dvdt_dwdt_or_dynamic_rate
+    def kinematic_rates(self, time):
+        return self.dynamic_states.kinematic_rates(time)
 
-        elif self.stepper_condition == 1:
+    def dynamic_rates(self, time):
+        self.update_accelerations()
 
-            self.kinematic_rate = v_w_states_or_kinematic_rate
-            self.dynamic_rate = v_w_dvdt_dwdt_or_dynamic_rate
+        """
+        The following commented block of code is a test to ensure that
+        the time-integrator always updates the view of the
+        collection variables, and not an independent variable
+        (aka no copy is made). It exists only for legacy
+        purposes and will be either refactored or removed once
+        testing is done.
+        """
+        # def shmem(x):
+        #     if np.shares_memory(
+        #             self.dynamic_states.rate_collection, x
+        #     ) : print("Shares memory")
+        #     else :
+        #         print("Explicit states does not share memory")
+        # shmem(self.velocity_collection)
+        # shmem(self.acceleration_collection)
+        # shmem(self.omega_collection)
+        # shmem(self.alpha_collection)
+        return self.dynamic_states.dynamic_rates(time)
+
 
     def _compute_geometry_from_state(self):
         """
@@ -754,6 +809,10 @@ class CosseratRodJIT:
         self._compute_internal_forces()
         self._compute_internal_torques()
 
+    # TODO: find better way and place to compute internal forces and torques
+    def update_internal_forces_and_torques(self):
+        self._compute_internal_forces_and_torques()
+
     def update_accelerations(self):
         """ TODO Do we need to make the collection members abstract?
 
@@ -788,27 +847,27 @@ class CosseratRodJIT:
         self.external_torques *= 0.0
 
 
-n_elements = 100
-start = np.zeros((3,))
-direction = np.array([0.0, 0.0, 1.0])
-normal = np.array([0.0, 1.0, 0.0])
-base_length = 1.0
-base_radius = 0.25
-density = 500.0
-nu = 0.1
-youngs_modulus = 1e3
-poisson_ratio = 0.2
+# n_elements = 100
+# start = np.zeros((3,))
+# direction = np.array([0.0, 0.0, 1.0])
+# normal = np.array([0.0, 1.0, 0.0])
+# base_length = 1.0
+# base_radius = 0.25
+# density = 500.0
+# nu = 0.1
+# youngs_modulus = 1e3
+# poisson_ratio = 0.2
 
-factory_function = FactoryClass()
-rodjit = factory_function.allocate(
-    n_elements,
-    start,
-    direction,
-    normal,
-    base_length,
-    base_radius,
-    density,
-    nu,
-    youngs_modulus,
-    poisson_ratio,
-)
+# factory_function = FactoryClass()
+# rodjit = factory_function.allocate(
+#     n_elements,
+#     start,
+#     direction,
+#     normal,
+#     base_length,
+#     base_radius,
+#     density,
+#     nu,
+#     youngs_modulus,
+#     poisson_ratio,
+# )
