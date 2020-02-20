@@ -82,7 +82,7 @@ class MuscleTorquesBasisFunctions(NoForces):
     def apply_torques(self, system, time: np.float = 0.0):
 
         # Ramp up the muscle torque
-        factor = min(1.0, time / self.ramp_up_time)
+        # factor = min(1.0, time / self.ramp_up_time)
 
         # Compute the torque profile for this time-step, controller might change
         # the active and deactive splines.
