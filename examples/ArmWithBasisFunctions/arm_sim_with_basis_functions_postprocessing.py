@@ -4,7 +4,13 @@ from matplotlib.colors import to_rgb
 
 
 def plot_video(
-    plot_params: dict, video_name="video.mp4", margin=0.2, fps=15, step=100
+    plot_params: dict,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
+    step=100,
+    *args,
+    **kwargs
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
@@ -23,6 +29,8 @@ def plot_video(
             x = positions_over_time[time][2]
             y = positions_over_time[time][1]
             fig.clf()
+            if kwargs.__contains__("target"):
+                plt.plot(kwargs["target"][2], kwargs["target"][1], "*", markersize=12)
             plt.plot(x, y, "o")
             plt.gca().set_aspect("equal", adjustable="box")
             plt.xlim([0 - margin, 1.0 + margin])
@@ -114,3 +122,28 @@ def plot_video_actiavation_muscle(
     #
     # # add ax2 to the figure again
     # plt.subplot(ax2)
+
+
+def plot_arm_tip_sensor_values(sensor: dict, filename, SAVE_FIGURE=False):
+
+    time = np.array(sensor["time"])
+    sensor_value = np.array(sensor["sensor"])
+    fig, axs = plt.subplots(3, 1, constrained_layout=False)
+    axs[0].plot(time, sensor_value[:, 0], "-")
+    axs[0].set_title("sensor value - x")
+    axs[0].set_xlabel("time [s]")
+    axs[0].set_ylabel("sensor value")
+
+    axs[1].plot(time, sensor_value[:, 1], "-")
+    axs[1].set_title("sensor value - y")
+    axs[1].set_xlabel("time [s]")
+    axs[1].set_ylabel("sensor value")
+
+    axs[2].plot(time, sensor_value[:, 2], "-")
+    axs[2].set_title("sensor value - z")
+    axs[2].set_xlabel("time [s]")
+    axs[2].set_ylabel("sensor value")
+
+    plt.show()
+    if SAVE_FIGURE:
+        fig.savefig(filename)
