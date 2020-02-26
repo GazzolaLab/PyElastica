@@ -147,3 +147,80 @@ def plot_arm_tip_sensor_values(sensor: dict, filename, SAVE_FIGURE=False):
     plt.show()
     if SAVE_FIGURE:
         fig.savefig(filename)
+
+
+def plot_video_zx(
+    plot_params: dict,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
+    step=100,
+    *args,
+    **kwargs
+):  # (time step, x/y/z, node)
+    import matplotlib.animation as manimation
+
+    positions_over_time = np.array(plot_params["position"])
+
+    print("plot video")
+    FFMpegWriter = manimation.writers["ffmpeg"]
+    metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
+    writer = FFMpegWriter(fps=fps, metadata=metadata)
+    fig = plt.figure()
+    plt.gca().set_aspect("equal", adjustable="box")
+    # plt.axis("square")
+    time = np.array(plot_params["time"])
+    with writer.saving(fig, video_name, 100):
+        for time in range(1, time.shape[0], int(step)):
+            x = positions_over_time[time][2]
+            y = positions_over_time[time][0]
+            fig.clf()
+            if kwargs.__contains__("target"):
+                plt.plot(kwargs["target"][2], kwargs["target"][0], "*", markersize=12)
+            plt.plot(x, y, "o")
+            plt.gca().set_aspect("equal", adjustable="box")
+            plt.xlim([0 - margin, 1.0 + margin])
+            plt.ylim([-1.00 - margin, 0.00 + margin])
+            writer.grab_frame()
+
+
+def plot_video3d(
+    plot_params: dict,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
+    step=100,
+    *args,
+    **kwargs
+):  # (time step, x/y/z, node)
+    import matplotlib.animation as manimation
+    from mpl_toolkits import mplot3d
+
+    time = plot_params["time"]
+    position = np.array(plot_params["position"])
+    radius = np.array(plot_params["radius"])
+
+    print("plot video")
+    FFMpegWriter = manimation.writers["ffmpeg"]
+    metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
+    writer = FFMpegWriter(fps=fps, metadata=metadata)
+    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
+    with writer.saving(fig, video_name, 100):
+        for time in range(1, len(time)):
+            fig.clf()
+            ax = plt.axes(projection="3d")  # fig.add_subplot(111)
+            ax.grid(b=True, which="minor", color="k", linestyle="--")
+            ax.grid(b=True, which="major", color="k", linestyle="-")
+            ax.scatter(
+                position[time, 2],
+                position[time, 0],
+                position[time, 1],
+                s=np.pi * radius[time] ** 2 * 10000,
+            )
+            ax.set_xlim(0 - margin, 1.0 + margin)
+            ax.set_ylim(-1.00 - margin, 0.00 + margin)
+            ax.set_zlim(0.0, 1.0 + margin)
+            ax.set_xlabel("z positon")
+            ax.set_ylabel("x position")
+            ax.set_zlabel("y position")
+            writer.grab_frame()

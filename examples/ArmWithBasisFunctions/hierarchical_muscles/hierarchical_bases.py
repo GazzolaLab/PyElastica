@@ -24,8 +24,8 @@ class Union(MutableSequence):
 
 
 class SplineHierarchy:
-    def __init__(self, basis_function_union: Union, spacing="equal"):
-        self.__scaling_factor = int(3)  # increase in levels
+    def __init__(self, basis_function_union: Union, spacing="equal", scaling_factor=3):
+        self.__scaling_factor = int(scaling_factor)  # increase in levels 3
 
         assert self.__scaling_factor > 1
         assert type(self.__scaling_factor) == int
@@ -85,8 +85,8 @@ class SplineHierarchy:
 
 
 class SpatiallyInvariantSplineHierarchy(SplineHierarchy):
-    def __init__(self, basis_function_union: Union, spacing="equal"):
-        super().__init__(basis_function_union, spacing)
+    def __init__(self, basis_function_union: Union, scaling_factor, spacing="equal"):
+        super().__init__(basis_function_union, spacing, scaling_factor)
         self.not_initialized = True
 
     def __call__(self, centerline, activation):

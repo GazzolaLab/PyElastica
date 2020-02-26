@@ -35,7 +35,13 @@ class HierarchicalMuscleTorques(NoForces):
     def apply_torques(self, system, time: np.float = 0.0):
         # Compute the torque profile for this time-step, controller might change
         # the active and deactive splines.
-        instantaneous_activation = self.activation(time)
+        # instantaneous_activation = self.activation(time)
+        activation_list = self.activation(time)
+        instantaneous_activation = activation_list[0]
+        for k in range(1, len(activation_list)):
+            instantaneous_activation = np.hstack(
+                (instantaneous_activation, activation_list[k])
+            )
 
         torque_magnitude = self.torque_generating_hierarchy(
             system.lengths, instantaneous_activation
@@ -56,20 +62,22 @@ class HierarchicalMuscleTorques(NoForces):
             if self.activation_function_recorder is not None:
                 self.activation_function_recorder["time"].append(time)
                 self.activation_function_recorder["second_activation_signal"].append(
-                    instantaneous_activation[:13][::-1]
+                    instantaneous_activation[:7][::-1]
                 )
                 self.activation_function_recorder["first_activation_signal"].append(
-                    instantaneous_activation[13:][::-1]
+                    instantaneous_activation[7:][::-1]
                 )
             if self.torque_profile_recorder is not None:
                 self.torque_profile_recorder["time"].append(time)
                 filter = np.zeros(torque_magnitude.shape)
                 second_filter = 0.0 * filter
-                second_filter[140:] = 1.0
+                second_filter[70:] = 1.0
+                # second_filter = np.ones(torque_magnitude.shape)
                 self.torque_profile_recorder["second_torque_mag"].append(
                     torque_magnitude * second_filter
                 )
-                filter[:140] = 1.0
+                filter[:50] = 1.0
+                # filter = np.ones(torque_magnitude.shape)
                 self.torque_profile_recorder["first_torque_mag"].append(
                     torque_magnitude * filter
                 )
