@@ -428,7 +428,7 @@ class _CosseratRodBase(RodBase):
         )
 
     # @profile
-    def _compute_internal_forces_and_torques(self, time):
+    def _compute_internal_forces_and_torques(self):
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -490,7 +490,7 @@ class _CosseratRodBase(RodBase):
 
     # @profile
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self, time):
+    def update_accelerations(self):
         """ TODO Do we need to make the collection members abstract?
 
         Parameters

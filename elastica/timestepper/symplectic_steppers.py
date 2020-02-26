@@ -171,7 +171,9 @@ class SymplecticStepperMethods:
 
 
 try:
-    from numba import jitclass
+    # from numba import jitclass
+    # In order to by pass jit classes try to import something
+    from numba import something, jitclass
 
     @jitclass([])
     class SymplecticStepperTag:
@@ -187,7 +189,9 @@ except ImportError:
 
 
 try:
-    from numba import jitclass
+    # from numba import jitclass
+    # In order to by pass jit classes try to import something
+    from numba import something
 
     pv_spec = [
         (
@@ -218,6 +222,11 @@ try:
 
 
 except ImportError:
+    from numba import njit
+    from elastica.rod.data_structures import (
+        overload_operator_kinematic_numba,
+        overload_operator_dynamic_numba,
+    )
 
     class PositionVerlet:
         """
@@ -233,16 +242,37 @@ except ImportError:
 
         def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
             prefac = self._first_prefactor(dt)
-            System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+            # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+            # _numba_first_(System, System.kinematic_rates)
+            # n_nodes = System.n_elems+1
+            # position_collection = System.kinematic_states.position_collection
+            # director_collection = System.kinematic_states.director_collection
+            # scaled_deriv_array = System.kinematic_rates(time, prefac)
+            overload_operator_kinematic_numba(
+                System.n_elems + 1,
+                prefac,
+                System.kinematic_states.position_collection,
+                System.kinematic_states.director_collection,
+                System.kinematic_rates(time, prefac),
+            )
 
         def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
-            System.dynamic_states += dt * System.dynamic_rates(
-                time, dt
-            )  # TODO : Why should we pass dt into System again?
+            # System.dynamic_states += dt * System.dynamic_rates(
+            #     time, dt
+            # )  # TODO : Why should we pass dt into System again?
+
+            overload_operator_dynamic_numba(
+                2 * System.n_elems + 1,
+                System.dynamic_states.rate_collection,
+                System.dynamic_rates(time, dt),
+            )
 
 
 try:
-    from numba import jitclass, float64
+    # In order to by pass jit classes try to import something
+    from numba import something, jitclass, float64
+
+    # from numba import jitclass, float64
 
     pefrl_spec = [
         (

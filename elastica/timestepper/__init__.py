@@ -23,7 +23,9 @@ def extend_stepper_interface(Stepper, System):
         Stepper.stepper if _StatefulStepper in Stepper.__class__.mro() else Stepper
     )
     try:
-        from numba import typeof
+        # from numba import typeof
+        # In order to by pass jit classes try to import something
+        from numba import something, typeof
 
         if typeof(ConcreteStepper.Tag) == SymplecticStepperTag.class_type.instance_type:
             from .symplectic_steppers import (

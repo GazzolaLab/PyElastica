@@ -23,10 +23,17 @@ from elastica.rod import RodBase
 from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
+from elastica.rod.cosserat_rod import (
+    compute_internal_forces,
+    compute_internal_torques,
+    _update_accelerations,
+)
+
 # from ..interaction import node_to_element_velocity
 from elastica.interaction import node_to_element_velocity
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 from elastica.rod.data_structures import _bootstrap_from_data
+
 
 class FactoryClass:
     def __init__(self):
@@ -101,7 +108,7 @@ class FactoryClass:
                 mass_second_moment_of_inertia[..., i],
                 mass_second_moment_of_inertia_temp[i, :],
             )
-        # sanity check of mass second momenet of inertia
+        # sanity check of mass second moment of inertia
         for k in range(n_elements):
             for i in range(0, MaxDimension.value()):
                 assert mass_second_moment_of_inertia[i, i, k] > Tolerance.atol()
@@ -181,10 +188,10 @@ class FactoryClass:
         mass[:-1] += 0.5 * density * volume
         mass[1:] += 0.5 * density * volume
 
-        mass_second_moment_of_inertia = mass_second_moment_of_inertia
-        inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
-        shear_matrix = shear_matrix
-        bend_matrix = bend_matrix
+        # mass_second_moment_of_inertia = mass_second_moment_of_inertia
+        # inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
+        # shear_matrix = shear_matrix
+        # bend_matrix = bend_matrix
 
         nu = nu
         rest_voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
@@ -325,7 +332,7 @@ class FactoryClass:
             # ("v_w_dvdt_dwdt", float64[:, :]),
             # ("kinematic_rates", float64[:, :]),
             ("kinematic_states", _KinematicState.class_type.instance_type),
-            ("dynamic_states",_DynamicState.class_type.instance_type),
+            ("dynamic_states", _DynamicState.class_type.instance_type),
             # ("dynamic_rate", float64[:, :]),
             # ("stepper_condition", int32),
         ]
@@ -343,8 +350,8 @@ class FactoryClass:
         #     rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
         #     v_w_states_or_kinematic_rate = kinematic_rate
         #     v_w_dvdt_dwdt_or_dynamic_rate = dynamic_rate
-        # rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
-        rodclass = CosseratRodJIT
+        rodclass = jitclass(cosserat_rod_spec)(CosseratRodJIT)
+        # rodclass = CosseratRodJIT
         return rodclass(
             n_elems,
             _vector_states,
@@ -522,7 +529,6 @@ class CosseratRodJIT:
         # shmem(self.omega_collection)
         # shmem(self.alpha_collection)
         return self.dynamic_states.dynamic_rates(time)
-
 
     def _compute_geometry_from_state(self):
         """
@@ -809,6 +815,48 @@ class CosseratRodJIT:
         self._compute_internal_forces()
         self._compute_internal_torques()
 
+        # self.internal_forces = compute_internal_forces(
+        #     self.position_collection,
+        #     self.volume,
+        #     self.lengths,
+        #     self.tangents,
+        #     self.radius,
+        #     self.rest_lengths,
+        #     self.rest_voronoi_lengths,
+        #     self.dilatation,
+        #     self.voronoi_dilatation,
+        #     self.director_collection,
+        #     self.sigma,
+        #     self.rest_sigma,
+        #     self.shear_matrix,
+        #     self.internal_stress,
+        #     self.velocity_collection,
+        #     self.nu,
+        # )
+        #
+        # compute_internal_torques(
+        #     self.position_collection,
+        #     self.velocity_collection,
+        #     self.tangents,
+        #     self.lengths,
+        #     self.rest_lengths,
+        #     self.director_collection,
+        #     self.rest_voronoi_lengths,
+        #     self.bend_matrix,
+        #     self.rest_kappa,
+        #     self.kappa,
+        #     self.voronoi_dilatation,
+        #     self.mass_second_moment_of_inertia,
+        #     self.omega_collection,
+        #     self.internal_stress,
+        #     self.internal_couple,
+        #     self.dilatation,
+        #     self.dilatation_rate,
+        #     self.nu,
+        #     self.damping_torques,
+        #     self.internal_torques,
+        # )
+
     # TODO: find better way and place to compute internal forces and torques
     def update_internal_forces_and_torques(self):
         self._compute_internal_forces_and_torques()
@@ -845,6 +893,18 @@ class CosseratRodJIT:
 
         # Reset torques
         self.external_torques *= 0.0
+
+        # _update_accelerations(
+        #     self.acceleration_collection,
+        #     self.internal_forces,
+        #     self.external_forces,
+        #     self.mass,
+        #     self.alpha_collection,
+        #     self.inv_mass_second_moment_of_inertia,
+        #     self.internal_torques,
+        #     self.external_torques,
+        #     self.dilatation,
+        # )
 
 
 # n_elements = 100
