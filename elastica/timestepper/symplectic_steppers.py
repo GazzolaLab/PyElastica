@@ -243,11 +243,7 @@ except ImportError:
         def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
             prefac = self._first_prefactor(dt)
             # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
-            # _numba_first_(System, System.kinematic_rates)
-            # n_nodes = System.n_elems+1
-            # position_collection = System.kinematic_states.position_collection
-            # director_collection = System.kinematic_states.director_collection
-            # scaled_deriv_array = System.kinematic_rates(time, prefac)
+
             overload_operator_kinematic_numba(
                 System.n_elems + 1,
                 prefac,
@@ -263,6 +259,7 @@ except ImportError:
 
             overload_operator_dynamic_numba(
                 2 * System.n_elems + 1,
+                dt,
                 System.dynamic_states.rate_collection,
                 System.dynamic_rates(time, dt),
             )

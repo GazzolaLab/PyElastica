@@ -5,6 +5,7 @@ import numpy as np
 from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
 
+
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
 class _RodExplicitStepperMixin:
@@ -591,7 +592,9 @@ except ImportError:
         for i in range(3):
             for k in range(n_nodes):
                 position_collection[i, k] += prefac * scaled_deriv_array[i, k]
-        rotation_matrix = _get_rotation_matrix(1.0, scaled_deriv_array[..., n_nodes:])
+        rotation_matrix = _get_rotation_matrix(
+            1.0, prefac * scaled_deriv_array[..., n_nodes:]
+        )
         director_collection[:] = _batch_matmul(rotation_matrix, director_collection)
 
         return
@@ -780,7 +783,7 @@ except ImportError:
 
     @njit()
     def overload_operator_dynamic_numba(
-        n_kinematic_rates, rate_collection, scaled_second_deriv_array
+        n_kinematic_rates, dt, rate_collection, scaled_second_deriv_array
     ):
         """ overloaded += operator, updating dynamic_rates
 
@@ -804,6 +807,6 @@ except ImportError:
 
         for i in range(3):
             for k in range(n_kinematic_rates):
-                rate_collection[i, k] += scaled_second_deriv_array[i, k]
+                rate_collection[i, k] += dt * scaled_second_deriv_array[i, k]
 
         return
