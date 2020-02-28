@@ -134,7 +134,7 @@ try:
             wave_number,
             phase_shift,
             direction,
-            n_elements,
+            rest_lengths,
             ramp_up_time=0.0,
             with_spline=False,
         ):
@@ -148,7 +148,6 @@ try:
             assert ramp_up_time >= 0.0
             self.ramp_up_time = ramp_up_time
 
-            rest_lengths = base_length / n_elements * np.ones((n_elements))
             self.s = np.cumsum(rest_lengths)
 
             if with_spline:
@@ -228,7 +227,7 @@ except ImportError:
             wave_number,
             phase_shift,
             direction,
-            n_elements,
+            rest_lengths,
             ramp_up_time=0.0,
             with_spline=False,
         ):
@@ -242,7 +241,6 @@ except ImportError:
             assert ramp_up_time >= 0.0
             self.ramp_up_time = ramp_up_time
 
-            rest_lengths = base_length / n_elements * np.ones((n_elements))
             self.s = np.cumsum(rest_lengths)
 
             if with_spline:
