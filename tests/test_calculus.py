@@ -86,7 +86,7 @@ def test_trapezoidal_correctness():
          :math:`\int_{a}^{b} f \rightarrow \mathbb{R}`
     where f satisfies the conditions f(a) = f(b) = 0.0
     """
-    blocksize = 32
+    blocksize = 64
     a = 0.0
     b = np.pi
     dh = (b - a) / (blocksize - 1)
@@ -95,8 +95,16 @@ def test_trapezoidal_correctness():
     input_vector = np.sin(np.linspace(a, b, blocksize))
     test_vector = _trapezoidal(input_vector[1:-1]) * dh
 
+    # Sampling for the analytical derivative needs to be done
+    # one a grid that lies in between the actual function for
+    # second-order accuracy!
+    interior_a = a + 0.5 * dh
+    interior_b = b - 0.5 * dh
+    correct_vector = np.sin(np.linspace(interior_a, interior_b, blocksize - 1)) * dh
+
     # Pathetic error of 1e-2 :(
-    assert_allclose(np.sum(test_vector), 2.0, atol=1e-2)
+    assert_allclose(np.sum(test_vector), 2.0, atol=1e-3)
+    assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
 def test_two_point_difference_correctness():
@@ -110,10 +118,16 @@ def test_two_point_difference_correctness():
     b = np.pi
     dh = (b - a) / (blocksize - 1)
 
+    # Sampling for the analytical derivative needs to be done
+    # one a grid that lies in between the actual function for
+    # second-order accuracy!
+    interior_a = a + 0.5 * dh
+    interior_b = b - 0.5 * dh
+
     # Should integrate this well
     input_vector = np.sin(np.linspace(a, b, blocksize))
     test_vector = _two_point_difference(input_vector[1:-1]) / dh
-    correct_vector = np.cos(np.linspace(a, b, blocksize - 1))
+    correct_vector = np.cos(np.linspace(interior_a, interior_b, blocksize - 1))
 
     # Pathetic error of 1e-2 :(
-    assert_allclose(test_vector, correct_vector, atol=1e-2)
+    assert_allclose(test_vector, correct_vector, atol=1e-4)

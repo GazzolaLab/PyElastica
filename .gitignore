@@ -222,3 +222,6 @@ outcmaes/*
 
 # line profiling outputs
 *.lprof
+
+# python npy files
+*.npy

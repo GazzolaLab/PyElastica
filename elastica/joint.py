@@ -16,7 +16,7 @@ class FreeJoint:
         # self.index_one = index_one
         # self.index_two = index_two
 
-    def apply_force(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(self, rod_one, index_one, rod_two, index_two):
         end_distance_vector = (
             rod_two.position_collection[..., index_two]
             - rod_one.position_collection[..., index_one]
@@ -52,7 +52,7 @@ class FreeJoint:
 
         return
 
-    def apply_torque(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, rod_one, index_one, rod_two, index_two):
         pass
 
 
@@ -73,10 +73,10 @@ class HingeJoint(FreeJoint):
         self.kt = kt
 
     # Apply force is same as free joint
-    def apply_force(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_force(rod_one, index_one, rod_two, index_two)
+    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+        return super().apply_forces(rod_one, index_one, rod_two, index_two)
 
-    def apply_torque(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, rod_one, index_one, rod_two, index_two):
         # current direction of the first element of link two
         # also NOTE: - rod two is hinged at first element
         link_direction = (
@@ -84,7 +84,7 @@ class HingeJoint(FreeJoint):
             - rod_two.position_collection[..., index_two]
         )
 
-        # projection of the linkdirection onto the plane normal
+        # projection of the link direction onto the plane normal
         force_direction = (
             -np.dot(link_direction, self.normal_direction) * self.normal_direction
         )
@@ -105,14 +105,14 @@ class FixedJoint(FreeJoint):
     def __init__(self, k, nu, kt):
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
-        # stiffness of the restoring constraint -- tuned emprically
+        # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
 
     # Apply force is same as free joint
-    def apply_force(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_force(rod_one, index_one, rod_two, index_two)
+    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+        return super().apply_forces(rod_one, index_one, rod_two, index_two)
 
-    def apply_torque(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, rod_one, index_one, rod_two, index_two):
         # current direction of the first element of link two
         # also NOTE: - rod two is fixed at first element
         link_direction = (
@@ -125,17 +125,10 @@ class FixedJoint(FreeJoint):
         # as check1, and the current position of the second node of link two as check2. Check1 and check2
         # should overlap.
 
-        position_diff = (
-            rod_one.position_collection[..., index_one]
-            - rod_one.position_collection[..., index_one - 1]
-        )
-        length = np.sqrt(np.dot(position_diff, position_diff))
-        tangent = position_diff / length
-
         tgt_destination = (
             rod_one.position_collection[..., index_one]
-            + rod_two.rest_lengths[index_two] * tangent
-        )  # dl of rod 2 can be different than rod 1 so use restlengt of rod 2
+            + rod_two.rest_lengths[index_two] * rod_one.tangents[..., index_one]
+        )  # dl of rod 2 can be different than rod 1 so use rest length of rod 2
 
         curr_destination = rod_two.position_collection[
             ..., index_two + 1
