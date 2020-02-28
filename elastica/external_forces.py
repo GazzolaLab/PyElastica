@@ -116,84 +116,191 @@ class UniformForces(NoForces):
         system.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]
 
 
-class MuscleTorques(NoForces):
-    """
-    Applies muscle torques on the body. It can apply muscle torques
-    as travelling wave with beta spline or only as travelling wave.
-    """
+try:
+    import numba
+    from numba import njit
 
-    def __init__(
-        self,
-        base_length,
-        b_coeff,
-        period,
-        wave_number,
-        phase_shift,
-        direction,
-        ramp_up_time=0.0,
-        with_spline=False,
-    ):
-        super(MuscleTorques, self).__init__()
+    class MuscleTorques(NoForces):
+        """
+        Applies muscle torques on the body. It can apply muscle torques
+        as travelling wave with beta spline or only as travelling wave.
+        """
 
-        self.direction = direction.reshape(3, 1)  # Direction torque applied
-        self.angular_frequency = 2.0 * np.pi / period
-        self.wave_number = wave_number
-        self.phase_shift = phase_shift
+        def __init__(
+            self,
+            base_length,
+            b_coeff,
+            period,
+            wave_number,
+            phase_shift,
+            direction,
+            n_elements,
+            ramp_up_time=0.0,
+            with_spline=False,
+        ):
+            super(MuscleTorques, self).__init__()
 
-        assert ramp_up_time >= 0.0
-        self.ramp_up_time = ramp_up_time
+            self.direction = direction.reshape(3, 1)  # Direction torque applied
+            self.angular_frequency = 2.0 * np.pi / period
+            self.wave_number = wave_number
+            self.phase_shift = phase_shift
 
-        if with_spline:
-            assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
-            self.my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
+            assert ramp_up_time >= 0.0
+            self.ramp_up_time = ramp_up_time
 
-        else:
+            rest_lengths = base_length / n_elements * np.ones((n_elements))
+            self.s = np.cumsum(rest_lengths)
 
-            def constant_function(input):
-                """
-                Return array of ones same as the size of the input array. This
-                function is called when Beta spline function is not used.
-                Parameters
-                ----------
-                input
+            if with_spline:
+                assert (
+                    b_coeff.size != 0
+                ), "Beta spline coefficient array (t_coeff) is empty"
+                my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
+                self.my_spline = my_spline(self.s)
 
-                Returns
-                -------
+            else:
 
-                """
-                return np.ones(input.shape)
+                def constant_function(input):
+                    """
+                    Return array of ones same as the size of the input array. This
+                    function is called when Beta spline function is not used.
+                    Parameters
+                    ----------
+                    input
 
-            self.my_spline = constant_function
+                    Returns
+                    -------
 
-    def apply_torques(self, system, time: np.float = 0.0):
+                    """
+                    return np.ones(input.shape)
 
-        # Ramp up the muscle torque
-        factor = min(1.0, time / self.ramp_up_time)
-        # From the node 1 to node nelem-1
-        # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
-        # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
-        # infinitesimal segment at the beginning and end of rod, because there is no additional element
-        # (at element=-1 or element=n_elem+1) to provide internal torques to cancel out an external
-        # torque. This coupled with the requirement that the sum of all muscle torques has
-        # to be zero results in this condition.
-        s = np.cumsum(system.rest_lengths)
-        # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
-        # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in
-        # front of wave number is positive, in Elastica cpp it is negative.
-        torque_mag = (
-            factor
-            * self.my_spline(s)
-            * np.sin(
-                self.angular_frequency * time - self.wave_number * s + self.phase_shift
+                self.my_spline = constant_function(self.s)
+
+        def apply_torques(self, system, time: np.float = 0.0):
+
+            # Ramp up the muscle torque
+            factor = min(1.0, time / self.ramp_up_time)
+            # From the node 1 to node nelem-1
+            # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
+            # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
+            # infinitesimal segment at the beginning and end of rod, because there is no additional element
+            # (at element=-1 or element=n_elem+1) to provide internal torques to cancel out an external
+            # torque. This coupled with the requirement that the sum of all muscle torques has
+            # to be zero results in this condition.
+            # s = np.cumsum(system.rest_lengths)
+            # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
+            # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in
+            # front of wave number is positive, in Elastica cpp it is negative.
+            torque_mag = (
+                factor
+                * self.my_spline
+                * np.sin(
+                    self.angular_frequency * time
+                    - self.wave_number * self.s
+                    + self.phase_shift
+                )
             )
-        )
-        # Head and tail of the snake is opposite compared to elastica cpp. We need to iterate torque_mag
-        # from last to first element.
-        torque = np.einsum("j,ij->ij", torque_mag[::-1], self.direction)
-        # TODO: Find a way without doing tow batch_matvec product
-        system.external_torques[..., 1:] += _batch_matvec(
-            system.director_collection, torque
-        )[..., 1:]
-        system.external_torques[..., :-1] -= _batch_matvec(
-            system.director_collection[..., :-1], torque[..., 1:]
-        )
+            # Head and tail of the snake is opposite compared to elastica cpp. We need to iterate torque_mag
+            # from last to first element.
+            torque = np.einsum("j,ij->ij", torque_mag[::-1], self.direction)
+            # # TODO: Find a way without doing tow batch_matvec product
+            system.external_torques[..., 1:] += _batch_matvec(
+                system.director_collection, torque
+            )[..., 1:]
+            system.external_torques[..., :-1] -= _batch_matvec(
+                system.director_collection[..., :-1], torque[..., 1:]
+            )
+
+
+except ImportError:
+
+    class MuscleTorques(NoForces):
+        """
+        Applies muscle torques on the body. It can apply muscle torques
+        as travelling wave with beta spline or only as travelling wave.
+        """
+
+        def __init__(
+            self,
+            base_length,
+            b_coeff,
+            period,
+            wave_number,
+            phase_shift,
+            direction,
+            n_elements,
+            ramp_up_time=0.0,
+            with_spline=False,
+        ):
+            super(MuscleTorques, self).__init__()
+
+            self.direction = direction.reshape(3, 1)  # Direction torque applied
+            self.angular_frequency = 2.0 * np.pi / period
+            self.wave_number = wave_number
+            self.phase_shift = phase_shift
+
+            assert ramp_up_time >= 0.0
+            self.ramp_up_time = ramp_up_time
+
+            rest_lengths = base_length / n_elements * np.ones((n_elements))
+            self.s = np.cumsum(rest_lengths)
+
+            if with_spline:
+                assert (
+                    b_coeff.size != 0
+                ), "Beta spline coefficient array (t_coeff) is empty"
+                my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
+                self.my_spline = my_spline(self.s)
+
+            else:
+
+                def constant_function(input):
+                    """
+                    Return array of ones same as the size of the input array. This
+                    function is called when Beta spline function is not used.
+                    Parameters
+                    ----------
+                    input
+
+                    Returns
+                    -------
+
+                    """
+                    return np.ones(input.shape)
+
+                self.my_spline = constant_function(self.s)
+
+        def apply_torques(self, system, time: np.float = 0.0):
+
+            # Ramp up the muscle torque
+            factor = min(1.0, time / self.ramp_up_time)
+            # From the node 1 to node nelem-1
+            # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
+            # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
+            # infinitesimal segment at the beginning and end of rod, because there is no additional element
+            # (at element=-1 or element=n_elem+1) to provide internal torques to cancel out an external
+            # torque. This coupled with the requirement that the sum of all muscle torques has
+            # to be zero results in this condition.
+            # s = np.cumsum(system.rest_lengths)
+            # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
+            # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in
+            # front of wave number is positive, in Elastica cpp it is negative.
+            torque_mag = (
+                factor
+                * self.my_spline
+                * np.sin(
+                    self.angular_frequency * time
+                    - self.wave_number * self.s
+                    + self.phase_shift
+                )
+            )
+            # Head and tail of the snake is opposite compared to elastica cpp. We need to iterate torque_mag
+            # from last to first element.
+            torque = np.einsum("j,ij->ij", torque_mag[::-1], self.direction)
+            # TODO: Find a way without doing tow batch_matvec product
+            system.external_torques[..., 1:] += _batch_matvec(
+                system.director_collection, torque
+            )[..., 1:]
+            system.external_torques[..., :-1] -= _batch_matvec(
+                system.director_collection[..., :-1], torque[..., 1:]
+            )
