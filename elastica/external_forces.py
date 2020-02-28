@@ -158,7 +158,7 @@ try:
         ):
             super(MuscleTorques, self).__init__()
 
-            self.direction = direction.reshape(3, 1)  # Direction torque applied
+            self.direction = direction  # Direction torque applied
             self.angular_frequency = 2.0 * np.pi / period
             self.wave_number = wave_number
             self.phase_shift = phase_shift
@@ -208,7 +208,7 @@ try:
                 self.wave_number,
                 self.phase_shift,
                 self.ramp_up_time,
-                self.direction.reshape(3),
+                self.direction,
                 system.director_collection,
                 system.external_torques,
             )
