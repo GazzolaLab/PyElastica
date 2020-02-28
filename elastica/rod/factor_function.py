@@ -30,7 +30,7 @@ from elastica.rod.cosserat_rod import (
 )
 
 # from ..interaction import node_to_element_velocity
-from elastica.interaction import node_to_element_velocity
+from elastica.interaction import node_to_element_pos_or_vel
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 from elastica.rod.data_structures import _bootstrap_from_data
 
@@ -619,7 +619,7 @@ class CosseratRodJIT:
 
     def _compute_damping_forces(self):
         # Internal damping foces.
-        elemental_velocities = node_to_element_velocity(self.velocity_collection)
+        elemental_velocities = node_to_element_pos_or_vel(self.velocity_collection)
         blocksize = elemental_velocities.shape[1]
         elemental_damping_forces = np.zeros((3, blocksize))
 
