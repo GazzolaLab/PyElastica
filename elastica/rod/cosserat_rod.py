@@ -17,7 +17,7 @@ from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 # from ..interaction import node_to_element_velocity
-from elastica.interaction import node_to_element_velocity
+from elastica.interaction import node_to_element_pos_or_vel
 
 # TODO Add documentation for all functions
 import numba
@@ -602,7 +602,7 @@ def _update_accelerations(
 @numba.njit()
 def compute_damping_forces(velocity_collection, nu, lengths):
     # Internal damping foces.
-    elemental_velocities = node_to_element_velocity(velocity_collection)
+    elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
 
     blocksize = elemental_velocities.shape[1]
     elemental_damping_forces = np.zeros((3, blocksize))
