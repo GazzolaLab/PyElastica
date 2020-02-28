@@ -64,7 +64,29 @@ try:
             self.acc_gravity = acc_gravity
 
         def apply_forces(self, system, time=0.0):
-            system.external_forces += np.outer(self.acc_gravity, system.mass)
+            self.compute_gravity_foces(
+                self.acc_gravity, system.mass, system.external_forces
+            )
+
+        @staticmethod
+        @njit()
+        def compute_gravity_foces(acc_gravity, mass, external_forces):
+            """
+            This function add gravitational forces on the nodes. We are
+            using njit decorated function to increase the speed.
+            Parameters
+            ----------
+            acc_gravity
+            mass
+            external_forces
+
+            Returns
+            -------
+
+            """
+            inplace_addition(
+                external_forces, _batch_product_i_k_to_ik(acc_gravity, mass)
+            )
 
     class EndpointForces(NoForces):
         """ Applies constant forces on endpoints
@@ -230,6 +252,20 @@ try:
 
     @njit()
     def inplace_addition(external_force_or_torque, force_or_torque):
+        """
+        This function does inplace addition. First argument
+        `external_force_or_torque` is the system.external_forces
+        or system.external_torques. Second argument force or torque
+        vector to be added.
+        Parameters
+        ----------
+        external_force_or_torque
+        force_or_torque
+
+        Returns
+        -------
+
+        """
         blocksize = force_or_torque.shape[1]
         for i in range(3):
             for k in range(blocksize):
@@ -237,6 +273,20 @@ try:
 
     @njit()
     def inplace_substraction(external_force_or_torque, force_or_torque):
+        """
+        This function does inplace substraction. First argument
+        `external_force_or_torque` is the system.external_forces
+        or system.external_torques. Second argument force or torque
+        vector to be substracted.
+        Parameters
+        ----------
+        external_force_or_torque
+        force_or_torque
+
+        Returns
+        -------
+
+        """
         blocksize = force_or_torque.shape[1]
         for i in range(3):
             for k in range(blocksize):
