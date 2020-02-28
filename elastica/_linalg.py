@@ -144,7 +144,6 @@ try:
 
         return output_vector
 
-
     @njit()
     def _batch_vec_oneD_vec_cross(first_vector_collection, second_vector):
         """
@@ -171,14 +170,20 @@ try:
         output_vector = np.empty((3, blocksize))
 
         for k in range(blocksize):
-            output_vector[0, k] = first_vector_collection[1, k] * second_vector[2] \
-                                  - first_vector_collection[2, k] * second_vector[1]
+            output_vector[0, k] = (
+                first_vector_collection[1, k] * second_vector[2]
+                - first_vector_collection[2, k] * second_vector[1]
+            )
 
-            output_vector[1, k] = first_vector_collection[2, k] * second_vector[0] \
-                                  - first_vector_collection[0, k] * second_vector[2]
+            output_vector[1, k] = (
+                first_vector_collection[2, k] * second_vector[0]
+                - first_vector_collection[0, k] * second_vector[2]
+            )
 
-            output_vector[2, k] = first_vector_collection[0, k] * second_vector[1] - \
-                                  first_vector_collection[1, k] * second_vector[0]
+            output_vector[2, k] = (
+                first_vector_collection[0, k] * second_vector[1]
+                - first_vector_collection[1, k] * second_vector[0]
+            )
 
         return output_vector
 
@@ -239,7 +244,6 @@ try:
 
         return output_vector
 
-
     @njit()
     def _batch_product_i_k_to_ik(vector1, vector2):
         """
@@ -267,7 +271,6 @@ try:
                 output_vector[i, k] = vector1[i] * vector2[k]
 
         return output_vector
-
 
     @njit()
     def _batch_product_i_ik_to_k(vector1, vector2):
@@ -299,7 +302,6 @@ try:
 
         return output_vector
 
-
     @njit()
     def _batch_product_k_ik_to_ik(vector1, vector2):
         """
@@ -327,7 +329,6 @@ try:
                 output_vector[i, k] = vector1[k] * vector2[i, k]
 
         return output_vector
-
 
     @njit()
     def _batch_vector_sum(vector1, vector2):
@@ -357,7 +358,6 @@ try:
                 output_vector[i, k] = vector1[i, k] + vector2[i, k]
 
         return output_vector
-
 
     @njit()
     def _batch_matrix_transpose(input_matrix):
@@ -444,5 +444,3 @@ except ImportError:
             first_vector_collection,
             second_vector_collection,
         )
-
-

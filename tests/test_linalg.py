@@ -87,26 +87,28 @@ try:
         input_first_vector_collection = np.random.randn(3, blocksize)
         input_second_vector = np.random.randn(3)
 
-        test_vector_collection = _batch_vec_oneD_vec_cross(input_first_vector_collection, input_second_vector)
+        test_vector_collection = _batch_vec_oneD_vec_cross(
+            input_first_vector_collection, input_second_vector
+        )
 
         correct_vector_collection = np.cross(
-            input_first_vector_collection,
-            input_second_vector,
-            axisa=0,
-            axisb=0,
+            input_first_vector_collection, input_second_vector, axisa=0, axisb=0,
         ).T
 
         assert_allclose(test_vector_collection, correct_vector_collection)
 
-
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_dot(blocksize):
-        input_first_vector_collection = np.random.randn(3,blocksize)
-        input_second_vector_collection = np.random.randn(3,blocksize)
+        input_first_vector_collection = np.random.randn(3, blocksize)
+        input_second_vector_collection = np.random.randn(3, blocksize)
 
-        test_vector_collection = _batch_dot(input_first_vector_collection, input_second_vector_collection)
+        test_vector_collection = _batch_dot(
+            input_first_vector_collection, input_second_vector_collection
+        )
 
-        correct_vector_collection = np.einsum("ij,ij->j",input_first_vector_collection, input_second_vector_collection)
+        correct_vector_collection = np.einsum(
+            "ij,ij->j", input_first_vector_collection, input_second_vector_collection
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
 
@@ -116,61 +118,77 @@ try:
 
         test_vector_collection = _batch_norm(input_first_vector_collection)
 
-        correct_vector_collection = np.sqrt(np.einsum("ij,ij->j", input_first_vector_collection, input_first_vector_collection))
+        correct_vector_collection = np.sqrt(
+            np.einsum(
+                "ij,ij->j", input_first_vector_collection, input_first_vector_collection
+            )
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
-
 
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_product_i_k_to_ik(blocksize):
         input_first_vector_collection = np.random.randn(3)
         input_second_vector_collection = np.random.randn(blocksize)
 
-        test_vector_collection = _batch_product_i_k_to_ik(input_first_vector_collection, input_second_vector_collection)
+        test_vector_collection = _batch_product_i_k_to_ik(
+            input_first_vector_collection, input_second_vector_collection
+        )
 
-        correct_vector_collection = np.einsum("i,j->ij", input_first_vector_collection, input_second_vector_collection)
+        correct_vector_collection = np.einsum(
+            "i,j->ij", input_first_vector_collection, input_second_vector_collection
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
 
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_product_i_ik_to_k(blocksize):
         input_first_vector_collection = np.random.randn(3)
-        input_second_vector_collection = np.random.randn(3,blocksize)
+        input_second_vector_collection = np.random.randn(3, blocksize)
 
-        test_vector_collection = _batch_product_i_ik_to_k(input_first_vector_collection, input_second_vector_collection)
+        test_vector_collection = _batch_product_i_ik_to_k(
+            input_first_vector_collection, input_second_vector_collection
+        )
 
-        correct_vector_collection = np.einsum("i,ij->j", input_first_vector_collection, input_second_vector_collection)
+        correct_vector_collection = np.einsum(
+            "i,ij->j", input_first_vector_collection, input_second_vector_collection
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
-
 
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_product_k_ik_to_ik(blocksize):
         input_first_vector_collection = np.random.randn(blocksize)
         input_second_vector_collection = np.random.randn(3, blocksize)
 
-        test_vector_collection = _batch_product_k_ik_to_ik(input_first_vector_collection, input_second_vector_collection)
+        test_vector_collection = _batch_product_k_ik_to_ik(
+            input_first_vector_collection, input_second_vector_collection
+        )
 
-        correct_vector_collection = np.einsum("j,ij->ij", input_first_vector_collection, input_second_vector_collection)
+        correct_vector_collection = np.einsum(
+            "j,ij->ij", input_first_vector_collection, input_second_vector_collection
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
-
 
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_vector_sum(blocksize):
-        input_first_vector_collection = np.random.randn(3,blocksize)
+        input_first_vector_collection = np.random.randn(3, blocksize)
         input_second_vector_collection = np.random.randn(3, blocksize)
 
-        test_vector_collection = _batch_vector_sum(input_first_vector_collection, input_second_vector_collection)
+        test_vector_collection = _batch_vector_sum(
+            input_first_vector_collection, input_second_vector_collection
+        )
 
-        correct_vector_collection = input_first_vector_collection + input_second_vector_collection
+        correct_vector_collection = (
+            input_first_vector_collection + input_second_vector_collection
+        )
 
         assert_allclose(test_vector_collection, correct_vector_collection)
 
-
     @pytest.mark.parametrize("blocksize", [8, 32])
     def test_batch_matrix_transpose(blocksize):
-        input_matrix_collection = np.random.randn(3,3,blocksize)
+        input_matrix_collection = np.random.randn(3, 3, blocksize)
 
         test_matrix_collection = _batch_matrix_transpose(input_matrix_collection)
 
