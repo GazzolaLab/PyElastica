@@ -1,10 +1,11 @@
 __doc__ = """ Convenient linear algebra kernels """
 import numpy as np
-from numpy import sqrt
+
 
 try:
     import numba
     from numba import njit
+    from numpy import sqrt
 
     @njit()
     def _batch_matvec(matrix_collection, vector_collection):
@@ -444,3 +445,6 @@ except ImportError:
             first_vector_collection,
             second_vector_collection,
         )
+
+    def _batch_norm(vector_collection):
+        return np.sqrt(np.einsum("ij,ij->j", vector_collection, vector_collection))

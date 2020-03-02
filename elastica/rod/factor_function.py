@@ -6,7 +6,7 @@ from elastica.utils import Tolerance
 from numpy import zeros, empty, sqrt, arccos, sin
 from elastica.utils import MaxDimension, Tolerance
 
-import numpy as np
+
 import functools
 
 from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
@@ -17,7 +17,7 @@ from elastica._calculus import (
     position_average,
 )
 from elastica._rotations import _inv_rotate
-from elastica.utils import MaxDimension, Tolerance
+
 
 from elastica.rod import RodBase
 from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
