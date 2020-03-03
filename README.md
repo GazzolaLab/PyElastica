@@ -15,11 +15,12 @@ The objective is to train a model to move a (cyber)-octopus with two soft arms a
 ## Progression of specific goals
 These goals build on each other, you need to successfully accomplish all prior goals to get credit for later goals.  
 
-1) Make your octopus crawl to the target location.  
-2) Have your octopus grab the object by wrapping one arm around the object.  
-3) Make your octopus return to its starting location with the object.  
-4) Generalize your policy to perform these tasks for an arbitrarily located object.   
-5) Have your octopus be the fastest to accomplish these tasks. 
+1) Make octopus crawl towards some direction. (5 points)
+2) Make your octopus crawl to the target location. (10 points)  
+3) Have your octopus grab the object by wrapping one arm around the object. (15 points) 
+4) Make your octopus return to its starting location with the object. (20 points)
+5) Generalize your policy to perform these tasks for an arbitrarily located object. (50 points)   
+6) Have your octopus be the fastest to accomplish these tasks. (10 points)
 
 ## Problem Context
 Octopuses have flexible limbs made up of muscles with no internal bone structure. These limbs, know as muscular hydrostats, have an almost infinite number of degrees of freedom, allowing an octopus to perform complex actions with its arms, but also making them difficult to mathematically model. Attempts to model octopus arms are motivated not only by a desire to understand them biologically, but also to adapt their control ability and decision making processes to the rapidly developing field of soft robotics. We have developed a simulation package Elastica that models flexible 1-d rods, which can be used to represent octopus arms as a long, slender rod. We now want to learn methods for controlling these arms. 
