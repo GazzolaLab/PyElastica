@@ -34,6 +34,10 @@ For this problem, we abstract the activation of the octopus muscles to the gener
 
 ![modes of deformation](assets/rotation.png =400x)
 
+<img src="assets/basis.png" alt="image name" width="400"/>
+
+<img src="assets/rotation.png" alt="image name" width="500"/>
+
 There are three levels of these basis functions, with 1 basis function in the first level, 2 in the second lever and 4 in the third, leading to 7 basis functions in set. These levels have different maximum levels of activation. The lower levels have larger magnitudes than the higher levels, meaning they represent bulk motion of the rod while the higher levels allow finer control of the rod along the interval. In the code, the magnitude of each level will be fixed but you can choose the amount of activation at each level by setting the activation level between -1 and 1. 
 
 There are two bending modes (in the normal and binormal directions) and a twisting mode (in the tangent direction), so we define torques in these three different directions and independently for each arm. This yields six different sets of basis functions that can be activated for a total of 42 inputs. 
