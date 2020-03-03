@@ -30,10 +30,6 @@ You are being provided with a model of an octopus that consists of two arms conn
 ## Controlling octopus arms with hierarchical basis functions
 For this problem, we abstract the activation of the octopus muscles to the generation of a torque profile defined by the activation of a set of hierarchical radial basis function. Here we are using Gaussian basis functions. 
 
-![basis functions](assets/basis.png =400x)
-
-![modes of deformation](assets/rotation.png =400x)
-
 <img src="assets/basis.png" alt="image name" width="400"/>
 
 <img src="assets/rotation.png" alt="image name" width="500"/>
