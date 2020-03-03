@@ -30,9 +30,9 @@ You are being provided with a model of an octopus that consists of two arms conn
 ## Controlling octopus arms with hierarchical basis functions
 For this problem, we abstract the activation of the octopus muscles to the generation of a torque profile defined by the activation of a set of hierarchical radial basis function. Here we are using Gaussian basis functions. 
 
-<img src="../basis.png" alt="image name" width="400"/>
+![basis functions](assests/basis.png)
 
-<img src="../rotation.png" alt="image name" width="500"/>
+![rotations](assests/rotations.png)
 
 There are three levels of these basis functions, with 1 basis function in the first level, 2 in the second lever and 4 in the third, leading to 7 basis functions in set. These levels have different maximum levels of activation. The lower levels have larger magnitudes than the higher levels, meaning they represent bulk motion of the rod while the higher levels allow finer control of the rod along the interval. In the code, the magnitude of each level will be fixed but you can choose the amount of activation at each level by setting the activation level between -1 and 1. 
 
