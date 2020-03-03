@@ -5,19 +5,6 @@ from tqdm import tqdm
 sys.path.append("../../")
 from examples.ArmWithBasisFunctions.set_environment import Environment
 
-
-def ramped_up(shifted_time, threshold=0.1):
-    return (
-        0.0
-        if shifted_time < 0.0
-        else (
-            1.0
-            if shifted_time > threshold
-            else 0.5 * (1.0 - np.cos(np.pi * shifted_time / threshold))
-        )
-    )
-
-
 def segment_activation_function(time):
     """
     This function is an example activation function for users. Similar to
@@ -37,7 +24,16 @@ def segment_activation_function(time):
     -------
 
     """
-
+    def ramped_up(shifted_time, threshold=0.1):
+        return (
+            0.0
+            if shifted_time < 0.0
+            else (
+                1.0
+                if shifted_time > threshold
+                else 0.5 * (1.0 - np.cos(np.pi * shifted_time / threshold))
+            )
+        )
     # Muscle segment at the first arm, acting in first bending direction or normal direction
     activation_arr_1 = np.zeros((7))
     # Top level muscle segment
@@ -98,8 +94,7 @@ def segment_activation_function(time):
         [activation_arr_5, activation_arr_6],  # activation in tangent direction
     ]
 
-
-# User defined condition for exitting the simulation
+# User defined condition for exiting the simulation
 def user_defined_condition_function(reward, systems, time):
     """
     This function will be defined by the user. Depending on
@@ -110,7 +105,7 @@ def user_defined_condition_function(reward, systems, time):
     Parameters
     ----------
     reward: user defined reward
-    systems: [sherable rod, rigid_rod] classes
+    systems: [shearable rod, rigid_rod] classes
     time: current simulation time
 
     Returns
@@ -118,8 +113,8 @@ def user_defined_condition_function(reward, systems, time):
     done: boolean
     """
     done = False
-    rod = systems[0]  # sherable rod or cyber-octopus
-    cyclinder = systems[1]  # rigid body or target object
+    rod = systems[0]       # shearable rod or cyber-octopus
+    cylinder = systems[1]  # rigid body or target object
     if time > 20.0:
         done = True
 
@@ -132,28 +127,19 @@ def main():
 
     # Initialize the environment
     env = Environment(final_time, COLLECT_DATA_FOR_POSTPROCESSING=True)
-    env.reset()
+    total_steps, systems = env.reset()
 
     # Do multiple simulations for learning, or control
     for i_episodes in range(1):
 
         # Reset the environment before the new episode and get total number of simulation steps
-        total_steps = env.reset()
+        total_steps, systems = env.reset()
 
         # Simulation loop starts
         time = np.float64(0.0)
-        user_defined_conditon = False
+        user_defined_condition = False
 
         for _ in tqdm(range(total_steps)):
-            """ Compute the activation signal and pass to environment """
-            # user has to write his/her own activation function, please
-            # look in to the example function defined above.
-            activation = segment_activation_function(time)
-
-            # Do one simulation step. This function returns, current simulation time
-            # systems which are shearable rod (octopus) and rigid body, and done condition.
-            time, systems, done = env.step(activation, time, user_defined_conditon)
-
             """ Use systems for observations """
             # Observations can be rod parameters and can be accessed after every time step.
             # shearable_rod.position_collection = position of the elements ( here octopus )
@@ -167,15 +153,32 @@ def main():
             reward = 0.0
             """Reward function should be here"""
 
+
+            """ Compute the activation signal and pass to environment """
+            # Based on the observations and reward function, have the learning algorithm
+            # update the muscle activations. Make sure that the activation arrays are packaged
+            # properly. See the segment_activation_function function defined above for an 
+            # example of manual activations. 
+            activation = segment_activation_function(time)
+
+            # Do one simulation step. This function returns the current simulation time,
+            # systems which are shearable rod (octopus) and rigid body, and done condition.
+            time, systems, done = env.step(activation, time)
+
             """ User defined condition to exit simulation loop """
             # Below function has to be defined by the user. If user wants to exit the simulation
             # after some condition is reached before simulation completed, user
             # has to return a True boolean.
-            # user_defined_conditon = user_defined_condition_function(reward, systems, time)
+            user_defined_condition = user_defined_condition_function(reward, systems, time)
+            if user_defined_condition == True:
+                print(" User defined condition satisfied, exit simulation")
+                print(" Episode finished after {} ".format(time))
+                break
 
-            # If done=True, Exit the simulation loop before, reaching final time
+            # If done=True, NaN detected in simulation. 
+            # Exit the simulation loop before, reaching final time
             if done:
-                print("Episode finished after {} ".format(time))
+                print(" Episode finished after {} ".format(time))
                 break
 
         print("Final time of simulation is : ", time)
