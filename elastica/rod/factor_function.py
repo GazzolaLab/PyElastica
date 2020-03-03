@@ -2,7 +2,6 @@ import numpy as np
 from numpy.testing import assert_allclose
 import numba
 from numba import njit, prange, guvectorize, float64, jitclass, int32, uint16
-from elastica.utils import Tolerance
 from numpy import zeros, empty, sqrt, arccos, sin
 from elastica.utils import MaxDimension, Tolerance
 

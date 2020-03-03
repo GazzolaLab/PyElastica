@@ -149,6 +149,56 @@ try:
     position_difference_kernel = _difference
     position_average = _average
 
+    @njit()
+    def _clip_array(input_array, vmin, vmax):
+        """
+        This function clips an array values
+        between user defined minimum and maximum
+        values.
+        Parameters
+        ----------
+        input_array
+        vmin
+        vmax
+
+        Returns
+        -------
+        Notes
+        -----
+        Micro benchmark results showed that for a block size of 100, using timeit
+        Python version: 18.2 µs ± 845 ns per loop
+        This version: 357 ns ± 7.29 ns per loop
+        """
+        blocksize = input_array.shape[0]
+
+        for k in range(blocksize):
+            if input_array[k] < vmin:
+                input_array[k] = vmin
+            if input_array[k] > vmax:
+                input_array[k] = vmax
+
+        return input_array
+
+    @njit()
+    def _isnan_check(array):
+        """
+        This function checks if there is any nan inside the array.
+        If there is nan, it returns True boolean
+        Parameters
+        ----------
+        array
+
+        Returns
+        -------
+        Notes
+        -----
+        Micro benchmark results showed that for a block size of 100, using timeit
+        Python version: 2.24 µs ± 96.1 ns per loop
+        This version: 479 ns ± 6.49 ns per loop
+        """
+        return np.isnan(array).any()
+
+
 except ImportError:
 
     def _trapezoidal(array_collection):
@@ -217,3 +267,42 @@ except ImportError:
 
     quadrature_kernel = _trapezoidal
     difference_kernel = _two_point_difference
+
+    def _clip_array(input_array, vmin, vmax):
+        """
+        This function clips an array values
+        between user defined minimum and maximum
+        values.
+        Parameters
+        ----------
+        input_array
+        vmin
+        vmax
+
+        Returns
+        -------
+        Notes
+        -----
+        Micro benchmark results showed that for a block size of 100, using timeit
+        Python high level function version: 18.2 µs ± 845 ns per loop
+        This version: 2.87 µs ± 202 ns per loop
+        """
+        return np.core.umath.maximum(np.core.umath.minimum(input_array, vmax), vmin)
+
+    def _isnan_check(array):
+        """
+        This function checks if there is any nan inside the array.
+        If there is nan, it returns True boolean
+        Parameters
+        ----------
+        array
+
+        Returns
+        -------
+        Notes
+        -----
+        Micro benchmark results showed that for a block size of 100, using timeit
+        Numba version: 479 ns ± 6.49 ns per loop
+        This version: 2.24 µs ± 96.1 ns per loop
+        """
+        return np.isnan(array).any()

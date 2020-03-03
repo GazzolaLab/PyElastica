@@ -1,10 +1,5 @@
 import numpy as np
-import sys
-from tqdm import tqdm
 
-sys.path.append("../../")
-
-import os
 from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
@@ -27,6 +22,7 @@ from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases impo
     ScalingFilter,
 )
 
+from elastica._calculus import _isnan_check
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate, extend_stepper_interface
@@ -37,10 +33,6 @@ from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing 
     plot_video_zx,
     plot_video3d,
 )
-from examples.ArmWithBasisFunctions.arm_setting_up_functions import (
-    make_tappered_arm,
-    make_two_arm_from_straigth_rod,
-)
 
 # Set base simulator class
 class BaseSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
@@ -49,12 +41,21 @@ class BaseSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
 
 class Environment:
     def __init__(
-        self, timestepper, COLLECT_DATA=False,
+        self, final_time, COLLECT_DATA_FOR_POSTPROCESSING=False,
     ):
-        self.StatefulStepper = timestepper
+        # Integrator type
+        self.StatefulStepper = PositionVerlet()
+
+        # Simulation parameters
+        self.final_time = final_time
+        time_step = 4.0e-5  # this is a stable timestep
+        self.total_steps = int(self.final_time / time_step)
+        self.time_step = np.float64(float(self.final_time) / self.total_steps)
+        print("Total steps", self.total_steps)
+
         # Collect data is a boolean. If it is true callback function collects
         # rod parameters defined by user in a list.
-        self.COLLECT_DATA = COLLECT_DATA
+        self.COLLECT_DATA_FOR_POSTPROCESSING = COLLECT_DATA_FOR_POSTPROCESSING
 
     def reset(self):
         """
@@ -136,7 +137,7 @@ class Environment:
         self.simulator.append(self.shearable_rod)
 
         ## Add the target cyclinder
-
+        # FIXME: ADD Rigid body cyclinder
         # target_cyclinder = CosseratRod.straight_rod(
         #     n_elements=10,
         #     start=np.array([-0.5, 0, 0.5]),
@@ -266,7 +267,7 @@ class Environment:
             segments_of_muscle_hierarchies_in_normal_dir,
             activation_func=self.activation_arr_in_normal_dir,
             direction=normal,
-            ramp_up_time=1.0,
+            # ramp_up_time=1.0,
             # step_skip=step_skip,
             # activation_function_recorder=activation_function_list_for_muscle_in_normal_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_normal_dir,
@@ -280,7 +281,7 @@ class Environment:
             segments_of_muscle_hierarchies_in_binormal_dir,
             activation_func=self.activation_arr_in_binormal_dir,
             direction=np.cross(direction, normal),
-            ramp_up_time=1.0,
+            # ramp_up_time=1.0,
             # step_skip=step_skip,
             # activation_function_recorder=activation_function_list_for_muscle_in_binormal_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_binormal_dir,
@@ -294,7 +295,7 @@ class Environment:
             segments_of_muscle_hierarchies_in_tangent_dir,
             activation_func=self.activation_arr_in_tangent_dir,
             direction=direction,
-            ramp_up_time=1.0,
+            # ramp_up_time=1.0,
             # step_skip=step_skip,
             # activation_function_recorder=activation_function_list_for_muscle_in_tangent_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_tangent_dir,
@@ -358,7 +359,7 @@ class Environment:
 
                     return
 
-        if self.COLLECT_DATA:
+        if self.COLLECT_DATA_FOR_POSTPROCESSING:
             # Collect data using callback function for postprocessing
             step_skip = 100  # collect data every # steps
             self.pp_list = defaultdict(list)  # list which collected data will be append
@@ -378,7 +379,9 @@ class Environment:
             self.StatefulStepper, self.simulator
         )
 
-    def step(self, activation_array_list, time, dt):
+        return self.total_steps
+
+    def step(self, activation_array_list, time, user_defined_condition):
 
         # Activation array contains lists for activation in different directions
         # assign correct activation arrays to correct directions.
@@ -388,25 +391,30 @@ class Environment:
 
         # Do one time step of simulation
         time = self.do_step(
-            self.StatefulStepper, self.stages_and_updates, self.simulator, time, dt
+            self.StatefulStepper,
+            self.stages_and_updates,
+            self.simulator,
+            time,
+            self.time_step,
         )
 
-        # Observations, what should be observations?
-        # Position, velocity ??
-        # Observations can be rod parameters and can be
-        # accessed after every time step.
-        observation = self.shearable_rod.position_collection
-        # observation = self.shearable_rod.velocity_collection
-
-        """Reward function should be here"""
-        reward = 0.0
-        """Reward function should be here"""
+        # FIXME: when you merge rigid body send cyclinder object
+        systems = [self.shearable_rod, self.shearable_rod]
 
         """ Done is a boolean to reset the environment before episode is completed """
         done = False
+        # Position of the rod cannot be NaN, it is not valid, stop the simulation
+        invalid_values_condition = _isnan_check(self.shearable_rod.position_collection)
+
+        if (invalid_values_condition == True) or (user_defined_condition == True):
+            if invalid_values_condition == True:
+                print(" Nan detacted, exit simulation")
+            if user_defined_condition == True:
+                print(" User defined condition satisfied, exit simulation")
+            done = True
         """ Done is a boolean to reset the environment before episode is completed """
 
-        return time, observation, reward, done
+        return time, systems, done
 
     def post_processing(self, filename_video):
         """
@@ -419,7 +427,7 @@ class Environment:
 
         """
 
-        if self.COLLECT_DATA:
+        if self.COLLECT_DATA_FOR_POSTPROCESSING:
             plot_video3d(
                 self.pp_list, video_name=filename_video, margin=0.4, fps=20, step=10,
             )
@@ -431,191 +439,261 @@ class Environment:
             )
 
 
-def ramped_up(shifted_time, threshold=0.1):
-    return (
-        0.0
-        if shifted_time < 0.0
-        else (
-            1.0
-            if shifted_time > threshold
-            else 0.5 * (1.0 - np.cos(np.pi * shifted_time / threshold))
+# TODO: this function should be a part of rod initialization, factory function and it should be removed from here
+def make_tappered_arm(
+    rod,
+    radius_along_rod,
+    base_length,
+    density,
+    youngs_modulus,
+    poisson_ratio,
+    direction,
+    normal,
+    position,
+    alpha_c=4.0 / 3.0,
+):
+    """
+    This function is used to reset the rod properties for a varying radius and/or not straight rod.
+    User can input a rod with varying radius. If radius varying in each element mass, mass moment  of inertia,
+    shear, bend matrices and volume are different. Also user can give nodepositions as 2 dimensional array and
+    this function computes corresponding directors, rest curvature, rest strain, rest lengths.
+    :param rod:
+    :param radius_along_rod:
+    :param density:
+    :param youngs_modulus:
+    :param poisson_ratio:
+    :param direction:
+    :param normal:
+    :param position:
+    :param alpha_c:
+    :return:
+    """
+    from elastica.utils import MaxDimension, Tolerance
+
+    # Use the before hand generated rod properties
+    n_elements = rod.n_elems
+    rest_lengths = rod.rest_lengths
+
+    # Compute the arm properties
+    radius = radius_along_rod
+
+    # Second moment of inertia
+    A0 = np.pi * radius * radius
+    I0_1 = A0 * A0 / (4.0 * np.pi)
+    I0_2 = I0_1
+    I0_3 = 2.0 * I0_2
+    I0 = np.array([I0_1, I0_2, I0_3]).transpose()
+    # Mass second moment of inertia for disk cross-section
+    mass_second_moment_of_inertia = np.zeros(
+        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
+    )
+    mass_second_moment_of_inertia_temp = I0 * density * base_length / n_elements
+    for i in range(n_elements):
+        np.fill_diagonal(
+            mass_second_moment_of_inertia[..., i],
+            mass_second_moment_of_inertia_temp[i, :],
         )
+    # sanity check of mass second moment of inertia
+    for k in range(n_elements):
+        for i in range(0, MaxDimension.value()):
+            assert mass_second_moment_of_inertia[i, i, k] > Tolerance.atol()
+
+    # Inverse of second moment of inertia
+    inv_mass_second_moment_of_inertia = np.zeros(
+        (MaxDimension.value(), MaxDimension.value(), n_elements)
+    )
+    for i in range(n_elements):
+        # Check rank of mass moment of inertia matrix to see if it is invertible
+        assert (
+            np.linalg.matrix_rank(mass_second_moment_of_inertia[..., i])
+            == MaxDimension.value()
+        )
+        inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
+            mass_second_moment_of_inertia[..., i]
+        )
+
+    # Shear/Stretch matrix
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    shear_matrix = np.zeros(
+        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
+    )
+    for i in range(n_elements):
+        np.fill_diagonal(
+            shear_matrix[..., i],
+            [
+                alpha_c * shear_modulus * A0[i],
+                alpha_c * shear_modulus * A0[i],
+                youngs_modulus * A0[i],
+            ],
+        )
+    for k in range(n_elements):
+        for i in range(0, MaxDimension.value()):
+            assert shear_matrix[i, i, k] > Tolerance.atol()
+
+    # Bend/Twist matrix
+    bend_matrix = np.zeros(
+        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
+    )
+    for i in range(n_elements):
+        np.fill_diagonal(
+            bend_matrix[..., i],
+            [
+                youngs_modulus * I0_1[i],
+                youngs_modulus * I0_2[i],
+                shear_modulus * I0_3[i],
+            ],
+        )
+    for k in range(n_elements):
+        for i in range(0, MaxDimension.value()):
+            assert bend_matrix[i, i, k] > Tolerance.atol()
+    # Compute bend matrix in Voronoi Domain
+    bend_matrix = (
+        bend_matrix[..., 1:] * rest_lengths[1:]
+        + bend_matrix[..., :-1] * rest_lengths[0:-1]
+    ) / (rest_lengths[1:] + rest_lengths[:-1])
+
+    # Compute volume of elements
+    volume = np.pi * radius_along_rod ** 2 * rest_lengths
+
+    # Compute the mass of elements
+    mass = np.zeros(n_elements + 1)
+    mass[:-1] += 0.5 * density * volume
+    mass[1:] += 0.5 * density * volume
+
+    rod.radius[:] = radius_along_rod
+    rod.mass_second_moment_of_inertia[:] = mass_second_moment_of_inertia
+    rod.inv_mass_second_moment_of_inertia[:] = inv_mass_second_moment_of_inertia
+    rod.shear_matrix[:] = shear_matrix
+    rod.bend_matrix[:] = bend_matrix
+    rod.volume[:] = volume
+    rod.mass[:] = mass
+
+    # Compute the tangents and directors
+    position_diff = position[..., 1:] - position[..., :-1]
+    lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
+    tangents = position_diff / lengths
+
+    plane_binormals = np.cross(direction, normal)
+
+    for k in range(n_elements):
+        rod.director_collection[0, :, k] = plane_binormals
+        rod.director_collection[1, :, k] = np.cross(plane_binormals, tangents[..., k])
+        rod.director_collection[2, :, k] = tangents[..., k]
+
+    rod.position_collection[:] = position
+
+    # We have to compute
+    rod._compute_shear_stretch_strains()
+    rod._compute_bending_twist_strains()
+
+    # Compute rest curvature and strains and reset the sigma and kappa
+    rod.rest_kappa = rod.kappa.copy()
+    rod.kappa *= 0.0
+    rod.rest_sigma = rod.sigma.copy()
+    rod.sigma *= 0.0
+
+
+def make_two_arm_from_straigth_rod(
+    rod,
+    beta,
+    base_length,
+    direction,
+    normal,
+    start,
+    head_n_elems,
+    radius_tip,
+    radius_base,
+    radius_head,
+):
+    """
+    This function is used to bend a rod and make two arms and head from the rod.
+    Angle between arms and head is determined by the user input beta which is in degrees.
+    This function positions and radius for three segments, which are first arm, head and
+    second arm. Radius here is varying so that we can get a tappered arm.
+    :param rod:
+    :param beta:
+    :param base_length:
+    :param direction:
+    :param normal:
+    :param start:
+    :param head_n_elems:
+    :param radius_tip:
+    :param radius_base:
+    :param radius_head:
+    :return:
+    position: this is the position of nodes
+    radius: for tappered arm radius is varying
+    """
+    from elastica.utils import MaxDimension
+
+    n_elements = rod.n_elems
+
+    # Compute the arm number of elements
+    arm_1_n_elems = int((n_elements - head_n_elems) / 2)
+    arm_2_n_elems = int((n_elements - head_n_elems) / 2)
+
+    # Compute the radius along the rod
+    s = np.linspace(
+        0.0, head_n_elems / 2 * base_length / n_elements, int(head_n_elems / 2)
+    )
+    half_head_radius = np.tanh(s) / max(np.tanh(s)) * (radius_head) + radius_tip
+    other_half_head_radius = half_head_radius[::-1]
+
+    radius_along_rod = np.linspace(radius_tip, radius_base, arm_1_n_elems)
+    radius_along_rod = np.hstack(
+        (radius_along_rod, half_head_radius, other_half_head_radius)
+    )
+    radius_along_rod = np.hstack(
+        (radius_along_rod, np.linspace(radius_tip, radius_base, arm_2_n_elems)[::-1])
     )
 
+    # radius_along_rod = np.linspace(radius_tip, radius_base, arm_1_n_elems)
+    # for i in range(head_element):
+    #     radius_along_rod = np.hstack((radius_along_rod, radius_head))
+    # radius_along_rod = np.hstack((radius_along_rod, np.linspace(radius_tip, radius_base, arm_2_n_elems)[::-1]))
 
-def segment_activation_function(time):
-    """
-    This function is an example activation function for users. Similar to
-    this function users can write their own activation function.
-    Note that it is important to set correctly activation array sizes, which
-    is number of basis functions for that muscle segment. Also users has to
-    pack activation arrays in correct order at the return step, thus correct
-    activation array activates correct muscle segment.
-    Parameters
-    ----------
-    time
+    # beta is the angle between head elements and arm
+    alpha = (90 - beta / 2) / 180 * np.pi
 
-    Returns
-    -------
+    d3_segment1 = np.cos(alpha) * direction + np.sin(alpha) * normal
+    d3_segment1 /= np.linalg.norm(d3_segment1)
 
-    """
+    # Set the head directors of the octopus
+    d3_segment2 = direction / np.linalg.norm(direction)
 
-    # Muscle segment at the first arm, acting in first bending direction or normal direction
-    activation_arr_1 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_1[0] = ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_1[1:3] = ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_1[3:7] = ramped_up(time - 0.8, 0.1)
+    d3_segment3 = np.cos(-alpha) * direction + np.sin(-alpha) * normal
+    d3_segment3 /= np.linalg.norm(d3_segment3)
 
-    # Muscle segment at the second arm, acting in first bending direction or normal direction
-    activation_arr_2 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_2[0] = ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_2[1:3] = ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_2[3:7] = ramped_up(time - 0.8, 0.1)
+    # We have to compute the correct position for arm and we have to check the the sigma, and kappa as well
+    segment_number_of_elements = np.array([arm_1_n_elems, head_n_elems, arm_2_n_elems])
+    start_idx_1 = 0
+    end_idx_1 = start_idx_1 + arm_1_n_elems
 
-    # Muscle segment at the first arm, acting in second bending direction or binormal direction
-    activation_arr_3 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_3[0] = ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_3[1:3] = ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_3[3:7] = ramped_up(time - 0.8, 0.1)
+    start_idx_2 = end_idx_1
+    end_idx_2 = start_idx_2 + head_n_elems
 
-    # Muscle segment at the second arm, acting in second bending direction or binormal direction
-    activation_arr_4 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_4[0] = ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_4[1:3] = ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_4[3:7] = ramped_up(time - 0.8, 0.1)
+    start_idx_3 = end_idx_2
+    end_idx_3 = start_idx_3 + arm_2_n_elems
 
-    # Muscle segment at the first arm, acting in twist direction or tangent direction
-    activation_arr_5 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_5[0] = ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_5[1:3] = ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_5[3:7] = ramped_up(time - 0.8, 0.1)
+    start_idx = np.hstack((start_idx_1, start_idx_2, start_idx_3))
+    end_idx = np.hstack((end_idx_1, end_idx_2, end_idx_3))
 
-    # Muscle segment at the second arm, acting in twist direction or tangent direction
-    activation_arr_6 = np.zeros((7))
-    # Top level muscle segment
-    activation_arr_6[0] = -1.0 * ramped_up(time - 1.0, 0.1)
-    # Mid level muscle segment
-    activation_arr_6[1:3] = -1.0 * ramped_up(time - 0.9, 0.1)
-    # Bottom level muscle segment
-    activation_arr_6[3:7] = -1.0 * ramped_up(time - 0.8, 0.1)
+    direction_of_segments = np.vstack((d3_segment1, d3_segment2, d3_segment3))
+    position = np.zeros((MaxDimension.value(), n_elements + 1))
 
-    return [
-        [activation_arr_1, activation_arr_2],  # activation in normal direction
-        [activation_arr_3, activation_arr_4],  # activation in binormal direction
-        [activation_arr_5, activation_arr_6],  # activation in tangent direction
-    ]
+    for k in range(segment_number_of_elements.shape[0]):
+        end = (
+            start
+            + direction_of_segments[k, ...]
+            * base_length
+            / n_elements
+            * segment_number_of_elements[k]
+        )
+        for i in range(0, MaxDimension.value()):
+            position[i, start_idx[k] : end_idx[k] + 1] = np.linspace(
+                start[i], end[i], num=segment_number_of_elements[k] + 1
+            )
+        # New segments start position should be old segments end position
+        start = end
 
-
-def main():
-    # Set simulation integrator type, final time and time step
-    timestepper = PositionVerlet()
-    final_time = 10.0
-    time_step = 4.0e-5
-    total_steps = int(final_time / time_step)
-    print("Total steps", total_steps)
-
-    # Initialize the environment
-    env = Environment(timestepper, COLLECT_DATA=True)
-    env.reset()
-
-    # Do multiple simulations for learning, or control
-    for i_episodes in range(1):
-
-        # Reset the environment before the new episode
-        env.reset()
-
-        # Simulation loop starts
-        dt = np.float64(float(final_time) / total_steps)
-        time = np.float64(0.0)
-
-        for _ in tqdm(range(total_steps)):
-            """ Compute the activation signal and pass to environment """
-            activation = segment_activation_function(time)
-
-            time, observation, reward, done = env.step(activation, time, dt)
-            if done:
-                print("Episode finished after {} ".format(time + 1))
-                break
-
-        print("Final time of simulation is : ", time)
-        # Simulation loop ends
-
-        # Post-processing
-        # env.post_processing(filename_video="two_arm_simulation_3d_with_target.mp4")
-
-
-# filename_video = "two_arm_simulation_zy.mp4"
-# plot_video(
-#     pp_list,
-#     video_name=filename_video,
-#     margin=0.4,
-#     fps=20,
-#     step=10,
-# )
-#
-# filename_activation_muscle_torque_video = "two_arm_activation_normal_dir_muscle_torque.mp4"
-# plot_video_actiavation_muscle(
-#     activation_function_list_for_muscle_in_normal_dir,
-#     torque_profile_list_for_muscle_in_normal_dir,
-#     video_name=filename_activation_muscle_torque_video,
-#     margin=0.2,
-#     fps=20,
-#     step=10,
-# )
-#
-# filename_activation_muscle_torque_video = "two_arm_activation_binormal_dir_muscle_torque.mp4"
-# plot_video_actiavation_muscle(
-#     activation_function_list_for_muscle_in_binormal_dir,
-#     torque_profile_list_for_muscle_in_binormal_dir,
-#     video_name=filename_activation_muscle_torque_video,
-#     margin=0.2,
-#     fps=20,
-#     step=10,
-# )
-#
-# filename_activation_muscle_torque_video = "two_arm_activation_tangent_dir_muscle_torque.mp4"
-# plot_video_actiavation_muscle(
-#     activation_function_list_for_muscle_in_tangent_dir,
-#     torque_profile_list_for_muscle_in_tangent_dir,
-#     video_name=filename_activation_muscle_torque_video,
-#     margin=0.2,
-#     fps=20,
-#     step=10,
-# )
-#
-# filename_video = "two_arm_simulation_zx.mp4"
-# plot_video_zx(
-#     pp_list,
-#     video_name=filename_video,
-#     margin=0.4,
-#     fps=20,
-#     step=10,
-# )
-#
-# filename_video = "two_arm_simulation_3d_with_target.mp4"
-# plot_video3d(
-#     env.pp_list, video_name=filename_video, margin=0.4, fps=20, step=10,
-# )
-
-
-# filename = "arm_tip_sensor_values.png"
-# plot_arm_tip_sensor_values(sensor_list, filename, SAVE_FIGURE=True)
-
-
-if __name__ == "__main__":
-    main()
+    return radius_along_rod, position

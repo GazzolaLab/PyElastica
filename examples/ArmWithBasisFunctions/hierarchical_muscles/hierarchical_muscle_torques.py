@@ -5,11 +5,12 @@ import numba
 sys.path.append("../../../")
 
 from elastica.external_forces import NoForces
-from elastica._linalg import _batch_matvec
+from elastica._linalg import _batch_matvec, _batch_product_i_k_to_ik
 from .hierarchical_bases import SplineHierarchySegments
 
-from elastica._linalg import _batch_product_i_k_to_ik
+
 from elastica.external_forces import inplace_addition, inplace_substraction
+from elastica._calculus import _clip_array
 
 
 class HierarchicalMuscleTorques(NoForces):
@@ -18,7 +19,7 @@ class HierarchicalMuscleTorques(NoForces):
         hierarchy_mapper: SplineHierarchySegments,
         activation_func,
         direction,
-        ramp_up_time=0.0,
+        # ramp_up_time=0.0,
         step_skip=200,
         **kwargs
     ):
@@ -50,6 +51,8 @@ class HierarchicalMuscleTorques(NoForces):
         #     instantaneous_activation = np.hstack(
         #         (instantaneous_activation, activation_list[k])
         #     )
+        # restrict the values of activation
+        instantaneous_activation = _clip_array(instantaneous_activation, -1.0, 1.0)
 
         torque_magnitude = self.torque_generating_hierarchy(
             system.lengths, instantaneous_activation
@@ -72,36 +75,36 @@ class HierarchicalMuscleTorques(NoForces):
             system.director_collection,
         )
 
-        self.counter += 1
-        if self.counter % self.step_skip == 0:
-            if self.activation_function_recorder is not None:
-                self.activation_function_recorder["time"].append(time)
-                self.activation_function_recorder["second_activation_signal"].append(
-                    instantaneous_activation[:7][::-1]
-                )
-                self.activation_function_recorder["first_activation_signal"].append(
-                    instantaneous_activation[7:][::-1]
-                )
-            if self.torque_profile_recorder is not None:
-                self.torque_profile_recorder["time"].append(time)
-                filter = np.zeros(torque_magnitude.shape)
-                second_filter = 0.0 * filter
-                second_filter[70:] = 1.0
-                # second_filter = np.ones(torque_magnitude.shape)
-                self.torque_profile_recorder["second_torque_mag"].append(
-                    torque_magnitude * second_filter
-                )
-                filter[:50] = 1.0
-                # filter = np.ones(torque_magnitude.shape)
-                self.torque_profile_recorder["first_torque_mag"].append(
-                    torque_magnitude * filter
-                )
-                self.torque_profile_recorder["torque"].append(
-                    system.external_torques.copy()
-                )
-                self.torque_profile_recorder["element_position"].append(
-                    np.cumsum(system.lengths)
-                )
+        # self.counter += 1
+        # if self.counter % self.step_skip == 0:
+        #     if self.activation_function_recorder is not None:
+        #         self.activation_function_recorder["time"].append(time)
+        #         self.activation_function_recorder["second_activation_signal"].append(
+        #             instantaneous_activation[:7][::-1]
+        #         )
+        #         self.activation_function_recorder["first_activation_signal"].append(
+        #             instantaneous_activation[7:][::-1]
+        #         )
+        #     if self.torque_profile_recorder is not None:
+        #         self.torque_profile_recorder["time"].append(time)
+        #         filter = np.zeros(torque_magnitude.shape)
+        #         second_filter = 0.0 * filter
+        #         second_filter[70:] = 1.0
+        #         # second_filter = np.ones(torque_magnitude.shape)
+        #         self.torque_profile_recorder["second_torque_mag"].append(
+        #             torque_magnitude * second_filter
+        #         )
+        #         filter[:50] = 1.0
+        #         # filter = np.ones(torque_magnitude.shape)
+        #         self.torque_profile_recorder["first_torque_mag"].append(
+        #             torque_magnitude * filter
+        #         )
+        #         self.torque_profile_recorder["torque"].append(
+        #             system.external_torques.copy()
+        #         )
+        #         self.torque_profile_recorder["element_position"].append(
+        #             np.cumsum(system.lengths)
+        #         )
 
     @staticmethod
     @numba.njit()
