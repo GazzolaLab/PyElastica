@@ -1,4 +1,4 @@
-# elastica-python [![Build_status](https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master)](https://travis-ci.com/mattialabteam) [![codecov](https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr)](https://codecov.io/gh/mattialabteam/elastica-python)
+## elastica-python [![Build_status](https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master)](https://travis-ci.com/mattialabteam) [![codecov](https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr)](https://codecov.io/gh/mattialabteam/elastica-python)
 
 Python version of elastica for use in the [NCSA-NVIDIA AI Hackathon](http://www.ncsa.illinois.edu/enabling/data/deep_learning/news/2020_ai_hack_3) held at the University of Illinois from March 7-8 2020.
 
@@ -100,7 +100,7 @@ Each activation array has 7 entries that relate to the activation of different b
 #### A few practical notes
 1) To save a video of the octopus with `Environment.post_processing()`, you need to install `ffmeg`. You can download and install it [here](https://www.ffmpeg.org/). 
 
-2) The timestep size is set to 40 $\mu s$. This is necessary to keep the simulation stable, however, you may not need to update your muscle activations that often.
+2) The timestep size is set to 40 μs. This is necessary to keep the simulation stable, however, you may not need to update your muscle activations that often.
 
 3) There is a 15-20 second startup delay while the simulation is initialized. This is a one time cost whenever the Python script is run and resetting the simulation using `.rest()` does not incur this delay for subsequent simulations. 
 
