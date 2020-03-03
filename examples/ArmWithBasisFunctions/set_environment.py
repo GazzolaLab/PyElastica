@@ -409,7 +409,7 @@ class Environment:
         # Position of the rod cannot be NaN, it is not valid, stop the simulation
         invalid_values_condition = _isnan_check(self.shearable_rod.position_collection)
 
-        if (invalid_values_condition == True):
+        if invalid_values_condition == True:
             print(" Nan detacted, exit simulation")
             done = True
         """ Done is a boolean to reset the environment before episode is completed """
