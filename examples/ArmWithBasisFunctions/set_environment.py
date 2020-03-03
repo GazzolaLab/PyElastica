@@ -379,9 +379,12 @@ class Environment:
             self.StatefulStepper, self.simulator
         )
 
-        return self.total_steps
+        # FIXME: when you merge rigid body send cylinder object
+        systems = [self.shearable_rod, self.shearable_rod]
 
-    def step(self, activation_array_list, time, user_defined_condition):
+        return self.total_steps, systems
+
+    def step(self, activation_array_list, time):
 
         # Activation array contains lists for activation in different directions
         # assign correct activation arrays to correct directions.
@@ -398,7 +401,7 @@ class Environment:
             self.time_step,
         )
 
-        # FIXME: when you merge rigid body send cyclinder object
+        # FIXME: when you merge rigid body send cylinder object
         systems = [self.shearable_rod, self.shearable_rod]
 
         """ Done is a boolean to reset the environment before episode is completed """
@@ -406,11 +409,8 @@ class Environment:
         # Position of the rod cannot be NaN, it is not valid, stop the simulation
         invalid_values_condition = _isnan_check(self.shearable_rod.position_collection)
 
-        if (invalid_values_condition == True) or (user_defined_condition == True):
-            if invalid_values_condition == True:
-                print(" Nan detacted, exit simulation")
-            if user_defined_condition == True:
-                print(" User defined condition satisfied, exit simulation")
+        if (invalid_values_condition == True):
+            print(" Nan detacted, exit simulation")
             done = True
         """ Done is a boolean to reset the environment before episode is completed """
 
