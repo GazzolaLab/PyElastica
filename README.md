@@ -97,6 +97,8 @@ Each activation array has 7 entries that relate to the activation of different b
 `activation_array[1:3]` -- Two mid level muscle segment  
 `activation_array[3:7]` -- Four bottom level muscle segment  
 
+The state of the octopus is available in `shearable_rod`. The octopus consists of a series of 121 nodes. Nodes 0 - 49 relates to one arm, nodes 50-70 relate to the head and nodes 71-120 realate to the second arm. `shearable_rod.position_collection` returns an array with entries relating to the position of each node. 
+
 #### A few practical notes
 1) To save a video of the octopus with `Environment.post_processing()`, you need to install `ffmeg`. You can download and install it [here](https://www.ffmpeg.org/). 
 
