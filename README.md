@@ -1,13 +1,8 @@
 # elastica-python [![Build_status](https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master)](https://travis-ci.com/mattialabteam) [![codecov](https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr)](https://codecov.io/gh/mattialabteam/elastica-python)
 
-Python version of elastica is located in this repository. Uploaded code is tested against the Timoshenko beam analytical solution. This branch contains ongoing implementation of friction and rod rod joints.
+Python version of elastica for use in the [NCSA-NVIDIA AI Hackathon](http://www.ncsa.illinois.edu/enabling/data/deep_learning/news/2020_ai_hack_3) held at the University of Illinois from March 7-8 2020.
 
-
----
-title: Hackathon Readme
-category: TEMP
-order: 1 
----
+# Hackathon readme
 
 ## Problem Statement
 The objective is to train a model to move a (cyber)-octopus with two soft arms and a head to reach a target location, and then grab an object. The octopus is modeled as an assembly of Cosserat rods and is activated by muscles surrounding its arms. Input to the mechanical model is the activation signals to the surrounding muscles, which causes it to contract, thus moving the arms. The output of the model comes from the octopus' environment. The mechanical model will be provided both for the octopus and its interaction with its environment. The goal is to find the correct muscle activation signals that make the octopus crawl to reach the target location and then make one arm to grab the object.
