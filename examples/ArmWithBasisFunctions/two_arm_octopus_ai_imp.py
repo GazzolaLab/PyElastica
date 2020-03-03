@@ -172,11 +172,13 @@ def main():
             user_defined_condition = user_defined_condition_function(reward, systems, time)
             if user_defined_condition == True:
                 print(" User defined condition satisfied, exit simulation")
-                done = True
+                print(" Episode finished after {} ".format(time))
+                break
 
-            # If done=True, Exit the simulation loop before, reaching final time
+            # If done=True, NaN detected in simulation. 
+            # Exit the simulation loop before, reaching final time
             if done:
-                print("Episode finished after {} ".format(time))
+                print(" Episode finished after {} ".format(time))
                 break
 
         print("Final time of simulation is : ", time)
