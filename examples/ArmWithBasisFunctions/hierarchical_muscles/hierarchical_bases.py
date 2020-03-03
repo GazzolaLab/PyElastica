@@ -232,11 +232,13 @@ class SplineHierarchySegments:
             start = stop
 
     def __call__(self, rod_lengths, activation):
-        cumulative_lengths = np.cumsum(rod_lengths)
-        non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
-        output = 0.0 * rod_lengths
+        # cumulative_lengths = np.cumsum(rod_lengths)
+        # non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
+        # output = 0.0 * rod_lengths
 
-        # output, non_dimensional_cum_length  = self.compute_non_dimensional_length(rod_lengths)
+        output, non_dimensional_cum_length = self.compute_non_dimensional_length(
+            rod_lengths
+        )
 
         for idx, mapper in enumerate(self.mappers):
             activation_start, activation_stop = self.activation_start_stop[idx]
