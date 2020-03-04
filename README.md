@@ -48,7 +48,6 @@ You will want to work within `main()` to interface with the simulations and deve
 
 ```
     # Set simulation integrator type, final time and time step
-    timestepper = PositionVerlet()  # Do not edit
     final_time = 10.0
 
     # Initialize the environment
