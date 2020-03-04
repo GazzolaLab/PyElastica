@@ -6,7 +6,8 @@ import os
 data_file_name = "flexible_swinging_pendulum.dat"
 if os.path.exists(data_file_name):
     import pickle
-    with open(data_file_name, 'rb') as file_handle:
+
+    with open(data_file_name, "rb") as file_handle:
         recorded_history = pickle.load(file_handle)
 
 # Generate data in six separate figures and not in one subplot
@@ -20,22 +21,24 @@ time = np.array(recorded_history["time"])
 positions = np.array(recorded_history["position"])
 
 if False:
-    fig = plt.figure(1, figsize=(8,5))
+    fig = plt.figure(1, figsize=(8, 5))
     ax = fig.add_subplot(111)
     for node in NODAL_SELECTION:
         ax.plot(time, positions[:, 2, node])
 
-    fig = plt.figure(2, figsize=(8,5))
+    fig = plt.figure(2, figsize=(8, 5))
     ax = fig.add_subplot(111)
     for node in NODAL_SELECTION:
         ax.plot(time, positions[:, 0, node])
 
-    fig = plt.figure(3, figsize=(8,5))
+    fig = plt.figure(3, figsize=(8, 5))
     ax = fig.add_subplot(111)
     # (time, 3, 3, n_elem) array
     directors = np.array(recorded_history["directors"])
     # Plot d1 . e1
-    projected_director = np.einsum('ijk,j->ik', directors[:, 0, :, :], np.array([1.0, 0.0, 0.0]))
+    projected_director = np.einsum(
+        "ijk,j->ik", directors[:, 0, :, :], np.array([1.0, 0.0, 0.0])
+    )
     for elem in ELEMENT_SELECTION:
         ax.plot(time, projected_director[:, elem])
 
@@ -61,4 +64,4 @@ for elem in FORCE_SELECTION:
 
 plt.show()
 # if __name__ == "__main__":
-    # main()
+# main()

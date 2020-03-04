@@ -21,7 +21,9 @@ from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forc
 from elastica._rotations import _get_rotation_matrix
 
 
-class GammaOmegaQuasistaticSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class GammaOmegaQuasistaticSimulator(
+    BaseSystemCollection, Constraints, Forcing, CallBacks
+):
     pass
 
 
@@ -85,13 +87,17 @@ class GammaOmegaBC(FreeRod):
         self.first_end[2] = inst_first_position
         rod.position_collection[..., 0] = self.first_end
         if non_dimensional_time < 0.1:
-            rod.position_collection[1, 0] = 1e-5 * np.sin(np.pi * non_dimensional_time / 0.1)
+            rod.position_collection[1, 0] = 1e-5 * np.sin(
+                np.pi * non_dimensional_time / 0.1
+            )
 
         inst_last_position = base_length * (1.0 - 0.5 * non_dimensional_time)
         self.last_end[2] = inst_last_position
         rod.position_collection[..., -1] = self.last_end
         if non_dimensional_time < 0.1:
-            rod.position_collection[1, -1] = 1e-5 * np.sin(np.pi * non_dimensional_time / 0.1)
+            rod.position_collection[1, -1] = 1e-5 * np.sin(
+                np.pi * non_dimensional_time / 0.1
+            )
 
         # Slerp for rotation matrices
         # First angle is 0.0, last angle is np.pi on the first director
@@ -99,12 +105,12 @@ class GammaOmegaBC(FreeRod):
         rotation_axes = np.array([0.0, 0.0, 1.0]).reshape(-1, 1)
         inst_first_dir = _get_rotation_matrix(inst_first_angle, rotation_axes)
         # print(inst_first_dir)
-        rod.director_collection[..., 0] = (inst_first_dir[..., 0] @ self.first_director)
+        rod.director_collection[..., 0] = inst_first_dir[..., 0] @ self.first_director
 
         inst_last_angle = (-np.pi) * non_dimensional_time
         inst_last_dir = _get_rotation_matrix(inst_last_angle, rotation_axes)
         # print(inst_last_dir)
-        rod.director_collection[..., -1] = (inst_last_dir[..., 0] @ self.last_director)
+        rod.director_collection[..., -1] = inst_last_dir[..., 0] @ self.last_director
 
     def constrain_rates(self, rod, time):
         non_dimensional_time = time / final_time
@@ -112,12 +118,24 @@ class GammaOmegaBC(FreeRod):
         rod.velocity_collection[..., 0] = 0.0
         rod.velocity_collection[2, 0] = 0.5 * base_length / final_time
         if non_dimensional_time < 0.1:
-            rod.velocity_collection[1, 0] = 1e-5 * np.pi / final_time / 0.1 * np.cos(np.pi * non_dimensional_time / 0.1)
+            rod.velocity_collection[1, 0] = (
+                1e-5
+                * np.pi
+                / final_time
+                / 0.1
+                * np.cos(np.pi * non_dimensional_time / 0.1)
+            )
 
         rod.velocity_collection[..., -1] = 0.0
         rod.velocity_collection[2, -1] = -0.5 * base_length / final_time
         if non_dimensional_time < 0.1:
-            rod.velocity_collection[1, -1] = 1e-5 * np.pi / final_time / 0.1 * np.cos(np.pi * non_dimensional_time / 0.1)
+            rod.velocity_collection[1, -1] = (
+                1e-5
+                * np.pi
+                / final_time
+                / 0.1
+                * np.cos(np.pi * non_dimensional_time / 0.1)
+            )
 
         # This is in d3! but d3 is equivalent to e3 in our case
         rod.omega_collection[..., 0] = 0.0
@@ -146,13 +164,9 @@ class GammaOmegaCallBack(CallBackBaseClass):
     def make_callback(self, system, time, current_step: int):
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
-            self.callback_params["directors"].append(
-                system.director_collection.copy())
-            self.callback_params["dilatation"].append(
-                system.dilatation.copy())
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["directors"].append(system.director_collection.copy())
+            self.callback_params["dilatation"].append(system.dilatation.copy())
         return
 
 
@@ -174,33 +188,37 @@ timestepper = PositionVerlet()
 integrate(timestepper, gamma_omega_sim, final_time, total_steps)
 
 if PLOT_VIDEO:
+
     def plot_video(
-            plot_params: dict,
-            video_name="video.mp4",
-            margin=0.2,
-            fps=60,
-            step=1,
-            *args,
-            **kwargs
+        plot_params: dict,
+        video_name="video.mp4",
+        margin=0.2,
+        fps=60,
+        step=1,
+        *args,
+        **kwargs
     ):
         # (time step, x/y/z, node)
         import matplotlib.animation as manimation
         from mpl_toolkits.mplot3d import Axes3D
-        plt.rcParams.update({'font.size': 22})
+
+        plt.rcParams.update({"font.size": 22})
 
         print("Plotting video")
         time = plot_params["time"]
         position = np.array(plot_params["position"])
         radius = np.array(plot_params["radius"])
         FFMpegWriter = manimation.writers["ffmpeg"]
-        metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
+        metadata = dict(
+            title="Movie Test", artist="Matplotlib", comment="Movie support!"
+        )
         writer = FFMpegWriter(fps=fps, metadata=metadata)
         dpi = 150
         fig = plt.figure(figsize=(10, 8), frameon=True, dpi=dpi)
         ax = fig.add_subplot(1, 1, 1, projection="3d")
         i = 0
-        rod_line, = ax.plot(positions[i, 2], positions[i, 0], positions[i, 1], lw=3.0)
-        ax.set_aspect('equal', adjustable='box')
+        (rod_line,) = ax.plot(positions[i, 2], positions[i, 0], positions[i, 1], lw=3.0)
+        ax.set_aspect("equal", adjustable="box")
         ax.set_xlim(0 - margin, 1.0 + margin)
         ax.set_ylim(-1.00 - margin, 0.00 + margin)
         ax.set_zlim(0.0, 1.0 + margin)
@@ -216,7 +234,6 @@ if PLOT_VIDEO:
                     rod_line.set_ydata(position[temporal_idx, 0])
                     rod_line.set_zdata(position[temporal_idx, 1])
                     writer.grab_frame()
-
 
     plot_video(recorded_history, "quas_gamma_omega.mp4")
 

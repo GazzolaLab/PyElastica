@@ -20,7 +20,9 @@ from elastica.timestepper.symplectic_steppers import PEFRL, PositionVerlet
 from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forcing
 
 
-class SwingingFlexiblePendulumSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class SwingingFlexiblePendulumSimulator(
+    BaseSystemCollection, Constraints, Forcing, CallBacks
+):
     pass
 
 
@@ -81,9 +83,7 @@ class HingeBC(FreeRod):
         rod.velocity_collection[..., 0] = 0.0
 
 
-pendulum_sim.constrain(pendulum_rod).using(
-    HingeBC, positions=(0,), directors=(0,)
-)
+pendulum_sim.constrain(pendulum_rod).using(HingeBC, positions=(0,), directors=(0,))
 
 # Add gravitational forces
 gravitational_acc = -9.80665
@@ -106,12 +106,8 @@ class PendulumCallBack(CallBackBaseClass):
     def make_callback(self, system, time, current_step: int):
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
-            self.callback_params["directors"].append(
-                system.director_collection.copy()
-            )
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["directors"].append(system.director_collection.copy())
             if time > 0.0:
                 self.callback_params["internal_stress"].append(
                     system.internal_stress.copy()
@@ -128,7 +124,11 @@ total_steps = int(final_time / dt)
 
 print("Total steps", total_steps)
 recorded_history = defaultdict(list)
-step_skip = 60 if PLOT_VIDEO else (int(total_steps / 10) if PLOT_FIGURE else int(total_steps / 200))
+step_skip = (
+    60
+    if PLOT_VIDEO
+    else (int(total_steps / 10) if PLOT_FIGURE else int(total_steps / 200))
+)
 pendulum_sim.collect_diagnostics(pendulum_rod).using(
     PendulumCallBack, step_skip=step_skip, callback_params=recorded_history,
 )
@@ -140,34 +140,38 @@ timestepper = PositionVerlet()
 integrate(timestepper, pendulum_sim, final_time, total_steps)
 
 if PLOT_VIDEO:
+
     def plot_video(
-            plot_params: dict,
-            video_name="video.mp4",
-            margin=0.2,
-            fps=60,
-            step=1,
-            *args,
-            **kwargs
+        plot_params: dict,
+        video_name="video.mp4",
+        margin=0.2,
+        fps=60,
+        step=1,
+        *args,
+        **kwargs
     ):  # (time step, x/y/z, node)
         import matplotlib.animation as manimation
-        plt.rcParams.update({'font.size': 22})
+
+        plt.rcParams.update({"font.size": 22})
 
         # Should give a (n_time, 3, n_elem) array
         positions = np.array(plot_params["position"])
 
         print("plot video")
         FFMpegWriter = manimation.writers["ffmpeg"]
-        metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
+        metadata = dict(
+            title="Movie Test", artist="Matplotlib", comment="Movie support!"
+        )
         writer = FFMpegWriter(fps=fps, metadata=metadata)
         dpi = 300
         fig = plt.figure(figsize=(10, 8), frameon=True, dpi=dpi)
         ax = fig.add_subplot(111)
-        ax.set_aspect('equal', adjustable='box')
+        ax.set_aspect("equal", adjustable="box")
         # plt.axis("square")
         i = 0
-        rod_line, = ax.plot(positions[i, 2], positions[i, 0], lw=3.0)
-        tip_line, = ax.plot(positions[:i, 2, -1], positions[:i, 0, -1], 'k--')
-        ax.set_aspect('equal', adjustable='box')
+        (rod_line,) = ax.plot(positions[i, 2], positions[i, 0], lw=3.0)
+        (tip_line,) = ax.plot(positions[:i, 2, -1], positions[:i, 0, -1], "k--")
+        ax.set_aspect("equal", adjustable="box")
         ax.set_xlim([-1.0 - margin, 1.0 + margin])
         ax.set_ylim([-1.0 - margin, 0.0 + margin])
         with writer.saving(fig, video_name, dpi):
@@ -179,13 +183,12 @@ if PLOT_VIDEO:
                     tip_line.set_ydata(positions[:i, 0, -1])
                     writer.grab_frame()
 
-
     plot_video(recorded_history, "swinging_flexible_pendulum.mp4")
 
 if PLOT_FIGURE:
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    ax.set_aspect('equal', adjustable='box')
+    ax.set_aspect("equal", adjustable="box")
     # Should give a (n_time, 3, n_elem) array
     positions = np.array(recorded_history["position"])
     for i in range(positions.shape[0]):
@@ -195,6 +198,7 @@ if PLOT_FIGURE:
 
 if SAVE_RESULTS:
     import pickle as pickle
+
     filename = "flexible_swinging_pendulum.dat"
     with open(filename, "wb") as file:
         pickle.dump(recorded_history, file)
