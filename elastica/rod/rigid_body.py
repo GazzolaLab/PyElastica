@@ -18,7 +18,7 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
         self.normal = normal.reshape(3, 1)
         self.tangents = direction.reshape(3, 1)
         self.radius = base_radius
-        self.length = base_length * direction
+        self.length = base_length
         self.density = density
         # This is for a rigid body cyclinder
         self.volume = np.pi * base_radius * base_radius * base_length
@@ -117,6 +117,9 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
+
+    def compute_position_center_of_mass(self):
+        return self.position_collection[..., 0].copy()
 
     def compute_translational_energy(self):
         return (
