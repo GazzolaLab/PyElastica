@@ -361,7 +361,7 @@ class Environment:
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             # Collect data using callback function for postprocessing
-            step_skip = 100  # collect data every # steps
+            step_skip = 500  # collect data every # steps
             self.pp_list = defaultdict(list)  # list which collected data will be append
             # set the diagnostics for rod and collect data
             self.simulator.collect_diagnostics(self.shearable_rod).using(

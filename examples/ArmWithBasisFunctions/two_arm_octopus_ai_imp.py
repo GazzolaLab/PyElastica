@@ -15,7 +15,7 @@ def segment_activation_function(time):
     pack activation arrays in correct order at the return step, thus correct
     activation array activates correct muscle segment.
     Note that, activation array values can take numbers between -1 and 1. If you
-    put numbers different than these Elastica clips the values. If activation value
+    put numbers different than these, Elastica clips the values. If activation value
     is -1, this basis function generates torque in opposite direction.
     Parameters
     ----------
@@ -117,8 +117,8 @@ def user_defined_condition_function(reward, systems, time):
     done: boolean
     """
     done = False
-    rod = systems[0]  # shearable rod or cyber-octopus
-    cylinder = systems[1]  # rigid body or target object
+    octopus = systems[0]  # shearable rod or cyber-octopus
+    target = systems[1]  # rigid body or target object
     if time > 20.0:
         done = True
 
@@ -149,8 +149,8 @@ def main():
             # shearable_rod.position_collection = position of the elements ( here octopus )
             # shearable_rod.velocity_collection = velocity of the elements ( here octopus )
             # rigid_body.position_collection = position of the rigid body (here target object)
-            shearable_rod = systems[0]
-            rigid_body = systems[1]
+            octopus = systems[0]
+            target = systems[1]
 
             """Reward function should be here"""
             # User has to define his/her own reward function
