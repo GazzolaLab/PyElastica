@@ -64,13 +64,13 @@ try:
             self.acc_gravity = acc_gravity
 
         def apply_forces(self, system, time=0.0):
-            self.compute_gravity_foces(
+            self.compute_gravity_forces(
                 self.acc_gravity, system.mass, system.external_forces
             )
 
         @staticmethod
         @njit()
-        def compute_gravity_foces(acc_gravity, mass, external_forces):
+        def compute_gravity_forces(acc_gravity, mass, external_forces):
             """
             This function add gravitational forces on the nodes. We are
             using njit decorated function to increase the speed.
@@ -100,10 +100,41 @@ try:
             self.ramp_up_time = ramp_up_time
 
         def apply_forces(self, system, time=0.0):
-            factor = min(1.0, time / self.ramp_up_time)
+            # factor = min(1.0, time / self.ramp_up_time)
+            #
+            # system.external_forces[..., 0] += self.start_force * factor
+            # system.external_forces[..., -1] += self.end_force * factor
 
-            system.external_forces[..., 0] += self.start_force * factor
-            system.external_forces[..., -1] += self.end_force * factor
+            self.compute_end_point_forces(
+                system.external_forces,
+                self.start_force,
+                self.end_force,
+                time,
+                self.ramp_up_time,
+            )
+
+        @staticmethod
+        @njit()
+        def compute_end_point_forces(
+            external_forces, start_force, end_force, time, ramp_up_time
+        ):
+            """
+            Compute end point forces that are applied on the rod using numba njit decorator.
+            Parameters
+            ----------
+            external_forces
+            start_force
+            end_force
+            time
+            ramp_up_time
+
+            Returns
+            -------
+
+            """
+            factor = min(1.0, time / ramp_up_time)
+            external_forces[..., 0] += start_force * factor
+            external_forces[..., -1] += end_force * factor
 
     class UniformTorques(NoForces):
         """

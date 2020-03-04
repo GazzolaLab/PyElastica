@@ -3,6 +3,9 @@ __doc__ = """ Boundary conditions for rod """
 import numpy as np
 from elastica._rotations import _get_rotation_matrix
 
+import numba
+from numba import njit
+
 
 class FreeRod:
     """
@@ -31,12 +34,57 @@ class OneEndFixedRod(FreeRod):
         self.fixed_directors = fixed_directors
 
     def constrain_values(self, rod, time):
-        rod.position_collection[..., 0] = self.fixed_position
-        rod.director_collection[..., 0] = self.fixed_directors
+        # rod.position_collection[..., 0] = self.fixed_position
+        # rod.director_collection[..., 0] = self.fixed_directors
+        self.compute_contrain_values(
+            rod.position_collection,
+            self.fixed_position,
+            rod.director_collection,
+            self.fixed_directors,
+        )
 
     def constrain_rates(self, rod, time):
-        rod.velocity_collection[..., 0] = 0.0
-        rod.omega_collection[..., 0] = 0.0
+        # rod.velocity_collection[..., 0] = 0.0
+        # rod.omega_collection[..., 0] = 0.0
+        self.compute_constrain_rates(rod.velocity_collection, rod.omega_collection)
+
+    @staticmethod
+    @njit()
+    def compute_contrain_values(
+        position_collection, fixed_position, director_collection, fixed_directors
+    ):
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        position_collection
+        fixed_position
+        director_collection
+        fixed_directors
+
+        Returns
+        -------
+
+        """
+        position_collection[..., 0] = fixed_position
+        director_collection[..., 0] = fixed_directors
+
+    @staticmethod
+    @njit()
+    def compute_constrain_rates(velocity_collection, omega_collection):
+        """
+        Compute contrain rates in numba njit decorator
+        Parameters
+        ----------
+        velocity_collection
+        omega_collection
+
+        Returns
+        -------
+
+        """
+        velocity_collection[..., 0] = 0.0
+        omega_collection[..., 0] = 0.0
 
 
 class HelicalBucklingBC(FreeRod):
