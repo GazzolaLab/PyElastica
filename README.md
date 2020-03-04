@@ -11,11 +11,11 @@ The objective is to train a model to move a (cyber)-octopus with two soft arms a
 These goals build on each other, you need to successfully accomplish all prior goals to get credit for later goals.  
 
 1) Make octopus crawl towards some direction. (5 points)
-2) Make your octopus crawl to the target location. (10 points)  
-3) Have your octopus grab the object by wrapping one arm around the object. (15 points) 
-4) Make your octopus return to its starting location with the object. (20 points)
-5) Generalize your policy to perform these tasks for an arbitrarily located object. (50 points)   
-6) Have your octopus be the fastest to accomplish these tasks. (10 points)
+2) Make your octopus crawl to the target location. (7.5 points)  
+3) Make octopus to move the object using its arms. (7.5 points)
+4) Have your octopus grab the object by wrapping one arm around the object. (10 points) 
+5) Make your octopus return to its starting location with the object. (20 points)
+6) Generalize your policy to perform these tasks for an arbitrarily located object. (50 points)   
 
 ## Problem Context
 Octopuses have flexible limbs made up of muscles with no internal bone structure. These limbs, know as muscular hydrostats, have an almost infinite number of degrees of freedom, allowing an octopus to perform complex actions with its arms, but also making them difficult to mathematically model. Attempts to model octopus arms are motivated not only by a desire to understand them biologically, but also to adapt their control ability and decision making processes to the rapidly developing field of soft robotics. We have developed a simulation package Elastica that models flexible 1-d rods, which can be used to represent octopus arms as a long, slender rod. We now want to learn methods for controlling these arms. 
@@ -29,7 +29,7 @@ For this problem, we abstract the activation of the octopus muscles to the gener
 
 <img src="assets/rotation.png" alt="image name" width="500"/>
 
-There are three levels of these basis functions, with 1 basis function in the first level, 2 in the second lever and 4 in the third, leading to 7 basis functions in set. These levels have different maximum levels of activation. The lower levels have larger magnitudes than the higher levels, meaning they represent bulk motion of the rod while the higher levels allow finer control of the rod along the interval. In the code, the magnitude of each level will be fixed but you can choose the amount of activation at each level by setting the activation level between -1 and 1. 
+There are three levels of these basis functions, with 1 basis function in the first level, 2 in the second level and 4 in the third, leading to 7 basis functions in set. These levels have different maximum levels of activation. The lower levels have larger magnitudes than the higher levels, meaning they represent bulk motion of the rod while the higher levels allow finer control of the rod along the interval. In the code, the magnitude of each level will be fixed but you can choose the amount of activation at each level by setting the activation level between -1 and 1. 
 
 There are two bending modes (in the normal and binormal directions) and a twisting mode (in the tangent direction), so we define torques in these three different directions and independently for each arm. This yields six different sets of basis functions that can be activated for a total of 42 inputs. 
 

@@ -117,8 +117,8 @@ def user_defined_condition_function(reward, systems, time):
     done: boolean
     """
     done = False
-    octopus = systems[0]  # shearable rod or cyber-octopus
-    target = systems[1]  # rigid body or target object
+    rod = systems[0]  # shearable rod or cyber-octopus
+    cylinder = systems[1]  # rigid body or target object
     if time > 20.0:
         done = True
 
@@ -149,8 +149,8 @@ def main():
             # shearable_rod.position_collection = position of the elements ( here octopus )
             # shearable_rod.velocity_collection = velocity of the elements ( here octopus )
             # rigid_body.position_collection = position of the rigid body (here target object)
-            octopus = systems[0]
-            target = systems[1]
+            shearable_rod = systems[0]
+            rigid_body = systems[1]
 
             """Reward function should be here"""
             # User has to define his/her own reward function
