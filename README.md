@@ -40,8 +40,8 @@ We are providing you the Elastica software package which is written in Python. E
 `Environment` has three relevant functions:  
 * `Environment.reset(self)`:  setups and initializes the simulation environment. Call this prior to running any simulations.  
 * `Environment.step(self, activation_array_list, time)`: takes one timestep for muscle activations defined in `activation_array_list`. 
-* `Environment.post_processing(self, filename_video)`: Makes 3D video based on saved data from simulation. Requires `ffmpeg`.
-We do not suggest changing too much in this function has it may cause unintended consequences to the simulation. 
+* `Environment.post_processing(self, filename_video)`: Makes 3D video based on saved data from simulation. Requires `ffmpeg`.  
+We do not suggest changing `Environment` as it may cause unintended consequences to the simulation. 
 
 
 You will want to work within `main()` to interface with the simulations and develop your learning model. In `main()`, the first thing you need to define is the length of your simulation and initialize the environment. `final_time` is the length of time that your simulation will run unless exited early. You want to give your octopus enough time to complete the task, but too much time will lead to excessively long simulation times.
