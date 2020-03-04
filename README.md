@@ -108,7 +108,7 @@ Each activation array has 7 entries that relate to the activation of different b
 
 3) There is a 15-20 second startup delay while the simulation is initialized. This is a one time cost whenever the Python script is run and resetting the simulation using `.rest()` does not incur this delay for subsequent simulations. 
 
-
+4) We suggest installing `requirements.txt` and `optional-requirements.txt`, to run Elastica without any problem.
 
 
 
