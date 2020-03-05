@@ -47,11 +47,12 @@ We do not suggest changing `Environment` as it may cause unintended consequences
 You will want to work within `main()` to interface with the simulations and develop your learning model. In `main()`, the first thing you need to define is the length of your simulation and initialize the environment. `final_time` is the length of time that your simulation will run unless exited early. You want to give your octopus enough time to complete the task, but too much time will lead to excessively long simulation times.
 
 ```
-    # Set simulation integrator type, final time and time step
+    # Set simulation final time
     final_time = 10.0
 
     # Initialize the environment
-    env = Environment(timestepper, COLLECT_DATA=True)
+    target_position = np.array([-0.4, 0.0, 0.5])
+    env = Environment(final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True)
     total_steps, systems = env.reset()
 ```
 
@@ -62,14 +63,16 @@ With your system initialized, you are now ready to perform the simulation. To pe
 There is also a user defined stopping condition. When met, this will immediately end the simulation. This can be useful to end the simulation if the octopus successfully complete the task early, or has a sufficiently low reward function that there is no point continuing the simulation. 
 
 ```
-    for _ in tqdm(range(total_steps)):
-        """ Add your learning algorithm here to define activation """
-        # This will be based on your observations of the system and 
-        # evaluation of your reward function.  
-        shearable_rod = systems[0]
-        rigid_body = systems[1]   
-        reward = reward_function()   
-        activation = segment_activation_function()
+    for i_sim in tqdm(range(total_steps)):
+	""" Learning loop """
+	if i_sim % 200:
+           """ Add your learning algorithm here to define activation """
+           # This will be based on your observations of the system and 
+           # evaluation of your reward function.  
+           shearable_rod = systems[0]
+           rigid_body = systems[1]   
+           reward = reward_function()   
+           activation = segment_activation_function()
 
         """ Perform time step """
         time, systems, done = env.step(activation, time)
