@@ -6,13 +6,18 @@ from elastica.wrappers import (
     Constraints,
     Forcing,
     CallBacks,
+    Connections,
 )
 from elastica.rod.cosserat_rod import CosseratRod
+from elastica.rod.rigid_body import RigidBodyCyclinder
 from elastica.external_forces import GravityForces
 from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_muscle_torques import (
     HierarchicalMuscleTorques,
 )
-from elastica.interaction import AnistropicFrictionalPlane
+from elastica.interaction import (
+    AnistropicFrictionalPlane,
+    AnistropicFrictionalPlaneRigidBody,
+)
 from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases import (
     SpatiallyInvariantSplineHierarchy,
     SpatiallyInvariantSplineHierarchyMapper,
@@ -21,7 +26,7 @@ from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases impo
     Gaussian,
     ScalingFilter,
 )
-
+from elastica.joint import ExternalContact
 from elastica._calculus import _isnan_check
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
@@ -35,13 +40,13 @@ from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing 
 )
 
 # Set base simulator class
-class BaseSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class BaseSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks, Connections):
     pass
 
 
 class Environment:
     def __init__(
-        self, final_time, COLLECT_DATA_FOR_POSTPROCESSING=False,
+        self, final_time, cylinder_start, COLLECT_DATA_FOR_POSTPROCESSING=False,
     ):
         # Integrator type
         self.StatefulStepper = PositionVerlet()
@@ -52,6 +57,9 @@ class Environment:
         self.total_steps = int(self.final_time / time_step)
         self.time_step = np.float64(float(self.final_time) / self.total_steps)
         print("Total steps", self.total_steps)
+
+        # Rigid body cyclinder start position
+        self.cylinder_start = cylinder_start
 
         # Collect data is a boolean. If it is true callback function collects
         # rod parameters defined by user in a list.
@@ -136,22 +144,19 @@ class Environment:
         # Now rod is ready for simulation, append rod to simulation
         self.simulator.append(self.shearable_rod)
 
-        ## Add the target cyclinder
-        # FIXME: ADD Rigid body cyclinder
-        # target_cyclinder = CosseratRod.straight_rod(
-        #     n_elements=10,
-        #     start=np.array([-0.5, 0, 0.5]),
-        #     direction=np.array([0.0, 1.0, 0.0]),
-        #     normal=np.array([0.0, 0.0, 1.0]),
-        #     base_length=0.25,
-        #     base_radius=0.02,
-        #     density=1000,
-        #     nu=5,
-        #     youngs_modulus=5e6,
-        #     poisson_ratio = 0.5
-        # )
-
-        # arm_muscle_with_basis_functions_sim.append(target_cyclinder)
+        self.cylinder = RigidBodyCyclinder(
+            self.cylinder_start,  # cylinder  initial position
+            normal,  # cylinder direction
+            direction,  # cylinder normal
+            1.2,  # cylinder length
+            0.05,  # cylinder radius
+            106.1032953945969,  # corresponds to mass of 1kg
+        )
+        self.simulator.append(self.cylinder)
+        # Add external contact between rod and cyclinder
+        self.simulator.connect(self.shearable_rod, self.cylinder).using(
+            ExternalContact, 1e2, 0.1
+        )
 
         # As basis functions Gaussian distribution is used. Gaussian function
         # takes standard deviation as an input.
@@ -307,7 +312,7 @@ class Environment:
             GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
         )
 
-        # Add frictional plane in environment
+        # Add frictional plane in environment for shearable rod
         origin_plane = np.array([0.0, 0.0, 0.0])
         normal_plane = normal
         slip_velocity_tol = 1e-8
@@ -318,6 +323,24 @@ class Environment:
         static_mu_array = 2 * kinetic_mu_array
         self.simulator.add_forcing_to(self.shearable_rod).using(
             AnistropicFrictionalPlane,
+            k=1.0,
+            nu=1e-0,
+            plane_origin=origin_plane,
+            plane_normal=normal_plane,
+            slip_velocity_tol=slip_velocity_tol,
+            static_mu_array=static_mu_array,
+            kinetic_mu_array=kinetic_mu_array,
+        )
+
+        # Add friction plane in environment for rigid body cyclinder
+        origin_plane = np.array([0.0, 0.0, 0.0])
+        normal_plane = normal
+        slip_velocity_tol = 1e-8
+        mu = 0.4
+        kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
+        static_mu_array = 2 * kinetic_mu_array
+        self.simulator.add_forcing_to(self.cylinder).using(
+            AnistropicFrictionalPlaneRigidBody,
             k=1.0,
             nu=1e-0,
             plane_origin=origin_plane,
@@ -359,6 +382,38 @@ class Environment:
 
                     return
 
+        # Add call backs
+        class RigidCylinderCallBack(CallBackBaseClass):
+            """
+            Call back function for two arm octopus
+            """
+
+            def __init__(self, step_skip: int, callback_params: dict):
+                CallBackBaseClass.__init__(self)
+                self.every = step_skip
+                self.callback_params = callback_params
+
+            def make_callback(self, system, time, current_step: int):
+                if current_step % self.every == 0:
+                    self.callback_params["time"].append(time)
+                    self.callback_params["step"].append(current_step)
+                    self.callback_params["position"].append(
+                        system.position_collection.copy()
+                    )
+                    # self.callback_params["velocity"].append(
+                    #     system.velocity_collection.copy()
+                    # )
+                    # self.callback_params["avg_velocity"].append(
+                    #     system.compute_velocity_center_of_mass()
+                    # )
+                    #
+                    # self.callback_params["center_of_mass"].append(
+                    #     system.compute_position_center_of_mass()
+                    # )
+                    # self.callback_params["radius"].append(system.radius.copy())
+
+                    return
+
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             # Collect data using callback function for postprocessing
             step_skip = 500  # collect data every # steps
@@ -370,6 +425,16 @@ class Environment:
                 callback_params=self.pp_list,
             )
 
+            self.pp_list_rigid_cyclinder = defaultdict(
+                list
+            )  # list which collected data will be append
+            # set the diagnostics for cyclinder and collect data
+            self.simulator.collect_diagnostics(self.cylinder).using(
+                RigidCylinderCallBack,
+                step_skip=step_skip,
+                callback_params=self.pp_list_rigid_cyclinder,
+            )
+
         # Finalize simulation environment. After finalize, you cannot add
         # any forcing, constrain or call back functions
         self.simulator.finalize()
@@ -379,8 +444,7 @@ class Environment:
             self.StatefulStepper, self.simulator
         )
 
-        # FIXME: when you merge rigid body send cylinder object
-        systems = [self.shearable_rod, self.shearable_rod]
+        systems = [self.shearable_rod, self.cylinder]
 
         return self.total_steps, systems
 
@@ -401,8 +465,7 @@ class Environment:
             self.time_step,
         )
 
-        # FIXME: when you merge rigid body send cylinder object
-        systems = [self.shearable_rod, self.shearable_rod]
+        systems = [self.shearable_rod, self.cylinder]
 
         """ Done is a boolean to reset the environment before episode is completed """
         done = False

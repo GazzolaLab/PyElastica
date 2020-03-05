@@ -130,7 +130,14 @@ def main():
     final_time = 10.0
 
     # Initialize the environment
-    env = Environment(final_time, COLLECT_DATA_FOR_POSTPROCESSING=True)
+    target_position = np.array(
+        [-0.05, 0.0, 0.5]
+    )  # np.array([-0.4, 0.0, 0.4]) # target object initial position
+    # For task 6 uncomment the below code and show that your algorithm can drive
+    # octopus towards the random target.
+    # alpha = np.random.sample()
+    # target_position = np.array([-0.4*np.sin(alpha), 0.0, 0.5 + 0.4*np.cos(alpha)])
+    env = Environment(final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True)
     total_steps, systems = env.reset()
 
     # Do multiple simulations for learning, or control
@@ -142,27 +149,36 @@ def main():
         # Simulation loop starts
         time = np.float64(0.0)
         user_defined_condition = False
+        activation = segment_activation_function(time)
+        reward = 0.0
 
-        for _ in tqdm(range(total_steps)):
-            """ Use systems for observations """
-            # Observations can be rod parameters and can be accessed after every time step.
-            # shearable_rod.position_collection = position of the elements ( here octopus )
-            # shearable_rod.velocity_collection = velocity of the elements ( here octopus )
-            # rigid_body.position_collection = position of the rigid body (here target object)
-            shearable_rod = systems[0]
-            rigid_body = systems[1]
+        for i_sim in tqdm(range(total_steps)):
 
-            """Reward function should be here"""
-            # User has to define his/her own reward function
-            reward = 0.0
-            """Reward function should be here"""
+            """ Learning loop """
+            # Reward and activation does not have to be computed or updated every simulation step.
+            # Simulation time step is chosen to satisfy numerical stability of Elastica simulation.
+            # However, learning time step can be larger. For example in the below if loop,
+            # we are updating activation every 200 step.
+            if i_sim % 200:
+                """ Use systems for observations """
+                # Observations can be rod parameters and can be accessed after every time step.
+                # shearable_rod.position_collection = position of the elements ( here octopus )
+                # shearable_rod.velocity_collection = velocity of the elements ( here octopus )
+                # rigid_body.position_collection = position of the rigid body (here target object)
+                shearable_rod = systems[0]
+                rigid_body = systems[1]
 
-            """ Compute the activation signal and pass to environment """
-            # Based on the observations and reward function, have the learning algorithm
-            # update the muscle activations. Make sure that the activation arrays are packaged
-            # properly. See the segment_activation_function function defined above for an
-            # example of manual activations.
-            activation = segment_activation_function(time)
+                """Reward function should be here"""
+                # User has to define his/her own reward function
+                reward = 0.0
+                """Reward function should be here"""
+
+                """ Compute the activation signal and pass to environment """
+                # Based on the observations and reward function, have the learning algorithm
+                # update the muscle activations. Make sure that the activation arrays are packaged
+                # properly. See the segment_activation_function function defined above for an
+                # example of manual activations.
+                activation = segment_activation_function(time)
 
             # Do one simulation step. This function returns the current simulation time,
             # systems which are shearable rod (octopus) and rigid body, and done condition.
