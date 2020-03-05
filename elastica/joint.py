@@ -361,9 +361,20 @@ try:
             aabb_rod[i, 0] = np.min(rod_one_position[i]) - max_possible_dimension[i]
             aabb_rod[i, 1] = np.max(rod_one_position[i]) + max_possible_dimension[i]
 
-        cylinder_dimensions_in_world_FOR = cylinder_director[..., 0].T @ np.array(
+        # Is actually Q^T * d but numba complains about performance so we do
+        # d^T @ Q
+        cylinder_dimensions_in_local_FOR = np.array(
             [cylinder_radius, cylinder_radius, 0.5 * cylinder_length]
         )
+        cylinder_dimensions_in_world_FOR = np.zeros_like(
+            cylinder_dimensions_in_local_FOR
+        )
+        for i in range(3):
+            for j in range(3):
+                cylinder_dimensions_in_world_FOR[i] += (
+                    cylinder_director[j, i, 0] * cylinder_dimensions_in_local_FOR[j]
+                )
+
         max_possible_dimension = np.abs(cylinder_dimensions_in_world_FOR)
         aabb_cylinder[..., 0] = cylinder_position[..., 0] - max_possible_dimension
         aabb_cylinder[..., 1] = cylinder_position[..., 0] + max_possible_dimension
