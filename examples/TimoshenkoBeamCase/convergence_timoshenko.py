@@ -3,7 +3,7 @@ import numpy as np
 # FIXME without appending sys.path make it more generic
 import sys
 
-sys.path.append("../")
+sys.path.append("../../")
 
 from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
 from elastica.rod.cosserat_rod import CosseratRod
@@ -15,7 +15,7 @@ from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
-from convergence_functions import calculate_error_norm, plot_convergence
+from examples.convergence_functions import calculate_error_norm, plot_convergence
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):

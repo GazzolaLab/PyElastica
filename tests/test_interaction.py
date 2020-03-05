@@ -9,8 +9,8 @@ from elastica.interaction import (
     find_slipping_elements,
     AnistropicFrictionalPlane,
     nodes_to_elements,
-    sum_over_elements,
-    node_to_element_velocity,
+    # sum_over_elements,
+    # node_to_element_pos_or_vel,
     SlenderBodyTheory,
 )
 from test_rod import TestRod
@@ -748,50 +748,57 @@ class TestAnisotropicFriction:
 
 # Slender Body Theory Unit Tests
 
+try:
+    from elastica.interaction import sum_over_elements, node_to_element_pos_or_vel
 
-class TestAuxiliaryFunctionsForSlenderBodyTheory:
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_sum_over_elements(self, n_elem):
-        """
-        This function test sum over elements function with
-        respect to default python function .sum(). We write
-        this function because with numba we can get the sum
-        faster.
-        Parameters
-        ----------
-        n_elem
+    # These functions are used in the case if Numba is available
+    class TestAuxiliaryFunctionsForSlenderBodyTheory:
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_sum_over_elements(self, n_elem):
+            """
+            This function test sum over elements function with
+            respect to default python function .sum(). We write
+            this function because with numba we can get the sum
+            faster.
+            Parameters
+            ----------
+            n_elem
 
-        Returns
-        -------
+            Returns
+            -------
 
-        """
+            """
 
-        input_variable = np.random.rand(n_elem)
-        correct_output = input_variable.sum()
-        output = sum_over_elements(input_variable)
-        assert_allclose(correct_output, output, atol=Tolerance.atol())
+            input_variable = np.random.rand(n_elem)
+            correct_output = input_variable.sum()
+            output = sum_over_elements(input_variable)
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
 
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_node_to_elements(self, n_elem):
-        """
-        This function test node_to_element_velocity function. We are
-        converting node velocities to element velocities. Here also
-        we are using numba to speed up the process.
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_node_to_elements(self, n_elem):
+            """
+            This function test node_to_element_velocity function. We are
+            converting node velocities to element velocities. Here also
+            we are using numba to speed up the process.
 
-        Parameters
-        ----------
-        n_elem
+            Parameters
+            ----------
+            n_elem
 
-        Returns
-        -------
+            Returns
+            -------
 
-        """
-        random = np.random.rand()  # Adding some random numbers
-        input_variable = random * np.ones((3, n_elem + 1))
-        correct_output = random * np.ones((3, n_elem))
+            """
+            random = np.random.rand()  # Adding some random numbers
+            input_variable = random * np.ones((3, n_elem + 1))
+            correct_output = random * np.ones((3, n_elem))
 
-        output = node_to_element_velocity(input_variable)
-        assert_allclose(correct_output, output, atol=Tolerance.atol())
+            output = node_to_element_pos_or_vel(input_variable)
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+
+except ImportError:
+    pass
 
 
 class TestSlenderBody:

@@ -49,7 +49,8 @@ class Difference:
 
 
 @pytest.mark.parametrize("Setup", [Trapezoidal, Difference])
-@pytest.mark.parametrize("ndim", [1, 2, 3])
+# @pytest.mark.parametrize("ndim", [1, 2, 3])
+@pytest.mark.parametrize("ndim", [3])
 def test_two_point_difference_integrity(Setup, ndim):
     input_vector_oned, correct_vector_oned = Setup.oned_setup()
     dim = 3
@@ -69,12 +70,18 @@ def test_two_point_difference_integrity(Setup, ndim):
         test_vector = Setup.kernel(input_vector)
         correct_vector = setup(correct_vector_oned, dim)
     if ndim == 3:
-        input_vector = setup(input_vector_oned, dim * dim)
+        # input_vector = setup(input_vector_oned, dim * dim)
+        # test_vector = Setup.kernel(input_vector.reshape(dim,-1))
+        # correct_vector = setup(correct_vector_oned, dim * dim)
+        # input_vector = input_vector.reshape(dim, dim, -1)
+        # test_vector = test_vector.reshape(dim, -1)
+        # correct_vector = correct_vector.reshape(dim, -1)
+
+        # Above tests where failing, because, new Numba kernels only works for 3,n
+        # matrices.
+        input_vector = np.repeat(input_vector_oned[np.newaxis, :], ndim, axis=0)
         test_vector = Setup.kernel(input_vector)
-        correct_vector = setup(correct_vector_oned, dim * dim)
-        input_vector = input_vector.reshape(dim, dim, -1)
-        test_vector = test_vector.reshape(dim, dim, -1)
-        correct_vector = correct_vector.reshape(dim, dim, -1)
+        correct_vector = np.repeat(correct_vector_oned[np.newaxis, :], ndim, axis=0)
 
     assert test_vector.shape == input_vector.shape[:-1] + (input_vector.shape[-1] + 1,)
     assert_allclose(test_vector, correct_vector)
@@ -92,18 +99,29 @@ def test_trapezoidal_correctness():
     dh = (b - a) / (blocksize - 1)
 
     # Should integrate this well, as end
-    input_vector = np.sin(np.linspace(a, b, blocksize))
-    test_vector = _trapezoidal(input_vector[1:-1]) * dh
+    input_vector = np.repeat(
+        np.sin(np.linspace(a, b, blocksize))[np.newaxis, :], 3, axis=0
+    )
+    test_vector = _trapezoidal(input_vector[..., 1:-1]) * dh
 
     # Sampling for the analytical derivative needs to be done
     # one a grid that lies in between the actual function for
     # second-order accuracy!
     interior_a = a + 0.5 * dh
     interior_b = b - 0.5 * dh
-    correct_vector = np.sin(np.linspace(interior_a, interior_b, blocksize - 1)) * dh
+    correct_vector = (
+        np.repeat(
+            np.sin(np.linspace(interior_a, interior_b, blocksize - 1))[np.newaxis, :],
+            3,
+            axis=0,
+        )
+        * dh
+    )
 
     # Pathetic error of 1e-2 :(
-    assert_allclose(np.sum(test_vector), 2.0, atol=1e-3)
+    assert_allclose(np.sum(test_vector[0]), 2.0, atol=1e-3)
+    assert_allclose(np.sum(test_vector[1]), 2.0, atol=1e-3)
+    assert_allclose(np.sum(test_vector[2]), 2.0, atol=1e-3)
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
@@ -125,9 +143,15 @@ def test_two_point_difference_correctness():
     interior_b = b - 0.5 * dh
 
     # Should integrate this well
-    input_vector = np.sin(np.linspace(a, b, blocksize))
-    test_vector = _two_point_difference(input_vector[1:-1]) / dh
-    correct_vector = np.cos(np.linspace(interior_a, interior_b, blocksize - 1))
+    input_vector = np.repeat(
+        np.sin(np.linspace(a, b, blocksize))[np.newaxis, :], 3, axis=0
+    )
+    test_vector = _two_point_difference(input_vector[..., 1:-1]) / dh
+    correct_vector = np.repeat(
+        np.cos(np.linspace(interior_a, interior_b, blocksize - 1))[np.newaxis, :],
+        3,
+        axis=0,
+    )
 
     # Pathetic error of 1e-2 :(
     assert_allclose(test_vector, correct_vector, atol=1e-4)

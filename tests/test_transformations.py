@@ -311,7 +311,7 @@ def test_rotate(blocksize):
     dim = 3
     axis_collection = np.random.randn(blocksize, dim)
     matrix_collection = np.random.randn(blocksize, dim, dim)
-    scale = np.random.randn(blocksize)
+    scale = 1.0  # np.random.randn(blocksize)
 
     test_rotate_matrix = rotate(matrix_collection, scale, axis_collection)
 

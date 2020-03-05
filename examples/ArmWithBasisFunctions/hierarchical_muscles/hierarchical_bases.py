@@ -1,6 +1,9 @@
 import numpy as np
 from collections.abc import MutableSequence
 
+import numba
+
+
 
 class Union(MutableSequence):
     def __init__(self, *args):
@@ -113,7 +116,23 @@ class SpatiallyInvariantSplineHierarchy(SplineHierarchy):
             self.not_initialized = False
 
         # do einsum of activation and cached_outputs
-        return np.einsum("i,ij->j", activation, self.cached_outputs)
+
+        # return np.einsum("i,ij->j", activation, self.cached_outputs)
+        return self.activation_cached_output_mult(activation, self.cached_outputs)
+
+    @staticmethod
+    @numba.njit()
+    def activation_cached_output_mult(activation, cached_outputs):
+        dim = activation.shape[0]
+        blocksize = cached_outputs.shape[1]
+        output_vector = np.zeros((blocksize))
+
+        for i in range(dim):
+            for k in range(blocksize):
+                output_vector[k] += activation[i] * cached_outputs[i, k]
+
+        return output_vector
+
 
 
 class SplineHierarchyMapper:
@@ -177,6 +196,7 @@ class SpatiallyInvariantSplineHierarchyMapper(SplineHierarchyMapper):
         )
 
 
+
 class SplineHierarchySegments:
     def __init__(self, *hierarchy_mappers):
         self.n_segments = len(hierarchy_mappers)
@@ -191,9 +211,14 @@ class SplineHierarchySegments:
             start = stop
 
     def __call__(self, rod_lengths, activation):
-        cumulative_lengths = np.cumsum(rod_lengths)
-        non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
-        output = 0.0 * rod_lengths
+
+        # cumulative_lengths = np.cumsum(rod_lengths)
+        # non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
+        # output = 0.0 * rod_lengths
+
+        output, non_dimensional_cum_length = self.compute_non_dimensional_length(
+            rod_lengths
+        )
 
         for idx, mapper in enumerate(self.mappers):
             activation_start, activation_stop = self.activation_start_stop[idx]
@@ -201,6 +226,16 @@ class SplineHierarchySegments:
             mapper(non_dimensional_cum_length, local_activation, output)
 
         return output
+
+
+    @staticmethod
+    @numba.njit()
+    def compute_non_dimensional_length(rod_lengths):
+        cumulative_lengths = np.cumsum(rod_lengths)
+        non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
+        output = 0.0 * rod_lengths
+        return output, non_dimensional_cum_length
+
 
 
 """
@@ -310,7 +345,9 @@ Some canonical compact basis functions
 
 class Gaussian:
     def __init__(self, epsilon):
-        self.epsilon = epsilon
+
+        self.epsilon = epsilon * 0.5
+
 
     def __call__(self, r):
         return np.exp(-((r / self.epsilon) ** 2))

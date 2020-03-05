@@ -72,14 +72,14 @@ def test_gravity_forces(n_elem):
     dim = 3
 
     mock_rod = MockRod()
-    mass = np.random.rand(1, n_elem)
+    mass = np.random.randn(n_elem)
     acceleration_gravity = np.random.rand(dim)
     correct_external_forces = (
         mass * np.broadcast_to(acceleration_gravity, (n_elem, dim)).T
     )
 
     mock_rod.mass = mass
-
+    mock_rod.external_forces = np.zeros((dim, n_elem))
     ext_gravity_forces = GravityForces(acceleration_gravity)
     ext_gravity_forces.apply_forces(mock_rod)
 
@@ -209,6 +209,7 @@ def test_muscle_torques(n_elem):
         wave_number,
         phase_shift,
         direction,
+        mock_rod.rest_lengths,
         ramp_up_time,
         with_spline=False,
     )
