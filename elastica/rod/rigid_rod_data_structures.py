@@ -83,11 +83,11 @@ class _RigidRodSymplecticStepperMixin:
     #     return self.dynamic_states.kinematic_rates(time, *args, **kwargs)
 
     # TODO: find better way and place to compute internal forces and torques
-    def update_internal_forces_and_torques(self, time, *args, **kwargs):
-        self._compute_internal_forces_and_torques(time)
+    def update_internal_forces_and_torques(self, *args, **kwargs):
+        self._compute_internal_forces_and_torques()
 
     def dynamic_rates(self, time, *args, **kwargs):
-        self.update_accelerations(time)
+        self.update_accelerations()
 
         """
         The following commented block of code is a test to ensure that

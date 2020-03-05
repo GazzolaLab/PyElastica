@@ -245,7 +245,7 @@ except ImportError:
             # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
             overload_operator_kinematic_numba(
-                System.n_elems + 1,
+                System.kinematic_states.n_nodes,
                 prefac,
                 System.kinematic_states.position_collection,
                 System.kinematic_states.director_collection,

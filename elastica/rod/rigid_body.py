@@ -22,7 +22,7 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
         self.density = density
         # This is for a rigid body cyclinder
         self.volume = np.pi * base_radius * base_radius * base_length
-        self.mass = self.volume * self.density
+        self.mass = np.array([self.volume * self.density])
 
         # Second moment of inertia
         A0 = np.pi * base_radius * base_radius
@@ -76,7 +76,7 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
 
         _RigidRodSymplecticStepperMixin.__init__(self)
 
-    def _compute_internal_forces_and_torques(self, time):
+    def _compute_internal_forces_and_torques(self):
         """
         This function here is only for integrator to work properly. We do not need
         internal forces and torques at all.
@@ -91,7 +91,7 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
         self.internal_forces *= 0.0
         self.internal_torques *= 0.0
 
-    def update_accelerations(self, time):
+    def update_accelerations(self):
         """ TODO Do we need to make the collection members abstract?
 
         Parameters
