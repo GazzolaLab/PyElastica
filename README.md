@@ -103,7 +103,7 @@ Each activation array has 7 entries that relate to the activation of different b
 #### A few practical notes
 1) To save a video of the octopus with `Environment.post_processing()`, you need to install `ffmeg`. You can download and install it [here](https://www.ffmpeg.org/). 
 
-2) The timestep size is set to 40 μs. This is necessary to keep the simulation stable, however, you may not need to update your muscle activations that often.
+2) The timestep size is set to 40 μs. This is necessary to keep the simulation stable, however, you may not need to update your muscle activations that often. Varying the learning time step will change how often your octopus updates its behaviour.
 
 3) There is a 15-20 second startup delay while the simulation is initialized. This is a one time cost whenever the Python script is run and resetting the simulation using `.rest()` does not incur this delay for subsequent simulations. 
 
