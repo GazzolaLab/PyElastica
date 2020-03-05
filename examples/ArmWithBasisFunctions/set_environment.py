@@ -9,7 +9,7 @@ from elastica.wrappers import (
     Connections,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rod.rigid_body import RigidBodyCyclinder
+from elastica.rod.rigid_body import RigidBodyCylinder
 from elastica.external_forces import GravityForces
 from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_muscle_torques import (
     HierarchicalMuscleTorques,
@@ -144,7 +144,7 @@ class Environment:
         # Now rod is ready for simulation, append rod to simulation
         self.simulator.append(self.shearable_rod)
 
-        self.cylinder = RigidBodyCyclinder(
+        self.cylinder = RigidBodyCylinder(
             self.cylinder_start,  # cylinder  initial position
             normal,  # cylinder direction
             direction,  # cylinder normal

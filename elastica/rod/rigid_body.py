@@ -9,7 +9,7 @@ from elastica.rod import RodBase
 from elastica.rod.rigid_rod_data_structures import _RigidRodSymplecticStepperMixin
 
 
-class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
+class RigidBodyCylinder(RodBase, _RigidRodSymplecticStepperMixin):
     def __init__(self, start, direction, normal, base_length, base_radius, density):
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
@@ -20,7 +20,7 @@ class RigidBodyCyclinder(RodBase, _RigidRodSymplecticStepperMixin):
         self.radius = base_radius
         self.length = base_length
         self.density = density
-        # This is for a rigid body cyclinder
+        # This is for a rigid body cylinder
         self.volume = np.pi * base_radius * base_radius * base_length
         self.mass = np.array([self.volume * self.density])
 

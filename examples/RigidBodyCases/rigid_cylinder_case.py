@@ -11,7 +11,7 @@ from elastica.wrappers import (
     Forcing,
     CallBacks,
 )
-from elastica.rod.rigid_body import RigidBodyCyclinder
+from elastica.rod.rigid_body import RigidBodyCylinder
 from elastica.external_forces import GravityForces
 from elastica.interaction import AnistropicFrictionalPlaneRigidBody
 from elastica.callback_functions import CallBackBaseClass
@@ -19,11 +19,11 @@ from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 
 
-class RigidCyclinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class RigidCylinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
     pass
 
 
-rigid_cyclinder_sim = RigidCyclinderSimulator()
+rigid_cylinder_sim = RigidCylinderSimulator()
 
 
 # setting up test params
@@ -37,15 +37,15 @@ base_area = np.pi * base_radius ** 2
 density = 1000
 
 
-rigid_rod = RigidBodyCyclinder(
+rigid_rod = RigidBodyCylinder(
     start, direction, normal, base_length, base_radius, density,
 )
 
-rigid_cyclinder_sim.append(rigid_rod)
+rigid_cylinder_sim.append(rigid_rod)
 
 # Add gravitational forces
 gravitational_acc = -9.80665
-rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
+rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
     GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
 )
 
@@ -58,7 +58,7 @@ period = 1.0
 mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
 kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
 static_mu_array = 2 * kinetic_mu_array
-rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
+rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
     AnistropicFrictionalPlaneRigidBody,
     k=1.0,
     nu=1e-0,
@@ -71,7 +71,7 @@ rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
 
 
 # Add call backs
-class RigidCyclinderCallBack(CallBackBaseClass):
+class RigidCylinderCallBack(CallBackBaseClass):
     """
     Call back function for continuum snake
     """
@@ -93,11 +93,11 @@ class RigidCyclinderCallBack(CallBackBaseClass):
 
 step_skip = 200
 pp_list = defaultdict(list)
-rigid_cyclinder_sim.collect_diagnostics(rigid_rod).using(
-    RigidCyclinderCallBack, step_skip=step_skip, callback_params=pp_list,
+rigid_cylinder_sim.collect_diagnostics(rigid_rod).using(
+    RigidCylinderCallBack, step_skip=step_skip, callback_params=pp_list,
 )
 
-rigid_cyclinder_sim.finalize()
+rigid_cylinder_sim.finalize()
 timestepper = PositionVerlet()
 
 rigid_rod.velocity_collection[2] += 0.1
@@ -106,4 +106,4 @@ final_time = 1.0  # 11.0 + 0.01)
 dt = 4.0e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, rigid_cyclinder_sim, final_time, total_steps)
+integrate(timestepper, rigid_cylinder_sim, final_time, total_steps)

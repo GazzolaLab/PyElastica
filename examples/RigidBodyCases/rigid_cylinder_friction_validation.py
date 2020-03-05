@@ -11,7 +11,7 @@ from elastica.wrappers import (
     Forcing,
     CallBacks,
 )
-from elastica.rod.rigid_body import RigidBodyCyclinder
+from elastica.rod.rigid_body import RigidBodyCylinder
 from elastica.external_forces import GravityForces, NoForces
 from elastica.interaction import AnistropicFrictionalPlaneRigidBody
 from elastica.callback_functions import CallBackBaseClass
@@ -22,7 +22,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 )
 
 
-class RigidCyclinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class RigidCylinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
     pass
 
 
@@ -32,15 +32,15 @@ SAVE_FIGURE = True
 SAVE_RESULTS = False
 
 
-def rigid_cyclinder_friction_validation(force=0.0):
+def rigid_cylinder_friction_validation(force=0.0):
     """
-    This test case is for validating friction calculation for rigid body. Here cyclinder direction
+    This test case is for validating friction calculation for rigid body. Here cylinder direction
     and normal directions are parallel and base of the cylinder is touching the ground. We are validating
     our friction model for different forces.
     :param force:
     :return:
     """
-    rigid_cyclinder_sim = RigidCyclinderSimulator()
+    rigid_cylinder_sim = RigidCylinderSimulator()
 
     # setting up test params
     start = np.zeros((3,))
@@ -53,11 +53,11 @@ def rigid_cyclinder_friction_validation(force=0.0):
     mass = 1.0
     density = mass / (base_length * base_area)
 
-    rigid_rod = RigidBodyCyclinder(
+    rigid_rod = RigidBodyCylinder(
         start, direction, normal, base_length, base_radius, density,
     )
 
-    rigid_cyclinder_sim.append(rigid_rod)
+    rigid_cylinder_sim.append(rigid_rod)
 
     class PointForceToCenter(NoForces):
         """
@@ -72,13 +72,13 @@ def rigid_cyclinder_friction_validation(force=0.0):
             system.external_forces += self.force
 
     # Add point force on the rod
-    rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
+    rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
         PointForceToCenter, force=force, direction=normal
     )
 
     # Add gravitational forces
     gravitational_acc = -9.80665
-    rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
+    rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
         GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
     )
 
@@ -88,7 +88,7 @@ def rigid_cyclinder_friction_validation(force=0.0):
     slip_velocity_tol = 1e-4
     static_mu_array = np.array([0.8, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.4, 0.2, 0.2])  # [forward, backward, sideways]
-    rigid_cyclinder_sim.add_forcing_to(rigid_rod).using(
+    rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
         AnistropicFrictionalPlaneRigidBody,
         k=1.0,
         nu=1e-0,
@@ -100,7 +100,7 @@ def rigid_cyclinder_friction_validation(force=0.0):
     )
 
     # Add call backs
-    class RigidCyclinderCallBack(CallBackBaseClass):
+    class RigidCylinderCallBack(CallBackBaseClass):
         """
         Call back function for continuum snake
         """
@@ -125,18 +125,18 @@ def rigid_cyclinder_friction_validation(force=0.0):
 
     step_skip = 200
     pp_list = defaultdict(list)
-    rigid_cyclinder_sim.collect_diagnostics(rigid_rod).using(
-        RigidCyclinderCallBack, step_skip=step_skip, callback_params=pp_list,
+    rigid_cylinder_sim.collect_diagnostics(rigid_rod).using(
+        RigidCylinderCallBack, step_skip=step_skip, callback_params=pp_list,
     )
 
-    rigid_cyclinder_sim.finalize()
+    rigid_cylinder_sim.finalize()
     timestepper = PositionVerlet()
 
     final_time = 0.25  # 11.0 + 0.01)
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    integrate(timestepper, rigid_cyclinder_sim, final_time, total_steps)
+    integrate(timestepper, rigid_cylinder_sim, final_time, total_steps)
 
     # compute translational and rotational energy
     translational_energy = rigid_rod.compute_translational_energy()
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
     force.sort()
     with mp.Pool(mp.cpu_count()) as pool:
-        results = pool.map(rigid_cyclinder_friction_validation, force)
+        results = pool.map(rigid_cylinder_friction_validation, force)
 
     if PLOT_FIGURE:
         filename = "axial_friction.png"
