@@ -4,7 +4,6 @@ from collections.abc import MutableSequence
 import numba
 
 
-
 class Union(MutableSequence):
     def __init__(self, *args):
         self._bases = []
@@ -134,7 +133,6 @@ class SpatiallyInvariantSplineHierarchy(SplineHierarchy):
         return output_vector
 
 
-
 class SplineHierarchyMapper:
     """
     Maps spline onto rod and returns the result
@@ -196,7 +194,6 @@ class SpatiallyInvariantSplineHierarchyMapper(SplineHierarchyMapper):
         )
 
 
-
 class SplineHierarchySegments:
     def __init__(self, *hierarchy_mappers):
         self.n_segments = len(hierarchy_mappers)
@@ -227,7 +224,6 @@ class SplineHierarchySegments:
 
         return output
 
-
     @staticmethod
     @numba.njit()
     def compute_non_dimensional_length(rod_lengths):
@@ -235,7 +231,6 @@ class SplineHierarchySegments:
         non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
         output = 0.0 * rod_lengths
         return output, non_dimensional_cum_length
-
 
 
 """
@@ -347,7 +342,6 @@ class Gaussian:
     def __init__(self, epsilon):
 
         self.epsilon = epsilon * 0.5
-
 
     def __call__(self, r):
         return np.exp(-((r / self.epsilon) ** 2))

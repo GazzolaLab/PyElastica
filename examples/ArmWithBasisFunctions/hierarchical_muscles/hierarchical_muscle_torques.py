@@ -42,7 +42,6 @@ class HierarchicalMuscleTorques(NoForces):
         self.step_skip = step_skip
         self.counter = 0  # for recording data from the muscles
 
-
     # @profile
     def apply_torques(self, system, time: np.float = 0.0):
         # Compute the torque profile for this time-step, controller might change
@@ -61,7 +60,6 @@ class HierarchicalMuscleTorques(NoForces):
         torque_magnitude = self.torque_generating_hierarchy(
             system.lengths, instantaneous_activation
         )
-
 
         # torque = np.einsum("j,ij->ij", torque_magnitude, self.direction)
 
@@ -125,4 +123,3 @@ class HierarchicalMuscleTorques(NoForces):
             external_torques[..., :-1],
             _batch_matvec(director_collection[..., :-1], torque[..., 1:]),
         )
-

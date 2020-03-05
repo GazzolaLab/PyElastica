@@ -1107,10 +1107,10 @@ except ImportError:
             stokes_force = factor * np.einsum(
                 "ijk, jk -> ik", tangent_tangent_transpose, element_velocity
             )
-            
+
             system.external_forces[..., :-1] += 0.5 * stokes_force
             system.external_forces[..., 1:] += 0.5 * stokes_force
-            
+
 
 # base class for interaction
 # only applies normal force no friction
@@ -1406,6 +1406,3 @@ class AnistropicFrictionalPlaneRigidBody(NoForces, InteractionPlaneRigidBody):
         #     system.director_collection,
         #     _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
         # )
-
-
-

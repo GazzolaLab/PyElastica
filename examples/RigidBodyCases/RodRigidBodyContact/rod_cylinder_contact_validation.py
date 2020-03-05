@@ -22,7 +22,9 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import proj3d, Axes3D
 
 
-class SingleRodSingleCylinderInteractionSimulator(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
+class SingleRodSingleCylinderInteractionSimulator(
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+):
     pass
 
 
