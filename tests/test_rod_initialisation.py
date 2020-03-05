@@ -3,6 +3,7 @@ __doc__ = """ Initialisation for rod test module """
 # System imports
 import numpy as np
 from elastica.rod.cosserat_rod import CosseratRod
+from elastica.rod.rigid_body import RigidBodyCyclinder
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from pytest import main
@@ -121,6 +122,66 @@ def test_straight_rod():
         assert_allclose(
             test_rod.bend_matrix[..., i], bend_matrix, atol=Tolerance.atol()
         )
+
+
+# tests Initialisation of straight rigid body rod
+def test_straight_rigid_rod():
+    # setting up test params
+    start = np.random.rand(3)
+    direction = 5 * np.random.rand(3)
+    direction_norm = np.linalg.norm(direction)
+    direction /= direction_norm
+    normal = np.array((direction[1], -direction[0], 0))
+    base_length = 10
+    base_radius = np.random.uniform(1, 10)
+    density = np.random.uniform(1, 10)
+    mass = density * np.pi * base_radius ** 2 * base_length
+
+    # Second moment of inertia
+    A0 = np.pi * base_radius * base_radius
+    I0_1 = A0 * A0 / (4.0 * np.pi)
+    I0_2 = I0_1
+    I0_3 = 2.0 * I0_2
+    I0 = np.array([I0_1, I0_2, I0_3])
+    # Mass second moment of inertia for disk cross-section
+    mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
+    np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length)
+    # Inverse mass second of inertia
+    inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
+
+    test_rod = RigidBodyCyclinder(
+        start, direction, normal, base_length, base_radius, density,
+    )
+    # checking origin and length of rod
+    assert_allclose(
+        test_rod.position_collection[..., -1],
+        start + base_length / 2 * direction,
+        atol=Tolerance.atol(),
+    )
+
+    # element lengths are equal for all rod.
+    # checking velocities, omegas and rest strains
+    # density and mass
+    rod_length = np.linalg.norm(test_rod.length)
+    assert_allclose(rod_length, base_length, atol=Tolerance.atol())
+    assert_allclose(
+        test_rod.velocity_collection, np.zeros((3, 1)), atol=Tolerance.atol()
+    )
+    assert_allclose(test_rod.omega_collection, np.zeros((3, 1)), atol=Tolerance.atol())
+
+    assert_allclose(test_rod.density, density, atol=Tolerance.atol())
+
+    # Check mass at each node. Note that, node masses is
+    # half of element mass at the first and last node.
+    assert_allclose(test_rod.mass, mass, atol=Tolerance.atol())
+
+    # checking directors, rest length
+    # and shear, bend matrices and moment of inertia
+    assert_allclose(
+        test_rod.inv_mass_second_moment_of_inertia[..., -1],
+        inv_mass_second_moment_of_inertia,
+        atol=Tolerance.atol(),
+    )
 
 
 if __name__ == "__main__":

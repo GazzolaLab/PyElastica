@@ -1,6 +1,8 @@
 import numpy as np
 from collections.abc import MutableSequence
+
 import numba
+
 
 
 class Union(MutableSequence):
@@ -114,6 +116,7 @@ class SpatiallyInvariantSplineHierarchy(SplineHierarchy):
             self.not_initialized = False
 
         # do einsum of activation and cached_outputs
+
         # return np.einsum("i,ij->j", activation, self.cached_outputs)
         return self.activation_cached_output_mult(activation, self.cached_outputs)
 
@@ -129,6 +132,7 @@ class SpatiallyInvariantSplineHierarchy(SplineHierarchy):
                 output_vector[k] += activation[i] * cached_outputs[i, k]
 
         return output_vector
+
 
 
 class SplineHierarchyMapper:
@@ -192,31 +196,6 @@ class SpatiallyInvariantSplineHierarchyMapper(SplineHierarchyMapper):
         )
 
 
-# class SplineHierarchySegments:
-#     def __init__(self, *hierarchy_mappers):
-#         self.n_segments = len(hierarchy_mappers)
-#         self.mappers = hierarchy_mappers
-#
-#         # list of (start_idx, stop_idx) pairs denoting indices of activation
-#         self.activation_start_stop = [None] * self.n_segments
-#         start = 0
-#         for idx, mapper in enumerate(hierarchy_mappers):
-#             stop = mapper.n_bases + start
-#             self.activation_start_stop[idx] = (start, stop)
-#             start = stop
-#
-#     def __call__(self, rod_lengths, activation):
-#         cumulative_lengths = np.cumsum(rod_lengths)
-#         non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
-#         output = 0.0 * rod_lengths
-#
-#         for idx, mapper in enumerate(self.mappers):
-#             activation_start, activation_stop = self.activation_start_stop[idx]
-#             local_activation = activation[activation_start:activation_stop]
-#             mapper(non_dimensional_cum_length, local_activation, output)
-#
-#         return output
-
 
 class SplineHierarchySegments:
     def __init__(self, *hierarchy_mappers):
@@ -232,6 +211,7 @@ class SplineHierarchySegments:
             start = stop
 
     def __call__(self, rod_lengths, activation):
+
         # cumulative_lengths = np.cumsum(rod_lengths)
         # non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
         # output = 0.0 * rod_lengths
@@ -247,6 +227,7 @@ class SplineHierarchySegments:
 
         return output
 
+
     @staticmethod
     @numba.njit()
     def compute_non_dimensional_length(rod_lengths):
@@ -254,6 +235,7 @@ class SplineHierarchySegments:
         non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
         output = 0.0 * rod_lengths
         return output, non_dimensional_cum_length
+
 
 
 """
@@ -363,7 +345,9 @@ Some canonical compact basis functions
 
 class Gaussian:
     def __init__(self, epsilon):
+
         self.epsilon = epsilon * 0.5
+
 
     def __call__(self, r):
         return np.exp(-((r / self.epsilon) ** 2))
