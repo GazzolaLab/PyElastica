@@ -9,7 +9,7 @@ from elastica.wrappers import (
     Connections,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rod.rigid_body import RigidBodyCylinder
+from elastica.rigidbody import Cylinder
 from elastica.external_forces import GravityForces
 from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_muscle_torques import (
     HierarchicalMuscleTorques,
@@ -30,12 +30,8 @@ from elastica.joint import ExternalContact
 from elastica._calculus import _isnan_check
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate, extend_stepper_interface
+from elastica.timestepper import extend_stepper_interface
 from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing import (
-    plot_video,
-    plot_video_actiavation_muscle,
-    plot_arm_tip_sensor_values,
-    plot_video_zx,
     plot_video3d,
     plot_video_with_surface,
 )
@@ -131,7 +127,7 @@ class Environment:
 
         # Below function takes previously computed node positions and centerline
         # radius and modifies the rod.
-        make_tappered_arm(
+        make_tapered_arm(
             self.shearable_rod,
             radius_along_rod,
             base_length,
@@ -145,7 +141,7 @@ class Environment:
         # Now rod is ready for simulation, append rod to simulation
         self.simulator.append(self.shearable_rod)
 
-        self.cylinder = RigidBodyCylinder(
+        self.cylinder = Cylinder(
             self.cylinder_start,  # cylinder  initial position
             normal,  # cylinder direction
             direction,  # cylinder normal
@@ -524,7 +520,7 @@ class Environment:
 
 
 # TODO: this function should be a part of rod initialization, factory function and it should be removed from here
-def make_tappered_arm(
+def make_tapered_arm(
     rod,
     radius_along_rod,
     base_length,
