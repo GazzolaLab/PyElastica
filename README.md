@@ -35,7 +35,8 @@ There are two bending modes (in the normal and binormal directions) and a twisti
 
 
 ## Overview of provided Elastica code
-We are providing you the Elastica software package which is written in Python. Elastica simulates the dynamics and kinematics of 1-d slender rods. We have set up the model for you such that you do not need to worry about the details of the model, only the activation patterns of the muscle. In the provided `two_arm_octopus_ai_imp.py` file you will import the `Environment` class which will define and setup the simulation. 
+We are providing you the Elastica software package which is written in Python. Elastica simulates the dynamics and kinematics of 1-d slender rods. We have set up the model for you such that you do not need to worry about the details of the model, only the activation patterns of the muscle. 
+In the provided `examples/ArmWithBasisFunctions/two_arm_octopus_ai_imp.py` file you will import the `Environment` class which will define and setup the simulation. 
 
 `Environment` has three relevant functions:  
 * `Environment.reset(self)`:  setups and initializes the simulation environment. Call this prior to running any simulations.  
