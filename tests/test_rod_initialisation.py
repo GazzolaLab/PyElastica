@@ -149,9 +149,7 @@ def test_straight_rigid_rod():
     # Inverse mass second of inertia
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
 
-    test_rod = Cylinder(
-        start, direction, normal, base_length, base_radius, density,
-    )
+    test_rod = Cylinder(start, direction, normal, base_length, base_radius, density,)
     # checking origin and length of rod
     assert_allclose(
         test_rod.position_collection[..., -1],

@@ -130,12 +130,14 @@ def main():
     final_time = 10.0
 
     # Initialize the environment
-    target_position = np.array([-0.4, 0.5, 0.0])
-    # np.array([-0.4, 0.0, 0.4]) # target object initial position
-    # For task 6 uncomment the below code and show that your algorithm can drive
-    # octopus towards the random target.
-    # alpha = np.random.sample()
-    # target_position = np.array([-0.4*np.sin(alpha), 0.0, 0.5 + 0.4*np.cos(alpha)])
+    # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6
+    RANDOM_TARGET_POSITION = False
+    if RANDOM_TARGET_POSITION:
+        alpha = 2 * np.pi * np.random.sample()
+        target_position = np.array([1.0 * np.sin(alpha), 1.0 * np.cos(alpha), 0.0])
+    else:
+        target_position = np.array([0.8, -0.8, 0.0])  # target object initial position
+
     env = Environment(final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True)
     total_steps, systems = env.reset()
 

@@ -197,6 +197,7 @@ if True:
         # min_limits = np.roll(np.array([0.0, -0.5 * cylinder_height, 0.0]), _roll_key)
         if True:
             from mpl_toolkits.mplot3d import Axes3D
+
             fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
             ax.grid(b=True, which="minor", color="k", linestyle="--")

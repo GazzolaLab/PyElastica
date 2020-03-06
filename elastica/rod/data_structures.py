@@ -422,6 +422,7 @@ Symplectic stepper interface
 try:
     import numba
     from numba import njit, jitclass, uint32, float64
+
     # In order to by pass jit classes try to import something
     raise ImportError
 
@@ -602,6 +603,7 @@ except ImportError:
 try:
     import numba
     from numba import njit, jitclass, uint32, float64
+
     # In order to by pass jit classes try to import something
     raise ImportError
 

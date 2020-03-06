@@ -172,6 +172,7 @@ class SymplecticStepperMethods:
 
 try:
     from numba import jitclass
+
     # In order to by pass jit classes try to import something
     raise ImportError
 
@@ -266,6 +267,7 @@ except ImportError:
 
 try:
     from numba import jitclass, float64
+
     # In order to by pass jit classes try to import error
     raise ImportError
 

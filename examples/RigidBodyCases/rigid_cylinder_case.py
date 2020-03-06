@@ -36,9 +36,7 @@ base_area = np.pi * base_radius ** 2
 density = 1000
 
 
-rigid_rod = Cylinder(
-    start, direction, normal, base_length, base_radius, density,
-)
+rigid_rod = Cylinder(start, direction, normal, base_length, base_radius, density,)
 
 rigid_cylinder_sim.append(rigid_rod)
 
