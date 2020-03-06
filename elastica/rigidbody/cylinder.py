@@ -1,15 +1,14 @@
-__doc__ = """ Rigid body classes and implementation details """
+__doc__ = """ Cylinder rigid body class """
 
 import numpy as np
 
 from elastica._linalg import _batch_matvec, _batch_cross
-from elastica.utils import MaxDimension, Tolerance
+from elastica.utils import MaxDimension
+from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
-from elastica.rod import RodBase
-from elastica.rod.rigid_rod_data_structures import _RigidRodSymplecticStepperMixin
 
-
-class RigidBodyCylinder(RodBase, _RigidRodSymplecticStepperMixin):
+class Cylinder(RigidBodyBase, _RigidRodSymplecticStepperMixin):
     def __init__(self, start, direction, normal, base_length, base_radius, density):
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
