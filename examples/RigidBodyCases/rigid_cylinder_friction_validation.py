@@ -3,7 +3,6 @@ import sys
 
 sys.path.append("../../")
 
-import os
 from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
@@ -11,11 +10,11 @@ from elastica.wrappers import (
     Forcing,
     CallBacks,
 )
-from elastica.rod.rigid_body import RigidBodyCylinder
+from elastica.rigidbody import Cylinder
 from elastica.external_forces import GravityForces, NoForces
 from elastica.interaction import AnistropicFrictionalPlaneRigidBody
 from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_axial_friction_validation,
@@ -53,7 +52,7 @@ def rigid_cylinder_friction_validation(force=0.0):
     mass = 1.0
     density = mass / (base_length * base_area)
 
-    rigid_rod = RigidBodyCylinder(
+    rigid_rod = Cylinder(
         start, direction, normal, base_length, base_radius, density,
     )
 

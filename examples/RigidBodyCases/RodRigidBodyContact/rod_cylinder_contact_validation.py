@@ -12,14 +12,13 @@ from elastica.wrappers import (
     CallBacks,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rod.rigid_body import RigidBodyCylinder
+from elastica.rigidbody import Cylinder
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from elastica.joint import ExternalContact
 from elastica.callback_functions import CallBackBaseClass
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import proj3d, Axes3D
 
 
 class SingleRodSingleCylinderInteractionSimulator(
@@ -125,7 +124,7 @@ rod1.velocity_collection[_roll_key, ...] = 0.05
 single_rod_sim.append(rod1)
 
 
-cylinder = RigidBodyCylinder(
+cylinder = Cylinder(
     cylinder_start,
     cylinder_direction,
     cylinder_normal,
@@ -225,6 +224,7 @@ if True:
 
         # min_limits = np.roll(np.array([0.0, -0.5 * cylinder_height, 0.0]), _roll_key)
         if True:
+            from mpl_toolkits.mplot3d import Axes3D
             fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
             ax.grid(b=True, which="minor", color="k", linestyle="--")

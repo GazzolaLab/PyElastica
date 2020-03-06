@@ -3,7 +3,6 @@ import sys
 
 sys.path.append("../../")
 
-import os
 from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
@@ -11,11 +10,11 @@ from elastica.wrappers import (
     Forcing,
     CallBacks,
 )
-from elastica.rod.rigid_body import RigidBodyCylinder
+from elastica.rigidbody import Cylinder
 from elastica.external_forces import GravityForces
 from elastica.interaction import AnistropicFrictionalPlaneRigidBody
 from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 
 
@@ -37,7 +36,7 @@ base_area = np.pi * base_radius ** 2
 density = 1000
 
 
-rigid_rod = RigidBodyCylinder(
+rigid_rod = Cylinder(
     start, direction, normal, base_length, base_radius, density,
 )
 
