@@ -821,6 +821,7 @@ try:
                 self.static_mu_sideways,
                 system.length,
                 system.normal,
+                system.binormal,
                 system.position_collection,
                 system.director_collection,
                 system.velocity_collection,
@@ -847,6 +848,7 @@ try:
         static_mu_sideways,
         length,
         rigid_body_normal,
+        rigid_body_binormal,
         position_collection,
         director_collection,
         velocity_collection,
@@ -935,10 +937,44 @@ try:
             * velocity_sign_along_axial_direction
             * axial_direction
         )
+
+        binormal_direction = rigid_body_binormal
+        velocity_mag_along_binormal_direction = _batch_dot(
+            element_velocity, binormal_direction
+        )
+        velocity_along_binormal_direction = _batch_product_k_ik_to_ik(
+            velocity_mag_along_binormal_direction, binormal_direction
+        )
+        # Friction forces depends on the direction of velocity, in other words sign
+        # of the velocity vector.
+        velocity_sign_along_binormal_direction = np.sign(
+            velocity_mag_along_binormal_direction
+        )
+        # Check top for sign convention
+        kinetic_mu = 0.5 * (
+            kinetic_mu_forward * (1 + velocity_sign_along_binormal_direction)
+            + kinetic_mu_backward * (1 - velocity_sign_along_binormal_direction)
+        )
+        # Call slip function to check if elements slipping or not
+        slip_function_along_binormal_direction = find_slipping_elements(
+            velocity_along_binormal_direction, slip_velocity_tol
+        )
+        kinetic_friction_force_along_binormal_direction = -(
+            (1.0 - slip_function_along_axial_direction)
+            * kinetic_mu
+            * plane_response_force_mag
+            * velocity_mag_along_binormal_direction
+            * binormal_direction
+        )
+
         # If rod element does not have any contact with plane, plane cannot apply friction
         # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
         kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-        external_forces += kinetic_friction_force_along_axial_direction
+        kinetic_friction_force_along_binormal_direction[..., no_contact_point_idx] = 0.0
+        external_forces += (
+            kinetic_friction_force_along_axial_direction
+            + kinetic_friction_force_along_binormal_direction
+        )
 
         # # Now rolling kinetic friction
         # rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
@@ -988,37 +1024,37 @@ try:
         #     _batch_cross(torque_arm, kinetic_friction_force_along_rolling_direction),
         # )
 
-        # now axial static friction
-        element_total_forces = _batch_vector_sum(internal_forces, external_forces)
-        # force_component_along_axial_direction = np.einsum(
-        #     "ij,ij->j", element_total_forces, axial_direction
+        # # now axial static friction
+        # element_total_forces = _batch_vector_sum(internal_forces, external_forces)
+        # # force_component_along_axial_direction = np.einsum(
+        # #     "ij,ij->j", element_total_forces, axial_direction
+        # # )
+        # force_component_along_axial_direction = _batch_dot(
+        #     element_total_forces, axial_direction
         # )
-        force_component_along_axial_direction = _batch_dot(
-            element_total_forces, axial_direction
-        )
-        force_component_sign_along_axial_direction = np.sign(
-            force_component_along_axial_direction
-        )
-        # check top for sign convention
-        static_mu = 0.5 * (
-            static_mu_forward * (1 + force_component_sign_along_axial_direction)
-            + static_mu_backward * (1 - force_component_sign_along_axial_direction)
-        )
-        max_friction_force = (
-            slip_function_along_axial_direction * static_mu * plane_response_force_mag
-        )
-        # friction = min(mu N, pushing force)
-        static_friction_force_along_axial_direction = -(
-            np.minimum(
-                np.fabs(force_component_along_axial_direction), max_friction_force
-            )
-            * force_component_sign_along_axial_direction
-            * axial_direction
-        )
-        # If rod element does not have any contact with plane, plane cannot apply friction
-        # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
-        static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-        external_forces += static_friction_force_along_axial_direction
+        # force_component_sign_along_axial_direction = np.sign(
+        #     force_component_along_axial_direction
+        # )
+        # # check top for sign convention
+        # static_mu = 0.5 * (
+        #     static_mu_forward * (1 + force_component_sign_along_axial_direction)
+        #     + static_mu_backward * (1 - force_component_sign_along_axial_direction)
+        # )
+        # max_friction_force = (
+        #     slip_function_along_axial_direction * static_mu * plane_response_force_mag
+        # )
+        # # friction = min(mu N, pushing force)
+        # static_friction_force_along_axial_direction = -(
+        #     np.minimum(
+        #         np.fabs(force_component_along_axial_direction), max_friction_force
+        #     )
+        #     * force_component_sign_along_axial_direction
+        #     * axial_direction
+        # )
+        # # If rod element does not have any contact with plane, plane cannot apply friction
+        # # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
+        # static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
+        # external_forces += static_friction_force_along_axial_direction
 
         # # now rolling static friction
         # # there is some normal, tangent and rolling directions inconsitency from Elastica

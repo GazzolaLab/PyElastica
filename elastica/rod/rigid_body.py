@@ -17,6 +17,7 @@ class RigidBodyCylinder(RodBase, _RigidRodSymplecticStepperMixin):
 
         self.normal = normal.reshape(3, 1)
         self.tangents = direction.reshape(3, 1)
+        self.binormal = np.cross(direction, normal).reshape(3, 1)
         self.radius = base_radius
         self.length = base_length
         self.density = density
