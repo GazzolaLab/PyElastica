@@ -12,7 +12,7 @@ from elastica.wrappers import (
     CallBacks,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rod.rigid_body import RigidBodyCyclinder
+from elastica.rod.rigid_body import RigidBodyCylinder
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from elastica.joint import ExternalContact
@@ -125,7 +125,7 @@ rod1.velocity_collection[_roll_key, ...] = 0.05
 single_rod_sim.append(rod1)
 
 
-cylinder = RigidBodyCyclinder(
+cylinder = RigidBodyCylinder(
     cylinder_start,
     cylinder_direction,
     cylinder_normal,
