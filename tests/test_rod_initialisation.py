@@ -3,7 +3,7 @@ __doc__ = """ Initialisation for rod test module """
 # System imports
 import numpy as np
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rod.rigid_body import RigidBodyCyclinder
+from elastica.rigidbody import Cylinder
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from pytest import main
@@ -149,7 +149,7 @@ def test_straight_rigid_rod():
     # Inverse mass second of inertia
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
 
-    test_rod = RigidBodyCyclinder(
+    test_rod = Cylinder(
         start, direction, normal, base_length, base_radius, density,
     )
     # checking origin and length of rod
