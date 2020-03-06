@@ -82,8 +82,8 @@ class Environment:
         # setting up test params
         n_elem = 120
         start = np.zeros((3,))
-        direction = np.array([0.0, 0.0, 1.0])  # rod direction
-        normal = np.array([0.0, 1.0, 0.0])
+        direction = np.array([0.0, 1.0, 0.0])  # rod direction
+        normal = np.array([0.0, 0.0, 1.0])
         binormal = np.cross(direction, normal)
         base_length = 1.0  # rod base length
         base_radius = 0.05  # rod base radius
@@ -151,7 +151,7 @@ class Environment:
             direction,  # cylinder normal
             0.6,  # cylinder length
             0.05,  # cylinder radius
-            8 * 106.1032953945969,  # corresponds to mass of 4kg
+            2 * 106.1032953945969,  # corresponds to mass of 4kg
         )
         self.simulator.append(self.cylinder)
         # Add external contact between rod and cyclinder
@@ -310,7 +310,7 @@ class Environment:
         # Add gravitational forces
         gravitational_acc = -9.80665
         self.simulator.add_forcing_to(self.shearable_rod).using(
-            GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+            GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
         )
 
         # Add frictional plane in environment for shearable rod
@@ -336,7 +336,7 @@ class Environment:
         # Add gravitational forces
         gravitational_acc = -9.80665
         self.simulator.add_forcing_to(self.cylinder).using(
-            GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+            GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
         )
 
         # Add friction plane in environment for rigid body cyclinder

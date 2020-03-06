@@ -130,9 +130,8 @@ def main():
     final_time = 10.0
 
     # Initialize the environment
-    target_position = np.array(
-        [-0.05, 0.0, 0.5]
-    )  # np.array([-0.4, 0.0, 0.4]) # target object initial position
+    target_position = np.array([-0.4, 0.5, 0.0])
+    # np.array([-0.4, 0.0, 0.4]) # target object initial position
     # For task 6 uncomment the below code and show that your algorithm can drive
     # octopus towards the random target.
     # alpha = np.random.sample()

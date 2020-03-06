@@ -212,15 +212,183 @@ def plot_video3d(
             ax.grid(b=True, which="minor", color="k", linestyle="--")
             ax.grid(b=True, which="major", color="k", linestyle="-")
             ax.scatter(
-                position[time, 2],
                 position[time, 0],
                 position[time, 1],
+                position[time, 2],
                 s=np.pi * radius[time] ** 2 * 10000,
             )
             ax.set_xlim(0 - margin, 1.0 + margin)
             ax.set_ylim(-1.00 - margin, 0.00 + margin)
             ax.set_zlim(0.0, 1.0 + margin)
-            ax.set_xlabel("z positon")
-            ax.set_ylabel("x position")
-            ax.set_zlabel("y position")
+            ax.set_xlabel("x positon")
+            ax.set_ylabel("y position")
+            ax.set_zlabel("z position")
             writer.grab_frame()
+
+
+if True:
+
+    # cylinder_start = np.array([-0.05, 0.0, 0.5])
+    # cylinder_radius = 0.05
+    # cylinder_height = 1.2
+    # cylinder_direction = np.array([0., 1., 0.])
+    # global_rot_mat = np.eye(3)
+    # _roll_key = 1
+
+    def make_data_for_cylinder_along_z(cstart, cradius, cheight):
+        center_x, center_y = cstart[0], cstart[1]
+        z = np.linspace(0, cheight, 5)
+        theta = np.linspace(0, 2 * np.pi, 20)
+        theta_grid, z_grid = np.meshgrid(theta, z)
+        x_grid = cradius * np.cos(theta_grid) + center_x
+        y_grid = cradius * np.sin(theta_grid) + center_y
+        z_grid += cstart[2]
+        return [x_grid, y_grid, z_grid]  # np.roll([x_grid, y_grid, z_grid], _roll_key)
+
+    # XC, YC, ZC = make_data_for_cylinder_along_z(
+    #     cylinder_start, cylinder_radius, cylinder_height
+    # )
+
+    def plot_video_with_surface(
+        plot_params: dict,
+        cylinder_history: dict,
+        cylinder_radius,
+        cylinder_height,
+        cylinder_direction,
+        video_name="video.mp4",
+        margin=0.2,
+        fps=60,
+        step=1,
+        *args,
+        **kwargs
+    ):  # (time step, x/y/z, node)
+        import matplotlib.animation as manimation
+        from mpl_toolkits.mplot3d import proj3d, Axes3D
+
+        plt.rcParams.update({"font.size": 22})
+
+        # Should give a (n_time, 3, n_elem) array
+        positions = np.array(plot_params["position"])
+        radius = np.array(plot_params["radius"])
+        # (n_time, 3) array
+        com = np.array(plot_params["com"])
+
+        cylinder_com = np.array(cylinder_history["com"])
+        cylinder_origin = (
+            cylinder_com - 0.5 * cylinder_height * cylinder_direction.reshape(3)
+        )
+
+        print("plot video")
+        FFMpegWriter = manimation.writers["ffmpeg"]
+        metadata = dict(
+            title="Movie Test", artist="Matplotlib", comment="Movie support!"
+        )
+        writer = FFMpegWriter(fps=fps, metadata=metadata)
+        dpi = 50
+
+        # min_limits = np.roll(np.array([0.0, -0.5 * cylinder_height, 0.0]), _roll_key)
+        if True:
+            fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
+            ax = plt.axes(projection="3d")  # fig.add_subplot(111)
+            ax.grid(b=True, which="minor", color="k", linestyle="--")
+            ax.grid(b=True, which="major", color="k", linestyle="-")
+            plt.axis("square")
+            i = 0
+            # (rod_line,) = ax.plot(
+            #     positions[i, 2], positions[i, 0], positions[i, 1], lw=3.0
+            # )
+            # (rod_line, ) = ax.scatter(
+            #     positions[i, 2],
+            #     positions[i, 0],
+            #     positions[i, 1],
+            #     s=np.pi * radius[i] ** 2 * 10000,
+            # )
+
+            XC, YC, ZC = make_data_for_cylinder_along_z(
+                cylinder_origin[i, ...], cylinder_radius, cylinder_height
+            )
+            surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.set_zlabel("z")
+
+            # min_limits = global_rot_mat @ np.array([0.0, -0.5 * cylinder_height, 0.0])
+            # min_limits = -np.abs(min_limits)
+            # max_limits = min_limits + cylinder_height
+
+            ax.set_xlim([-1, 1])
+            ax.set_ylim([-1, 1])
+            ax.set_zlim([-0.01, 1])
+            with writer.saving(fig, video_name, dpi):
+                with plt.style.context("seaborn-white"):
+                    for i in range(0, positions.shape[0], int(step)):
+                        # # fig.clf()
+                        ax = plt.axes(projection="3d")  # fig.add_subplot(111)
+                        ax.grid(b=True, which="minor", color="k", linestyle="--")
+                        ax.grid(b=True, which="major", color="k", linestyle="-")
+                        ax.set_xlabel("x")
+                        ax.set_ylabel("y")
+                        ax.set_zlabel("z")
+                        ax.set_xlim([-1, 1])
+                        ax.set_ylim([-1, 1])
+                        ax.set_zlim([-0.01, 1])
+                        # rod_line.set_xdata(positions[i, 2])
+                        # rod_line.set_ydata(positions[i, 0])
+                        # rod_line.set_3d_properties(positions[i, 1])
+
+                        ax.scatter(
+                            positions[i, 0],
+                            positions[i, 1],
+                            positions[i, 2],
+                            s=np.pi * radius[i] ** 2 * 10000,
+                        )
+
+                        XC, YC, ZC = make_data_for_cylinder_along_z(
+                            cylinder_origin[i, ...], cylinder_radius, cylinder_height
+                        )
+                        # surf.remove()
+                        surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
+
+                        writer.grab_frame()
+                        fig.clf()
+        if True:
+            from matplotlib.patches import Circle
+
+            fig = plt.figure(2, figsize=(10, 8), frameon=True, dpi=dpi)
+            ax = fig.add_subplot(111)
+            i = 0
+            # positions = np.roll(positions, -_roll_key, axis=1)
+            # com = np.roll(com, -_roll_key, axis=1)
+            # cstart = np.roll(cylinder_origin, -_roll_key, axis=1)
+            (rod_line,) = ax.plot(positions[i, 0], positions[i, 1], lw=3.0)
+            (tip_line,) = ax.plot(com[i, 0], com[i, 1], "k--")
+
+            # min_limits = np.array([0.0, -0.5 * cylinder_height, 0.0])
+            # max_limits = min_limits + cylinder_height
+
+            # ax.set_xlim([min_limits[0], max_limits[0]])
+            # ax.set_ylim([min_limits[1], max_limits[1]])
+
+            ax.set_xlim([-1, 1])
+            ax.set_ylim([-1, 1])
+
+            circle_artist = Circle(
+                (cylinder_origin[i, 0], cylinder_origin[i, 1]),
+                cylinder_radius,
+                color="g",
+            )
+            ax.add_artist(circle_artist)
+            ax.set_aspect("equal")
+            video_name = "2D_" + video_name
+            with writer.saving(fig, video_name, dpi):
+                with plt.style.context("fivethirtyeight"):
+                    for i in range(0, positions.shape[0], int(step)):
+                        rod_line.set_xdata(positions[i, 0])
+                        rod_line.set_ydata(positions[i, 1])
+                        tip_line.set_xdata(com[:i, 0])
+                        tip_line.set_ydata(com[:i, 1])
+                        circle_artist.center = (
+                            cylinder_origin[i, 0],
+                            cylinder_origin[i, 1],
+                        )
+                        writer.grab_frame()
