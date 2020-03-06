@@ -37,10 +37,11 @@ from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing 
     plot_arm_tip_sensor_values,
     plot_video_zx,
     plot_video3d,
+    plot_video_with_surface,
 )
 
 # Set base simulator class
-class BaseSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks, Connections):
+class BaseSimulator(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
     pass
 
 
@@ -148,9 +149,9 @@ class Environment:
             self.cylinder_start,  # cylinder  initial position
             normal,  # cylinder direction
             direction,  # cylinder normal
-            1.2,  # cylinder length
+            0.6,  # cylinder length
             0.05,  # cylinder radius
-            106.1032953945969,  # corresponds to mass of 1kg
+            8 * 106.1032953945969,  # corresponds to mass of 4kg
         )
         self.simulator.append(self.cylinder)
         # Add external contact between rod and cyclinder
@@ -332,6 +333,12 @@ class Environment:
             kinetic_mu_array=kinetic_mu_array,
         )
 
+        # Add gravitational forces
+        gravitational_acc = -9.80665
+        self.simulator.add_forcing_to(self.cylinder).using(
+            GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+        )
+
         # Add friction plane in environment for rigid body cyclinder
         origin_plane = np.array([0.0, 0.0, 0.0])
         normal_plane = normal
@@ -379,6 +386,9 @@ class Environment:
                     #     system.compute_position_center_of_mass()
                     # )
                     self.callback_params["radius"].append(system.radius.copy())
+                    self.callback_params["com"].append(
+                        system.compute_position_center_of_mass()
+                    )
 
                     return
 
@@ -399,6 +409,9 @@ class Environment:
                     self.callback_params["step"].append(current_step)
                     self.callback_params["position"].append(
                         system.position_collection.copy()
+                    )
+                    self.callback_params["com"].append(
+                        system.compute_position_center_of_mass()
                     )
                     # self.callback_params["velocity"].append(
                     #     system.velocity_collection.copy()
@@ -425,14 +438,14 @@ class Environment:
                 callback_params=self.pp_list,
             )
 
-            self.pp_list_rigid_cyclinder = defaultdict(
+            self.pp_list_rigid_cylinder = defaultdict(
                 list
             )  # list which collected data will be append
             # set the diagnostics for cyclinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
                 step_skip=step_skip,
-                callback_params=self.pp_list_rigid_cyclinder,
+                callback_params=self.pp_list_rigid_cylinder,
             )
 
         # Finalize simulation environment. After finalize, you cannot add
@@ -493,6 +506,14 @@ class Environment:
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             plot_video3d(
                 self.pp_list, video_name=filename_video, margin=0.4, fps=20, step=10,
+            )
+            plot_video_with_surface(
+                self.pp_list,
+                self.pp_list_rigid_cylinder,
+                self.cylinder.radius,
+                self.cylinder.length,
+                self.cylinder.tangents,
+                video_name="cylinder_rod_collision.mp4",
             )
 
         else:
