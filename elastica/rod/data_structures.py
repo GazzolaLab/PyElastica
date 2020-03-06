@@ -421,10 +421,9 @@ Symplectic stepper interface
 """
 try:
     import numba
-
-    # In order to by pass jit classes try to import something
-    from numba import something
     from numba import njit, jitclass, uint32, float64
+    # In order to by pass jit classes try to import something
+    raise ImportError
 
     kinematic_state_spec = [
         ("n_nodes", uint32),  # a simple scalar field
@@ -564,7 +563,7 @@ except ImportError:
 
     from numba import njit
 
-    @njit()
+    @njit(cache=True)
     def overload_operator_kinematic_numba(
         n_nodes, prefac, position_collection, director_collection, scaled_deriv_array
     ):
@@ -602,10 +601,9 @@ except ImportError:
 
 try:
     import numba
-
-    # from numba import njit, jitclass, uint32, float64
+    from numba import njit, jitclass, uint32, float64
     # In order to by pass jit classes try to import something
-    from numba import something
+    raise ImportError
 
     dynamic_state_spec = [
         ("n_kinematic_rates", uint32),
@@ -781,7 +779,7 @@ except ImportError:
             """
             return self.rate_collection[..., self.n_kinematic_rates :]
 
-    @njit()
+    @njit(cache=True)
     def overload_operator_dynamic_numba(
         n_kinematic_rates, dt, rate_collection, scaled_second_deriv_array
     ):

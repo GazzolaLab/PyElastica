@@ -19,7 +19,7 @@ try:
     import numba
     from numba import njit
 
-    @njit()
+    @njit(cache=True)
     def _trapezoidal(array_collection):
         """
         Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way
@@ -60,7 +60,7 @@ try:
 
         return temp_collection
 
-    @njit()
+    @njit(cache=True)
     def _two_point_difference(array_collection):
         """
         This function does differentiation.
@@ -97,7 +97,7 @@ try:
     quadrature_kernel = _trapezoidal
     difference_kernel = _two_point_difference
 
-    @njit()
+    @njit(cache=True)
     def _difference(vector):
         """
         This function computes difference between elements of a batch vector
@@ -122,7 +122,7 @@ try:
 
         return output_vector
 
-    @njit()
+    @njit(cache=True)
     def _average(vector):
         """
         This function computes the average between elements of a vector
@@ -149,7 +149,7 @@ try:
     position_difference_kernel = _difference
     position_average = _average
 
-    @njit()
+    @njit(cache=True)
     def _clip_array(input_array, vmin, vmax):
         """
         This function clips an array values
@@ -179,7 +179,7 @@ try:
 
         return input_array
 
-    @njit()
+    @njit(cache=True)
     def _isnan_check(array):
         """
         This function checks if there is any nan inside the array.

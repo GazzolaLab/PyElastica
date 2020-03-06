@@ -22,7 +22,7 @@ try:
         _batch_vec_oneD_vec_cross,
     )
 
-    @njit()
+    @njit(cache=True)
     def find_slipping_elements(velocity_slip, velocity_threshold):
         """
         This function takes the velocity of elements and checks if they are larger
@@ -60,7 +60,7 @@ try:
         )
         return slip_function
 
-    @njit()
+    @njit(cache=True)
     def nodes_to_elements(input):
         """
         Converting forces on nodes to element forces
@@ -88,7 +88,7 @@ try:
 
         return output
 
-    @njit()
+    @njit(cache=True)
     def elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
         """
         Updating nodal forces using the forces computed on elements
@@ -137,7 +137,7 @@ try:
                 system.external_forces,
             )
 
-    @njit()
+    @njit(cache=True)
     def apply_normal_force_numba(
         plane_origin,
         plane_normal,
@@ -291,7 +291,7 @@ try:
                 system.external_torques,
             )
 
-    @njit()
+    @njit(cache=True)
     def anisotropic_friction(
         plane_origin,
         plane_normal,
@@ -505,7 +505,7 @@ try:
         )
 
     # Slender body module
-    @numba.njit
+    @njit(cache=True)
     def sum_over_elements(input):
         """
         This function sums all elements of input array,
@@ -534,7 +534,7 @@ try:
 
         return output
 
-    @numba.njit()
+    @njit(cache=True)
     def node_to_element_pos_or_vel(vector_in_node_frame):
         """
         This function converts node position or velocity to
@@ -566,7 +566,7 @@ try:
 
         return vector_in_element_frame
 
-    @numba.njit
+    @njit(cache=True)
     def slender_body_forces(
         tangents, velocity_collection, dynamic_viscosity, lengths, radius
     ):
@@ -706,7 +706,7 @@ try:
                 system.external_forces,
             )
 
-    @njit()
+    @njit(cache=True)
     def apply_normal_force_numba_rigid_body(
         plane_origin,
         plane_normal,
@@ -832,7 +832,7 @@ try:
                 system.external_torques,
             )
 
-    @njit()
+    @njit(cache=True)
     def anisotropic_firction_numba_rigid_body(
         plane_origin,
         plane_normal,

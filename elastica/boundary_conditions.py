@@ -49,7 +49,7 @@ class OneEndFixedRod(FreeRod):
         self.compute_constrain_rates(rod.velocity_collection, rod.omega_collection)
 
     @staticmethod
-    @njit()
+    @njit(cache=True)
     def compute_contrain_values(
         position_collection, fixed_position, director_collection, fixed_directors
     ):
@@ -70,7 +70,7 @@ class OneEndFixedRod(FreeRod):
         director_collection[..., 0] = fixed_directors
 
     @staticmethod
-    @njit()
+    @njit(cache=True)
     def compute_constrain_rates(velocity_collection, omega_collection):
         """
         Compute contrain rates in numba njit decorator

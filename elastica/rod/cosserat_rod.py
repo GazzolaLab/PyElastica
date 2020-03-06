@@ -563,7 +563,7 @@ class _CosseratRodBase(RodBase):
 
 ################################ NUMBA FUNCTIONS ###########################################
 ############################################################################################
-@numba.njit()
+@numba.njit(cache=True)
 def _update_accelerations(
     acceleration_collection,
     internal_forces,
@@ -599,7 +599,7 @@ def _update_accelerations(
     external_torques *= 0.0
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_damping_forces(velocity_collection, nu, lengths):
     # Internal damping foces.
     elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
@@ -618,7 +618,7 @@ def compute_damping_forces(velocity_collection, nu, lengths):
     return quadrature_kernel(elemental_damping_forces)
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_geometry_from_state(position_collection, volume, lengths, tangents, radius):
     """
     Returns
@@ -644,7 +644,7 @@ def compute_geometry_from_state(position_collection, volume, lengths, tangents, 
         radius[k] = np.sqrt(volume[k] / lengths[k] / pi)
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_all_dilatations(
     position_collection,
     volume,
@@ -681,7 +681,7 @@ def compute_all_dilatations(
         voronoi_dilatation[k] = voronoi_lengths[k] / rest_voronoi_lengths[k]
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_shear_stretch_strains(
     position_collection,
     volume,
@@ -714,7 +714,7 @@ def compute_shear_stretch_strains(
     sigma[:] = dilatation * _batch_matvec(director_collection, tangents) - z_vector
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_internal_shear_stretch_stresses_from_model(
     position_collection,
     volume,
@@ -758,7 +758,7 @@ def compute_internal_shear_stretch_stresses_from_model(
     internal_stress[:] = _batch_matvec(shear_matrix, sigma - rest_sigma)
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_internal_forces(
     position_collection,
     volume,
@@ -821,7 +821,7 @@ def compute_internal_forces(
     )
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_dilatation_rate(
     position_collection, velocity_collection, lengths, rest_lengths, dilatation_rate
 ):
@@ -851,7 +851,7 @@ def compute_dilatation_rate(
         )
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_bending_twist_strains(director_collection, rest_voronoi_lengths, kappa):
     temp = _inv_rotate(director_collection)
     blocksize = rest_voronoi_lengths.shape[0]
@@ -861,7 +861,7 @@ def compute_bending_twist_strains(director_collection, rest_voronoi_lengths, kap
         kappa[2, k] = temp[2, k] / rest_voronoi_lengths[k]
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_internal_bending_twist_stresses_from_model(
     director_collection,
     rest_voronoi_lengths,
@@ -885,7 +885,7 @@ def compute_internal_bending_twist_stresses_from_model(
     internal_couple[:] = _batch_matvec(bend_matrix, kappa - rest_kappa)
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_damping_torques(nu, omega_collection, lengths, damping_torques):
     blocksize = damping_torques.shape[1]
     for i in range(3):
@@ -893,7 +893,7 @@ def compute_damping_torques(nu, omega_collection, lengths, damping_torques):
             damping_torques[i, k] = nu * omega_collection[i, k] * lengths[k]
 
 
-@numba.njit()
+@numba.njit(cache=True)
 def compute_internal_torques(
     position_collection,
     velocity_collection,

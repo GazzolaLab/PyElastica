@@ -241,7 +241,7 @@ try:
     import numba
     from numba import njit
 
-    @njit()
+    @njit(cache=True)
     def _get_rotation_matrix(scale: float, axis_collection):
         blocksize = axis_collection.shape[1]
         rot_mat = np.empty((3, 3, blocksize))
@@ -297,7 +297,7 @@ try:
             _get_rotation_matrix(scale, axis_collection), director_collection
         )
 
-    @njit()
+    @njit(cache=True)
     def _inv_rotate(director_collection):
         blocksize = director_collection.shape[2] - 1
         vector_collection = np.empty((3, blocksize))

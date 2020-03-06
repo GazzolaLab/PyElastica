@@ -152,7 +152,7 @@ class FixedJoint(FreeJoint):
 try:
     import numba
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _dot_product(a, b):
         sum = 0.0
         for i in range(3):
@@ -161,20 +161,20 @@ try:
 
     from math import sqrt
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _norm(a):
         return sqrt(_dot_product(a, a))
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _clip(x, low, high):
         return max(low, min(x, high))
 
     # Can this be made more efficient than 2 comp, 1 or?
-    @numba.njit()
+    @numba.njit(cache=True)
     def _out_of_bounds(x, low, high):
         return (x < low) or (x > high)
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _find_min_dist(x1, e1, x2, e2):
         e1e1 = _dot_product(e1, e1)
         e1e2 = _dot_product(e1, e2)
@@ -240,7 +240,7 @@ try:
 
         return x2 + s * e2 - x1 - t * e1
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _calculate_contact_forces(
         x_collection_rod,
         edge_collection_rod,
@@ -329,7 +329,7 @@ try:
                 external_forces_rod[..., i + 1] -= net_contact_force
                 external_forces_cylinder[..., 0] += 2.0 * net_contact_force
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _aabbs_not_intersecting(aabb_one, aabb_two):
         """ Returns true if not intersecting else false"""
         if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
@@ -341,7 +341,7 @@ try:
 
         return 0
 
-    @numba.njit()
+    @numba.njit(cache=True)
     def _prune_using_aabbs(
         rod_one_position,
         rod_one_radius_collection,

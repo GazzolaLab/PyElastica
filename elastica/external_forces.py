@@ -69,7 +69,7 @@ try:
             )
 
         @staticmethod
-        @njit()
+        @njit(cache=True)
         def compute_gravity_forces(acc_gravity, mass, external_forces):
             """
             This function add gravitational forces on the nodes. We are
@@ -114,7 +114,7 @@ try:
             )
 
         @staticmethod
-        @njit()
+        @njit(cache=True)
         def compute_end_point_forces(
             external_forces, start_force, end_force, time, ramp_up_time
         ):
@@ -245,7 +245,7 @@ try:
             )
 
         @staticmethod
-        @njit()
+        @njit(cache=True)
         def compute_muscle_torques(
             time,
             my_spline,
@@ -281,7 +281,7 @@ try:
                 _batch_matvec(director_collection[..., :-1], torque[..., 1:]),
             )
 
-    @njit()
+    @njit(cache=True)
     def inplace_addition(external_force_or_torque, force_or_torque):
         """
         This function does inplace addition. First argument
@@ -302,7 +302,7 @@ try:
             for k in range(blocksize):
                 external_force_or_torque[i, k] += force_or_torque[i, k]
 
-    @njit()
+    @njit(cache=True)
     def inplace_substraction(external_force_or_torque, force_or_torque):
         """
         This function does inplace substraction. First argument

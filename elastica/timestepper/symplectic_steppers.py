@@ -171,9 +171,9 @@ class SymplecticStepperMethods:
 
 
 try:
-    # from numba import jitclass
+    from numba import jitclass
     # In order to by pass jit classes try to import something
-    from numba import something, jitclass
+    raise ImportError
 
     @jitclass([])
     class SymplecticStepperTag:
@@ -222,7 +222,6 @@ try:
 
 
 except ImportError:
-    from numba import njit
     from elastica.rod.data_structures import (
         overload_operator_kinematic_numba,
         overload_operator_dynamic_numba,
@@ -266,10 +265,9 @@ except ImportError:
 
 
 try:
-    # In order to by pass jit classes try to import something
-    from numba import something, jitclass, float64
-
-    # from numba import jitclass, float64
+    from numba import jitclass, float64
+    # In order to by pass jit classes try to import error
+    raise ImportError
 
     pefrl_spec = [
         (
