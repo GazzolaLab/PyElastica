@@ -53,7 +53,10 @@ class Environment:
         time_step = 4.0e-5  # this is a stable timestep
         self.total_steps = int(self.final_time / time_step)
         self.time_step = np.float64(float(self.final_time) / self.total_steps)
-        print("Total steps", self.total_steps)
+        # Video speed
+        self.rendering_fps = 60
+        self.step_skip = int(1.0 / (self.rendering_fps * self.time_step))
+        # print("Total steps", self.total_steps)
 
         # Rigid body cyclinder start position
         self.cylinder_start = cylinder_start
@@ -425,12 +428,12 @@ class Environment:
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             # Collect data using callback function for postprocessing
-            step_skip = 500  # collect data every # steps
+            # step_skip = 500  # collect data every # steps
             self.pp_list = defaultdict(list)  # list which collected data will be append
             # set the diagnostics for rod and collect data
             self.simulator.collect_diagnostics(self.shearable_rod).using(
                 ArmMuscleBasisCallBack,
-                step_skip=step_skip,
+                step_skip=self.step_skip,
                 callback_params=self.pp_list,
             )
 
@@ -440,7 +443,7 @@ class Environment:
             # set the diagnostics for cyclinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
-                step_skip=step_skip,
+                step_skip=self.step_skip,
                 callback_params=self.pp_list_rigid_cylinder,
             )
 
@@ -482,13 +485,13 @@ class Environment:
         invalid_values_condition = _isnan_check(self.shearable_rod.position_collection)
 
         if invalid_values_condition == True:
-            print(" Nan detacted, exit simulation")
+            print(" Nan detected, exiting simulation now")
             done = True
         """ Done is a boolean to reset the environment before episode is completed """
 
         return time, systems, done
 
-    def post_processing(self, filename_video):
+    def post_processing(self, filename_video, **kwargs):
         """
         Make video 3D rod movement in time.
         Parameters
@@ -500,16 +503,19 @@ class Environment:
         """
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
-            plot_video3d(
-                self.pp_list, video_name=filename_video, margin=0.4, fps=20, step=10,
-            )
+            # plot_video3d(
+            #     self.pp_list, video_name=filename_video, margin=0.4, fps=60, step=1, **kwargs
+            # )
             plot_video_with_surface(
                 self.pp_list,
                 self.pp_list_rigid_cylinder,
                 self.cylinder.radius,
                 self.cylinder.length,
                 self.cylinder.tangents,
-                video_name="cylinder_rod_collision.mp4",
+                video_name=filename_video,
+                fps=self.rendering_fps,
+                step=1,
+                **kwargs
             )
 
         else:
