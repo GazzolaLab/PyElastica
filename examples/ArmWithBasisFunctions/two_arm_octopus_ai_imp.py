@@ -127,7 +127,7 @@ def user_defined_condition_function(reward, systems, time):
 
 def main():
     # Set simulation final time
-    final_time = 4.0
+    final_time = 10.0
 
     # Initialize the environment
     # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6
