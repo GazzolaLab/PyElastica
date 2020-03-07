@@ -47,7 +47,7 @@ We do not suggest changing `Environment` as it may cause unintended consequences
 
 You will want to work within `main()` to interface with the simulations and develop your learning model. In `main()`, the first thing you need to define is the length of your simulation and initialize the environment. `final_time` is the length of time that your simulation will run unless exited early. You want to give your octopus enough time to complete the task, but too much time will lead to excessively long simulation times.
 
-```
+```python 
     # Set simulation final time
     final_time = 10.0
 
@@ -89,7 +89,7 @@ The state of the target object is available in `rigid_body`.
 
 It is important to properly define the activation function. It consists of a list of lists defining the activation of the two arms in each of the the three modes of deformation. The activation function should be a list with three entries for the three modes of deformation. Each of these entries is in turn a list with two entries, which are arrays of the basis function activations for the two arms. 
 
-```
+```python
     activation = [
         [arm_1_normal,   arm_2_normal],    # activation in normal direction
         [arm_1_binormal, arm_2_binormal],  # activation in binormal direction
