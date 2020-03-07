@@ -127,7 +127,7 @@ def user_defined_condition_function(reward, systems, time):
 
 def main():
     # Set simulation final time
-    final_time = 10.0
+    final_time = 4.0
 
     # Initialize the environment
     target_position = np.array([-0.4, 0.5, 0.0])
@@ -207,8 +207,19 @@ def main():
         # Post-processing
         # Make a video of octopus for current simulation episode. Note that
         # in order to make a video, COLLECT_DATA_FOR_POSTPROCESSING=True
-        env.post_processing(filename_video="two_arm_simulation_3d_with_target.mp4")
+        env.post_processing(
+            filename_video="two_arm_simulation_3d_with_target.mp4",
+            # The following parameters are optional
+            x_limits=(-1.0, 1.0),  # Set bounds on x-axis
+            y_limits=(-1.0, 1.0),  # Set bounds on y-axis
+            z_limits=(-0.05, 1.00),  # Set bounds on z-axis
+            dpi=100,  # Set the quality of the image
+            vis3D=True,  # Turn on 3D visualization
+            vis2D=True,  # Turn on projected (2D) visualization
+        )
+
+        return env
 
 
 if __name__ == "__main__":
-    main()
+    env = main()
