@@ -63,7 +63,7 @@ With your system initialized, you are now ready to perform the simulation. To pe
 
 There is also a user defined stopping condition. When met, this will immediately end the simulation. This can be useful to end the simulation if the octopus successfully complete the task early, or has a sufficiently low reward function that there is no point continuing the simulation. 
 
-```
+```python
     for i_sim in tqdm(range(total_steps)):
 	""" Learning loop """
 	if i_sim % 200:
