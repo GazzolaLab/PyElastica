@@ -129,20 +129,23 @@ def main():
     # Set simulation final time
     final_time = 10.0
 
-    # Initialize the environment
-    # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6
-    RANDOM_TARGET_POSITION = False
-    if RANDOM_TARGET_POSITION:
-        alpha = 2 * np.pi * np.random.sample()
-        target_position = np.array([1.0 * np.sin(alpha), 1.0 * np.cos(alpha), 0.0])
-    else:
-        target_position = np.array([0.8, -0.8, 0.0])  # target object initial position
-
-    env = Environment(final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True)
-    total_steps, systems = env.reset()
-
     # Do multiple simulations for learning, or control
     for i_episodes in range(1):
+
+        # Initialize the environment
+        # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6
+        RANDOM_TARGET_POSITION = False
+        if RANDOM_TARGET_POSITION:
+            alpha = 2 * np.pi * np.random.sample()
+            target_position = np.array([1.0 * np.sin(alpha), 1.0 * np.cos(alpha), 0.0])
+        else:
+            target_position = np.array(
+                [0.8, -0.6, 0.0]
+            )  # target object initial position
+
+        env = Environment(
+            final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True
+        )
 
         # Reset the environment before the new episode and get total number of simulation steps
         total_steps, systems = env.reset()
@@ -220,7 +223,7 @@ def main():
             vis2D=True,  # Turn on projected (2D) visualization
         )
 
-        return env
+    return env
 
 
 if __name__ == "__main__":
