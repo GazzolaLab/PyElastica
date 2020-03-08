@@ -43,7 +43,7 @@ class BaseSimulator(BaseSystemCollection, Constraints, Connections, Forcing, Cal
 
 class Environment:
     def __init__(
-        self, final_time, cylinder_start, COLLECT_DATA_FOR_POSTPROCESSING=False,
+        self, final_time, COLLECT_DATA_FOR_POSTPROCESSING=False,
     ):
         # Integrator type
         self.StatefulStepper = PositionVerlet()
@@ -58,14 +58,14 @@ class Environment:
         self.step_skip = int(1.0 / (self.rendering_fps * self.time_step))
         # print("Total steps", self.total_steps)
 
-        # Rigid body cyclinder start position
-        self.cylinder_start = cylinder_start
+        # # Rigid body cyclinder start position
+        # self.cylinder_start = cylinder_start
 
         # Collect data is a boolean. If it is true callback function collects
         # rod parameters defined by user in a list.
         self.COLLECT_DATA_FOR_POSTPROCESSING = COLLECT_DATA_FOR_POSTPROCESSING
 
-    def reset(self):
+    def reset(self, cylinder_start):
         """
         This function, creates the simulation environment.
         First, rod intialized and then rod is modified to make it tapered.
@@ -77,6 +77,9 @@ class Environment:
 
         """
         self.simulator = BaseSimulator()
+
+        # Rigid body cyclinder start position
+        self.cylinder_start = cylinder_start
 
         # setting up test params
         n_elem = 120

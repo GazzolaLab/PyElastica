@@ -128,9 +128,10 @@ def user_defined_condition_function(reward, systems, time):
 def main():
     # Set simulation final time
     final_time = 10.0
+    env = Environment(final_time, COLLECT_DATA_FOR_POSTPROCESSING=True)
 
     # Do multiple simulations for learning, or control
-    for i_episodes in range(1):
+    for i_episodes in range(3):
 
         # Initialize the environment
         # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6
@@ -143,12 +144,8 @@ def main():
                 [0.8, -0.6, 0.0]
             )  # target object initial position
 
-        env = Environment(
-            final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True
-        )
-
         # Reset the environment before the new episode and get total number of simulation steps
-        total_steps, systems = env.reset()
+        total_steps, systems = env.reset(target_position)
 
         # Simulation loop starts
         time = np.float64(0.0)
