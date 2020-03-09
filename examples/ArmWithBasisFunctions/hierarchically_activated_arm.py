@@ -3,7 +3,6 @@ import sys
 
 sys.path.append("../../")
 
-import os
 from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
@@ -12,11 +11,10 @@ from elastica.wrappers import (
     CallBacks,
 )
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.external_forces import GravityForces, MuscleTorques, NoForces
-from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_muscle_torques import (
+from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
     HierarchicalMuscleTorques,
 )
-from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases import (
+from elastica.hierarchical_muscles.hierarchical_bases import (
     SpatiallyInvariantSplineHierarchy,
     SpatiallyInvariantSplineHierarchyMapper,
     SplineHierarchySegments,
@@ -26,7 +24,7 @@ from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases impo
 )
 from elastica.boundary_conditions import OneEndFixedRod
 from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing import (
     plot_video,
@@ -136,7 +134,7 @@ def main():
 
     # First pack of hierarchical muscles
     first_muscle_segment = SpatiallyInvariantSplineHierarchy(
-        Union(Gaussian(0.20), Gaussian(0.08), Gaussian(0.05))
+        Union(Gaussian(0.40), Gaussian(0.16), Gaussian(0.10)), scaling_factor=3
     )
     # apply filters to change magnitude
     first_muscle_segment.apply_filter(0, ScalingFilter, 32)
@@ -144,7 +142,7 @@ def main():
     first_muscle_segment.apply_filter(2, ScalingFilter, 2)
 
     second_muscle_segment = SpatiallyInvariantSplineHierarchy(
-        Union(Gaussian(0.10), Gaussian(0.05), Gaussian(0.03))
+        Union(Gaussian(0.20), Gaussian(0.10), Gaussian(0.06)), scaling_factor=3
     )
     # apply filters to change magnitude
     # second_muscle_segment.apply_filter(0, ScalingFilter, 16)
@@ -233,7 +231,7 @@ def main():
     arm_muscle_with_basis_functions_sim.add_forcing_to(shearable_rod).using(
         HierarchicalMuscleTorques,
         segments_of_muscle_hierarchies,
-        activation_func=single_segment_activation
+        activation_func_or_array=single_segment_activation
         if segments_of_muscle_hierarchies.n_segments == 1
         else two_segment_activation,
         direction=np.array([-1.0, 0.0, 0.0]),

@@ -20,7 +20,7 @@ class HierarchicalMuscleTorques(NoForces):
     def __init__(
         self,
         hierarchy_mapper: SplineHierarchySegments,
-        activation_func,
+        activation_func_or_array,
         direction,
         # ramp_up_time=0.0,
         step_skip=200,
@@ -31,7 +31,12 @@ class HierarchicalMuscleTorques(NoForces):
         self.torque_generating_hierarchy = hierarchy_mapper
         # function (time) that generates \sum n_bases amount of signals
         # comes from the controller
-        self.activation = activation_func
+        self.activation = (
+            activation_func_or_array
+            if hasattr(activation_func_or_array, "__call__")
+            else lambda time_v: activation_func_or_array
+        )
+        # self.activation = activation_func
         self.direction = (
             direction  # direction.reshape(3, 1)  # Direction in which torque is applied
         )
@@ -46,8 +51,8 @@ class HierarchicalMuscleTorques(NoForces):
     def apply_torques(self, system, time: np.float = 0.0):
         # Compute the torque profile for this time-step, controller might change
         # the active and deactive splines.
-        # instantaneous_activation = np.hstack((self.activation(time)))
-        instantaneous_activation = np.hstack((self.activation))
+        instantaneous_activation = np.hstack((self.activation(time)))
+        # instantaneous_activation = np.hstack((self.activation))
         # activation_list = self.activation(time)
         # instantaneous_activation = activation_list[0]
         # for k in range(1, len(activation_list)):

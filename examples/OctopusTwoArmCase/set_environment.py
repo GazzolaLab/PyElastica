@@ -260,7 +260,7 @@ class Environment:
         )
 
         # Set the list for activation function and torque profile
-        # activation_function_list_for_muscle_in_normal_dir = defaultdict(list)
+        # activation_func_or_arraytion_list_for_muscle_in_normal_dir = defaultdict(list)
         # torque_profile_list_for_muscle_in_normal_dir = defaultdict(list)
 
         # step_skip = 100
@@ -274,39 +274,39 @@ class Environment:
         self.simulator.add_forcing_to(self.shearable_rod).using(
             HierarchicalMuscleTorques,
             segments_of_muscle_hierarchies_in_normal_dir,
-            activation_func=self.activation_arr_in_normal_dir,
+            activation_func_or_array=self.activation_arr_in_normal_dir,
             direction=normal,
             # ramp_up_time=1.0,
             # step_skip=step_skip,
-            # activation_function_recorder=activation_function_list_for_muscle_in_normal_dir,
+            # activation_func_or_arraytion_recorder=activation_func_or_arraytion_list_for_muscle_in_normal_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_normal_dir,
         )
 
-        # activation_function_list_for_muscle_in_binormal_dir = defaultdict(list)
+        # activation_func_or_arraytion_list_for_muscle_in_binormal_dir = defaultdict(list)
         # torque_profile_list_for_muscle_in_binormal_dir = defaultdict(list)
 
         self.simulator.add_forcing_to(self.shearable_rod).using(
             HierarchicalMuscleTorques,
             segments_of_muscle_hierarchies_in_binormal_dir,
-            activation_func=self.activation_arr_in_binormal_dir,
+            activation_func_or_array=self.activation_arr_in_binormal_dir,
             direction=np.cross(direction, normal),
             # ramp_up_time=1.0,
             # step_skip=step_skip,
-            # activation_function_recorder=activation_function_list_for_muscle_in_binormal_dir,
+            # activation_func_or_arraytion_recorder=activation_func_or_arraytion_list_for_muscle_in_binormal_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_binormal_dir,
         )
 
-        # activation_function_list_for_muscle_in_tangent_dir = defaultdict(list)
+        # activation_func_or_arraytion_list_for_muscle_in_tangent_dir = defaultdict(list)
         # torque_profile_list_for_muscle_in_tangent_dir = defaultdict(list)
 
         self.simulator.add_forcing_to(self.shearable_rod).using(
             HierarchicalMuscleTorques,
             segments_of_muscle_hierarchies_in_tangent_dir,
-            activation_func=self.activation_arr_in_tangent_dir,
+            activation_func_or_array=self.activation_arr_in_tangent_dir,
             direction=direction,
             # ramp_up_time=1.0,
             # step_skip=step_skip,
-            # activation_function_recorder=activation_function_list_for_muscle_in_tangent_dir,
+            # activation_func_or_arraytion_recorder=activation_func_or_arraytion_list_for_muscle_in_tangent_dir,
             # torque_profile_recorder=torque_profile_list_for_muscle_in_tangent_dir,
         )
 
