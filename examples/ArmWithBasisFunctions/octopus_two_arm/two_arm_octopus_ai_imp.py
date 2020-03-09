@@ -2,8 +2,8 @@ import numpy as np
 import sys
 from tqdm import tqdm
 
-sys.path.append("../../")
-from examples.ArmWithBasisFunctions.set_environment import Environment
+sys.path.append("../../../")
+from examples.ArmWithBasisFunctions.octopus_two_arm.set_environment import Environment
 
 
 def segment_activation_function(time):
@@ -131,7 +131,7 @@ def main():
     env = Environment(final_time, COLLECT_DATA_FOR_POSTPROCESSING=True)
 
     # Do multiple simulations for learning, or control
-    for i_episodes in range(3):
+    for i_episodes in range(1):
 
         # Initialize the environment
         # Make RANDOM_TARGET_POSITION=True for randomly initialize cylinder for task 6

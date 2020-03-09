@@ -432,22 +432,24 @@ class Environment:
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             # Collect data using callback function for postprocessing
             # step_skip = 500  # collect data every # steps
-            self.pp_list = defaultdict(list)  # list which collected data will be append
+            self.post_processing_dict_rod = defaultdict(
+                list
+            )  # list which collected data will be append
             # set the diagnostics for rod and collect data
             self.simulator.collect_diagnostics(self.shearable_rod).using(
                 ArmMuscleBasisCallBack,
                 step_skip=self.step_skip,
-                callback_params=self.pp_list,
+                callback_params=self.post_processing_dict_rod,
             )
 
-            self.pp_list_rigid_cylinder = defaultdict(
+            self.post_processing_dict_cylinder = defaultdict(
                 list
             )  # list which collected data will be append
             # set the diagnostics for cyclinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
                 step_skip=self.step_skip,
-                callback_params=self.pp_list_rigid_cylinder,
+                callback_params=self.post_processing_dict_cylinder,
             )
 
         # Finalize simulation environment. After finalize, you cannot add
@@ -510,8 +512,8 @@ class Environment:
             #     self.pp_list, video_name=filename_video, margin=0.4, fps=60, step=1, **kwargs
             # )
             plot_video_with_surface(
-                self.pp_list,
-                self.pp_list_rigid_cylinder,
+                self.post_processing_dict_rod,
+                self.post_processing_dict_cylinder,
                 self.cylinder.radius,
                 self.cylinder.length,
                 self.cylinder.tangents,
