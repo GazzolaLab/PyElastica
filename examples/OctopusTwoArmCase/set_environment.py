@@ -11,7 +11,9 @@ from elastica.wrappers import (
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody import Cylinder
 from elastica.external_forces import GravityForces
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import HierarchicalMuscleTorques
+from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
+    HierarchicalMuscleTorques,
+)
 from elastica.interaction import (
     AnistropicFrictionalPlane,
     AnistropicFrictionalPlaneRigidBody,
@@ -31,7 +33,9 @@ from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import extend_stepper_interface
 
-from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import plot_video_with_surface
+from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import (
+    plot_video_with_surface,
+)
 
 # Set base simulator class
 class BaseSimulator(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
