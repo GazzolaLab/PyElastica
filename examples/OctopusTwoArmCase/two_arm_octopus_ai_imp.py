@@ -2,8 +2,8 @@ import numpy as np
 import sys
 from tqdm import tqdm
 
-sys.path.append("../../../")
-from examples.ArmWithBasisFunctions.octopus_two_arm.set_environment import Environment
+sys.path.append("../../")
+from examples.OctopusTwoArmCase.set_environment import Environment
 
 
 def segment_activation_function(time):

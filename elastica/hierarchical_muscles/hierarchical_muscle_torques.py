@@ -4,7 +4,7 @@ import sys
 import numba
 
 
-sys.path.append("../../../")
+# sys.path.append("../../../")
 
 from elastica.external_forces import NoForces
 

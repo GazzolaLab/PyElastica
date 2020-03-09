@@ -11,14 +11,12 @@ from elastica.wrappers import (
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody import Cylinder
 from elastica.external_forces import GravityForces
-from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_muscle_torques import (
-    HierarchicalMuscleTorques,
-)
+from elastica.hierarchical_muscles.hierarchical_muscle_torques import HierarchicalMuscleTorques
 from elastica.interaction import (
     AnistropicFrictionalPlane,
     AnistropicFrictionalPlaneRigidBody,
 )
-from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases import (
+from elastica.hierarchical_muscles.hierarchical_bases import (
     SpatiallyInvariantSplineHierarchy,
     SpatiallyInvariantSplineHierarchyMapper,
     SplineHierarchySegments,
@@ -26,15 +24,14 @@ from examples.ArmWithBasisFunctions.hierarchical_muscles.hierarchical_bases impo
     Gaussian,
     ScalingFilter,
 )
+
 from elastica.joint import ExternalContact
 from elastica._calculus import _isnan_check
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import extend_stepper_interface
-from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing import (
-    plot_video3d,
-    plot_video_with_surface,
-)
+
+from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import plot_video_with_surface
 
 # Set base simulator class
 class BaseSimulator(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
@@ -508,9 +505,6 @@ class Environment:
         """
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
-            # plot_video3d(
-            #     self.pp_list, video_name=filename_video, margin=0.4, fps=60, step=1, **kwargs
-            # )
             plot_video_with_surface(
                 self.post_processing_dict_rod,
                 self.post_processing_dict_cylinder,
