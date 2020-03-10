@@ -1,31 +1,44 @@
 from collections import defaultdict
 
 import sys
+
 sys.path.append("../../")
 
 import numpy as np
 
 from elastica.callback_functions import CallBackBaseClass
 from elastica.external_forces import GravityForces
-from elastica.hierarchical_muscles.hierarchical_bases import (Gaussian,
-                                                              ScalingFilter,
-                                                              SpatiallyInvariantSplineHierarchy,
-                                                              SpatiallyInvariantSplineHierarchyMapper,
-                                                              SplineHierarchySegments,
-                                                              Union)
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import \
-		HierarchicalMuscleTorques
-from elastica.interaction import (AnistropicFrictionalPlane,
-                                  AnistropicFrictionalPlaneRigidBody)
+from elastica.hierarchical_muscles.hierarchical_bases import (
+    Gaussian,
+    ScalingFilter,
+    SpatiallyInvariantSplineHierarchy,
+    SpatiallyInvariantSplineHierarchyMapper,
+    SplineHierarchySegments,
+    Union,
+)
+from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
+    HierarchicalMuscleTorques,
+)
+from elastica.interaction import (
+    AnistropicFrictionalPlane,
+    AnistropicFrictionalPlaneRigidBody,
+)
 from elastica.joint import ExternalContact
 from elastica.rigidbody import Cylinder, Sphere
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.timestepper import integrate
 from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.wrappers import (BaseSystemCollection, CallBacks, Connections,
-                               Constraints, Forcing)
-from examples.OctopusTwoArmCase.set_environment import (make_tapered_arm,
-                                                        make_two_arm_from_straigth_rod)
+from elastica.wrappers import (
+    BaseSystemCollection,
+    CallBacks,
+    Connections,
+    Constraints,
+    Forcing,
+)
+from examples.OctopusTwoArmCase.set_environment import (
+    make_tapered_arm,
+    make_two_arm_from_straigth_rod,
+)
 
 
 # Set base simulator class
@@ -528,19 +541,17 @@ if SAVE_DATA_FOR_POVRAY_VIZ:
         os.path.join(save_folder, "octopus_data.npz"),
         position=positions,
         radii=np.array(rod_history["radius"]),
-        n_elems=shearable_rod.n_elems
+        n_elems=shearable_rod.n_elems,
     )
 
     #
     for i in range(N_CYLINDERS):
         save_file_name = os.path.join(save_folder, "cylinder_data_{:04d}.npz".format(i))
-        base_point = (
-            np.array(cylinder_histories[i]["com"])
-            - (0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"])
+        base_point = np.array(cylinder_histories[i]["com"]) - (
+            0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
         )
-        cap_point = (
-            np.array(cylinder_histories[i]["com"])
-            + (0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"])
+        cap_point = np.array(cylinder_histories[i]["com"]) + (
+            0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
         )
         radius = cylinder_histories[i]["radius"]
         np.savez(
