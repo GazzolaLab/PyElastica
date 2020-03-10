@@ -446,6 +446,9 @@ class Environment:
             self.post_processing_dict_cylinder = defaultdict(
                 list
             )  # list which collected data will be append
+            self.post_processing_dict_cylinder["radius"] = self.cylinder.radius
+            self.post_processing_dict_cylinder["height"] = self.cylinder.length
+            self.post_processing_dict_cylinder["direction"] = self.cylinder.tangents
             # set the diagnostics for cyclinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
@@ -510,11 +513,8 @@ class Environment:
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
             plot_video_with_surface(
-                self.post_processing_dict_rod,
-                self.post_processing_dict_cylinder,
-                self.cylinder.radius,
-                self.cylinder.length,
-                self.cylinder.tangents,
+                [self.post_processing_dict_rod],
+                [self.post_processing_dict_cylinder],
                 video_name=filename_video,
                 fps=self.rendering_fps,
                 step=1,
