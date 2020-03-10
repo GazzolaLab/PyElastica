@@ -422,6 +422,9 @@ max_variation_cylinder_radius = 0.03
 start_circle_radius = 0.3  # controls where the cylinders will be located
 assert max_variation_cylinder_radius < mean_cylinder_radius
 
+mean_cylinder_height = 0.4
+max_variation_cylinder_height = 0.1
+
 # Prepare to add friction plane in environment for rigid body cyclinder
 mu = 0.4
 kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
@@ -436,11 +439,14 @@ for i in range(N_CYLINDERS):
     cylinder_radius = mean_cylinder_radius + max_variation_cylinder_radius * (
         np.random.random() * 2.0 - 1.0
     )
+    cylinder_height = mean_cylinder_height + max_variation_cylinder_height * (
+        np.random.random() * 2.0 - 1.0
+    )
     cylinders[i] = Cylinder(
         cylinder_start,  # cylinder  initial position
         normal,  # cylinder direction
         direction,  # cylinder normal
-        0.6,  # cylinder length
+        cylinder_height,  # cylinder length
         cylinder_radius,  # cylinder radius
         2 * 106.1032953945969,  # corresponds to mass of 4kg
     )
@@ -465,7 +471,7 @@ for i in range(N_CYLINDERS):
     )
     # set the diagnostics for cyclinder and collect data
     cylinder_histories[i]["radius"] = cylinder_radius
-    cylinder_histories[i]["height"] = 0.6
+    cylinder_histories[i]["height"] = cylinder_height
     cylinder_histories[i]["direction"] = normal.copy()
     simulator.collect_diagnostics(cylinders[i]).using(
         RigidCylinderCallBack,
@@ -530,11 +536,11 @@ if SAVE_DATA_FOR_POVRAY_VIZ:
         save_file_name = os.path.join(save_folder, "cylinder_data_{:04d}.npz".format(i))
         base_point = (
             np.array(cylinder_histories[i]["com"])
-            - 0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
+            - (0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"])
         )
         cap_point = (
             np.array(cylinder_histories[i]["com"])
-            + 0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
+            + (0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"])
         )
         radius = cylinder_histories[i]["radius"]
         np.savez(
