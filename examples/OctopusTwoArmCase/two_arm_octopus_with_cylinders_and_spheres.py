@@ -1,39 +1,31 @@
+from collections import defaultdict
+
+import sys
+sys.path.append("../../")
+
 import numpy as np
 
 from elastica.callback_functions import CallBackBaseClass
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-    Connections,
-)
-from elastica.joint import ExternalContact
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rigidbody import Sphere, Cylinder
 from elastica.external_forces import GravityForces
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
-    HierarchicalMuscleTorques,
-)
-from elastica.interaction import (
-    AnistropicFrictionalPlane,
-    AnistropicFrictionalPlaneRigidBody,
-)
-from elastica.hierarchical_muscles.hierarchical_bases import (
-    SpatiallyInvariantSplineHierarchy,
-    SpatiallyInvariantSplineHierarchyMapper,
-    SplineHierarchySegments,
-    Union,
-    Gaussian,
-    ScalingFilter,
-)
-from examples.OctopusTwoArmCase.set_environment import (
-    make_two_arm_from_straigth_rod,
-    make_tapered_arm,
-)
-from elastica.timestepper.symplectic_steppers import PositionVerlet
+from elastica.hierarchical_muscles.hierarchical_bases import (Gaussian,
+                                                              ScalingFilter,
+                                                              SpatiallyInvariantSplineHierarchy,
+                                                              SpatiallyInvariantSplineHierarchyMapper,
+                                                              SplineHierarchySegments,
+                                                              Union)
+from elastica.hierarchical_muscles.hierarchical_muscle_torques import \
+		HierarchicalMuscleTorques
+from elastica.interaction import (AnistropicFrictionalPlane,
+                                  AnistropicFrictionalPlaneRigidBody)
+from elastica.joint import ExternalContact
+from elastica.rigidbody import Cylinder, Sphere
+from elastica.rod.cosserat_rod import CosseratRod
 from elastica.timestepper import integrate
+from elastica.timestepper.symplectic_steppers import PositionVerlet
+from elastica.wrappers import (BaseSystemCollection, CallBacks, Connections,
+                               Constraints, Forcing)
+from examples.OctopusTwoArmCase.set_environment import (make_tapered_arm,
+                                                        make_two_arm_from_straigth_rod)
 
 
 # Set base simulator class
@@ -488,7 +480,7 @@ simulator.finalize()
 
 timestepper = PositionVerlet()
 
-final_time = 5.0
+final_time = 4.0
 dt = 4.0e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
@@ -522,10 +514,15 @@ if SAVE_DATA_FOR_POVRAY_VIZ:
     save_folder = os.path.join(os.getcwd(), "data")
     os.makedirs(save_folder, exist_ok=True)
 
+    # Transform nodal to elemental positions
+    positions = np.array(rod_history["position"])
+    positions = 0.5 * (positions[..., 1:] + positions[..., :-1])
+
     np.savez(
         os.path.join(save_folder, "octopus_data.npz"),
-        position=np.array(rod_history["position"]),
+        position=positions,
         radii=np.array(rod_history["radius"]),
+        n_elems=shearable_rod.n_elems
     )
 
     #
