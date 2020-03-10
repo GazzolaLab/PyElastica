@@ -3,7 +3,7 @@ import sys
 from tqdm import tqdm
 
 sys.path.append("../../../")
-from examples.TapperedArmDecayingBasisFunctions.set_environment import Environment
+from examples.TaperedArmDecayingBasisFunctions.set_environment import Environment
 
 
 def segment_activation_function(number_of_muscle_segments, time):

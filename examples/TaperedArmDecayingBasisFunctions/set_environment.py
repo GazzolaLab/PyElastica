@@ -682,7 +682,7 @@ def make_two_arm_from_straigth_rod(
     This function is used to bend a rod and make two arms and head from the rod.
     Angle between arms and head is determined by the user input beta which is in degrees.
     This function positions and radius for three segments, which are first arm, head and
-    second arm. Radius here is varying so that we can get a tappered arm.
+    second arm. Radius here is varying so that we can get a tapered arm.
     :param rod:
     :param beta:
     :param base_length:
@@ -695,7 +695,7 @@ def make_two_arm_from_straigth_rod(
     :param radius_head:
     :return:
     position: this is the position of nodes
-    radius: for tappered arm radius is varying
+    radius: for tapered arm radius is varying
     """
     from elastica.utils import MaxDimension
 
