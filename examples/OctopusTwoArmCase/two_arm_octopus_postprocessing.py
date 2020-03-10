@@ -7,12 +7,12 @@ from typing import Dict, Sequence
 
 
 def plot_video_with_surface(
-        rods_history: Sequence[Dict],
-        cylinders_history: Sequence[Dict],
-        video_name="video.mp4",
-        fps=60,
-        step=1,
-        **kwargs
+    rods_history: Sequence[Dict],
+    cylinders_history: Sequence[Dict],
+    video_name="video.mp4",
+    fps=60,
+    step=1,
+    **kwargs
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
     from mpl_toolkits.mplot3d import proj3d, Axes3D
@@ -28,18 +28,25 @@ def plot_video_with_surface(
     cylinder_radii = [x["radius"] for x in cylinders_history]
     sim_time = np.array(cylinders_history[0]["time"])
 
-    cylinder_cmap = cm.get_cmap('Spectral', n_visualized_cylinders)
+    cylinder_cmap = cm.get_cmap("Spectral", n_visualized_cylinders)
 
     # Rods next
     n_visualized_rods = len(rods_history)
 
     # TODO : Should be a generator rather a function
     rod_history_unpacker = lambda rod_idx, t_idx: (
-        rods_history[rod_idx]["position"][time_idx], rods_history[rod_idx]["radius"][t_idx])
+        rods_history[rod_idx]["position"][time_idx],
+        rods_history[rod_idx]["radius"][t_idx],
+    )
     com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
     cylinder_history_unpacker = lambda cyl_idx, t_idx: (
-        cylinders_history[cyl_idx]["com"][t_idx] - 0.5 * cylinder_heights[cyl_idx] * cylinders_history[cyl_idx][
-            "direction"].reshape(3), cylinder_radii[cyl_idx], cylinder_heights[cyl_idx])
+        cylinders_history[cyl_idx]["com"][t_idx]
+        - 0.5
+        * cylinder_heights[cyl_idx]
+        * cylinders_history[cyl_idx]["direction"].reshape(3),
+        cylinder_radii[cyl_idx],
+        cylinder_heights[cyl_idx],
+    )
 
     print("Plotting videos!")
     FFMpegWriter = manimation.writers["ffmpeg"]
@@ -85,7 +92,9 @@ def plot_video_with_surface(
             XC, YC, ZC = make_data_for_cylinder_along_z(
                 *cylinder_history_unpacker(cylinder_idx, time_idx)
             )
-            cylinder_surfs[cylinder_idx] = ax.plot_surface(XC, YC, ZC, color=cylinder_cmap(cylinder_idx), alpha=1.0)
+            cylinder_surfs[cylinder_idx] = ax.plot_surface(
+                XC, YC, ZC, color=cylinder_cmap(cylinder_idx), alpha=1.0
+            )
 
         # Rods next
         rod_scatters = [None for _ in range(n_visualized_cylinders)]
@@ -108,8 +117,12 @@ def plot_video_with_surface(
             with plt.style.context("seaborn-whitegrid"):
                 for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
                     for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-                        inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
+                        inst_position, inst_radius = rod_history_unpacker(
+                            rod_idx, time_idx
+                        )
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
+                        )
                         rod_scatters[rod_idx]._offsets3d = (
                             inst_position[0],
                             inst_position[1],
@@ -118,16 +131,22 @@ def plot_video_with_surface(
                         rod_scatters[rod_idx].set_sizes(np.pi * inst_radius ** 2 * 1e4)
 
                     for cylinder_idx in range(n_visualized_cylinders):
-                        XC, YC, ZC = make_data_for_cylinder_along_z(*cylinder_history_unpacker(cylinder_idx, time_idx))
+                        XC, YC, ZC = make_data_for_cylinder_along_z(
+                            *cylinder_history_unpacker(cylinder_idx, time_idx)
+                        )
                         cylinder_surfs[cylinder_idx].remove()
-                        cylinder_surfs[cylinder_idx] = ax.plot_surface(XC, YC, ZC, color=cylinder_cmap(cylinder_idx),
-                                                                       alpha=1.0)
+                        cylinder_surfs[cylinder_idx] = ax.plot_surface(
+                            XC, YC, ZC, color=cylinder_cmap(cylinder_idx), alpha=1.0
+                        )
 
                     writer.grab_frame()
 
         # Delete all variables within scope
         # Painful
-        del rod_scatters, cylinder_surfs,
+        del (
+            rod_scatters,
+            cylinder_surfs,
+        )
         del time_idx, rod_idx, cylinder_idx
         del inst_position, inst_radius
         del XC, YC, ZC
@@ -153,7 +172,9 @@ def plot_video_with_surface(
         for rod_idx in range(n_visualized_rods):
             inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
             inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
-            rod_lines[rod_idx] = ax.plot(inst_position[0], inst_position[1], "r", lw=0.5)[0]
+            rod_lines[rod_idx] = ax.plot(
+                inst_position[0], inst_position[1], "r", lw=0.5
+            )[0]
             inst_com = com_history_unpacker(rod_idx, time_idx)
             rod_com_lines[rod_idx] = ax.plot(inst_com[0], inst_com[1], "k--", lw=2.0)[0]
 
@@ -171,7 +192,9 @@ def plot_video_with_surface(
 
         cylinder_artists = [None for _ in range(n_visualized_cylinders)]
         for cylinder_idx in range(n_visualized_cylinders):
-            cylinder_origin, cylinder_radius, _ = cylinder_history_unpacker(cylinder_idx, time_idx)
+            cylinder_origin, cylinder_radius, _ = cylinder_history_unpacker(
+                cylinder_idx, time_idx
+            )
             cylinder_artists[cylinder_idx] = Circle(
                 (cylinder_origin[0], cylinder_origin[1]),
                 cylinder_radius,
@@ -186,8 +209,12 @@ def plot_video_with_surface(
                 for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
                     for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-                        inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
+                        inst_position, inst_radius = rod_history_unpacker(
+                            rod_idx, time_idx
+                        )
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
+                        )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
                         rod_lines[rod_idx].set_ydata(inst_position[1])
@@ -196,14 +223,19 @@ def plot_video_with_surface(
                         rod_com_lines[rod_idx].set_xdata(com[0])
                         rod_com_lines[rod_idx].set_ydata(com[1])
 
-                        rod_scatters[rod_idx].set_offsets(
-                            inst_position[:2].T,
+                        rod_scatters[rod_idx].set_offsets(inst_position[:2].T,)
+                        rod_scatters[rod_idx].set_sizes(
+                            np.pi * (scaling_factor * inst_radius) ** 2
                         )
-                        rod_scatters[rod_idx].set_sizes(np.pi * (scaling_factor * inst_radius) ** 2)
 
                     for cylinder_idx in range(n_visualized_cylinders):
-                        cylinder_origin, _, _ = cylinder_history_unpacker(cylinder_idx, time_idx)
-                        cylinder_artists[cylinder_idx].center = (cylinder_origin[0], cylinder_origin[1])
+                        cylinder_origin, _, _ = cylinder_history_unpacker(
+                            cylinder_idx, time_idx
+                        )
+                        cylinder_artists[cylinder_idx].center = (
+                            cylinder_origin[0],
+                            cylinder_origin[1],
+                        )
 
                     writer.grab_frame()
 

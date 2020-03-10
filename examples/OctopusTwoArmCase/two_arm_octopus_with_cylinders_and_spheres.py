@@ -28,7 +28,10 @@ from elastica.hierarchical_muscles.hierarchical_bases import (
     Gaussian,
     ScalingFilter,
 )
-from examples.OctopusTwoArmCase.set_environment import make_two_arm_from_straigth_rod, make_tapered_arm
+from examples.OctopusTwoArmCase.set_environment import (
+    make_two_arm_from_straigth_rod,
+    make_tapered_arm,
+)
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 
@@ -203,6 +206,7 @@ segments_of_muscle_hierarchies_in_tangent_dir = SplineHierarchySegments(
     first_muscle_mapper_in_tangent_dir, second_muscle_mapper_in_tangent_dir
 )
 
+
 def ramped_up(shifted_time, threshold=0.1):
     return (
         0.0
@@ -213,6 +217,7 @@ def ramped_up(shifted_time, threshold=0.1):
             else 0.5 * (1.0 - np.cos(np.pi * shifted_time / threshold))
         )
     )
+
 
 def segment_activation_function_normal(time):
     """
@@ -274,6 +279,7 @@ def segment_activation_function_binormal(time):
     # Bottom level muscle segment
     activation_arr_4[3:7] = ramped_up(time - 0.8, 0.1)
     return [activation_arr_3, activation_arr_4]  # activation in binormal direction
+
 
 def segment_activation_function_tangent(time):
 
@@ -367,9 +373,7 @@ class ArmMuscleBasisCallBack(CallBackBaseClass):
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
+            self.callback_params["position"].append(system.position_collection.copy())
             # callback_params["velocity"].append(
             #     system.velocity_collection.copy()
             # )
@@ -381,9 +385,7 @@ class ArmMuscleBasisCallBack(CallBackBaseClass):
             #     system.compute_position_center_of_mass()
             # )
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["com"].append(
-                system.compute_position_center_of_mass()
-            )
+            self.callback_params["com"].append(system.compute_position_center_of_mass())
 
             return
 
@@ -403,25 +405,17 @@ class RigidCylinderCallBack(CallBackBaseClass):
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
-            self.callback_params["com"].append(
-                system.compute_position_center_of_mass()
-            )
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["com"].append(system.compute_position_center_of_mass())
             return
 
 
 # Collect data using callback function for postprocessing
 step_skip = 500  # collect data every # steps
-rod_history = defaultdict(
-    list
-)  # list which collected data will be append
+rod_history = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 simulator.collect_diagnostics(shearable_rod).using(
-    ArmMuscleBasisCallBack,
-    step_skip=step_skip,
-    callback_params=rod_history,
+    ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=rod_history,
 )
 
 
@@ -433,7 +427,7 @@ cylinder_radii = [None for _ in range(N_CYLINDERS)]
 # Configuration of cylinders
 mean_cylinder_radius = 0.05
 max_variation_cylinder_radius = 0.03
-start_circle_radius = 0.3 # controls where the cylinders will be located
+start_circle_radius = 0.3  # controls where the cylinders will be located
 assert max_variation_cylinder_radius < mean_cylinder_radius
 
 # Prepare to add friction plane in environment for rigid body cyclinder
@@ -444,8 +438,12 @@ static_mu_array = 2 * kinetic_mu_array
 com_rod = shearable_rod.compute_position_center_of_mass()
 for i in range(N_CYLINDERS):
     theta = i / N_CYLINDERS * 2.0 * np.pi
-    cylinder_start = com_rod + start_circle_radius * np.array([np.cos(theta), np.sin(theta), 0.0])
-    cylinder_radius = mean_cylinder_radius + max_variation_cylinder_radius * (np.random.random() * 2.0 - 1.0)
+    cylinder_start = com_rod + start_circle_radius * np.array(
+        [np.cos(theta), np.sin(theta), 0.0]
+    )
+    cylinder_radius = mean_cylinder_radius + max_variation_cylinder_radius * (
+        np.random.random() * 2.0 - 1.0
+    )
     cylinders[i] = Cylinder(
         cylinder_start,  # cylinder  initial position
         normal,  # cylinder direction
@@ -457,9 +455,7 @@ for i in range(N_CYLINDERS):
     cylinder_radii[i] = cylinder_radius
     simulator.append(cylinders[i])
     # Add external contact between rod and cyclinder
-    simulator.connect(shearable_rod, cylinders[i]).using(
-        ExternalContact, 1e2, 0.1
-    )
+    simulator.connect(shearable_rod, cylinders[i]).using(ExternalContact, 1e2, 0.1)
     # Add gravitational forces
     simulator.add_forcing_to(cylinders[i]).using(
         GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
@@ -500,7 +496,10 @@ integrate(timestepper, simulator, final_time, total_steps)
 
 PLOT_VIDEO = False
 if PLOT_VIDEO:
-    from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import plot_video_with_surface
+    from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import (
+        plot_video_with_surface,
+    )
+
     plot_video_with_surface(
         [rod_history],
         cylinder_histories,
@@ -508,27 +507,39 @@ if PLOT_VIDEO:
         step=1,
         video_name="two_arm_simulation_with_cylinders.mp4",
         # The following parameters are optional
-        x_limits = (-1.0, 0.5),  # Set bounds on x-axis
-        y_limits = (-0.025, 1.25),  # Set bounds on y-axis
-        z_limits = (-0.05, 1.00),  # Set bounds on z-axis
-        dpi = 100,  # Set the quality of the image
-        vis3D = True,  # Turn on 3D visualization
-        vis2D = True,  # Turn on projected (2D) visualization
+        x_limits=(-1.0, 0.5),  # Set bounds on x-axis
+        y_limits=(-0.025, 1.25),  # Set bounds on y-axis
+        z_limits=(-0.05, 1.00),  # Set bounds on z-axis
+        dpi=100,  # Set the quality of the image
+        vis3D=True,  # Turn on 3D visualization
+        vis2D=True,  # Turn on projected (2D) visualization
     )
 
 SAVE_DATA_FOR_POVRAY_VIZ = True
 if SAVE_DATA_FOR_POVRAY_VIZ:
     import os
-    save_folder = os.path.join(os.getcwd(), 'data')
+
+    save_folder = os.path.join(os.getcwd(), "data")
     os.makedirs(save_folder, exist_ok=True)
 
-    np.savez(os.path.join(save_folder, 'octopus_data.npz'), position=np.array(rod_history['position']), radii=np.array(rod_history['radius']))
+    np.savez(
+        os.path.join(save_folder, "octopus_data.npz"),
+        position=np.array(rod_history["position"]),
+        radii=np.array(rod_history["radius"]),
+    )
 
     #
     for i in range(N_CYLINDERS):
-        save_file_name = os.path.join(save_folder, 'cylinder_data_{:04d}.npz'.format(i))
-        base_point = np.array(cylinder_histories[i]['com']) - 0.5 * cylinder_histories[i]['height'] * cylinder_histories[i]['direction']
-        cap_point = np.array(cylinder_histories[i]['com']) + 0.5 * cylinder_histories[i]['height'] * cylinder_histories[i]['direction']
-        radius = cylinder_histories[i]['radius']
-        np.savez(save_file_name, base_point=base_point, cap_point=cap_point, radius=radius)
-
+        save_file_name = os.path.join(save_folder, "cylinder_data_{:04d}.npz".format(i))
+        base_point = (
+            np.array(cylinder_histories[i]["com"])
+            - 0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
+        )
+        cap_point = (
+            np.array(cylinder_histories[i]["com"])
+            + 0.5 * cylinder_histories[i]["height"] * cylinder_histories[i]["direction"]
+        )
+        radius = cylinder_histories[i]["radius"]
+        np.savez(
+            save_file_name, base_point=base_point, cap_point=cap_point, radius=radius
+        )
