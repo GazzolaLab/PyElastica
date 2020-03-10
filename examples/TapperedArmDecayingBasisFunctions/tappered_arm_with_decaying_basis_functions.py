@@ -85,14 +85,14 @@ def user_defined_condition_function(reward, systems, time):
 
 def main():
     # Set simulation final time
-    final_time = 20
+    final_time = 10
     # Number of muscle segments
     number_of_muscle_segments = 10
 
     env = Environment(
         final_time,
         number_of_muscle_segments,
-        alpha=10,
+        alpha=20,
         COLLECT_DATA_FOR_POSTPROCESSING=True,
     )
 
@@ -107,7 +107,7 @@ def main():
             target_position = np.array([1.0 * np.sin(alpha), 1.0 * np.cos(alpha), 0.0])
         else:
             target_position = np.array(
-                [0.8, -0.6, 0.0]
+                [0.1, 0.95, 0.0]
             )  # target object initial position
 
         # Reset the environment before the new episode and get total number of simulation steps

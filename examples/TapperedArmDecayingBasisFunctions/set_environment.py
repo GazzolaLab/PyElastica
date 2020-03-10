@@ -18,6 +18,7 @@ from elastica.interaction import (
     AnistropicFrictionalPlane,
     AnistropicFrictionalPlaneRigidBody,
 )
+from elastica.boundary_conditions import OneEndFixedRod
 from elastica.hierarchical_muscles.hierarchical_bases import (
     SpatiallyInvariantSplineHierarchy,
     SpatiallyInvariantSplineHierarchyMapper,
@@ -142,12 +143,17 @@ class Environment:
         # Now rod is ready for simulation, append rod to simulation
         self.simulator.append(self.shearable_rod)
 
+        # Constrain the rod
+        self.simulator.constrain(self.shearable_rod).using(
+            OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+        )
+
         self.cylinder = Cylinder(
             self.cylinder_start,  # cylinder  initial position
             normal,  # cylinder direction
             direction,  # cylinder normal
             0.6,  # cylinder length
-            0.05,  # cylinder radius
+            0.07,  # cylinder radius
             2 * 106.1032953945969,  # corresponds to mass of 4kg
         )
         self.simulator.append(self.cylinder)
@@ -396,6 +402,9 @@ class Environment:
             self.post_processing_dict_cylinder = defaultdict(
                 list
             )  # list which collected data will be append
+            self.post_processing_dict_cylinder["radius"] = self.cylinder.radius
+            self.post_processing_dict_cylinder["height"] = self.cylinder.length
+            self.post_processing_dict_cylinder["direction"] = self.cylinder.tangents
             # set the diagnostics for cyclinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
@@ -488,11 +497,8 @@ class Environment:
             # )
 
             plot_video_with_surface(
-                self.post_processing_dict_rod,
-                self.post_processing_dict_cylinder,
-                self.cylinder.radius,
-                self.cylinder.length,
-                self.cylinder.tangents,
+                [self.post_processing_dict_rod],
+                [self.post_processing_dict_cylinder],
                 video_name=filename_video,
                 fps=self.rendering_fps,
                 step=1,
