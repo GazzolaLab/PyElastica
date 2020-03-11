@@ -73,7 +73,7 @@ class _CosseratRodBase(RodBase):
         )
         # calculated in `_compute_internal_forces_and_torques`
         self.internal_forces = 0 * accelerations
-        self.external_torques = 0 * angular_accelerations
+        self.internal_torques = 0 * angular_accelerations
 
         # will apply external force and torques externally
         self.external_forces = 0 * accelerations
