@@ -16,7 +16,7 @@ class Sphere(RigidBodyBase, _RigidRodSymplecticStepperMixin):
 
         self.radius = base_radius
         self.density = density
-        self.length = base_radius
+        self.length = 2 * base_radius
         # This is for a rigid body cylinder
         self.volume = 4.0 / 3.0 * np.pi * base_radius ** 3
         self.mass = np.array([self.volume * self.density])
