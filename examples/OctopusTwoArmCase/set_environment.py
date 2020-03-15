@@ -662,11 +662,11 @@ def make_tapered_arm(
     lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
     tangents = position_diff / lengths
 
-    plane_binormals = np.cross(direction, normal)
+    # plane_binormals = np.cross(direction, normal)
 
     for k in range(n_elements):
         rod.director_collection[0, :, k] = normal
-        rod.director_collection[1, :, k] = plane_binormals
+        rod.director_collection[1, :, k] = np.cross(tangents[..., k], normal)
         rod.director_collection[2, :, k] = tangents[..., k]
 
     rod.position_collection[:] = position
