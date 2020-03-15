@@ -52,6 +52,7 @@ class Environment:
         final_time,
         number_of_muscle_segment,
         alpha,
+        muscle_segment_overlap,
         COLLECT_DATA_FOR_POSTPROCESSING=False,
     ):
         # Integrator type
@@ -72,6 +73,9 @@ class Environment:
         # Basis function amplitude
         self.alpha = alpha
 
+        # Muscle basis overlap
+        self.muscle_segment_overlap = muscle_segment_overlap
+
         # Collect data is a boolean. If it is true callback function collects
         # rod parameters defined by user in a list.
         self.COLLECT_DATA_FOR_POSTPROCESSING = COLLECT_DATA_FOR_POSTPROCESSING
@@ -89,11 +93,11 @@ class Environment:
         """
         self.simulator = BaseSimulator()
 
-        # Rigid body cyclinder start position
+        # Rigid body cylinder start position
         self.cylinder_start = cylinder_start
 
         # setting up test params
-        n_elem = 120
+        n_elem = 220
         start = np.zeros((3,))
         direction = np.array([0.0, 1.0, 0.0])  # rod direction
         normal = np.array([0.0, 0.0, 1.0])
@@ -118,7 +122,6 @@ class Environment:
             E,
             poisson_ratio,
         )
-
         # Set the arm properties after defining rods
         radius_tip = 0.025  # radius of the arm at the tip
         radius_base = 0.05  # radius of the arm at the base
@@ -139,7 +142,6 @@ class Environment:
             normal,
             position,
         )
-
         # Now rod is ready for simulation, append rod to simulation
         self.simulator.append(self.shearable_rod)
 
@@ -169,19 +171,38 @@ class Environment:
         # from base to tip.
 
         muscle_mapper = []
-        length_of_basis = 1.0 / (
+        # Keep the start position of the first muscle segment at constant position(0.0) and shift
+        # the rest of muscle segments towards the base so we get some overlap
+        # if muscle_segment_overlap is zero, then there is no overlap between
+        # muscle segment. 0.25 means we shift the muscles 25% to right and there is an overlap
+        # of 25% of muscle segment length. When we move muscle segments towards right, there is
+        # an empty space left at the tip of the arm. Thus, in order to have an overlap and cover the
+        # whole arm with muscle segments, we need to increase the length of muscle segments.
+        # In order to derive the muscle segments position, with overlap, we can use below series.
+        # segment id    start position      stop  position
+        # 0             0                   dx
+        # 1             dx-offset*dx        2dx-offset*dx
+        # 2             2dx-offset*2dx      3dx-offset*2dx
+        # 3             3dx-offset*3dx      4dx-offset*3dx
+        # n             ndx-offset*ndx      (n+1)dx-offset*ndx
+        # As can be seen from the above series expansion, nth element stop position has to be at
+        # 1.0 (non-dimensional length). Thus, we can easily find the length of segments.
+        # dx = 1.0 / (n - (n-1) * offset)
+        length_of_segments = 1.0 / (
             self.number_of_muscle_segment
-        )  # This is percentage length of the basis
+            - (self.number_of_muscle_segment - 1) * self.muscle_segment_overlap
+        )
 
         rod_lengths = self.shearable_rod.lengths
         rod_radius = self.shearable_rod.radius
         cumulative_lengths = np.cumsum(rod_lengths)
         non_dimensional_cum_length = cumulative_lengths / cumulative_lengths[-1]
 
-        for i in range(self.number_of_muscle_segment):
+        offset = self.muscle_segment_overlap
+        for i in range(0, self.number_of_muscle_segment):
             # Start and stop non dimensional positions of the muscle segments
-            start = i * length_of_basis
-            stop = (i + 1) * length_of_basis
+            start = i * (1 - offset) * length_of_segments
+            stop = start + length_of_segments
             # Find the index where muscle segments start and stop
             idx = np.searchsorted(non_dimensional_cum_length, (start, stop))
             # Find the index at the middle of muscle segment to find the rod
@@ -195,7 +216,7 @@ class Environment:
             # overlap the muscles. Gaussian function takes standard deviation as input.
             # For scaling factor we chose 2 and we add only one layer of basis function.
             muscle_segment = SpatiallyInvariantSplineHierarchy(
-                Union(ScalingFilter(Gaussian(0.80), factor)), scaling_factor=2
+                Union(ScalingFilter(Gaussian(0.35), factor),), scaling_factor=2,
             )
             # Append muscles segments in to the list
             muscle_mapper.append(
@@ -206,64 +227,26 @@ class Environment:
         segments_of_muscle_hierarchies_in_normal_dir = SplineHierarchySegments(
             *muscle_mapper
         )
-        """ Muscles in binormal direction / 2nd bending mode """
-        segments_of_muscle_hierarchies_in_binormal_dir = SplineHierarchySegments(
-            *muscle_mapper
-        )
-        """ Muscles in tangent direction/ twist mode """
-        segments_of_muscle_hierarchies_in_tangent_dir = SplineHierarchySegments(
-            *muscle_mapper
-        )
 
         # Set the list for activation function and torque profile
-        # self.activation_function_list_for_muscle_in_normal_dir = defaultdict(list)
-        # self.torque_profile_list_for_muscle_in_normal_dir = defaultdict(list)
+        self.activation_function_list_for_muscle_in_normal_dir = defaultdict(list)
+        self.torque_profile_list_for_muscle_in_normal_dir = defaultdict(list)
 
-        # step_skip = 100
+        step_skip = 100
 
-        # Set the activation arrays for each direction
+        # Set the activation arrays for normal direction
         self.activation_arr_in_normal_dir = []
-        self.activation_arr_in_binormal_dir = []
-        self.activation_arr_in_tangent_dir = []
 
         # # Apply torques
         self.simulator.add_forcing_to(self.shearable_rod).using(
             HierarchicalMuscleTorques,
             segments_of_muscle_hierarchies_in_normal_dir,
             activation_func_or_array=self.activation_arr_in_normal_dir,
-            direction=normal,
+            direction=-1 * normal,
             ramp_up_time=1.0,
-            # step_skip=step_skip,
-            # activation_function_recorder=self.activation_function_list_for_muscle_in_normal_dir,
-            # torque_profile_recorder=self.torque_profile_list_for_muscle_in_normal_dir,
-        )
-
-        # self.activation_function_list_for_muscle_in_binormal_dir = defaultdict(list)
-        # self.torque_profile_list_for_muscle_in_binormal_dir = defaultdict(list)
-
-        self.simulator.add_forcing_to(self.shearable_rod).using(
-            HierarchicalMuscleTorques,
-            segments_of_muscle_hierarchies_in_binormal_dir,
-            activation_func_or_array=self.activation_arr_in_binormal_dir,
-            direction=np.cross(direction, normal),
-            ramp_up_time=1.0,
-            # step_skip=step_skip,
-            # activation_function_recorder=self.activation_function_list_for_muscle_in_binormal_dir,
-            # torque_profile_recorder=self.torque_profile_list_for_muscle_in_binormal_dir,
-        )
-
-        # self.activation_function_list_for_muscle_in_tangent_dir = defaultdict(list)
-        # self.torque_profile_list_for_muscle_in_tangent_dir = defaultdict(list)
-
-        self.simulator.add_forcing_to(self.shearable_rod).using(
-            HierarchicalMuscleTorques,
-            segments_of_muscle_hierarchies_in_tangent_dir,
-            activation_func_or_array=self.activation_arr_in_tangent_dir,
-            direction=direction,
-            # ramp_up_time=1.0,
-            # step_skip=step_skip,
-            # activation_function_recorder=self.activation_function_list_for_muscle_in_tangent_dir,
-            # torque_profile_recorder=self.torque_profile_list_for_muscle_in_tangent_dir,
+            step_skip=step_skip,
+            activation_function_recorder=self.activation_function_list_for_muscle_in_normal_dir,
+            torque_profile_recorder=self.torque_profile_list_for_muscle_in_normal_dir,
         )
 
         # Add gravitational forces
@@ -298,7 +281,7 @@ class Environment:
             GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
         )
 
-        # Add friction plane in environment for rigid body cyclinder
+        # Add friction plane in environment for rigid body cylinder
         origin_plane = np.array([0.0, 0.0, 0.0])
         normal_plane = normal
         slip_velocity_tol = 1e-8
@@ -405,7 +388,7 @@ class Environment:
             self.post_processing_dict_cylinder["radius"] = self.cylinder.radius
             self.post_processing_dict_cylinder["height"] = self.cylinder.length
             self.post_processing_dict_cylinder["direction"] = self.cylinder.tangents
-            # set the diagnostics for cyclinder and collect data
+            # set the diagnostics for cylinder and collect data
             self.simulator.collect_diagnostics(self.cylinder).using(
                 RigidCylinderCallBack,
                 step_skip=self.step_skip,
@@ -429,9 +412,7 @@ class Environment:
 
         # Activation array contains lists for activation in different directions
         # assign correct activation arrays to correct directions.
-        self.activation_arr_in_normal_dir[:] = activation_array_list[0]
-        self.activation_arr_in_binormal_dir[:] = activation_array_list[1]
-        self.activation_arr_in_tangent_dir[:] = activation_array_list[2]
+        self.activation_arr_in_normal_dir[:] = activation_array_list
 
         # Do one time step of simulation
         time = self.do_step(
@@ -469,32 +450,14 @@ class Environment:
 
         if self.COLLECT_DATA_FOR_POSTPROCESSING:
 
-            # plot_video_actiavation_muscle(
-            #     self.activation_function_list_for_muscle_in_normal_dir,
-            #     self.torque_profile_list_for_muscle_in_normal_dir,
-            #     video_name="arm_activation_muscle_torque_in_normal_dir.mp4",
-            #     margin=0.2,
-            #     fps=20,
-            #     step=10,
-            # )
-            #
-            # plot_video_actiavation_muscle(
-            #     self.activation_function_list_for_muscle_in_binormal_dir,
-            #     self.torque_profile_list_for_muscle_in_binormal_dir,
-            #     video_name="arm_activation_muscle_torque_in_binormal_dir.mp4",
-            #     margin=0.2,
-            #     fps=20,
-            #     step=10,
-            # )
-            #
-            # plot_video_actiavation_muscle(
-            #     self.activation_function_list_for_muscle_in_tangent_dir,
-            #     self.torque_profile_list_for_muscle_in_tangent_dir,
-            #     video_name="arm_activation_muscle_torque_in_tangent_dir.mp4",
-            #     margin=0.2,
-            #     fps=20,
-            #     step=10,
-            # )
+            plot_video_actiavation_muscle(
+                self.activation_function_list_for_muscle_in_normal_dir,
+                self.torque_profile_list_for_muscle_in_normal_dir,
+                video_name="arm_activation_muscle_torque_in_normal_dir.mp4",
+                margin=0.2,
+                fps=20,
+                step=10,
+            )
 
             plot_video_with_surface(
                 [self.post_processing_dict_rod],
@@ -649,8 +612,8 @@ def make_tapered_arm(
     plane_binormals = np.cross(direction, normal)
 
     for k in range(n_elements):
-        rod.director_collection[0, :, k] = plane_binormals
-        rod.director_collection[1, :, k] = np.cross(plane_binormals, tangents[..., k])
+        rod.director_collection[0, :, k] = normal
+        rod.director_collection[1, :, k] = plane_binormals
         rod.director_collection[2, :, k] = tangents[..., k]
 
     rod.position_collection[:] = position

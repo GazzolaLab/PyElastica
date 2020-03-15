@@ -225,3 +225,7 @@ outcmaes/*
 
 # python npy files
 *.npy
+*.npz
+
+# pickle files
+*.pickle

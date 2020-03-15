@@ -81,7 +81,7 @@ def plot_video_actiavation_muscle(
             # ax1 = plt.subplot(2, 2, 1)
             # ax2 = plt.subplot(222, frameon=False)
             # x = activation[time][2]
-            torq = torque[time][1]
+            torq = torque[time][0]
             pos = element_position[time]
             fig.clf()
             plt.subplot(3, 1, 1)
@@ -97,6 +97,14 @@ def plot_video_actiavation_muscle(
                 plt.plot(pos, torque_mag[time], "-")
             else:
                 plt.plot(pos, first_torque_mag[time], pos, second_torque_mag[time])
+            plt.ylim(
+                [
+                    min(np.amin(first_torque_mag), np.amin(second_torque_mag))
+                    - 50 * margin,
+                    max(np.amax(first_torque_mag), np.amax(second_torque_mag))
+                    + 50 * margin,
+                ]
+            )
             plt.subplot(3, 1, 3)
             plt.plot(pos, torq, "-")
             # plt.xlim([0 - margin, 2.5 + margin])

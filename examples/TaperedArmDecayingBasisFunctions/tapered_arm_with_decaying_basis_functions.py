@@ -39,21 +39,9 @@ def segment_activation_function(number_of_muscle_segments, time):
 
     # Muscle segment acting in first bending direction or normal direction
     activation_arr_in_normal_direction = np.zeros((number_of_muscle_segments))
-    activation_arr_in_normal_direction[:] = 1.0 * ramped_up(time - 1.0, 0.1)
+    activation_arr_in_normal_direction[:] = 1.0 * ramped_up(time - 0.3, 0.1)
 
-    # Muscle segment acting in second bending direction or binormal direction
-    activation_arr_in_binormal_direction = np.zeros((number_of_muscle_segments))
-    activation_arr_in_binormal_direction[:] = 1.0 * ramped_up(time - 1.0, 0.1)
-
-    # Muscle segment acting in twist direction or tangent direction
-    activation_arr_in_tangent_direction = np.zeros((number_of_muscle_segments))
-    activation_arr_in_tangent_direction[:] = 1.0 * ramped_up(time - 1.0, 0.1)
-
-    return [
-        [activation_arr_in_normal_direction],  # activation in normal direction
-        [activation_arr_in_binormal_direction],  # activation in binormal direction
-        [activation_arr_in_tangent_direction],  # activation in tangent direction
-    ]
+    return (activation_arr_in_normal_direction,)  # activation in normal direction
 
 
 # User defined condition for exiting the simulation
@@ -85,14 +73,17 @@ def user_defined_condition_function(reward, systems, time):
 
 def main():
     # Set simulation final time
-    final_time = 10
+    final_time = 4.0
     # Number of muscle segments
     number_of_muscle_segments = 10
+    # Muscle segments offset for overlap
+    muscle_segment_overlap = 0.4
 
     env = Environment(
         final_time,
         number_of_muscle_segments,
         alpha=20,
+        muscle_segment_overlap=muscle_segment_overlap,
         COLLECT_DATA_FOR_POSTPROCESSING=True,
     )
 
@@ -193,31 +184,3 @@ def main():
 
 if __name__ == "__main__":
     env = main()
-
-    positions = env.shearable_rod.position_collection
-    avg_positions = 0.5 * (positions[..., :-1] + positions[..., 1:])
-    radius = env.shearable_rod.radius
-
-    from matplotlib import pyplot as plt
-    from matplotlib.colors import to_rgb
-    import matplotlib.animation as manimation
-    from mpl_toolkits.mplot3d import proj3d, Axes3D
-
-    fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=100)
-    ax = plt.axes(projection="3d")
-
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-    ax.set_xlim([-0.1, 1.1])
-    ax.set_ylim([-0.1, 1.1])
-    ax.set_zlim([0, 0.5])
-
-    # Rods next
-    scatt = ax.scatter(
-        avg_positions[0],
-        avg_positions[1],
-        avg_positions[2],
-        s=np.pi * radius ** 2 * 1e4,
-    )
-    plt.show()
