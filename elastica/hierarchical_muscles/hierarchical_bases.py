@@ -359,9 +359,12 @@ class TruncatedCosine:
 
 
 """ Can be functools objects too!"""
+
+
 # https://en.wikipedia.org/wiki/Bump_function
 def Bump(epsilon):
     def bump_impl(r, eps):
+
         output = 0.0 * r
         idx = r ** 2 < eps ** 2
         output[idx] = np.exp(-1.0 / (1.0 - (r / eps) ** 2))
