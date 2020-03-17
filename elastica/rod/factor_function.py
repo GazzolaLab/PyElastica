@@ -9,11 +9,14 @@ from elastica.utils import MaxDimension, Tolerance
 import functools
 
 from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
+
+# FIXME: when cosserat rod for numba and numpy written do import from correct places
+from elastica._elastica_numba._calculus import _difference, _average
+
+
 from elastica._calculus import (
     quadrature_kernel,
     difference_kernel,
-    position_difference_kernel,
-    position_average,
 )
 from elastica._rotations import _inv_rotate
 
@@ -29,9 +32,12 @@ from elastica.rod.cosserat_rod import (
 )
 
 # from ..interaction import node_to_element_velocity
-from elastica.interaction import node_to_element_pos_or_vel
+from elastica._elastica_numba._interaction import node_to_element_pos_or_vel
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 from elastica.rod.data_structures import _bootstrap_from_data
+
+position_difference_kernel = _difference
+position_average = _average
 
 
 class FactoryClass:

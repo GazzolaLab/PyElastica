@@ -14,9 +14,9 @@ from elastica.transformations import (
     format_matrix_shape,
 )
 
-from elastica._rotations import _skew_symmetrize, _get_rotation_matrix
+from elastica._elastica_numpy._rotations import _skew_symmetrize, _get_rotation_matrix
 
-from elastica._linalg import _batch_matmul
+from elastica._elastica_numpy._linalg import _batch_matmul
 
 
 ###############################################################################

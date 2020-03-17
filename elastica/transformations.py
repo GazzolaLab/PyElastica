@@ -3,7 +3,11 @@ __all__ = ["skew_symmetrize", "inv_skew_symmetrize"]
 
 import numpy as np
 
-from elastica._rotations import _inv_skew_symmetrize, _skew_symmetrize, _rotate
+from elastica._elastica_numpy._rotations import (
+    _inv_skew_symmetrize,
+    _skew_symmetrize,
+    _rotate,
+)
 
 from .utils import MaxDimension, isqrt
 

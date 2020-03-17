@@ -9,7 +9,8 @@ from pytest import main
 
 try:
     import numba
-    from elastica.rod.factor_function import FactoryClass
+
+    # from elastica.rod.factor_function import FactoryClass
 
     # tests Initialisation of straight rod
     def test_straight_rod():

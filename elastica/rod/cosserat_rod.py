@@ -3,11 +3,13 @@ import numpy as np
 import functools
 
 from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
+
+# FIXME: when cosserat rod for numba and numpy written do import from correct places
+from elastica._elastica_numba._calculus import _difference, _average
+
 from elastica._calculus import (
     quadrature_kernel,
     difference_kernel,
-    position_difference_kernel,
-    position_average,
 )
 from elastica._rotations import _inv_rotate
 from elastica.utils import MaxDimension, Tolerance
@@ -17,11 +19,14 @@ from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 # from ..interaction import node_to_element_velocity
-from elastica.interaction import node_to_element_pos_or_vel
+from elastica._elastica_numba._interaction import node_to_element_pos_or_vel
 
 # TODO Add documentation for all functions
 import numba
 from numpy import pi
+
+position_difference_kernel = _difference
+position_average = _average
 
 
 @functools.lru_cache(maxsize=1)
@@ -428,7 +433,7 @@ class _CosseratRodBase(RodBase):
         )
 
     # @profile
-    def _compute_internal_forces_and_torques(self):
+    def _compute_internal_forces_and_torques(self, time):
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -490,7 +495,7 @@ class _CosseratRodBase(RodBase):
 
     # @profile
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self):
+    def update_accelerations(self, time):
         """ TODO Do we need to make the collection members abstract?
 
         Parameters

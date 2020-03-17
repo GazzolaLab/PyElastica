@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.systems.analytical import (
+from elastica._elastica_numpy._systems._analytical import (
     ScalarExponentialDecaySystem,
     UndampedSimpleHarmonicOscillatorSystem,
     SymplecticUndampedSimpleHarmonicOscillatorSystem,
@@ -12,16 +12,18 @@ from elastica.systems.analytical import (
     SymplecticUndampedHarmonicOscillatorCollectiveSystem,
     ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
 )
-from elastica.timestepper import integrate, extend_stepper_interface
+from elastica._elastica_numpy._timestepper import integrate, extend_stepper_interface
 from elastica.timestepper._stepper_interface import _TimeStepper
 
-from elastica.timestepper.explicit_steppers import (
+from elastica._elastica_numpy._timestepper._explicit_steppers import (
     RungeKutta4,
-    StatefulRungeKutta4,
-    StatefulEulerForward,
     ExplicitStepperTag,
 )
-from elastica.timestepper.symplectic_steppers import (
+from elastica.timestepper.explicit_steppers import (
+    StatefulRungeKutta4,
+    StatefulEulerForward,
+)
+from elastica._elastica_numpy._timestepper._symplectic_steppers import (
     PositionVerlet,
     PEFRL,
     SymplecticStepperTag,
@@ -315,7 +317,7 @@ class TestSteppersAgainstCollectiveSystems:
 
         # Before stepping, let's extend the interface of the stepper
         # while providing memory slots
-        from elastica.systems import make_memory_for_explicit_stepper
+        from elastica._elastica_numba._systems import make_memory_for_explicit_stepper
 
         memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
         from elastica.timestepper import extend_stepper_interface
@@ -346,7 +348,9 @@ class TestSteppersAgainstRodLikeSystems:
     @pytest.mark.xfail
     @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
     def test_explicit_against_ellipse_motion(self, explicit_stepper):
-        from elastica.systems.analytical import SimpleSystemWithPositionsDirectors
+        from elastica._elastica_numpy._systems._analytical import (
+            SimpleSystemWithPositionsDirectors,
+        )
 
         rod_like_system = SimpleSystemWithPositionsDirectors(
             np.array([0.0, 0.0, 0.0]), np.random.randn(3, 3, 1)
@@ -366,7 +370,7 @@ class TestSteppersAgainstRodLikeSystems:
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
-        from elastica.systems.analytical import (
+        from elastica._elastica_numpy._systems._analytical import (
             make_simple_system_with_positions_directors,
             SimpleSystemWithPositionsDirectors,
         )

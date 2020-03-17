@@ -8,6 +8,8 @@ from elastica.timestepper._stepper_interface import (
     _StatefulStepper,
 )
 
+from elastica import IMPORT_NUMBA
+
 """
 Developer Note
 --------------
@@ -134,172 +136,185 @@ class ExplicitStepperMethods:
         return len(self._stages_and_updates)
 
 
-try:
-    from numba import jitclass
+if IMPORT_NUMBA:
+    from elastica._elastica_numba._timestepper._explicit_steppers import (
+        ExplicitStepperTag,
+        RungeKutta4,
+        EulerForward,
+    )
+else:
+    from elastica._elastica_numpy._timestepper._explicit_steppers import (
+        ExplicitStepperTag,
+        RungeKutta4,
+        EulerForward,
+    )
 
-    @jitclass([])
-    class ExplicitStepperTag:
-        def __init__(self):
-            pass
-
-
-except ImportError:
-
-    class ExplicitStepperTag:
-        def __init__(self):
-            pass
+# try:
+#     from numba import jitclass
+#
+#     @jitclass([])
+#     class ExplicitStepperTag:
+#         def __init__(self):
+#             pass
+#
+#
+# except ImportError:
+#
+#     class ExplicitStepperTag:
+#         def __init__(self):
+#             pass
 
 
 """
 Classical RK4 follows
 """
-try:
-    from numba import jitclass
-
-    rk_spec = [
-        (
-            "Tag",
-            ExplicitStepperTag.class_type.instance_type
-            if hasattr(ExplicitStepperTag, "class_type")
-            else ExplicitStepperTag,
-        )
-    ]
-
-    @jitclass(rk_spec)
-    class RungeKutta4:
-        """
-        Stateless runge-kutta4. coordinates operations only, memory needs
-        to be externally managed and allocated.
-        """
-
-        def __init__(self):
-            self.Tag = ExplicitStepperTag()
-
-        # These methods should be static, but because we need to enable automatic
-        # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
-        # For automatic discovery, the order of declaring stages here is very important
-        def _first_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.initial_state = copy(System.state)
-            Memory.k_1 = dt * System(time, dt)  # Don't update state yet
-
-        def _first_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + 0.5 * Memory.k_1
-            return time + 0.5 * dt
-
-        def _second_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_2 = dt * System(time, dt)  # Don't update state yet
-
-        def _second_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + 0.5 * Memory.k_2
-            return time
-
-        def _third_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_3 = dt * System(time, dt)  # Don't update state yet
-
-        def _third_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + Memory.k_3
-            return time + 0.5 * dt
-
-        def _fourth_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_4 = dt * System(time, dt)  # Don't update state yet
-
-        def _fourth_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = (
-                Memory.initial_state
-                + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0
-            )
-            return time
-
-    euler_fwd_spec = [
-        (
-            "Tag",
-            ExplicitStepperTag.class_type.instance_type
-            if hasattr(ExplicitStepperTag, "class_type")
-            else ExplicitStepperTag,
-        )
-    ]
-
-    @jitclass(euler_fwd_spec)
-    class EulerForward:
-        def __init__(self):
-            self.Tag = ExplicitStepperTag()
-
-        def _first_stage(self, System, Memory, time, dt):
-            pass
-
-        def _first_update(self, System, Memory, time, dt):
-            System.state += dt * System(time, dt)
-            return time + dt
-
-
-except ImportError:
-
-    class RungeKutta4:
-        """
-        Stateless runge-kutta4. coordinates operations only, memory needs
-        to be externally managed and allocated.
-        """
-
-        Tag = ExplicitStepperTag()
-
-        def __init__(self):
-            pass
-
-        # These methods should be static, but because we need to enable automatic
-        # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
-        # For automatic discovery, the order of declaring stages here is very important
-        def _first_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.initial_state = copy(System.state)
-            Memory.k_1 = dt * System(time, dt)  # Don't update state yet
-
-        def _first_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + 0.5 * Memory.k_1
-            return time + 0.5 * dt
-
-        def _second_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_2 = dt * System(time, dt)  # Don't update state yet
-
-        def _second_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + 0.5 * Memory.k_2
-            return time
-
-        def _third_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_3 = dt * System(time, dt)  # Don't update state yet
-
-        def _third_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = Memory.initial_state + Memory.k_3
-            return time + 0.5 * dt
-
-        def _fourth_stage(self, System, Memory, time: np.float64, dt: np.float64):
-            Memory.k_4 = dt * System(time, dt)  # Don't update state yet
-
-        def _fourth_update(self, System, Memory, time: np.float64, dt: np.float64):
-            # prepare for next stage
-            System.state = (
-                Memory.initial_state
-                + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0
-            )
-            return time
-
-    class EulerForward:
-        Tag = ExplicitStepperTag()
-
-        def __init__(self):
-            super(EulerForward, self).__init__()
-
-        def _first_stage(self, System, Memory, time, dt):
-            pass
-
-        def _first_update(self, System, Memory, time, dt):
-            System.state += dt * System(time, dt)
-            return time + dt
+# try:
+#     from numba import jitclass
+#
+#     rk_spec = [
+#         (
+#             "Tag",
+#             ExplicitStepperTag.class_type.instance_type
+#             if hasattr(ExplicitStepperTag, "class_type")
+#             else ExplicitStepperTag,
+#         )
+#     ]
+#
+#     @jitclass(rk_spec)
+#     class RungeKutta4:
+#         """
+#         Stateless runge-kutta4. coordinates operations only, memory needs
+#         to be externally managed and allocated.
+#         """
+#
+#         def __init__(self):
+#             self.Tag = ExplicitStepperTag()
+#
+#         # These methods should be static, but because we need to enable automatic
+#         # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
+#         # For automatic discovery, the order of declaring stages here is very important
+#         def _first_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.initial_state = copy(System.state)
+#             Memory.k_1 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _first_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + 0.5 * Memory.k_1
+#             return time + 0.5 * dt
+#
+#         def _second_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_2 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _second_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + 0.5 * Memory.k_2
+#             return time
+#
+#         def _third_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_3 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _third_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + Memory.k_3
+#             return time + 0.5 * dt
+#
+#         def _fourth_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_4 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _fourth_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = (
+#                 Memory.initial_state
+#                 + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0
+#             )
+#             return time
+#
+#     euler_fwd_spec = [
+#         (
+#             "Tag",
+#             ExplicitStepperTag.class_type.instance_type
+#             if hasattr(ExplicitStepperTag, "class_type")
+#             else ExplicitStepperTag,
+#         )
+#     ]
+#
+#     @jitclass(euler_fwd_spec)
+#     class EulerForward:
+#         def __init__(self):
+#             self.Tag = ExplicitStepperTag()
+#
+#         def _first_stage(self, System, Memory, time, dt):
+#             pass
+#
+#         def _first_update(self, System, Memory, time, dt):
+#             System.state += dt * System(time, dt)
+#             return time + dt
+#
+#
+# except ImportError:
+#
+#     class RungeKutta4:
+#         """
+#         Stateless runge-kutta4. coordinates operations only, memory needs
+#         to be externally managed and allocated.
+#         """
+#
+#         Tag = ExplicitStepperTag()
+#
+#         def __init__(self):
+#             pass
+#
+#         # These methods should be static, but because we need to enable automatic
+#         # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
+#         # For automatic discovery, the order of declaring stages here is very important
+#         def _first_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.initial_state = copy(System.state)
+#             Memory.k_1 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _first_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + 0.5 * Memory.k_1
+#             return time + 0.5 * dt
+#
+#         def _second_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_2 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _second_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + 0.5 * Memory.k_2
+#             return time
+#
+#         def _third_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_3 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _third_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = Memory.initial_state + Memory.k_3
+#             return time + 0.5 * dt
+#
+#         def _fourth_stage(self, System, Memory, time: np.float64, dt: np.float64):
+#             Memory.k_4 = dt * System(time, dt)  # Don't update state yet
+#
+#         def _fourth_update(self, System, Memory, time: np.float64, dt: np.float64):
+#             # prepare for next stage
+#             System.state = (
+#                 Memory.initial_state
+#                 + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0
+#             )
+#             return time
+#
+#     class EulerForward:
+#         Tag = ExplicitStepperTag()
+#
+#         def __init__(self):
+#             super(EulerForward, self).__init__()
+#
+#         def _first_stage(self, System, Memory, time, dt):
+#             pass
+#
+#         def _first_update(self, System, Memory, time, dt):
+#             System.state += dt * System(time, dt)
+#             return time + dt
 
 
 class StatefulRungeKutta4(_StatefulStepper):
@@ -325,18 +340,18 @@ Classical EulerForward
 """
 
 
-class EulerForward:
-    Tag = ExplicitStepperTag()
-
-    def __init__(self):
-        pass
-
-    def _first_stage(self, System, Memory, time, dt):
-        pass
-
-    def _first_update(self, System, Memory, time, dt):
-        System.state += dt * System(time, dt)
-        return time + dt
+# class EulerForward:
+#     Tag = ExplicitStepperTag()
+#
+#     def __init__(self):
+#         pass
+#
+#     def _first_stage(self, System, Memory, time, dt):
+#         pass
+#
+#     def _first_update(self, System, Memory, time, dt):
+#         System.state += dt * System(time, dt)
+#         return time + dt
 
 
 class StatefulEulerForward(_StatefulStepper):
