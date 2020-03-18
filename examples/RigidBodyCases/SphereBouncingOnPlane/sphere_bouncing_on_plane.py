@@ -1,24 +1,25 @@
-import numpy as np
+# import numpy as np
 
 # FIXME without appending sys.path make it more generic
 import sys
 
 sys.path.append("../../../")
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Forcing,
-    CallBacks,
-)
-from elastica.rigidbody import Sphere
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
-from elastica.callback_functions import CallBackBaseClass
-from elastica.external_forces import GravityForces
-from elastica.interaction import (
-    InteractionPlaneRigidBody,
-    AnistropicFrictionalPlaneRigidBody,
-)
-from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rigidbody import Sphere
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.timestepper import integrate
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.external_forces import GravityForces
+# from elastica.interaction import (
+#     InteractionPlaneRigidBody,
+#     AnistropicFrictionalPlaneRigidBody,
+# )
+# from collections import defaultdict
+from elastica import *
 
 
 class SphereBouncingOnPlaneSumulator(BaseSystemCollection, Forcing, CallBacks):

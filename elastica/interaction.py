@@ -1,17 +1,25 @@
 __doc__ = """ Interaction module """
-
+__all__ = [
+    "AnistropicFrictionalPlane",
+    "AnistropicFrictionalPlaneRigidBody",
+    "SlenderBodyTheory",
+]
 from elastica import IMPORT_NUMBA
 
 if IMPORT_NUMBA:
     from elastica._elastica_numba._interaction import (
         AnistropicFrictionalPlane,
+        InteractionPlane,
         AnistropicFrictionalPlaneRigidBody,
+        InteractionPlaneRigidBody,
         SlenderBodyTheory,
     )
 else:
     from elastica._elastica_numpy import (
         AnistropicFrictionalPlane,
+        InteractionPlane,
         AnistropicFrictionalPlaneRigidBody,
+        InteractionPlaneRigidBody,
         SlenderBodyTheory,
     )
 

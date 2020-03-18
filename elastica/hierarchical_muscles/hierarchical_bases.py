@@ -1,5 +1,16 @@
 __doc__ = """Hierarchical bases functions"""
-
+__all__ = [
+    "Union",
+    "SplineHierarchy",
+    "SpatiallyInvariantSplineHierarchy",
+    "SplineHierarchyMapper",
+    "SpatiallyInvariantSplineHierarchyMapper",
+    "SplineHierarchySegments",
+    "Gaussian",
+    "TruncatedCosine",
+    "Filter",
+    "ScalingFilter",
+]
 from elastica import IMPORT_NUMBA
 
 if IMPORT_NUMBA:

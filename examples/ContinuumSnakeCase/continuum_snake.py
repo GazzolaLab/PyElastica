@@ -6,19 +6,21 @@ import sys
 sys.path.append("../../")
 
 import os
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.external_forces import GravityForces, MuscleTorques
-from elastica.interaction import AnistropicFrictionalPlane
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.external_forces import GravityForces, MuscleTorques
+# from elastica.interaction import AnistropicFrictionalPlane
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+# from elastica.timestepper import integrate
+from elastica import *
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,

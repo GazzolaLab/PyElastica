@@ -1,39 +1,40 @@
-import numpy as np
+# import numpy as np
+#
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+#     Connections,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.rigidbody import Cylinder
+# from elastica.external_forces import GravityForces
+# from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
+#     HierarchicalMuscleTorques,
+# )
+# from elastica.interaction import (
+#     AnistropicFrictionalPlane,
+#     AnistropicFrictionalPlaneRigidBody,
+# )
+# from elastica.boundary_conditions import OneEndFixedRod
+# from elastica.hierarchical_muscles.hierarchical_bases import (
+#     SpatiallyInvariantSplineHierarchy,
+#     SpatiallyInvariantSplineHierarchyMapper,
+#     SplineHierarchySegments,
+#     Union,
+#     Gaussian,
+#     ScalingFilter,
+# )
 
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-    Connections,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rigidbody import Cylinder
-from elastica.external_forces import GravityForces
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
-    HierarchicalMuscleTorques,
-)
-from elastica.interaction import (
-    AnistropicFrictionalPlane,
-    AnistropicFrictionalPlaneRigidBody,
-)
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.hierarchical_muscles.hierarchical_bases import (
-    SpatiallyInvariantSplineHierarchy,
-    SpatiallyInvariantSplineHierarchyMapper,
-    SplineHierarchySegments,
-    Union,
-    Gaussian,
-    ScalingFilter,
-)
-
-from elastica.joint import ExternalContact
+# from elastica.joint import ExternalContact
 from elastica._calculus import _isnan_check
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import extend_stepper_interface
 
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+from elastica.timestepper import extend_stepper_interface
+from elastica import *
 from examples.OctopusTwoArmCase.two_arm_octopus_postprocessing import (
     plot_video_with_surface,
 )

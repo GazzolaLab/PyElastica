@@ -1,6 +1,6 @@
-import numpy as np
-
-from elastica._linalg import _batch_matvec
+# import numpy as np
+#
+# from elastica._linalg import _batch_matvec
 
 
 class RodBase:

@@ -6,18 +6,19 @@ import sys
 
 sys.path.append("../../")  # isort:skip
 
-from collections import defaultdict
+# from collections import defaultdict
 
-import numpy as np
+# import numpy as np
 from matplotlib import pyplot as plt
 
-from elastica.boundary_conditions import FreeRod
-from elastica.callback_functions import CallBackBaseClass
-from elastica.external_forces import GravityForces
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.timestepper import integrate
-from elastica.timestepper.symplectic_steppers import PEFRL, PositionVerlet
-from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forcing
+# from elastica.boundary_conditions import FreeRod
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.external_forces import GravityForces
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.timestepper import integrate
+# from elastica.timestepper.symplectic_steppers import PEFRL, PositionVerlet
+# from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forcing
+from elastica import *
 
 
 class SwingingFlexiblePendulumSimulator(
@@ -83,7 +84,9 @@ class HingeBC(FreeRod):
         rod.velocity_collection[..., 0] = 0.0
 
 
-pendulum_sim.constrain(pendulum_rod).using(HingeBC, positions=(0,), directors=(0,))
+pendulum_sim.constrain(pendulum_rod).using(
+    HingeBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+)
 
 # Add gravitational forces
 gravitational_acc = -9.80665

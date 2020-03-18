@@ -28,18 +28,19 @@ import sys
 
 sys.path.append("../../")  # isort:skip
 
-from collections import defaultdict
+# from collections import defaultdict
 
-import numpy as np
+# import numpy as np
 from matplotlib import pyplot as plt
 
-from elastica.boundary_conditions import FreeRod, OneEndFixedRod
-from elastica.callback_functions import CallBackBaseClass
-from elastica.external_forces import EndpointForces
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.timestepper import integrate
-from elastica.timestepper.symplectic_steppers import PEFRL, PositionVerlet
-from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forcing
+# from elastica.boundary_conditions import FreeRod, OneEndFixedRod
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.external_forces import EndpointForces
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.timestepper import integrate
+# from elastica.timestepper.symplectic_steppers import PEFRL, PositionVerlet
+# from elastica.wrappers import BaseSystemCollection, CallBacks, Constraints, Forcing
+from elastica import *
 
 
 class StretchingBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
@@ -83,7 +84,7 @@ stretchable_rod = CosseratRod.straight_rod(
 
 stretch_sim.append(stretchable_rod)
 stretch_sim.constrain(stretchable_rod).using(
-    OneEndFixedRod, positions=(0,), directors=(0,)
+    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force_x = 1.0

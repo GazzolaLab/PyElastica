@@ -1,21 +1,22 @@
-import numpy as np
+# import numpy as np
 import sys
 
 sys.path.append("../../")
 
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rigidbody import Cylinder
-from elastica.external_forces import GravityForces
-from elastica.interaction import AnistropicFrictionalPlaneRigidBody
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rigidbody import Cylinder
+# from elastica.external_forces import GravityForces
+# from elastica.interaction import AnistropicFrictionalPlaneRigidBody
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.timestepper import integrate
+from elastica import *
 
 
 class RigidCylinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):

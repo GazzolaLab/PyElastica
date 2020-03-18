@@ -1,6 +1,9 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
+__all__ = ["integrate", "PositionVerlet", "PEFRL", "RungeKutta4", "EulerForward"]
+from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.explicit_steppers import RungeKutta4, EulerForward
 
-import numpy as np
+# import numpy as np
 
 # from .explicit_steppers import ExplicitStepper
 # from .symplectic_steppers import SymplecticStepper

@@ -1,4 +1,5 @@
 __doc__ = """ Rod base classes and implementation details that need to be hidden from the user"""
+__all__ = ["CosseratRod"]
 import numpy as np
 import functools
 

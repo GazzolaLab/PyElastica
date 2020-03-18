@@ -1,5 +1,5 @@
 __doc__ = """ Joint between rods module """
-
+__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact"]
 import numpy as np
 from elastica.utils import Tolerance, MaxDimension
 from elastica import IMPORT_NUMBA

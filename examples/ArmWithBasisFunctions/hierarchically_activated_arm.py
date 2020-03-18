@@ -1,31 +1,32 @@
-import numpy as np
+# import numpy as np
 import sys
 
 sys.path.append("../../")
 
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
-    HierarchicalMuscleTorques,
-)
-from elastica.hierarchical_muscles.hierarchical_bases import (
-    SpatiallyInvariantSplineHierarchy,
-    SpatiallyInvariantSplineHierarchyMapper,
-    SplineHierarchySegments,
-    Union,
-    Gaussian,
-    ScalingFilter,
-)
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
+#     HierarchicalMuscleTorques,
+# )
+# from elastica.hierarchical_muscles.hierarchical_bases import (
+#     SpatiallyInvariantSplineHierarchy,
+#     SpatiallyInvariantSplineHierarchyMapper,
+#     SplineHierarchySegments,
+#     Union,
+#     Gaussian,
+#     ScalingFilter,
+# )
+# from elastica.boundary_conditions import OneEndFixedRod
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.timestepper import integrate
+from elastica import *
 from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing import (
     plot_video,
     plot_video_actiavation_muscle,

@@ -1,4 +1,4 @@
-import numpy as np
+# import numpy as np
 import sys
 
 sys.path.append("../../")
@@ -26,6 +26,7 @@ from elastica.boundary_conditions import OneEndFixedRod
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
+from elastica import *
 from examples.ArmWithBasisFunctions.arm_sim_with_basis_functions_postprocessing import (
     plot_video,
     plot_video_actiavation_muscle,

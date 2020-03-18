@@ -4,17 +4,20 @@ import sys
 sys.path.append("../")
 sys.path.append("../../")
 
-from collections import defaultdict
-import numpy as np
+# from collections import defaultdict
+# import numpy as np
 from matplotlib import pyplot as plt
 
 
-from elastica.wrappers import BaseSystemCollection, CallBacks
-from elastica.rod.cosserat_rod import CosseratRod, _CosseratRodBase
-from elastica.callback_functions import CallBackBaseClass
+# from elastica.wrappers import BaseSystemCollection, CallBacks
+# from elastica.rod.cosserat_rod import CosseratRod, _CosseratRodBase
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.utils import MaxDimension
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.timestepper import integrate
+from elastica import *
 from elastica.utils import MaxDimension
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
+from elastica.rod.cosserat_rod import _CosseratRodBase
 
 
 class ButterflySimulator(BaseSystemCollection, CallBacks):

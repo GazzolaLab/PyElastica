@@ -1,5 +1,5 @@
 __doc__ = """Hierarchical muscle torques"""
-
+__all__ = ["HierarchicalMuscleTorques"]
 from elastica import IMPORT_NUMBA
 
 if IMPORT_NUMBA:

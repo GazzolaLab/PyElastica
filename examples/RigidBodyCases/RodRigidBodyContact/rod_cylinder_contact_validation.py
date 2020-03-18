@@ -1,23 +1,24 @@
-import numpy as np
+# import numpy as np
 
 # FIXME without appending sys.path make it more generic
 import sys
 
 sys.path.append("../../../")
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Connections,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rigidbody import Cylinder
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
-from elastica.joint import ExternalContact
-from elastica.callback_functions import CallBackBaseClass
-from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Connections,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.rigidbody import Cylinder
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.timestepper import integrate
+# from elastica.joint import ExternalContact
+# from elastica.callback_functions import CallBackBaseClass
+# from collections import defaultdict
+from elastica import *
 from matplotlib import pyplot as plt
 
 
