@@ -8,7 +8,6 @@ import pytest
 import sys
 
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica._linalg import _batch_cross, _batch_norm
 from elastica.rod.factory_function import allocate
 from elastica.rigidbody import Cylinder
 
