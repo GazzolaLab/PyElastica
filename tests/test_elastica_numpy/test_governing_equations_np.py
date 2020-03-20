@@ -1,11 +1,11 @@
-__doc__ = """Test Cosserat rod governing equations"""
+__doc__ = """Test Cosserat rod governing equations for Numpy implementation"""
 
 # System imports
 import numpy as np
-from elastica.rod.cosserat_rod import CosseratRod
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._linalg import _batch_matvec
+from elastica._elastica_numpy._linalg import _batch_matvec
+from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
 import pytest
 
 
@@ -43,7 +43,6 @@ def constructor(n_elem, nu=0.0):
     return cls, rod
 
 
-# @pytest.fixture  # (scope="function")
 def compute_geometry_analytically(n_elem):
 
     initial = BaseClass(n_elem)
@@ -64,7 +63,6 @@ def compute_geometry_analytically(n_elem):
     return position, rest_lengths, tangents, radius
 
 
-# @pytest.fixture  # (scope="function")
 def compute_all_dilatations_analytically(n_elem, dilatation):
 
     initial = BaseClass(n_elem)
@@ -85,7 +83,6 @@ def compute_all_dilatations_analytically(n_elem, dilatation):
     return (dilatation_collection, voronoi_dilatation, lengths, rest_voronoi_lengths)
 
 
-# @pytest.fixture  # (scope="function")
 def compute_dilatation_rate_analytically(n_elem, dilatation):
 
     position, rest_lengths, tangents, radius = compute_geometry_analytically(n_elem)
@@ -106,7 +103,6 @@ def compute_dilatation_rate_analytically(n_elem, dilatation):
     return dilatation_rate, velocity
 
 
-# @pytest.fixture  # (scope="function")
 def compute_strain_analytically(n_elem, dilatation):
     position, rest_lengths, tangents, radius = compute_geometry_analytically(n_elem)
     (
@@ -122,7 +118,6 @@ def compute_strain_analytically(n_elem, dilatation):
     return strain
 
 
-# @pytest.fixture  # (scope="function")
 def compute_stress_analytically(n_elem, dilatation):
     initial = BaseClass(n_elem)
     strain = compute_strain_analytically(n_elem, dilatation)
@@ -133,7 +128,6 @@ def compute_stress_analytically(n_elem, dilatation):
     return stress
 
 
-# @pytest.fixture  # (scope="function")
 def compute_forces_analytically(n_elem, dilatation):
     internal_stress = compute_stress_analytically(n_elem, dilatation)
     # Internal forces in between elements have to be zero, because

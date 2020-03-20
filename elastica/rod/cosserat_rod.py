@@ -1,35 +1,40 @@
 __doc__ = """ Rod base classes and implementation details that need to be hidden from the user"""
 __all__ = ["CosseratRod"]
-import numpy as np
-import functools
-
-from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
-
-# FIXME: when cosserat rod for numba and numpy written do import from correct places
-from elastica._elastica_numba._calculus import _difference, _average
-
-from elastica._calculus import (
-    quadrature_kernel,
-    difference_kernel,
-)
-from elastica._rotations import _inv_rotate
-from elastica.utils import MaxDimension, Tolerance
-
-from elastica.rod import RodBase
-from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
-from elastica.rod.data_structures import _RodSymplecticStepperMixin
-
-# from ..interaction import node_to_element_velocity
-from elastica._elastica_numba._interaction import node_to_element_pos_or_vel
-
-# TODO Add documentation for all functions
-import numba
-from numpy import pi
+# import numpy as np
+# import functools
+#
+# from elastica._linalg import _batch_matvec, _batch_cross, _batch_norm, _batch_dot
+#
+# # FIXME: when cosserat rod for numba and numpy written do import from correct places
+# from elastica._elastica_numba._calculus import _difference, _average
+#
+# from elastica._calculus import (
+#     quadrature_kernel,
+#     difference_kernel,
+# )
+# from elastica._rotations import _inv_rotate
+# from elastica.utils import MaxDimension, Tolerance
+#
+# from elastica.rod import RodBase
+# from elastica.rod.constitutive_model import _LinearConstitutiveModelMixin
+# from elastica.rod.data_structures import _RodSymplecticStepperMixin
+#
+# # from ..interaction import node_to_element_velocity
+# from elastica._elastica_numba._interaction import node_to_element_pos_or_vel
+#
+# # TODO Add documentation for all functions
+# import numba
+# from numpy import pi
 
 # position_difference_kernel = _difference
 # position_average = _average
 
-from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
+from elastica import IMPORT_NUMBA
+
+from elastica._elastica_numba._rod._cosserat_rod import CosseratRod
+
+# from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
+
 
 # @functools.lru_cache(maxsize=1)
 # def _get_z_vector():
