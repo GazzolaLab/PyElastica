@@ -67,8 +67,9 @@ class TestBaseSystemCollection:
         bsc.extend_allowed_types((int, float, str))
 
         from elastica.rod import RodBase
+        from elastica.rigidbody import RigidBodyBase
 
-        assert bsc.allowed_sys_types == (RodBase, int, float, str)
+        assert bsc.allowed_sys_types == (RodBase, RigidBodyBase, int, float, str)
 
     def test_extend_correctness(self, load_collection):
         """

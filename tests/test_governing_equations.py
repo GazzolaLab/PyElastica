@@ -326,8 +326,10 @@ class TestingClass:
         # Compute geometry from state
         test_rod._compute_geometry_from_state()
         # Compute damping forces and torques using in class functions
-        test_damping_forces = test_rod._compute_damping_forces()
-        test_damping_torques = test_rod._compute_damping_torques()
+        test_rod._compute_damping_forces()
+        test_rod._compute_damping_torques()
+        test_damping_forces = test_rod.damping_forces
+        test_damping_torques = test_rod.damping_torques
         # Compare damping forces and torques computed using in class functions and above
         assert_allclose(test_damping_forces, damping_forces, atol=Tolerance.atol())
         assert_allclose(test_damping_torques, damping_torques, atol=Tolerance.atol())
