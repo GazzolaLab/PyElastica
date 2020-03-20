@@ -30,10 +30,10 @@ __all__ = ["CosseratRod"]
 # position_average = _average
 
 from elastica import IMPORT_NUMBA
-
-from elastica._elastica_numba._rod._cosserat_rod import CosseratRod
-
-# from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
+if IMPORT_NUMBA:
+    from elastica._elastica_numba._rod._cosserat_rod import CosseratRod
+else:
+    from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
 
 
 # @functools.lru_cache(maxsize=1)
