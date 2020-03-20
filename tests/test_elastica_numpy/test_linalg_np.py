@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Test scripts for linear algebra helpers in elastica Numpy implementation
+""" Test scripts for linear algebra helpers in Elastica Numpy implementation
 """
 # System imports
 import numpy as np

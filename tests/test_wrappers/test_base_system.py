@@ -1,7 +1,4 @@
-"""
-test_base_system
-----------------
-"""
+__doc__ = """ Test wrappers for base systems """
 
 import pytest
 import numpy as np

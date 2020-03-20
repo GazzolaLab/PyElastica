@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Test scripts for calculus kernels in elastica
-"""
+__doc__ = """ Test scripts for calculus kernels in Elastica Numpy implementation """
 # System imports
 import numpy as np
 import pytest

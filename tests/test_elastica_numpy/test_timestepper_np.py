@@ -1,3 +1,4 @@
+__doc__ = """Testing timesteppers in Elastica Numpy implementation """
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -29,7 +30,7 @@ from elastica._elastica_numpy._timestepper._symplectic_steppers import (
     SymplecticStepperTag,
 )
 
-# from elastica.timestepper.hybrid_rod_steppers import SymplecticCosseratRodStepper
+
 from elastica.utils import Tolerance
 
 

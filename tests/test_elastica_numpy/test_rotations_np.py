@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Test scripts for rotation kernels in elastica Numpy implementaiton
-"""
+__doc__ = """ Test scripts for rotation kernels in Elastica Numpy implementaiton """
 # System imports
 import numpy as np
 import pytest

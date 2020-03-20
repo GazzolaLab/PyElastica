@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Test scripts for transformation interface in elastica
-"""
+__doc__=""" Test scripts for transformation interface in Elastica Numpy implementation"""
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose

@@ -1,4 +1,4 @@
-__doc__ = """ Rod class for testing module """
+__doc__ = """ Rod class for testing module in Elastica Numba implementation"""
 
 import pytest
 import numpy as np

@@ -1,7 +1,4 @@
-"""
-test_constraints
-----------------
-"""
+__doc__ = """ Test wrappers for constraints """
 import numpy as np
 from numpy.testing import assert_allclose
 import pytest

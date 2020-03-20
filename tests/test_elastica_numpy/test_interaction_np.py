@@ -1,4 +1,4 @@
-__doc__ = "Interaction module tests"
+__doc__ = "Interaction module tests in Elastica Numpy implementation"
 
 import numpy as np
 import pytest

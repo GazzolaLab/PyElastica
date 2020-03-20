@@ -1,3 +1,4 @@
+__doc__ = """Testing timesteppers in Elastica Numba implementation """
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -12,7 +13,7 @@ from elastica._elastica_numba._systems._analytical import (
     SymplecticUndampedHarmonicOscillatorCollectiveSystem,
     ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
 )
-from elastica.timestepper import integrate, extend_stepper_interface
+from elastica._elastica_numba._timestepper import integrate, extend_stepper_interface
 from elastica.timestepper._stepper_interface import _TimeStepper
 
 from elastica._elastica_numba._timestepper._explicit_steppers import (
@@ -29,7 +30,7 @@ from elastica._elastica_numba._timestepper._symplectic_steppers import (
     SymplecticStepperTag,
 )
 
-# from elastica.timestepper.hybrid_rod_steppers import SymplecticCosseratRodStepper
+
 from elastica.utils import Tolerance
 
 
