@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-__doc__ = """ Test scripts for linear algebra helpers in Elastica Numba implementation"""
+__doc__ = (
+    """ Test scripts for linear algebra helpers in Elastica Numba implementation"""
+)
 # System imports
 import numpy as np
 import pytest

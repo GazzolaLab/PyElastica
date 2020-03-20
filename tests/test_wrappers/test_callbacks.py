@@ -1,4 +1,4 @@
-__doc__= """ Test wrappers for callback """
+__doc__ = """ Test wrappers for callback """
 import numpy as np
 from numpy.testing import assert_allclose
 import pytest

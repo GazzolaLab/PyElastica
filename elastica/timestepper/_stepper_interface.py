@@ -1,4 +1,4 @@
-__doc__ = "Interface"
+__doc__ = "Time stepper interface"
 
 import numpy as np
 

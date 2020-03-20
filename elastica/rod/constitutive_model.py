@@ -1,6 +1,4 @@
-"""
-Rod constitutive model mixins
-"""
+__doc__ = """ Rod constitutive model mixins (This file is depreciated)"""
 import numpy as np
 
 from elastica._linalg import _batch_matvec
