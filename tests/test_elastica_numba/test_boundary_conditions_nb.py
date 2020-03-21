@@ -1,10 +1,16 @@
-__doc__ = """ Boundary conditions for rod test module """
+__doc__ = (
+    """ Boundary conditions for rod test module in Elastica Numba implementation"""
+)
 import sys
 
 # System imports
 import numpy as np
-from test_rod import TestRod
-from elastica.boundary_conditions import FreeRod, OneEndFixedRod, HelicalBucklingBC
+from test_rod_nb import TestRod
+from elastica._elastica_numba._boundary_conditions import (
+    FreeRod,
+    OneEndFixedRod,
+    HelicalBucklingBC,
+)
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from pytest import main

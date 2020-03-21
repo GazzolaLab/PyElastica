@@ -30,6 +30,7 @@ __all__ = ["CosseratRod"]
 # position_average = _average
 
 from elastica import IMPORT_NUMBA
+
 if IMPORT_NUMBA:
     from elastica._elastica_numba._rod._cosserat_rod import CosseratRod
 else:
