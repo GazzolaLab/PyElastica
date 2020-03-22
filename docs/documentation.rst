@@ -1,6 +1,8 @@
 *************
-Documentation
+Pyelastica
 *************
+
+This the the documentation page for Pyelastica. We can add a bit here about things people should know before we get into the details below.
 
 Rods
 =====

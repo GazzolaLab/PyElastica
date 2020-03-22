@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>elastica.interaction &mdash; pyelastica 0.0.1 documentation</title>
+  <title>elastica.interaction &mdash; Elastica 0.0.1 documentation</title>
   
 
   
@@ -48,7 +48,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> pyelastica
+            <a href="../../index.html" class="icon icon-home"> Elastica
           
 
           
@@ -78,14 +78,15 @@
               
             
             
-              <p class="caption"><span class="caption-text">Main Page:</span></p>
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">Just a simple test</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../another_page.html">Hello World</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../elastica++.html">Elastica++</a></li>
 </ul>
 
             
@@ -100,7 +101,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">pyelastica</a>
+          <a href="../../index.html">Elastica</a>
         
       </nav>
 
@@ -192,19 +193,19 @@
 
 <span class="c1"># TODO: node_to_elements only used in friction, so that it is located here, we can change it.</span>
 <span class="c1"># Converting forces on nodes to elements</span>
-<span class="k">def</span> <span class="nf">nodes_to_elements</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+<div class="viewcode-block" id="nodes_to_elements"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.interaction.nodes_to_elements">[docs]</a><span class="k">def</span> <span class="nf">nodes_to_elements</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
     <span class="c1"># TODO: find a way with out initialzing output vector</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">output</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">input</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">output</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">input</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">output</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">input</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">output</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">input</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">output</span>
+    <span class="k">return</span> <span class="n">output</span></div>
 
 
 <span class="c1"># base class for interaction</span>
 <span class="c1"># only applies normal force no friction</span>
-<span class="k">class</span> <span class="nc">InteractionPlane</span><span class="p">:</span>
+<div class="viewcode-block" id="InteractionPlane"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.interaction.InteractionPlane">[docs]</a><span class="k">class</span> <span class="nc">InteractionPlane</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">plane_origin</span><span class="p">,</span> <span class="n">plane_normal</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span>
@@ -212,7 +213,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">plane_normal</span> <span class="o">=</span> <span class="n">plane_normal</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surface_tol</span> <span class="o">=</span> <span class="mf">1e-4</span>
 
-    <span class="k">def</span> <span class="nf">apply_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="InteractionPlane.apply_normal_force"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.interaction.InteractionPlane.apply_normal_force">[docs]</a>    <span class="k">def</span> <span class="nf">apply_normal_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function computes the plane force response on the element, in the</span>
 <span class="sd">        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper</span>
@@ -289,7 +290,7 @@
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij, ij-&gt;j&quot;</span><span class="p">,</span> <span class="n">plane_response_force</span><span class="p">,</span> <span class="n">plane_response_force</span><span class="p">)),</span>
             <span class="n">no_contact_point_idx</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div></div>
 
 
 <span class="c1"># class for anisotropic frictional plane</span>

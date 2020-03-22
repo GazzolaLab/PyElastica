@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>elastica.boundary_conditions &mdash; pyelastica 0.0.1 documentation</title>
+  <title>elastica.boundary_conditions &mdash; Elastica 0.0.1 documentation</title>
   
 
   
@@ -48,7 +48,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> pyelastica
+            <a href="../../index.html" class="icon icon-home"> Elastica
           
 
           
@@ -78,14 +78,15 @@
               
             
             
-              <p class="caption"><span class="caption-text">Main Page:</span></p>
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">Just a simple test</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../another_page.html">Hello World</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../elastica++.html">Elastica++</a></li>
 </ul>
 
             
@@ -100,7 +101,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">pyelastica</a>
+          <a href="../../index.html">Elastica</a>
         
       </nav>
 
@@ -164,11 +165,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">constrain_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="FreeRod.constrain_values"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.FreeRod.constrain_values">[docs]</a>    <span class="k">def</span> <span class="nf">constrain_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="FreeRod.constrain_rates"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.FreeRod.constrain_rates">[docs]</a>    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
 
 
 <div class="viewcode-block" id="OneEndFixedRod"><a class="viewcode-back" href="../../documentation.html#elastica.boundary_conditions.OneEndFixedRod">[docs]</a><span class="k">class</span> <span class="nc">OneEndFixedRod</span><span class="p">(</span><span class="n">FreeRod</span><span class="p">):</span>
@@ -181,13 +182,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fixed_position</span> <span class="o">=</span> <span class="n">fixed_position</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fixed_directors</span> <span class="o">=</span> <span class="n">fixed_directors</span>
 
-    <span class="k">def</span> <span class="nf">constrain_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="OneEndFixedRod.constrain_values"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.OneEndFixedRod.constrain_values">[docs]</a>    <span class="k">def</span> <span class="nf">constrain_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="n">rod</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_position</span>
-        <span class="n">rod</span><span class="o">.</span><span class="n">director_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_directors</span>
+        <span class="n">rod</span><span class="o">.</span><span class="n">director_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_directors</span></div>
 
-    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="OneEndFixedRod.constrain_rates"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.OneEndFixedRod.constrain_rates">[docs]</a>    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="n">rod</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+        <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span></div></div>
 
 
 <div class="viewcode-block" id="HelicalBucklingBC"><a class="viewcode-back" href="../../documentation.html#elastica.boundary_conditions.HelicalBucklingBC">[docs]</a><span class="k">class</span> <span class="nc">HelicalBucklingBC</span><span class="p">(</span><span class="n">FreeRod</span><span class="p">):</span>
@@ -228,7 +229,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">final_start_directors</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">_get_rotation_matrix</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">direction</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-            <span class="o">@</span> <span class="n">director_start</span>
+<div class="viewcode-block" id="HelicalBucklingBC.constrain_values"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.HelicalBucklingBC.constrain_values">[docs]</a>            <span class="o">@</span> <span class="n">director_start</span>
         <span class="p">)</span>  <span class="c1"># rotation_matrix wants vectors 3,1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">final_end_directors</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">_get_rotation_matrix</span><span class="p">(</span><span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">direction</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -241,9 +242,9 @@
             <span class="n">rod</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_end_position</span>
 
             <span class="n">rod</span><span class="o">.</span><span class="n">director_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_start_directors</span>
-            <span class="n">rod</span><span class="o">.</span><span class="n">director_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_end_directors</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">director_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_end_directors</span></div>
 
-    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="HelicalBucklingBC.constrain_rates"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.boundary_conditions.HelicalBucklingBC.constrain_rates">[docs]</a>    <span class="k">def</span> <span class="nf">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">time</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">twisting_time</span><span class="p">:</span>
             <span class="n">rod</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -256,7 +257,7 @@
             <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ang_vel</span>
 
             <span class="n">rod</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">shrink_vel</span>
-            <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">ang_vel</span></div>
+            <span class="n">rod</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">ang_vel</span></div></div>
 </pre></div>
 
            </div>

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'pyelastica'
+project = 'Elastica'
 copyright = '2020, mattiaLab'
 author = 'mattiaLab'
 
@@ -37,7 +37,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx.ext.coverage',
     'sphinx_rtd_theme',
 ]
 

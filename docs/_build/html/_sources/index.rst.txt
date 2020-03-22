@@ -12,22 +12,20 @@ I am writting a test example
 
 .. toctree::
    :maxdepth: 2
-   :caption: Main Page:
+   :caption: Elastica:
 
    welcome_page
-   another_page
+   installation
 
 .. toctree::
    :maxdepth: 2
    :caption: Documentation:
-
+   
    documentation
+   elastica++
 
 
-
-
-
-
+---------
 
 Indices and tables
 ==================
