@@ -6,96 +6,22 @@
 Welcome to pyelastica's documentation!
 ======================================
 
+.. include:: ../README.rst
+
+I am writting a test example 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Main Page:
 
-Rods
-=====
-.. automodule:: elastica.rod.cosserat_rod
-   :members:
+   welcome_page
+   another_page
 
-.. automodule:: elastica.rod.constitutive_model
-   :members:
+.. toctree::
+   :maxdepth: 2
+   :caption: Documentation:
 
-.. automodule:: elastica.rod.data_structures
-   :members:
-
-Boundary Conditions
-====================
-.. automodule:: elastica.boundary_conditions
-   :members:
-
-.. automodule:: elastica.external_forces
-   :members:
-
-.. automodule:: elastica.interaction
-   :members:
-
-
-Multiple Rod Connections
-=========================
-.. automodule:: elastica.joint
-   :members:
-
-
-Callback Functions
-===================
-.. automodule:: elastica.callback_functions
-   :members:
-
-
-Time steppers
-==============
-.. automodule:: elastica.timestepper.symplectic_steppers
-   :members:
-
-Wrappers
-==========
-.. automodule:: elastica.wrappers.base_system
-   :members:
-
-.. automodule:: elastica.wrappers.callbacks
-   :members:
-
-.. automodule:: elastica.wrappers.connections
-   :members:
-
-.. automodule:: elastica.wrappers.constraints
-   :members:
-
-.. automodule:: elastica.wrappers.forcing
-   :members:
-
-
-
-Utility Functions
-==================
-.. automodule:: elastica.transformations
-   :members:
-
-.. automodule:: elastica.utils
-   :members:
-
-.. automodule:: elastica._calculus
-   :members:
-
-.. automodule:: elastica._linalg
-   :members:
-
-.. automodule:: elastica._rotations
-   :members:
-
-.. automodule:: elastica._spline
-   :members:
-
-
-
-Systems
-========
-.. automodule:: elastica.systems.analytical
-   :members:
-
+   documentation
 
 
 

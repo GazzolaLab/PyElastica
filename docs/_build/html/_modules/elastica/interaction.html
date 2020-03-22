@@ -1,40 +1,152 @@
 
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>elastica.interaction &#8212; pyelastica 0.0.1 documentation</title>
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica.interaction &mdash; pyelastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyelastica 0.0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
-      </ul>
-    </div>  
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> pyelastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Main Page:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">Just a simple test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../another_page.html">Hello World</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyelastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>elastica.interaction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for elastica.interaction</h1><div class="highlight"><pre>
 <span></span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot; Interaction module &quot;&quot;&quot;</span>
@@ -46,7 +158,7 @@
 <span class="kn">from</span> <span class="nn">elastica.external_forces</span> <span class="kn">import</span> <span class="n">NoForces</span>
 
 
-<div class="viewcode-block" id="find_slipping_elements"><a class="viewcode-back" href="../../index.html#elastica.interaction.find_slipping_elements">[docs]</a><span class="k">def</span> <span class="nf">find_slipping_elements</span><span class="p">(</span><span class="n">velocity_slip</span><span class="p">,</span> <span class="n">velocity_threshold</span><span class="p">):</span>
+<div class="viewcode-block" id="find_slipping_elements"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.find_slipping_elements">[docs]</a><span class="k">def</span> <span class="nf">find_slipping_elements</span><span class="p">(</span><span class="n">velocity_slip</span><span class="p">,</span> <span class="n">velocity_threshold</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function takes the velocity of elements and checks if they are larger</span>
 <span class="sd">    than the threshold velocity. If velocity of elements are larger than</span>
@@ -186,7 +298,7 @@
 <span class="c1"># head is at x[0] and forward means head to tail</span>
 <span class="c1"># same convention for kinetic and static</span>
 <span class="c1"># mu named as to which direction it opposes</span>
-<div class="viewcode-block" id="AnistropicFrictionalPlane"><a class="viewcode-back" href="../../index.html#elastica.interaction.AnistropicFrictionalPlane">[docs]</a><span class="k">class</span> <span class="nc">AnistropicFrictionalPlane</span><span class="p">(</span><span class="n">NoForces</span><span class="p">,</span> <span class="n">InteractionPlane</span><span class="p">):</span>
+<div class="viewcode-block" id="AnistropicFrictionalPlane"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.AnistropicFrictionalPlane">[docs]</a><span class="k">class</span> <span class="nc">AnistropicFrictionalPlane</span><span class="p">(</span><span class="n">NoForces</span><span class="p">,</span> <span class="n">InteractionPlane</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">k</span><span class="p">,</span>
@@ -212,7 +324,7 @@
 
     <span class="c1"># kinetic and static friction should separate functions</span>
     <span class="c1"># for now putting them together to figure out common variables</span>
-<div class="viewcode-block" id="AnistropicFrictionalPlane.apply_forces"><a class="viewcode-back" href="../../index.html#elastica.interaction.AnistropicFrictionalPlane.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<div class="viewcode-block" id="AnistropicFrictionalPlane.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.AnistropicFrictionalPlane.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="c1"># calculate axial and rolling directions</span>
         <span class="n">plane_response_force_mag</span><span class="p">,</span> <span class="n">no_contact_point_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_normal_force</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
         <span class="n">normal_plane_collection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
@@ -415,7 +527,7 @@
 
 
 <span class="c1"># Slender body module</span>
-<div class="viewcode-block" id="sum_over_elements"><a class="viewcode-back" href="../../index.html#elastica.interaction.sum_over_elements">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<div class="viewcode-block" id="sum_over_elements"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.sum_over_elements">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
 <span class="k">def</span> <span class="nf">sum_over_elements</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function sums all elements of input array,</span>
@@ -445,7 +557,7 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="node_to_element_velocity"><a class="viewcode-back" href="../../index.html#elastica.interaction.node_to_element_velocity">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<div class="viewcode-block" id="node_to_element_velocity"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.node_to_element_velocity">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
 <span class="k">def</span> <span class="nf">node_to_element_velocity</span><span class="p">(</span><span class="n">node_velocity</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function computes to velocity on the elements.</span>
@@ -471,7 +583,7 @@
     <span class="k">return</span> <span class="n">element_velocity</span></div>
 
 
-<div class="viewcode-block" id="slender_body_forces"><a class="viewcode-back" href="../../index.html#elastica.interaction.slender_body_forces">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<div class="viewcode-block" id="slender_body_forces"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.slender_body_forces">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
 <span class="k">def</span> <span class="nf">slender_body_forces</span><span class="p">(</span>
     <span class="n">tangents</span><span class="p">,</span> <span class="n">velocity_collection</span><span class="p">,</span> <span class="n">dynamic_viscosity</span><span class="p">,</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">radius</span>
 <span class="p">):</span>
@@ -547,12 +659,12 @@
 
 
 <span class="c1"># slender body theory</span>
-<div class="viewcode-block" id="SlenderBodyTheory"><a class="viewcode-back" href="../../index.html#elastica.interaction.SlenderBodyTheory">[docs]</a><span class="k">class</span> <span class="nc">SlenderBodyTheory</span><span class="p">(</span><span class="n">NoForces</span><span class="p">):</span>
+<div class="viewcode-block" id="SlenderBodyTheory"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.SlenderBodyTheory">[docs]</a><span class="k">class</span> <span class="nc">SlenderBodyTheory</span><span class="p">(</span><span class="n">NoForces</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dynamic_viscosity</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SlenderBodyTheory</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_viscosity</span> <span class="o">=</span> <span class="n">dynamic_viscosity</span>
 
-<div class="viewcode-block" id="SlenderBodyTheory.apply_forces"><a class="viewcode-back" href="../../index.html#elastica.interaction.SlenderBodyTheory.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<div class="viewcode-block" id="SlenderBodyTheory.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.interaction.SlenderBodyTheory.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function applies hydrodynamic forces on body</span>
 <span class="sd">        using the slender body theory given in</span>
@@ -579,41 +691,43 @@
         <span class="n">system</span><span class="o">.</span><span class="n">external_forces</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">stokes_force</span></div></div>
 </pre></div>
 
+           </div>
+           
           </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyelastica 0.0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, mattiaLab.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1.
-    </div>
-  </body>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>
