@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>elastica.callback_functions &#8212; pyelastica 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for elastica.callback_functions</h1><div class="highlight"><pre>
+<span></span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot; Call back functions for rod &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="CallBackBaseClass"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.CallBackBaseClass">[docs]</a><span class="k">class</span> <span class="nc">CallBackBaseClass</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base call back class, user has to derive new</span>
+<span class="sd">    call back classes from this class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="CallBackBaseClass.make_callback"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.CallBackBaseClass.make_callback">[docs]</a>    <span class="k">def</span> <span class="nf">make_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will be called every time step, user can</span>
+<span class="sd">        define which parameters at which time-step to be called back</span>
+<span class="sd">        in derived call back class</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        system : system is rod</span>
+<span class="sd">        time : simulation time</span>
+<span class="sd">        current_step : current simulation time step</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="MyCallBack"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.MyCallBack">[docs]</a><span class="k">class</span> <span class="nc">MyCallBack</span><span class="p">(</span><span class="n">CallBackBaseClass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    My call back class it is derived from the base call back class.</span>
+<span class="sd">    This is an example, user can use this class as an example to write</span>
+<span class="sd">    new call back classes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_skip</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback_params</span><span class="p">):</span>
+        <span class="n">CallBackBaseClass</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">every</span> <span class="o">=</span> <span class="n">step_skip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span> <span class="o">=</span> <span class="n">callback_params</span>
+
+<div class="viewcode-block" id="MyCallBack.make_callback"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.MyCallBack.make_callback">[docs]</a>    <span class="k">def</span> <span class="nf">make_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">current_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">position_collection</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;directors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">director_collection</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">velocity_collection</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+            <span class="k">return</span></div></div>
+
+
+<div class="viewcode-block" id="ContinuumSnakeCallBack"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.ContinuumSnakeCallBack">[docs]</a><span class="k">class</span> <span class="nc">ContinuumSnakeCallBack</span><span class="p">(</span><span class="n">CallBackBaseClass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call back function for continuum snake</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_skip</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback_params</span><span class="p">):</span>
+        <span class="n">CallBackBaseClass</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">every</span> <span class="o">=</span> <span class="n">step_skip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span> <span class="o">=</span> <span class="n">callback_params</span>
+
+<div class="viewcode-block" id="ContinuumSnakeCallBack.make_callback"><a class="viewcode-back" href="../../index.html#elastica.callback_functions.ContinuumSnakeCallBack.make_callback">[docs]</a>    <span class="k">def</span> <span class="nf">make_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">current_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">position_collection</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">velocity_collection</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_params</span><span class="p">[</span><span class="s2">&quot;avg_velocity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">system</span><span class="o">.</span><span class="n">compute_velocity_center_of_mass</span><span class="p">()</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pyelastica</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, mattiaLab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
