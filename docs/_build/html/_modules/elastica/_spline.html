@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica._spline &mdash; Elastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Elastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../elastica++.html">Elastica++</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Elastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>elastica._spline</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for elastica._spline</h1><div class="highlight"><pre>
+<span></span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot; Spline for muscle torques acting on rod &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="_bspline"><a class="viewcode-back" href="../../documentation.html#elastica._spline._bspline">[docs]</a><span class="k">def</span> <span class="nf">_bspline</span><span class="p">(</span><span class="n">t_coeff</span><span class="p">,</span> <span class="n">l_centerline</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generates a bspline object that plots the spline interpolant for</span>
+<span class="sd">    any vector x. Optionally takes in a centerline length, set to 1.0 by</span>
+<span class="sd">    default and keep_pts for keeping record of control points</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_coeff : np.array</span>
+<span class="sd">        The spline coefficients, denoted by :math:`beta_i`. Note that the first</span>
+<span class="sd">        and the last values are set to zero by default.</span>
+<span class="sd">    l_centreline : float</span>
+<span class="sd">        The length of the centerline in meters.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    spline : scipy.interpolate.Bspline class</span>
+<span class="sd">        A spline class that can be called as spline(x), where x are the points at</span>
+<span class="sd">        which the spline needs to be evaluated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Divide into n_control_pts number of points (n_ctr_pts-1) regions</span>
+    <span class="n">control_pts</span> <span class="o">=</span> <span class="n">l_centerline</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">t_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Degree of b-spline required. Set to cubic</span>
+    <span class="n">degree</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="c1"># Update coefficients at the head and tail</span>
+    <span class="c1"># Setting it to 0.0 here</span>
+    <span class="n">beta_head</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">beta_tail</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">__bspline_impl__</span><span class="p">(</span><span class="n">control_pts</span><span class="p">,</span> <span class="n">t_coeff</span><span class="p">,</span> <span class="n">beta_head</span><span class="p">,</span> <span class="n">beta_tail</span><span class="p">,</span> <span class="n">degree</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="__bspline_impl__"><a class="viewcode-back" href="../../documentation.html#elastica._spline.__bspline_impl__">[docs]</a><span class="k">def</span> <span class="nf">__bspline_impl__</span><span class="p">(</span><span class="n">x_pts</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">b_head</span><span class="p">,</span> <span class="n">b_tail</span><span class="p">,</span> <span class="n">t_k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">BSpline</span>
+
+    <span class="c1"># Update the coefficients</span>
+    <span class="n">t_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">b_head</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">b_tail</span><span class="p">))</span>
+
+    <span class="c1"># Update the knots</span>
+    <span class="c1"># You need 2 additional knots for the head and tail control points</span>
+    <span class="c1"># You need degree + 1 additional knots to sink into the head and tail for</span>
+    <span class="c1"># controlling C^k smoothness. We set it to 0.0</span>
+    <span class="n">n_upd</span> <span class="o">=</span> <span class="n">x_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">t_k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># The first and last points are always fixed</span>
+    <span class="n">x_first</span> <span class="o">=</span> <span class="n">x_pts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_last</span> <span class="o">=</span> <span class="n">x_pts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x_pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">x_first</span><span class="p">,</span> <span class="n">x_pts</span><span class="p">,</span> <span class="n">x_last</span><span class="p">))</span>
+
+    <span class="c1"># Generate the knots</span>
+    <span class="n">knots_updated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_upd</span><span class="p">,)</span>
+    <span class="c1"># Fix first degree-1 knots into head</span>
+    <span class="n">knots_updated</span><span class="p">[:</span> <span class="n">t_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_first</span>
+    <span class="c1"># Middle knot locations correspond to x_locations</span>
+    <span class="n">knots_updated</span><span class="p">[</span><span class="n">t_k</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">n_upd</span> <span class="o">-</span> <span class="p">(</span><span class="n">t_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">x_pts</span>
+    <span class="c1"># Fix first degree-1 knots into tail</span>
+    <span class="n">knots_updated</span><span class="p">[</span><span class="n">n_upd</span> <span class="o">-</span> <span class="p">(</span><span class="n">t_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x_last</span>
+
+    <span class="k">return</span> <span class="n">BSpline</span><span class="p">(</span><span class="n">knots_updated</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">t_k</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">x_pts</span><span class="p">,</span> <span class="n">t_c</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
