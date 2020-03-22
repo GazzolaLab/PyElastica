@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -236,7 +237,7 @@
         <span class="k">return</span> <span class="n">time</span>
 
 
-<div class="viewcode-block" id="ExplicitStepper"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.ExplicitStepper">[docs]</a><span class="k">class</span> <span class="nc">ExplicitStepper</span><span class="p">(</span><span class="n">_TimeStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="ExplicitStepper"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.ExplicitStepper">[docs]</a><span class="k">class</span> <span class="nc">ExplicitStepper</span><span class="p">(</span><span class="n">_TimeStepper</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Base class for all explicit steppers</span>
 <span class="sd">    Can also be used as a mixin with optional cls argument below</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -275,7 +276,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="RungeKutta4"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.RungeKutta4">[docs]</a><span class="k">class</span> <span class="nc">RungeKutta4</span><span class="p">(</span><span class="n">ExplicitStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="RungeKutta4"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.RungeKutta4">[docs]</a><span class="k">class</span> <span class="nc">RungeKutta4</span><span class="p">(</span><span class="n">ExplicitStepper</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stateless runge-kutta4. coordinates operations only, memory needs</span>
 <span class="sd">    to be externally managed and allocated.</span>
@@ -324,7 +325,7 @@
         <span class="k">return</span> <span class="n">time</span></div>
 
 
-<div class="viewcode-block" id="StatefulRungeKutta4"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulRungeKutta4">[docs]</a><span class="k">class</span> <span class="nc">StatefulRungeKutta4</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="StatefulRungeKutta4"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulRungeKutta4">[docs]</a><span class="k">class</span> <span class="nc">StatefulRungeKutta4</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stores all states of Rk within the time-stepper. Works as long as the states</span>
 <span class="sd">    are all one big numpy array, made possible by carefully using views.</span>
@@ -347,7 +348,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="EulerForward"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.EulerForward">[docs]</a><span class="k">class</span> <span class="nc">EulerForward</span><span class="p">(</span><span class="n">ExplicitStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="EulerForward"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.EulerForward">[docs]</a><span class="k">class</span> <span class="nc">EulerForward</span><span class="p">(</span><span class="n">ExplicitStepper</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EulerForward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -359,13 +360,13 @@
         <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">dt</span></div>
 
 
-<div class="viewcode-block" id="StatefulEulerForward"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulEulerForward">[docs]</a><span class="k">class</span> <span class="nc">StatefulEulerForward</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="StatefulEulerForward"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulEulerForward">[docs]</a><span class="k">class</span> <span class="nc">StatefulEulerForward</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StatefulEulerForward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepper</span> <span class="o">=</span> <span class="n">EulerForward</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="ExplicitLinearExponentialIntegrator"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.ExplicitLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">ExplicitLinearExponentialIntegrator</span><span class="p">(</span>
+<div class="viewcode-block" id="ExplicitLinearExponentialIntegrator"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.ExplicitLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">ExplicitLinearExponentialIntegrator</span><span class="p">(</span>
     <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">,</span> <span class="n">ExplicitStepper</span>
 <span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -373,7 +374,7 @@
         <span class="n">ExplicitStepper</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="StatefulLinearExponentialIntegrator"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">StatefulLinearExponentialIntegrator</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
+<div class="viewcode-block" id="StatefulLinearExponentialIntegrator"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.explicit_steppers.StatefulLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">StatefulLinearExponentialIntegrator</span><span class="p">(</span><span class="n">_StatefulStepper</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StatefulLinearExponentialIntegrator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepper</span> <span class="o">=</span> <span class="n">ExplicitLinearExponentialIntegrator</span><span class="p">()</span>

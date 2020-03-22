@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -160,12 +161,12 @@
 <span class="kn">from</span> <span class="nn">elastica.boundary_conditions</span> <span class="kn">import</span> <span class="n">FreeRod</span>
 
 
-<div class="viewcode-block" id="Constraints"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.constraints.Constraints">[docs]</a><span class="k">class</span> <span class="nc">Constraints</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Constraints"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints.Constraints">[docs]</a><span class="k">class</span> <span class="nc">Constraints</span><span class="p">:</span>
+<div class="viewcode-block" id="Constraints.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints.Constraints.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Constraints</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Constraints</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Constraints.constrain"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.constraints.Constraints.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="Constraints.constrain"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints.Constraints.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
         <span class="n">sys_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sys_idx_if_valid</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
 
         <span class="c1"># Create _Constraint object, cache it and return to user</span>
@@ -174,7 +175,7 @@
 
         <span class="k">return</span> <span class="n">_constraint</span></div>
 
-    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Constraints._finalize"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints.Constraints._finalize">[docs]</a>    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># From stored _Constraint objects, instantiate the boundary conditions</span>
         <span class="c1"># inplace : https://stackoverflow.com/a/1208792</span>
 
@@ -197,23 +198,23 @@
         <span class="c1"># At t=0.0, constrain all the boundary conditions (for compatability with</span>
         <span class="c1"># initial conditions)</span>
         <span class="c1"># TODO: you may need to change naming of _callBC</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_callBC</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callBC</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
 
     <span class="c1"># TODO: same as above naming of _callBC function</span>
-    <span class="k">def</span> <span class="nf">_callBC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Constraints._callBC"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints.Constraints._callBC">[docs]</a>    <span class="k">def</span> <span class="nf">_callBC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">sys_id</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">:</span>
             <span class="n">constraint</span><span class="o">.</span><span class="n">constrain_values</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">sys_id</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">constraint</span><span class="o">.</span><span class="n">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">sys_id</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+            <span class="n">constraint</span><span class="o">.</span><span class="n">constrain_rates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">sys_id</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">_Constraint</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="_Constraint"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints._Constraint">[docs]</a><span class="k">class</span> <span class="nc">_Constraint</span><span class="p">:</span>
+<div class="viewcode-block" id="_Constraint.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints._Constraint.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span> <span class="o">=</span> <span class="n">sys_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bc_cls</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span></div>
 
-    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bc_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_Constraint.using"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints._Constraint.using">[docs]</a>    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bc_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span>
             <span class="n">bc_cls</span><span class="p">,</span> <span class="n">FreeRod</span>
         <span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not a valid boundary condition. Did you forget to derive from FreeRod?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -222,12 +223,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_bc_cls</span> <span class="o">=</span> <span class="n">bc_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span>
+<div class="viewcode-block" id="_Constraint.id"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints._Constraint.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span></div>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_Constraint.__call__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.constraints._Constraint.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Constructs a constraint after checks</span>
 
 <span class="sd">        Parameters</span>
@@ -277,7 +278,7 @@
                 <span class="s2">&quot;2. Number of requested position and directors such as (1, 2) should match</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="s2">&quot;the __init__ method. eg MyBC.__init__(pos_one, director_one, director_two)</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="s2">&quot;should have the `using` call as .using(MyBC, positions=(1,), directors=(1,-1))</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
            </div>

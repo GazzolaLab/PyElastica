@@ -6,12 +6,19 @@ This the the documentation page for Pyelastica. We can add a bit here about thin
 
 Rods
 =====
+
+Cosserat Rod
+~~~~~~~~~~~~
 .. automodule:: elastica.rod.cosserat_rod
    :members:
 
+Constitutive Model
+~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.rod.constitutive_model
    :members:
 
+Data Structures
+~~~~~~~~~~~~~~~~
 .. automodule:: elastica.rod.data_structures
    :members:
 
@@ -65,12 +72,19 @@ Wrappers
 
 Utility Functions
 ==================
+
+Transformations
+-----------------
 .. automodule:: elastica.transformations
    :members:
 
+Utils
+------
 .. automodule:: elastica.utils
    :members:
 
+Other Stuff
+------------
 .. automodule:: elastica._calculus
    :members:
 

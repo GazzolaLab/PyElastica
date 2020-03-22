@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -161,12 +162,12 @@
 <span class="kn">from</span> <span class="nn">elastica.joint</span> <span class="kn">import</span> <span class="n">FreeJoint</span>
 
 
-<div class="viewcode-block" id="Connections"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.connections.Connections">[docs]</a><span class="k">class</span> <span class="nc">Connections</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Connections"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections.Connections">[docs]</a><span class="k">class</span> <span class="nc">Connections</span><span class="p">:</span>
+<div class="viewcode-block" id="Connections.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections.Connections.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Connections</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Connections</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Connections.connect"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.connections.Connections.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
+<div class="viewcode-block" id="Connections.connect"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections.Connections.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">first_rod</span><span class="p">,</span> <span class="n">second_rod</span><span class="p">,</span> <span class="n">first_connect_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second_connect_idx</span><span class="o">=-</span><span class="mi">1</span>
     <span class="p">):</span>
         <span class="n">sys_idx</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
@@ -185,7 +186,7 @@
 
         <span class="k">return</span> <span class="n">_connector</span></div>
 
-    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Connections._finalize"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections.Connections._finalize">[docs]</a>    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># From stored _Connect objects, instantiate the joints and store it</span>
 
         <span class="c1"># dev : the first indices stores the</span>
@@ -195,13 +196,13 @@
         <span class="c1"># step. Being lazy, I put them both in the same array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="o">*</span><span class="n">connection</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="n">connection</span><span class="p">())</span> <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span>
-        <span class="p">]</span>
+        <span class="p">]</span></div>
 
         <span class="c1"># Need to finally solve CPP here, if we are doing things properly</span>
         <span class="c1"># This is to optimize the call tree for better memory accesses</span>
         <span class="c1"># https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Connections.__call__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections.Connections.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span>
             <span class="n">first_sys_idx</span><span class="p">,</span>
             <span class="n">second_sys_idx</span><span class="p">,</span>
@@ -220,11 +221,11 @@
                 <span class="n">first_connect_idx</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">second_sys_idx</span><span class="p">],</span>
                 <span class="n">second_connect_idx</span><span class="p">,</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">_Connect</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="_Connect"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect">[docs]</a><span class="k">class</span> <span class="nc">_Connect</span><span class="p">:</span>
+<div class="viewcode-block" id="_Connect.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">first_sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">second_sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -239,9 +240,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">second_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="_Connect.set_index"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect.set_index">[docs]</a>    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">second_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="c1"># TODO assert range</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span> <span class="o">&lt;=</span> <span class="n">first_idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span>
@@ -255,9 +256,9 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span> <span class="o">=</span> <span class="n">first_idx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="n">second_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="n">second_idx</span></div>
 
-    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connect_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_Connect.using"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect.using">[docs]</a>    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connect_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span>
             <span class="n">connect_cls</span><span class="p">,</span> <span class="n">FreeJoint</span>
         <span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not a valid joint class. Did you forget to derive from FreeJoint?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -266,17 +267,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span> <span class="o">=</span> <span class="n">connect_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="_Connect.id"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_idx</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_idx</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_Connect.__call__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.connections._Connect.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="s2">&quot;No connections provided to link rod id </span><span class="si">{0}</span><span class="s2">&quot;</span>
@@ -291,7 +292,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">r</span><span class="s2">&quot;Unable to construct connection class.\n&quot;</span>
                 <span class="sa">r</span><span class="s2">&quot;Did you provide all necessary joint properties?&quot;</span>
-            <span class="p">)</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
            </div>

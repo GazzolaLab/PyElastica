@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -166,7 +167,7 @@
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">grouper</span>
 
 
-<div class="viewcode-block" id="CosseratRodStepper"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.CosseratRodStepper">[docs]</a><span class="k">class</span> <span class="nc">CosseratRodStepper</span><span class="p">:</span>
+<div class="viewcode-block" id="CosseratRodStepper"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.CosseratRodStepper">[docs]</a><span class="k">class</span> <span class="nc">CosseratRodStepper</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepper</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepper</span> <span class="o">=</span> <span class="n">stepper</span>
         <span class="k">if</span> <span class="n">SymplecticStepper</span> <span class="ow">in</span> <span class="n">stepper</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">:</span>
@@ -175,7 +176,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">linear_stepper</span> <span class="o">=</span> <span class="n">ExplicitLinearExponentialIntegrator</span></div>
 
 
-<div class="viewcode-block" id="SymplecticCosseratRodStepper"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.SymplecticCosseratRodStepper">[docs]</a><span class="k">class</span> <span class="nc">SymplecticCosseratRodStepper</span><span class="p">:</span>
+<div class="viewcode-block" id="SymplecticCosseratRodStepper"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.SymplecticCosseratRodStepper">[docs]</a><span class="k">class</span> <span class="nc">SymplecticCosseratRodStepper</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Follows the facade pattern</span>
 <span class="sd">    Steps in a hybrid fashion for time-marching the dynamics of Cosserat Rods</span>
@@ -244,7 +245,7 @@
     <span class="k">def</span> <span class="nf">n_stages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__n_steps</span>
 
-<div class="viewcode-block" id="SymplecticCosseratRodStepper.do_step"><a class="viewcode-back" href="../../../api_doc/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.SymplecticCosseratRodStepper.do_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="SymplecticCosseratRodStepper.do_step"><a class="viewcode-back" href="../../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.hybrid_rod_steppers.SymplecticCosseratRodStepper.do_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

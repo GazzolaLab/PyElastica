@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -159,15 +160,15 @@
 <span class="c1"># TODO Check feasiblity of other quadrature / difference rules</span>
 
 
-<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="viewcode-block" id="_get_zero_array"><a class="viewcode-back" href="../../documentation.html#elastica._calculus._get_zero_array">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_get_zero_array</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
     <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
 
 
-<span class="k">def</span> <span class="nf">_trapezoidal</span><span class="p">(</span><span class="n">array_collection</span><span class="p">):</span>
+<div class="viewcode-block" id="_trapezoidal"><a class="viewcode-back" href="../../documentation.html#elastica._calculus._trapezoidal">[docs]</a><span class="k">def</span> <span class="nf">_trapezoidal</span><span class="p">(</span><span class="n">array_collection</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way</span>
 
@@ -195,10 +196,10 @@
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">temp_collection</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">temp_collection</span></div>
 
 
-<span class="k">def</span> <span class="nf">_two_point_difference</span><span class="p">(</span><span class="n">array_collection</span><span class="p">):</span>
+<div class="viewcode-block" id="_two_point_difference"><a class="viewcode-back" href="../../documentation.html#elastica._calculus._two_point_difference">[docs]</a><span class="k">def</span> <span class="nf">_two_point_difference</span><span class="p">(</span><span class="n">array_collection</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -226,7 +227,7 @@
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">temp_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">array_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">temp_collection</span>
+    <span class="k">return</span> <span class="n">temp_collection</span></div>
 
 
 <span class="n">quadrature_kernel</span> <span class="o">=</span> <span class="n">_trapezoidal</span>

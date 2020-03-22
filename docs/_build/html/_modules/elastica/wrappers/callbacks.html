@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -160,12 +161,12 @@
 <span class="kn">from</span> <span class="nn">elastica.callback_functions</span> <span class="kn">import</span> <span class="n">CallBackBaseClass</span>
 
 
-<div class="viewcode-block" id="CallBacks"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.callbacks.CallBacks">[docs]</a><span class="k">class</span> <span class="nc">CallBacks</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CallBacks"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks.CallBacks">[docs]</a><span class="k">class</span> <span class="nc">CallBacks</span><span class="p">:</span>
+<div class="viewcode-block" id="CallBacks.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks.CallBacks.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CallBacks</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CallBacks</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="CallBacks.collect_diagnostics"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.callbacks.CallBacks.collect_diagnostics">[docs]</a>    <span class="k">def</span> <span class="nf">collect_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="CallBacks.collect_diagnostics"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks.CallBacks.collect_diagnostics">[docs]</a>    <span class="k">def</span> <span class="nf">collect_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
         <span class="n">sys_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sys_idx_if_valid</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
 
         <span class="c1"># Create _Constraint object, cache it and return to user</span>
@@ -174,7 +175,7 @@
 
         <span class="k">return</span> <span class="n">_callbacks</span></div>
 
-    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CallBacks._finalize"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks.CallBacks._finalize">[docs]</a>    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># From stored _CallBack objects, instantiate the boundary conditions</span>
         <span class="c1"># inplace : https://stackoverflow.com/a/1208792</span>
 
@@ -194,24 +195,24 @@
         <span class="c1"># to sort callbacks.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_callBack</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">current_step</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callBack</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">current_step</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
     <span class="c1"># TODO: same as above naming of _callBack function</span>
-    <span class="k">def</span> <span class="nf">_callBack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CallBacks._callBack"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks.CallBacks._callBack">[docs]</a>    <span class="k">def</span> <span class="nf">_callBack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">sys_id</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="p">:</span>
             <span class="n">callback</span><span class="o">.</span><span class="n">make_callback</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">sys_id</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">_CallBack</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="_CallBack"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks._CallBack">[docs]</a><span class="k">class</span> <span class="nc">_CallBack</span><span class="p">:</span>
+<div class="viewcode-block" id="_CallBack.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks._CallBack.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span> <span class="o">=</span> <span class="n">sys_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callback_cls</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span></div>
 
-    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_CallBack.using"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks._CallBack.using">[docs]</a>    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span>
             <span class="n">callback_cls</span><span class="p">,</span> <span class="n">CallBackBaseClass</span>
         <span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not a valid call back. Did you forget to derive from CallBackClass?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -220,12 +221,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_callback_cls</span> <span class="o">=</span> <span class="n">callback_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span>
+<div class="viewcode-block" id="_CallBack.id"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks._CallBack.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sys_idx</span></div>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="_CallBack.__call__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.callbacks._CallBack.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Constructs a callback functions after checks</span>
 
 <span class="sd">        Parameters</span>
@@ -250,7 +251,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">r</span><span class="s2">&quot;Unable to construct callback class.\n&quot;</span>
                 <span class="sa">r</span><span class="s2">&quot;Did you provide all necessary callback properties?&quot;</span>
-            <span class="p">)</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
            </div>

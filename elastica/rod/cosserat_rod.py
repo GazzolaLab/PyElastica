@@ -20,7 +20,9 @@ def _get_z_vector():
 
 
 class _CosseratRodBase(RodBase):
-    # I'm assuming number of elements can be deduced from the size of the inputs
+    """
+    I'm assuming number of elements can be deduced from the size of the inputs
+    """
     def __init__(
         self,
         n_elements,
@@ -34,6 +36,7 @@ class _CosseratRodBase(RodBase):
         *args,
         **kwargs
     ):
+        """a test again"""
         velocities = np.zeros((MaxDimension.value(), n_elements + 1))
         omegas = np.zeros((MaxDimension.value(), n_elements))  # + 1e-16
         accelerations = 0.0 * velocities
@@ -404,6 +407,9 @@ class _CosseratRodBase(RodBase):
 class CosseratRod(
     _LinearConstitutiveModelMixin, _CosseratRodBase, _RodSymplecticStepperMixin
 ):
+    """
+    Just a test
+    """
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
         _LinearConstitutiveModelMixin.__init__(
             self,

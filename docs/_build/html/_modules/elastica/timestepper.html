@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -159,7 +160,7 @@
 <span class="kn">from</span> <span class="nn">._stepper_interface</span> <span class="kn">import</span> <span class="n">_StatefulStepper</span>
 
 
-<div class="viewcode-block" id="extend_stepper_interface"><a class="viewcode-back" href="../../api_doc/elastica.timestepper.html#elastica.timestepper.extend_stepper_interface">[docs]</a><span class="k">def</span> <span class="nf">extend_stepper_interface</span><span class="p">(</span><span class="n">Stepper</span><span class="p">,</span> <span class="n">System</span><span class="p">):</span>
+<div class="viewcode-block" id="extend_stepper_interface"><a class="viewcode-back" href="../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.extend_stepper_interface">[docs]</a><span class="k">def</span> <span class="nf">extend_stepper_interface</span><span class="p">(</span><span class="n">Stepper</span><span class="p">,</span> <span class="n">System</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">extend_instance</span>
     <span class="kn">from</span> <span class="nn">..systems</span> <span class="kn">import</span> <span class="n">is_system_a_collection</span>
 
@@ -199,7 +200,7 @@
 
 
 <span class="c1"># TODO Improve interface of this function to take args and kwargs for ease of use</span>
-<div class="viewcode-block" id="integrate"><a class="viewcode-back" href="../../api_doc/elastica.timestepper.html#elastica.timestepper.integrate">[docs]</a><span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span>
+<div class="viewcode-block" id="integrate"><a class="viewcode-back" href="../../api_doc_hold/elastica.timestepper.html#elastica.timestepper.integrate">[docs]</a><span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span>
     <span class="n">StatefulStepper</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">final_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">assert</span> <span class="n">final_time</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;Final time is negative!&quot;</span>

@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -173,9 +174,11 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">_CosseratRodBase</span><span class="p">(</span><span class="n">RodBase</span><span class="p">):</span>
-    <span class="c1"># I&#39;m assuming number of elements can be deduced from the size of the inputs</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="_CosseratRodBase"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase">[docs]</a><span class="k">class</span> <span class="nc">_CosseratRodBase</span><span class="p">(</span><span class="n">RodBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    I&#39;m assuming number of elements can be deduced from the size of the inputs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="_CosseratRodBase.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_elements</span><span class="p">,</span>
         <span class="n">position</span><span class="p">,</span>
@@ -188,6 +191,7 @@
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;a test again&quot;&quot;&quot;</span>
         <span class="n">velocities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">omegas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span><span class="p">))</span>  <span class="c1"># + 1e-16</span>
         <span class="n">accelerations</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">velocities</span>
@@ -241,7 +245,7 @@
         <span class="c1"># calculated in `compute_all_dilatatation`</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation_rate</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation_rate</span> <span class="o">=</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">straight_rod</span><span class="p">(</span>
@@ -308,7 +312,7 @@
             <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_compute_geometry_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="_CosseratRodBase._compute_geometry_from_state"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase._compute_geometry_from_state">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_geometry_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -324,9 +328,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij,ij-&gt;j&quot;</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tangents</span> <span class="o">=</span> <span class="n">position_diff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
         <span class="c1"># resize based on volume conservation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_compute_all_dilatations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="_CosseratRodBase._compute_all_dilatations"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase._compute_all_dilatations">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_all_dilatations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute element and Voronoi region dilatations</span>
 <span class="sd">        Returns</span>
@@ -345,9 +349,9 @@
         <span class="n">voronoi_lengths</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c1"># Cmopute eq (3.45 from 2018 RSOS paper</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">=</span> <span class="n">voronoi_lengths</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">=</span> <span class="n">voronoi_lengths</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span></div>
 
-    <span class="k">def</span> <span class="nf">_compute_dilatation_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="_CosseratRodBase._compute_dilatation_rate"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase._compute_dilatation_rate">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_dilatation_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Returns</span>
@@ -373,7 +377,7 @@
             <span class="p">(</span><span class="n">r_dot_v</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">r_dot_v</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">r_dot_v_plus_one</span> <span class="o">-</span> <span class="n">r_plus_one_dot_v</span><span class="p">)</span>
             <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
             <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_compute_shear_stretch_strains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant</span>
@@ -476,7 +480,7 @@
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_damping_torques</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_compute_internal_forces_and_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="_CosseratRodBase._compute_internal_forces_and_torques"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase._compute_internal_forces_and_torques">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_internal_forces_and_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because</span>
 <span class="sd">        they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques</span>
@@ -491,10 +495,10 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">internal_forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_forces</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">internal_torques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_torques</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal_torques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_torques</span><span class="p">()</span></div>
 
     <span class="c1"># Interface to time-stepper mixins (Symplectic, Explicit), which calls this method</span>
-    <span class="k">def</span> <span class="nf">update_accelerations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="_CosseratRodBase.update_accelerations"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod._CosseratRodBase.update_accelerations">[docs]</a>    <span class="k">def</span> <span class="nf">update_accelerations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; TODO Do we need to make the collection members abstract?</span>
 
 <span class="sd">        Parameters</span>
@@ -520,7 +524,7 @@
 
         <span class="c1"># Reset forces and torques</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">external_forces</span> <span class="o">*=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">external_torques</span> <span class="o">*=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_torques</span> <span class="o">*=</span> <span class="mf">0.0</span></div>
 
     <span class="k">def</span> <span class="nf">compute_translational_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -550,7 +554,7 @@
         <span class="n">mass_times_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ij-&gt;ij&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">)</span>
         <span class="n">sum_mass_times_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij-&gt;i&quot;</span><span class="p">,</span> <span class="n">mass_times_position</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">sum_mass_times_position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">sum_mass_times_position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
 
 
 <span class="c1"># TODO Fix this classmethod weirdness to a more scalable and maintainable solution</span>
@@ -558,7 +562,10 @@
 <div class="viewcode-block" id="CosseratRod"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod.CosseratRod">[docs]</a><span class="k">class</span> <span class="nc">CosseratRod</span><span class="p">(</span>
     <span class="n">_LinearConstitutiveModelMixin</span><span class="p">,</span> <span class="n">_CosseratRodBase</span><span class="p">,</span> <span class="n">_RodSymplecticStepperMixin</span>
 <span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Just a test</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CosseratRod.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod.CosseratRod.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">_LinearConstitutiveModelMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">n_elements</span><span class="p">,</span>
@@ -586,9 +593,9 @@
 
         <span class="c1"># This below two lines are for initializing sigma and kappa</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_shear_stretch_strains</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_bending_twist_strains</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_bending_twist_strains</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="CosseratRod.straight_rod"><a class="viewcode-back" href="../../../api_doc/elastica.rod.html#elastica.rod.cosserat_rod.CosseratRod.straight_rod">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">straight_rod</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">n_elements</span><span class="p">,</span>
@@ -657,7 +664,7 @@
             <span class="o">*</span><span class="n">args</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -150,7 +151,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for elastica.systems</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="is_system_a_collection"><a class="viewcode-back" href="../../api_doc/elastica.systems.html#elastica.systems.is_system_a_collection">[docs]</a><span></span><span class="k">def</span> <span class="nf">is_system_a_collection</span><span class="p">(</span><span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="is_system_a_collection"><a class="viewcode-back" href="../../api_doc_hold/elastica.systems.html#elastica.systems.is_system_a_collection">[docs]</a><span></span><span class="k">def</span> <span class="nf">is_system_a_collection</span><span class="p">(</span><span class="n">system</span><span class="p">):</span>
     <span class="c1"># Check if system is a &quot;collection&quot; of smaller systems</span>
     <span class="c1"># by checking for the [] method</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -190,7 +191,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="make_memory_for_explicit_stepper"><a class="viewcode-back" href="../../api_doc/elastica.systems.html#elastica.systems.make_memory_for_explicit_stepper">[docs]</a><span class="k">def</span> <span class="nf">make_memory_for_explicit_stepper</span><span class="p">(</span><span class="n">stepper</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="make_memory_for_explicit_stepper"><a class="viewcode-back" href="../../api_doc_hold/elastica.systems.html#elastica.systems.make_memory_for_explicit_stepper">[docs]</a><span class="k">def</span> <span class="nf">make_memory_for_explicit_stepper</span><span class="p">(</span><span class="n">stepper</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
     <span class="c1"># TODO Automated logic (class creation, memory management logic) agnostic of stepper details (RK, AB etc.)</span>
 
     <span class="kn">from</span> <span class="nn">..timestepper.explicit_steppers</span> <span class="kn">import</span> <span class="n">RungeKutta4</span>
@@ -221,7 +222,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="MemoryCollection"><a class="viewcode-back" href="../../api_doc/elastica.systems.html#elastica.systems.MemoryCollection">[docs]</a><span class="k">class</span> <span class="nc">MemoryCollection</span><span class="p">:</span>
+<div class="viewcode-block" id="MemoryCollection"><a class="viewcode-back" href="../../api_doc_hold/elastica.systems.html#elastica.systems.MemoryCollection">[docs]</a><span class="k">class</span> <span class="nc">MemoryCollection</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; Slots of memories for timestepper in a cohesive unit.</span>
 
 <span class="sd">    A `MemoryCollection` object is meant to be used in conjunction</span>

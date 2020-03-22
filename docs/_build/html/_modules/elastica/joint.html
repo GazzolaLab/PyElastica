@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -156,19 +157,19 @@
 <span class="kn">from</span> <span class="nn">elastica.utils</span> <span class="kn">import</span> <span class="n">Tolerance</span>
 
 
-<div class="viewcode-block" id="FreeJoint"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FreeJoint">[docs]</a><span class="k">class</span> <span class="nc">FreeJoint</span><span class="p">:</span>
+<div class="viewcode-block" id="FreeJoint"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FreeJoint">[docs]</a><span class="k">class</span> <span class="nc">FreeJoint</span><span class="p">:</span>
     <span class="c1"># pass the k and nu for the forces</span>
     <span class="c1"># also the necessary rods for the joint</span>
     <span class="c1"># indices should be 0 or -1, we will provide wrappers for users later</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">):</span>
+<div class="viewcode-block" id="FreeJoint.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FreeJoint.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span></div>
         <span class="c1"># self.rod_one = rod_one</span>
         <span class="c1"># self.rod_two = rod_two</span>
         <span class="c1"># self.index_one = index_one</span>
         <span class="c1"># self.index_two = index_two</span>
 
-<div class="viewcode-block" id="FreeJoint.apply_forces"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FreeJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="FreeJoint.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FreeJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="n">end_distance_vector</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">rod_two</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">index_two</span><span class="p">]</span>
             <span class="o">-</span> <span class="n">rod_one</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">index_one</span><span class="p">]</span>
@@ -204,7 +205,7 @@
 
         <span class="k">return</span></div>
 
-<div class="viewcode-block" id="FreeJoint.apply_torques"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FreeJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="FreeJoint.apply_torques"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FreeJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="k">pass</span></div></div>
 
 
@@ -214,7 +215,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">kt</span><span class="p">,</span> <span class="n">normal_direction</span><span class="p">):</span>
+<div class="viewcode-block" id="HingeJoint.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.joint.HingeJoint.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">kt</span><span class="p">,</span> <span class="n">normal_direction</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
         <span class="c1"># normal direction of the constrain plane</span>
         <span class="c1"># for example for yz plane (1,0,0)</span>
@@ -222,13 +223,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">normal_direction</span> <span class="o">=</span> <span class="n">normal_direction</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">normal_direction</span><span class="p">)</span>
         <span class="c1"># additional in-plane constraint through restoring torque</span>
         <span class="c1"># stiffness of the restoring constraint -- tuned empirically</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kt</span> <span class="o">=</span> <span class="n">kt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kt</span> <span class="o">=</span> <span class="n">kt</span></div>
 
     <span class="c1"># Apply force is same as free joint</span>
-<div class="viewcode-block" id="HingeJoint.apply_forces"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.HingeJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="HingeJoint.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.joint.HingeJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply_forces</span><span class="p">(</span><span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HingeJoint.apply_torques"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.HingeJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="HingeJoint.apply_torques"><a class="viewcode-back" href="../../documentation.html#elastica.joint.HingeJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="c1"># current direction of the first element of link two</span>
         <span class="c1"># also NOTE: - rod two is hinged at first element</span>
         <span class="n">link_direction</span> <span class="o">=</span> <span class="p">(</span>
@@ -253,18 +254,18 @@
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="FixedJoint"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FixedJoint">[docs]</a><span class="k">class</span> <span class="nc">FixedJoint</span><span class="p">(</span><span class="n">FreeJoint</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">kt</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedJoint"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FixedJoint">[docs]</a><span class="k">class</span> <span class="nc">FixedJoint</span><span class="p">(</span><span class="n">FreeJoint</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedJoint.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FixedJoint.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">kt</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
         <span class="c1"># additional in-plane constraint through restoring torque</span>
         <span class="c1"># stiffness of the restoring constraint -- tuned empirically</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kt</span> <span class="o">=</span> <span class="n">kt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kt</span> <span class="o">=</span> <span class="n">kt</span></div>
 
     <span class="c1"># Apply force is same as free joint</span>
-<div class="viewcode-block" id="FixedJoint.apply_forces"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FixedJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedJoint.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FixedJoint.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply_forces</span><span class="p">(</span><span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FixedJoint.apply_torques"><a class="viewcode-back" href="../../api_doc/elastica.html#elastica.joint.FixedJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedJoint.apply_torques"><a class="viewcode-back" href="../../documentation.html#elastica.joint.FixedJoint.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rod_one</span><span class="p">,</span> <span class="n">index_one</span><span class="p">,</span> <span class="n">rod_two</span><span class="p">,</span> <span class="n">index_two</span><span class="p">):</span>
         <span class="c1"># current direction of the first element of link two</span>
         <span class="c1"># also NOTE: - rod two is fixed at first element</span>
         <span class="n">link_direction</span> <span class="o">=</span> <span class="p">(</span>

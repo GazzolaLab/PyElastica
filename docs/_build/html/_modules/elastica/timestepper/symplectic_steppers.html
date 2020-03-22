@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -169,8 +170,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="k">class</span> <span class="nc">_SystemInstanceStepperMixin</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="_SystemInstanceStepperMixin"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers._SystemInstanceStepperMixin">[docs]</a><span class="k">class</span> <span class="nc">_SystemInstanceStepperMixin</span><span class="p">:</span>
+<div class="viewcode-block" id="_SystemInstanceStepperMixin.do_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers._SystemInstanceStepperMixin.do_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span>
             <span class="n">kin_prefactor</span><span class="p">,</span>
             <span class="n">kin_step</span><span class="p">,</span>
@@ -188,11 +189,11 @@
 
         <span class="n">prefac</span> <span class="o">=</span> <span class="n">last_kin_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
         <span class="n">time</span> <span class="o">=</span> <span class="n">last_kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">_SystemCollectionStepperMixin</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="_SystemCollectionStepperMixin"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers._SystemCollectionStepperMixin">[docs]</a><span class="k">class</span> <span class="nc">_SystemCollectionStepperMixin</span><span class="p">:</span>
+<div class="viewcode-block" id="_SystemCollectionStepperMixin.do_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers._SystemCollectionStepperMixin.do_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span>
             <span class="n">kin_prefactor</span><span class="p">,</span>
             <span class="n">kin_step</span><span class="p">,</span>
@@ -237,11 +238,11 @@
         <span class="c1"># Call back function, will call the user defined call back functions and store data</span>
         <span class="n">SystemCollection</span><span class="o">.</span><span class="n">callBack</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">dt</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span></div></div>
 
 
 <div class="viewcode-block" id="SymplecticStepper"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticStepper">[docs]</a><span class="k">class</span> <span class="nc">SymplecticStepper</span><span class="p">(</span><span class="n">_TimeStepper</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SymplecticStepper.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticStepper.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SymplecticStepper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="n">take_methods_from</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">cls</span><span class="p">()</span>
         <span class="c1"># Let the total number of steps for the Symplectic method</span>
@@ -315,7 +316,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_prefactors</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_steps</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_stages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -326,29 +327,29 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PositionVerlet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<div class="viewcode-block" id="PositionVerlet.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PositionVerlet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PositionVerlet._first_kinematic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet._first_kinematic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PositionVerlet._first_kinematic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet._first_kinematic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PositionVerlet._first_dynamic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet._first_dynamic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PositionVerlet._first_dynamic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet._first_dynamic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span>
             <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span>
         <span class="p">)</span>  <span class="c1"># TODO : Why should we pass dt into System again?</span>
-        <span class="k">return</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span></div>
 
     <span class="c1"># TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!</span>
-    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PositionVerlet._update_internal_forces_torques"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet._update_internal_forces_torques">[docs]</a>    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">update_internal_forces_and_torques</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span></div>
+        <span class="k">return</span> <span class="n">time</span></div></div>
 
     <span class="c1"># Note : we don&#39;t need the second half of the calls as it simply forwards</span>
     <span class="c1"># to its equivalent first half. This is taken care in the base class</span>
@@ -373,49 +374,49 @@
     <span class="n">lambda_dash_coeff</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span>
     <span class="n">xi_chi_dash_coeff</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">ξ</span> <span class="o">+</span> <span class="n">χ</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PEFRL</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<div class="viewcode-block" id="PEFRL.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PEFRL</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ξ</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PEFRL._first_kinematic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._first_kinematic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ξ</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._first_kinematic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._first_kinematic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PEFRL._first_dynamic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._first_dynamic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._first_dynamic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._first_dynamic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span></div>
 
-    <span class="k">def</span> <span class="nf">_second_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">χ</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PEFRL._second_kinematic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._second_kinematic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_second_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">χ</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_second_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._second_kinematic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._second_kinematic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_second_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span></div>
 
-    <span class="k">def</span> <span class="nf">_second_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">λ</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PEFRL._second_dynamic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._second_dynamic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_second_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">λ</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_second_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._second_dynamic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._second_dynamic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_second_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span></div>
 
-    <span class="k">def</span> <span class="nf">_third_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi_chi_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span>
+<div class="viewcode-block" id="PEFRL._third_kinematic_prefactor"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._third_kinematic_prefactor">[docs]</a>    <span class="k">def</span> <span class="nf">_third_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi_chi_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span></div>
 
-    <span class="k">def</span> <span class="nf">_third_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._third_kinematic_step"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._third_kinematic_step">[docs]</a>    <span class="k">def</span> <span class="nf">_third_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="c1"># Need to fill in</span>
         <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span></div>
 
     <span class="c1"># TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!</span>
-    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+<div class="viewcode-block" id="PEFRL._update_internal_forces_torques"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL._update_internal_forces_torques">[docs]</a>    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
         <span class="n">System</span><span class="o">.</span><span class="n">update_internal_forces_and_torques</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">time</span></div>
+        <span class="k">return</span> <span class="n">time</span></div></div>
 
     <span class="c1"># Note : we don&#39;t need the second half of the calls as it simply forwards</span>
     <span class="c1"># to its equivalent first half. This is taken care in the base class</span>
@@ -437,9 +438,9 @@
 <div class="viewcode-block" id="SymplecticLinearExponentialIntegrator"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">SymplecticLinearExponentialIntegrator</span><span class="p">(</span>
     <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">,</span> <span class="n">SymplecticStepper</span>
 <span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SymplecticLinearExponentialIntegrator.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">_LinearExponentialIntegratorMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">SymplecticStepper</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">)</span></div>
+        <span class="n">SymplecticStepper</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

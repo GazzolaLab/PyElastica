@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -165,8 +166,8 @@
 <span class="sd">    apply_torques object over and over.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="NoForces.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.NoForces.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="NoForces.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.NoForces.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Apply forces to a system object.</span>
@@ -207,9 +208,9 @@
     <span class="sd">&quot;&quot;&quot; Applies a constant gravity on the entire rod</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acc_gravity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.80665</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
+<div class="viewcode-block" id="GravityForces.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.GravityForces.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acc_gravity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.80665</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GravityForces</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acc_gravity</span> <span class="o">=</span> <span class="n">acc_gravity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acc_gravity</span> <span class="o">=</span> <span class="n">acc_gravity</span></div>
 
 <div class="viewcode-block" id="GravityForces.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.GravityForces.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="n">system</span><span class="o">.</span><span class="n">external_forces</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acc_gravity</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span></div></div>
@@ -219,12 +220,12 @@
     <span class="sd">&quot;&quot;&quot; Applies constant forces on endpoints</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_force</span><span class="p">,</span> <span class="n">end_force</span><span class="p">,</span> <span class="n">ramp_up_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<div class="viewcode-block" id="EndpointForces.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.EndpointForces.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_force</span><span class="p">,</span> <span class="n">end_force</span><span class="p">,</span> <span class="n">ramp_up_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EndpointForces</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_force</span> <span class="o">=</span> <span class="n">start_force</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">end_force</span> <span class="o">=</span> <span class="n">end_force</span>
         <span class="k">assert</span> <span class="n">ramp_up_time</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ramp_up_time</span> <span class="o">=</span> <span class="n">ramp_up_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ramp_up_time</span> <span class="o">=</span> <span class="n">ramp_up_time</span></div>
 
 <div class="viewcode-block" id="EndpointForces.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.EndpointForces.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ramp_up_time</span><span class="p">)</span>
@@ -238,9 +239,9 @@
 <span class="sd">    Applies uniform torque to entire rod</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torque</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
+<div class="viewcode-block" id="UniformTorques.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.UniformTorques.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torque</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UniformTorques</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">torque</span> <span class="o">=</span> <span class="p">(</span><span class="n">torque</span> <span class="o">*</span> <span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">torque</span> <span class="o">=</span> <span class="p">(</span><span class="n">torque</span> <span class="o">*</span> <span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="UniformTorques.apply_torques"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.UniformTorques.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
         <span class="n">torque_on_one_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">torque</span> <span class="o">/</span> <span class="n">system</span><span class="o">.</span><span class="n">n_elems</span>
@@ -254,9 +255,9 @@
 <span class="sd">    Applies uniform forces to entire rod</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
+<div class="viewcode-block" id="UniformForces.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.UniformForces.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UniformForces</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="p">(</span><span class="n">force</span> <span class="o">*</span> <span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="p">(</span><span class="n">force</span> <span class="o">*</span> <span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="UniformForces.apply_forces"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.UniformForces.apply_forces">[docs]</a>    <span class="k">def</span> <span class="nf">apply_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
         <span class="n">force_on_one_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">/</span> <span class="n">system</span><span class="o">.</span><span class="n">n_elems</span>
@@ -274,7 +275,7 @@
 <span class="sd">    as travelling wave with beta spline or only as travelling wave.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="MuscleTorques.__init__"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.MuscleTorques.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_length</span><span class="p">,</span>
         <span class="n">b_coeff</span><span class="p">,</span>
@@ -315,7 +316,7 @@
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">my_spline</span> <span class="o">=</span> <span class="n">constant_function</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">my_spline</span> <span class="o">=</span> <span class="n">constant_function</span></div>
 
 <div class="viewcode-block" id="MuscleTorques.apply_torques"><a class="viewcode-back" href="../../documentation.html#elastica.external_forces.MuscleTorques.apply_torques">[docs]</a>    <span class="k">def</span> <span class="nf">apply_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
 

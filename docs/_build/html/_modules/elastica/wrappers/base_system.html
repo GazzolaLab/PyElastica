@@ -25,6 +25,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -172,7 +173,7 @@
 <span class="sd">    https://stackoverflow.com/q/3945940</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.__init__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># We need to initialize our mixin classes</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">BaseSystemCollection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="c1"># List of system types/bases that are allowed</span>
@@ -182,9 +183,9 @@
         <span class="c1"># List of feature calls, such as those coming</span>
         <span class="c1"># from Controllers, Environments which are</span>
         <span class="c1"># tacked on to the SystemCollection in a sim.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_features</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_features</span> <span class="o">=</span> <span class="bp">NotImplemented</span></div>
 
-    <span class="k">def</span> <span class="nf">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_to_be_added</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection._check_type"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection._check_type">[docs]</a>    <span class="k">def</span> <span class="nf">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_to_be_added</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">sys_to_be_added</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_sys_types</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="s2">&quot;</span><span class="si">{0}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -196,35 +197,35 @@
                 <span class="s2">&quot;The allowed types are</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="s2">&quot;</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sys_to_be_added</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_sys_types</span><span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">)</span>
+<div class="viewcode-block" id="BaseSystemCollection.__len__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<div class="viewcode-block" id="BaseSystemCollection.__getitem__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<div class="viewcode-block" id="BaseSystemCollection.__delitem__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__delitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.__setitem__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__setitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_type</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">system</span></div>
 
 <div class="viewcode-block" id="BaseSystemCollection.insert"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">system</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_type</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">system</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">)</span>
+<div class="viewcode-block" id="BaseSystemCollection.__str__"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseSystemCollection.extend_allowed_types"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.base_system.BaseSystemCollection.extend_allowed_types">[docs]</a>    <span class="k">def</span> <span class="nf">extend_allowed_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">additional_types</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.extend_allowed_types"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.extend_allowed_types">[docs]</a>    <span class="k">def</span> <span class="nf">extend_allowed_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">additional_types</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">allowed_sys_types</span> <span class="o">+=</span> <span class="n">additional_types</span></div>
 
-<div class="viewcode-block" id="BaseSystemCollection.override_allowed_types"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.base_system.BaseSystemCollection.override_allowed_types">[docs]</a>    <span class="k">def</span> <span class="nf">override_allowed_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allowed_types</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.override_allowed_types"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.override_allowed_types">[docs]</a>    <span class="k">def</span> <span class="nf">override_allowed_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allowed_types</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">allowed_sys_types</span> <span class="o">=</span> <span class="n">allowed_types</span></div>
 
-    <span class="k">def</span> <span class="nf">_get_sys_idx_if_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_to_be_added</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection._get_sys_idx_if_valid"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection._get_sys_idx_if_valid">[docs]</a>    <span class="k">def</span> <span class="nf">_get_sys_idx_if_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_to_be_added</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">int_</span> <span class="k">as</span> <span class="n">npint</span>
 
         <span class="n">n_systems</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">)</span>  <span class="c1"># Total number of systems from mixed-in class</span>
@@ -249,7 +250,7 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">sys_idx</span>
+        <span class="k">return</span> <span class="n">sys_idx</span></div>
 
 <div class="viewcode-block" id="BaseSystemCollection.finalize"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -276,18 +277,18 @@
         <span class="k">for</span> <span class="n">finalize</span> <span class="ow">in</span> <span class="n">finalize_methods</span><span class="p">:</span>
             <span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseSystemCollection.synchronize"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.base_system.BaseSystemCollection.synchronize">[docs]</a>    <span class="k">def</span> <span class="nf">synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.synchronize"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.synchronize">[docs]</a>    <span class="k">def</span> <span class="nf">synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="c1"># Calls all constraints, connections, controls etc.</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_features</span><span class="p">:</span>
             <span class="n">feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span></div>
 
     <span class="c1"># TODO: remove synchronizeBC below</span>
-<div class="viewcode-block" id="BaseSystemCollection.synchronizeBC"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.base_system.BaseSystemCollection.synchronizeBC">[docs]</a>    <span class="k">def</span> <span class="nf">synchronizeBC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.synchronizeBC"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.synchronizeBC">[docs]</a>    <span class="k">def</span> <span class="nf">synchronizeBC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="c1"># Calls all constraints, connections, controls etc.</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_featuresBC</span><span class="p">:</span>
             <span class="n">feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BaseSystemCollection.callBack"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.base_system.BaseSystemCollection.callBack">[docs]</a>    <span class="k">def</span> <span class="nf">callBack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSystemCollection.callBack"><a class="viewcode-back" href="../../../documentation.html#elastica.wrappers.base_system.BaseSystemCollection.callBack">[docs]</a>    <span class="k">def</span> <span class="nf">callBack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="c1"># Calls call back functions at the end of time-step</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_featuresCallBack</span><span class="p">:</span>
             <span class="n">feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">current_step</span><span class="p">)</span></div></div>

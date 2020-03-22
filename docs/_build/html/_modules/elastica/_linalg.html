@@ -25,6 +25,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -178,15 +179,15 @@
     <span class="k">return</span> <span class="n">epsilon</span></div>
 
 
-<span class="k">def</span> <span class="nf">_batch_matvec</span><span class="p">(</span><span class="n">matrix_collection</span><span class="p">,</span> <span class="n">vector_collection</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,jk-&gt;ik&quot;</span><span class="p">,</span> <span class="n">matrix_collection</span><span class="p">,</span> <span class="n">vector_collection</span><span class="p">)</span>
+<div class="viewcode-block" id="_batch_matvec"><a class="viewcode-back" href="../../documentation.html#elastica._linalg._batch_matvec">[docs]</a><span class="k">def</span> <span class="nf">_batch_matvec</span><span class="p">(</span><span class="n">matrix_collection</span><span class="p">,</span> <span class="n">vector_collection</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,jk-&gt;ik&quot;</span><span class="p">,</span> <span class="n">matrix_collection</span><span class="p">,</span> <span class="n">vector_collection</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_batch_matmul</span><span class="p">(</span><span class="n">first_matrix_collection</span><span class="p">,</span> <span class="n">second_matrix_collection</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,jlk-&gt;ilk&quot;</span><span class="p">,</span> <span class="n">first_matrix_collection</span><span class="p">,</span> <span class="n">second_matrix_collection</span><span class="p">)</span>
+<div class="viewcode-block" id="_batch_matmul"><a class="viewcode-back" href="../../documentation.html#elastica._linalg._batch_matmul">[docs]</a><span class="k">def</span> <span class="nf">_batch_matmul</span><span class="p">(</span><span class="n">first_matrix_collection</span><span class="p">,</span> <span class="n">second_matrix_collection</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,jlk-&gt;ilk&quot;</span><span class="p">,</span> <span class="n">first_matrix_collection</span><span class="p">,</span> <span class="n">second_matrix_collection</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_batch_cross</span><span class="p">(</span><span class="n">first_vector_collection</span><span class="p">,</span> <span class="n">second_vector_collection</span><span class="p">):</span>
+<div class="viewcode-block" id="_batch_cross"><a class="viewcode-back" href="../../documentation.html#elastica._linalg._batch_cross">[docs]</a><span class="k">def</span> <span class="nf">_batch_cross</span><span class="p">(</span><span class="n">first_vector_collection</span><span class="p">,</span> <span class="n">second_vector_collection</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -214,7 +215,7 @@
         <span class="n">levi_civita_tensor</span><span class="p">(</span><span class="n">first_vector_collection</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="n">first_vector_collection</span><span class="p">,</span>
         <span class="n">second_vector_collection</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 </pre></div>
 
            </div>

@@ -25,6 +25,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -88,7 +89,12 @@
 <p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pyelastica</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-elastica.rod.cosserat_rod">Rods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rods">Rods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-elastica.rod.cosserat_rod">Cosserat Rod</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-elastica.rod.constitutive_model">Constitutive Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-elastica.rod.data_structures">Data Structures</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-elastica.boundary_conditions">Boundary Conditions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-elastica.joint">Multiple Rod Connections</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-elastica.callback_functions">Callback Functions</a></li>
@@ -101,7 +107,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#forcing">forcing</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-elastica.transformations">Utility Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-elastica.systems.analytical">Systems</a></li>
 </ul>
 </li>
@@ -173,16 +179,486 @@
   <div class="section" id="pyelastica">
 <h1>Pyelastica<a class="headerlink" href="#pyelastica" title="Permalink to this headline">¶</a></h1>
 <p>This the the documentation page for Pyelastica. We can add a bit here about things people should know before we get into the details below.</p>
+<div class="section" id="rods">
+<h2>Rods<a class="headerlink" href="#rods" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-elastica.rod.cosserat_rod">
-<span id="rods"></span><h2>Rods<a class="headerlink" href="#module-elastica.rod.cosserat_rod" title="Permalink to this headline">¶</a></h2>
+<span id="cosserat-rod"></span><h3>Cosserat Rod<a class="headerlink" href="#module-elastica.rod.cosserat_rod" title="Permalink to this headline">¶</a></h3>
 <p>Rod base classes and implementation details that need to be hidden from the user</p>
 <dl class="class">
 <dt id="elastica.rod.cosserat_rod.CosseratRod">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.rod.cosserat_rod.</code><code class="sig-name descname">CosseratRod</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rod</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#CosseratRod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod.CosseratRod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin" title="elastica.rod.constitutive_model._LinearConstitutiveModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.rod.constitutive_model._LinearConstitutiveModelMixin</span></code></a>, <a class="reference internal" href="#elastica.rod.cosserat_rod._CosseratRodBase" title="elastica.rod.cosserat_rod._CosseratRodBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.rod.cosserat_rod._CosseratRodBase</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.rod.data_structures._RodSymplecticStepperMixin</span></code></p>
+<p>Just a test</p>
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod.CosseratRod.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rod</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#CosseratRod.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod.CosseratRod.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>a test again</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.cosserat_rod.</code><code class="sig-name descname">_CosseratRodBase</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">position</em>, <em class="sig-param">directors</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">density</em>, <em class="sig-param">volume</em>, <em class="sig-param">mass_second_moment_of_inertia</em>, <em class="sig-param">nu</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.rod.RodBase</span></code></p>
+<p>I’m assuming number of elements can be deduced from the size of the inputs</p>
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">position</em>, <em class="sig-param">directors</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">density</em>, <em class="sig-param">volume</em>, <em class="sig-param">mass_second_moment_of_inertia</em>, <em class="sig-param">nu</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>a test again</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase._compute_all_dilatations">
+<code class="sig-name descname">_compute_all_dilatations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase._compute_all_dilatations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase._compute_all_dilatations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute element and Voronoi region dilatations</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase._compute_dilatation_rate">
+<code class="sig-name descname">_compute_dilatation_rate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase._compute_dilatation_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase._compute_dilatation_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<span class="target" id="module-elastica.rod.constitutive_model"></span><p>Rod constitutive model mixins</p>
-<span class="target" id="module-elastica.rod.data_structures"></span><p>Data structure wrapper for rod components</p>
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase._compute_geometry_from_state">
+<code class="sig-name descname">_compute_geometry_from_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase._compute_geometry_from_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase._compute_geometry_from_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase._compute_internal_forces_and_torques">
+<code class="sig-name descname">_compute_internal_forces_and_torques</code><span class="sig-paren">(</span><em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase._compute_internal_forces_and_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase._compute_internal_forces_and_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
+they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
+one time and use them. Previously, we were computing internal forces and torques multiple times in interaction.
+Saving internal forces and torques in a variable take some memory, but we will gain speed up.
+:param time:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.cosserat_rod._CosseratRodBase.update_accelerations">
+<code class="sig-name descname">update_accelerations</code><span class="sig-paren">(</span><em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/cosserat_rod.html#_CosseratRodBase.update_accelerations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.cosserat_rod._CosseratRodBase.update_accelerations" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO Do we need to make the collection members abstract?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>time</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.rod.constitutive_model">
+<span id="constitutive-model"></span><h3>Constitutive Model<a class="headerlink" href="#module-elastica.rod.constitutive_model" title="Permalink to this headline">¶</a></h3>
+<p>Rod constitutive model mixins but classes here does not uploaded</p>
+<dl class="class">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelMixin">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.constitutive_model.</code><code class="sig-name descname">_LinearConstitutiveModelMixin</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Linear Constitutive model for Cosserat Rods</p>
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelMixin.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelMixin.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelMixin.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelMixin._compute_internal_bending_twist_stresses_from_model">
+<code class="sig-name descname">_compute_internal_bending_twist_stresses_from_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelMixin._compute_internal_bending_twist_stresses_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin._compute_internal_bending_twist_stresses_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear force functional
+Operates on
+B : (3,3,n) tensor and curvature kappa (3,n)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelMixin._compute_internal_shear_stretch_stresses_from_model">
+<code class="sig-name descname">_compute_internal_shear_stretch_stresses_from_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelMixin._compute_internal_shear_stretch_stresses_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin._compute_internal_shear_stretch_stresses_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear force functional
+Operates on
+S : (3,3,n) tensor and sigma (3,n)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.constitutive_model.</code><code class="sig-name descname">_LinearConstitutiveModelWithStrainRateMixin</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelWithStrainRateMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.rod.constitutive_model._LinearConstitutiveModelMixin" title="elastica.rod.constitutive_model._LinearConstitutiveModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.rod.constitutive_model._LinearConstitutiveModelMixin</span></code></a></p>
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements</em>, <em class="sig-param">shear_matrix</em>, <em class="sig-param">bend_matrix</em>, <em class="sig-param">rest_lengths</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelWithStrainRateMixin.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin._compute_internal_bending_twist_stresses_from_model">
+<code class="sig-name descname">_compute_internal_bending_twist_stresses_from_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelWithStrainRateMixin._compute_internal_bending_twist_stresses_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin._compute_internal_bending_twist_stresses_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear force functional
+Operates on
+B : (3,3,n) tensor and curvature kappa (3,n)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin._compute_internal_shear_stretch_stresses_from_model">
+<code class="sig-name descname">_compute_internal_shear_stretch_stresses_from_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/constitutive_model.html#_LinearConstitutiveModelWithStrainRateMixin._compute_internal_shear_stretch_stresses_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.constitutive_model._LinearConstitutiveModelWithStrainRateMixin._compute_internal_shear_stretch_stresses_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear force functional
+Operates on
+S : (3,3,n) tensor and sigma (3,n)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.rod.data_structures">
+<span id="data-structures"></span><h3>Data Structures<a class="headerlink" href="#module-elastica.rod.data_structures" title="Permalink to this headline">¶</a></h3>
+<p>Data structure wrapper for rod components</p>
+<dl class="class">
+<dt id="elastica.rod.data_structures._DerivativeState">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.data_structures.</code><code class="sig-name descname">_DerivativeState</code><span class="sig-paren">(</span><em class="sig-param">_unused_n_elems: int</em>, <em class="sig-param">rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DerivativeState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DerivativeState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>TimeDerivative of States for explicit steppers.</p>
+<p>Wraps time-derivative data as state, with overloaded methods for
+explicit steppers (steppers that integrate all states in one-step/stage).
+Allows for separating implementation of stepper from actual addition
+/multiplication used.</p>
+<dl class="method">
+<dt id="elastica.rod.data_structures._DerivativeState.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">_unused_n_elems: int</em>, <em class="sig-param">rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DerivativeState.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DerivativeState.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_unused_n_elems</strong> (<em>int</em><em>, </em><em>number of elements</em><em> (</em><em>unused</em><em>, </em><em>kept for</em>) – </p></li>
+<li><p><strong>with _bootstrap_from_data</strong><strong>)</strong> (<em>compatibility</em>) – </p></li>
+<li><p><strong>rate_collection_view</strong> (<em>np.ndarray containing</em><em> (</em><em>v</em><em>, </em><em>ω</em><em>, </em><em>dv/dt</em><em>, </em><em>dω/dt</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._DerivativeState.__mul__">
+<code class="sig-name descname">__mul__</code><span class="sig-paren">(</span><em class="sig-param">scalar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DerivativeState.__mul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DerivativeState.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded self * scalar</p>
+<p>TODO Check if this pattern (forwarding to __mul__) has
+any disdvantages apart from extra function call penalty</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scalar</strong> (<em>float</em><em>, </em><em>typically dt</em><em> (</em><em>the time-step</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>output</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray containing (v*dt, ω*dt, dv/dt*dt, dω/dt*dt)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._DerivativeState.__rmul__">
+<code class="sig-name descname">__rmul__</code><span class="sig-paren">(</span><em class="sig-param">scalar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DerivativeState.__rmul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DerivativeState.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded scalar * self,</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scalar</strong> (<em>float</em><em>, </em><em>typically dt</em><em> (</em><em>the time-step</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>output</strong> (<em>np.ndarray containing (v*dt, ω*dt, dv/dt*dt, dω/dt*dt)</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>Returns a np.ndarray and not a State object (as one expects).</em></p></li>
+<li><p><em>Returning a State here with (v*dt, ω*dt, dv/dt*dt, dω/dt*dt) as members</em></p></li>
+<li><p><em>is possible but it’s less efficient, especially because this is hot</em></p></li>
+<li><p><em>piece of code</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.rod.data_structures._DerivativeState.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.rod.data_structures._DerivativeState.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.rod.data_structures._DynamicState">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.data_structures.</code><code class="sig-name descname">_DynamicState</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DynamicState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DynamicState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.</p>
+<p>Wraps data as state, with overloaded methods for symplectic steppers.
+Allows for separating implementation of stepper from actual
+addition/multiplication/other formulae used.</p>
+<p>Symplectic steppers rely only on in-place modifications to state and so
+only these methods are provided.</p>
+<dl class="method">
+<dt id="elastica.rod.data_structures._DynamicState.__iadd__">
+<code class="sig-name descname">__iadd__</code><span class="sig-paren">(</span><em class="sig-param">scaled_second_deriv_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DynamicState.__iadd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DynamicState.__iadd__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded += operator, updating dynamic_rates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaled_second_deriv_array</strong> (<em>np.ndarray containing dt *</em><em> (</em><em>dvdt</em><em>, </em><em>dωdt</em><em>)</em><em>,</em>) – </p></li>
+<li><p><strong>retured from _DynamicState's dynamic_rates method</strong> (<em>as</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>self</strong> (<em>_DynamicState instance with inplace modified data</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>Takes a np.ndarray and not a _DynamicState object (as one expects).</em></p></li>
+<li><p>This is done for efficiency reasons, see <cite>dynamic_rates</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._DynamicState.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DynamicState.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DynamicState.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elems</strong> (<em>int</em><em>, </em><em>number of rod elements</em>) – </p></li>
+<li><p><strong>rate_collection_view</strong> (<em>np.ndarray containing</em><em> (</em><em>v</em><em>, </em><em>ω</em><em>, </em><em>dv/dt</em><em>, </em><em>dω/dt</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.rod.data_structures._DynamicState.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.rod.data_structures._DynamicState.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._DynamicState.dynamic_rates">
+<code class="sig-name descname">dynamic_rates</code><span class="sig-paren">(</span><em class="sig-param">time</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DynamicState.dynamic_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DynamicState.dynamic_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields dynamic rates to add to with _DynamicState</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>acc_and_alpha</strong> (<em>np.ndarray consisting of (dv/dt,dω/dt)</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>Doesn’t return a _DynamicState with (dt*v, dt*w) as members,</em></p></li>
+<li><p><em>as one expects the _Dynamic __add__ operator to interact</em></p></li>
+<li><p><em>with another _DynamicState. This is done for efficiency purposes.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._DynamicState.kinematic_rates">
+<code class="sig-name descname">kinematic_rates</code><span class="sig-paren">(</span><em class="sig-param">time</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_DynamicState.kinematic_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._DynamicState.kinematic_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields kinematic rates to interact with _KinematicState</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>v_and_omega</strong> (<em>np.ndarray consisting of (v,ω)</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>Doesn’t return a _KinematicState with (dt*v, dt*w) as members,</em></p></li>
+<li><p><em>as one expects the _Kinematic __add__ operator to interact</em></p></li>
+<li><p><em>with another _KinematicState. This is done for efficiency purposes.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.rod.data_structures._KinematicState">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.data_structures.</code><code class="sig-name descname">_KinematicState</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">position_collection_view</em>, <em class="sig-param">director_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_KinematicState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._KinematicState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>State storing (x,Q) for symplectic steppers.</p>
+<p>Wraps data as state, with overloaded methods for symplectic steppers.
+Allows for separating implementation of stepper from actual
+addition/multiplication/other formulae used.</p>
+<p>Symplectic steppers rely only on in-place modifications to state and so
+only these methods are provided.</p>
+<dl class="method">
+<dt id="elastica.rod.data_structures._KinematicState.__iadd__">
+<code class="sig-name descname">__iadd__</code><span class="sig-paren">(</span><em class="sig-param">scaled_deriv_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_KinematicState.__iadd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._KinematicState.__iadd__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded += operator</p>
+<p>The add for directors is customized to reflect Rodrigues’ rotation
+formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaled_deriv_array</strong> (<em>np.ndarray containing dt *</em><em> (</em><em>v</em><em>, </em><em>ω</em><em>)</em><em>,</em>) – </p></li>
+<li><p><strong>retured from _DynamicState's kinematic_rates method</strong> (<em>as</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>self</strong> (<em>_KinematicState instance with inplace modified data</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>Takes a np.ndarray and not a _KinematicState object (as one expects).</em></p></li>
+<li><p>This is done for efficiency reasons, see _DynamicState’s <cite>kinematic_rates</cite></p></li>
+<li><p><em>method</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._KinematicState.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">position_collection_view</em>, <em class="sig-param">director_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_KinematicState.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._KinematicState.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elems</strong> (<em>int</em><em>, </em><em>number of rod elements</em>) – </p></li>
+<li><p><strong>position_collection_view</strong> (<em>view of positions</em><em> (</em><em>or</em><em>) </em><em>x</em>) – </p></li>
+<li><p><strong>director_collection_view</strong> (<em>view of directors</em><em> (</em><em>or</em><em>) </em><em>Q</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.rod.data_structures._KinematicState.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.rod.data_structures._KinematicState.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.rod.data_structures._State">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.rod.data_structures.</code><code class="sig-name descname">_State</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">position_collection_view</em>, <em class="sig-param">director_collection_view</em>, <em class="sig-param">kinematic_rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._State" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>State for explicit steppers.</p>
+<p>Wraps data as state, with overloaded methods for explicit steppers
+(steppers that integrate all states in one-step/stage).
+Allows for separating implementation of stepper from actual
+addition/multiplication/other formulae used.</p>
+<dl class="method">
+<dt id="elastica.rod.data_structures._State.__add__">
+<code class="sig-name descname">__add__</code><span class="sig-paren">(</span><em class="sig-param">scaled_derivative_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_State.__add__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._State.__add__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded + operator, useful in state.k1 = state + dt * deriv_state</p>
+<p>The add for directors is customized to reflect Rodrigues’ rotation
+formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaled_derivative_state</strong> (<em>np.ndarray with dt *</em><em> (</em><em>v</em><em>, </em><em>ω</em><em>, </em><em>dv/dt</em><em>, </em><em>dω/dt</em><em>)</em>) – </p></li>
+<li><p><strong>returned from _DerivativeState's __mul__ method</strong> (<em>,</em><em>as</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>state</strong> (<em>new _State object with modified data (copied)</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p>Note that the argument is not a <cite>other</cite> _State object but is rather</p></li>
+<li><p>assumed to be a <cite>np.ndarray</cite> from calling _DerivativeState’s __mul__</p></li>
+<li><p><em>method. This reflects the most common use-case in time-steppers</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._State.__iadd__">
+<code class="sig-name descname">__iadd__</code><span class="sig-paren">(</span><em class="sig-param">scaled_deriv_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_State.__iadd__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._State.__iadd__" title="Permalink to this definition">¶</a></dt>
+<dd><p>overloaded += operator</p>
+<p>The add for directors is customized to reflect Rodrigues’ rotation
+formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaled_deriv_array</strong> (<em>np.ndarray containing dt *</em><em> (</em><em>v</em><em>, </em><em>ω</em><em>, </em><em>dv/dt</em><em>, </em><em>dω/dt</em><em>)</em>) – </p></li>
+<li><p><strong>returned from _DerivativeState's __mul__ method</strong> (<em>,</em><em>as</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>self</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>_State with inplace modified data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.rod.data_structures._State.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elems: int</em>, <em class="sig-param">position_collection_view</em>, <em class="sig-param">director_collection_view</em>, <em class="sig-param">kinematic_rate_collection_view</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_State.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._State.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elems</strong> (<em>int</em><em>, </em><em>number of rod elements</em>) – </p></li>
+<li><p><strong>position_collection_view</strong> (<em>view of positions</em><em> (</em><em>or</em><em>) </em><em>x</em>) – </p></li>
+<li><p><strong>director_collection_view</strong> (<em>view of directors</em><em> (</em><em>or</em><em>) </em><em>Q</em>) – </p></li>
+<li><p><strong>kinematic_rate_collection_view</strong> (<em>view of velocity and omega</em><em> (</em><em>or</em><em>) </em><em>(</em><em>v</em><em>,</em><em>ω</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.rod.data_structures._State.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.rod.data_structures._State.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica.rod.data_structures._bootstrap_from_data">
+<code class="sig-prename descclassname">elastica.rod.data_structures.</code><code class="sig-name descname">_bootstrap_from_data</code><span class="sig-paren">(</span><em class="sig-param">stepper_type: str</em>, <em class="sig-param">n_elems: int</em>, <em class="sig-param">vector_states</em>, <em class="sig-param">matrix_states</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/rod/data_structures.html#_bootstrap_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.rod.data_structures._bootstrap_from_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns states wrapping numpy arrays based on the time-stepping algorithm</p>
+<p>Convenience method that takes in rod internal (raw np.ndarray) data, create views
+(references) from it, and outputs State classes that are used in the time-stepping
+algorithm. This means that modifying the state modifies the internal data!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stepper_type</strong> (<em>str</em><em> (</em><em>likely to change in future</em><em>)</em><em>, </em><em>representing stepper type</em>) – </p></li>
+<li><p><strong>parameters are</strong><strong> [</strong><strong>'explicit'</strong><strong>, </strong><strong>'symplectic'</strong><strong>]</strong> (<em>Allowed</em>) – </p></li>
+<li><p><strong>n_elems</strong> (<em>int</em><em>, </em><em>number of rod elements</em>) – </p></li>
+<li><p><strong>vector_states</strong> (np.ndarray of shape (dim, <a href="#id1"><span class="problematic" id="id2">*</span></a>) with the following structure) – <cite>vector_states</cite> = [<cite>position</cite>,`velocity`,`omega`,`acceleration`,`angular acceleration`]
+<cite>n_nodes = n_elems + 1</cite>
+<cite>position = 0 -&gt; n_nodes , size = n_nodes</cite>
+<cite>velocity = n_nodes -&gt; 2 * n_nodes, size = n_nodes</cite>
+<cite>omega = 2 * n_nodes -&gt; 2 * n_nodes + nelem, size = nelem</cite>
+<cite>acceleration = 2 * n_nodes + nelem -&gt; 3 * n_nodes + nelem, size = n_nodes</cite>
+<cite>angular acceleration = 3 * n_nodes + nelem -&gt; 3 * n_nodes + 2 * nelem, size = n_elems</cite></p></li>
+<li><p><strong>matrix_states</strong> (<em>np.ndarray of shape</em><em> (</em><em>dim</em><em>, </em><em>dim</em><em>, </em><em>n_elems</em><em>) </em><em>containing the directors</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>output</strong> (<em>tuple of len 8 containing</em>)</p></li>
+<li><p><em>(state, derivative_state, position, directors, velocity, omega, acceleration, alpha)</em></p></li>
+<li><p><em>derivative_state carries rate information</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="module-elastica.boundary_conditions">
 <span id="boundary-conditions"></span><h2>Boundary Conditions<a class="headerlink" href="#module-elastica.boundary_conditions" title="Permalink to this headline">¶</a></h2>
@@ -190,28 +666,62 @@
 <dl class="class">
 <dt id="elastica.boundary_conditions.FreeRod">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">FreeRod</code><a class="reference internal" href="_modules/elastica/boundary_conditions.html#FreeRod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.FreeRod" title="Permalink to this definition">¶</a></dt>
-<dd><p>the base class for rod boundary conditions
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>the base class for rod boundary conditions
 also the free rod class</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.FreeRod.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#FreeRod.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.FreeRod.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.boundary_conditions.FreeRod.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.boundary_conditions.FreeRod.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="elastica.boundary_conditions.HelicalBucklingBC">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">HelicalBucklingBC</code><span class="sig-paren">(</span><em class="sig-param">position_start</em>, <em class="sig-param">position_end</em>, <em class="sig-param">director_start</em>, <em class="sig-param">director_end</em>, <em class="sig-param">twisting_time</em>, <em class="sig-param">slack</em>, <em class="sig-param">number_of_rotations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#HelicalBucklingBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.HelicalBucklingBC" title="Permalink to this definition">¶</a></dt>
-<dd><p>boundary condition for helical buckling
+<dd><p>Bases: <a class="reference internal" href="#elastica.boundary_conditions.FreeRod" title="elastica.boundary_conditions.FreeRod"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.boundary_conditions.FreeRod</span></code></a></p>
+<p>boundary condition for helical buckling
 controlled twisting of the ends</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.HelicalBucklingBC.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">position_start</em>, <em class="sig-param">position_end</em>, <em class="sig-param">director_start</em>, <em class="sig-param">director_end</em>, <em class="sig-param">twisting_time</em>, <em class="sig-param">slack</em>, <em class="sig-param">number_of_rotations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#HelicalBucklingBC.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.HelicalBucklingBC.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="elastica.boundary_conditions.OneEndFixedRod">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">OneEndFixedRod</code><span class="sig-paren">(</span><em class="sig-param">fixed_position</em>, <em class="sig-param">fixed_directors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#OneEndFixedRod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.OneEndFixedRod" title="Permalink to this definition">¶</a></dt>
-<dd><p>the end of the rod fixed x[0]</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.boundary_conditions.FreeRod" title="elastica.boundary_conditions.FreeRod"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.boundary_conditions.FreeRod</span></code></a></p>
+<p>the end of the rod fixed x[0]</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.OneEndFixedRod.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">fixed_position</em>, <em class="sig-param">fixed_directors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#OneEndFixedRod.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.OneEndFixedRod.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 </dd></dl>
 
 <span class="target" id="module-elastica.external_forces"></span><p>External forcing for rod</p>
 <dl class="class">
 <dt id="elastica.external_forces.EndpointForces">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">EndpointForces</code><span class="sig-paren">(</span><em class="sig-param">start_force</em>, <em class="sig-param">end_force</em>, <em class="sig-param">ramp_up_time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#EndpointForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.EndpointForces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies constant forces on endpoints</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies constant forces on endpoints</p>
+<dl class="method">
+<dt id="elastica.external_forces.EndpointForces.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">start_force</em>, <em class="sig-param">end_force</em>, <em class="sig-param">ramp_up_time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#EndpointForces.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.EndpointForces.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.EndpointForces.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#EndpointForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.EndpointForces.apply_forces" title="Permalink to this definition">¶</a></dt>
@@ -238,7 +748,14 @@ controlled twisting of the ends</p>
 <dl class="class">
 <dt id="elastica.external_forces.GravityForces">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">GravityForces</code><span class="sig-paren">(</span><em class="sig-param">acc_gravity=array([ 0.</em>, <em class="sig-param">-9.80665</em>, <em class="sig-param">0.     ])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#GravityForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.GravityForces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a constant gravity on the entire rod</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies a constant gravity on the entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.GravityForces.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">acc_gravity=array([ 0.</em>, <em class="sig-param">-9.80665</em>, <em class="sig-param">0.     ])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#GravityForces.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.GravityForces.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.GravityForces.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#GravityForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.GravityForces.apply_forces" title="Permalink to this definition">¶</a></dt>
@@ -265,8 +782,15 @@ controlled twisting of the ends</p>
 <dl class="class">
 <dt id="elastica.external_forces.MuscleTorques">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">MuscleTorques</code><span class="sig-paren">(</span><em class="sig-param">base_length</em>, <em class="sig-param">b_coeff</em>, <em class="sig-param">period</em>, <em class="sig-param">wave_number</em>, <em class="sig-param">phase_shift</em>, <em class="sig-param">direction</em>, <em class="sig-param">ramp_up_time=0.0</em>, <em class="sig-param">with_spline=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#MuscleTorques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.MuscleTorques" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies muscle torques on the body. It can apply muscle torques
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies muscle torques on the body. It can apply muscle torques
 as travelling wave with beta spline or only as travelling wave.</p>
+<dl class="method">
+<dt id="elastica.external_forces.MuscleTorques.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">base_length</em>, <em class="sig-param">b_coeff</em>, <em class="sig-param">period</em>, <em class="sig-param">wave_number</em>, <em class="sig-param">phase_shift</em>, <em class="sig-param">direction</em>, <em class="sig-param">ramp_up_time=0.0</em>, <em class="sig-param">with_spline=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#MuscleTorques.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.MuscleTorques.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.MuscleTorques.apply_torques">
 <code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#MuscleTorques.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.MuscleTorques.apply_torques" title="Permalink to this definition">¶</a></dt>
@@ -293,10 +817,23 @@ as travelling wave with beta spline or only as travelling wave.</p>
 <dl class="class">
 <dt id="elastica.external_forces.NoForces">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">NoForces</code><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for external forcing for Rods</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for external forcing for Rods</p>
 <p>Can make this an abstract class, but its inconvenient
 for the user to keep on defining apply_forces and
 apply_torques object over and over.</p>
+<dl class="method">
+<dt id="elastica.external_forces.NoForces.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.external_forces.NoForces.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.external_forces.NoForces.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.NoForces.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces.apply_forces" title="Permalink to this definition">¶</a></dt>
@@ -344,7 +881,14 @@ apply_torques object over and over.</p>
 <dl class="class">
 <dt id="elastica.external_forces.UniformForces">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">UniformForces</code><span class="sig-paren">(</span><em class="sig-param">force</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformForces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies uniform forces to entire rod</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies uniform forces to entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.UniformForces.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">force</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformForces.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformForces.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.UniformForces.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformForces.apply_forces" title="Permalink to this definition">¶</a></dt>
@@ -371,7 +915,14 @@ apply_torques object over and over.</p>
 <dl class="class">
 <dt id="elastica.external_forces.UniformTorques">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">UniformTorques</code><span class="sig-paren">(</span><em class="sig-param">torque</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformTorques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformTorques" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies uniform torque to entire rod</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies uniform torque to entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.UniformTorques.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">torque</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformTorques.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformTorques.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.external_forces.UniformTorques.apply_torques">
 <code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformTorques.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformTorques.apply_torques" title="Permalink to this definition">¶</a></dt>
@@ -399,7 +950,14 @@ apply_torques object over and over.</p>
 <dl class="class">
 <dt id="elastica.interaction.AnistropicFrictionalPlane">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">AnistropicFrictionalPlane</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">plane_origin</em>, <em class="sig-param">plane_normal</em>, <em class="sig-param">slip_velocity_tol</em>, <em class="sig-param">static_mu_array</em>, <em class="sig-param">kinetic_mu_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#AnistropicFrictionalPlane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.AnistropicFrictionalPlane" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.interaction.InteractionPlane</span></code></p>
+<dl class="method">
+<dt id="elastica.interaction.AnistropicFrictionalPlane.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">plane_origin</em>, <em class="sig-param">plane_normal</em>, <em class="sig-param">slip_velocity_tol</em>, <em class="sig-param">static_mu_array</em>, <em class="sig-param">kinetic_mu_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#AnistropicFrictionalPlane.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.AnistropicFrictionalPlane.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="elastica.interaction.AnistropicFrictionalPlane.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#AnistropicFrictionalPlane.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.AnistropicFrictionalPlane.apply_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply forces to a system object.</p>
@@ -425,7 +983,14 @@ apply_torques object over and over.</p>
 <dl class="class">
 <dt id="elastica.interaction.SlenderBodyTheory">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">SlenderBodyTheory</code><span class="sig-paren">(</span><em class="sig-param">dynamic_viscosity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#SlenderBodyTheory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.SlenderBodyTheory" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<dl class="method">
+<dt id="elastica.interaction.SlenderBodyTheory.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dynamic_viscosity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#SlenderBodyTheory.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.SlenderBodyTheory.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="elastica.interaction.SlenderBodyTheory.apply_forces">
 <code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#SlenderBodyTheory.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.SlenderBodyTheory.apply_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function applies hydrodynamic forces on body
@@ -554,8 +1119,15 @@ compared to python sum(), .sum() and np.sum()</p>
 <dl class="class">
 <dt id="elastica.joint.HingeJoint">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.joint.</code><code class="sig-name descname">HingeJoint</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">kt</em>, <em class="sig-param">normal_direction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#HingeJoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.HingeJoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>this joint currently keeps rod one fixed and moves rod two
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.joint.FreeJoint</span></code></p>
+<p>this joint currently keeps rod one fixed and moves rod two
 how couples act needs to be reconfirmed</p>
+<dl class="method">
+<dt id="elastica.joint.HingeJoint.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">kt</em>, <em class="sig-param">normal_direction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#HingeJoint.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.HingeJoint.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -565,8 +1137,21 @@ how couples act needs to be reconfirmed</p>
 <dl class="class">
 <dt id="elastica.callback_functions.CallBackBaseClass">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">CallBackBaseClass</code><a class="reference internal" href="_modules/elastica/callback_functions.html#CallBackBaseClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base call back class, user has to derive new
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base call back class, user has to derive new
 call back classes from this class</p>
+<dl class="method">
+<dt id="elastica.callback_functions.CallBackBaseClass.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#CallBackBaseClass.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.callback_functions.CallBackBaseClass.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.callback_functions.CallBackBaseClass.make_callback">
 <code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#CallBackBaseClass.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass.make_callback" title="Permalink to this definition">¶</a></dt>
@@ -586,7 +1171,14 @@ in derived call back class
 <dl class="class">
 <dt id="elastica.callback_functions.ContinuumSnakeCallBack">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">ContinuumSnakeCallBack</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#ContinuumSnakeCallBack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.ContinuumSnakeCallBack" title="Permalink to this definition">¶</a></dt>
-<dd><p>Call back function for continuum snake</p>
+<dd><p>Bases: <a class="reference internal" href="#elastica.callback_functions.CallBackBaseClass" title="elastica.callback_functions.CallBackBaseClass"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.callback_functions.CallBackBaseClass</span></code></a></p>
+<p>Call back function for continuum snake</p>
+<dl class="method">
+<dt id="elastica.callback_functions.ContinuumSnakeCallBack.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#ContinuumSnakeCallBack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.ContinuumSnakeCallBack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.callback_functions.ContinuumSnakeCallBack.make_callback">
 <code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#ContinuumSnakeCallBack.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.ContinuumSnakeCallBack.make_callback" title="Permalink to this definition">¶</a></dt>
@@ -606,9 +1198,16 @@ in derived call back class
 <dl class="class">
 <dt id="elastica.callback_functions.MyCallBack">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">MyCallBack</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#MyCallBack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.MyCallBack" title="Permalink to this definition">¶</a></dt>
-<dd><p>My call back class it is derived from the base call back class.
+<dd><p>Bases: <a class="reference internal" href="#elastica.callback_functions.CallBackBaseClass" title="elastica.callback_functions.CallBackBaseClass"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.callback_functions.CallBackBaseClass</span></code></a></p>
+<p>My call back class it is derived from the base call back class.
 This is an example, user can use this class as an example to write
 new call back classes</p>
+<dl class="method">
+<dt id="elastica.callback_functions.MyCallBack.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#MyCallBack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.MyCallBack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.callback_functions.MyCallBack.make_callback">
 <code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#MyCallBack.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.MyCallBack.make_callback" title="Permalink to this definition">¶</a></dt>
@@ -632,25 +1231,53 @@ in derived call back class
 <dl class="class">
 <dt id="elastica.timestepper.symplectic_steppers.PEFRL">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.timestepper.symplectic_steppers.</code><code class="sig-name descname">PEFRL</code><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#PEFRL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.PEFRL" title="Permalink to this definition">¶</a></dt>
-<dd><p>Position Extended Forest-Ruth Like Algorithm of
+<dd><p>Bases: <a class="reference internal" href="#elastica.timestepper.symplectic_steppers.SymplecticStepper" title="elastica.timestepper.symplectic_steppers.SymplecticStepper"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.timestepper.symplectic_steppers.SymplecticStepper</span></code></a></p>
+<p>Position Extended Forest-Ruth Like Algorithm of
 I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
 <a class="reference external" href="http://arxiv.org/abs/cond-mat/0110585">http://arxiv.org/abs/cond-mat/0110585</a></p>
+<dl class="method">
+<dt id="elastica.timestepper.symplectic_steppers.PEFRL.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#PEFRL.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.PEFRL.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="elastica.timestepper.symplectic_steppers.PositionVerlet">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.timestepper.symplectic_steppers.</code><code class="sig-name descname">PositionVerlet</code><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#PositionVerlet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.PositionVerlet" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bases: <a class="reference internal" href="#elastica.timestepper.symplectic_steppers.SymplecticStepper" title="elastica.timestepper.symplectic_steppers.SymplecticStepper"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.timestepper.symplectic_steppers.SymplecticStepper</span></code></a></p>
+<dl class="method">
+<dt id="elastica.timestepper.symplectic_steppers.PositionVerlet.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#PositionVerlet.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.PositionVerlet.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="class">
 <dt id="elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.timestepper.symplectic_steppers.</code><code class="sig-name descname">SymplecticLinearExponentialIntegrator</code><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#SymplecticLinearExponentialIntegrator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.timestepper._stepper_interface._LinearExponentialIntegratorMixin</span></code>, <a class="reference internal" href="#elastica.timestepper.symplectic_steppers.SymplecticStepper" title="elastica.timestepper.symplectic_steppers.SymplecticStepper"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.timestepper.symplectic_steppers.SymplecticStepper</span></code></a></p>
+<dl class="method">
+<dt id="elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#SymplecticLinearExponentialIntegrator.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="class">
 <dt id="elastica.timestepper.symplectic_steppers.SymplecticStepper">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.timestepper.symplectic_steppers.</code><code class="sig-name descname">SymplecticStepper</code><span class="sig-paren">(</span><em class="sig-param">cls=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#SymplecticStepper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.SymplecticStepper" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.timestepper._stepper_interface._TimeStepper</span></code></p>
+<dl class="method">
+<dt id="elastica.timestepper.symplectic_steppers.SymplecticStepper.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">cls=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/timestepper/symplectic_steppers.html#SymplecticStepper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.timestepper.symplectic_steppers.SymplecticStepper.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 <div class="section" id="module-elastica.wrappers.base_system">
@@ -662,10 +1289,29 @@ interface (ie. works with symplectic or explicit routines <cite>timestepper.py</
 <dl class="class">
 <dt id="elastica.wrappers.base_system.BaseSystemCollection">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.base_system.</code><code class="sig-name descname">BaseSystemCollection</code><a class="reference internal" href="_modules/elastica/wrappers/base_system.html#BaseSystemCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base System</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableSequence</span></code></p>
+<p>Base System</p>
 <p>Technical note : We can directly subclass a list for the
 most part, but this is a bad idea, as List is non abstract
 <a class="reference external" href="https://stackoverflow.com/q/3945940">https://stackoverflow.com/q/3945940</a></p>
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/wrappers/base_system.html#BaseSystemCollection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.__str__">
+<code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/wrappers/base_system.html#BaseSystemCollection.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="elastica.wrappers.base_system.BaseSystemCollection.finalize">
 <code class="sig-name descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/wrappers/base_system.html#BaseSystemCollection.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.finalize" title="Permalink to this definition">¶</a></dt>
@@ -699,9 +1345,9 @@ rigid bodies) using Joints (see <cite>joints.py</cite>).</p>
 <p>Add forces and torques to rod (external point force, b-spline torques etc).</p>
 </div>
 </div>
-<div class="section" id="module-elastica.transformations">
-<span id="utility-functions"></span><h2>Utility Functions<a class="headerlink" href="#module-elastica.transformations" title="Permalink to this headline">¶</a></h2>
-<p>Rotation interface functions</p>
+<div class="section" id="utility-functions">
+<h2>Utility Functions<a class="headerlink" href="#utility-functions" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-elastica.transformations"></span><p>Rotation interface functions</p>
 <dl class="function">
 <dt id="elastica.transformations.inv_skew_symmetrize">
 <code class="sig-prename descclassname">elastica.transformations.</code><code class="sig-name descname">inv_skew_symmetrize</code><span class="sig-paren">(</span><em class="sig-param">matrix_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/transformations.html#inv_skew_symmetrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.transformations.inv_skew_symmetrize" title="Permalink to this definition">¶</a></dt>
@@ -739,6 +1385,52 @@ Credits : <a class="reference external" href="https://stackoverflow.com/a/539836
 </dd></dl>
 
 <span class="target" id="module-elastica._calculus"></span><p>Quadrature and difference kernels</p>
+<dl class="function">
+<dt id="elastica._calculus._trapezoidal">
+<code class="sig-prename descclassname">elastica._calculus.</code><code class="sig-name descname">_trapezoidal</code><span class="sig-paren">(</span><em class="sig-param">array_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_calculus.html#_trapezoidal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._calculus._trapezoidal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array_collection</strong> – </p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not using numpy.pad, numpy.hstack for performance reasons
+with pad : 23.3 µs ± 1.65 µs per loop
+without pad (previous version, see git history) : 9.73 µs ± 168 ns per loop
+without pad and hstack (this version) : 6.52 µs ± 118 ns per loop</p>
+<ul class="simple">
+<li><p>Getting the array shape and manipulating them seems to add ±0.5 µs difference</p></li>
+<li><p>As an added bonus, this works for n-dimensions as long as last dimension</p></li>
+</ul>
+<p>is preserved</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._calculus._two_point_difference">
+<code class="sig-prename descclassname">elastica._calculus.</code><code class="sig-name descname">_two_point_difference</code><span class="sig-paren">(</span><em class="sig-param">array_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_calculus.html#_two_point_difference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._calculus._two_point_difference" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array_collection</strong> – </p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not using numpy.pad, numpy.diff, numpy.hstack for performance reasons
+with pad : 23.3 µs ± 1.65 µs per loop
+without pad (previous version, see git history) : 8.3 µs ± 195 ns per loop
+without pad, hstack (this version) : 5.73 µs ± 216 ns per loop</p>
+<ul class="simple">
+<li><p>Getting the array shape and ndim seems to add ±0.5 µs difference</p></li>
+<li><p>Diff also seems to add only ±3.0 µs</p></li>
+<li><p>As an added bonus, this works for n-dimensions as long as last dimension</p></li>
+</ul>
+<p>is preserved</p>
+</div>
+</dd></dl>
+
 <dl class="function">
 <dt id="elastica._calculus.difference_kernel">
 <code class="sig-prename descclassname">elastica._calculus.</code><code class="sig-name descname">difference_kernel</code><span class="sig-paren">(</span><em class="sig-param">array_collection</em><span class="sig-paren">)</span><a class="headerlink" href="#elastica._calculus.difference_kernel" title="Permalink to this definition">¶</a></dt>
@@ -786,6 +1478,31 @@ without pad and hstack (this version) : 6.52 µs ± 118 ns per loop</p>
 </dd></dl>
 
 <span class="target" id="module-elastica._linalg"></span><p>Convenient linear algebra kernels</p>
+<dl class="function">
+<dt id="elastica._linalg._batch_cross">
+<code class="sig-prename descclassname">elastica._linalg.</code><code class="sig-name descname">_batch_cross</code><span class="sig-paren">(</span><em class="sig-param">first_vector_collection</em>, <em class="sig-param">second_vector_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_linalg.html#_batch_cross"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._linalg._batch_cross" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>first_vector_collection</strong> – </p></li>
+<li><p><strong>second_vector_collection</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If we hardcode np.einsum as follows, the timing data is
+%timeit np.einsum(‘ijk,jl,kl-&gt;il’,levi_civita_tensor(3), first_vector_collection, second_vector_collection)
+9.45 µs ± 55.9 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+Using batch_cross, the timing data is
+9.98 µs ± 233 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+For reference, using np.cross as follows:
+%timeit np.cross(first_vector_collection, second_vector_collection, axisa=0, axisb=0).T
+where the transpose is needed because cross switches axes, the microbenchmark is
+42.2 µs ± 3.27 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)</p>
+</div>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="elastica._linalg.levi_civita_tensor">
 <code class="sig-prename descclassname">elastica._linalg.</code><code class="sig-name descname">levi_civita_tensor</code><a class="reference internal" href="_modules/elastica/_linalg.html#levi_civita_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._linalg.levi_civita_tensor" title="Permalink to this definition">¶</a></dt>
@@ -793,7 +1510,215 @@ without pad and hstack (this version) : 6.52 µs ± 118 ns per loop</p>
 </dd></dl>
 
 <span class="target" id="module-elastica._rotations"></span><p>Rotation kernels</p>
+<dl class="attribute">
+<dt id="elastica._rotations._get_diag_map">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_get_diag_map</code><a class="reference internal" href="_modules/elastica/_rotations.html#_get_diag_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._get_diag_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates lexicographic mapping to diagonal in a serialized matrix-type</p>
+<p>For input dimension dim  we calculate mapping to * in Matrix M below</p>
+<blockquote>
+<div><p><a href="#id3"><span class="problematic" id="id4">|* 0 0|</span></a></p>
+</div></blockquote>
+<dl class="simple">
+<dt>M = <a href="#id5"><span class="problematic" id="id6">|0 * 0|</span></a></dt><dd><p><a href="#id7"><span class="problematic" id="id8">|0 0 *|</span></a></p>
+</dd>
+</dl>
+<p>in a dimension agnostic way.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._get_rotation_matrix">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_get_rotation_matrix</code><span class="sig-paren">(</span><em class="sig-param">scale: float</em>, <em class="sig-param">axis_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_get_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._get_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scale</strong> – </p></li>
+<li><p><strong>axis_collection</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p># TODO include microbechmark results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica._rotations._get_skew_map">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_get_skew_map</code><a class="reference internal" href="_modules/elastica/_rotations.html#_get_skew_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._get_skew_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates mapping from src to target skew-symmetric operator</p>
+<p>For input vector V and output Matrix M (represented in lexicographical index),
+we calculate mapping from</p>
+<blockquote>
+<div><p><a href="#id9"><span class="problematic" id="id10">|x|</span></a>        <a href="#id11"><span class="problematic" id="id12">|0 -z y|</span></a></p>
+</div></blockquote>
+<dl class="simple">
+<dt>V = <a href="#id13"><span class="problematic" id="id14">|y|</span></a> to M = <a href="#id15"><span class="problematic" id="id16">|z 0 -x|</span></a></dt><dd><p><a href="#id17"><span class="problematic" id="id18">|z|</span></a>        <a href="#id19"><span class="problematic" id="id20">|-y x 0|</span></a></p>
+</dd>
+</dl>
+<p>in a dimension agnostic way.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._get_skew_symmetric_pair">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_get_skew_symmetric_pair</code><span class="sig-paren">(</span><em class="sig-param">vector_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_get_skew_symmetric_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._get_skew_symmetric_pair" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vector_collection</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._inv_rotate">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_inv_rotate</code><span class="sig-paren">(</span><em class="sig-param">director_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_inv_rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._inv_rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculated rate of change using Rodrigues’ formula</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>director_collection</strong> (<em>The collection of frames/directors at every element</em><em>,</em>) – </p></li>
+<li><p><strong>of shape</strong><strong> (</strong><strong>dim</strong><strong>, </strong><strong>dim</strong><strong>, </strong><strong>n</strong><strong>)</strong> (<em>numpy.ndarray</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>vector_collection</strong> (<em>The collection of axes around which the body rotates</em>)</p></li>
+<li><p><em>numpy.ndarray of shape (dim, n)</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Routine bogged down by 6ms for index checking, gets
+37.4 µs ± 1.04 µs per loop</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._inv_skew_symmetrize">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_inv_skew_symmetrize</code><span class="sig-paren">(</span><em class="sig-param">matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_inv_skew_symmetrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._inv_skew_symmetrize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the vector elements from a skew-symmetric matrix M</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> (<em>np.ndarray of dimension</em><em> (</em><em>dim</em><em>, </em><em>dim</em><em>, </em><em>blocksize</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>vector</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray of dimension (dim, blocksize)</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Harcoded : 2.28 µs ± 63.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+This : 2.91 µs ± 58.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._rotate">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_rotate</code><span class="sig-paren">(</span><em class="sig-param">director_collection</em>, <em class="sig-param">scale: float</em>, <em class="sig-param">axis_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does alibi rotations
+<a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities">https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>director_collection</strong> – </p></li>
+<li><p><strong>scale</strong> – </p></li>
+<li><p><strong>axis_collection</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p># TODO Finish documentation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._skew_symmetrize">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_skew_symmetrize</code><span class="sig-paren">(</span><em class="sig-param">vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_skew_symmetrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._skew_symmetrize" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>numpy.ndarray of shape</em><em> (</em><em>dim</em><em>, </em><em>blocksize</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>output</strong> – [0, -z, y, z, 0, -x, -y , x, 0]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray of shape (dim*dim, blocksize) corresponding to</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Gets close to the hard-coded implementation in time but with slightly
+high memory requirement for iteration.</p>
+<p>For blocksize=128,
+hardcoded : 5.9 µs ± 186 ns per loop
+this : 6.19 µs ± 79.2 ns per loop</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica._rotations._skew_symmetrize_sq">
+<code class="sig-prename descclassname">elastica._rotations.</code><code class="sig-name descname">_skew_symmetrize_sq</code><span class="sig-paren">(</span><em class="sig-param">vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_rotations.html#_skew_symmetrize_sq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._rotations._skew_symmetrize_sq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the square of an orthogonal matrix from vector elements</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>numpy.ndarray of shape</em><em> (</em><em>dim</em><em>, </em><em>blocksize</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>output</strong> – [-(y^2+z^2), xy, xz, yx, -(x^2+z^2), yz, zx, zy, -(x^2+y^2)]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray of shape (dim*dim, blocksize) corresponding to</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Faster than hard-coded implementation in time with slightly high
+memory requirement for einsum calculation.</p>
+<p>For blocksize=128,
+hardcoded : 23.1 µs ± 481 ns per loop
+this version: 14.1 µs ± 96.9 ns per loop</p>
+</div>
+</dd></dl>
+
 <span class="target" id="module-elastica._spline"></span><p>Spline for muscle torques acting on rod</p>
+<dl class="function">
+<dt id="elastica._spline.__bspline_impl__">
+<code class="sig-prename descclassname">elastica._spline.</code><code class="sig-name descname">__bspline_impl__</code><span class="sig-paren">(</span><em class="sig-param">x_pts</em>, <em class="sig-param">t_c</em>, <em class="sig-param">b_head</em>, <em class="sig-param">b_tail</em>, <em class="sig-param">t_k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_spline.html#__bspline_impl__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._spline.__bspline_impl__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="elastica._spline._bspline">
+<code class="sig-prename descclassname">elastica._spline.</code><code class="sig-name descname">_bspline</code><span class="sig-paren">(</span><em class="sig-param">t_coeff</em>, <em class="sig-param">l_centerline=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/_spline.html#_bspline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica._spline._bspline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a bspline object that plots the spline interpolant for
+any vector x. Optionally takes in a centerline length, set to 1.0 by
+default and keep_pts for keeping record of control points</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_coeff</strong> (<em>np.array</em>) – The spline coefficients, denoted by <span class="math notranslate nohighlight">\(beta_i\)</span>. Note that the first
+and the last values are set to zero by default.</p></li>
+<li><p><strong>l_centreline</strong> (<em>float</em>) – The length of the centerline in meters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>spline</strong> – A spline class that can be called as spline(x), where x are the points at
+which the spline needs to be evaluated.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>scipy.interpolate.Bspline class</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-elastica.systems.analytical">
 <span id="systems"></span><h2>Systems<a class="headerlink" href="#module-elastica.systems.analytical" title="Permalink to this headline">¶</a></h2>
@@ -801,7 +1726,8 @@ without pad and hstack (this version) : 6.52 µs ± 118 ns per loop</p>
 <dl class="class">
 <dt id="elastica.systems.analytical.SecondOrderHybridSystem">
 <em class="property">class </em><code class="sig-prename descclassname">elastica.systems.analytical.</code><code class="sig-name descname">SecondOrderHybridSystem</code><span class="sig-paren">(</span><em class="sig-param">init_x=5.0</em>, <em class="sig-param">init_f=3.0</em>, <em class="sig-param">init_v=1.0</em>, <em class="sig-param">init_w=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/systems/analytical.html#SecondOrderHybridSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.systems.analytical.SecondOrderHybridSystem" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="simple">
 <dt>Integrate a simple, non-linear ODE:</dt><dd><p>dx/dt = v
 df/dt = -f * ω (f is short for frame, for lack of better notation)
 dv/dt = -v**2
@@ -813,6 +1739,23 @@ dω/dt = -ω**2</p>
 linear_states are [f]
 _kin_state are [x], taken as a slice
 _dyn_state are [v, ω], taken as a slice</p>
+<dl class="method">
+<dt id="elastica.systems.analytical.SecondOrderHybridSystem.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/systems/analytical.html#SecondOrderHybridSystem.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.systems.analytical.SecondOrderHybridSystem.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.systems.analytical.SecondOrderHybridSystem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">init_x=5.0</em>, <em class="sig-param">init_f=3.0</em>, <em class="sig-param">init_v=1.0</em>, <em class="sig-param">init_w=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/systems/analytical.html#SecondOrderHybridSystem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.systems.analytical.SecondOrderHybridSystem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.systems.analytical.SecondOrderHybridSystem.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#elastica.systems.analytical.SecondOrderHybridSystem.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
