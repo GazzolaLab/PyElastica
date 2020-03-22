@@ -1,5 +1,5 @@
 __doc__ = """
-Rod constitutive model mixins but classes here does not uploaded
+Rod constitutive model mixins classes
 """
 import numpy as np
 
@@ -8,8 +8,19 @@ from elastica.utils import MaxDimension, Tolerance
 
 
 class _LinearConstitutiveModelMixin:
-    __doc__ = """
-    Linear Constitutive model for Cosserat Rods
+    """
+    Linear constitutive model mixin class for Cosserat Rod
+
+    Attributes
+    ----------
+    rest_sigma: ndarray
+        2D array containing data with 'float' type.
+    rest_kappa: ndarray
+        2D array containing data with 'float' type.
+    shear_matrix: ndarray
+        3D array containing data with 'float' type.
+    bend_matrix: ndarray
+       3D array containing data with 'float' type.
     """
 
     # Needs
@@ -18,6 +29,18 @@ class _LinearConstitutiveModelMixin:
     def __init__(
         self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
     ):
+        """
+        Parameters
+        ----------
+        n_elements: int
+        shear_matrix: ndarray
+            3D array containing data with 'float' type.
+        bend_matrix: ndarray
+           3D array containing data with 'float' type.
+        rest_lengths: ndarray
+            1D array containing data with 'float' type.
+
+        """
         # set rest strains and curvature to be  zero at start
         # if found in kwargs modify (say for curved rod)
         self.rest_sigma = np.zeros((MaxDimension.value(), n_elements))
@@ -73,9 +96,39 @@ class _LinearConstitutiveModelMixin:
 
 
 class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin):
+    """
+    Linear constitutive model with strain rate mixin class for Cosserat Rod
+
+    Attributes
+    ----------
+    rest_sigma: ndarray
+        2D array containing data with 'float' type.
+    rest_kappa: ndarray
+        2D array containing data with 'float' type.
+    shear_matrix: ndarray
+        3D array containing data with 'float' type.
+    bend_matrix: ndarray
+       3D array containing data with 'float' type.
+    shear_rate_matrix: ndarray
+        2D array containing data with 'float' type.
+    bend_rate_matrix: ndarray
+        2D array containing data with 'float' type.
+    """
+
     def __init__(
         self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
     ):
+        """
+        Parameters
+        ----------
+        n_elements: int
+        shear_matrix: ndarray
+            3D array containing data with 'float' type.
+        bend_matrix: ndarray
+           3D array containing data with 'float' type.
+        rest_lengths: ndarray
+            1D array containing data with 'float' type.
+        """
         _LinearConstitutiveModelMixin.__init__(
             self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
         )
