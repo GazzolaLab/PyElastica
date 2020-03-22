@@ -1,0 +1,702 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica.rod.cosserat_rod &mdash; Elastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Elastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../elastica++.html">Elastica++</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Elastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../rod.html">elastica.rod</a> &raquo;</li>
+        
+      <li>elastica.rod.cosserat_rod</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for elastica.rod.cosserat_rod</h1><div class="highlight"><pre>
+<span></span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot; Rod base classes and implementation details that need to be hidden from the user&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">from</span> <span class="nn">elastica._linalg</span> <span class="kn">import</span> <span class="n">_batch_matvec</span><span class="p">,</span> <span class="n">_batch_cross</span>
+<span class="kn">from</span> <span class="nn">elastica._calculus</span> <span class="kn">import</span> <span class="n">quadrature_kernel</span><span class="p">,</span> <span class="n">difference_kernel</span>
+<span class="kn">from</span> <span class="nn">elastica._rotations</span> <span class="kn">import</span> <span class="n">_inv_rotate</span>
+<span class="kn">from</span> <span class="nn">elastica.utils</span> <span class="kn">import</span> <span class="n">MaxDimension</span><span class="p">,</span> <span class="n">Tolerance</span>
+
+<span class="kn">from</span> <span class="nn">elastica.rod</span> <span class="kn">import</span> <span class="n">RodBase</span>
+<span class="kn">from</span> <span class="nn">elastica.rod.constitutive_model</span> <span class="kn">import</span> <span class="n">_LinearConstitutiveModelMixin</span>
+<span class="kn">from</span> <span class="nn">elastica.rod.data_structures</span> <span class="kn">import</span> <span class="n">_RodSymplecticStepperMixin</span>
+
+<span class="c1"># TODO Add documentation for all functions</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_get_z_vector</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_CosseratRodBase</span><span class="p">(</span><span class="n">RodBase</span><span class="p">):</span>
+    <span class="c1"># I&#39;m assuming number of elements can be deduced from the size of the inputs</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_elements</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">,</span>
+        <span class="n">directors</span><span class="p">,</span>
+        <span class="n">rest_lengths</span><span class="p">,</span>
+        <span class="n">density</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">,</span>
+        <span class="n">mass_second_moment_of_inertia</span><span class="p">,</span>
+        <span class="n">nu</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="n">velocities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">omegas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span><span class="p">))</span>  <span class="c1"># + 1e-16</span>
+        <span class="n">accelerations</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">velocities</span>
+        <span class="n">angular_accelerations</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">omegas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_elems</span> <span class="o">=</span> <span class="n">n_elements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vector_states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">velocities</span><span class="p">,</span> <span class="n">omegas</span><span class="p">,</span> <span class="n">accelerations</span><span class="p">,</span> <span class="n">angular_accelerations</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matrix_states</span> <span class="o">=</span> <span class="n">directors</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># initial set to zero; if coming through kwargs then modify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span> <span class="o">=</span> <span class="n">rest_lengths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_second_moment_of_inertia</span> <span class="o">=</span> <span class="n">mass_second_moment_of_inertia</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inv_mass_second_moment_of_inertia</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_elements</span><span class="p">):</span>
+            <span class="c1"># Check rank of mass moment of inertia matrix to see if it is invertible</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">mass_second_moment_of_inertia</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+                <span class="o">==</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_mass_second_moment_of_inertia</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span>
+                <span class="n">mass_second_moment_of_inertia</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># calculated in `_compute_internal_forces_and_torques`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal_forces</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">accelerations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal_torques</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">angular_accelerations</span>
+
+        <span class="c1"># will apply external force and torques externally</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_forces</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">accelerations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_torques</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">angular_accelerations</span>
+
+        <span class="c1"># calculated in `compute_geometry_from_state`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangents</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+
+        <span class="c1"># calculated in `compute_all_dilatatation`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation_rate</span> <span class="o">=</span> <span class="bp">NotImplemented</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">straight_rod</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">n_elements</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">,</span>
+        <span class="n">normal</span><span class="p">,</span>
+        <span class="n">base_length</span><span class="p">,</span>
+        <span class="n">base_radius</span><span class="p">,</span>
+        <span class="n">density</span><span class="p">,</span>
+        <span class="n">nu</span><span class="p">,</span>
+        <span class="n">mass_second_moment_of_inertia</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="c1"># sanity checks here</span>
+        <span class="k">assert</span> <span class="n">n_elements</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">base_length</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">base_radius</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">density</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">nu</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">normal</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">direction</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()):</span>
+            <span class="k">assert</span> <span class="n">mass_second_moment_of_inertia</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">Tolerance</span><span class="o">.</span><span class="n">atol</span><span class="p">()</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">base_length</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()):</span>
+            <span class="n">position</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># compute rest lengths and tangents</span>
+        <span class="n">position_diff</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">position</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">rest_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij,ij-&gt;j&quot;</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">))</span>
+        <span class="n">tangents</span> <span class="o">=</span> <span class="n">position_diff</span> <span class="o">/</span> <span class="n">rest_lengths</span>
+        <span class="n">normal</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">normal</span><span class="p">))</span>
+
+        <span class="c1"># set directors</span>
+        <span class="c1"># check this order once</span>
+        <span class="n">directors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">n_elements</span><span class="p">))</span>
+        <span class="n">normal_collection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">normal</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">directors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">normal_collection</span>
+        <span class="n">directors</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">_batch_cross</span><span class="p">(</span><span class="n">tangents</span><span class="p">,</span> <span class="n">normal_collection</span><span class="p">)</span>
+        <span class="n">directors</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">tangents</span>
+
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">base_radius</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">rest_lengths</span>
+
+        <span class="n">inertia_collection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">mass_second_moment_of_inertia</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span>
+        <span class="p">)</span>
+
+        <span class="c1"># create rod</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">n_elements</span><span class="p">,</span>
+            <span class="n">position</span><span class="p">,</span>
+            <span class="n">directors</span><span class="p">,</span>
+            <span class="n">rest_lengths</span><span class="p">,</span>
+            <span class="n">density</span><span class="p">,</span>
+            <span class="n">volume</span><span class="p">,</span>
+            <span class="n">inertia_collection</span><span class="p">,</span>
+            <span class="n">nu</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_geometry_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Compute eq (3.3) from 2018 RSOS paper</span>
+
+        <span class="c1"># Note : we can use the two-point difference kernel, but it needs unnecessary padding</span>
+        <span class="c1"># and hence will always be slower</span>
+        <span class="n">position_diff</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij,ij-&gt;j&quot;</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">,</span> <span class="n">position_diff</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tangents</span> <span class="o">=</span> <span class="n">position_diff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+        <span class="c1"># resize based on volume conservation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_all_dilatations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute element and Voronoi region dilatations</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_geometry_from_state</span><span class="p">()</span>
+        <span class="c1"># Caveat : Needs already set rest_lengths and rest voronoi domain lengths</span>
+        <span class="c1"># Put in initialization</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span>
+
+        <span class="c1"># Cmopute eq (3.4) from 2018 RSOS paper</span>
+
+        <span class="c1"># Note : we can use trapezoidal kernel, but it has padding and will be slower</span>
+        <span class="n">voronoi_lengths</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Cmopute eq (3.45 from 2018 RSOS paper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">=</span> <span class="n">voronoi_lengths</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span>
+
+    <span class="k">def</span> <span class="nf">_compute_dilatation_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO Use the vector formula rather than separating it out</span>
+        <span class="c1"># self.lengths = l_i = |r^{i+1} - r^{i}|</span>
+        <span class="n">r_dot_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+            <span class="s2">&quot;ij,ij-&gt;j&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span>
+        <span class="p">)</span>
+        <span class="n">r_plus_one_dot_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+            <span class="s2">&quot;ij, ij-&gt;j&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">r_dot_v_plus_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+            <span class="s2">&quot;ij, ij-&gt;j&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dilatation_rate</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">r_dot_v</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">r_dot_v</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">r_dot_v_plus_one</span> <span class="o">-</span> <span class="n">r_plus_one_dot_v</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_shear_stretch_strains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Quick trick : Instead of evaliation Q(et-d^3), use property that Q*d3 = (0,0,1), a constant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_all_dilatations</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span> <span class="o">*</span> <span class="n">_batch_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">director_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangents</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">_get_z_vector</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_bending_twist_strains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Note: dilatations are computed previously inside ` _compute_all_dilatations `</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kappa</span> <span class="o">=</span> <span class="n">_inv_rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">director_collection</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span>
+
+    <span class="k">def</span> <span class="nf">_compute_damping_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Internal damping foces.</span>
+        <span class="c1"># damping_forces = self.nu * self.velocity_collection</span>
+        <span class="c1"># damping_forces[..., 0] *= 0.5  # first and last nodes have half mass</span>
+        <span class="c1"># damping_forces[..., -1] *= 0.5  # first and last nodes have half mass</span>
+        <span class="c1">#</span>
+        <span class="c1"># return damping_forces</span>
+
+        <span class="n">elemental_velocities</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="n">elemental_damping_forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">*</span> <span class="n">elemental_velocities</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+        <span class="n">nodal_damping_forces</span> <span class="o">=</span> <span class="n">quadrature_kernel</span><span class="p">(</span><span class="n">elemental_damping_forces</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nodal_damping_forces</span>
+
+    <span class="k">def</span> <span class="nf">_compute_internal_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Compute n_l and cache it using internal_stress</span>
+        <span class="c1"># Be careful about usage though</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_shear_stretch_stresses_from_model</span><span class="p">()</span>
+        <span class="c1"># Signifies Q^T n_L / e</span>
+        <span class="c1"># Not using batch matvec as I don&#39;t want to take directors.T here</span>
+        <span class="n">cosserat_internal_stress</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;jik, jk-&gt;ik&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">director_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal_stress</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span>  <span class="c1"># computed in comp_dilatation &lt;- compute_strain &lt;- compute_stress</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">difference_kernel</span><span class="p">(</span><span class="n">cosserat_internal_stress</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_damping_forces</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_damping_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Internal damping torques</span>
+        <span class="n">damping_torques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega_collection</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+        <span class="k">return</span> <span class="n">damping_torques</span>
+
+    <span class="k">def</span> <span class="nf">_compute_internal_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Compute \tau_l and cache it using internal_couple</span>
+        <span class="c1"># Be careful about usage though</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_bending_twist_stresses_from_model</span><span class="p">()</span>
+        <span class="c1"># Compute dilatation rate when needed, dilatation itself is done before</span>
+        <span class="c1"># in internal_stresses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dilatation_rate</span><span class="p">()</span>
+
+        <span class="n">voronoi_dilatation_inv_cube_cached</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">voronoi_dilatation</span> <span class="o">**</span> <span class="mi">3</span>
+        <span class="c1"># Delta(\tau_L / \Epsilon^3)</span>
+        <span class="n">bend_twist_couple_2D</span> <span class="o">=</span> <span class="n">difference_kernel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internal_couple</span> <span class="o">*</span> <span class="n">voronoi_dilatation_inv_cube_cached</span>
+        <span class="p">)</span>
+        <span class="c1"># \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epsilon^3 ]</span>
+        <span class="n">bend_twist_couple_3D</span> <span class="o">=</span> <span class="n">quadrature_kernel</span><span class="p">(</span>
+            <span class="n">_batch_cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kappa</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal_couple</span><span class="p">)</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_voronoi_lengths</span>
+            <span class="o">*</span> <span class="n">voronoi_dilatation_inv_cube_cached</span>
+        <span class="p">)</span>
+        <span class="c1"># (Qt x n_L) * \hat{l}</span>
+        <span class="n">shear_stretch_couple</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_batch_cross</span><span class="p">(</span>
+                <span class="n">_batch_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">director_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangents</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">internal_stress</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rest_lengths</span>
+        <span class="p">)</span>
+
+        <span class="c1"># I apply common sub expression elimination here, as J w / e is used in both the lagrangian and dilatation</span>
+        <span class="c1"># terms</span>
+        <span class="c1"># TODO : the _batch_matvec kernel needs to depend on the representation of J, and should be coded as such</span>
+        <span class="n">J_omega_upon_e</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_batch_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_second_moment_of_inertia</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span>
+        <span class="p">)</span>
+
+        <span class="c1"># (J \omega_L / e) x \omega_L</span>
+        <span class="c1"># Warning : Do not do micro-optimization here : you can ignore dividing by dilatation as we later multiply by it</span>
+        <span class="c1"># but this causes confusion and violates SRP</span>
+        <span class="n">lagrangian_transport</span> <span class="o">=</span> <span class="n">_batch_cross</span><span class="p">(</span><span class="n">J_omega_upon_e</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">)</span>
+
+        <span class="c1"># Note : in the computation of dilatation_rate, there is an optimization opportunity as dilatation rate has</span>
+        <span class="c1"># a dilatation-like term in the numerator, which we cancel here</span>
+        <span class="c1"># (J \omega_L / e^2) . (de/dt)</span>
+        <span class="n">unsteady_dilatation</span> <span class="o">=</span> <span class="n">J_omega_upon_e</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation_rate</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">bend_twist_couple_2D</span>
+            <span class="o">+</span> <span class="n">bend_twist_couple_3D</span>
+            <span class="o">+</span> <span class="n">shear_stretch_couple</span>
+            <span class="o">+</span> <span class="n">lagrangian_transport</span>
+            <span class="o">+</span> <span class="n">unsteady_dilatation</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_damping_torques</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_internal_forces_and_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because</span>
+<span class="sd">        they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques</span>
+<span class="sd">        one time and use them. Previously, we were computing internal forces and torques multiple times in interaction.</span>
+<span class="sd">        Saving internal forces and torques in a variable take some memory, but we will gain speed up.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal_forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_forces</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal_torques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_internal_torques</span><span class="p">()</span>
+
+    <span class="c1"># Interface to time-stepper mixins (Symplectic, Explicit), which calls this method</span>
+    <span class="k">def</span> <span class="nf">update_accelerations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; TODO Do we need to make the collection members abstract?</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">copyto</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_collection</span><span class="p">,</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_forces</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_forces</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">copyto</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha_collection</span><span class="p">,</span>
+            <span class="n">_batch_matvec</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inv_mass_second_moment_of_inertia</span><span class="p">,</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_torques</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_torques</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reset forces and torques</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_forces</span> <span class="o">*=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_torques</span> <span class="o">*=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="nf">compute_translational_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="mf">0.5</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mass</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+                    <span class="s2">&quot;ij, ij-&gt; j&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span>
+                <span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_rotational_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">J_omega_upon_e</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_batch_matvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_second_moment_of_inertia</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilatation</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ik,ik-&gt;k&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega_collection</span><span class="p">,</span> <span class="n">J_omega_upon_e</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">compute_velocity_center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mass_times_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ij-&gt;ij&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity_collection</span><span class="p">)</span>
+        <span class="n">sum_mass_times_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij-&gt;i&quot;</span><span class="p">,</span> <span class="n">mass_times_velocity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sum_mass_times_velocity</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">compute_position_center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mass_times_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ij-&gt;ij&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_collection</span><span class="p">)</span>
+        <span class="n">sum_mass_times_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij-&gt;i&quot;</span><span class="p">,</span> <span class="n">mass_times_position</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sum_mass_times_position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+
+<span class="c1"># TODO Fix this classmethod weirdness to a more scalable and maintainable solution</span>
+<span class="c1"># TODO Fix the SymplecticStepperMixin interface class as it does not belong here</span>
+<div class="viewcode-block" id="CosseratRod"><a class="viewcode-back" href="../../../documentation.html#elastica.rod.cosserat_rod.CosseratRod">[docs]</a><span class="k">class</span> <span class="nc">CosseratRod</span><span class="p">(</span>
+    <span class="n">_LinearConstitutiveModelMixin</span><span class="p">,</span> <span class="n">_CosseratRodBase</span><span class="p">,</span> <span class="n">_RodSymplecticStepperMixin</span>
+<span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">_LinearConstitutiveModelMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n_elements</span><span class="p">,</span>
+            <span class="n">shear_matrix</span><span class="p">,</span>
+            <span class="n">bend_matrix</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">rest_lengths</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">_CosseratRodBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n_elements</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">_vector_states</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="n">n_elements</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">_matrix_states</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">rest_lengths</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">density</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">mass_second_moment_of_inertia</span><span class="p">,</span>
+            <span class="n">rod</span><span class="o">.</span><span class="n">nu</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">_RodSymplecticStepperMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">rod</span>
+
+        <span class="c1"># This below two lines are for initializing sigma and kappa</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_shear_stretch_strains</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_bending_twist_strains</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CosseratRod.straight_rod"><a class="viewcode-back" href="../../../api_doc/elastica.rod.html#elastica.rod.cosserat_rod.CosseratRod.straight_rod">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">straight_rod</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">n_elements</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">,</span>
+        <span class="n">normal</span><span class="p">,</span>
+        <span class="n">base_length</span><span class="p">,</span>
+        <span class="n">base_radius</span><span class="p">,</span>
+        <span class="n">density</span><span class="p">,</span>
+        <span class="n">nu</span><span class="p">,</span>
+        <span class="n">youngs_modulus</span><span class="p">,</span>
+        <span class="n">poisson_ratio</span><span class="p">,</span>
+        <span class="n">alpha_c</span><span class="o">=</span><span class="mf">4.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="c1"># FIXME: Make sure G=E/(poisson_ratio+1.0) in wikipedia it is different</span>
+        <span class="c1"># Shear Modulus</span>
+        <span class="n">shear_modulus</span> <span class="o">=</span> <span class="n">youngs_modulus</span> <span class="o">/</span> <span class="p">(</span><span class="n">poisson_ratio</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="c1"># Second moment of inertia</span>
+        <span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">base_radius</span> <span class="o">*</span> <span class="n">base_radius</span>
+        <span class="n">I0_1</span> <span class="o">=</span> <span class="n">A0</span> <span class="o">*</span> <span class="n">A0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">I0_2</span> <span class="o">=</span> <span class="n">I0_1</span>
+        <span class="n">I0_3</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">I0_2</span>
+        <span class="n">I0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">I0_1</span><span class="p">,</span> <span class="n">I0_2</span><span class="p">,</span> <span class="n">I0_3</span><span class="p">])</span>
+
+        <span class="c1"># Mass second moment of inertia for disk cross-section</span>
+        <span class="n">mass_second_moment_of_inertia</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span>
+            <span class="n">mass_second_moment_of_inertia</span><span class="p">,</span> <span class="n">I0</span> <span class="o">*</span> <span class="n">density</span> <span class="o">*</span> <span class="n">base_length</span> <span class="o">/</span> <span class="n">n_elements</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Shear/Stretch matrix</span>
+        <span class="n">shear_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span>
+            <span class="n">shear_matrix</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="n">alpha_c</span> <span class="o">*</span> <span class="n">shear_modulus</span> <span class="o">*</span> <span class="n">A0</span><span class="p">,</span>
+                <span class="n">alpha_c</span> <span class="o">*</span> <span class="n">shear_modulus</span> <span class="o">*</span> <span class="n">A0</span><span class="p">,</span>
+                <span class="n">youngs_modulus</span> <span class="o">*</span> <span class="n">A0</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Bend/Twist matrix</span>
+        <span class="n">bend_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="n">MaxDimension</span><span class="o">.</span><span class="n">value</span><span class="p">()),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span>
+            <span class="n">bend_matrix</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">youngs_modulus</span> <span class="o">*</span> <span class="n">I0_1</span><span class="p">,</span> <span class="n">youngs_modulus</span> <span class="o">*</span> <span class="n">I0_2</span><span class="p">,</span> <span class="n">shear_modulus</span> <span class="o">*</span> <span class="n">I0_3</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">rod</span> <span class="o">=</span> <span class="n">_CosseratRodBase</span><span class="o">.</span><span class="n">straight_rod</span><span class="p">(</span>
+            <span class="n">n_elements</span><span class="p">,</span>
+            <span class="n">start</span><span class="p">,</span>
+            <span class="n">direction</span><span class="p">,</span>
+            <span class="n">normal</span><span class="p">,</span>
+            <span class="n">base_length</span><span class="p">,</span>
+            <span class="n">base_radius</span><span class="p">,</span>
+            <span class="n">density</span><span class="p">,</span>
+            <span class="n">nu</span><span class="p">,</span>
+            <span class="n">mass_second_moment_of_inertia</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">n_elements</span><span class="p">,</span> <span class="n">shear_matrix</span><span class="p">,</span> <span class="n">bend_matrix</span><span class="p">,</span> <span class="n">rod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica.wrappers package &mdash; Elastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Elastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../elastica++.html">Elastica++</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Elastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>elastica.wrappers package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api_doc/elastica.wrappers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="elastica-wrappers-package">
+<h1>elastica.wrappers package<a class="headerlink" href="#elastica-wrappers-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-elastica.wrappers.base_system">
+<span id="elastica-wrappers-base-system-module"></span><h2>elastica.wrappers.base_system module<a class="headerlink" href="#module-elastica.wrappers.base_system" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="base-system">
+<h3>base_system<a class="headerlink" href="#base-system" title="Permalink to this headline">¶</a></h3>
+<p>basic coordinating multiple, smaller systems that have an independently integrable
+interface (ie. works with symplectic or explicit routines <cite>timestepper.py</cite>.)</p>
+<dl class="class">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.base_system.</code><code class="sig-name descname">BaseSystemCollection</code><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableSequence</span></code></p>
+<p>Base System</p>
+<p>Technical note : We can directly subclass a list for the
+most part, but this is a bad idea, as List is non abstract
+<a class="reference external" href="https://stackoverflow.com/q/3945940">https://stackoverflow.com/q/3945940</a></p>
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.callBack">
+<code class="sig-name descname">callBack</code><span class="sig-paren">(</span><em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.callBack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.callBack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.extend_allowed_types">
+<code class="sig-name descname">extend_allowed_types</code><span class="sig-paren">(</span><em class="sig-param">additional_types</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.extend_allowed_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.extend_allowed_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.finalize">
+<code class="sig-name descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalizes all feature class methods</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.insert">
+<code class="sig-name descname">insert</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">system</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.insert(index, value) – insert value before index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.override_allowed_types">
+<code class="sig-name descname">override_allowed_types</code><span class="sig-paren">(</span><em class="sig-param">allowed_types</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.override_allowed_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.override_allowed_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.synchronize">
+<code class="sig-name descname">synchronize</code><span class="sig-paren">(</span><em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.synchronize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.synchronize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.wrappers.base_system.BaseSystemCollection.synchronizeBC">
+<code class="sig-name descname">synchronizeBC</code><span class="sig-paren">(</span><em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/base_system.html#BaseSystemCollection.synchronizeBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.base_system.BaseSystemCollection.synchronizeBC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-elastica.wrappers.callbacks">
+<span id="elastica-wrappers-callbacks-module"></span><h2>elastica.wrappers.callbacks module<a class="headerlink" href="#module-elastica.wrappers.callbacks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="callback">
+<h3>callback<a class="headerlink" href="#callback" title="Permalink to this headline">¶</a></h3>
+<p>Provides the CallBack interface to collect data in time (see <cite>callback_functions.py</cite>).</p>
+<dl class="class">
+<dt id="elastica.wrappers.callbacks.CallBacks">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.callbacks.</code><code class="sig-name descname">CallBacks</code><a class="reference internal" href="../_modules/elastica/wrappers/callbacks.html#CallBacks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.callbacks.CallBacks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.wrappers.callbacks.CallBacks.collect_diagnostics">
+<code class="sig-name descname">collect_diagnostics</code><span class="sig-paren">(</span><em class="sig-param">system</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/callbacks.html#CallBacks.collect_diagnostics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.callbacks.CallBacks.collect_diagnostics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-elastica.wrappers.connections">
+<span id="elastica-wrappers-connections-module"></span><h2>elastica.wrappers.connections module<a class="headerlink" href="#module-elastica.wrappers.connections" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="connect">
+<h3>connect<a class="headerlink" href="#connect" title="Permalink to this headline">¶</a></h3>
+<p>Provides the Connections interface to connect entities (rods,
+rigid bodies) using Joints (see <cite>joints.py</cite>).</p>
+<dl class="class">
+<dt id="elastica.wrappers.connections.Connections">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.connections.</code><code class="sig-name descname">Connections</code><a class="reference internal" href="../_modules/elastica/wrappers/connections.html#Connections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.connections.Connections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.wrappers.connections.Connections.connect">
+<code class="sig-name descname">connect</code><span class="sig-paren">(</span><em class="sig-param">first_rod</em>, <em class="sig-param">second_rod</em>, <em class="sig-param">first_connect_idx=0</em>, <em class="sig-param">second_connect_idx=-1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/connections.html#Connections.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.connections.Connections.connect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-elastica.wrappers.constraints">
+<span id="elastica-wrappers-constraints-module"></span><h2>elastica.wrappers.constraints module<a class="headerlink" href="#module-elastica.wrappers.constraints" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="constraints">
+<h3>constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h3>
+<p>Provides the Constraints interface to enforce boundary conditions (see <cite>boundary_conditions.py</cite>).</p>
+<dl class="class">
+<dt id="elastica.wrappers.constraints.Constraints">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.constraints.</code><code class="sig-name descname">Constraints</code><a class="reference internal" href="../_modules/elastica/wrappers/constraints.html#Constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.constraints.Constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.wrappers.constraints.Constraints.constrain">
+<code class="sig-name descname">constrain</code><span class="sig-paren">(</span><em class="sig-param">system</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/constraints.html#Constraints.constrain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.constraints.Constraints.constrain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-elastica.wrappers.forcing">
+<span id="elastica-wrappers-forcing-module"></span><h2>elastica.wrappers.forcing module<a class="headerlink" href="#module-elastica.wrappers.forcing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="forcing">
+<h3>forcing<a class="headerlink" href="#forcing" title="Permalink to this headline">¶</a></h3>
+<p>Add forces and torques to rod (external point force, b-spline torques etc).</p>
+<dl class="class">
+<dt id="elastica.wrappers.forcing.Forcing">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.wrappers.forcing.</code><code class="sig-name descname">Forcing</code><a class="reference internal" href="../_modules/elastica/wrappers/forcing.html#Forcing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.forcing.Forcing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.wrappers.forcing.Forcing.add_forcing_to">
+<code class="sig-name descname">add_forcing_to</code><span class="sig-paren">(</span><em class="sig-param">system</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/elastica/wrappers/forcing.html#Forcing.add_forcing_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.wrappers.forcing.Forcing.add_forcing_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-elastica.wrappers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-elastica.wrappers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="wrappers">
+<h3>wrappers<a class="headerlink" href="#wrappers" title="Permalink to this headline">¶</a></h3>
+<p>Wrappers are simple objects that you can subclass to provide extended
+functionality to the simulation, such as adding an environment, joints
+, controllers etc.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

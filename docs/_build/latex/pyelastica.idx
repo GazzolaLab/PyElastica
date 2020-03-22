@@ -1,0 +1,66 @@
+\indexentry{elastica.rod.cosserat\_rod (module)@\spxentry{elastica.rod.cosserat\_rod}\spxextra{module}|hyperpage}{1}
+\indexentry{CosseratRod (class in elastica.rod.cosserat\_rod)@\spxentry{CosseratRod}\spxextra{class in elastica.rod.cosserat\_rod}|hyperpage}{1}
+\indexentry{elastica.rod.constitutive\_model (module)@\spxentry{elastica.rod.constitutive\_model}\spxextra{module}|hyperpage}{1}
+\indexentry{elastica.rod.data\_structures (module)@\spxentry{elastica.rod.data\_structures}\spxextra{module}|hyperpage}{1}
+\indexentry{elastica.boundary\_conditions (module)@\spxentry{elastica.boundary\_conditions}\spxextra{module}|hyperpage}{2}
+\indexentry{FreeRod (class in elastica.boundary\_conditions)@\spxentry{FreeRod}\spxextra{class in elastica.boundary\_conditions}|hyperpage}{2}
+\indexentry{HelicalBucklingBC (class in elastica.boundary\_conditions)@\spxentry{HelicalBucklingBC}\spxextra{class in elastica.boundary\_conditions}|hyperpage}{2}
+\indexentry{OneEndFixedRod (class in elastica.boundary\_conditions)@\spxentry{OneEndFixedRod}\spxextra{class in elastica.boundary\_conditions}|hyperpage}{2}
+\indexentry{elastica.external\_forces (module)@\spxentry{elastica.external\_forces}\spxextra{module}|hyperpage}{2}
+\indexentry{EndpointForces (class in elastica.external\_forces)@\spxentry{EndpointForces}\spxextra{class in elastica.external\_forces}|hyperpage}{2}
+\indexentry{apply\_forces() (elastica.external\_forces.EndpointForces method)@\spxentry{apply\_forces()}\spxextra{elastica.external\_forces.EndpointForces method}|hyperpage}{2}
+\indexentry{GravityForces (class in elastica.external\_forces)@\spxentry{GravityForces}\spxextra{class in elastica.external\_forces}|hyperpage}{2}
+\indexentry{apply\_forces() (elastica.external\_forces.GravityForces method)@\spxentry{apply\_forces()}\spxextra{elastica.external\_forces.GravityForces method}|hyperpage}{2}
+\indexentry{MuscleTorques (class in elastica.external\_forces)@\spxentry{MuscleTorques}\spxextra{class in elastica.external\_forces}|hyperpage}{2}
+\indexentry{apply\_torques() (elastica.external\_forces.MuscleTorques method)@\spxentry{apply\_torques()}\spxextra{elastica.external\_forces.MuscleTorques method}|hyperpage}{2}
+\indexentry{NoForces (class in elastica.external\_forces)@\spxentry{NoForces}\spxextra{class in elastica.external\_forces}|hyperpage}{3}
+\indexentry{apply\_forces() (elastica.external\_forces.NoForces method)@\spxentry{apply\_forces()}\spxextra{elastica.external\_forces.NoForces method}|hyperpage}{3}
+\indexentry{apply\_torques() (elastica.external\_forces.NoForces method)@\spxentry{apply\_torques()}\spxextra{elastica.external\_forces.NoForces method}|hyperpage}{3}
+\indexentry{UniformForces (class in elastica.external\_forces)@\spxentry{UniformForces}\spxextra{class in elastica.external\_forces}|hyperpage}{3}
+\indexentry{apply\_forces() (elastica.external\_forces.UniformForces method)@\spxentry{apply\_forces()}\spxextra{elastica.external\_forces.UniformForces method}|hyperpage}{3}
+\indexentry{UniformTorques (class in elastica.external\_forces)@\spxentry{UniformTorques}\spxextra{class in elastica.external\_forces}|hyperpage}{3}
+\indexentry{apply\_torques() (elastica.external\_forces.UniformTorques method)@\spxentry{apply\_torques()}\spxextra{elastica.external\_forces.UniformTorques method}|hyperpage}{3}
+\indexentry{elastica.interaction (module)@\spxentry{elastica.interaction}\spxextra{module}|hyperpage}{4}
+\indexentry{AnistropicFrictionalPlane (class in elastica.interaction)@\spxentry{AnistropicFrictionalPlane}\spxextra{class in elastica.interaction}|hyperpage}{4}
+\indexentry{apply\_forces() (elastica.interaction.AnistropicFrictionalPlane method)@\spxentry{apply\_forces()}\spxextra{elastica.interaction.AnistropicFrictionalPlane method}|hyperpage}{4}
+\indexentry{SlenderBodyTheory (class in elastica.interaction)@\spxentry{SlenderBodyTheory}\spxextra{class in elastica.interaction}|hyperpage}{4}
+\indexentry{apply\_forces() (elastica.interaction.SlenderBodyTheory method)@\spxentry{apply\_forces()}\spxextra{elastica.interaction.SlenderBodyTheory method}|hyperpage}{4}
+\indexentry{find\_slipping\_elements() (in module elastica.interaction)@\spxentry{find\_slipping\_elements()}\spxextra{in module elastica.interaction}|hyperpage}{4}
+\indexentry{node\_to\_element\_velocity (in module elastica.interaction)@\spxentry{node\_to\_element\_velocity}\spxextra{in module elastica.interaction}|hyperpage}{4}
+\indexentry{slender\_body\_forces (in module elastica.interaction)@\spxentry{slender\_body\_forces}\spxextra{in module elastica.interaction}|hyperpage}{5}
+\indexentry{sum\_over\_elements (in module elastica.interaction)@\spxentry{sum\_over\_elements}\spxextra{in module elastica.interaction}|hyperpage}{5}
+\indexentry{elastica.joint (module)@\spxentry{elastica.joint}\spxextra{module}|hyperpage}{6}
+\indexentry{HingeJoint (class in elastica.joint)@\spxentry{HingeJoint}\spxextra{class in elastica.joint}|hyperpage}{6}
+\indexentry{elastica.callback\_functions (module)@\spxentry{elastica.callback\_functions}\spxextra{module}|hyperpage}{6}
+\indexentry{CallBackBaseClass (class in elastica.callback\_functions)@\spxentry{CallBackBaseClass}\spxextra{class in elastica.callback\_functions}|hyperpage}{6}
+\indexentry{make\_callback() (elastica.callback\_functions.CallBackBaseClass method)@\spxentry{make\_callback()}\spxextra{elastica.callback\_functions.CallBackBaseClass method}|hyperpage}{6}
+\indexentry{ContinuumSnakeCallBack (class in elastica.callback\_functions)@\spxentry{ContinuumSnakeCallBack}\spxextra{class in elastica.callback\_functions}|hyperpage}{6}
+\indexentry{make\_callback() (elastica.callback\_functions.ContinuumSnakeCallBack method)@\spxentry{make\_callback()}\spxextra{elastica.callback\_functions.ContinuumSnakeCallBack method}|hyperpage}{6}
+\indexentry{MyCallBack (class in elastica.callback\_functions)@\spxentry{MyCallBack}\spxextra{class in elastica.callback\_functions}|hyperpage}{6}
+\indexentry{make\_callback() (elastica.callback\_functions.MyCallBack method)@\spxentry{make\_callback()}\spxextra{elastica.callback\_functions.MyCallBack method}|hyperpage}{6}
+\indexentry{elastica.timestepper.symplectic\_steppers (module)@\spxentry{elastica.timestepper.symplectic\_steppers}\spxextra{module}|hyperpage}{6}
+\indexentry{PEFRL (class in elastica.timestepper.symplectic\_steppers)@\spxentry{PEFRL}\spxextra{class in elastica.timestepper.symplectic\_steppers}|hyperpage}{6}
+\indexentry{PositionVerlet (class in elastica.timestepper.symplectic\_steppers)@\spxentry{PositionVerlet}\spxextra{class in elastica.timestepper.symplectic\_steppers}|hyperpage}{6}
+\indexentry{SymplecticLinearExponentialIntegrator (class in elastica.timestepper.symplectic\_steppers)@\spxentry{SymplecticLinearExponentialIntegrator}\spxextra{class in elastica.timestepper.symplectic\_steppers}|hyperpage}{6}
+\indexentry{SymplecticStepper (class in elastica.timestepper.symplectic\_steppers)@\spxentry{SymplecticStepper}\spxextra{class in elastica.timestepper.symplectic\_steppers}|hyperpage}{6}
+\indexentry{elastica.wrappers.base\_system (module)@\spxentry{elastica.wrappers.base\_system}\spxextra{module}|hyperpage}{7}
+\indexentry{BaseSystemCollection (class in elastica.wrappers.base\_system)@\spxentry{BaseSystemCollection}\spxextra{class in elastica.wrappers.base\_system}|hyperpage}{7}
+\indexentry{finalize() (elastica.wrappers.base\_system.BaseSystemCollection method)@\spxentry{finalize()}\spxextra{elastica.wrappers.base\_system.BaseSystemCollection method}|hyperpage}{7}
+\indexentry{insert() (elastica.wrappers.base\_system.BaseSystemCollection method)@\spxentry{insert()}\spxextra{elastica.wrappers.base\_system.BaseSystemCollection method}|hyperpage}{7}
+\indexentry{elastica.wrappers.callbacks (module)@\spxentry{elastica.wrappers.callbacks}\spxextra{module}|hyperpage}{7}
+\indexentry{elastica.wrappers.connections (module)@\spxentry{elastica.wrappers.connections}\spxextra{module}|hyperpage}{7}
+\indexentry{elastica.wrappers.constraints (module)@\spxentry{elastica.wrappers.constraints}\spxextra{module}|hyperpage}{7}
+\indexentry{elastica.wrappers.forcing (module)@\spxentry{elastica.wrappers.forcing}\spxextra{module}|hyperpage}{7}
+\indexentry{elastica.transformations (module)@\spxentry{elastica.transformations}\spxextra{module}|hyperpage}{7}
+\indexentry{inv\_skew\_symmetrize() (in module elastica.transformations)@\spxentry{inv\_skew\_symmetrize()}\spxextra{in module elastica.transformations}|hyperpage}{7}
+\indexentry{elastica.utils (module)@\spxentry{elastica.utils}\spxextra{module}|hyperpage}{7}
+\indexentry{isqrt (in module elastica.utils)@\spxentry{isqrt}\spxextra{in module elastica.utils}|hyperpage}{7}
+\indexentry{elastica.\_calculus (module)@\spxentry{elastica.\_calculus}\spxextra{module}|hyperpage}{8}
+\indexentry{difference\_kernel() (in module elastica.\_calculus)@\spxentry{difference\_kernel()}\spxextra{in module elastica.\_calculus}|hyperpage}{8}
+\indexentry{quadrature\_kernel() (in module elastica.\_calculus)@\spxentry{quadrature\_kernel()}\spxextra{in module elastica.\_calculus}|hyperpage}{8}
+\indexentry{elastica.\_linalg (module)@\spxentry{elastica.\_linalg}\spxextra{module}|hyperpage}{8}
+\indexentry{levi\_civita\_tensor (in module elastica.\_linalg)@\spxentry{levi\_civita\_tensor}\spxextra{in module elastica.\_linalg}|hyperpage}{8}
+\indexentry{elastica.\_rotations (module)@\spxentry{elastica.\_rotations}\spxextra{module}|hyperpage}{8}
+\indexentry{elastica.\_spline (module)@\spxentry{elastica.\_spline}\spxextra{module}|hyperpage}{8}
+\indexentry{elastica.systems.analytical (module)@\spxentry{elastica.systems.analytical}\spxextra{module}|hyperpage}{9}
+\indexentry{SecondOrderHybridSystem (class in elastica.systems.analytical)@\spxentry{SecondOrderHybridSystem}\spxextra{class in elastica.systems.analytical}|hyperpage}{9}

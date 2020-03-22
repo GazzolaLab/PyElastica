@@ -1,0 +1,899 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica package &mdash; pyelastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="elastica.rod package" href="elastica.rod.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyelastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Main Page:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">elastica package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.rod.html">elastica.rod package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="elastica.systems.html">elastica.systems package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="elastica.timestepper.html">elastica.timestepper package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html">elastica.wrappers package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.boundary_conditions">elastica.boundary_conditions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.callback_functions">elastica.callback_functions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.external_forces">elastica.external_forces module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.interaction">elastica.interaction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.joint">elastica.joint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.transformations">elastica.transformations module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica.utils">elastica.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-elastica">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyelastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>elastica package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/elastica.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="elastica-package">
+<h1>elastica package<a class="headerlink" href="#elastica-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="elastica.rod.html">elastica.rod package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="elastica.rod.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.rod.html#module-elastica.rod.constitutive_model">elastica.rod.constitutive_model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.rod.html#module-elastica.rod.cosserat_rod">elastica.rod.cosserat_rod module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.rod.html#module-elastica.rod.data_structures">elastica.rod.data_structures module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.rod.html#module-elastica.rod">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="elastica.systems.html">elastica.systems package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="elastica.systems.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.systems.html#module-elastica.systems.analytical">elastica.systems.analytical module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.systems.html#module-elastica.systems">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="elastica.timestepper.html">elastica.timestepper package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="elastica.timestepper.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.timestepper.html#module-elastica.timestepper.explicit_steppers">elastica.timestepper.explicit_steppers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.timestepper.html#module-elastica.timestepper.hybrid_rod_steppers">elastica.timestepper.hybrid_rod_steppers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.timestepper.html#module-elastica.timestepper.symplectic_steppers">elastica.timestepper.symplectic_steppers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.timestepper.html#module-elastica.timestepper">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="elastica.wrappers.html">elastica.wrappers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers.base_system">elastica.wrappers.base_system module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#base-system">base_system</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers.callbacks">elastica.wrappers.callbacks module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#callback">callback</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers.connections">elastica.wrappers.connections module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#connect">connect</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers.constraints">elastica.wrappers.constraints module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#constraints">constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers.forcing">elastica.wrappers.forcing module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#forcing">forcing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="elastica.wrappers.html#module-elastica.wrappers">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="elastica.wrappers.html#wrappers">wrappers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-elastica.boundary_conditions">
+<span id="elastica-boundary-conditions-module"></span><h2>elastica.boundary_conditions module<a class="headerlink" href="#module-elastica.boundary_conditions" title="Permalink to this headline">¶</a></h2>
+<p>Boundary conditions for rod</p>
+<dl class="class">
+<dt id="elastica.boundary_conditions.FreeRod">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">FreeRod</code><a class="reference internal" href="_modules/elastica/boundary_conditions.html#FreeRod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.FreeRod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>the base class for rod boundary conditions
+also the free rod class</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.FreeRod.constrain_rates">
+<code class="sig-name descname">constrain_rates</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#FreeRod.constrain_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.FreeRod.constrain_rates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.boundary_conditions.FreeRod.constrain_values">
+<code class="sig-name descname">constrain_values</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#FreeRod.constrain_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.FreeRod.constrain_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.boundary_conditions.HelicalBucklingBC">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">HelicalBucklingBC</code><span class="sig-paren">(</span><em class="sig-param">position_start</em>, <em class="sig-param">position_end</em>, <em class="sig-param">director_start</em>, <em class="sig-param">director_end</em>, <em class="sig-param">twisting_time</em>, <em class="sig-param">slack</em>, <em class="sig-param">number_of_rotations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#HelicalBucklingBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.HelicalBucklingBC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.boundary_conditions.FreeRod" title="elastica.boundary_conditions.FreeRod"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.boundary_conditions.FreeRod</span></code></a></p>
+<p>boundary condition for helical buckling
+controlled twisting of the ends</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.HelicalBucklingBC.constrain_rates">
+<code class="sig-name descname">constrain_rates</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#HelicalBucklingBC.constrain_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.HelicalBucklingBC.constrain_rates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.boundary_conditions.HelicalBucklingBC.constrain_values">
+<code class="sig-name descname">constrain_values</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#HelicalBucklingBC.constrain_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.HelicalBucklingBC.constrain_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.boundary_conditions.OneEndFixedRod">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.boundary_conditions.</code><code class="sig-name descname">OneEndFixedRod</code><span class="sig-paren">(</span><em class="sig-param">fixed_position</em>, <em class="sig-param">fixed_directors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#OneEndFixedRod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.OneEndFixedRod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.boundary_conditions.FreeRod" title="elastica.boundary_conditions.FreeRod"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.boundary_conditions.FreeRod</span></code></a></p>
+<p>the end of the rod fixed x[0]</p>
+<dl class="method">
+<dt id="elastica.boundary_conditions.OneEndFixedRod.constrain_rates">
+<code class="sig-name descname">constrain_rates</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#OneEndFixedRod.constrain_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.OneEndFixedRod.constrain_rates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.boundary_conditions.OneEndFixedRod.constrain_values">
+<code class="sig-name descname">constrain_values</code><span class="sig-paren">(</span><em class="sig-param">rod</em>, <em class="sig-param">time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/boundary_conditions.html#OneEndFixedRod.constrain_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.boundary_conditions.OneEndFixedRod.constrain_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.callback_functions">
+<span id="elastica-callback-functions-module"></span><h2>elastica.callback_functions module<a class="headerlink" href="#module-elastica.callback_functions" title="Permalink to this headline">¶</a></h2>
+<p>Call back functions for rod</p>
+<dl class="class">
+<dt id="elastica.callback_functions.CallBackBaseClass">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">CallBackBaseClass</code><a class="reference internal" href="_modules/elastica/callback_functions.html#CallBackBaseClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base call back class, user has to derive new
+call back classes from this class</p>
+<dl class="method">
+<dt id="elastica.callback_functions.CallBackBaseClass.make_callback">
+<code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#CallBackBaseClass.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.CallBackBaseClass.make_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will be called every time step, user can
+define which parameters at which time-step to be called back
+in derived call back class
+:param system:
+:type system: system is rod
+:param time:
+:type time: simulation time
+:param current_step:
+:type current_step: current simulation time step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.callback_functions.ContinuumSnakeCallBack">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">ContinuumSnakeCallBack</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#ContinuumSnakeCallBack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.ContinuumSnakeCallBack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.callback_functions.CallBackBaseClass" title="elastica.callback_functions.CallBackBaseClass"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.callback_functions.CallBackBaseClass</span></code></a></p>
+<p>Call back function for continuum snake</p>
+<dl class="method">
+<dt id="elastica.callback_functions.ContinuumSnakeCallBack.make_callback">
+<code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#ContinuumSnakeCallBack.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.ContinuumSnakeCallBack.make_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will be called every time step, user can
+define which parameters at which time-step to be called back
+in derived call back class
+:param system:
+:type system: system is rod
+:param time:
+:type time: simulation time
+:param current_step:
+:type current_step: current simulation time step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.callback_functions.MyCallBack">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.callback_functions.</code><code class="sig-name descname">MyCallBack</code><span class="sig-paren">(</span><em class="sig-param">step_skip: int</em>, <em class="sig-param">callback_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#MyCallBack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.MyCallBack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.callback_functions.CallBackBaseClass" title="elastica.callback_functions.CallBackBaseClass"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.callback_functions.CallBackBaseClass</span></code></a></p>
+<p>My call back class it is derived from the base call back class.
+This is an example, user can use this class as an example to write
+new call back classes</p>
+<dl class="method">
+<dt id="elastica.callback_functions.MyCallBack.make_callback">
+<code class="sig-name descname">make_callback</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time</em>, <em class="sig-param">current_step: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/callback_functions.html#MyCallBack.make_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.callback_functions.MyCallBack.make_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will be called every time step, user can
+define which parameters at which time-step to be called back
+in derived call back class
+:param system:
+:type system: system is rod
+:param time:
+:type time: simulation time
+:param current_step:
+:type current_step: current simulation time step</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.external_forces">
+<span id="elastica-external-forces-module"></span><h2>elastica.external_forces module<a class="headerlink" href="#module-elastica.external_forces" title="Permalink to this headline">¶</a></h2>
+<p>External forcing for rod</p>
+<dl class="class">
+<dt id="elastica.external_forces.EndpointForces">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">EndpointForces</code><span class="sig-paren">(</span><em class="sig-param">start_force</em>, <em class="sig-param">end_force</em>, <em class="sig-param">ramp_up_time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#EndpointForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.EndpointForces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies constant forces on endpoints</p>
+<dl class="method">
+<dt id="elastica.external_forces.EndpointForces.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#EndpointForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.EndpointForces.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply forces to a system object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.external_forces.GravityForces">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">GravityForces</code><span class="sig-paren">(</span><em class="sig-param">acc_gravity=array([ 0.</em>, <em class="sig-param">-9.80665</em>, <em class="sig-param">0.     ])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#GravityForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.GravityForces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies a constant gravity on the entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.GravityForces.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#GravityForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.GravityForces.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply forces to a system object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.external_forces.MuscleTorques">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">MuscleTorques</code><span class="sig-paren">(</span><em class="sig-param">base_length</em>, <em class="sig-param">b_coeff</em>, <em class="sig-param">period</em>, <em class="sig-param">wave_number</em>, <em class="sig-param">phase_shift</em>, <em class="sig-param">direction</em>, <em class="sig-param">ramp_up_time=0.0</em>, <em class="sig-param">with_spline=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#MuscleTorques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.MuscleTorques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies muscle torques on the body. It can apply muscle torques
+as travelling wave with beta spline or only as travelling wave.</p>
+<dl class="method">
+<dt id="elastica.external_forces.MuscleTorques.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#MuscleTorques.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.MuscleTorques.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply torques to a Rod-like object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.external_forces.NoForces">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">NoForces</code><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for external forcing for Rods</p>
+<p>Can make this an abstract class, but its inconvenient
+for the user to keep on defining apply_forces and
+apply_torques object over and over.</p>
+<dl class="method">
+<dt id="elastica.external_forces.NoForces.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply forces to a system object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="elastica.external_forces.NoForces.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#NoForces.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.NoForces.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply torques to a Rod-like object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.external_forces.UniformForces">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">UniformForces</code><span class="sig-paren">(</span><em class="sig-param">force</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformForces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformForces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies uniform forces to entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.UniformForces.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformForces.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformForces.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply forces to a system object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.external_forces.UniformTorques">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.external_forces.</code><code class="sig-name descname">UniformTorques</code><span class="sig-paren">(</span><em class="sig-param">torque</em>, <em class="sig-param">direction=array([0.</em>, <em class="sig-param">0.</em>, <em class="sig-param">0.])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformTorques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformTorques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<p>Applies uniform torque to entire rod</p>
+<dl class="method">
+<dt id="elastica.external_forces.UniformTorques.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/external_forces.html#UniformTorques.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.external_forces.UniformTorques.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply torques to a Rod-like object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.interaction">
+<span id="elastica-interaction-module"></span><h2>elastica.interaction module<a class="headerlink" href="#module-elastica.interaction" title="Permalink to this headline">¶</a></h2>
+<p>Interaction module</p>
+<dl class="class">
+<dt id="elastica.interaction.AnistropicFrictionalPlane">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">AnistropicFrictionalPlane</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">plane_origin</em>, <em class="sig-param">plane_normal</em>, <em class="sig-param">slip_velocity_tol</em>, <em class="sig-param">static_mu_array</em>, <em class="sig-param">kinetic_mu_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#AnistropicFrictionalPlane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.AnistropicFrictionalPlane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a>, <a class="reference internal" href="#elastica.interaction.InteractionPlane" title="elastica.interaction.InteractionPlane"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.interaction.InteractionPlane</span></code></a></p>
+<dl class="method">
+<dt id="elastica.interaction.AnistropicFrictionalPlane.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#AnistropicFrictionalPlane.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.AnistropicFrictionalPlane.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply forces to a system object.</p>
+<p>In NoForces, this routine simply passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>system that is Rod-like</em>) – </p></li>
+<li><p><strong>time</strong> (<em>np.float</em><em>, </em><em>the time of simulation</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.interaction.InteractionPlane">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">InteractionPlane</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">plane_origin</em>, <em class="sig-param">plane_normal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#InteractionPlane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.InteractionPlane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.interaction.InteractionPlane.apply_normal_force">
+<code class="sig-name descname">apply_normal_force</code><span class="sig-paren">(</span><em class="sig-param">system</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#InteractionPlane.apply_normal_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.InteractionPlane.apply_normal_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the plane force response on the element, in the
+case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+is used.
+:param system:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>magnitude of the plane response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.interaction.SlenderBodyTheory">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">SlenderBodyTheory</code><span class="sig-paren">(</span><em class="sig-param">dynamic_viscosity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#SlenderBodyTheory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.SlenderBodyTheory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.external_forces.NoForces" title="elastica.external_forces.NoForces"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.external_forces.NoForces</span></code></a></p>
+<dl class="method">
+<dt id="elastica.interaction.SlenderBodyTheory.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">system</em>, <em class="sig-param">time=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#SlenderBodyTheory.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.SlenderBodyTheory.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function applies hydrodynamic forces on body
+using the slender body theory given in
+Eq. 4.13 Gazzola et. al. RSoS 2018 paper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>system</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica.interaction.find_slipping_elements">
+<code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">find_slipping_elements</code><span class="sig-paren">(</span><em class="sig-param">velocity_slip</em>, <em class="sig-param">velocity_threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#find_slipping_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.find_slipping_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the velocity of elements and checks if they are larger
+than the threshold velocity. If velocity of elements are larger than
+threshold velocity, that means those elements are slipping, in other words
+kinetic friction will be acting on those elements not static friction. This
+function output an array called slip function, this array has a size of number
+of elements. If velocity of element is smaller than the threshold velocity slip
+function value for that element is 1, which means static friction is acting on
+that element. If velocity of element is larger than the threshold velocity slip
+function value for that element is between 0 and 1, which means kinetic friction
+is acting on that element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocity_slip</strong> – </p></li>
+<li><p><strong>velocity_threshold</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>slip function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.interaction.node_to_element_velocity">
+<code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">node_to_element_velocity</code><a class="reference internal" href="_modules/elastica/interaction.html#node_to_element_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.node_to_element_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes to velocity on the elements.
+Here we define a seperate function because benchmark results
+showed that using numba, we get almost 3 times faster calculation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>node_velocity</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>element_velocity</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Faster than pure python for blocksize 100
+python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="elastica.interaction.nodes_to_elements">
+<code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">nodes_to_elements</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/interaction.html#nodes_to_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.nodes_to_elements" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.interaction.slender_body_forces">
+<code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">slender_body_forces</code><a class="reference internal" href="_modules/elastica/interaction.html#slender_body_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.slender_body_forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes hydrodynamic forces on body using slender body theory.
+Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS 2018 paper.</p>
+<p>Fh = - 4*pi*mu/ln(L/r) * ((I - 0.5 * t`t) * v)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tangents</strong> – </p></li>
+<li><p><strong>velocity_collection</strong> – </p></li>
+<li><p><strong>dynamic_viscosity</strong> – </p></li>
+<li><p><strong>length</strong> – </p></li>
+<li><p><strong>radius</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Faster than numpy einsum implementation for blocksize 100</em></p></li>
+<li><p><strong>numpy</strong> (<em>39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)</em>)</p></li>
+<li><p><strong>this version</strong> (<em>3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)</em>)</p></li>
+<li><p><em>Unrolling loops show better performance. Also since we are working in 3D everything is</em></p></li>
+<li><p><em>3 dimensional.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="elastica.interaction.sum_over_elements">
+<code class="sig-prename descclassname">elastica.interaction.</code><code class="sig-name descname">sum_over_elements</code><a class="reference internal" href="_modules/elastica/interaction.html#sum_over_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.interaction.sum_over_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sums all elements of input array,
+using a numba jit decorator shows better performance
+compared to python sum(), .sum() and np.sum()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>Faster than sum(), .sum() and np.sum()</em></p></li>
+<li><p><em>For blocksize = 200</em></p></li>
+<li><p><strong>sum()</strong> (<em>36.9 µs ± 3.99 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)</em>)</p></li>
+<li><p><strong>.sum()</strong> (<em>3.17 µs ± 90.1 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)</em>)</p></li>
+<li><p><strong>np.sum()</strong> (<em>5.17 µs ± 364 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)</em>)</p></li>
+<li><p><strong>This version</strong> (<em>513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.joint">
+<span id="elastica-joint-module"></span><h2>elastica.joint module<a class="headerlink" href="#module-elastica.joint" title="Permalink to this headline">¶</a></h2>
+<p>Joint between rods module</p>
+<dl class="class">
+<dt id="elastica.joint.FixedJoint">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.joint.</code><code class="sig-name descname">FixedJoint</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">kt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FixedJoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FixedJoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.joint.FreeJoint" title="elastica.joint.FreeJoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.joint.FreeJoint</span></code></a></p>
+<dl class="method">
+<dt id="elastica.joint.FixedJoint.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FixedJoint.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FixedJoint.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.joint.FixedJoint.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FixedJoint.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FixedJoint.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.joint.FreeJoint">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.joint.</code><code class="sig-name descname">FreeJoint</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FreeJoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FreeJoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="elastica.joint.FreeJoint.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FreeJoint.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FreeJoint.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.joint.FreeJoint.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#FreeJoint.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.FreeJoint.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="elastica.joint.HingeJoint">
+<em class="property">class </em><code class="sig-prename descclassname">elastica.joint.</code><code class="sig-name descname">HingeJoint</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">nu</em>, <em class="sig-param">kt</em>, <em class="sig-param">normal_direction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#HingeJoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.HingeJoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#elastica.joint.FreeJoint" title="elastica.joint.FreeJoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">elastica.joint.FreeJoint</span></code></a></p>
+<p>this joint currently keeps rod one fixed and moves rod two
+how couples act needs to be reconfirmed</p>
+<dl class="method">
+<dt id="elastica.joint.HingeJoint.apply_forces">
+<code class="sig-name descname">apply_forces</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#HingeJoint.apply_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.HingeJoint.apply_forces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="elastica.joint.HingeJoint.apply_torques">
+<code class="sig-name descname">apply_torques</code><span class="sig-paren">(</span><em class="sig-param">rod_one</em>, <em class="sig-param">index_one</em>, <em class="sig-param">rod_two</em>, <em class="sig-param">index_two</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/joint.html#HingeJoint.apply_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.joint.HingeJoint.apply_torques" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.transformations">
+<span id="elastica-transformations-module"></span><h2>elastica.transformations module<a class="headerlink" href="#module-elastica.transformations" title="Permalink to this headline">¶</a></h2>
+<p>Rotation interface functions</p>
+<dl class="function">
+<dt id="elastica.transformations.skew_symmetrize">
+<code class="sig-prename descclassname">elastica.transformations.</code><code class="sig-name descname">skew_symmetrize</code><span class="sig-paren">(</span><em class="sig-param">vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/transformations.html#skew_symmetrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.transformations.skew_symmetrize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="elastica.transformations.inv_skew_symmetrize">
+<code class="sig-prename descclassname">elastica.transformations.</code><code class="sig-name descname">inv_skew_symmetrize</code><span class="sig-paren">(</span><em class="sig-param">matrix_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/elastica/transformations.html#inv_skew_symmetrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.transformations.inv_skew_symmetrize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safe wrapper around inv_skew_symmetrize that does checking
+and formatting on type of matrix_collection using format_matrix_shape
+function.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica.utils">
+<span id="elastica-utils-module"></span><h2>elastica.utils module<a class="headerlink" href="#module-elastica.utils" title="Permalink to this headline">¶</a></h2>
+<p>Handy utilities</p>
+<dl class="attribute">
+<dt id="elastica.utils.isqrt">
+<code class="sig-prename descclassname">elastica.utils.</code><code class="sig-name descname">isqrt</code><a class="reference internal" href="_modules/elastica/utils.html#isqrt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#elastica.utils.isqrt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficiently computes sqrt for integer values</p>
+<p>Dropin replacement for python3.8’s isqrt function
+Credits : <a class="reference external" href="https://stackoverflow.com/a/53983683">https://stackoverflow.com/a/53983683</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num</strong> (<em>int</em><em>, </em><em>input</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>sqrt_num</strong> (<em>int, rounded down sqrt of num</em>)</p></li>
+<li><p><em>Caveats</em></p></li>
+<li><p><em>——-</em> –</p>
+<ul>
+<li><p>Doesn’t handle edge-cases of negative numbers by design</p></li>
+<li><p>Doesn’t type-check for integers by design, although it is hinted at</p></li>
+</ul>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-elastica">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-elastica" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="elastica.rod.html" class="btn btn-neutral float-right" title="elastica.rod package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

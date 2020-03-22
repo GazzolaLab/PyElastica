@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica.timestepper.symplectic_steppers &mdash; Elastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Elastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../elastica++.html">Elastica++</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Elastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../timestepper.html">elastica.timestepper</a> &raquo;</li>
+        
+      <li>elastica.timestepper.symplectic_steppers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for elastica.timestepper.symplectic_steppers</h1><div class="highlight"><pre>
+<span></span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Symplectic timesteppers and concepts&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">elastica.timestepper._stepper_interface</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_TimeStepper</span><span class="p">,</span>
+    <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Developer Note</span>
+<span class="sd">--------------</span>
+
+<span class="sd">For the reasons why we define Mixin classes here, the developer</span>
+<span class="sd">is referred to the same section on `explicit_steppers.py`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">_SystemInstanceStepperMixin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span>
+            <span class="n">kin_prefactor</span><span class="p">,</span>
+            <span class="n">kin_step</span><span class="p">,</span>
+            <span class="n">dyn_prefactor</span><span class="p">,</span>
+            <span class="n">dyn_step</span><span class="p">,</span>
+        <span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">prefac</span> <span class="o">=</span> <span class="n">kin_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+            <span class="n">prefac</span> <span class="o">=</span> <span class="n">dyn_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">dyn_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+
+        <span class="c1"># Peel the last kinematic step and prefactor alone</span>
+        <span class="n">last_kin_prefactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">last_kin_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">prefac</span> <span class="o">=</span> <span class="n">last_kin_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">last_kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span>
+
+
+<span class="k">class</span> <span class="nc">_SystemCollectionStepperMixin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">do_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span>
+            <span class="n">kin_prefactor</span><span class="p">,</span>
+            <span class="n">kin_step</span><span class="p">,</span>
+            <span class="n">dyn_prefactor</span><span class="p">,</span>
+            <span class="n">dyn_step</span><span class="p">,</span>
+        <span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">prefac</span> <span class="o">=</span> <span class="n">kin_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">SystemCollection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+
+            <span class="c1"># TODO: remove below lines and try to find a better call option to compute internal forces and torques</span>
+            <span class="c1"># We need internal forces and torques because they are used by interaction module.</span>
+            <span class="n">update_internal_forces_torques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_internal_forces_torques</span><span class="p">[</span>
+                <span class="mi">0</span>
+            <span class="p">]</span>  <span class="c1"># here 0 because you have one item in list</span>
+            <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">SystemCollection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">time</span><span class="p">)</span>
+
+            <span class="c1"># BoCos, External forces, controls etc.</span>
+            <span class="n">SystemCollection</span><span class="o">.</span><span class="n">synchronize</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="c1"># TODO: remove below line, it should be some other function synchronizeBC</span>
+            <span class="n">SystemCollection</span><span class="o">.</span><span class="n">synchronizeBC</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="n">prefac</span> <span class="o">=</span> <span class="n">dyn_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">SystemCollection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">dyn_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">dyn_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+
+            <span class="c1"># TODO: remove below line, it should be some other function synchronizeBC</span>
+            <span class="n">SystemCollection</span><span class="o">.</span><span class="n">synchronizeBC</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+        <span class="c1"># Peel the last kinematic step and prefactor alone</span>
+        <span class="n">last_kin_prefactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">last_kin_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">prefac</span> <span class="o">=</span> <span class="n">last_kin_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">SystemCollection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">last_kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">last_kin_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SystemCollection</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+
+        <span class="c1"># Call back function, will call the user defined call back functions and store data</span>
+        <span class="n">SystemCollection</span><span class="o">.</span><span class="n">callBack</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">dt</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">time</span>
+
+
+<div class="viewcode-block" id="SymplecticStepper"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticStepper">[docs]</a><span class="k">class</span> <span class="nc">SymplecticStepper</span><span class="p">(</span><span class="n">_TimeStepper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SymplecticStepper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">take_methods_from</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="c1"># Let the total number of steps for the Symplectic method</span>
+        <span class="c1"># be (2*n + 1) (for time-symmetry). What we do is collect</span>
+        <span class="c1"># the first n + 1 entries down in _steps and _prefac below, and then</span>
+        <span class="c1"># reverse and append it to itself.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">v</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">take_methods_from</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;step&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># Prefac here is necessary because the linear-exponential integrator</span>
+        <span class="c1"># needs only the prefactor and not the dt.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefactors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">v</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">take_methods_from</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;prefactor&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># We are getting function named as _update_internal_forces_torques from dictionary,</span>
+        <span class="c1"># it turns a list.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_internal_forces_torques</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">v</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">take_methods_from</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;forces_torques&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">mirror</span><span class="p">(</span><span class="n">in_list</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot; Mirrors an input list ignoring the last element</span>
+<span class="sd">            If steps = [A, B, C]</span>
+<span class="sd">            then this call makes it [A, B, C, B, A]</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            in_list : input list to be mirrored, modified in-place</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1">#  syntax is very ugly</span>
+            <span class="n">in_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">in_list</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">mirror</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">)</span>
+        <span class="n">mirror</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefactors</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prefactors</span>
+        <span class="p">),</span> <span class="s2">&quot;Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_prefactors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefactors</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_prefactors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefactors</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Avoid this check for MockClasses</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_steps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_steps</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_steps</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">),</span> <span class="s2">&quot;Size mismatch in the number of kinematic and dynamic steps provided for a Symplectic Stepper!&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_prefactors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_prefactors</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">),</span> <span class="s2">&quot;Size mismatch in the number of kinematic and dynamic prefactors provided for a Symplectic Stepper!&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">zip_longest</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_prefactors</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kinematic_steps</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_prefactors</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_steps</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_stages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_steps_and_prefactors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PositionVerlet"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PositionVerlet">[docs]</a><span class="k">class</span> <span class="nc">PositionVerlet</span><span class="p">(</span><span class="n">SymplecticStepper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PositionVerlet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+
+    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span>
+            <span class="n">time</span><span class="p">,</span> <span class="n">prefac</span>
+        <span class="p">)</span>  <span class="c1"># TODO : Why should we pass dt into System again?</span>
+        <span class="k">return</span> <span class="n">time</span>
+
+    <span class="c1"># TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!</span>
+    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">update_internal_forces_and_torques</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span></div>
+
+    <span class="c1"># Note : we don&#39;t need the second half of the calls as it simply forwards</span>
+    <span class="c1"># to its equivalent first half. This is taken care in the base class</span>
+
+    <span class="c1"># def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):</span>
+    <span class="c1">#     return self._first_kinematic_step(System, time, dt)</span>
+
+
+<div class="viewcode-block" id="PEFRL"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.PEFRL">[docs]</a><span class="k">class</span> <span class="nc">PEFRL</span><span class="p">(</span><span class="n">SymplecticStepper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Position Extended Forest-Ruth Like Algorithm of</span>
+<span class="sd">    I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),</span>
+<span class="sd">    http://arxiv.org/abs/cond-mat/0110585</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># xi and chi are confusing, but be careful!</span>
+    <span class="n">ξ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">0.1786178958448091e0</span><span class="p">)</span>  <span class="c1"># ξ</span>
+    <span class="n">λ</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">0.2123418310626054e0</span><span class="p">)</span>  <span class="c1"># λ</span>
+    <span class="n">χ</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="mf">0.6626458266981849e-1</span><span class="p">)</span>  <span class="c1"># χ</span>
+
+    <span class="c1"># Pre-calculate other coefficients</span>
+    <span class="n">lambda_dash_coeff</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span>
+    <span class="n">xi_chi_dash_coeff</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">ξ</span> <span class="o">+</span> <span class="n">χ</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PEFRL</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_first_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ξ</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_first_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+
+    <span class="k">def</span> <span class="nf">_first_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_first_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span>
+
+    <span class="k">def</span> <span class="nf">_second_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">χ</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_second_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+
+    <span class="k">def</span> <span class="nf">_second_dynamic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">λ</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_second_dynamic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">dynamic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">dynamic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span>
+
+    <span class="k">def</span> <span class="nf">_third_kinematic_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi_chi_dash_coeff</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="k">def</span> <span class="nf">_third_kinematic_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">prefac</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="c1"># Need to fill in</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">kinematic_states</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">System</span><span class="o">.</span><span class="n">kinematic_rates</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span> <span class="o">+</span> <span class="n">prefac</span>
+
+    <span class="c1"># TODO: find a better place for this or a better call option. We need to compute internal forces and torques before external because interaction uses it!</span>
+    <span class="k">def</span> <span class="nf">_update_internal_forces_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">System</span><span class="o">.</span><span class="n">update_internal_forces_and_torques</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">time</span></div>
+
+    <span class="c1"># Note : we don&#39;t need the second half of the calls as it simply forwards</span>
+    <span class="c1"># to its equivalent first half. This is taken care in the base class</span>
+
+    <span class="c1"># def _third_dynamic_step(self, System, time: np.float64, dt: np.float64):</span>
+    <span class="c1">#     return self._second_dynamic_step(System, time, dt)</span>
+    <span class="c1">#</span>
+    <span class="c1"># def _fourth_kinematic_step(self, System, time: np.float64, dt: np.float64):</span>
+    <span class="c1">#     return self._second_kinematic_step(System, time, dt)</span>
+    <span class="c1">#</span>
+    <span class="c1"># def _fourth_dynamic_step(self, System, time: np.float64, dt: np.float64):</span>
+    <span class="c1">#     return self._first_dynamic_step(System, time, dt)</span>
+    <span class="c1">#</span>
+    <span class="c1"># def _fifth_kinematic_step(self, System, time: np.float64, dt: np.float64):</span>
+    <span class="c1">#     return self._first_kinematic_step(System, time, dt)</span>
+    <span class="c1">#     # return time + dt # To avoid numerical precision errors</span>
+
+
+<div class="viewcode-block" id="SymplecticLinearExponentialIntegrator"><a class="viewcode-back" href="../../../documentation.html#elastica.timestepper.symplectic_steppers.SymplecticLinearExponentialIntegrator">[docs]</a><span class="k">class</span> <span class="nc">SymplecticLinearExponentialIntegrator</span><span class="p">(</span>
+    <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">,</span> <span class="n">SymplecticStepper</span>
+<span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_LinearExponentialIntegratorMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">SymplecticStepper</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_LinearExponentialIntegratorMixin</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

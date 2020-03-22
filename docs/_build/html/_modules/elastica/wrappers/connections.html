@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elastica.wrappers.connections &mdash; Elastica 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Elastica
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Elastica:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../welcome_page.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../documentation.html">Pyelastica</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../elastica++.html">Elastica++</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Elastica</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>elastica.wrappers.connections</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for elastica.wrappers.connections</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">connect</span>
+<span class="sd">-------</span>
+
+<span class="sd">Provides the Connections interface to connect entities (rods,</span>
+<span class="sd">rigid bodies) using Joints (see `joints.py`).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">elastica.joint</span> <span class="kn">import</span> <span class="n">FreeJoint</span>
+
+
+<div class="viewcode-block" id="Connections"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.connections.Connections">[docs]</a><span class="k">class</span> <span class="nc">Connections</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Connections</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Connections.connect"><a class="viewcode-back" href="../../../api_doc/elastica.wrappers.html#elastica.wrappers.connections.Connections.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">first_rod</span><span class="p">,</span> <span class="n">second_rod</span><span class="p">,</span> <span class="n">first_connect_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second_connect_idx</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="p">):</span>
+        <span class="n">sys_idx</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i_sys</span><span class="p">,</span> <span class="n">sys</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">first_rod</span><span class="p">,</span> <span class="n">second_rod</span><span class="p">)):</span>
+            <span class="n">sys_idx</span><span class="p">[</span><span class="n">i_sys</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sys_idx_if_valid</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
+
+        <span class="c1"># For each system identified, get max dofs</span>
+        <span class="c1"># FIXME: Revert back to len, it should be able to take, systems without elements!</span>
+        <span class="c1"># sys_dofs = [len(self._systems[idx]) for idx in sys_idx]</span>
+        <span class="n">sys_dofs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">n_elems</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">sys_idx</span><span class="p">]</span>
+
+        <span class="c1"># Create _Connect object, cache it and return to user</span>
+        <span class="n">_connector</span> <span class="o">=</span> <span class="n">_Connect</span><span class="p">(</span><span class="o">*</span><span class="n">sys_idx</span><span class="p">,</span> <span class="o">*</span><span class="n">sys_dofs</span><span class="p">)</span>
+        <span class="n">_connector</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">first_connect_idx</span><span class="p">,</span> <span class="n">second_connect_idx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_connector</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_connector</span></div>
+
+    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># From stored _Connect objects, instantiate the joints and store it</span>
+
+        <span class="c1"># dev : the first indices stores the</span>
+        <span class="c1"># (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)</span>
+        <span class="c1"># to apply the connections to</span>
+        <span class="c1"># Technically we can use another array but it its one more book-keeping</span>
+        <span class="c1"># step. Being lazy, I put them both in the same array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="o">*</span><span class="n">connection</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="n">connection</span><span class="p">())</span> <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Need to finally solve CPP here, if we are doing things properly</span>
+        <span class="c1"># This is to optimize the call tree for better memory accesses</span>
+        <span class="c1"># https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span>
+            <span class="n">first_sys_idx</span><span class="p">,</span>
+            <span class="n">second_sys_idx</span><span class="p">,</span>
+            <span class="n">first_connect_idx</span><span class="p">,</span>
+            <span class="n">second_connect_idx</span><span class="p">,</span>
+            <span class="n">connection</span><span class="p">,</span>
+        <span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">apply_forces</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">first_sys_idx</span><span class="p">],</span>
+                <span class="n">first_connect_idx</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">second_sys_idx</span><span class="p">],</span>
+                <span class="n">second_connect_idx</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">apply_torques</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">first_sys_idx</span><span class="p">],</span>
+                <span class="n">first_connect_idx</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_systems</span><span class="p">[</span><span class="n">second_sys_idx</span><span class="p">],</span>
+                <span class="n">second_connect_idx</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_Connect</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">first_sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">second_sys_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">first_sys_nlim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">second_sys_nlim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_idx</span> <span class="o">=</span> <span class="n">first_sys_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_idx</span> <span class="o">=</span> <span class="n">second_sys_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span> <span class="o">=</span> <span class="n">first_sys_nlim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_n_lim</span> <span class="o">=</span> <span class="n">second_sys_nlim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">second_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># TODO assert range</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span> <span class="o">&lt;=</span> <span class="n">first_idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span>
+        <span class="p">),</span> <span class="s2">&quot;Connection index of first rod exceeds its dof : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_n_lim</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_n_lim</span> <span class="o">&lt;=</span> <span class="n">second_idx</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_n_lim</span>
+        <span class="p">),</span> <span class="s2">&quot;Connection index of second rod exceeds its dof : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_n_lim</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span> <span class="o">=</span> <span class="n">first_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span> <span class="o">=</span> <span class="n">second_idx</span>
+
+    <span class="k">def</span> <span class="nf">using</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connect_cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span>
+            <span class="n">connect_cls</span><span class="p">,</span> <span class="n">FreeJoint</span>
+        <span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not a valid joint class. Did you forget to derive from FreeJoint?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">connect_cls</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span> <span class="o">=</span> <span class="n">connect_cls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_first_sys_idx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_second_sys_idx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_sys_connection_idx</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">second_sys_connection_idx</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;No connections provided to link rod id </span><span class="si">{0}</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;(at </span><span class="si">{2}</span><span class="s2">) and </span><span class="si">{1}</span><span class="s2"> (at </span><span class="si">{3}</span><span class="s2">), but a Connection&quot;</span>
+                <span class="s2">&quot;was intended as per code. Did you forget to&quot;</span>
+                <span class="s2">&quot;call the `using` method?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">())</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_cls</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;Unable to construct connection class.\n&quot;</span>
+                <span class="sa">r</span><span class="s2">&quot;Did you provide all necessary joint properties?&quot;</span>
+            <span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, mattiaLab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
