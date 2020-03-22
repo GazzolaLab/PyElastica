@@ -1,5 +1,5 @@
-"""
-Rod constitutive model mixins
+__doc__ = """
+Rod constitutive model mixins but classes here does not uploaded
 """
 import numpy as np
 
@@ -8,6 +8,9 @@ from elastica.utils import MaxDimension, Tolerance
 
 
 class _LinearConstitutiveModelMixin:
+    __doc__ = """
+    Linear Constitutive model for Cosserat Rods
+    """
 
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
