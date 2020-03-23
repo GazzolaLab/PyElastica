@@ -45,7 +45,7 @@ class _SystemCollectionStepperMixin:
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
         """
         Function for doing symplectic stepper over the user defined rods (system).
-        
+
         Parameters
         ----------
         SystemCollection: rod object

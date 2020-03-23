@@ -32,7 +32,7 @@ class _CosseratRodBase(RodBase):
     -----------
     n_elems: int
     _vector_states: numpy.ndarray
-        2D (dim, \*) array containing data with 'float' type.
+        2D (dim, :math:`*`) array containing data with 'float' type.
     _matrix_states:
         3D array containing data with 'float' type.
     rest_lengths: numpy.ndarray
