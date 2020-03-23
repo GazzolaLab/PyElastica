@@ -32,7 +32,7 @@ class _CosseratRodBase(RodBase):
     -----------
     n_elems: int
     _vector_states: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+        2D (dim, \*) array containing data with 'float' type.
     _matrix_states:
         3D array containing data with 'float' type.
     rest_lengths: numpy.ndarray
@@ -107,6 +107,10 @@ class _CosseratRodBase(RodBase):
             2D (dim, blocksize) array containing data with 'float' type.
         nu: numpy.ndarray
            1D (blocksize) array containing data with 'float' type.
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
         """
         velocities = np.zeros((MaxDimension.value(), n_elements + 1))
         omegas = np.zeros((MaxDimension.value(), n_elements))  # + 1e-16

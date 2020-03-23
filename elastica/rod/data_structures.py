@@ -129,9 +129,11 @@ class _RodSymplecticStepperMixin:
         This function is a wrapper to call internal forces and torques.
         Parameters
         ----------
-        time
-        args
-        kwargs
+        time: float
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
 
         Returns
         -------
@@ -145,9 +147,11 @@ class _RodSymplecticStepperMixin:
         accelerations (dynamic rates).
         Parameters
         ----------
-        time
-        args
-        kwargs
+        time: float
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
 
         Returns
         -------
@@ -177,7 +181,7 @@ class _RodSymplecticStepperMixin:
 
 
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
-    """ Returns states wrapping numpy arrays based on the time-stepping algorithm
+    r""" Returns states wrapping numpy arrays based on the time-stepping algorithm
 
     Convenience method that takes in rod internal (raw np.numpy.ndarray) data, create views
     (references) from it, and outputs State classes that are used in the time-stepping
@@ -188,15 +192,41 @@ def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_
     stepper_type : str (likely to change in future), representing stepper type
     Allowed parameters are ['explicit', 'symplectic']
     n_elems : int, number of rod elements
-    vector_states : numpy.ndarray of shape (dim, *) with the following structure
-        `vector_states` = [`position`,`velocity`,`omega`,`acceleration`,`angular acceleration`]
-        `n_nodes = n_elems + 1`
-        `position = 0 -> n_nodes , size = n_nodes`
-        `velocity = n_nodes -> 2 * n_nodes, size = n_nodes`
-        `omega = 2 * n_nodes -> 2 * n_nodes + nelem, size = nelem`
-        `acceleration = 2 * n_nodes + nelem -> 3 * n_nodes + nelem, size = n_nodes`
-        `angular acceleration = 3 * n_nodes + nelem -> 3 * n_nodes + 2 * nelem, size = n_elems`
-    matrix_states : numpy.ndarray of shape (dim, dim, n_elems) containing the directors
+    vector_states : numpy.ndarray
+         2D (dim, \*) array containing data with 'float' type.
+
+
+    .. math::
+
+        vector\_states = [position,velocity,omega,acceleration,angular acceleration]\\
+
+    .. math::
+
+        {n_{nodes}} = {n_{elem}} + 1\\
+
+    .. math::
+
+        position = 0 \to {n_{nodes}},size = {n_{nodes}}\\
+
+    .. math::
+
+        velocity = {n_{nodes}} \to 2{n_{nodes}},size = {n_{nodes}}\\
+
+    .. math::
+
+        omega = {\rm{2}}{n_{nodes}} \to {\rm{ }}2{n_{nodes}} + {n_{elem}},{\rm{ }}size = {n_{elem}}\\
+
+    .. math::
+
+        acceleration = 2{n_{nodes}} + {n_{elem}} \to 3{n_{nodes}} + {n_{elem}},size = {n_{nodes}}\\
+
+    .. math::
+
+        angular\_acceleration = 3{n_{nodes}} + {n_{elem}} \to 3{n_{nodes}} + 2{n_{elem}},size = {n_{elem}}\\
+
+
+    matrix_states : numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
@@ -371,7 +401,7 @@ class _State:
         -------
         state : new _State object with modified data (copied)
 
-        Caveats
+        Note
         -------
         Note that the argument is not a `other` _State object but is rather
         assumed to be a `numpy.ndarray` from calling _DerivativeState's __mul__
@@ -437,7 +467,7 @@ class _DerivativeState:
         -------
         output : numpy.ndarray containing (v*dt, ω*dt, dv/dt*dt, dω/dt*dt)
 
-        Caveats
+        Note
         -------
         Returns a numpy.ndarray and not a State object (as one expects).
         Returning a State here with (v*dt, ω*dt, dv/dt*dt, dω/dt*dt) as members
@@ -546,7 +576,7 @@ class _KinematicState:
         -------
         self : _KinematicState instance with inplace modified data
 
-        Caveats
+        Note
         -------
         Takes a numpy.ndarray and not a _KinematicState object (as one expects).
         This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
@@ -608,7 +638,7 @@ class _DynamicState:
         -------
         self : _DynamicState instance with inplace modified data
 
-        Caveats
+        Note
         -------
         Takes a numpy.ndarray and not a _DynamicState object (as one expects).
         This is done for efficiency reasons, see `dynamic_rates`.
@@ -642,7 +672,7 @@ class _DynamicState:
         -------
         acc_and_alpha : numpy.ndarray consisting of (dv/dt,dω/dt)
 
-        Caveats
+        Note
         -------
         Doesn't return a _DynamicState with (dt*v, dt*w) as members,
         as one expects the _Dynamic __add__ operator to interact

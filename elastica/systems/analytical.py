@@ -197,18 +197,32 @@ class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
 
 
 class SecondOrderHybridSystem:
-    """
+    r"""
     Integrate a simple, non-linear ODE:
-        dx/dt = v
-        df/dt = -f * ω (f is short for frame, for lack of better notation)
-        dv/dt = -v**2
-        dω/dt = -ω**2
-    Dofs: [x, f, v, ω], with the convention that
 
-    _state in this case are [x, v, ω]
-    linear_states are [f]
-    _kin_state are [x], taken as a slice
-    _dyn_state are [v, ω], taken as a slice
+    .. math::
+
+        \frac{{dx}}{{dt}} = v\\
+
+    .. math::
+
+        \frac{{df}}{{dt}} =  - f\omega \\
+
+    (f is short for frame, for lack of better notation)
+
+    .. math::
+
+        \frac{{dv}}{{dt}} =  - {v^2}\\
+
+    .. math::
+
+        \frac{{d\omega }}{{dt}} =  - {\omega ^2}\\
+
+    Dofs: :math:`[x, f, v, ω]`, with the convention that
+    _state in this case are :math:`[x, v, ω]`
+    linear_states are :math:`[f]`
+    _kin_state are :math:`[x]`, taken as a slice
+    _dyn_state are :math:`[v, ω]`, taken as a slice
     """
 
     def __init__(self, init_x=5.0, init_f=3.0, init_v=1.0, init_w=1.0):

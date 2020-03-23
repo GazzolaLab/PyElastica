@@ -28,7 +28,7 @@ class NoForces:
 
         Returns
         -------
-        None
+
 
         """
 
@@ -46,7 +46,7 @@ class NoForces:
 
         Returns
         -------
-        None
+
         """
         pass
 

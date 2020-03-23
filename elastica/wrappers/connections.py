@@ -80,6 +80,24 @@ class Connections:
 
 
 class _Connect:
+    """
+    Connect wrapper private class
+
+    Attributes
+    ----------
+    _first_sys_idx: int
+    _second_sys_idx: int
+    _first_sys_n_lim: int
+    _second_sys_n_lim: int
+    _connect_class: list
+    first_sys_connection_idx: int
+    second_sys_connection_idx: int
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
     def __init__(
         self,
         first_sys_idx: int,
@@ -87,6 +105,15 @@ class _Connect:
         first_sys_nlim: int,
         second_sys_nlim: int,
     ):
+        """
+
+        Parameters
+        ----------
+        first_sys_idx: int
+        second_sys_idx: int
+        first_sys_nlim: int
+        second_sys_nlim: int
+        """
         self._first_sys_idx = first_sys_idx
         self._second_sys_idx = second_sys_idx
         self._first_sys_n_lim = first_sys_nlim

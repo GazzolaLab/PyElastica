@@ -56,7 +56,26 @@ class Forcing:
 
 
 class _ExtForceTorque:
+    """
+    Forcing wrapper private class
+
+    Attributes
+    ----------
+    _sys_idx: int
+    _forcing_cls: list
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
     def __init__(self, sys_idx: int):
+        """
+
+        Parameters
+        ----------
+        sys_idx: int
+        """
         self._sys_idx = sys_idx
         self._forcing_cls = None
         self._args = ()
@@ -83,8 +102,10 @@ class _ExtForceTorque:
 
         Parameters
         ----------
-        args
-        kwargs
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
 
         Returns
         -------

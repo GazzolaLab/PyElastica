@@ -22,13 +22,14 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 
     Parameters
     ----------
-    velocity_slip
-    velocity_threshold
+    velocity_slip: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    velocity_threshold: float
 
     Returns
     -------
-    slip function
-
+    slip function: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
     """
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
     slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
@@ -42,6 +43,18 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 # TODO: node_to_elements only used in friction, so that it is located here, we can change it.
 # Converting forces on nodes to elements
 def nodes_to_elements(input):
+    """
+    Converts node velocity to element velocity.
+    Parameters
+    ----------
+    input: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+
+    Returns
+    -------
+    output: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    """
     # TODO: find a way with out initialzing output vector
     output = np.zeros((input.shape[0], input.shape[1] - 1))
     output[..., :-1] += 0.5 * input[..., 1:-1]
@@ -54,7 +67,32 @@ def nodes_to_elements(input):
 # base class for interaction
 # only applies normal force no friction
 class InteractionPlane:
+    """
+    Interaction plane class
+
+    Attributes
+    ----------
+    k: float
+    nu: float
+    plane_origin: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    plane_normal: numpy.ndarray
+       2D (dim, 1) array containing data with 'float' type.
+    surface_tol: float
+    """
+
     def __init__(self, k, nu, plane_origin, plane_normal):
+        """
+
+        Parameters
+        ----------
+        k: float
+        nu: float
+        plane_origin: numpy.ndarray
+           2D (dim, 1) array containing data with 'float' type.
+        plane_normal: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        """
         self.k = k
         self.nu = nu
         self.plane_origin = plane_origin.reshape(3, 1)
@@ -68,11 +106,12 @@ class InteractionPlane:
         is used.
         Parameters
         ----------
-        system
+        system: object
 
         Returns
         -------
-        magnitude of the plane response
+        magnitude of the plane response: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
         """
 
         # Compute plane response force
@@ -148,6 +187,24 @@ class InteractionPlane:
 # same convention for kinetic and static
 # mu named as to which direction it opposes
 class AnistropicFrictionalPlane(NoForces, InteractionPlane):
+    """
+    Anistropic friction plane class
+
+    Attributes
+    ----------
+    k: float
+    nu: float
+    plane_origin: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    plane_normal: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    slip_velocity_tol: float
+    static_mu_array: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+    kinetic_mu_array: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+    """
+
     def __init__(
         self,
         k,
@@ -158,6 +215,22 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         static_mu_array,
         kinetic_mu_array,
     ):
+        """
+
+        Parameters
+        ----------
+        k: float
+        nu: float
+        plane_origin: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        plane_normal: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        slip_velocity_tol: float
+        static_mu_array: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
+        kinetic_mu_array: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
+        """
         InteractionPlane.__init__(self, k, nu, plane_origin, plane_normal)
         self.slip_velocity_tol = slip_velocity_tol
         (
@@ -174,6 +247,17 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
     def apply_forces(self, system, time=0.0):
+        """
+        Apply friction forces on the rods.
+        Parameters
+        ----------
+        system: object
+        time: float
+
+        Returns
+        -------
+
+        """
         # calculate axial and rolling directions
         plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
         normal_plane_collection = np.repeat(
@@ -385,11 +469,15 @@ def sum_over_elements(input):
 
     Parameters
     ----------
-    input
+    input: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    output: float
 
+    Note
+    -----
     Faster than sum(), .sum() and np.sum()
 
     For blocksize = 200
@@ -410,19 +498,21 @@ def sum_over_elements(input):
 def node_to_element_velocity(node_velocity):
     """
     This function computes to velocity on the elements.
-    Here we define a seperate function because benchmark results
+    Here we define a separate function because benchmark results
     showed that using numba, we get almost 3 times faster calculation
 
     Parameters
     ----------
-    node_velocity
+    node_velocity: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
-    element_velocity
+    element_velocity: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Note
-    ___
+    ----
     Faster than pure python for blocksize 100
     python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
     this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
@@ -444,14 +534,22 @@ def slender_body_forces(
 
     Parameters
     ----------
-    tangents
-    velocity_collection
-    dynamic_viscosity
-    length
-    radius
+    tangents: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    velocity_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    dynamic_viscosity: float
+    length: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    radius: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    output: numpy.ndarray
+       2D (dim, blocksize) array containing data with 'float' type.
+    Note
+    ----
     Faster than numpy einsum implementation for blocksize 100
     numpy: 39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
     this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
@@ -509,6 +607,13 @@ def slender_body_forces(
 
 # slender body theory
 class SlenderBodyTheory(NoForces):
+    """
+    Slender body theory class
+    Attributes
+    ----------
+    dynamic_viscosity: float
+    """
+
     def __init__(self, dynamic_viscosity):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
@@ -521,7 +626,7 @@ class SlenderBodyTheory(NoForces):
 
         Parameters
         ----------
-        system
+        system: object
 
         Returns
         -------

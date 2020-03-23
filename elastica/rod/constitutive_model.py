@@ -39,7 +39,10 @@ class _LinearConstitutiveModelMixin:
             3D (dim, dim, blocksize) array containing data with 'float' type.
         rest_lengths: numpy.ndarray
             1D (blocksize) array containing data with 'float' type.
-
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
         """
         # set rest strains and curvature to be  zero at start
         # if found in kwargs modify (say for curved rod)
@@ -128,6 +131,10 @@ class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin)
             3D (dim, dim, blocksize) array containing data with 'float' type.
         rest_lengths: numpy.ndarray
             1D (blocksize) array containing data with 'float' type.
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
         """
         _LinearConstitutiveModelMixin.__init__(
             self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs

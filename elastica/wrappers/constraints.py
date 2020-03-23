@@ -63,7 +63,27 @@ class Constraints:
 
 
 class _Constraint:
+    """
+    Constraint wrapper private class
+
+    Attributes
+    ----------
+    _sys_idx: int
+    _bc_cls: list
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
     def __init__(self, sys_idx: int):
+        """
+
+        Parameters
+        ----------
+        sys_idx: int
+
+        """
         self._sys_idx = sys_idx
         self._bc_cls = None
         self._args = ()

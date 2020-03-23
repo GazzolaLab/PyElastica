@@ -11,6 +11,7 @@ def levi_civita_tensor(dim):
     """
     Creates levi civita tensor for cross product of
     vector in different directions.
+
     Parameters
     ----------
     dim: int
@@ -29,12 +30,13 @@ def levi_civita_tensor(dim):
 
 def _batch_matvec(matrix_collection, vector_collection):
     """
-    Computes batch matrix and batch vector product
+    Computes batch matrix and batch vector product.
+
     Parameters
     ----------
-    matrix_collection: ndarray
+    matrix_collection: numpy.ndarray
         3D (dim, dim, blocksize) array containing data with 'float' type.
-    vector_collection: ndarray
+    vector_collection: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
     Returns
     -------
@@ -45,12 +47,13 @@ def _batch_matvec(matrix_collection, vector_collection):
 
 def _batch_matmul(first_matrix_collection, second_matrix_collection):
     """
-    Computes batch matrix and batch matrix product
+    Computes batch matrix and batch matrix product.
+
     Parameters
     ----------
-    first_matrix_collection: ndarray
+    first_matrix_collection: numpy.ndarray
         3D (dim, dim, blocksize) array containing data with 'float' type.
-    second_matrix_collection: ndarray
+    second_matrix_collection: numpy.ndarray
         3D (dim, dim, blocksize) array containing data with 'float' type.
     Returns
     -------
@@ -62,11 +65,12 @@ def _batch_matmul(first_matrix_collection, second_matrix_collection):
 def _batch_cross(first_vector_collection, second_vector_collection):
     """
     Computes batch vector and batch vector cross product.
+
     Parameters
     ----------
-    first_vector_collection: ndarray
+    first_vector_collection: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
-    second_vector_collection: ndarray
+    second_vector_collection: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
 
     Returns

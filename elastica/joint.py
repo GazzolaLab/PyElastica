@@ -5,10 +5,25 @@ from elastica.utils import Tolerance
 
 
 class FreeJoint:
+    """
+    Free or spherical joint class.
+    Attributes
+    ----------
+    k: float
+    nu: float
+    """
+
     # pass the k and nu for the forces
     # also the necessary rods for the joint
     # indices should be 0 or -1, we will provide wrappers for users later
     def __init__(self, k, nu):
+        """
+
+        Parameters
+        ----------
+        k: float
+        nu: float
+        """
         self.k = k
         self.nu = nu
         # self.rod_one = rod_one
@@ -58,11 +73,29 @@ class FreeJoint:
 
 class HingeJoint(FreeJoint):
     """ this joint currently keeps rod one fixed and moves rod two
-        how couples act needs to be reconfirmed
+        how couples act needs to be reconfirmed.
+
+        Attributes
+        ----------
+        k: float
+        nu: float
+        kt: float
+        normal_direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(self, k, nu, kt, normal_direction):
+        """
+
+        Parameters
+        ----------
+        k: float
+        nu: float
+        kt: float
+        normal_direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        """
         super().__init__(k, nu)
         # normal direction of the constrain plane
         # for example for yz plane (1,0,0)
@@ -102,7 +135,24 @@ class HingeJoint(FreeJoint):
 
 
 class FixedJoint(FreeJoint):
+    """
+    Fixed joint
+    Attributes
+    ----------
+    k: float
+    nu: float
+    kt: float
+    """
+
     def __init__(self, k, nu, kt):
+        """
+
+        Parameters
+        ----------
+        k: float
+        nu: float
+        kt: float
+        """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
