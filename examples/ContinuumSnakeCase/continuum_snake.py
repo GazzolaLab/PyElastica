@@ -3,7 +3,7 @@ import numpy as np
 # FIXME without appending sys.path make it more generic
 import sys
 
-sys.path.append("../")
+sys.path.append("../../")
 
 import os
 from collections import defaultdict
