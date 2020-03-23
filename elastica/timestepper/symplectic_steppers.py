@@ -47,7 +47,7 @@ class _SystemCollectionStepperMixin:
         Function for doing symplectic stepper over the user defined rods (system).
         Parameters
         ----------
-        SystemCollection: object
+        SystemCollection: rod object
         time: float
         dt: float
 

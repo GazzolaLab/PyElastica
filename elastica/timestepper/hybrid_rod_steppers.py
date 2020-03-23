@@ -94,9 +94,9 @@ class SymplecticCosseratRodStepper:
         """
         Parameters
         ----------
-        System
-        time
-        dt
+        System: rod object
+        time: float
+        dt: float
 
         Returns
         -------

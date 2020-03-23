@@ -53,9 +53,18 @@ class NoForces:
 
 class GravityForces(NoForces):
     """ Applies a constant gravity on the entire rod
+    Attributes
+    ----------
+    acc_gravity: float
     """
 
     def __init__(self, acc_gravity=np.array([0.0, -9.80665, 0.0])):
+        """
+
+        Parameters
+        ----------
+        acc_gravity: float
+        """
         super(GravityForces, self).__init__()
         self.acc_gravity = acc_gravity
 
@@ -65,9 +74,26 @@ class GravityForces(NoForces):
 
 class EndpointForces(NoForces):
     """ Applies constant forces on endpoints
+    Attributes
+    ----------
+    start_force: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    end_force: numpy.ndarray
+       2D (dim, 1) array containing data with 'float' type.
+    ramp_up_time: float
     """
 
     def __init__(self, start_force, end_force, ramp_up_time=0.0):
+        """
+
+        Parameters
+        ----------
+        start_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        end_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        ramp_up_time: float
+        """
         super(EndpointForces, self).__init__()
         self.start_force = start_force
         self.end_force = end_force
@@ -84,9 +110,21 @@ class EndpointForces(NoForces):
 class UniformTorques(NoForces):
     """
     Applies uniform torque to entire rod
+    Attributes
+    ----------
+    torque: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
+        """
+
+        Parameters
+        ----------
+        torque: float
+        direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        """
         super(UniformTorques, self).__init__()
         self.torque = (torque * direction).reshape(3, 1)
 
@@ -100,9 +138,21 @@ class UniformTorques(NoForces):
 class UniformForces(NoForces):
     """
     Applies uniform forces to entire rod
+    Attributes
+    ----------
+    force:  numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, force, direction=np.array([0.0, 0.0, 0.0])):
+        """
+
+        Parameters
+        ----------
+        force: float
+        direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        """
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
@@ -120,6 +170,17 @@ class MuscleTorques(NoForces):
     """
     Applies muscle torques on the body. It can apply muscle torques
     as travelling wave with beta spline or only as travelling wave.
+
+    Attributes
+    ----------
+    direction: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    angular_frequency: float
+    wave_number: float
+    phase_shift: float
+    ramp_up_time: float
+    my_spline: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
     """
 
     def __init__(
@@ -133,6 +194,21 @@ class MuscleTorques(NoForces):
         ramp_up_time=0.0,
         with_spline=False,
     ):
+        """
+
+        Parameters
+        ----------
+        base_length: float
+        b_coeff: nump.ndarray
+            1D array containing data with 'float' type.
+        period: float
+        wave_number: float
+        phase_shift: float
+        direction: numpy.ndarray
+           2D (dim, 1) array containing data with 'float' type.
+        ramp_up_time: float
+        with_spline: float
+        """
         super(MuscleTorques, self).__init__()
 
         self.direction = direction.reshape(3, 1)  # Direction torque applied

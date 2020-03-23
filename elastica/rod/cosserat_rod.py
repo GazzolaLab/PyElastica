@@ -31,48 +31,48 @@ class _CosseratRodBase(RodBase):
     Attributes
     -----------
     n_elems: int
-    _vector_states: ndarray
-        2D array containing data with 'float' type.
+    _vector_states: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
     _matrix_states:
         3D array containing data with 'float' type.
-    rest_lengths: ndarray
-        1D array containing data with 'float' type.
-    density: ndarray
-        1D array containing data with 'float' type.
-    volume: ndarray
-        1D array containing data with 'float' type.
-    mass: ndarray
-        1D array containing data with 'float' type.
-    mass_second_moment_of_inertia: ndarray
-        3D array containing data with 'float' type.
-    inv_mass_second_moment_of_inertia: ndarray
-        3D array containing data with 'float' type.
-    nu: ndarray
-        1D array containing data with 'float' type.
-    rest_voronoi_lengths: ndarray
-        1D array containing data with 'float' type.
-    rest_lengths: ndarray
-        1D array containing data with 'float' type.
-    internal_forces: ndarray
-        2D array containing data with 'float' type.
-    internal_torques: ndarray
-        2D array containing data with 'float' type.
-    external_forces: ndarray
-        2D array containing data with 'float' type.
-    external_torques: ndarray
-        2D array containing data with 'float' type.
-    lengths: ndarray
-        1D array containing data with 'float' type.
-    tangents: ndarray
-        2D array containing data with 'float' type.
-    radius: ndarray
-        1D array containing data with 'float' type.
-    dilatation: ndarray
-        1D array containing data with 'float' type.
-    voronoi_dilatation: ndarray
-        1D array containing data with 'float' type.
-    dilatation_rate: ndarray
-        1D array containing data with 'float' type.
+    rest_lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    density: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    volume: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    mass: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    mass_second_moment_of_inertia: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    inv_mass_second_moment_of_inertia: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    nu: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    rest_voronoi_lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    rest_lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    internal_forces: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    internal_torques: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    external_forces: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    external_torques: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    tangents: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    radius: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    dilatation: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    voronoi_dilatation: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    dilatation_rate: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
 
     """
 
@@ -93,20 +93,20 @@ class _CosseratRodBase(RodBase):
         Parameters
         ----------
         n_elements: int
-        position: ndarray
-            2D array containing data with 'float' type.
-        directors: ndarray
-            3D array containing data with 'float' type.
-        rest_lengths: ndarray
-            1D array containing data with 'float' type.
-        density: ndarray
-            1D array containing data with 'float' type.
-        volume: ndarray
-            1D array containing data with 'float' type.
-        mass_second_moment_of_inertia: ndarray
-            2D array containing data with 'float' type.
-        nu: ndarray
-           1D array containing data with 'float' type.
+        position: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+        directors: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        rest_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+        density: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+        volume: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+        mass_second_moment_of_inertia: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+        nu: numpy.ndarray
+           1D (blocksize) array containing data with 'float' type.
         """
         velocities = np.zeros((MaxDimension.value(), n_elements + 1))
         omegas = np.zeros((MaxDimension.value(), n_elements))  # + 1e-16

@@ -13,14 +13,14 @@ class _LinearConstitutiveModelMixin:
 
     Attributes
     ----------
-    rest_sigma: ndarray
-        2D array containing data with 'float' type.
-    rest_kappa: ndarray
-        2D array containing data with 'float' type.
-    shear_matrix: ndarray
-        3D array containing data with 'float' type.
-    bend_matrix: ndarray
-       3D array containing data with 'float' type.
+    rest_sigma: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    rest_kappa: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    shear_matrix: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    bend_matrix: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
     """
 
     # Needs
@@ -33,12 +33,12 @@ class _LinearConstitutiveModelMixin:
         Parameters
         ----------
         n_elements: int
-        shear_matrix: ndarray
-            3D array containing data with 'float' type.
-        bend_matrix: ndarray
-           3D array containing data with 'float' type.
-        rest_lengths: ndarray
-            1D array containing data with 'float' type.
+        shear_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        bend_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        rest_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
 
         """
         # set rest strains and curvature to be  zero at start
@@ -101,18 +101,18 @@ class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin)
 
     Attributes
     ----------
-    rest_sigma: ndarray
-        2D array containing data with 'float' type.
-    rest_kappa: ndarray
-        2D array containing data with 'float' type.
-    shear_matrix: ndarray
-        3D array containing data with 'float' type.
-    bend_matrix: ndarray
-       3D array containing data with 'float' type.
-    shear_rate_matrix: ndarray
-        2D array containing data with 'float' type.
-    bend_rate_matrix: ndarray
-        2D array containing data with 'float' type.
+    rest_sigma: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    rest_kappa: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    shear_matrix: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    bend_matrix: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    shear_rate_matrix: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    bend_rate_matrix: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
     """
 
     def __init__(
@@ -122,12 +122,12 @@ class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin)
         Parameters
         ----------
         n_elements: int
-        shear_matrix: ndarray
-            3D array containing data with 'float' type.
-        bend_matrix: ndarray
-           3D array containing data with 'float' type.
-        rest_lengths: ndarray
-            1D array containing data with 'float' type.
+        shear_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        bend_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        rest_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
         """
         _LinearConstitutiveModelMixin.__init__(
             self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs

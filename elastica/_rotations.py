@@ -10,7 +10,17 @@ from ._linalg import _batch_matmul
 
 @functools.lru_cache(maxsize=1)
 def _generate_skew_map(dim: int):
-    # TODO Documentation
+    """
+    Generates mapping for skew symmetric matrices, depending on
+    matrix dimension.
+    Parameters
+    ----------
+    dim: int
+
+    Returns
+    -------
+
+    """
     # Preallocate
     mapping_list = [None] * ((dim ** 2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
@@ -37,7 +47,8 @@ def _generate_skew_map(dim: int):
 
 @functools.lru_cache(maxsize=1)
 def _get_skew_map(dim):
-    """ Generates mapping from src to target skew-symmetric operator
+    """
+    Generates mapping from src to target skew-symmetric operator
 
     For input vector V and output Matrix M (represented in lexicographical index),
     we calculate mapping from
@@ -47,6 +58,13 @@ def _get_skew_map(dim):
         |z|        |-y x 0|
 
     in a dimension agnostic way.
+
+    Parameters
+    ----------
+    dim: int
+
+    Returns
+    -------
 
     """
     mapping_list = _generate_skew_map(dim)
@@ -60,7 +78,17 @@ def _get_skew_map(dim):
 
 @functools.lru_cache(maxsize=1)
 def _get_inv_skew_map(dim):
-    # TODO Documentation
+    """
+    Generates mapping for inverse skew symmetric matrices, depending on
+    matrix dimension.
+    Parameters
+    ----------
+    dim: int
+
+    Returns
+    -------
+
+    """
     # (vec_src, mat_i, mat_j, sign)
     mapping_list = _generate_skew_map(dim)
 
@@ -71,7 +99,8 @@ def _get_inv_skew_map(dim):
 
 @functools.lru_cache(maxsize=1)
 def _get_diag_map(dim):
-    """ Generates lexicographic mapping to diagonal in a serialized matrix-type
+    """
+    Generates lexicographic mapping to diagonal in a serialized matrix-type
 
     For input dimension dim  we calculate mapping to * in Matrix M below
 
@@ -80,6 +109,12 @@ def _get_diag_map(dim):
         |0 0 *|
 
     in a dimension agnostic way.
+    Parameters
+    ----------
+    dim: int
+
+    Returns
+    -------
 
     """
     # Preallocate
@@ -94,14 +129,16 @@ def _get_diag_map(dim):
 
 def _skew_symmetrize(vector):
     """
-
+    This function takes a vector and creates skew symmetric matrix.
     Parameters
     ----------
-    vector : numpy.ndarray of shape (dim, blocksize)
+    vector : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
-    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
+    output : numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
              [0, -z, y, z, 0, -x, -y , x, 0]
 
     Note
@@ -133,11 +170,13 @@ def _skew_symmetrize_sq(vector):
 
     Parameters
     ----------
-    vector : numpy.ndarray of shape (dim, blocksize)
+    vector : ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
-    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
+    output : ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
              [-(y^2+z^2), xy, xz, yx, -(x^2+z^2), yz, zx, zy, -(x^2+y^2)]
 
     Note
@@ -188,14 +227,20 @@ def _skew_symmetrize_sq(vector):
 
 def _get_skew_symmetric_pair(vector_collection):
     """
+    This function takes batch vector and created skew symmetric
+    matrix and square of skew symmetric matrix.
 
     Parameters
     ----------
-    vector_collection
+    vector_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
-
+    u: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    u_sq: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
     """
     u = _skew_symmetrize(vector_collection)
     u_sq = np.einsum("ijk,jlk->ilk", u, u)
@@ -208,11 +253,13 @@ def _inv_skew_symmetrize(matrix):
 
     Parameters
     ----------
-    matrix : np.ndarray of dimension (dim, dim, blocksize)
+    matrix : numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
-    vector : np.ndarray of dimension (dim, blocksize)
+    vector : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Note
     ----
@@ -235,14 +282,18 @@ def _inv_skew_symmetrize(matrix):
 
 def _get_rotation_matrix(scale: float, axis_collection):
     """
+    Compute rotation matrix
 
     Parameters
     ----------
-    scale
-    axis_collection
+    scale: float
+    axis_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    rot_mat: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
 
     # TODO include microbechmark results
     """
@@ -287,14 +338,17 @@ def _get_rotation_matrix(scale: float, axis_collection):
 
 def _rotate(director_collection, scale: float, axis_collection):
     """
+    Takes the director collection and rotates it around the axis collection.
     Does alibi rotations
     https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
 
     Parameters
     ----------
-    director_collection
-    scale
-    axis_collection
+    director_collection: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    scale: float
+    axis_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
@@ -315,13 +369,15 @@ def _inv_rotate(director_collection):
 
     Parameters
     ----------
-    director_collection : The collection of frames/directors at every element,
-    numpy.ndarray of shape (dim, dim, n)
+    director_collection : numpy.ndarray
+       3D (dim, dim, blocksize) array containing data with 'float' type.
+       The collection of frames/directors at every element.
 
     Returns
     -------
-    vector_collection : The collection of axes around which the body rotates
-    numpy.ndarray of shape (dim, n)
+    vector_collection : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        The collection of axes around which the body rotates
 
     Note
     ----

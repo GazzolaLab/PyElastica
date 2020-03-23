@@ -33,9 +33,21 @@ class MyCallBack(CallBackBaseClass):
     My call back class it is derived from the base call back class.
     This is an example, user can use this class as an example to write
     new call back classes
+
+    Attributes
+    ----------
+    every: int
+    callback_params: dict
     """
 
     def __init__(self, step_skip: int, callback_params):
+        """
+
+        Parameters
+        ----------
+        step_skip: int
+        callback_params: dict
+        """
         CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
@@ -56,9 +68,21 @@ class MyCallBack(CallBackBaseClass):
 class ContinuumSnakeCallBack(CallBackBaseClass):
     """
     Call back function for continuum snake
+
+    Attributes
+    ----------
+    every: int
+    callback_params: dict
     """
 
     def __init__(self, step_skip: int, callback_params):
+        """
+
+        Parameters
+        ----------
+        step_skip: int
+        callback_params: dict
+        """
         CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params

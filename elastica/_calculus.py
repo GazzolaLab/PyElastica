@@ -9,6 +9,17 @@ import functools
 
 @functools.lru_cache(maxsize=2)
 def _get_zero_array(dim, ndim):
+    """
+    Returns zeros float or array depending on ndim
+    Parameters
+    ----------
+    dim: int
+    ndim : int
+
+    Returns
+    -------
+
+    """
     if ndim == 1:
         return 0.0
     if ndim == 2:
@@ -21,7 +32,8 @@ def _trapezoidal(array_collection):
 
     Parameters
     ----------
-    array_collection
+    array_collection: ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
@@ -51,7 +63,8 @@ def _two_point_difference(array_collection):
 
     Parameters
     ----------
-    array_collection
+    array_collection: ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------

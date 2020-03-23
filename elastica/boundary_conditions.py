@@ -22,10 +22,25 @@ class FreeRod:
 
 class OneEndFixedRod(FreeRod):
     """
-    the end of the rod fixed x[0]
+    The end of the rod fixed x[0]
+    Attributes
+    ----------
+    fixed_positions: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    fixed_directors: numpy.ndarray
+        3D (dim, dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, fixed_position, fixed_directors):
+        """
+
+        Parameters
+        ----------
+        fixed_position: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        fixed_directors: numpy.ndarray
+            3D (dim, dim, 1) array containing data with 'float' type.
+        """
         FreeRod.__init__(self)
         self.fixed_position = fixed_position
         self.fixed_directors = fixed_directors
@@ -43,6 +58,22 @@ class HelicalBucklingBC(FreeRod):
     """
     boundary condition for helical buckling
     controlled twisting of the ends
+
+    Attributes
+    ----------
+    twisting_time: float
+    final_start_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    final_end_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    ang_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    shrink_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    final_start_directors: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    final_end_directors: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
     """
 
     def __init__(
@@ -55,6 +86,22 @@ class HelicalBucklingBC(FreeRod):
         slack,
         number_of_rotations,
     ):
+        """
+
+        Parameters
+        ----------
+        position_start: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        position_end: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        director_start: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        director_end: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        twisting_time: float
+        slack: float
+        number_of_rotations: float
+        """
         FreeRod.__init__(self)
         self.twisting_time = twisting_time
 
