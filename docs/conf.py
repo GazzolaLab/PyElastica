@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
+    'sphinx.ext.mathjax',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,6 +50,11 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 autodoc_default_flags = ['members',  'private-members', 'special-members',  'show-inheritance']
+
+source_parsers = {
+   '.md': 'recommonmark.parser.CommonMarkParser',
+}
+source_suffix = ['.rst', '.md']
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

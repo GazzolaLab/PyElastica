@@ -29,7 +29,7 @@ class _CosseratRodBase(RodBase):
     CosseratRodBase is base class of CosseratRod class, which have all Cosserat Rod equations
 
     Attributes
-    ----------
+    -----------
     n_elems: int
     _vector_states: ndarray
         2D array containing data with 'float' type.
