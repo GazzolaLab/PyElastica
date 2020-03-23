@@ -7,6 +7,14 @@ Add forces and torques to rod (external point force, b-spline torques etc).
 
 
 class Forcing:
+    """
+    Forcing wrapper class for calling external force functions
+
+    Attributes
+    ----------
+    _ext_forces_torques: list
+    """
+
     def __init__(self):
         self._ext_forces_torques = []
         super(Forcing, self).__init__()

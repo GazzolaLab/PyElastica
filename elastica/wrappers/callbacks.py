@@ -9,6 +9,14 @@ from elastica.callback_functions import CallBackBaseClass
 
 
 class CallBacks:
+    """
+    Call back wrapper class for calling callback functions
+
+    Attributes
+    ----------
+    _callbacks: list
+    """
+
     def __init__(self):
         self._callbacks = []
         super(CallBacks, self).__init__()

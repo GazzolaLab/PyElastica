@@ -9,6 +9,14 @@ from elastica.boundary_conditions import FreeRod
 
 
 class Constraints:
+    """
+    Constraints wrapper class for calling boundary condition functions
+
+    Attributes
+    ----------
+    _constraints: list
+    """
+
     def __init__(self):
         self._constraints = []
         super(Constraints, self).__init__()

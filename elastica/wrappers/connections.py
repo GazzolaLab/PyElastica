@@ -10,6 +10,14 @@ from elastica.joint import FreeJoint
 
 
 class Connections:
+    """
+    Connection wrapper class for calling joints functions
+
+    Attributes
+    ----------
+    _connections: list
+    """
+
     def __init__(self):
         self._connections = []
         super(Connections, self).__init__()

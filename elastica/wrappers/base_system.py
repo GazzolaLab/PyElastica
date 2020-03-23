@@ -15,7 +15,15 @@ class BaseSystemCollection(MutableSequence):
     """
     Base System
 
-    Technical note : We can directly subclass a list for the
+    Attributes
+    ----------
+    allowed_sys_types: Class
+    _systems: list
+    _features: list
+
+    Note
+    ----
+    We can directly subclass a list for the
     most part, but this is a bad idea, as List is non abstract
     https://stackoverflow.com/q/3945940
     """

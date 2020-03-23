@@ -38,7 +38,23 @@ class _SystemInstanceStepperMixin:
 
 
 class _SystemCollectionStepperMixin:
+    """
+    Symplectic stepper mixin collection class
+    """
+
     def do_step(self, SystemCollection, time: np.float64, dt: np.float64):
+        """
+        Function for doing symplectic stepper over the user defined rods (system).
+        Parameters
+        ----------
+        SystemCollection: object
+        time: float
+        dt: float
+
+        Returns
+        -------
+
+        """
         for (
             kin_prefactor,
             kin_step,
@@ -87,6 +103,19 @@ class _SystemCollectionStepperMixin:
 
 
 class SymplecticStepper(_TimeStepper):
+    """
+    Symplectic stepper constructor.
+
+    Attributes
+    ----------
+    _steps: list
+        List containing methods of symplectic time stepper.
+    _prefactors: list
+        List containing prefactors of symplectic time stepper.
+    _update_internal_forces_torques: list
+        List containing methods for computing internal forces and torques.
+    """
+
     def __init__(self, cls=None):
         super(SymplecticStepper, self).__init__()
         take_methods_from = self if cls is None else cls()
@@ -170,6 +199,8 @@ class SymplecticStepper(_TimeStepper):
 
 class PositionVerlet(SymplecticStepper):
     """
+    Position Verlet symplectic time stepper class, which
+    includes methods for position Verlet.
     """
 
     def __init__(self):

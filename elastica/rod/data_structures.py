@@ -8,6 +8,25 @@ from elastica._rotations import _get_rotation_matrix, _rotate
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
 class _RodExplicitStepperMixin:
+    """
+    Rod explicit time stepper mixin class
+
+    Attributes
+    ----------
+    state: ndarray
+        2D array containing data with 'float' type.
+    position_collection: ndarray
+        2D array containing data with 'float' type.
+    director_collection: ndarray
+        3D array containing data with 'float' type.
+    velocity_collection: ndarray
+        2D array containing data with 'float' type.
+    omega_collection: ndarray
+        2D array containing data with 'float' type.
+    acceleration_collection: ndarray
+        2D array containing data with 'float' type.
+    """
+
     def __init__(self):
         (
             self.state,
@@ -42,6 +61,28 @@ class _RodExplicitStepperMixin:
 
 
 class _RodSymplecticStepperMixin:
+    """
+    Rod symplectic stepper mixin class
+
+    Attributes
+    ----------
+    kinematic_states: ndarray
+        2D array containing data with 'float' type.
+    dynamic_states: ndarray
+        2D array containing data with 'float' type.
+    position_collection: ndarray
+        2D array containing data with 'float' type.
+    director_collection: ndarray
+        2D array containing data with 'float' type.
+    omega_collection: ndarray
+        2D array containing data with 'float' type.
+    acceleration_collection: ndarray
+        2D array containing data with 'float' type.
+    alpha_collection: ndarray
+        2D array containing data with 'float' type.
+
+    """
+
     def __init__(self):
         (
             self.kinematic_states,
@@ -84,9 +125,34 @@ class _RodSymplecticStepperMixin:
 
     # TODO: find better way and place to compute internal forces and torques
     def update_internal_forces_and_torques(self, time, *args, **kwargs):
+        """
+        This function is a wrapper to call internal forces and torques.
+        Parameters
+        ----------
+        time
+        args
+        kwargs
+
+        Returns
+        -------
+
+        """
         self._compute_internal_forces_and_torques(time)
 
     def dynamic_rates(self, time, *args, **kwargs):
+        """
+        This function is a wrapper to call update accelerations and update
+        accelerations (dynamic rates).
+        Parameters
+        ----------
+        time
+        args
+        kwargs
+
+        Returns
+        -------
+
+        """
         self.update_accelerations(time)
 
         """
@@ -185,6 +251,17 @@ class _State:
     (steppers that integrate all states in one-step/stage).
     Allows for separating implementation of stepper from actual
     addition/multiplication/other formulae used.
+
+    Attributes
+    ----------
+    n_nodes: int
+    n_kinematic_rates: int
+    position_collection: ndarray
+        2D array containing data with 'float' type.
+    director_collection: ndarray
+        3D array containing data with 'float' type.
+    kinematic_rate_collection_view: ndarray
+        2D array containing data with 'float' type.
     """
 
     # TODO : args, kwargs instead of hardcoding types
@@ -331,6 +408,11 @@ class _DerivativeState:
     explicit steppers (steppers that integrate all states in one-step/stage).
     Allows for separating implementation of stepper from actual addition
     /multiplication used.
+
+    Attributes
+    ----------
+    rate_collection: ndarray
+        2D array containing data with 'float' type.
     """
 
     def __init__(self, _unused_n_elems: int, rate_collection_view):
@@ -424,6 +506,14 @@ class _KinematicState:
 
     Symplectic steppers rely only on in-place modifications to state and so
     only these methods are provided.
+
+    Attributes
+    ----------
+    n_nodes: int
+    postion_collection: ndarray
+        2D array containing data with 'float' type.
+    director_collection: ndarray
+        2D array containing data with 'float' type.
     """
 
     def __init__(
@@ -485,6 +575,12 @@ class _DynamicState:
 
     Symplectic steppers rely only on in-place modifications to state and so
     only these methods are provided.
+
+    Attributes
+    ----------
+    n_kinematic_rates: int
+    rate_collection: ndarray
+        2D array containing data with 'float' type.
     """
 
     def __init__(self, n_elems: int, rate_collection_view):
