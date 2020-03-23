@@ -5,6 +5,7 @@ import sys
 
 sys.path.append("../../")
 
+
 # import os
 # from collections import defaultdict
 # from elastica.wrappers import (
@@ -21,6 +22,7 @@ sys.path.append("../../")
 # from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 # from elastica.timestepper import integrate
 from elastica import *
+
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )
