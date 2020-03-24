@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose
 
 from elastica.utils import MaxDimension, Tolerance
 
-from elastica._linalg import _batch_cross, _batch_norm
+from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
 
 
 def allocate(
@@ -126,6 +126,14 @@ def allocate(
     else:
         # Construct directors using tangents and normal
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
+        # Check if rod normal and rod tangent are perpendicular to each other otherwise
+        # directors will be wrong!!
+        assert_allclose(
+            _batch_dot(normal_collection, tangents),
+            0,
+            atol=Tolerance.atol(),
+            err_msg=(" Rod normal and tangent are not perpendicular to each other!"),
+        )
         directors[0, ...] = normal_collection
         directors[1, ...] = _batch_cross(tangents, normal_collection)
         directors[2, ...] = tangents

@@ -206,7 +206,10 @@ def test_input_and_output_position_array(n_elems):
     poisson_ratio = 0.3
 
     # Check if the input position vector and output position vector are valid and same
-    correct_position = np.hstack((start.reshape(3, 1), np.random.randn(3, n_elems)))
+    correct_position = np.zeros((3, n_elems + 1))
+    correct_position[0] = np.random.randn(n_elems + 1)
+    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[..., 0] = start
     mockrod = MockRodForTest.straight_rod(
         n_elems,
         start,
