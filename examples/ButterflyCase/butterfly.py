@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 # from elastica.timestepper import integrate
 from elastica import *
 from elastica.utils import MaxDimension
-from elastica.rod.cosserat_rod import _CosseratRodBase
+from elastica._elastica_numpy._rod._cosserat_rod import _CosseratRodBase
 
 
 class ButterflySimulator(BaseSystemCollection, CallBacks):
@@ -113,16 +113,40 @@ inertia_collection = np.repeat(
     mass_second_moment_of_inertia[:, :, np.newaxis], n_elem, axis=2
 )
 
-temporary_rod = _CosseratRodBase(
-    n_elements=n_elem,
-    position=positions,
-    directors=directors,
-    rest_lengths=rest_lengths,
-    density=density,
-    volume=np.pi * base_radius ** 2 * rest_lengths,
-    mass_second_moment_of_inertia=inertia_collection,
-    nu=nu,
-)
+# temporary_rod = _CosseratRodBase(
+#     n_elements=n_elem,
+#     position=positions,
+#     directors=directors,
+#     rest_lengths=rest_lengths,
+#     density=density,
+#     volume=np.pi * base_radius ** 2 * rest_lengths,
+#     mass_second_moment_of_inertia=inertia_collection,
+#     nu=nu,
+# )
+#
+# temporary_rod = _CosseratRodBase(
+#     n_elements=n_elem,
+#     position=positions,
+#     directors=directors,
+#     rest_lengths=rest_lengths,
+#     density=density,
+#     volume=np.pi * base_radius ** 2 * rest_lengths,
+#     mass_second_moment_of_inertia=inertia_collection,
+#     nu=nu,
+# )
+#
+# temporary_rod = CosseratRod.straight_rod(
+#         n_elem,
+#         start=origin,
+#         direction=np.array([0., 0., 1.]),
+#         normal=normal,
+#         base_length=total_length,
+#         base_radius=base_radius,
+#         density=density,
+#         nu=nu,
+#         E=,
+#         poisson_ratio,
+#     )
 
 # Shear/Stretch matrix
 shear_matrix = np.zeros((MaxDimension.value(), MaxDimension.value()), np.float64)
