@@ -26,6 +26,7 @@ class RigidCylinderSimulator(BaseSystemCollection, Constraints, Forcing, CallBac
     pass
 
 
+# FIXME: This example case is not working correctly because friction for rigid body is not anisotropic
 # Options
 PLOT_FIGURE = True
 SAVE_FIGURE = True
