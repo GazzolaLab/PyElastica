@@ -259,23 +259,38 @@ def allocate(
     mass[1:] += 0.5 * density * volume
 
     # Set dissipation constant or nu array
-    dissipation_constant = np.zeros((n_elements))
+    dissipation_constant_for_forces = np.zeros((n_elements))
     # Check if the user input nu is valid
     nu_temp = np.array(nu)
     assert nu_temp.ndim < 2, (
-        "Input dissipation constant(nu) shape is not correct "
-        + str(radius_temp.shape)
+        "Input dissipation constant(nu) for forces shape is not correct "
+        + str(nu_temp.shape)
         + " It should be "
-        + str(radius.shape)
+        + str(dissipation_constant_for_forces.shape)
         + " or  single floating number "
     )
-    dissipation_constant[:] = nu
+    dissipation_constant_for_forces[:] = nu
     # Check if the elements of dissipation constant greater than tolerance
     for k in range(n_elements):
-        assert dissipation_constant[k] >= 0.0, (
+        assert dissipation_constant_for_forces[k] >= 0.0, (
             " Dissipation constant has to be equal or greater than 0 "
             + " Check your dissipation constant(nu) input!"
         )
+
+    dissipation_constant_for_torques = np.zeros((n_elements))
+    if kwargs.__contains__("nu_for_torques"):
+        temp_nu_for_torques = np.array(kwargs["nu_for_torques"])
+        assert temp_nu_for_torques.ndim < 2, (
+            "Input dissipation constant(nu) for torques shape is not correct "
+            + str(temp_nu_for_torques.shape)
+            + " It should be "
+            + str(dissipation_constant_for_torques.shape)
+            + " or  single floating number "
+        )
+        dissipation_constant_for_torques[:] = temp_nu_for_torques
+
+    else:
+        dissipation_constant_for_torques[:] = dissipation_constant_for_forces
 
     # Generate rest sigma and rest kappa, use user input if defined
     # set rest strains and curvature to be  zero at start
@@ -349,7 +364,8 @@ def allocate(
         density,
         volume,
         mass,
-        dissipation_constant,
+        dissipation_constant_for_forces,
+        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,

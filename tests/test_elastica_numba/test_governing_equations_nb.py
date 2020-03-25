@@ -372,7 +372,7 @@ class TestingClass:
             test_rod.shear_matrix,
             test_rod.internal_stress,
             test_rod.velocity_collection,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
         )
@@ -425,14 +425,14 @@ class TestingClass:
         _compute_damping_forces(
             test_rod.damping_forces,
             test_rod.velocity_collection,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_forces,
             test_rod.lengths,
         )
         _compute_damping_torques(
-            test_rod.nu,
-            test_rod.omega_collection,
-            test_rod.lengths,
             test_rod.damping_torques,
+            test_rod.omega_collection,
+            test_rod.dissipation_constant_for_torques,
+            test_rod.lengths,
         )
 
         test_damping_forces = test_rod.damping_forces
@@ -599,7 +599,7 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
         )
@@ -687,7 +687,7 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
         )
@@ -760,7 +760,7 @@ class TestingClass:
             test_rod.shear_matrix,
             test_rod.internal_stress,
             test_rod.velocity_collection,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
         )
@@ -790,7 +790,7 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
         )
@@ -843,7 +843,7 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.nu,
+            test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
         )

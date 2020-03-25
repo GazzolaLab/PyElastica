@@ -44,7 +44,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         density,
         volume,
         mass,
-        dissipation_constant,
+        dissipation_constant_for_forces,
+        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -76,7 +77,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         self.density = density
         self.volume = volume
         self.mass = mass
-        self.nu = dissipation_constant
+        self.dissipation_constant_for_forces = dissipation_constant_for_forces
+        self.dissipation_constant_for_torques = dissipation_constant_for_torques
         self.internal_forces = internal_forces
         self.internal_torques = internal_torques
         self.external_forces = external_forces
@@ -149,7 +151,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             density,
             volume,
             mass,
-            dissipation_constant,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -197,7 +200,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             density,
             volume,
             mass,
-            dissipation_constant,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -249,7 +253,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             self.shear_matrix,
             self.internal_stress,
             self.velocity_collection,
-            self.nu,
+            self.dissipation_constant_for_forces,
             self.damping_forces,
             self.internal_forces,
         )
@@ -272,7 +276,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             self.internal_couple,
             self.dilatation,
             self.dilatation_rate,
-            self.nu,
+            self.dissipation_constant_for_torques,
             self.damping_torques,
             self.internal_torques,
         )
@@ -529,7 +533,9 @@ def _compute_internal_bending_twist_stresses_from_model(
 
 
 @numba.njit(cache=True)
-def _compute_damping_forces(damping_forces, velocity_collection, nu, lengths):
+def _compute_damping_forces(
+    damping_forces, velocity_collection, dissipation_constant_for_forces, lengths
+):
     # Internal damping foces.
     elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
 
@@ -539,7 +545,9 @@ def _compute_damping_forces(damping_forces, velocity_collection, nu, lengths):
     for i in range(3):
         for k in range(blocksize):
             elemental_damping_forces[i, k] = (
-                nu[k] * elemental_velocities[i, k] * lengths[k]
+                dissipation_constant_for_forces[k]
+                * elemental_velocities[i, k]
+                * lengths[k]
             )
 
     damping_forces[:] = quadrature_kernel(elemental_damping_forces)
@@ -562,7 +570,7 @@ def _compute_internal_forces(
     shear_matrix,
     internal_stress,
     velocity_collection,
-    nu,
+    dissipation_constant_for_forces,
     damping_forces,
     internal_forces,
 ):
@@ -600,17 +608,25 @@ def _compute_internal_forces(
 
     cosserat_internal_stress /= dilatation
 
-    _compute_damping_forces(damping_forces, velocity_collection, nu, lengths)
+    _compute_damping_forces(
+        damping_forces, velocity_collection, dissipation_constant_for_forces, lengths
+    )
 
     internal_forces[:] = difference_kernel(cosserat_internal_stress) - damping_forces
 
 
 @numba.njit(cache=True)
-def _compute_damping_torques(nu, omega_collection, lengths, damping_torques):
+def _compute_damping_torques(
+    damping_torques, omega_collection, dissipation_constant_for_torques, lengths
+):
     blocksize = damping_torques.shape[1]
     for i in range(3):
         for k in range(blocksize):
-            damping_torques[i, k] = nu[k] * omega_collection[i, k] * lengths[k]
+            damping_torques[i, k] = (
+                dissipation_constant_for_torques[k]
+                * omega_collection[i, k]
+                * lengths[k]
+            )
 
 
 @numba.njit(cache=True)
@@ -632,7 +648,7 @@ def _compute_internal_torques(
     internal_couple,
     dilatation,
     dilatation_rate,
-    nu,
+    dissipation_constant_for_torques,
     damping_torques,
     internal_torques,
 ):
@@ -687,7 +703,9 @@ def _compute_internal_torques(
     # (J \omega_L / e^2) . (de/dt)
     unsteady_dilatation = J_omega_upon_e * dilatation_rate / dilatation
 
-    _compute_damping_torques(nu, omega_collection, lengths, damping_torques)
+    _compute_damping_torques(
+        damping_torques, omega_collection, dissipation_constant_for_torques, lengths
+    )
 
     blocksize = internal_torques.shape[1]
     for i in range(3):

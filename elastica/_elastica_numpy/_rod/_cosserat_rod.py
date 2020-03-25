@@ -34,7 +34,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         density,
         volume,
         mass,
-        dissipation_constant,
+        dissipation_constant_for_forces,
+        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -66,7 +67,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         self.density = density
         self.volume = volume
         self.mass = mass
-        self.nu = dissipation_constant
+        self.dissipation_constant_for_forces = dissipation_constant_for_forces
+        self.dissipation_constant_for_torques = dissipation_constant_for_torques
         self.internal_forces = internal_forces
         self.internal_torques = internal_torques
         self.external_forces = external_forces
@@ -122,7 +124,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             density,
             volume,
             mass,
-            dissipation_constant,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -170,7 +173,8 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             density,
             volume,
             mass,
-            dissipation_constant,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -300,7 +304,9 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         elemental_velocities = 0.5 * (
             self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
         )
-        elemental_damping_forces = self.nu * elemental_velocities * self.lengths
+        elemental_damping_forces = (
+            self.dissipation_constant_for_forces * elemental_velocities * self.lengths
+        )
         self.damping_forces = quadrature_kernel(elemental_damping_forces)
 
     def _compute_internal_forces(self):
@@ -321,7 +327,9 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
 
     def _compute_damping_torques(self):
         # Internal damping torques
-        self.damping_torques = self.nu * self.omega_collection * self.lengths
+        self.damping_torques = (
+            self.dissipation_constant_for_torques * self.omega_collection * self.lengths
+        )
 
     def _compute_internal_torques(self):
         # Compute \tau_l and cache it using internal_couple
