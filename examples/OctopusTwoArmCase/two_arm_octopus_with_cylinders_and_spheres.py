@@ -4,39 +4,40 @@ import sys
 
 sys.path.append("../../")
 
-import numpy as np
-
-from elastica.callback_functions import CallBackBaseClass
-from elastica.external_forces import GravityForces
-from elastica.hierarchical_muscles.hierarchical_bases import (
-    Gaussian,
-    ScalingFilter,
-    SpatiallyInvariantSplineHierarchy,
-    SpatiallyInvariantSplineHierarchyMapper,
-    SplineHierarchySegments,
-    Union,
-)
-from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
-    HierarchicalMuscleTorques,
-)
-from elastica.interaction import (
-    AnistropicFrictionalPlane,
-    AnistropicFrictionalPlaneRigidBody,
-)
-from elastica.joint import ExternalContact
-from elastica.rigidbody import Cylinder, Sphere
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.timestepper import integrate
-from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.wrappers import (
-    BaseSystemCollection,
-    CallBacks,
-    Connections,
-    Constraints,
-    Forcing,
-)
+# import numpy as np
+#
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.external_forces import GravityForces
+# from elastica.hierarchical_muscles.hierarchical_bases import (
+#     Gaussian,
+#     ScalingFilter,
+#     SpatiallyInvariantSplineHierarchy,
+#     SpatiallyInvariantSplineHierarchyMapper,
+#     SplineHierarchySegments,
+#     Union,
+# )
+# from elastica.hierarchical_muscles.hierarchical_muscle_torques import (
+#     HierarchicalMuscleTorques,
+# )
+# from elastica.interaction import (
+#     AnistropicFrictionalPlane,
+#     AnistropicFrictionalPlaneRigidBody,
+# )
+# from elastica.joint import ExternalContact
+# from elastica.rigidbody import Cylinder, Sphere
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.timestepper import integrate
+# from elastica.timestepper.symplectic_steppers import PositionVerlet
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     CallBacks,
+#     Connections,
+#     Constraints,
+#     Forcing,
+# )
+from elastica import *
 from examples.OctopusTwoArmCase.set_environment import (
-    make_tapered_arm,
+    # make_tapered_arm,
     make_two_arm_from_straigth_rod,
 )
 
@@ -62,19 +63,6 @@ nu = 5.0  # dissipation coefficient
 E = 5e6  # Young's Modulus
 poisson_ratio = 0.5
 
-shearable_rod = CosseratRod.straight_rod(
-    n_elem,
-    start,
-    direction,
-    normal,
-    base_length,
-    base_radius,
-    density,
-    nu,
-    E,
-    poisson_ratio,
-)
-
 # Set the arm properties after defining rods
 # We will have one element for head only
 head_element = int(20)
@@ -86,7 +74,7 @@ radius_head = 0.1  # radius of the head
 # Below function takes the rod and computes new position of nodes
 # and centerline radius for the user defined configuration.
 radius_along_rod, position = make_two_arm_from_straigth_rod(
-    shearable_rod,
+    n_elem,
     240,
     base_length,
     direction,
@@ -98,19 +86,56 @@ radius_along_rod, position = make_two_arm_from_straigth_rod(
     radius_head,
 )
 
-# Below function takes previously computed node positions and centerline
-# radius and modifies the rod.
-make_tapered_arm(
-    shearable_rod,
-    radius_along_rod,
-    base_length,
-    density,
-    E,
-    poisson_ratio,
+shearable_rod = CosseratRod.straight_rod(
+    n_elem,
+    start,
     direction,
     normal,
-    position,
+    base_length,
+    radius_along_rod,
+    density,
+    nu,
+    E,
+    poisson_ratio,
+    position=position,
 )
+
+# # Set the arm properties after defining rods
+# # We will have one element for head only
+# head_element = int(20)
+#
+# radius_tip = 0.025  # radius of the arm at the tip
+# radius_base = 0.03  # radius of the arm at the base
+# radius_head = 0.1  # radius of the head
+#
+# # Below function takes the rod and computes new position of nodes
+# # and centerline radius for the user defined configuration.
+# radius_along_rod, position = make_two_arm_from_straigth_rod(
+#     shearable_rod,
+#     240,
+#     base_length,
+#     direction,
+#     binormal,
+#     start,
+#     head_element,
+#     radius_tip,
+#     radius_base,
+#     radius_head,
+# )
+
+# # Below function takes previously computed node positions and centerline
+# # radius and modifies the rod.
+# make_tapered_arm(
+#     shearable_rod,
+#     radius_along_rod,
+#     base_length,
+#     density,
+#     E,
+#     poisson_ratio,
+#     direction,
+#     normal,
+#     position,
+# )
 # Now rod is ready for simulation, append rod to simulation
 simulator.append(shearable_rod)
 
