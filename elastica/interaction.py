@@ -15,7 +15,7 @@ if IMPORT_NUMBA:
         SlenderBodyTheory,
     )
 else:
-    from elastica._elastica_numpy import (
+    from elastica._elastica_numpy._interaction import (
         AnistropicFrictionalPlane,
         InteractionPlane,
         AnistropicFrictionalPlaneRigidBody,

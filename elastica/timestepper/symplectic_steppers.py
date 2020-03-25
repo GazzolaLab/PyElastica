@@ -178,7 +178,7 @@ if IMPORT_NUMBA:
         PEFRL,
     )
 else:
-    from elastica._elastica_numba._timestepper._symplectic_steppers import (
+    from elastica._elastica_numpy._timestepper._symplectic_steppers import (
         SymplecticStepperTag,
         PositionVerlet,
         PEFRL,
