@@ -3,9 +3,6 @@ __all__ = ["FreeRod", "OneEndFixedRod", "HelicalBucklingBC"]
 import numpy as np
 from elastica._rotations import _get_rotation_matrix
 
-import numba
-from numba import njit
-
 
 class FreeRod:
     """
