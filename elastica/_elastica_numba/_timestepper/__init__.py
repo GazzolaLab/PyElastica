@@ -87,7 +87,6 @@ def integrate(
     # states cannot be aggregated), then stepper now loops over the system
     # state
     do_step, stages_and_updates = extend_stepper_interface(StatefulStepper, System)
-    print(stages_and_updates)
 
     dt = np.float64(float(final_time) / n_steps)
     time = np.float64(0.0)
