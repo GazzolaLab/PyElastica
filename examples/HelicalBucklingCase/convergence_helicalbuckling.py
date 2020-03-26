@@ -105,13 +105,7 @@ def simulate_helicalbucklin_beam_with(
     if PLOT_FIGURE:
         plot_helicalbuckling(shearable_rod, SAVE_FIGURE)
 
-    return {
-        "rod": shearable_rod,
-        "error": error,
-        "l1": l1,
-        "l2": l2,
-        "linf": linf,
-    }
+    return {"rod": shearable_rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
 
 
 if __name__ == "__main__":

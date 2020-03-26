@@ -104,10 +104,7 @@ def plot_video_xy(
         for time in range(1, len(time)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0],
-                position_of_rod1[time, 1],
-                "or",
-                label="rod1",
+                position_of_rod1[time, 0], position_of_rod1[time, 1], "or", label="rod1"
             )
             plt.plot(
                 position_of_rod2[time, 0],
@@ -145,10 +142,7 @@ def plot_video_xz(
         for time in range(1, len(time)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0],
-                position_of_rod1[time, 2],
-                "or",
-                label="rod1",
+                position_of_rod1[time, 0], position_of_rod1[time, 2], "or", label="rod1"
             )
             plt.plot(
                 position_of_rod2[time, 0],

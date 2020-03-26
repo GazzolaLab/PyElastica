@@ -42,7 +42,7 @@ def plot_friction_validation(results, SAVE_FIGURE, filename):
         label="Translational analytical",
     )
     ax.plot(
-        sweep, analytical_rotational_energy, "--k", lw=2, label="Rotational analytical",
+        sweep, analytical_rotational_energy, "--k", lw=2, label="Rotational analytical"
     )
 
     # fig.legend(prop={"size": 20})

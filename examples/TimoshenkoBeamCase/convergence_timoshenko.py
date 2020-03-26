@@ -115,13 +115,7 @@ def simulate_timoshenko_beam_with(
         shearable_rod.position_collection[0, ...],
         n_elem,
     )
-    return {
-        "rod": shearable_rod,
-        "error": error,
-        "l1": l1,
-        "l2": l2,
-        "linf": linf,
-    }
+    return {"rod": shearable_rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
 
 
 if __name__ == "__main__":

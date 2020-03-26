@@ -7,12 +7,7 @@ sys.path.append("../../")
 
 import os
 from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
+from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.external_forces import GravityForces, MuscleTorques
 from elastica.interaction import AnistropicFrictionalPlane
@@ -140,7 +135,7 @@ def run_snake(
 
     pp_list = defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
-        ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list,
+        ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list
     )
 
     snake_sim.finalize()

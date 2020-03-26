@@ -68,10 +68,10 @@ class TestInteractionPlane:
     ):
         rod = BaseRodClass(n_elem)
         plane_origin = np.array([0.0, -rod.radius[0] + shift, 0.0])
-        interaction_plane = InteractionPlane(k_w, nu_w, plane_origin, plane_normal,)
+        interaction_plane = InteractionPlane(k_w, nu_w, plane_origin, plane_normal)
         fnormal = -10.0 * np.sign(plane_normal[1]) * np.random.random_sample(1).item()
         external_forces = np.repeat(
-            np.array([0.0, fnormal, 0.0]).reshape(3, 1), n_elem + 1, axis=1,
+            np.array([0.0, fnormal, 0.0]).reshape(3, 1), n_elem + 1, axis=1
         )
         external_forces[..., 0] *= 0.5
         external_forces[..., -1] *= 0.5
@@ -551,7 +551,7 @@ class TestAnisotropicFriction:
 
         """
         [rod, frictionplane, external_forces_collection] = self.initializer(
-            n_elem, kinetic_mu_array=np.array([0.0, 0.0, 1.0]),
+            n_elem, kinetic_mu_array=np.array([0.0, 0.0, 1.0])
         )
 
         rod.velocity_collection += np.array([velocity, 0.0, 0.0]).reshape(3, 1)
@@ -665,7 +665,7 @@ class TestAnisotropicFriction:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     @pytest.mark.parametrize("torque_mag", [-3.0, -1.0, 2.0, 3.5])
     def test_static_rolling_friction_total_torque_smaller_than_static_friction_force(
-        self, n_elem, torque_mag,
+        self, n_elem, torque_mag
     ):
         """
         In this test case, static rolling friction force tested with zero internal and external force and
