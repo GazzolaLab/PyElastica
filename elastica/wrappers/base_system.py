@@ -25,10 +25,7 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
-        self.allowed_sys_types = (
-            RodBase,
-            RigidBodyBase,
-        )
+        self.allowed_sys_types = (RodBase, RigidBodyBase)
         # List of systems to be integrated
         self._systems = []
         # List of feature calls, such as those coming

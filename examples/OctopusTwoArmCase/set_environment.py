@@ -45,9 +45,7 @@ class BaseSimulator(BaseSystemCollection, Constraints, Connections, Forcing, Cal
 
 
 class Environment:
-    def __init__(
-        self, final_time, COLLECT_DATA_FOR_POSTPROCESSING=False,
-    ):
+    def __init__(self, final_time, COLLECT_DATA_FOR_POSTPROCESSING=False):
         # Integrator type
         self.StatefulStepper = PositionVerlet()
 

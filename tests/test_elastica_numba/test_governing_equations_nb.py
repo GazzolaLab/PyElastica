@@ -1067,6 +1067,191 @@ class TestingClass:
 
         assert_allclose(output_position, correct_position, atol=Tolerance.atol())
 
+    # alpha is base angle of isosceles triangle
+    @pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
+    def test_case_compute_bending_energy(self, alpha, nu=0.0):
+        """
+        Similar to the previous test case test_case_bend_straight_rod.
+        In this test case we initialize a straight rod with 2 elements
+        and numerically bend the rod. We modify node positions and directors
+        to make a isosceles triangle. Then first we compute curvature
+        between two elements and compute the angle between them.
+        Finally, we compute the bending energy of rod and compare with
+        correct solution.
+        This test function tests
+            compute_bending_energy
+        Parameters
+        ----------
+        alpha
+        nu
+
+        Returns
+        -------
+
+        """
+        n_elem = 2
+        initial, test_rod = constructor(n_elem, nu=0.0)
+        base_length = initial.base_length
+        # Change the coordinates of nodes, artificially bend the rod.
+        #              /\
+        # ------ ==>  /  \
+        #            /    \
+        # Here I chose a isosceles triangle.
+
+        length = base_length / n_elem
+        position = np.zeros((MaxDimension.value(), n_elem + 1))
+        position[..., 0] = np.array([0.0, 0.0, 0.0])
+        position[..., 1] = length * np.array([0.0, np.sin(alpha), np.cos(alpha)])
+        position[..., 2] = length * np.array([0.0, 0.0, 2 * np.cos(alpha)])
+        test_rod.position_collection = position
+
+        # Set the directors manually. This is easy since we have two elements.
+        directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elem))
+        directors[..., 0] = np.array(
+            (
+                [1.0, 0.0, 0.0],
+                [0.0, np.cos(alpha), -np.sin(alpha)],
+                [0.0, np.sin(alpha), np.cos(alpha)],
+            )
+        )
+        directors[..., -1] = np.array(
+            (
+                [1.0, 0.0, 0.0],
+                [0.0, np.cos(alpha), np.sin(alpha)],
+                [0, -np.sin(alpha), np.cos(alpha)],
+            )
+        )
+        test_rod.director_collection = directors
+
+        # Compute voronoi rest length. Since elements lengths are equal
+        # in this test case, rest voronoi length can be easily computed
+        # dividing base length to number of elements.
+
+        rest_voronoi_length = base_length / n_elem
+
+        # Now compute geometry and dilatation, which we need for curvature calculations.
+        _compute_all_dilatations(
+            test_rod.position_collection,
+            test_rod.volume,
+            test_rod.lengths,
+            test_rod.tangents,
+            test_rod.radius,
+            test_rod.dilatation,
+            test_rod.rest_lengths,
+            test_rod.rest_voronoi_lengths,
+            test_rod.voronoi_dilatation,
+        )
+
+        _compute_dilatation_rate(
+            test_rod.position_collection,
+            test_rod.velocity_collection,
+            test_rod.lengths,
+            test_rod.rest_lengths,
+            test_rod.dilatation_rate,
+        )
+
+        _compute_bending_twist_strains(
+            test_rod.director_collection, test_rod.rest_voronoi_lengths, test_rod.kappa
+        )
+
+        # Generalized rotation per unit length is given by rest_D_i * Kappa_i.
+        # Thus in order to get the angle between two elements, we need to multiply
+        # kappa with rest_D_i .  But this will give the exterior vertex angle of the
+        # triangle. Think as, we rotate element 1 clockwise direction and align with
+        # the element 2.
+        #
+        #               \
+        #     /\         \ 1
+        #  1 /  \ 2  ==>  \
+        #   /    \         \
+        #                   \ 2
+        #                    \
+        #
+        # So for this transformation we use exterior vertex angle of isosceles triangle.
+        # Exterior vertex angle can be computed easily, it is the sum of base angles
+        # , since this is isosceles triangle it is 2*base_angle
+
+        correct_angle = np.degrees(np.array([2 * alpha, 0.0, 0.0]).reshape(3, 1))
+        test_angle = np.degrees(test_rod.kappa * test_rod.rest_voronoi_lengths)
+        assert_allclose(test_angle, correct_angle, atol=Tolerance.atol())
+
+        # Now lets test bending stress terms in internal torques equation.
+        # Here we will test bend twist couple 2D and bend twist couple 3D terms of the
+        # internal torques equation. Set the bending matrix to identity matrix for simplification.
+        test_rod.bend_matrix[:] = np.repeat(
+            np.identity(3)[:, :, np.newaxis], n_elem - 1, axis=2
+        )
+
+        # Compute bending energy
+        correct_kappa = 2 * alpha / rest_voronoi_length
+        correct_bending_energy = (
+            0.5 * correct_kappa * correct_kappa * rest_voronoi_length
+        )
+        test_bending_energy = test_rod.compute_bending_energy()
+        assert_allclose(
+            test_bending_energy, correct_bending_energy, atol=Tolerance.atol()
+        )
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
+    def test_compute_shear_energy(self, n_elem, dilatation):
+        """
+        This test case is initializes a straight rod.  We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, compute shear energy function.
+
+        Parameters
+        ----------
+        n_elem
+        dilatation
+
+        Returns
+        -------
+
+        """
+        initial, test_rod = constructor(n_elem)
+        base_length = initial.base_length
+
+        # Compute  rest length. Since elements lengths are equal
+        # in this test case, rest  length can be easily computed
+        # dividing base length to number of elements.
+        rest_length = base_length / n_elem
+
+        test_rod.position_collection *= dilatation
+        internal_strain = compute_strain_analytically(n_elem, dilatation)
+        internal_stress = compute_stress_analytically(n_elem, dilatation)
+
+        # Compute shear energy
+        correct_shear_energy = (
+            0.5
+            * (
+                np.einsum("ij, ij->j", internal_strain, internal_stress) * rest_length
+            ).sum()
+        )
+        _compute_internal_forces(
+            test_rod.position_collection,
+            test_rod.volume,
+            test_rod.lengths,
+            test_rod.tangents,
+            test_rod.radius,
+            test_rod.rest_lengths,
+            test_rod.rest_voronoi_lengths,
+            test_rod.dilatation,
+            test_rod.voronoi_dilatation,
+            test_rod.director_collection,
+            test_rod.sigma,
+            test_rod.rest_sigma,
+            test_rod.shear_matrix,
+            test_rod.internal_stress,
+            test_rod.velocity_collection,
+            test_rod.dissipation_constant_for_forces,
+            test_rod.damping_forces,
+            test_rod.internal_forces,
+        )
+        test_shear_energy = test_rod.compute_shear_energy()
+
+        assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
 
 if __name__ == "__main__":
     from pytest import main

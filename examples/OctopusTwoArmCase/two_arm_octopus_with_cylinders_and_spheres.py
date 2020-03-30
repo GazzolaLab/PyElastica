@@ -445,7 +445,7 @@ step_skip = 500  # collect data every # steps
 rod_history = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 simulator.collect_diagnostics(shearable_rod).using(
-    ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=rod_history,
+    ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=rod_history
 )
 
 

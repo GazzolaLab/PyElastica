@@ -33,7 +33,7 @@ class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
 
 
 def run_flagella(
-    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False,
+    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False
 ):
 
     flagella_sim = FlagellaSimulator()

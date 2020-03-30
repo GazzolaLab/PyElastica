@@ -118,7 +118,7 @@ class AxialStretchingCallBack(CallBackBaseClass):
 
 recorded_history = defaultdict(list)
 stretch_sim.collect_diagnostics(stretchable_rod).using(
-    AxialStretchingCallBack, step_skip=200, callback_params=recorded_history,
+    AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
 )
 
 stretch_sim.finalize()

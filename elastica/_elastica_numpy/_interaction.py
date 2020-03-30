@@ -176,7 +176,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         # calculate axial and rolling directions
         plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
         normal_plane_collection = np.repeat(
-            self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1,
+            self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
         )
         # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
         # axial direction has to be in plane, it cannot be out of plane. We are projecting rod element tangent vector in
@@ -263,7 +263,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
             velocity_along_rolling_direction + rotation_velocity_along_rolling_direction
         )
         slip_velocity_along_rolling_direction = np.einsum(
-            "j, ij->ij", slip_velocity_mag_along_rolling_direction, rolling_direction,
+            "j, ij->ij", slip_velocity_mag_along_rolling_direction, rolling_direction
         )
         slip_velocity_sign_along_rolling_direction = np.sign(
             slip_velocity_mag_along_rolling_direction

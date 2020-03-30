@@ -179,7 +179,7 @@ print("Total steps", total_steps)
 recorded_history = defaultdict(list)
 step_skip = 60
 gamma_omega_sim.collect_diagnostics(gamma_omega_rod).using(
-    GammaOmegaCallBack, step_skip=step_skip, callback_params=recorded_history,
+    GammaOmegaCallBack, step_skip=step_skip, callback_params=recorded_history
 )
 
 gamma_omega_sim.finalize()

@@ -22,7 +22,7 @@ class _SystemInstanceStepper:
     def do_step(
         TimeStepper, _steps_and_prefactors, System, time: np.float64, dt: np.float64
     ):
-        for (kin_prefactor, kin_step, dyn_step,) in _steps_and_prefactors[:-1]:
+        for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
             kin_step(TimeStepper, System, time, dt)
             time += kin_prefactor(TimeStepper, dt)
             dyn_step(TimeStepper, System, time, dt)
@@ -44,7 +44,7 @@ class _SystemCollectionStepper:
         time: np.float64,
         dt: np.float64,
     ):
-        for (kin_prefactor, kin_step, dyn_step,) in _steps_and_prefactors[:-1]:
+        for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
 
             for system in SystemCollection:
                 kin_step(TimeStepper, system, time, dt)

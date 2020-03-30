@@ -76,9 +76,7 @@ def extend_stepper_interface(Stepper, System):
 
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
-def integrate(
-    StatefulStepper, System, final_time: float, n_steps: int = 1000,
-):
+def integrate(StatefulStepper, System, final_time: float, n_steps: int = 1000):
     assert final_time > 0.0, "Final time is negative!"
     assert n_steps > 0, "Number of integration steps is negative!"
 

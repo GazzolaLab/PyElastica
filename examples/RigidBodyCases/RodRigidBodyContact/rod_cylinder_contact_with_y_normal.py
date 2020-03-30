@@ -41,7 +41,7 @@ n_elem = 50
 # normal = np.array([0.0, 0.0, 1.0])
 
 inclination = np.deg2rad(30)
-direction = np.array([0.0, np.sin(inclination), -np.cos(inclination),])
+direction = np.array([0.0, np.sin(inclination), -np.cos(inclination)])
 normal = np.array([0.0, np.cos(inclination), np.sin(inclination)])
 
 base_length = 0.5
@@ -132,11 +132,11 @@ class PositionCollector(CallBackBaseClass):
 
 recorded_rod_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(rod1).using(
-    PositionCollector, step_skip=200, callback_params=recorded_rod_history,
+    PositionCollector, step_skip=200, callback_params=recorded_rod_history
 )
 recorded_cyl_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(cylinder).using(
-    PositionCollector, step_skip=200, callback_params=recorded_cyl_history,
+    PositionCollector, step_skip=200, callback_params=recorded_cyl_history
 )
 
 single_rod_sim.finalize()

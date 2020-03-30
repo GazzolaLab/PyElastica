@@ -330,7 +330,7 @@ def _inv_rotate(director_collection):
 
     # Q_{i+i}Q^T_{i} collection
     rotmat_collection = np.einsum(
-        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1],
+        "ijk, ljk->ilk", director_collection[:, :, 1:], director_collection[:, :, :-1]
     )
     # Q^T_{i+i}Q_{i} collection
     # rotmat_collection = np.einsum(

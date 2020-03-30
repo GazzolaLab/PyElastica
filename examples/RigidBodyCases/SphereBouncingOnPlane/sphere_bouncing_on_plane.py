@@ -57,7 +57,7 @@ class PositionCollector(CallBackBaseClass):
 
 recorded_sphere_history = defaultdict(list)
 sphere_bouncing_sim.collect_diagnostics(sphere).using(
-    PositionCollector, step_skip=20, callback_params=recorded_sphere_history,
+    PositionCollector, step_skip=20, callback_params=recorded_sphere_history
 )
 
 # Add gravitational forces
@@ -108,17 +108,13 @@ if VIS == True:
     for sim_time_val, y in zip(sim_time, com[:, 1]):
         circle = Circle((sim_time_val, y), sphere_radius, color="b")
         ax.add_artist(circle)
-    ax.hlines(
-        origin_plane[1], sim_time[0], sim_time[-1], "k", linestyle="dashed",
-    )
+    ax.hlines(origin_plane[1], sim_time[0], sim_time[-1], "k", linestyle="dashed")
     # From newton's second equation of motion
     analytical_max_height = (
         sphere_intial_displacement
         + (sphere_initial_velocity ** 2) * 0.5 / -gravitational_acc
     )
-    ax.hlines(
-        analytical_max_height, sim_time[0], sim_time[-1], "g", linestyle="dashed",
-    )
+    ax.hlines(analytical_max_height, sim_time[0], sim_time[-1], "g", linestyle="dashed")
     ax.set_aspect("equal")
     ax.set_xlabel("t")
     ax.set_ylabel("y")

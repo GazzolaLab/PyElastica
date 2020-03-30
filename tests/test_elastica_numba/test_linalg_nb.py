@@ -69,7 +69,7 @@ def test_batch_cross(dim, blocksize):
         input_first_vector_collection, input_second_vector_collection
     )
     correct_vector_collection = np.cross(
-        input_first_vector_collection, input_second_vector_collection, axisa=0, axisb=0,
+        input_first_vector_collection, input_second_vector_collection, axisa=0, axisb=0
     ).T
 
     assert_allclose(test_vector_collection, correct_vector_collection)
@@ -85,7 +85,7 @@ def test_batch_vec_oneD_vec_cross(blocksize):
     )
 
     correct_vector_collection = np.cross(
-        input_first_vector_collection, input_second_vector, axisa=0, axisb=0,
+        input_first_vector_collection, input_second_vector, axisa=0, axisb=0
     ).T
 
     assert_allclose(test_vector_collection, correct_vector_collection)

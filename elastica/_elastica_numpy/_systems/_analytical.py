@@ -338,7 +338,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         omegas[2, ...] = self.omega_value
         angular_accelerations = 0.0 * omegas
         self._vector_states = np.hstack(
-            (all_positions, velocities, omegas, accelerations, angular_accelerations,)
+            (all_positions, velocities, omegas, accelerations, angular_accelerations)
         )
         self.init_dir = start_director.copy()
         self._matrix_states = start_director.copy()

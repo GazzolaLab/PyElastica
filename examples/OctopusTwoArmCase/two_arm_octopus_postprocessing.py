@@ -143,10 +143,7 @@ def plot_video_with_surface(
 
         # Delete all variables within scope
         # Painful
-        del (
-            rod_scatters,
-            cylinder_surfs,
-        )
+        del (rod_scatters, cylinder_surfs)
         del time_idx, rod_idx, cylinder_idx
         del inst_position, inst_radius
         del XC, YC, ZC
@@ -223,7 +220,7 @@ def plot_video_with_surface(
                         rod_com_lines[rod_idx].set_xdata(com[0])
                         rod_com_lines[rod_idx].set_ydata(com[1])
 
-                        rod_scatters[rod_idx].set_offsets(inst_position[:2].T,)
+                        rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
                         rod_scatters[rod_idx].set_sizes(
                             np.pi * (scaling_factor * inst_radius) ** 2
                         )

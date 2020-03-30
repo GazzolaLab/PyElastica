@@ -160,11 +160,11 @@ class PositionCollector(CallBackBaseClass):
 
 recorded_rod_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(rod1).using(
-    PositionCollector, step_skip=200, callback_params=recorded_rod_history,
+    PositionCollector, step_skip=200, callback_params=recorded_rod_history
 )
 recorded_cyl_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(cylinder).using(
-    PositionCollector, step_skip=200, callback_params=recorded_cyl_history,
+    PositionCollector, step_skip=200, callback_params=recorded_cyl_history
 )
 
 single_rod_sim.finalize()

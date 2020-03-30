@@ -133,7 +133,7 @@ step_skip = (
     else (int(total_steps / 10) if PLOT_FIGURE else int(total_steps / 200))
 )
 pendulum_sim.collect_diagnostics(pendulum_rod).using(
-    PendulumCallBack, step_skip=step_skip, callback_params=recorded_history,
+    PendulumCallBack, step_skip=step_skip, callback_params=recorded_history
 )
 
 pendulum_sim.finalize()

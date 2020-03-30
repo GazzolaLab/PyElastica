@@ -275,7 +275,7 @@ def main():
 
     pp_list = defaultdict(list)
     arm_muscle_with_basis_functions_sim.collect_diagnostics(shearable_rod).using(
-        ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=pp_list,
+        ArmMuscleBasisCallBack, step_skip=step_skip, callback_params=pp_list
     )
 
     arm_muscle_with_basis_functions_sim.finalize()

@@ -231,12 +231,12 @@ class TestSymplecticStepperStateBehavior(LoadStates):
         # numba complains if this is included
         assert np.all(
             np.in1d(
-                self.States["Velocity"].ravel(), dyn_state.kinematic_rates(0.0).ravel(),
+                self.States["Velocity"].ravel(), dyn_state.kinematic_rates(0.0).ravel()
             )
         )
         assert np.all(
             np.in1d(
-                self.States["Omega"].ravel(), dyn_state.kinematic_rates(0.0).ravel(),
+                self.States["Omega"].ravel(), dyn_state.kinematic_rates(0.0).ravel()
             )
         )
 

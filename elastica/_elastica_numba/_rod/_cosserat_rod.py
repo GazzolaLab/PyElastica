@@ -337,6 +337,29 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
 
         return sum_mass_times_position / self.mass.sum()
 
+    def compute_bending_energy(self):
+
+        kappa_diff = self.kappa - self.rest_kappa
+        bending_internal_torques = _batch_matvec(self.bend_matrix, kappa_diff)
+
+        return (
+            0.5
+            * (
+                _batch_dot(kappa_diff, bending_internal_torques)
+                * self.rest_voronoi_lengths
+            ).sum()
+        )
+
+    def compute_shear_energy(self):
+
+        sigma_diff = self.sigma - self.rest_sigma
+        shear_internal_torques = _batch_matvec(self.shear_matrix, sigma_diff)
+
+        return (
+            0.5
+            * (_batch_dot(sigma_diff, shear_internal_torques) * self.rest_lengths).sum()
+        )
+
 
 @numba.njit(cache=True)
 def _compute_geometry_from_state(
@@ -682,7 +705,7 @@ def _compute_internal_torques(
     )
     # (Qt x n_L) * \hat{l}
     shear_stretch_couple = (
-        _batch_cross(_batch_matvec(director_collection, tangents), internal_stress,)
+        _batch_cross(_batch_matvec(director_collection, tangents), internal_stress)
         * rest_lengths
     )
 

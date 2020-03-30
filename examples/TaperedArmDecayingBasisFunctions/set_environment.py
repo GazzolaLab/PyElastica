@@ -223,7 +223,7 @@ class Environment:
             # overlap the muscles. Gaussian function takes standard deviation as input.
             # For scaling factor we chose 2 and we add only one layer of basis function.
             muscle_segment = SpatiallyInvariantSplineHierarchy(
-                Union(ScalingFilter(Gaussian(0.35), factor),), scaling_factor=2,
+                Union(ScalingFilter(Gaussian(0.35), factor)), scaling_factor=2
             )
             # Append muscles segments in to the list
             muscle_mapper.append(

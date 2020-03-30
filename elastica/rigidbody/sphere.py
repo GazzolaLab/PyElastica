@@ -99,13 +99,11 @@ class Sphere(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         -------
 
         """
-        np.copyto(
-            self.acceleration_collection, self.external_forces / self.mass,
-        )
+        np.copyto(self.acceleration_collection, self.external_forces / self.mass)
         np.copyto(
             self.alpha_collection,
             _batch_matvec(
-                self.inv_mass_second_moment_of_inertia, self.external_torques,
+                self.inv_mass_second_moment_of_inertia, self.external_torques
             ),
         )
 

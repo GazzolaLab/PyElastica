@@ -187,7 +187,7 @@ recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
 
 butterfly_sim.collect_diagnostics(butterfly_rod).using(
-    VelocityCallBack, step_skip=100, callback_params=recorded_history,
+    VelocityCallBack, step_skip=100, callback_params=recorded_history
 )
 
 

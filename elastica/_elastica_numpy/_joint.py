@@ -193,9 +193,7 @@ class ExternalContact(FreeJoint):
             [[cylinder_two.radius], [cylinder_two.radius], [0.5 * cylinder_two.length]]
         )
         np.amax(
-            np.abs(cylinder_dimensions_in_world_FOR),
-            axis=1,
-            out=max_possible_dimension,
+            np.abs(cylinder_dimensions_in_world_FOR), axis=1, out=max_possible_dimension
         )
         self.aabb_cylinder[..., 0] = (
             cylinder_two.position_collection[..., 0] - max_possible_dimension

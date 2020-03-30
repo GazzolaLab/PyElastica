@@ -54,7 +54,7 @@ def rigid_cylinder_friction_validation(force=0.0):
     mass = 1.0
     density = mass / (base_length * base_area)
 
-    rigid_rod = Cylinder(start, direction, normal, base_length, base_radius, density,)
+    rigid_rod = Cylinder(start, direction, normal, base_length, base_radius, density)
 
     rigid_cylinder_sim.append(rigid_rod)
 
@@ -125,7 +125,7 @@ def rigid_cylinder_friction_validation(force=0.0):
     step_skip = 200
     pp_list = defaultdict(list)
     rigid_cylinder_sim.collect_diagnostics(rigid_rod).using(
-        RigidCylinderCallBack, step_skip=step_skip, callback_params=pp_list,
+        RigidCylinderCallBack, step_skip=step_skip, callback_params=pp_list
     )
 
     rigid_cylinder_sim.finalize()

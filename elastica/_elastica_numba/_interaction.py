@@ -218,10 +218,7 @@ def apply_normal_force_numba(
     # Update the external forces
     elements_to_nodes_inplace(plane_response_force_total, external_forces)
 
-    return (
-        _batch_norm(plane_response_force),
-        no_contact_point_idx,
-    )
+    return (_batch_norm(plane_response_force), no_contact_point_idx)
 
 
 # class for anisotropic frictional plane
@@ -389,7 +386,7 @@ def anisotropic_friction(
     # w_rot = Q.T @ omega @ Q @ r
     rotation_velocity = _batch_matvec(
         directors_transpose,
-        _batch_cross(omega_collection, _batch_matvec(director_collection, torque_arm),),
+        _batch_cross(omega_collection, _batch_matvec(director_collection, torque_arm)),
     )
     rotation_velocity_along_rolling_direction = _batch_dot(
         rotation_velocity, rolling_direction
@@ -767,10 +764,7 @@ def apply_normal_force_numba_rigid_body(
     # Update the external forces
     external_forces += plane_response_force_total
 
-    return (
-        _batch_norm(plane_response_force),
-        no_contact_point_idx,
-    )
+    return (_batch_norm(plane_response_force), no_contact_point_idx)
 
 
 class AnistropicFrictionalPlaneRigidBody(NoForces, InteractionPlaneRigidBody):

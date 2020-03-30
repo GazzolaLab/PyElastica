@@ -468,3 +468,26 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         sum_mass_times_position = np.einsum("ij->i", mass_times_position)
 
         return sum_mass_times_position / self.mass.sum()
+
+    def compute_bending_energy(self):
+
+        kappa_diff = self.kappa - self.rest_kappa
+        bending_internal_torques = _batch_matvec(self.bend_matrix, kappa_diff)
+
+        return (
+            0.5
+            * (
+                _batch_dot(kappa_diff, bending_internal_torques)
+                * self.rest_voronoi_lengths
+            ).sum()
+        )
+
+    def compute_shear_energy(self):
+
+        sigma_diff = self.sigma - self.rest_sigma
+        shear_internal_torques = _batch_matvec(self.shear_matrix, sigma_diff)
+
+        return (
+            0.5
+            * (_batch_dot(sigma_diff, shear_internal_torques) * self.rest_lengths).sum()
+        )
