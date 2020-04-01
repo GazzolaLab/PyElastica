@@ -143,10 +143,13 @@ class UniformTorques(NoForces):
 
     def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
         super(UniformTorques, self).__init__()
-        self.torque = (torque * direction).reshape(3, 1)
+        self.torque = torque * direction
 
     def apply_torques(self, system, time: np.float = 0.0):
-        torque_on_one_element = self.torque / system.n_elems
+        n_elems = system.n_elems
+        torque_on_one_element = (
+            _batch_product_i_k_to_ik(self.torque, np.ones((n_elems))) / n_elems
+        )
         system.external_torques += _batch_matvec(
             system.director_collection, torque_on_one_element
         )
