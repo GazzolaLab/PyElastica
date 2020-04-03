@@ -1,4 +1,4 @@
-__doc__ = """ Boundary conditions for rod """
+__doc__ = """ Boundary condition module constraining values and rates of the rod. """
 
 import numpy as np
 from elastica._rotations import _get_rotation_matrix
@@ -6,8 +6,13 @@ from elastica._rotations import _get_rotation_matrix
 
 class FreeRod:
     """
-    the base class for rod boundary conditions
-    also the free rod class
+    This is the base class for rod boundary conditions,
+    and it is the free rod class.
+
+    Note
+    ----
+    Every new rod boundary condition class has to be
+    derived from FreeRod class.
     """
 
     def __init__(self):
@@ -22,7 +27,10 @@ class FreeRod:
 
 class OneEndFixedRod(FreeRod):
     """
-    The end of the rod fixed x[0]
+    This is the one end fixed rod class. Currently,
+    this boundary condition fixes position and directors
+    at the first node and first element of the rod.
+
     Attributes
     ----------
     fixed_positions: numpy.ndarray
@@ -56,8 +64,10 @@ class OneEndFixedRod(FreeRod):
 
 class HelicalBucklingBC(FreeRod):
     """
-    boundary condition for helical buckling
-    controlled twisting of the ends
+    This is the boundary condition class for Helical
+    Buckling case in Gazzola et. al. RSOS paper 2018.
+    Applied boundary condition is twist and slack on to
+    the first and last nodes and elements of the rod.
 
     Attributes
     ----------
@@ -74,6 +84,12 @@ class HelicalBucklingBC(FreeRod):
         3D (dim, dim, blocksize) array containing data with 'float' type.
     final_end_directors: numpy.ndarray
         3D (dim, dim, blocksize) array containing data with 'float' type.
+
+    Note
+    ----
+    This is a specific boundary condition for the Helical Buckling case. It
+    is suggested that users look at Gazzola et. al. RSOS paper 2018
+
     """
 
     def __init__(

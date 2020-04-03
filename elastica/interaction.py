@@ -1,4 +1,4 @@
-__doc__ = """ Interaction module """
+__doc__ = """ Module for interaction between rod and environment. """
 
 import numpy as np
 import numba
@@ -45,6 +45,7 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 def nodes_to_elements(input):
     """
     Converts node velocity to element velocity.
+
     Parameters
     ----------
     input: numpy.ndarray
@@ -68,7 +69,8 @@ def nodes_to_elements(input):
 # only applies normal force no friction
 class InteractionPlane:
     """
-    Interaction plane class
+    Interaction plane class is computing plane reaction
+    force on the rod.
 
     Attributes
     ----------
@@ -79,6 +81,7 @@ class InteractionPlane:
     plane_normal: numpy.ndarray
        2D (dim, 1) array containing data with 'float' type.
     surface_tol: float
+
     """
 
     def __init__(self, k, nu, plane_origin, plane_normal):
@@ -101,9 +104,10 @@ class InteractionPlane:
 
     def apply_normal_force(self, system):
         """
-        This function computes the plane force response on the element, in the
-        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
-        is used.
+        This function computes the plane reaction force on the element, in the
+        case of contact. For more details regarding contact module look
+        Eqn 4.8 Gazzola et. al. RSoS 2018 paper.
+
         Parameters
         ----------
         system: object
@@ -188,7 +192,10 @@ class InteractionPlane:
 # mu named as to which direction it opposes
 class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     """
-    Anistropic friction plane class
+    Anistropic friction plane class, is for computing anistropic
+    friction forces on rods. Detailed explanation of the
+    implemented equations can be found in Gazzola et. al. RSoS 2018
+    paper.
 
     Attributes
     ----------
@@ -247,17 +254,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
     def apply_forces(self, system, time=0.0):
-        """
-        Apply friction forces on the rods.
-        Parameters
-        ----------
-        system: object
-        time: float
 
-        Returns
-        -------
-
-        """
         # calculate axial and rolling directions
         plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
         normal_plane_collection = np.repeat(
@@ -481,10 +478,15 @@ def sum_over_elements(input):
     Faster than sum(), .sum() and np.sum()
 
     For blocksize = 200
+
     sum(): 36.9 µs ± 3.99 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+
     .sum(): 3.17 µs ± 90.1 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
     np.sum(): 5.17 µs ± 364 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
     This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+
     """
 
     output = 0.0
@@ -499,7 +501,7 @@ def node_to_element_velocity(node_velocity):
     """
     This function computes to velocity on the elements.
     Here we define a separate function because benchmark results
-    showed that using numba, we get almost 3 times faster calculation
+    showed that using numba, we get almost 3 times faster calculation.
 
     Parameters
     ----------
@@ -514,7 +516,9 @@ def node_to_element_velocity(node_velocity):
     Note
     ----
     Faster than pure python for blocksize 100
+
     python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
     this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
 
     """
@@ -526,11 +530,14 @@ def node_to_element_velocity(node_velocity):
 def slender_body_forces(
     tangents, velocity_collection, dynamic_viscosity, lengths, radius
 ):
-    """
+    r"""
     This function computes hydrodynamic forces on body using slender body theory.
     Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS 2018 paper.
 
-    Fh = - 4*pi*mu/ln(L/r) * ((I - 0.5 * t`t) * v)
+    .. math::
+        F_{h}=\frac{-4\pi\mu}{\ln{(L/r)}}\left(\mathbf{I}-\frac{1}{2}\mathbf{t}^{\textrm{T}}\mathbf{t}\right)\mathbf{v}
+
+
 
     Parameters
     ----------
@@ -551,8 +558,11 @@ def slender_body_forces(
     Note
     ----
     Faster than numpy einsum implementation for blocksize 100
+
     numpy: 39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+
     this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
     Unrolling loops show better performance. Also since we are working in 3D everything is
     3 dimensional.
     """
@@ -608,7 +618,11 @@ def slender_body_forces(
 # slender body theory
 class SlenderBodyTheory(NoForces):
     """
-    Slender body theory class
+    Slender body theory class is for flow-structure
+    interaction problems. This class applies hydrodynamic
+    forces on body using the slender body theory given in
+    Eq. 4.13 Gazzola et. al. RSoS 2018 paper.
+
     Attributes
     ----------
     dynamic_viscosity: float
@@ -619,19 +633,6 @@ class SlenderBodyTheory(NoForces):
         self.dynamic_viscosity = dynamic_viscosity
 
     def apply_forces(self, system, time=0.0):
-        """
-        This function applies hydrodynamic forces on body
-        using the slender body theory given in
-        Eq. 4.13 Gazzola et. al. RSoS 2018 paper
-
-        Parameters
-        ----------
-        system: object
-
-        Returns
-        -------
-
-        """
 
         stokes_force = slender_body_forces(
             system.tangents,

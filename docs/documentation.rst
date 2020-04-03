@@ -24,12 +24,19 @@ Data Structures
 
 Boundary Conditions
 ====================
+
+Constrain Values and Rates
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.boundary_conditions
    :members:
 
+External Forces
+~~~~~~~~~~~~~~~
 .. automodule:: elastica.external_forces
    :members:
 
+Interaction with Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.interaction
    :members:
 

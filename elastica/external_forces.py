@@ -1,4 +1,4 @@
-__doc__ = """ External forcing for rod """
+__doc__ = """ External forcing modules for rod. """
 
 import numpy as np
 from elastica._linalg import _batch_matvec
@@ -6,11 +6,14 @@ from elastica._spline import _bspline
 
 
 class NoForces:
-    """ Base class for external forcing for Rods
+    """
+    This is the base class for external forcing for Rods.
 
-    Can make this an abstract class, but its inconvenient
-    for the user to keep on defining apply_forces and
-    apply_torques object over and over.
+    Note
+    ----
+    Every new external forcing class has to be derived
+    from NoForces class.
+
     """
 
     def __init__(self):
@@ -19,7 +22,7 @@ class NoForces:
     def apply_forces(self, system, time: np.float = 0.0):
         """ Apply forces to a system object.
 
-        In NoForces, this routine simply passes.
+        In NoForces class, this routine simply passes.
 
         Parameters
         ----------
@@ -37,7 +40,7 @@ class NoForces:
     def apply_torques(self, system, time: np.float = 0.0):
         """ Apply torques to a Rod-like object.
 
-        In NoForces, this routine simply passes.
+        In NoForces class, this routine simply passes.
 
         Parameters
         ----------
@@ -52,10 +55,13 @@ class NoForces:
 
 
 class GravityForces(NoForces):
-    """ Applies a constant gravity on the entire rod
+    """
+    This class applies a constant gravity on the entire rod.
+
     Attributes
     ----------
     acc_gravity: float
+
     """
 
     def __init__(self, acc_gravity=np.array([0.0, -9.80665, 0.0])):
@@ -73,7 +79,9 @@ class GravityForces(NoForces):
 
 
 class EndpointForces(NoForces):
-    """ Applies constant forces on endpoints
+    """
+    This class applies constant forces on endpoint nodes.
+
     Attributes
     ----------
     start_force: numpy.ndarray
@@ -81,6 +89,7 @@ class EndpointForces(NoForces):
     end_force: numpy.ndarray
        2D (dim, 1) array containing data with 'float' type.
     ramp_up_time: float
+
     """
 
     def __init__(self, start_force, end_force, ramp_up_time=0.0):
@@ -93,6 +102,7 @@ class EndpointForces(NoForces):
         end_force: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
         ramp_up_time: float
+
         """
         super(EndpointForces, self).__init__()
         self.start_force = start_force
@@ -109,11 +119,13 @@ class EndpointForces(NoForces):
 
 class UniformTorques(NoForces):
     """
-    Applies uniform torque to entire rod
+    This is class applies uniform torque to the entire rod.
+
     Attributes
     ----------
     torque: numpy.ndarray
         2D (dim, 1) array containing data with 'float' type.
+
     """
 
     def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
@@ -137,7 +149,8 @@ class UniformTorques(NoForces):
 
 class UniformForces(NoForces):
     """
-    Applies uniform forces to entire rod
+    This class applies uniform forces to entire rod.
+
     Attributes
     ----------
     force:  numpy.ndarray
@@ -168,8 +181,9 @@ class UniformForces(NoForces):
 
 class MuscleTorques(NoForces):
     """
-    Applies muscle torques on the body. It can apply muscle torques
-    as travelling wave with beta spline or only as travelling wave.
+    This class applies muscle torques on the body. It can apply
+    muscle torques as a traveling wave with a beta spline or only
+    as a traveling wave.
 
     Attributes
     ----------
@@ -181,6 +195,7 @@ class MuscleTorques(NoForces):
     ramp_up_time: float
     my_spline: numpy.ndarray
         1D (blocksize) array containing data with 'float' type.
+
     """
 
     def __init__(
@@ -208,6 +223,7 @@ class MuscleTorques(NoForces):
            2D (dim, 1) array containing data with 'float' type.
         ramp_up_time: float
         with_spline: float
+
         """
         super(MuscleTorques, self).__init__()
 
