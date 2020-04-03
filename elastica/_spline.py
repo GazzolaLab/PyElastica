@@ -55,7 +55,7 @@ def __bspline_impl__(x_pts, t_c, b_head, b_tail, t_k):
     x_pts = np.hstack((x_first, x_pts, x_last))
 
     # Generate the knots
-    knots_updated = np.zeros(n_upd,)
+    knots_updated = np.zeros(n_upd)
     # Fix first degree-1 knots into head
     knots_updated[: t_k - 1] = x_first
     # Middle knot locations correspond to x_locations

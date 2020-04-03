@@ -7,12 +7,7 @@ sys.path.append("../")
 
 import os
 from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
+from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.external_forces import MuscleTorques
 from elastica.interaction import SlenderBodyTheory
@@ -31,7 +26,7 @@ class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
 
 
 def run_flagella(
-    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False,
+    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False
 ):
 
     flagella_sim = FlagellaSimulator()
