@@ -1,8 +1,8 @@
-"""
-connect
+__doc__ = """
+Connect
 -------
 
-Provides the Connections interface to connect entities (rods,
+Provides the connections interface to connect entities (rods,
 rigid bodies) using Joints (see `joints.py`).
 """
 
@@ -11,11 +11,14 @@ from elastica.joint import FreeJoint
 
 class Connections:
     """
-    Connection wrapper class for calling joints functions
+    Connections class is a wrapper for connecting rod-like objects using joints selected
+    by the user. If the user wants to connect two rod-like objects, the simulator class has to
+    be derived from the Connections class.
 
-    Attributes
-    ----------
-    _connections: list
+        Attributes
+        ----------
+        _connections: list
+            List of joint classes defined for rod-like objects.
     """
 
     def __init__(self):
@@ -25,6 +28,26 @@ class Connections:
     def connect(
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
     ):
+        """
+        This method is to connect the rod-like object using the joint class selected
+        by the user. The user has to input two rod-like objects that are connected. Also
+        the user has to set the element indexes of these rods where connection happens.
+
+        Parameters
+        ----------
+        first_rod : object
+            Rod-like object
+        second_rod : object
+            Rod-like object
+        first_connect_idx : int
+            Index of first rod for joint.
+        second_connect_idx : int
+            Index of second rod for joint.
+
+        Returns
+        -------
+
+        """
         sys_idx = [None] * 2
         for i_sys, sys in enumerate((first_rod, second_rod)):
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
@@ -141,6 +164,23 @@ class _Connect:
         self.second_sys_connection_idx = second_idx
 
     def using(self, connect_cls, *args, **kwargs):
+        """
+        This method is a wrapper to set which joint class is used to connect
+        user defined rod-like objects.
+
+        Parameters
+        ----------
+        connect_cls: object
+            User defined callback class.
+        *args
+            Variable length argument list
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         assert issubclass(
             connect_cls, FreeJoint
         ), "{} is not a valid joint class. Did you forget to derive from FreeJoint?".format(

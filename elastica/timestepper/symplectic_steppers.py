@@ -1,4 +1,5 @@
-__doc__ = """Symplectic timesteppers and concepts"""
+__doc__ = """Symplectic time steppers and concepts module for integrating rod-like object kinematic 
+and dynamic equations """
 import numpy as np
 
 from elastica.timestepper._stepper_interface import (
@@ -201,7 +202,7 @@ class SymplecticStepper(_TimeStepper):
 class PositionVerlet(SymplecticStepper):
     """
     Position Verlet symplectic time stepper class, which
-    includes methods for position Verlet.
+    includes methods for second-order position Verlet.
     """
 
     def __init__(self):
@@ -238,7 +239,7 @@ class PositionVerlet(SymplecticStepper):
 class PEFRL(SymplecticStepper):
     """
     Position Extended Forest-Ruth Like Algorithm of
-    I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
+    I.M. Omelyan, I.M. Mryglod, and R. Folk, Computer Physics Communications 146, 188 (2002),
     http://arxiv.org/abs/cond-mat/0110585
     """
 

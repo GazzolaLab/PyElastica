@@ -1,18 +1,22 @@
-"""
-forcing
+__doc__ = """
+Forcing
 -------
 
-Add forces and torques to rod (external point force, b-spline torques etc).
+Provides the forcing interface to apply forces and torques to rod-like objects
+(external point force, muscle torques, etc).
 """
 
 
 class Forcing:
     """
-    Forcing wrapper class for calling external force functions
+    Forcing class is a wrapper for applying external forces, set by the user.
+    If the user wants to apply forcing on rod-like objects, the simulator class
+    has to be derived from the Forcing class.
 
     Attributes
     ----------
     _ext_forces_torques: list
+        List of forcing class defined for rod-like objects.
     """
 
     def __init__(self):
@@ -20,6 +24,20 @@ class Forcing:
         super(Forcing, self).__init__()
 
     def add_forcing_to(self, system):
+        """
+        This method is to apply external forces and torques, for user-defined system or rod-like
+        object. User has to input the system or rod-like object that he/she
+        wants to apply external forces and torques.
+
+        Parameters
+        ----------
+        system: object
+            System is a rod-like object.
+
+        Returns
+        -------
+
+        """
         sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user
@@ -82,6 +100,23 @@ class _ExtForceTorque:
         self._kwargs = {}
 
     def using(self, forcing_cls, *args, **kwargs):
+        """
+        This method is a wrapper to set which forcing class is used to apply forcing
+        to user defined rod-like objects.
+
+        Parameters
+        ----------
+        forcing_cls: object
+            User defined forcing class.
+        *args
+            Variable length argument list
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         from elastica.external_forces import NoForces
 
         assert issubclass(

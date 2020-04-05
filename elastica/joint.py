@@ -9,7 +9,7 @@ class FreeJoint:
     Free joint class is a base class for joints. Free or spherical
     joint constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, users
-    can refer to Zhang Nature Communications 2019 paper.
+    can refer to Zhang et. al. Nature Communications 2019 paper.
 
         Attributes
         ----------
@@ -44,14 +44,16 @@ class FreeJoint:
 
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         """
-        Apply joint force to two Rod objects.
+        Apply joint force to the connected rod objects.
 
         Parameters
         ----------
         rod_one : object
+            Rod-like object
         index_one : int
             Index of first rod for joint.
         rod_two : object
+            Rod-like object
         index_two : int
             Index of second rod for joint.
 
@@ -96,16 +98,18 @@ class FreeJoint:
 
     def apply_torques(self, rod_one, index_one, rod_two, index_two):
         """
-        Apply joint torque to two Rod objects.
+        Apply joint torque to the connected rod objects.
 
         In FreeJoint class, this routine simply passes.
 
         Parameters
         ----------
         rod_one : object
+            Rod-like object
         index_one : int
             Index of first rod for joint.
         rod_two : object
+            Rod-like object
         index_two : int
             Index of second rod for joint.
 
@@ -121,7 +125,7 @@ class HingeJoint(FreeJoint):
     Hinge joint class constrains the relative movement and rotation
     (only one axis defined by the user) between two nodes and elements
     (chosen by the user) by applying restoring forces and torques. For
-    implementation details, users can refer to Zhang Nature
+    implementation details, users can refer to Zhang et. al. Nature
     Communications 2019 paper.
 
         Attributes
@@ -133,7 +137,7 @@ class HingeJoint(FreeJoint):
         kt: float
             Rotational stiffness coefficient of the joint.
         normal_direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
+            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
@@ -149,7 +153,7 @@ class HingeJoint(FreeJoint):
         kt: float
             Rotational stiffness coefficient of the joint.
         normal_direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. The direction that we constraint rotation.
+            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
         """
         super().__init__(k, nu)
         # normal direction of the constrain plane
@@ -193,7 +197,7 @@ class FixedJoint(FreeJoint):
     """
     Fixed joint class constrains the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
-    For implementation details, users can refer to Zhang Nature
+    For implementation details, users can refer to Zhang et. al. Nature
     Communications 2019 paper.
 
         Attributes

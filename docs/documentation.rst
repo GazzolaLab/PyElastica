@@ -11,16 +11,19 @@ Cosserat Rod
 ~~~~~~~~~~~~
 .. automodule:: elastica.rod.cosserat_rod
    :members:
+   :exclude-members: __weakref__
 
 Constitutive Model
 ~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.rod.constitutive_model
    :members:
+   :exclude-members: __weakref__
 
 Data Structures
 ~~~~~~~~~~~~~~~~
 .. automodule:: elastica.rod.data_structures
    :members:
+   :exclude-members: __weakref__
 
 Boundary Conditions
 ====================
@@ -29,51 +32,66 @@ Constrain Values and Rates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.boundary_conditions
    :members:
+   :exclude-members: __weakref__
 
 External Forces
 ~~~~~~~~~~~~~~~
 .. automodule:: elastica.external_forces
    :members:
+   :exclude-members: __weakref__
 
 Interaction with Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.interaction
    :members:
+   :exclude-members: __weakref__
 
 
 Multiple Rod Connections
 =========================
 .. automodule:: elastica.joint
    :members:
+   :exclude-members: __weakref__
 
 
 Callback Functions
 ===================
 .. automodule:: elastica.callback_functions
    :members:
+   :exclude-members: __weakref__
 
 
 Time steppers
 ==============
 .. automodule:: elastica.timestepper.symplectic_steppers
    :members:
+   :exclude-members: __weakref__, __init__,  _SystemCollectionStepperMixin, SymplecticLinearExponentialIntegrator, SymplecticStepper
 
 Wrappers
 ==========
+.. automodule:: elastica.wrappers.__init__
+   :members:
+   :exclude-members: __weakref__
+
 .. automodule:: elastica.wrappers.base_system
    :members:
+   :exclude-members: __weakref__, __init__, __str__, insert
 
 .. automodule:: elastica.wrappers.callbacks
    :members:
+   :exclude-members: __weakref__, __init__, _callbacks, _CallBack
 
 .. automodule:: elastica.wrappers.connections
    :members:
+   :exclude-members: __weakref__, __init__, __call__, _Connect
 
 .. automodule:: elastica.wrappers.constraints
    :members:
+   :exclude-members: __weakref__, __init__, _Constraint
 
 .. automodule:: elastica.wrappers.forcing
    :members:
+   :exclude-members: __weakref__, __init__, __call__, _ExtForceTorque 
 
 
 
@@ -84,25 +102,31 @@ Transformations
 -----------------
 .. automodule:: elastica.transformations
    :members:
+   :exclude-members: __weakref__
 
 Utils
 ------
 .. automodule:: elastica.utils
    :members:
+   :exclude-members: __weakref__
 
 Other Stuff
 ------------
 .. automodule:: elastica._calculus
    :members:
+   :exclude-members: __weakref__
 
 .. automodule:: elastica._linalg
    :members:
+   :exclude-members: __weakref__
 
 .. automodule:: elastica._rotations
    :members:
+   :exclude-members: __weakref__
 
 .. automodule:: elastica._spline
    :members:
+   :exclude-members: __weakref__
 
 
 
@@ -110,5 +134,6 @@ Systems
 ========
 .. automodule:: elastica.systems.analytical
    :members:
+   :exclude-members: __weakref__
 
 

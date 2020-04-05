@@ -16,12 +16,47 @@ class FreeRod:
     """
 
     def __init__(self):
+        """
+        Free rod no input parameters.
+        """
         pass
 
     def constrain_values(self, rod, time):
+        """
+        Constrain values (position and/or directors) of a rod object.
+
+        In FreeRod class, this routine simply passes.
+
+        Parameters
+        ----------
+        rod : object
+            Rod-like object.
+        time : float
+            The time of simulation.
+
+        Returns
+        -------
+
+        """
         pass
 
     def constrain_rates(self, rod, time):
+        """
+        Constrain rates (velocity and/or omega) of a rod object.
+
+        In FreeRod class, this routine simply passes.
+
+        Parameters
+        ----------
+        rod : object
+            Rod-like object.
+        time : float
+            The time of simulation.
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -31,12 +66,12 @@ class OneEndFixedRod(FreeRod):
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
 
-    Attributes
-    ----------
-    fixed_positions: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    fixed_directors: numpy.ndarray
-        3D (dim, dim, 1) array containing data with 'float' type.
+        Attributes
+        ----------
+        fixed_positions : numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        fixed_directors : numpy.ndarray
+            3D (dim, dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, fixed_position, fixed_directors):
@@ -44,9 +79,9 @@ class OneEndFixedRod(FreeRod):
 
         Parameters
         ----------
-        fixed_position: numpy.ndarray
+        fixed_position : numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
-        fixed_directors: numpy.ndarray
+        fixed_directors : numpy.ndarray
             3D (dim, dim, 1) array containing data with 'float' type.
         """
         FreeRod.__init__(self)
@@ -69,21 +104,28 @@ class HelicalBucklingBC(FreeRod):
     Applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
 
-    Attributes
-    ----------
-    twisting_time: float
-    final_start_position: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    final_end_position: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    ang_vel: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    shrink_vel: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    final_start_directors: numpy.ndarray
-        3D (dim, dim, blocksize) array containing data with 'float' type.
-    final_end_directors: numpy.ndarray
-        3D (dim, dim, blocksize) array containing data with 'float' type.
+        Attributes
+        ----------
+        twisting_time: float
+            Time to complete twist.
+        final_start_position: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Position of first node of rod after twist completed.
+        final_end_position: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Position of last node of rod after twist completed.
+        ang_vel: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Angular velocity of rod during twisting time.
+        shrink_vel: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Shrink velocity of rod during twisting time.
+        final_start_directors: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Directors of first element of rod after twist completed.
+        final_end_directors: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Directors of last element of rod after twist completed.
 
     Note
     ----
@@ -106,17 +148,25 @@ class HelicalBucklingBC(FreeRod):
 
         Parameters
         ----------
-        position_start: numpy.ndarray
+
+        position_start : numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
-        position_end: numpy.ndarray
+            Initial position of first node.
+        position_end : numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
-        director_start: numpy.ndarray
+            Initial position of last node.
+        director_start : numpy.ndarray
             3D (dim, dim, blocksize) array containing data with 'float' type.
-        director_end: numpy.ndarray
+            Initial director of first element.
+        director_end : numpy.ndarray
             3D (dim, dim, blocksize) array containing data with 'float' type.
-        twisting_time: float
-        slack: float
-        number_of_rotations: float
+            Initial director of last element.
+        twisting_time : float
+            Time to complete twist.
+        slack : float
+            Slack applied to rod.
+        number_of_rotations : float
+            Number of rotations applied to rod.
         """
         FreeRod.__init__(self)
         self.twisting_time = twisting_time

@@ -9,26 +9,26 @@ from elastica.external_forces import NoForces
 
 def find_slipping_elements(velocity_slip, velocity_threshold):
     """
-    This function takes the velocity of elements and checks if they are larger
-    than the threshold velocity. If velocity of elements are larger than
-    threshold velocity, that means those elements are slipping, in other words
-    kinetic friction will be acting on those elements not static friction. This
-    function output an array called slip function, this array has a size of number
-    of elements. If velocity of element is smaller than the threshold velocity slip
-    function value for that element is 1, which means static friction is acting on
-    that element. If velocity of element is larger than the threshold velocity slip
-    function value for that element is between 0 and 1, which means kinetic friction
-    is acting on that element.
+    This function takes the velocity of elements and checks if they are larger than the threshold velocity.
+    If the velocity of elements is larger than threshold velocity, that means those elements are slipping,
+    in other words, kinetic friction will be acting on those elements, not static friction.
+    This function output an array called slip function, this array has a size of the number of elements.
+    If the velocity of the element is smaller than the threshold velocity slip function value for that element is 1,
+    which means static friction is acting on that element. If the velocity of the element is larger than
+    the threshold velocity slip function value for that element is between 0 and 1, which means kinetic friction is acting
+    on that element.
 
     Parameters
     ----------
-    velocity_slip: numpy.ndarray
+    velocity_slip : numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
-    velocity_threshold: float
+        Rod-like object element velocity.
+    velocity_threshold : float
+        Threshold velocity to determine slip.
 
     Returns
     -------
-    slip function: numpy.ndarray
+    slip_function : numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
     """
     abs_velocity_slip = np.sqrt(np.einsum("ij, ij->j", velocity_slip, velocity_slip))
@@ -44,7 +44,9 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 # Converting forces on nodes to elements
 def nodes_to_elements(input):
     """
-    Converts node velocity to element velocity.
+    This function converts rod-like object dofs on nodes to
+    dofs on elements. For example, node velocity is converted to
+    element velocity.
 
     Parameters
     ----------
@@ -69,18 +71,24 @@ def nodes_to_elements(input):
 # only applies normal force no friction
 class InteractionPlane:
     """
-    Interaction plane class is computing plane reaction
-    force on the rod.
+    The interaction plane class is computing plane reaction
+    force on the rod-like object.  For more details regarding the contact module look
+    Eqn 4.8 Gazzola et. al. RSoS 2018 paper.
 
-    Attributes
-    ----------
-    k: float
-    nu: float
-    plane_origin: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    plane_normal: numpy.ndarray
-       2D (dim, 1) array containing data with 'float' type.
-    surface_tol: float
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient between the plane and the rod-like object.
+        nu: float
+            Dissipation coefficient between the plane and the rod-like object.
+        plane_origin: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Origin of the plane.
+        plane_normal: numpy.ndarray
+           2D (dim, 1) array containing data with 'float' type.
+           The normal vector of the plane.
+        surface_tol: float
+            Penetration tolerance between the plane and the rod-like object.
 
     """
 
@@ -90,11 +98,15 @@ class InteractionPlane:
         Parameters
         ----------
         k: float
+            Stiffness coefficient between the plane and the rod-like object.
         nu: float
+            Dissipation coefficient between the plane and the rod-like object.
         plane_origin: numpy.ndarray
            2D (dim, 1) array containing data with 'float' type.
+           Origin of the plane.
         plane_normal: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
+            The normal vector of the plane.
         """
         self.k = k
         self.nu = nu
@@ -105,17 +117,21 @@ class InteractionPlane:
     def apply_normal_force(self, system):
         """
         This function computes the plane reaction force on the element, in the
-        case of contact. For more details regarding contact module look
-        Eqn 4.8 Gazzola et. al. RSoS 2018 paper.
+        case of contact.
 
         Parameters
         ----------
         system: object
+            Rod-like object.
 
         Returns
         -------
-        magnitude of the plane response: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
+        plane_response_force_mag : numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Magnitude of plane response force acting on rod-like object.
+        no_contact_point_idx : numpy.ndarray
+            1D (blocksize) array containing data with 'int' type.
+            Index of rod-like object elements that are not in contact with the plane.
         """
 
         # Compute plane response force
@@ -190,26 +206,33 @@ class InteractionPlane:
 # head is at x[0] and forward means head to tail
 # same convention for kinetic and static
 # mu named as to which direction it opposes
-class AnistropicFrictionalPlane(NoForces, InteractionPlane):
+class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
     """
-    Anistropic friction plane class, is for computing anistropic
-    friction forces on rods. Detailed explanation of the
-    implemented equations can be found in Gazzola et. al. RSoS 2018
-    paper.
+    Anisotropic friction plane class is for computing
+    anisotropic friction forces on rods.
+    A detailed explanation of the implemented equations
+    can be found in Gazzola et. al. RSoS. 2018 paper.
 
-    Attributes
-    ----------
-    k: float
-    nu: float
-    plane_origin: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    plane_normal: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-    slip_velocity_tol: float
-    static_mu_array: numpy.ndarray
-        1D (3,) array containing data with 'float' type.
-    kinetic_mu_array: numpy.ndarray
-        1D (3,) array containing data with 'float' type.
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient between the plane and the rod-like object.
+        nu: float
+            Dissipation coefficient between the plane and the rod-like object.
+        plane_origin: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Origin of the plane.
+        plane_normal: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            The normal vector of the plane.
+        slip_velocity_tol: float
+            Velocity tolerance to determine if the element is slipping or not.
+        static_mu_array: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
+            [forward, backward, sideways] static friction coefficients.
+        kinetic_mu_array: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
+            [forward, backward, sideways] kinetic friction coefficients.
     """
 
     def __init__(
@@ -227,16 +250,23 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
         Parameters
         ----------
         k: float
+            Stiffness coefficient between the plane and the rod-like object.
         nu: float
+            Dissipation coefficient between the plane and the rod-like object.
         plane_origin: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
+            Origin of the plane.
         plane_normal: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
+            The normal vector of the plane.
         slip_velocity_tol: float
+            Velocity tolerance to determine if the element is slipping or not.
         static_mu_array: numpy.ndarray
             1D (3,) array containing data with 'float' type.
+            [forward, backward, sideways] static friction coefficients.
         kinetic_mu_array: numpy.ndarray
             1D (3,) array containing data with 'float' type.
+            [forward, backward, sideways] kinetic friction coefficients.
         """
         InteractionPlane.__init__(self, k, nu, plane_origin, plane_normal)
         self.slip_velocity_tol = slip_velocity_tol
@@ -461,7 +491,7 @@ class AnistropicFrictionalPlane(NoForces, InteractionPlane):
 def sum_over_elements(input):
     """
     This function sums all elements of input array,
-    using a numba jit decorator shows better performance
+    using a Numba njit decorator shows better performance
     compared to python sum(), .sum() and np.sum()
 
     Parameters
@@ -471,7 +501,7 @@ def sum_over_elements(input):
 
     Returns
     -------
-    output: float
+    float
 
     Note
     -----
@@ -501,7 +531,7 @@ def node_to_element_velocity(node_velocity):
     """
     This function computes to velocity on the elements.
     Here we define a separate function because benchmark results
-    showed that using numba, we get almost 3 times faster calculation.
+    showed that using Numba, we get almost 3 times faster calculation.
 
     Parameters
     ----------
@@ -532,7 +562,7 @@ def slender_body_forces(
 ):
     r"""
     This function computes hydrodynamic forces on body using slender body theory.
-    Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS 2018 paper.
+    Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS. 2018 paper.
 
     .. math::
         F_{h}=\frac{-4\pi\mu}{\ln{(L/r)}}\left(\mathbf{I}-\frac{1}{2}\mathbf{t}^{\textrm{T}}\mathbf{t}\right)\mathbf{v}
@@ -543,17 +573,22 @@ def slender_body_forces(
     ----------
     tangents: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
+        Rod-like element tangent directions.
     velocity_collection: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
+        Rod-like object velocity collection.
     dynamic_viscosity: float
+        Dynamic viscosity of the fluid.
     length: numpy.ndarray
         1D (blocksize) array containing data with 'float' type.
+        Rod-like object element lengths.
     radius: numpy.ndarray
         1D (blocksize) array containing data with 'float' type.
+        Rod-like object element radius.
 
     Returns
     -------
-    output: numpy.ndarray
+    stokes_force: numpy.ndarray
        2D (dim, blocksize) array containing data with 'float' type.
     Note
     ----
@@ -563,8 +598,6 @@ def slender_body_forces(
 
     this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
-    Unrolling loops show better performance. Also since we are working in 3D everything is
-    3 dimensional.
     """
 
     f = np.empty((tangents.shape[0], tangents.shape[1]))
@@ -620,15 +653,24 @@ class SlenderBodyTheory(NoForces):
     """
     Slender body theory class is for flow-structure
     interaction problems. This class applies hydrodynamic
-    forces on body using the slender body theory given in
-    Eq. 4.13 Gazzola et. al. RSoS 2018 paper.
+    forces on the body using the slender body theory given in
+    Eq. 4.13 Gazzola et. al. RSoS. 2018 paper.
 
-    Attributes
-    ----------
-    dynamic_viscosity: float
+        Attributes
+        ----------
+        dynamic_viscosity: float
+            Dynamic viscosity of the fluid.
+
     """
 
     def __init__(self, dynamic_viscosity):
+        """
+
+        Parameters
+        ----------
+        dynamic_viscosity : float
+            Dynamic viscosity of the fluid.
+        """
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
 
