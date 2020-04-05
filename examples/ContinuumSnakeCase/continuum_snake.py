@@ -10,7 +10,7 @@ from collections import defaultdict
 from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.external_forces import GravityForces, MuscleTorques
-from elastica.interaction import AnistropicFrictionalPlane
+from elastica.interaction import AnisotropicFrictionalPlane
 from elastica.callback_functions import CallBackBaseClass
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
@@ -90,7 +90,7 @@ def run_snake(
     )  # [forward, backward, sideways]
     static_mu_array = 2 * kinetic_mu_array
     snake_sim.add_forcing_to(shearable_rod).using(
-        AnistropicFrictionalPlane,
+        AnisotropicFrictionalPlane,
         k=1.0,
         nu=1e-6,
         plane_origin=origin_plane,

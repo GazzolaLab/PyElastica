@@ -7,7 +7,7 @@ from elastica.utils import Tolerance, MaxDimension
 from elastica.interaction import (
     InteractionPlane,
     find_slipping_elements,
-    AnistropicFrictionalPlane,
+    AnisotropicFrictionalPlane,
     nodes_to_elements,
     sum_over_elements,
     node_to_element_velocity,
@@ -392,7 +392,7 @@ class TestAnisotropicFriction:
         origin_plane = np.array([0.0, -rod.radius[0], 0.0])
         normal_plane = np.array([0.0, 1.0, 0.0])
         slip_velocity_tol = 1e-2
-        friction_plane = AnistropicFrictionalPlane(
+        friction_plane = AnisotropicFrictionalPlane(
             0.0,
             0.0,
             origin_plane,
