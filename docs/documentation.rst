@@ -16,7 +16,7 @@ Cosserat Rod
    :members:
    :exclude-members: __weakref__, _get_z_vector,
 
-Constitutive Model
+Constitutive Models
 ~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.rod.constitutive_model
    :members:
@@ -26,8 +26,8 @@ Constitutive Model
 Boundary Conditions
 ====================
 
-Constrain Values and Rates
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Endpoint Constraints
+~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.boundary_conditions
    :members:
    :exclude-members: __weakref__
@@ -38,8 +38,8 @@ External Forces
    :members:
    :exclude-members: __weakref__
 
-Interaction with Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Environment Interactions
+~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: elastica.interaction
    :members:
    :exclude-members: __weakref__
