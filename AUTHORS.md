@@ -7,4 +7,4 @@ Names arranged alphabetically
 - Yashraj Bhosale
 
 # Other Contributors
-- Justin Wasserman
+
