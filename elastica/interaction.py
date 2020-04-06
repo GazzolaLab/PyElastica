@@ -503,7 +503,9 @@ def sum_over_elements(input):
     -------
     float
 
-    Note
+    """
+    """
+    Developer Note
     -----
     Faster than sum(), .sum() and np.sum()
 
@@ -516,7 +518,6 @@ def sum_over_elements(input):
     np.sum(): 5.17 µs ± 364 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
     This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
-
     """
 
     output = 0.0
@@ -543,15 +544,18 @@ def node_to_element_velocity(node_velocity):
     element_velocity: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
 
-    Note
+    """
+
+    """
+    Developer Note
     ----
     Faster than pure python for blocksize 100
 
     python: 3.81 µs ± 427 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
     this version: 1.11 µs ± 19.3 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
-
     """
+
     element_velocity = 0.5 * (node_velocity[..., :-1] + node_velocity[..., 1:])
     return element_velocity
 
@@ -590,14 +594,16 @@ def slender_body_forces(
     -------
     stokes_force: numpy.ndarray
        2D (dim, blocksize) array containing data with 'float' type.
-    Note
+    """
+
+    """
+    Developer Note
     ----
     Faster than numpy einsum implementation for blocksize 100
 
     numpy: 39.5 µs ± 6.78 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
     this version: 3.91 µs ± 310 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-
     """
 
     f = np.empty((tangents.shape[0], tangents.shape[1]))
