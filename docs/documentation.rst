@@ -14,13 +14,13 @@ Cosserat Rod
 ~~~~~~~~~~~~
 .. automodule:: elastica.rod.cosserat_rod
    :members:
-   :exclude-members: __weakref__, _get_z_vector,
+   :exclude-members: __weakref__, _get_z_vector, __init__, _CosseratRodBase
 
-Constitutive Models
-~~~~~~~~~~~~~~~~~~~
-.. automodule:: elastica.rod.constitutive_model
-   :members:
-   :exclude-members: __weakref__
+.. Constitutive Models
+.. ~~~~~~~~~~~~~~~~~~~
+.. .. automodule:: elastica.rod.constitutive_model
+..    :members:
+..    :exclude-members: __weakref__
 
 
 Boundary Conditions
