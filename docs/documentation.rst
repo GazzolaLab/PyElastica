@@ -6,12 +6,15 @@ This the the documentation page for Pyelastica. We can add a bit here about thin
 
 Rods
 =====
+.. automodule:: elastica.rod.__init__
+   :members:
+   :exclude-members: __weakref__
 
 Cosserat Rod
 ~~~~~~~~~~~~
 .. automodule:: elastica.rod.cosserat_rod
    :members:
-   :exclude-members: __weakref__
+   :exclude-members: __weakref__, _get_z_vector,
 
 Constitutive Model
 ~~~~~~~~~~~~~~~~~~~
@@ -19,11 +22,6 @@ Constitutive Model
    :members:
    :exclude-members: __weakref__
 
-Data Structures
-~~~~~~~~~~~~~~~~
-.. automodule:: elastica.rod.data_structures
-   :members:
-   :exclude-members: __weakref__
 
 Boundary Conditions
 ====================

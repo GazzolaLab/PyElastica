@@ -1,5 +1,4 @@
-__doc__ = """Symplectic time steppers and concepts module for integrating rod-like object kinematic 
-and dynamic equations """
+__doc__ = """Symplectic time steppers and concepts for integrating rod-like object kinematic and dynamic equations """
 import numpy as np
 
 from elastica.timestepper._stepper_interface import (

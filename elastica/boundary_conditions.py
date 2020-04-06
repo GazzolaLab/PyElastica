@@ -100,7 +100,7 @@ class OneEndFixedRod(FreeRod):
 class HelicalBucklingBC(FreeRod):
     """
     This is the boundary condition class for Helical
-    Buckling case in Gazzola et. al. RSOS paper 2018.
+    Buckling case in Gazzola et. al. RSoS paper 2018.
     Applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
 
@@ -127,10 +127,6 @@ class HelicalBucklingBC(FreeRod):
             3D (dim, dim, blocksize) array containing data with 'float' type.
             Directors of last element of rod after twist completed.
 
-    Note
-    ----
-    This is a specific boundary condition for the Helical Buckling case. It
-    is suggested that users look at Gazzola et. al. RSOS paper 2018
 
     """
 

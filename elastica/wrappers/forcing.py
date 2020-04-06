@@ -13,10 +13,10 @@ class Forcing:
     If the user wants to apply forcing on rod-like objects, the simulator class
     has to be derived from the Forcing class.
 
-    Attributes
-    ----------
-    _ext_forces_torques: list
-        List of forcing class defined for rod-like objects.
+        Attributes
+        ----------
+        _ext_forces_torques: list
+            List of forcing class defined for rod-like objects.
     """
 
     def __init__(self):

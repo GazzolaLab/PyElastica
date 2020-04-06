@@ -1,4 +1,4 @@
-__doc__ = """ Rod base classes and implementation details that need to be hidden from the user"""
+__doc__ = """ Cosserat rod class module implementations """
 import numpy as np
 import functools
 
@@ -18,61 +18,85 @@ from elastica.rod.data_structures import _RodSymplecticStepperMixin
 def _get_z_vector():
     """
     Generates and returns d3 vector.
+
     Returns
     -------
+    numpy.ndarray
+        2D (dim,1) array containing data with 'float' type.
     """
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
 class _CosseratRodBase(RodBase):
     """
-    CosseratRodBase is base class of CosseratRod class, which have all Cosserat Rod equations
+    CosseratRodBase is a base class that contains all Cosserat rod equations.
 
-    Attributes
-    -----------
-    n_elems: int
-    _vector_states: numpy.ndarray
-        2D (dim, :math:`*`) array containing data with 'float' type.
-    _matrix_states:
-        3D array containing data with 'float' type.
-    rest_lengths: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    density: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    volume: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    mass: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    mass_second_moment_of_inertia: numpy.ndarray
-        3D (dim, dim, blocksize) array containing data with 'float' type.
-    inv_mass_second_moment_of_inertia: numpy.ndarray
-        3D (dim, dim, blocksize) array containing data with 'float' type.
-    nu: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    rest_voronoi_lengths: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    rest_lengths: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    internal_forces: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    internal_torques: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    external_forces: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    external_torques: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    lengths: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    tangents: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    radius: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    dilatation: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    voronoi_dilatation: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
-    dilatation_rate: numpy.ndarray
-        1D (blocksize) array containing data with 'float' type.
+        Attributes
+        -----------
+        n_elems: int
+            The number of elements of the rod.
+        _vector_states: numpy.ndarray
+            2D (dim, :math:`*`) array containing data with 'float' type.
+            Array containing position_collection, velocity_collection, omega_collection,
+            alpha_collection.
+        _matrix_states:
+            3D array containing data with 'float' type.
+            An array containing directors.
+        rest_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element lengths at rest configuration.
+        density: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod elements densities.
+        volume: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element volumes.
+        mass: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod node masses. Note that masses are stored on the nodes, not on elements.
+        mass_second_moment_of_inertia: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Rod element mass second moment of interia.
+        inv_mass_second_moment_of_inertia: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Rod element inverse mass moment of inertia.
+        nu: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element dissipation coefficient.
+        rest_voronoi_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod lengths on the voronoi domain at the rest configuration.
+        internal_forces: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Rod node internal forces. Note that internal forces are stored on the node, not on elements.
+        internal_torques: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Rod element internal torques.
+        external_forces: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            External forces acting on rod nodes.
+        external_torques: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            External torques acting on rod elements.
+        lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element lengths.
+        tangents: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Rod element tangent vectors.
+        radius: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element radius.
+        dilatation: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element dilatation.
+        voronoi_dilatation: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod dilatation on voronoi domain.
+        dilatation_rate: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element dilatation rates.
+
 
     """
 
@@ -95,18 +119,25 @@ class _CosseratRodBase(RodBase):
         n_elements: int
         position: numpy.ndarray
             2D (dim, blocksize) array containing data with 'float' type.
+            Rod node position array.
         directors: numpy.ndarray
             3D (dim, dim, blocksize) array containing data with 'float' type.
+            Rod element directors array.
         rest_lengths: numpy.ndarray
             1D (blocksize) array containing data with 'float' type.
+            Rod element rest lengths.
         density: numpy.ndarray
             1D (blocksize) array containing data with 'float' type.
+            Rod element density.
         volume: numpy.ndarray
             1D (blocksize) array containing data with 'float' type.
+            Rod element volume.
         mass_second_moment_of_inertia: numpy.ndarray
             2D (dim, blocksize) array containing data with 'float' type.
+            Rod element mass second moment of inertia.
         nu: numpy.ndarray
            1D (blocksize) array containing data with 'float' type.
+           Rod element dissipation constant.
         *args
             Variable length argument list.
         **kwargs
@@ -234,7 +265,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_geometry_from_state(self):
         """
-        Computes element length, tangent and radius.
+        This method computes element length, tangent and radius.
+
         Returns
         -------
 
@@ -253,7 +285,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_all_dilatations(self):
         """
-        Compute element dilatation and Voronoi region dilatations.
+        This method compute element dilatation and voronoi region dilatations.
+
         Returns
         -------
 
@@ -274,7 +307,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_dilatation_rate(self):
         """
-        Computes element dilatation rate.
+        This method computes element dilatation rate.
+
         Returns
         -------
 
@@ -302,7 +336,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_shear_stretch_strains(self):
         """
-        Computes shear and stretch strains of the element.
+        This method computes shear and stretch strains of the elements.
+
         Returns
         -------
 
@@ -316,7 +351,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_bending_twist_strains(self):
         """
-        Computes bending and twist strains of the element.
+        This method computes bending and twist strains of the elements.
+
         Returns
         -------
 
@@ -326,18 +362,13 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_forces(self):
         """
-        Computes internal damping forces acting on the elements.
+        This method computes internal damping forces acting on the elements.
+
         Returns
         -------
 
         """
-        # Internal damping foces.
-        # damping_forces = self.nu * self.velocity_collection
-        # damping_forces[..., 0] *= 0.5  # first and last nodes have half mass
-        # damping_forces[..., -1] *= 0.5  # first and last nodes have half mass
-        #
-        # return damping_forces
-
+        # Internal damping forces.
         elemental_velocities = 0.5 * (
             self.velocity_collection[..., :-1] + self.velocity_collection[..., 1:]
         )
@@ -347,7 +378,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_internal_forces(self):
         """
-        Computes internal forces acting on elements.
+        This method computes internal forces acting on elements.
+
         Returns
         -------
 
@@ -367,7 +399,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_damping_torques(self):
         """
-        Computes damping torques acting on elements.
+        This method computes damping torques acting on elements.
+
         Returns
         -------
 
@@ -378,7 +411,8 @@ class _CosseratRodBase(RodBase):
 
     def _compute_internal_torques(self):
         """
-        Computes internal torques acting on elements.
+        This method computes internal torques acting on elements.
+
         Returns
         -------
 
@@ -439,13 +473,12 @@ class _CosseratRodBase(RodBase):
 
     def _compute_internal_forces_and_torques(self, time):
         """
-        Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
-        they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
-        one time and use them. Previously, we were computing internal forces and torques multiple times in interaction.
-        Saving internal forces and torques in a variable take some memory, but we will gain speed up.
+        This method is a wrapper called by the time-stepper algorithm to compute internal forces and torques.
+
         Parameters
         ----------
-        time
+        time: float
+            Simulation time.
 
         Returns
         -------
@@ -457,11 +490,12 @@ class _CosseratRodBase(RodBase):
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
     def update_accelerations(self, time):
         """
-        Compute translational and angular acceleration.
+        This method computes translational and angular acceleration and reset external forces and torques to zero.
 
         Parameters
         ----------
-        time
+        time: float
+            Simulation time.
 
         Returns
         -------
@@ -486,7 +520,8 @@ class _CosseratRodBase(RodBase):
 
     def compute_translational_energy(self):
         """
-        Compute translational energy of the rod.
+        This method computes the total translational energy of the rod.
+
         Returns
         -------
 
@@ -503,7 +538,8 @@ class _CosseratRodBase(RodBase):
 
     def compute_rotational_energy(self):
         """
-        Compute rotational energy of the rod.
+        This method computes the total rotational energy of the rod.
+
         Returns
         -------
 
@@ -516,7 +552,8 @@ class _CosseratRodBase(RodBase):
 
     def compute_velocity_center_of_mass(self):
         """
-        Compute velocity of rod center of mass.
+        This method computes velocity of rod center of mass.
+
         Returns
         -------
 
@@ -528,7 +565,8 @@ class _CosseratRodBase(RodBase):
 
     def compute_position_center_of_mass(self):
         """
-        Compute positon of the rod center of mass.
+        This method computes position of the rod center of mass.
+
         Returns
         -------
 
@@ -545,7 +583,34 @@ class CosseratRod(
     _LinearConstitutiveModelMixin, _CosseratRodBase, _RodSymplecticStepperMixin
 ):
     """
-    Cosserat Rod class which can be seen by user.
+    Cosserat Rod public class. User should prefer to use this class because it is derived from some
+    of the essential classes.
+    Although position, velocity, acceleration, angular velocity, and angular acceleration are set and
+    referenced in _RodSymplecticStepperMixin class, for users convenience variable names for those
+    are given below.
+
+        Attributes
+        ----------
+        position_collection: numpy.ndarray
+            2D (dim, n_nodes) array containing data with 'float' type.
+            Array containing node position vectors.
+        velocity_collection: numpy.ndarray
+            2D (dim, n_nodes) array containing data with 'float' type.
+            Array containing node velocity vectors.
+        acceleration_collection: numpy.ndarray
+            2D (dim, n_nodes) array containing data with 'float' type.
+            Array containing node acceleration vectors.
+        omega_collection: numpy.ndarray
+            2D (dim, n_elems) array containing data with 'float' type.
+            Array containing element angular velocity vectors.
+        alpha_collection: numpy.ndarray
+            2D (dim, n_elems) array containing data with 'float' type.
+            Array contining element angular acceleration vectors.
+        director_collection: numpy.ndarray
+            3D (dim, dim, n_elems) array containing data with 'float' type.
+            Array containing element director matrices.
+
+
     """
 
     def __init__(self, n_elements, shear_matrix, bend_matrix, rod, *args, **kwargs):
@@ -595,6 +660,41 @@ class CosseratRod(
         *args,
         **kwargs
     ):
+        """
+        This method should be called by the user to initialize and generate Cosserat rod object.
+
+        Parameters
+        ----------
+        n_elements: float
+            Rod number of elements.
+        start: numpy.ndarray
+            1D (dim) array containing data with 'float' type. Start position of the rod.
+        direction: numpy.ndarray
+            1D (dim) array containing data with 'float' type. Direction or tangent of the rod.
+        normal: numpy.ndarray
+            1D (dim) array containing data with 'float' type. Normal direction of the rod.
+        base_length: float
+            Initial length of the rod.
+        base_radius: float
+            Initial radius of the rod.
+        density: float
+            Density of the rod.
+        nu: float
+            Dissipation constant of the rod.
+        youngs_modulus: float
+            Youngs modulus of the rod.
+        poisson_ratio: float
+            Poisson ratio of the rod is used to compute shear modulus.
+        alpha_c: float
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         # FIXME: Make sure G=E/(poisson_ratio+1.0) in wikipedia it is different
         # Shear Modulus
         shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
