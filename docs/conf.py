@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Elastica'
-copyright = '2020, mattiaLab'
-author = 'mattiaLab'
+copyright = '2020, Gazzola Lab'
+author = 'Gazzola Lab'
 
 # The full version, including alpha/beta/rc tags
 release = '0.0.1'

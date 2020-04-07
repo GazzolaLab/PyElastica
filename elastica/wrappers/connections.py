@@ -3,7 +3,7 @@ Connect
 -------
 
 Provides the connections interface to connect entities (rods,
-rigid bodies) using Joints (see `joints.py`).
+rigid bodies) using joints (see `joints.py`).
 """
 
 from elastica.joint import FreeJoint
@@ -11,9 +11,9 @@ from elastica.joint import FreeJoint
 
 class Connections:
     """
-    Connections class is a wrapper for connecting rod-like objects using joints selected
-    by the user. If the user wants to connect two rod-like objects, the simulator class has to
-    be derived from the Connections class.
+    The Connections class is a wrapper for connecting rod-like objects using joints selected
+    by the user. To connect two rod-like objects, the simulator class must be derived from 
+    the Connections class.
 
         Attributes
         ----------
@@ -29,9 +29,9 @@ class Connections:
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
     ):
         """
-        This method is to connect the rod-like object using the joint class selected
-        by the user. The user has to input two rod-like objects that are connected. Also
-        the user has to set the element indexes of these rods where connection happens.
+        This method connects two rod-like objects using the selected joint class. 
+        You need to input the two rod-like objects that are to be connected as well 
+        as set the element indexes of these rods where the connection occurs.
 
         Parameters
         ----------

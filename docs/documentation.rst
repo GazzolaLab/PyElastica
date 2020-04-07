@@ -1,8 +1,8 @@
 *************
-Pyelastica
+PyElastica
 *************
 
-This the the documentation page for Pyelastica. We can add a bit here about things people should know before we get into the details below.
+This the the documentation page for PyElastica. For more information about PyElastica, see the `project website`_. 
 
 Rods
 =====
@@ -134,4 +134,4 @@ Wrappers
 ..    :members:
 ..    :exclude-members: __weakref__
 
-
+.. _project website: https://cosseratrods.org/software/pyelastica

@@ -2,7 +2,7 @@ __doc__ = """
 Base System
 -----------
 
-Basic coordinating multiple, smaller systems that have an independently integrable
+Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
 from collections.abc import MutableSequence
@@ -14,7 +14,7 @@ from elastica.rod import RodBase
 class BaseSystemCollection(MutableSequence):
     """
     Base System for simulator classes. Every simulation class written by the user
-    has to be derived from the BaseSystemCollection class. Otherwise, simulation does not
+    must be derived from the BaseSystemCollection class; otherwise the simulation will
     proceed.
 
         Attributes
@@ -26,6 +26,10 @@ class BaseSystemCollection(MutableSequence):
         _features: list
             List of classes acting on the rod-like object, such as external forces classes.
 
+    """
+    """
+    Developer Note
+    -----
     Note
     ----
     We can directly subclass a list for the
@@ -114,7 +118,7 @@ class BaseSystemCollection(MutableSequence):
 
     def finalize(self):
         """
-        This method finalizes simulator class and it is assumed that the user appended
+        This method finalizes the simulator class. When it is called, it is assumed that the user has appended
         all rod-like objects to the simulator as well as all boundary conditions, callbacks, etc.,
         acting on these rod-like objects. After the finalize method called,
         the user cannot add new features to the simulator class.

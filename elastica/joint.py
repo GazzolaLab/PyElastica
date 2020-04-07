@@ -1,4 +1,5 @@
-__doc__ = """ Joint module to connect rods. """
+__doc__ = """ Module containing joint classes to connect multiple rods together. """
+
 
 import numpy as np
 from elastica.utils import Tolerance
@@ -6,10 +7,9 @@ from elastica.utils import Tolerance
 
 class FreeJoint:
     """
-    Free joint class is a base class for joints. Free or spherical
-    joint constrains the relative movement between two nodes (chosen by the user)
-    by applying restoring forces. For implementation details, users
-    can refer to Zhang et. al. Nature Communications 2019 paper.
+    This free joint class is the base class for all joints. Free or spherical
+    joints constrains the relative movement between two nodes (chosen by the user)
+    by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
         Attributes
         ----------
@@ -20,7 +20,7 @@ class FreeJoint:
 
     Note
     ----
-    Every new joint class has to be derived from the FreeJoint class.
+    Every new joint class must be derived from the FreeJoint class.
 
 
     """
@@ -98,7 +98,7 @@ class FreeJoint:
 
     def apply_torques(self, rod_one, index_one, rod_two, index_two):
         """
-        Apply joint torque to the connected rod objects.
+        Apply restoring joint torques to the connected rod objects.
 
         In FreeJoint class, this routine simply passes.
 
@@ -122,11 +122,11 @@ class FreeJoint:
 
 class HingeJoint(FreeJoint):
     """
-    Hinge joint class constrains the relative movement and rotation
+    This hinge joint class constrains the relative movement and rotation
     (only one axis defined by the user) between two nodes and elements
     (chosen by the user) by applying restoring forces and torques. For
-    implementation details, users can refer to Zhang et. al. Nature
-    Communications 2019 paper.
+    implementation details, refer to Zhang et. al. Nature
+    Communications (2019).
 
         Attributes
         ----------
@@ -195,10 +195,10 @@ class HingeJoint(FreeJoint):
 
 class FixedJoint(FreeJoint):
     """
-    Fixed joint class constrains the relative movement and rotation
+    The fixed joint class restricts the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
-    For implementation details, users can refer to Zhang et. al. Nature
-    Communications 2019 paper.
+    For implementation details, refer to Zhang et al. Nature
+    Communications (2019).
 
         Attributes
         ----------

@@ -1,4 +1,4 @@
-__doc__ = """ Module for interaction between rod and environment. """
+__doc__ = """ Module containing interactions between a rod and its environment. """
 
 import numpy as np
 import numba
@@ -10,9 +10,9 @@ from elastica.external_forces import NoForces
 def find_slipping_elements(velocity_slip, velocity_threshold):
     """
     This function takes the velocity of elements and checks if they are larger than the threshold velocity.
-    If the velocity of elements is larger than threshold velocity, that means those elements are slipping,
-    in other words, kinetic friction will be acting on those elements, not static friction.
-    This function output an array called slip function, this array has a size of the number of elements.
+    If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
+    In other words, kinetic friction will be acting on those elements, not static friction.
+    This function outputs an array called slip function, this array has a size of the number of elements.
     If the velocity of the element is smaller than the threshold velocity slip function value for that element is 1,
     which means static friction is acting on that element. If the velocity of the element is larger than
     the threshold velocity slip function value for that element is between 0 and 1, which means kinetic friction is acting
@@ -44,7 +44,7 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 # Converting forces on nodes to elements
 def nodes_to_elements(input):
     """
-    This function converts rod-like object dofs on nodes to
+    This function converts the rod-like object dofs on nodes to
     dofs on elements. For example, node velocity is converted to
     element velocity.
 
@@ -71,9 +71,9 @@ def nodes_to_elements(input):
 # only applies normal force no friction
 class InteractionPlane:
     """
-    The interaction plane class is computing plane reaction
-    force on the rod-like object.  For more details regarding the contact module look
-    Eqn 4.8 Gazzola et. al. RSoS 2018 paper.
+    The interaction plane class computes the plane reaction
+    force on a rod-like object.  For more details regarding the contact module refer to
+    Eqn 4.8 of Gazzola et al. RSoS (2018).
 
         Attributes
         ----------
@@ -116,8 +116,7 @@ class InteractionPlane:
 
     def apply_normal_force(self, system):
         """
-        This function computes the plane reaction force on the element, in the
-        case of contact.
+        In the case of contact with the plane, this function computes the plane reaction force on the element.
 
         Parameters
         ----------
@@ -208,10 +207,10 @@ class InteractionPlane:
 # mu named as to which direction it opposes
 class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
     """
-    Anisotropic friction plane class is for computing
+    This anisotropic friction plane class is for computing
     anisotropic friction forces on rods.
     A detailed explanation of the implemented equations
-    can be found in Gazzola et. al. RSoS. 2018 paper.
+    can be found in Gazzola et al. RSoS. (2018).
 
         Attributes
         ----------
@@ -490,8 +489,8 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
 @numba.njit
 def sum_over_elements(input):
     """
-    This function sums all elements of input array,
-    using a Numba njit decorator shows better performance
+    This function sums all elements of the input array.
+    Using a Numba njit decorator shows better performance
     compared to python sum(), .sum() and np.sum()
 
     Parameters
@@ -530,7 +529,7 @@ def sum_over_elements(input):
 @numba.njit
 def node_to_element_velocity(node_velocity):
     """
-    This function computes to velocity on the elements.
+    This function computes the velocity of the elements.
     Here we define a separate function because benchmark results
     showed that using Numba, we get almost 3 times faster calculation.
 
@@ -565,8 +564,8 @@ def slender_body_forces(
     tangents, velocity_collection, dynamic_viscosity, lengths, radius
 ):
     r"""
-    This function computes hydrodynamic forces on body using slender body theory.
-    Below implementation is from the Eq. 4.13 in Gazzola et. al. RSoS. 2018 paper.
+    This function computes hydrodynamic forces on a body using slender body theory.
+    The below implementation is from Eq. 4.13 in Gazzola et al. RSoS. (2018).
 
     .. math::
         F_{h}=\frac{-4\pi\mu}{\ln{(L/r)}}\left(\mathbf{I}-\frac{1}{2}\mathbf{t}^{\textrm{T}}\mathbf{t}\right)\mathbf{v}
@@ -657,10 +656,10 @@ def slender_body_forces(
 # slender body theory
 class SlenderBodyTheory(NoForces):
     """
-    Slender body theory class is for flow-structure
+    This slender body theory class is for flow-structure
     interaction problems. This class applies hydrodynamic
     forces on the body using the slender body theory given in
-    Eq. 4.13 Gazzola et. al. RSoS. 2018 paper.
+    Eq. 4.13 of Gazzola et al. RSoS (2018).
 
         Attributes
         ----------

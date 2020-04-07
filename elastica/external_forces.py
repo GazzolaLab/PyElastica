@@ -1,4 +1,4 @@
-__doc__ = """ External forcing modules for rod. """
+__doc__ = """ Module for boundary condition implementations that apply external forces to the rod. """
 
 import numpy as np
 from elastica._linalg import _batch_matvec
@@ -7,11 +7,11 @@ from elastica._spline import _bspline
 
 class NoForces:
     """
-    This is the base class for external forcing for rod-like objects.
+    This is the base class for external forcing boundary conditions applied to rod-like objects.
 
     Note
     ----
-    Every new external forcing class has to be derived
+    Every new external forcing class must be derived
     from NoForces class.
 
     """
@@ -23,7 +23,7 @@ class NoForces:
         pass
 
     def apply_forces(self, system, time: np.float = 0.0):
-        """ Apply forces to a system object.
+        """ Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
 
@@ -43,7 +43,7 @@ class NoForces:
         pass
 
     def apply_torques(self, system, time: np.float = 0.0):
-        """ Apply torques to a Rod-like object.
+        """ Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
 
@@ -63,7 +63,7 @@ class NoForces:
 
 class GravityForces(NoForces):
     """
-    This class applies a constant gravity on the entire rod.
+    This class applies a constant gravitational force to the entire rod.
 
         Attributes
         ----------
@@ -90,7 +90,7 @@ class GravityForces(NoForces):
 
 class EndpointForces(NoForces):
     """
-    This class applies constant forces on endpoint nodes.
+    This class applies constant forces on the endpoint nodes.
 
         Attributes
         ----------
@@ -133,7 +133,7 @@ class EndpointForces(NoForces):
 
 class UniformTorques(NoForces):
     """
-    This is class applies uniform torque to the entire rod.
+    This class applies a uniform torque to the entire rod.
 
         Attributes
         ----------
@@ -165,7 +165,7 @@ class UniformTorques(NoForces):
 
 class UniformForces(NoForces):
     """
-    This class applies uniform forces to entire rod.
+    This class applies a uniform force to the entire rod.
 
         Attributes
         ----------
@@ -199,10 +199,11 @@ class UniformForces(NoForces):
 
 class MuscleTorques(NoForces):
     """
-    This class applies muscle torques on the body. It can apply
+    This class applies muscle torques along the body. The applied muscle torques are treated
+    as applied external forces. This class can apply
     muscle torques as a traveling wave with a beta spline or only
     as a traveling wave. For implementation details refer to Gazzola et. al.
-    RSoS. 2018 paper.
+    RSoS. (2018).
 
         Attributes
         ----------

@@ -1,4 +1,4 @@
-__doc__ = """ Boundary condition module constraining values and rates of the rod. """
+__doc__ = """ Module for boundary condition implementations that constrain or define displacement conditions on the rod. """
 
 import numpy as np
 from elastica._rotations import _get_rotation_matrix
@@ -6,18 +6,17 @@ from elastica._rotations import _get_rotation_matrix
 
 class FreeRod:
     """
-    This is the base class for rod boundary conditions,
-    and it is the free rod class.
+    This is the base class for displacement boundary conditions. It applies no constraints or displacements to the rod.
 
     Note
     ----
-    Every new rod boundary condition class has to be
+    Every new displacement boundary condition class must be
     derived from FreeRod class.
     """
 
     def __init__(self):
         """
-        Free rod no input parameters.
+        Free rod has no input parameters.
         """
         pass
 
@@ -62,7 +61,7 @@ class FreeRod:
 
 class OneEndFixedRod(FreeRod):
     """
-    This is the one end fixed rod class. Currently,
+    This boundary condition class fixes one end of the rod. Currently,
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
 
@@ -100,8 +99,8 @@ class OneEndFixedRod(FreeRod):
 class HelicalBucklingBC(FreeRod):
     """
     This is the boundary condition class for Helical
-    Buckling case in Gazzola et. al. RSoS paper 2018.
-    Applied boundary condition is twist and slack on to
+    Buckling case in Gazzola et. al. RSoS (2018).
+    The applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
 
         Attributes

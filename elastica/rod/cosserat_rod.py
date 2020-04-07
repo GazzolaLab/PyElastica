@@ -1,4 +1,4 @@
-__doc__ = """ Cosserat rod class module implementations """
+__doc__ = """ Module containing implementations of Cosserat Rod classes """
 import numpy as np
 import functools
 
@@ -583,10 +583,10 @@ class CosseratRod(
     _LinearConstitutiveModelMixin, _CosseratRodBase, _RodSymplecticStepperMixin
 ):
     """
-    Cosserat Rod public class. User should prefer to use this class because it is derived from some
-    of the essential classes.
-    Although attributes of CosseratRod is from its parent classes, for users convenience variable
-    names for those are given below. So that users can access easily.
+    Cosserat Rod public class. This is the preferred class for rods because it is derived from some
+    of the essential base classes.
+    Although the attributes of this CosseratRod class are inherited from its parent classes, for convenience and easy access, the variable
+    names are given below.
 
         Attributes
         ----------
@@ -715,7 +715,8 @@ class CosseratRod(
         **kwargs
     ):
         """
-        This method should be called by the user to initialize and generate Cosserat rod object.
+        Call this method to initialize and generate a Cosserat rod object that is a straight rod. Future versions will contain 
+        methods for curvilinear rods. 
 
         Parameters
         ----------

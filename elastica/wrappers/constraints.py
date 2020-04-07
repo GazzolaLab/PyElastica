@@ -2,7 +2,7 @@ __doc__ = """
 Constraints
 -----------
 
-Provides the constraints interface to enforce boundary conditions (see `boundary_conditions.py`).
+Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
 from elastica.boundary_conditions import FreeRod
@@ -10,9 +10,9 @@ from elastica.boundary_conditions import FreeRod
 
 class Constraints:
     """
-    Constraints class is a wrapper for enforcing boundary conditions, set by the user.
-    If the user wants to enforce boundary conditions on rod-like objects, the simulator class
-    has to be derived from Constraints class.
+    The Constraints class is a wrapper for enforcing displacement boundary conditions.
+    To enforce boundary conditions on rod-like objects, the simulator class
+    must be derived from Constraints class.
 
         Attributes
         ----------
@@ -26,9 +26,9 @@ class Constraints:
 
     def constrain(self, system):
         """
-        This method is to enforce boundary conditions, for user-defined
-        system or rod-like object. User has to input the system or rod-like
-        object that he/she wants to enforce boundary condition.
+        This method enforces a displacement boundary conditions to the relevant user-defined
+        system or rod-like object. You must input the system or rod-like
+        object that you want to enforce boundary condition on.
 
         Parameters
         ----------

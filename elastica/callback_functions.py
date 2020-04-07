@@ -1,13 +1,13 @@
-__doc__ = """ Call back modules for rod-like objects """
+__doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
 
 
 class CallBackBaseClass:
     """
-    This is the base class to do callback for rod-like objects.
+    This is the base class for callbacks for rod-like objects.
 
     Note
     ----
-    Every new callback class has to be derived from
+    Every new callback class must be derived from
     CallBackBaseClass.
 
     """
@@ -20,9 +20,9 @@ class CallBackBaseClass:
 
     def make_callback(self, system, time, current_step: int):
         """
-        This method will be called every time step. Users can define
-        which parameters to be called back and recorded. Also users
-        can define the sampling rate of these parameters inside this
+        This method is called every time step. Users can define
+        which parameters are called back and recorded. Also users
+        can define the sampling rate of these parameters inside the
         method function.
 
         Parameters
@@ -43,9 +43,9 @@ class CallBackBaseClass:
 
 class MyCallBack(CallBackBaseClass):
     """
-    My call back class is derived from the base call back class.
-    This is an example, user can use this class as an example to write
-    new call back classes in his/her client file.
+    MyCallBack class is derived from the base callback class.
+    This is just an example of a callback class, this class as an example/template to write
+    new call back classes in your client file.
 
         Attributes
         ----------

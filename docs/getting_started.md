@@ -1,11 +1,11 @@
 # Getting Started
 
-### Pyelastica Overview
-We have written a introductory guide to using pyelastica available on the project website [here](https://cosserat-rods.github.io/software/pyelastica/#pyelastica-workflow)
+### PyElastica Overview
+We have written a introductory guide to using PyElastica available on the project website [here](https://cosseratrods.org/software/pyelastica/#pyelastica-workflow)
 
 ### Tutorials
 **(Under Development)**  
-We are creating a number of Jupyter Notebooks and python scripts to help get users started with using Pyelastica. Our goal is to upload the notebooks to [Binder](link-to-binder-notebooks), allowing you to try out some of the tutorials without having to install Pyelastica. Additional examples are also available in the examples folder of Pyelastica's [Github repo](link-to-github-repo).
+We are creating a number of Jupyter Notebooks and python scripts to help get users started with using PyElastica. Our goal is to upload the notebooks to [Binder](link-to-binder-notebooks), allowing you to try out some of the tutorials without having to install PyElastica. Additional examples are also available in the examples folder of PyElastica's [Github repo](link-to-github-repo).
 
 
 ### Visualization

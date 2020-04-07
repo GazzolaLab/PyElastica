@@ -2,7 +2,7 @@ __doc__ = """
 CallBacks
 -----------
 
-Provides the CallBack interface to collect data in time (see `callback_functions.py`).
+Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
 
 from elastica.callback_functions import CallBackBaseClass
@@ -26,9 +26,9 @@ class CallBacks:
 
     def collect_diagnostics(self, system):
         """
-        This method is to call user-defined call-back classes, for
-        user-defined system or rod-like object. User has to input the
-        system or rod-like object that he/she wants to collect data.
+        This method calls user-defined call-back classes for a
+        user-defined system or rod-like object. You need to input the
+        system or rod-like object that you want to collect data from.
 
         Parameters
         ----------

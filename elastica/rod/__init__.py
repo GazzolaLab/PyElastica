@@ -10,7 +10,7 @@ class RodBase:
 
     Note
     ----
-    All new rod classes has to derive from RodBase class.
+    All new rod classes must be derived from this RodBase class.
 
 
     """
