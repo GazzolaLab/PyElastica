@@ -9,8 +9,8 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 
 class Forcing:
     """
-    The Forcing class is a wrapper for applying boundary conditions that 
-    consist of applied external forces. To apply forcing on rod-like objects, 
+    The Forcing class is a wrapper for applying boundary conditions that
+    consist of applied external forces. To apply forcing on rod-like objects,
     the simulator class must be derived from the Forcing class.
 
         Attributes
@@ -25,8 +25,8 @@ class Forcing:
 
     def add_forcing_to(self, system):
         """
-        This method applies external forces and torques on the relevant 
-        user-defined system or rod-like object. You must input the system 
+        This method applies external forces and torques on the relevant
+        user-defined system or rod-like object. You must input the system
         or rod-like object that you want to apply external forces and torques on.
 
         Parameters

@@ -715,8 +715,8 @@ class CosseratRod(
         **kwargs
     ):
         """
-        Call this method to initialize and generate a Cosserat rod object that is a straight rod. Future versions will contain 
-        methods for curvilinear rods. 
+        Call this method to initialize and generate a Cosserat rod object that is a straight rod. Future versions will contain
+        methods for curvilinear rods.
 
         Parameters
         ----------

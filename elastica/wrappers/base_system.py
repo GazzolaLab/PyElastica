@@ -27,6 +27,7 @@ class BaseSystemCollection(MutableSequence):
             List of classes acting on the rod-like object, such as external forces classes.
 
     """
+
     """
     Developer Note
     -----

@@ -12,7 +12,7 @@ from elastica.joint import FreeJoint
 class Connections:
     """
     The Connections class is a wrapper for connecting rod-like objects using joints selected
-    by the user. To connect two rod-like objects, the simulator class must be derived from 
+    by the user. To connect two rod-like objects, the simulator class must be derived from
     the Connections class.
 
         Attributes
@@ -29,8 +29,8 @@ class Connections:
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
     ):
         """
-        This method connects two rod-like objects using the selected joint class. 
-        You need to input the two rod-like objects that are to be connected as well 
+        This method connects two rod-like objects using the selected joint class.
+        You need to input the two rod-like objects that are to be connected as well
         as set the element indexes of these rods where the connection occurs.
 
         Parameters
