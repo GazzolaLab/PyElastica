@@ -34,7 +34,6 @@ release = "0.0.1"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 master_doc = 'index'
-html_favicon = 'elastica_logo.png'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
@@ -75,6 +74,7 @@ source_suffix = {
 # source_parsers = { ".md": "recommonmark.parser.CommonMarkParser",}
 # source_suffix = [".rst", ".md"]
 # -- Options for HTML output -------------------------------------------------
+html_favicon = 'docs/elastica_logo.png'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
