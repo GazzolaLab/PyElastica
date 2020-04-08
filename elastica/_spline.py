@@ -9,7 +9,7 @@ def _bspline(t_coeff, l_centerline=1.0):
 
     Parameters
     ----------
-    t_coeff : np.array
+    t_coeff : numpy.ndarray
         The spline coefficients, denoted by :math:`beta_i`. Note that the first
         and the last values are set to zero by default.
     l_centreline : float

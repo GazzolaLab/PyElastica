@@ -1,22 +1,66 @@
-__doc__ = """ Joint between rods module """
+__doc__ = """ Module containing joint classes to connect multiple rods together. """
+
 
 import numpy as np
 from elastica.utils import Tolerance
 
 
 class FreeJoint:
+    """
+    This free joint class is the base class for all joints. Free or spherical
+    joints constrains the relative movement between two nodes (chosen by the user)
+    by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
+
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+
+    Note
+    ----
+    Every new joint class must be derived from the FreeJoint class.
+
+
+    """
+
     # pass the k and nu for the forces
     # also the necessary rods for the joint
     # indices should be 0 or -1, we will provide wrappers for users later
     def __init__(self, k, nu):
+        """
+
+        Parameters
+        ----------
+        k: float
+           Stiffness coefficient of the joint.
+        nu: float
+           Damping coefficient of the joint.
+
+        """
         self.k = k
         self.nu = nu
-        # self.rod_one = rod_one
-        # self.rod_two = rod_two
-        # self.index_one = index_one
-        # self.index_two = index_two
 
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
+        """
+        Apply joint force to the connected rod objects.
+
+        Parameters
+        ----------
+        rod_one : object
+            Rod-like object
+        index_one : int
+            Index of first rod for joint.
+        rod_two : object
+            Rod-like object
+        index_two : int
+            Index of second rod for joint.
+
+        Returns
+        -------
+
+        """
         end_distance_vector = (
             rod_two.position_collection[..., index_two]
             - rod_one.position_collection[..., index_one]
@@ -53,16 +97,64 @@ class FreeJoint:
         return
 
     def apply_torques(self, rod_one, index_one, rod_two, index_two):
+        """
+        Apply restoring joint torques to the connected rod objects.
+
+        In FreeJoint class, this routine simply passes.
+
+        Parameters
+        ----------
+        rod_one : object
+            Rod-like object
+        index_one : int
+            Index of first rod for joint.
+        rod_two : object
+            Rod-like object
+        index_two : int
+            Index of second rod for joint.
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class HingeJoint(FreeJoint):
-    """ this joint currently keeps rod one fixed and moves rod two
-        how couples act needs to be reconfirmed
+    """
+    This hinge joint class constrains the relative movement and rotation
+    (only one axis defined by the user) between two nodes and elements
+    (chosen by the user) by applying restoring forces and torques. For
+    implementation details, refer to Zhang et. al. Nature
+    Communications (2019).
+
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
+        normal_direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(self, k, nu, kt, normal_direction):
+        """
+
+        Parameters
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
+        normal_direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
+        """
         super().__init__(k, nu)
         # normal direction of the constrain plane
         # for example for yz plane (1,0,0)
@@ -102,7 +194,34 @@ class HingeJoint(FreeJoint):
 
 
 class FixedJoint(FreeJoint):
+    """
+    The fixed joint class restricts the relative movement and rotation
+    between two nodes and elements by applying restoring forces and torques.
+    For implementation details, refer to Zhang et al. Nature
+    Communications (2019).
+
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
+    """
+
     def __init__(self, k, nu, kt):
+        """
+
+        Parameters
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
+        """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically

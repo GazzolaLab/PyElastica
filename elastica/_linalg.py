@@ -9,10 +9,12 @@ from .utils import perm_parity
 @functools.lru_cache(maxsize=1)
 def levi_civita_tensor(dim):
     """
+    Creates levi civita tensor for cross product of
+    vector in different directions.
 
     Parameters
     ----------
-    dim
+    dim: int
 
     Returns
     -------
@@ -27,20 +29,49 @@ def levi_civita_tensor(dim):
 
 
 def _batch_matvec(matrix_collection, vector_collection):
+    """
+    Computes batch matrix and batch vector product.
+
+    Parameters
+    ----------
+    matrix_collection: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    vector_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    Returns
+    -------
+
+    """
     return np.einsum("ijk,jk->ik", matrix_collection, vector_collection)
 
 
 def _batch_matmul(first_matrix_collection, second_matrix_collection):
+    """
+    Computes batch matrix and batch matrix product.
+
+    Parameters
+    ----------
+    first_matrix_collection: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    second_matrix_collection: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+    Returns
+    -------
+
+    """
     return np.einsum("ijk,jlk->ilk", first_matrix_collection, second_matrix_collection)
 
 
 def _batch_cross(first_vector_collection, second_vector_collection):
     """
+    Computes batch vector and batch vector cross product.
 
     Parameters
     ----------
-    first_vector_collection
-    second_vector_collection
+    first_vector_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    second_vector_collection: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------

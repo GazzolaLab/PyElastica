@@ -1,5 +1,5 @@
-"""
-Rod constitutive model mixins
+__doc__ = """
+Rod constitutive model implementations.
 """
 import numpy as np
 
@@ -8,6 +8,24 @@ from elastica.utils import MaxDimension, Tolerance
 
 
 class _LinearConstitutiveModelMixin:
+    """
+    Linear constitutive model mixin class for Cosserat rod.
+
+        Attributes
+        ----------
+        rest_sigma: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Strain rest configuration defined on rod elements. Usually, rest strain is zero.
+        rest_kappa: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Curvature of at rest configuration defined on rod elements. Usually, rest kappa is zero.
+        shear_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Shear/stretch matrix defined on rod elements.
+        bend_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Bending/twist matrix defined on rod voronoi domain.
+    """
 
     # Needs
     # kappa, kappa0, strain (sigma), sigma0, B, S in specified formats
@@ -15,6 +33,25 @@ class _LinearConstitutiveModelMixin:
     def __init__(
         self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
     ):
+        """
+        Parameters
+        ----------
+        n_elements: int
+            The number of elements of the rod.
+        shear_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Shear/stretch matrix defined on rod elements.
+        bend_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Bending/twist matrix defined on rod voronoi domain.
+        rest_lengths: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Rod element lengths at rest configuration.
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
+        """
         # set rest strains and curvature to be  zero at start
         # if found in kwargs modify (say for curved rod)
         self.rest_sigma = np.zeros((MaxDimension.value(), n_elements))
@@ -38,9 +75,7 @@ class _LinearConstitutiveModelMixin:
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
-        Linear force functional
-        Operates on
-        S : (3,3,n) tensor and sigma (3,n)
+        This method computes shear and stretch stresses on the rod elements.
 
         Returns
         -------
@@ -54,9 +89,7 @@ class _LinearConstitutiveModelMixin:
 
     def _compute_internal_bending_twist_stresses_from_model(self):
         """
-        Linear force functional
-        Operates on
-        B : (3,3,n) tensor and curvature kappa (3,n)
+        This method computes internal bending and twist stress on the rod voronoi.
 
         Returns
         -------
@@ -70,9 +103,35 @@ class _LinearConstitutiveModelMixin:
 
 
 class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin):
+    """
+    Linear constitutive model with strain rate mixin class for Cosserat rod.
+
+        Attributes
+        ----------
+        rest_sigma: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Strain rest configuration defined on rod elements. Usually, rest strain is zero.
+        rest_kappa: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Curvature of at rest configuration defined on rod elements. Usually, rest kappa is zero.
+        shear_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Shear/stretch matrix defined on rod elements.
+        bend_matrix: numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+            Bending/twist matrix defined on rod voronoi domain.
+        shear_rate_matrix: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Shear/stretch rate matrix defined on rod elements.
+        bend_rate_matrix: numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+            Bending/twist rate matrix defined on rod voronoi domain.
+    """
+
     def __init__(
         self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
     ):
+
         _LinearConstitutiveModelMixin.__init__(
             self, n_elements, shear_matrix, bend_matrix, rest_lengths, *args, **kwargs
         )
@@ -95,15 +154,7 @@ class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin)
             raise ValueError("bend rate matrix value missing!")
 
     def _compute_internal_shear_stretch_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        S : (3,3,n) tensor and sigma (3,n)
 
-        Returns
-        -------
-
-        """
         # TODO : test this function
         # Calculates stress based purely on strain component
         super(
@@ -114,15 +165,7 @@ class _LinearConstitutiveModelWithStrainRateMixin(_LinearConstitutiveModelMixin)
         self.internal_stress += _batch_matvec(self.shear_rate_matrix, self.sigma_dot)
 
     def _compute_internal_bending_twist_stresses_from_model(self):
-        """
-        Linear force functional
-        Operates on
-        B : (3,3,n) tensor and curvature kappa (3,n)
 
-        Returns
-        -------
-
-        """
         # TODO : test this function
         # Calculates stress based purely on strain component
         super(

@@ -5,7 +5,7 @@ def is_system_a_collection(system):
 
     Parameters
     ----------
-    system
+    system: object
 
     Returns
     -------

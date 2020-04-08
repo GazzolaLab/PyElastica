@@ -9,7 +9,7 @@ from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Fo
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import FreeRod
 from elastica.external_forces import GravityForces, UniformTorques
-from elastica.interaction import AnistropicFrictionalPlane
+from elastica.interaction import AnisotropicFrictionalPlane
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
@@ -91,7 +91,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
 
     rolling_friction_initial_velocity_sim.add_forcing_to(shearable_rod).using(
-        AnistropicFrictionalPlane,
+        AnisotropicFrictionalPlane,
         k=10.0,
         nu=1e-4,
         plane_origin=origin_plane,
