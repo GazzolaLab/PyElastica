@@ -8,21 +8,20 @@ from shutil import rmtree
 from setuptools import Command, find_packages, setup
 
 # Package meta-data.
-NAME = "pyelastica"
+NAME = "PyElastica"
 DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
-URL = "https://github.com/mattialabteam/elastica-python"
+URL = "https://github.com/gazzolalab/pyelastica"
 EMAIL = "armant2@illinois.edu"
-AUTHOR = "MattiaLab"
+AUTHOR = "Gazzola Lab"
 REQUIRES_PYTHON = ">=3.4.0"
 VERSION = "0.0.1"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm"]
+REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
 
 # What packages are optional?
 EXTRAS = {
-    "Optimization and Inverse Design": ["cma"],
-    "Kernel acceleration": ["numba"],
+    "Optimization and Inverse Design": ["cma"]
 }
 
 here = os.path.abspath(os.path.dirname(__file__))

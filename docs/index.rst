@@ -7,7 +7,7 @@
 Elastica
 *********
 
-.. include:: README.rst
+.. include:: intro_page.rst
 
 
 
