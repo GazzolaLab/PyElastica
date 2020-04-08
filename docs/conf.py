@@ -39,7 +39,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
     "sphinx.ext.mathjax",
-    "numpydoc",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
