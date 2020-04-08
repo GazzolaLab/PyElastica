@@ -58,10 +58,10 @@ exclude_patterns = []
 # ]
 
 autodoc_default_options = {
-    'members': True,
-    'private-members': True,
-    'special-members': True,
-    'show-inheritance': True,
+    'members': None,
+    'private-members': None,
+    'special-members': None,
+    'show-inheritance': None,
 }
 
 source_suffix = {
