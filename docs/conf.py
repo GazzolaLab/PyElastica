@@ -34,7 +34,7 @@ release = "0.0.1"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 master_doc = 'index'
-
+html_favicon = 'elastica_logo.png'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
