@@ -2,4 +2,4 @@
 Elastica++
 *************
 
-We can add elastica++ documentation here
+Elastica++ documentation will be here when released.
