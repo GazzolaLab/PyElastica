@@ -11,13 +11,17 @@ There are currently two versions of Elastica.
 
 PyElastica
 ~~~~~~~~~~
-.. image:: https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master 
-	:target: https://travis-ci.com/mattialabteam 
+.. image:: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master
+	:target: https://travis-ci.com/gazzolalab 
 	:alt: Build_status
 
-.. image:: https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr
-	:target: https://codecov.io/gh/mattialabteam/elastica-python
+.. image:: https://codecov.io/gh/gazzolalab/PyElastica/branch/master/graph/badge.svg
+	:target: https://codecov.io/gh/gazzolalab/PyElastica
 	:alt: codecov
+	
+.. image:: https://readthedocs.org/projects/pyelastica/badge/?version=latest
+	:target: https://pyelastica.readthedocs.io/en/latest/?badge=latest
+	:alt: Documentation Status
 
 PyElastica is the python implementation of Elastica. The easiest way to install PyElastica is with PIP: 
 
