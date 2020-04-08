@@ -75,20 +75,20 @@ class InteractionPlane:
     force on a rod-like object.  For more details regarding the contact module refer to
     Eqn 4.8 of Gazzola et al. RSoS (2018).
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient between the plane and the rod-like object.
-        nu: float
-            Dissipation coefficient between the plane and the rod-like object.
-        plane_origin: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Origin of the plane.
-        plane_normal: numpy.ndarray
-           2D (dim, 1) array containing data with 'float' type.
-           The normal vector of the plane.
-        surface_tol: float
-            Penetration tolerance between the plane and the rod-like object.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient between the plane and the rod-like object.
+    nu: float
+        Dissipation coefficient between the plane and the rod-like object.
+    plane_origin: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Origin of the plane.
+    plane_normal: numpy.ndarray
+       2D (dim, 1) array containing data with 'float' type.
+       The normal vector of the plane.
+    surface_tol: float
+        Penetration tolerance between the plane and the rod-like object.
 
     """
 
@@ -212,26 +212,26 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
     A detailed explanation of the implemented equations
     can be found in Gazzola et al. RSoS. (2018).
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient between the plane and the rod-like object.
-        nu: float
-            Dissipation coefficient between the plane and the rod-like object.
-        plane_origin: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Origin of the plane.
-        plane_normal: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            The normal vector of the plane.
-        slip_velocity_tol: float
-            Velocity tolerance to determine if the element is slipping or not.
-        static_mu_array: numpy.ndarray
-            1D (3,) array containing data with 'float' type.
-            [forward, backward, sideways] static friction coefficients.
-        kinetic_mu_array: numpy.ndarray
-            1D (3,) array containing data with 'float' type.
-            [forward, backward, sideways] kinetic friction coefficients.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient between the plane and the rod-like object.
+    nu: float
+        Dissipation coefficient between the plane and the rod-like object.
+    plane_origin: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Origin of the plane.
+    plane_normal: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        The normal vector of the plane.
+    slip_velocity_tol: float
+        Velocity tolerance to determine if the element is slipping or not.
+    static_mu_array: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+        [forward, backward, sideways] static friction coefficients.
+    kinetic_mu_array: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+        [forward, backward, sideways] kinetic friction coefficients.
     """
 
     def __init__(
@@ -661,10 +661,10 @@ class SlenderBodyTheory(NoForces):
     forces on the body using the slender body theory given in
     Eq. 4.13 of Gazzola et al. RSoS (2018).
 
-        Attributes
-        ----------
-        dynamic_viscosity: float
-            Dynamic viscosity of the fluid.
+    Attributes
+    ----------
+    dynamic_viscosity: float
+        Dynamic viscosity of the fluid.
 
     """
 

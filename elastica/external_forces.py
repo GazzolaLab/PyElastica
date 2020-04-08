@@ -65,10 +65,10 @@ class GravityForces(NoForces):
     """
     This class applies a constant gravitational force to the entire rod.
 
-        Attributes
-        ----------
-        acc_gravity: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+    Attributes
+    ----------
+    acc_gravity: numpy.ndarray
+        1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
 
     """
 
@@ -92,14 +92,14 @@ class EndpointForces(NoForces):
     """
     This class applies constant forces on the endpoint nodes.
 
-        Attributes
-        ----------
-        start_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Force applied to first node of the rod-like object.
-        end_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Force applied to last node of the rod-like object.
-        ramp_up_time: float
-            Applied forces are ramped up until ramp up time.
+    Attributes
+    ----------
+    start_force: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Force applied to first node of the rod-like object.
+    end_force: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Force applied to last node of the rod-like object.
+    ramp_up_time: float
+        Applied forces are ramped up until ramp up time.
 
     """
 
@@ -135,10 +135,10 @@ class UniformTorques(NoForces):
     """
     This class applies a uniform torque to the entire rod.
 
-        Attributes
-        ----------
-        torque: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
+    Attributes
+    ----------
+    torque: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
 
     """
 
@@ -167,10 +167,10 @@ class UniformForces(NoForces):
     """
     This class applies a uniform force to the entire rod.
 
-        Attributes
-        ----------
-        force:  numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
+    Attributes
+    ----------
+    force:  numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
     """
 
     def __init__(self, force, direction=np.array([0.0, 0.0, 0.0])):
@@ -205,20 +205,20 @@ class MuscleTorques(NoForces):
     as a traveling wave. For implementation details refer to Gazzola et. al.
     RSoS. (2018).
 
-        Attributes
-        ----------
-        direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Muscle torque direction.
-        angular_frequency: float
-            Angular frequency of traveling wave.
-        wave_number: float
-            Wave number of traveling wave.
-        phase_shift: float
-            Phase shift of traveling wave.
-        ramp_up_time: float
-            Applied muscle torques are ramped up until ramp up time.
-        my_spline: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type. Generated spline.
+    Attributes
+    ----------
+    direction: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Muscle torque direction.
+    angular_frequency: float
+        Angular frequency of traveling wave.
+    wave_number: float
+        Wave number of traveling wave.
+    phase_shift: float
+        Phase shift of traveling wave.
+    ramp_up_time: float
+        Applied muscle torques are ramped up until ramp up time.
+    my_spline: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type. Generated spline.
 
     """
 

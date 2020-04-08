@@ -18,6 +18,7 @@ PyElastica
 .. image:: https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr
 	:target: https://codecov.io/gh/mattialabteam/elastica-python
 	:alt: codecov
+
 PyElastica is the python implementation of Elastica. The easiest way to install PyElastica is with PIP: 
 
 .. code:: console
