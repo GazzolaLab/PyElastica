@@ -1,11 +1,11 @@
 
-**Elastica** is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional bodies using Cosserat Rod theory.
+**Elastica** is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional structures using Cosserat Rod theory.
 
 More information about Elastica is available at the `project website`_
 
 Implementations
 ----------------
-There are currently two versions of Elastica. 
+There are currently two implementations of Elastica. 
 
 PyElastica
 ~~~~~~~~~~
@@ -29,6 +29,6 @@ PyElastica is the python implementation of Elastica. The easiest way to install 
 
 Elastica++
 ~~~~~~~~~~
-Elastica++ is a C++ implementation of Elastica. 
+Elastica++ is a C++ implementation of Elastica that is still under development
 
 .. _project website: https://cosseratrods.org
