@@ -5,7 +5,7 @@ We have written a introductory guide to using PyElastica available on the projec
 
 ### Tutorials
 **(Under Development)**  
-We are creating a number of Jupyter Notebooks and python scripts to help get users started with using PyElastica. Our goal is to upload the notebooks to [Binder](link-to-binder-notebooks), allowing you to try out some of the tutorials without having to install PyElastica. Additional examples are also available in the examples folder of PyElastica's [Github repo](link-to-github-repo).
+We are creating a number of Jupyter Notebooks and python scripts to help get users started with using PyElastica. Our goal is to upload the notebooks to [Binder](link-to-binder-notebooks), allowing you to try out some of the tutorials without having to install PyElastica. Additional examples are also available in the examples folder of PyElastica's [Github repo](https://github.com/GazzolaLab/PyElastica).
 
 
 ### Visualization
