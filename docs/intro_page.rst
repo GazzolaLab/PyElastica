@@ -27,8 +27,11 @@ PyElastica is the python implementation of Elastica. The easiest way to install 
 
     $ pip install pyelastica
 
+Or download the source code from the `GitHub repo`_ 
+
 Elastica++
 ~~~~~~~~~~
 Elastica++ is a C++ implementation of Elastica that is still under development
 
 .. _project website: https://cosseratrods.org
+.. _GitHub repo: https://github.com/GazzolaLab/PyElastica
