@@ -74,7 +74,7 @@ source_suffix = {
 # source_parsers = { ".md": "recommonmark.parser.CommonMarkParser",}
 # source_suffix = [".rst", ".md"]
 # -- Options for HTML output -------------------------------------------------
-html_favicon = 'docs/elastica_logo.svg'
+html_favicon = 'elastica_logo.svg'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
