@@ -272,7 +272,7 @@ class Environment:
         kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
         static_mu_array = 2 * kinetic_mu_array
         self.simulator.add_forcing_to(self.shearable_rod).using(
-            AnistropicFrictionalPlane,
+            AnisotropicFrictionalPlane,
             k=1.0,
             nu=1e-0,
             plane_origin=origin_plane,
@@ -296,7 +296,7 @@ class Environment:
         kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
         static_mu_array = 2 * kinetic_mu_array
         self.simulator.add_forcing_to(self.cylinder).using(
-            AnistropicFrictionalPlaneRigidBody,
+            AnisotropicFrictionalPlaneRigidBody,
             k=1.0,
             nu=1e-0,
             plane_origin=origin_plane,

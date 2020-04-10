@@ -88,7 +88,7 @@ def rigid_cylinder_friction_validation(force=0.0):
     static_mu_array = np.array([0.8, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.4, 0.2, 0.2])  # [forward, backward, sideways]
     rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
-        AnistropicFrictionalPlaneRigidBody,
+        AnisotropicFrictionalPlaneRigidBody,
         k=1.0,
         nu=1e-0,
         plane_origin=origin_plane,

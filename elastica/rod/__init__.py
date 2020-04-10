@@ -5,14 +5,19 @@
 
 class RodBase:
     """
-    Base class for all rods
-    # TODO : What needs to be ported here?
+    Base class for all rods.
 
-    # The interface class, as seen from global scope
-    # Can be made common to all entities in the code
+    Note
+    ----
+    All new rod classes must be derived from this RodBase class.
+
+
     """
 
     def __init__(self):
+        """
+        RodBase does not take any arguments.
+        """
         pass
         # self.position_collection = NotImplemented
         # self.omega_collection = NotImplemented

@@ -377,7 +377,7 @@ mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
 kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
 static_mu_array = 2 * kinetic_mu_array
 simulator.add_forcing_to(shearable_rod).using(
-    AnistropicFrictionalPlane,
+    AnisotropicFrictionalPlane,
     k=1.0,
     nu=1e-0,
     plane_origin=origin_plane,
@@ -498,7 +498,7 @@ for i in range(N_CYLINDERS):
     )
 
     simulator.add_forcing_to(cylinders[i]).using(
-        AnistropicFrictionalPlaneRigidBody,
+        AnisotropicFrictionalPlaneRigidBody,
         k=1.0,
         nu=1e-0,
         plane_origin=origin_plane,

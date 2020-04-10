@@ -98,7 +98,7 @@ def run_snake(
     )  # [forward, backward, sideways]
     static_mu_array = 2 * kinetic_mu_array
     snake_sim.add_forcing_to(shearable_rod).using(
-        AnistropicFrictionalPlane,
+        AnisotropicFrictionalPlane,
         k=1.0,
         nu=1e-6,
         plane_origin=origin_plane,

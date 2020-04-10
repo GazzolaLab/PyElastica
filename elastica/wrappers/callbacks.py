@@ -1,19 +1,44 @@
 __doc__ = """
-callback
+CallBacks
 -----------
 
-Provides the CallBack interface to collect data in time (see `callback_functions.py`).
+Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
 
 from elastica.callback_functions import CallBackBaseClass
 
 
 class CallBacks:
+    """
+    CallBacks class is a wrapper for calling callback functions, set by the user. If the user
+    wants to collect data from the simulation, the simulator class has to be derived
+    from the CallBacks class.
+
+        Attributes
+        ----------
+        _callbacks: list
+            List of call back classes defined for rod-like objects.
+    """
+
     def __init__(self):
         self._callbacks = []
         super(CallBacks, self).__init__()
 
     def collect_diagnostics(self, system):
+        """
+        This method calls user-defined call-back classes for a
+        user-defined system or rod-like object. You need to input the
+        system or rod-like object that you want to collect data from.
+
+        Parameters
+        ----------
+        system: object
+            System is a rod-like object.
+
+        Returns
+        -------
+
+        """
         sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user
@@ -26,8 +51,8 @@ class CallBacks:
         # From stored _CallBack objects, instantiate the boundary conditions
         # inplace : https://stackoverflow.com/a/1208792
 
-        # dev : the first index stores the rod index to apply the boundary condition
-        # to. Technically we can use another array but it its one more book-keeping
+        # dev : the first index stores the rod index to collect data.
+        # Technically we can use another array but it its one more book-keeping
         # step. Being lazy, I put them both in the same array
         self._callbacks[:] = [
             (callback.id(), callback(self._systems[callback.id()]))
@@ -53,13 +78,49 @@ class CallBacks:
 
 
 class _CallBack:
+    """
+    CallBack wrapper private class
+
+        Attributes
+        ----------
+        _sys_idx: rod object index
+        _callback_cls: list
+        *args
+            Variable length argument list.
+        **kwargs
+            Arbitrary keyword arguments.
+    """
+
     def __init__(self, sys_idx: int):
+        """
+
+        Parameters
+        ----------
+        sys_idx: int
+        """
         self._sys_idx = sys_idx
         self._callback_cls = None
         self._args = ()
         self._kwargs = {}
 
     def using(self, callback_cls, *args, **kwargs):
+        """
+        This method is a wrapper to set which callback class is used to collect data
+        from user defined rod-like object.
+
+        Parameters
+        ----------
+        callback_cls: object
+            User defined callback class.
+        *args
+            Variable length argument list
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         assert issubclass(
             callback_cls, CallBackBaseClass
         ), "{} is not a valid call back. Did you forget to derive from CallBackClass?".format(

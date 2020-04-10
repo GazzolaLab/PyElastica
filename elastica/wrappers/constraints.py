@@ -1,19 +1,44 @@
 __doc__ = """
-constraints
+Constraints
 -----------
 
-Provides the Constraints interface to enforce boundary conditions (see `boundary_conditions.py`).
+Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
 from elastica.boundary_conditions import FreeRod
 
 
 class Constraints:
+    """
+    The Constraints class is a wrapper for enforcing displacement boundary conditions.
+    To enforce boundary conditions on rod-like objects, the simulator class
+    must be derived from Constraints class.
+
+        Attributes
+        ----------
+        _constraints: list
+            List of boundary condition classes defined for rod-like objects.
+    """
+
     def __init__(self):
         self._constraints = []
         super(Constraints, self).__init__()
 
     def constrain(self, system):
+        """
+        This method enforces a displacement boundary conditions to the relevant user-defined
+        system or rod-like object. You must input the system or rod-like
+        object that you want to enforce boundary condition on.
+
+        Parameters
+        ----------
+        system: object
+            System is a rod-like object.
+
+        Returns
+        -------
+
+        """
         sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user
@@ -65,13 +90,50 @@ class Constraints:
 
 
 class _Constraint:
+    """
+    Constraint wrapper private class
+
+    Attributes
+    ----------
+    _sys_idx: int
+    _bc_cls: list
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
     def __init__(self, sys_idx: int):
+        """
+
+        Parameters
+        ----------
+        sys_idx: int
+
+        """
         self._sys_idx = sys_idx
         self._bc_cls = None
         self._args = ()
         self._kwargs = {}
 
     def using(self, bc_cls, *args, **kwargs):
+        """
+        This method is a wrapper to set which boundary condition class is used to
+        enforce boundary condition from user defined rod-like objects.
+
+        Parameters
+        ----------
+        bc_cls : object
+            User defined boundary condition class.
+        *args
+            Variable length argument list
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         assert issubclass(
             bc_cls, FreeRod
         ), "{} is not a valid boundary condition. Did you forget to derive from FreeRod?".format(

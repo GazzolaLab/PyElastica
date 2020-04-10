@@ -15,6 +15,8 @@ class SymplecticStepperTag:
 
 class PositionVerlet:
     """
+    Position Verlet symplectic time stepper class, which
+    includes methods for second-order position Verlet.
     """
 
     Tag = SymplecticStepperTag()

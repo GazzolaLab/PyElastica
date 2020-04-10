@@ -1,4 +1,4 @@
-__doc__ = """ External forcing for rod  Numpy implementation"""
+__doc__ = """ Numpy implementation module for boundary condition implementations that apply external forces to the rod."""
 
 import numpy as np
 from elastica._linalg import _batch_matvec
@@ -6,56 +6,81 @@ from elastica.utils import _bspline
 
 
 class NoForces:
-    """ Base class for external forcing for Rods
+    """
+    This is the base class for external forcing boundary conditions applied to rod-like objects.
 
-    Can make this an abstract class, but its inconvenient
-    for the user to keep on defining apply_forces and
-    apply_torques object over and over.
+    Note
+    ----
+    Every new external forcing class must be derived
+    from NoForces class.
+
     """
 
     def __init__(self):
+        """
+        NoForces class does not need any input parameters.
+        """
         pass
 
     def apply_forces(self, system, time: np.float = 0.0):
-        """ Apply forces to a system object.
+        """ Apply forces to a rod-like object.
 
-        In NoForces, this routine simply passes.
+        In NoForces class, this routine simply passes.
 
         Parameters
         ----------
-        system : system that is Rod-like
-        time : np.float, the time of simulation
+        system : object
+            System that is Rod-like.
+        time : float
+            The time of simulation.
 
         Returns
         -------
-        None
+
 
         """
 
         pass
 
     def apply_torques(self, system, time: np.float = 0.0):
-        """ Apply torques to a Rod-like object.
+        """ Apply torques to a rod-like object.
 
-        In NoForces, this routine simply passes.
+        In NoForces class, this routine simply passes.
 
         Parameters
         ----------
-        system : system that is Rod-like
-        time : np.float, the time of simulation
+        system : object
+            System that is Rod-like.
+        time : float
+            The time of simulation.
 
         Returns
         -------
-        None
+
         """
         pass
 
 
 class GravityForces(NoForces):
-    """ Applies a constant gravity on the entire rod
+    """
+    This class applies a constant gravitational force to the entire rod.
+
+        Attributes
+        ----------
+        acc_gravity: numpy.ndarray
+            1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+
     """
 
     def __init__(self, acc_gravity=np.array([0.0, -9.80665, 0.0])):
+        """
+
+        Parameters
+        ----------
+        acc_gravity: numpy.ndarray
+            1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+
+        """
         super(GravityForces, self).__init__()
         self.acc_gravity = acc_gravity
 
@@ -64,10 +89,35 @@ class GravityForces(NoForces):
 
 
 class EndpointForces(NoForces):
-    """ Applies constant forces on endpoints
+    """
+    This class applies constant forces on the endpoint nodes.
+
+        Attributes
+        ----------
+        start_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Force applied to first node of the rod-like object.
+        end_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Force applied to last node of the rod-like object.
+        ramp_up_time: float
+            Applied forces are ramped up until ramp up time.
+
     """
 
     def __init__(self, start_force, end_force, ramp_up_time=0.0):
+        """
+
+        Parameters
+        ----------
+        start_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Force applied to first node of the rod-like object.
+        end_force: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+            Force applied to last node of the rod-like object.
+        ramp_up_time: float
+            Applied forces are ramped up until ramp up time.
+
+        """
         super(EndpointForces, self).__init__()
         self.start_force = start_force
         self.end_force = end_force
@@ -83,10 +133,26 @@ class EndpointForces(NoForces):
 
 class UniformTorques(NoForces):
     """
-    Applies uniform torque to entire rod
+    This class applies a uniform torque to the entire rod.
+
+        Attributes
+        ----------
+        torque: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
+
     """
 
     def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
+        """
+
+        Parameters
+        ----------
+        torque: float
+            Torque magnitude applied to a rod-like object.
+        direction: numpy.ndarray
+            1D (dim) array containing data with 'float' type.
+            Direction in which torque applied.
+        """
         super(UniformTorques, self).__init__()
         self.torque = (torque * direction).reshape(3, 1)
 
@@ -99,10 +165,25 @@ class UniformTorques(NoForces):
 
 class UniformForces(NoForces):
     """
-    Applies uniform forces to entire rod
+    This class applies a uniform force to the entire rod.
+
+        Attributes
+        ----------
+        force:  numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
     """
 
     def __init__(self, force, direction=np.array([0.0, 0.0, 0.0])):
+        """
+
+        Parameters
+        ----------
+        force: float
+            Force magnitude applied to a rod-like object.
+        direction: numpy.ndarray
+            1D (dim) array containing data with 'float' type.
+            Direction in which force applied.
+        """
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
@@ -118,8 +199,27 @@ class UniformForces(NoForces):
 
 class MuscleTorques(NoForces):
     """
-    Applies muscle torques on the body. It can apply muscle torques
-    as travelling wave with beta spline or only as travelling wave.
+    This class applies muscle torques along the body. The applied muscle torques are treated
+    as applied external forces. This class can apply
+    muscle torques as a traveling wave with a beta spline or only
+    as a traveling wave. For implementation details refer to Gazzola et. al.
+    RSoS. (2018).
+
+        Attributes
+        ----------
+        direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Muscle torque direction.
+        angular_frequency: float
+            Angular frequency of traveling wave.
+        wave_number: float
+            Wave number of traveling wave.
+        phase_shift: float
+            Phase shift of traveling wave.
+        ramp_up_time: float
+            Applied muscle torques are ramped up until ramp up time.
+        my_spline: numpy.ndarray
+            1D (blocksize) array containing data with 'float' type. Generated spline.
+
     """
 
     def __init__(
@@ -134,6 +234,29 @@ class MuscleTorques(NoForces):
         ramp_up_time=0.0,
         with_spline=False,
     ):
+        """
+
+        Parameters
+        ----------
+        base_length: float
+            Rest length of the rod-like object.
+        b_coeff: nump.ndarray
+            1D array containing data with 'float' type.
+            Beta coefficients for beta-spline.
+        period: float
+            Period of traveling wave.
+        wave_number: float
+            Wave number of traveling wave.
+        phase_shift: float
+            Phase shift of traveling wave.
+        direction: numpy.ndarray
+           1D (dim) array containing data with 'float' type. Muscle torque direction.
+        ramp_up_time: float
+            Applied muscle torques are ramped up until ramp up time.
+        with_spline: boolean
+            Option to use beta-spline.
+
+        """
         super(MuscleTorques, self).__init__()
 
         self.direction = direction.reshape(3, 1)  # Direction torque applied
@@ -163,6 +286,7 @@ class MuscleTorques(NoForces):
                 """
                 Return array of ones same as the size of the input array. This
                 function is called when Beta spline function is not used.
+
                 Parameters
                 ----------
                 input

@@ -92,7 +92,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
 
     rolling_friction_initial_velocity_sim.add_forcing_to(shearable_rod).using(
-        AnistropicFrictionalPlane,
+        AnisotropicFrictionalPlane,
         k=10.0,
         nu=1e-4,
         plane_origin=origin_plane,

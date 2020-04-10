@@ -57,7 +57,7 @@ mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
 kinetic_mu_array = np.array([mu, mu, mu])  # [forward, backward, sideways]
 static_mu_array = 2 * kinetic_mu_array
 rigid_cylinder_sim.add_forcing_to(rigid_rod).using(
-    AnistropicFrictionalPlaneRigidBody,
+    AnisotropicFrictionalPlaneRigidBody,
     k=1.0,
     nu=1e-0,
     plane_origin=origin_plane,

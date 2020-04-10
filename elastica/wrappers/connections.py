@@ -1,15 +1,26 @@
 __doc__ = """
-connect
+Connect
 -------
 
-Provides the Connections interface to connect entities (rods,
-rigid bodies) using Joints (see `joints.py`).
+Provides the connections interface to connect entities (rods,
+rigid bodies) using joints (see `joints.py`).
 """
 
 from elastica.joint import FreeJoint
 
 
 class Connections:
+    """
+    The Connections class is a wrapper for connecting rod-like objects using joints selected
+    by the user. To connect two rod-like objects, the simulator class must be derived from
+    the Connections class.
+
+        Attributes
+        ----------
+        _connections: list
+            List of joint classes defined for rod-like objects.
+    """
+
     def __init__(self):
         self._connections = []
         super(Connections, self).__init__()
@@ -17,6 +28,26 @@ class Connections:
     def connect(
         self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
     ):
+        """
+        This method connects two rod-like objects using the selected joint class.
+        You need to input the two rod-like objects that are to be connected as well
+        as set the element indexes of these rods where the connection occurs.
+
+        Parameters
+        ----------
+        first_rod : object
+            Rod-like object
+        second_rod : object
+            Rod-like object
+        first_connect_idx : int
+            Index of first rod for joint.
+        second_connect_idx : int
+            Index of second rod for joint.
+
+        Returns
+        -------
+
+        """
         sys_idx = [None] * 2
         for i_sys, sys in enumerate((first_rod, second_rod)):
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
@@ -72,6 +103,24 @@ class Connections:
 
 
 class _Connect:
+    """
+    Connect wrapper private class
+
+    Attributes
+    ----------
+    _first_sys_idx: int
+    _second_sys_idx: int
+    _first_sys_n_lim: int
+    _second_sys_n_lim: int
+    _connect_class: list
+    first_sys_connection_idx: int
+    second_sys_connection_idx: int
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
     def __init__(
         self,
         first_sys_idx: int,
@@ -79,6 +128,15 @@ class _Connect:
         first_sys_nlim: int,
         second_sys_nlim: int,
     ):
+        """
+
+        Parameters
+        ----------
+        first_sys_idx: int
+        second_sys_idx: int
+        first_sys_nlim: int
+        second_sys_nlim: int
+        """
         self._first_sys_idx = first_sys_idx
         self._second_sys_idx = second_sys_idx
         self._first_sys_n_lim = first_sys_nlim
@@ -106,6 +164,23 @@ class _Connect:
         self.second_sys_connection_idx = second_idx
 
     def using(self, connect_cls, *args, **kwargs):
+        """
+        This method is a wrapper to set which joint class is used to connect
+        user defined rod-like objects.
+
+        Parameters
+        ----------
+        connect_cls: object
+            User defined callback class.
+        *args
+            Variable length argument list
+        **kwargs
+            Arbitrary keyword arguments.
+
+        Returns
+        -------
+
+        """
         assert issubclass(
             connect_cls, FreeJoint
         ), "{} is not a valid joint class. Did you forget to derive from FreeJoint?".format(

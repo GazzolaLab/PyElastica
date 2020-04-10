@@ -17,6 +17,10 @@ class _TimeStepper:
 
 
 class _StatefulStepper:
+    """
+    Stateful explicit, symplectic stepper wrapper.
+    """
+
     def __init__(self):
         pass
 
@@ -30,6 +34,10 @@ class _StatefulStepper:
 
 
 class _LinearExponentialIntegratorMixin:
+    """
+    Linear Exponential integrator mixin wrapper.
+    """
+
     def __init__(self):
         pass
 

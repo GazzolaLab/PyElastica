@@ -1,4 +1,4 @@
-__doc__ = """Symplectic timesteppers and concepts"""
+__doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
 import numpy as np
 
@@ -36,6 +36,10 @@ class _SystemInstanceStepper:
 
 
 class _SystemCollectionStepper:
+    """
+    Symplectic stepper collection class
+    """
+
     @staticmethod
     def do_step(
         TimeStepper,
@@ -44,6 +48,19 @@ class _SystemCollectionStepper:
         time: np.float64,
         dt: np.float64,
     ):
+        """
+        Function for doing symplectic stepper over the user defined rods (system).
+
+        Parameters
+        ----------
+        SystemCollection: rod object
+        time: float
+        dt: float
+
+        Returns
+        -------
+
+        """
         for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
 
             for system in SystemCollection:

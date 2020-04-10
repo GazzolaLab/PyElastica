@@ -16,6 +16,18 @@ from .utils import MaxDimension, isqrt
 
 
 def format_vector_shape(vector_collection):
+    """
+    Function for formatting vector shapes into correct format
+    Parameters
+    ----------
+    vector_collection: numpy.ndarray
+        Can be 1D or 2D.
+
+    Returns
+    -------
+    output: numpy.ndarray
+        Can be 1D or 2D.
+    """
     n_dim = vector_collection.ndim
 
     if n_dim == 1:
@@ -48,6 +60,17 @@ def format_vector_shape(vector_collection):
 
 
 def format_matrix_shape(matrix_collection):
+    """
+    Formats input matrix into correct format
+    Parameters
+    ----------
+    matrix_collection: numpy.ndarray
+        Can be 1D, 2D, 3D.
+
+    Returns
+    -------
+
+    """
     n_dim = matrix_collection.ndim
 
     # check first two dimensions are same and matrix is square
@@ -118,9 +141,18 @@ def skew_symmetrize(vector):
 
 
 def inv_skew_symmetrize(matrix_collection):
-    """ Safe wrapper around inv_skew_symmetrize that does checking
+    """
+    Safe wrapper around inv_skew_symmetrize that does checking
     and formatting on type of matrix_collection using format_matrix_shape
     function.
+
+    Parameters
+    ----------
+    matrix_collection: numpy.ndarray
+
+    Returns
+    -------
+
     """
     # format matrix collection into correct shape
     matrix_collection = format_matrix_shape(matrix_collection)
