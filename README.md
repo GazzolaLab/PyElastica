@@ -9,8 +9,8 @@ The current version of PyElastica released here is the educational version. This
 ## Installation 
 PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyElastica is with PIP. 
 
-~~~python
-    pip install pyelastica 
+~~~bash
+$ pip install pyelastica 
 ~~~
 
 ## Documentation
