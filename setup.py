@@ -14,7 +14,7 @@ URL = "https://github.com/gazzolalab/pyelastica"
 EMAIL = "armant2@illinois.edu"
 AUTHOR = "Gazzola Lab"
 REQUIRES_PYTHON = ">=3.4.0"
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
