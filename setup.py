@@ -107,7 +107,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
     ],
-    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.0.1.tar.gz",
+    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.0.2.tar.gz",
     install_requires=REQUIRED,
     extras_require=EXTRAS,
 )
