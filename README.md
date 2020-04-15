@@ -7,7 +7,7 @@ PyElastica is the python implementation of **Elastica**, which is a *free* and *
 The current version of PyElastica released here is the educational version. This version is a straight forward Python implementation of the Elastica code making heavy use of numpy. As such, it is very slow. We are working on a significantly accelerated Python version of the code that we hope to release soon.
 
 ## Installation 
-The easiest way to install PyElastica is with PIP. PyElastica requires Python 3.7. 
+PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyElastica is with PIP. 
 
 ~~~python
     pip install pyelastica 
