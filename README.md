@@ -1,5 +1,5 @@
 # PyElastica 
-![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)  [![Downloads](https://pepy.tech/badge/pyelastica)](https://pepy.tech/project/pyelastica) [![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)  [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest)
+![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)  [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)  [![Downloads](https://pepy.tech/badge/pyelastica)](https://pepy.tech/project/pyelastica) 
 
 
 PyElastica is the python implementation of **Elastica**, which is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional structures using Cosserat Rod theory. More information about Elastica and Cosserat rod theory is available at the Elastica [project website](https://cosseratrods.org)
