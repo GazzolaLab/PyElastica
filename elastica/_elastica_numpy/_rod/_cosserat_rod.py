@@ -322,6 +322,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             / self.dilatation  # computed in comp_dilatation <- compute_strain <- compute_stress
         )
         # self._compute_internal_forces()
+        self._compute_damping_forces()
 
         return difference_kernel(cosserat_internal_stress) - self.damping_forces
 
