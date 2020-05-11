@@ -4,7 +4,8 @@
 We have written a introductory guide to using PyElastica available on the project website [here](https://cosseratrods.org/software/pyelastica/#pyelastica-workflow)
 
 ### Tutorials
-We have created several Jupyter notebooks and Python scripts to help get users started with using PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica. [Launch Binder](https://github.com/GazzolaLab/PyElastica/tree/master/examples).  
+We have created several Jupyter notebooks and Python scripts to help get users started with using PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica. 
+ 
 [![](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb)
 
 Additional examples are also available in the examples folder of PyElastica's [Github repo](https://github.com/GazzolaLab/PyElastica).
