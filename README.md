@@ -7,6 +7,8 @@ PyElastica is the python implementation of **Elastica**, which is a *free* and *
 The current version of PyElastica released here is the educational version. This version is a straight forward Python implementation of the Elastica code making heavy use of numpy. As such, it is very slow. We are working on a significantly accelerated Python version of the code that we hope to release soon.
 
 ## Installation 
+[![PyPI version](https://badge.fury.io/py/PyElastica.svg)](https://badge.fury.io/py/PyElastica)
+
 PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyElastica is with PIP. 
 
 ~~~bash
@@ -14,6 +16,8 @@ $ pip install pyelastica
 ~~~
 
 ## Documentation
+[![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest)
+
 Documentation of PyElastica is available at [docs.cosseratrods.org](https://docs.cosseratrods.org/)
 
 PyElastica is developed by the [Gazzola Lab](http://mattia-lab.com/) at the University of Illinois at Urbana-Champaign. 
