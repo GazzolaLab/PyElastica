@@ -1,5 +1,5 @@
 # PyElastica 
-![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)[![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)[![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest)
+![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)  [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)  [![Downloads](https://pepy.tech/badge/pyelastica)](https://pepy.tech/project/pyelastica) [![](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb)
 
 
 PyElastica is the python implementation of **Elastica**, which is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional structures using Cosserat Rod theory. More information about Elastica and Cosserat rod theory is available at the Elastica [project website](https://cosseratrods.org)
@@ -9,8 +9,8 @@ The current version of PyElastica released here is the educational version. This
 ## Installation 
 PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyElastica is with PIP. 
 
-~~~python
-    pip install pyelastica 
+~~~bash
+$ pip install pyelastica 
 ~~~
 
 ## Documentation
