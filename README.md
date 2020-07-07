@@ -38,7 +38,7 @@ Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex 
 Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. <a href="https://doi.org/10.1098/rsos.171628">doi: 10.1098/rsos.171628</a>
 </p> 
 
-<pre><code>
+```
 @article{gazzola2018forward,
   title={Forward and inverse problems in the mechanics of soft filaments},
   author={Gazzola, M and Dudte, LH and McCormick, AG and Mahadevan, L},
@@ -51,9 +51,9 @@ Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in th
   doi = {10.1098/rsos.171628},
   url = {https://doi.org/10.1098/rsos.171628},
 }
-</code></pre>
+```
 
-<pre><code>
+```
 @article{zhang2019modeling,
   title={Modeling and simulation of complex dynamic musculoskeletal architectures},
   author={Zhang, X and Chan, FK and Parthasarathy, T and Gazzola, M},
@@ -66,4 +66,4 @@ Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in th
   doi = {10.1038/s41467-019-12759-5},
   url = {https://doi.org/10.1038/s41467-019-12759-5},
 }
-</code></pre>
+```
