@@ -27,11 +27,11 @@ before_install:
         - pip3 install --upgrade pip
         - pip3 install -r requirements.txt
         - pip3 install -r tests/requirements.txt
+        - pip3 install -U pytest
         - pip3 install -r optional-requirements.txt
 
 # command to run tests
 script:
-        - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pytest --version; fi
         - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then python3 -m pytest --cov=elastica --cov-report=xml; else python3 -m pytest; fi
         - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then black --version && black --check elastica tests; flake8 --version && flake8 elastica tests; fi
 
