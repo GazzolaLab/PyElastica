@@ -1,5 +1,5 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact"]
+__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
 import numpy as np
 from elastica.utils import Tolerance, MaxDimension
 from elastica import IMPORT_NUMBA
@@ -885,6 +885,6 @@ class FixedJoint(FreeJoint):
 #             )
 
 if IMPORT_NUMBA:
-    from elastica._elastica_numba._joint import ExternalContact
+    from elastica._elastica_numba._joint import ExternalContact, SelfContact
 else:
     from elastica._elastica_numpy._joint import ExternalContact
