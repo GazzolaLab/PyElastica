@@ -17,9 +17,9 @@ class PlectonemesCase(
 plectonemes_sim = PlectonemesCase()
 
 # Simulation parameters
-time_twist = 75
+time_twist = 50
 time_relax = 50
-final_time = time_relax + time_twist
+final_time = 30#time_relax + time_twist
 
 base_length = 1.0
 n_elem = 150
@@ -57,7 +57,7 @@ sherable_rod = CosseratRod.straight_rod(
     poisson_ratio,
 )
 
-sherable_rod.velocity_collection[..., int(n_elem / 2)] -= 1e-4
+sherable_rod.velocity_collection[2, int(n_elem / 2)] -= 1e-4
 
 
 plectonemes_sim.append(sherable_rod)
@@ -143,7 +143,7 @@ plectonemes_sim.constrain(sherable_rod).using(
 )
 
 # Add self contact to prevent penetration
-plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10)
+# plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10)
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
