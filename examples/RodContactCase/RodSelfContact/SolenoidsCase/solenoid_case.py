@@ -155,7 +155,7 @@ class SelonoidsBC(FreeRod):
             rod.velocity_collection[2, -1] = 0.0
             rod.omega_collection[..., -1] = -self.ang_vel
 
-            rod.velocity_collection[2,:] -= 1E-4
+            rod.velocity_collection[2,int(rod.n_elems/2)] -= 1E-4
 
 
 solenoid_sim.constrain(sherable_rod).using(
@@ -168,11 +168,11 @@ solenoid_sim.constrain(sherable_rod).using(
 )
 
 solenoid_sim.add_forcing_to(sherable_rod).using(
-    EndpointForces, np.zeros(3,), F_pulling_scalar * direction, ramp_up_time=time_start_twist
+    EndpointForces, np.zeros(3,), F_pulling_scalar * direction, ramp_up_time=time_start_twist-1
 )
 
 # Add self contact to prevent penetration
-# solenoid_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1E4, nu=10)
+solenoid_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1E4, nu=10)
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
