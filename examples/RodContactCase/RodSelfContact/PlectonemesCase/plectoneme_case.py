@@ -17,9 +17,11 @@ class PlectonemesCase(
 plectonemes_sim = PlectonemesCase()
 
 # Simulation parameters
-time_twist = 50
+number_of_rotations = 10
+time_start_twist = 0
+time_twist = 5 * number_of_rotations
 time_relax = 50
-final_time = 30#time_relax + time_twist
+final_time = time_relax + time_twist + time_start_twist
 
 base_length = 1.0
 n_elem = 150
@@ -31,7 +33,7 @@ rendering_fps = 20
 step_skip = int(1.0 / (rendering_fps * time_step))
 
 # Rest of the rod parameters and construct rod
-base_radius = 0.0125
+base_radius = 0.025
 base_area = np.pi * base_radius ** 2
 volume = base_area * base_length
 mass = 1.0
@@ -78,10 +80,12 @@ class SelonoidsBC(FreeRod):
         director_start,
         director_end,
         twisting_time,
+        time_twis_start,
         number_of_rotations,
     ):
         FreeRod.__init__(self)
         self.twisting_time = twisting_time
+        self.time_twis_start = time_twis_start
 
         theta = 2.0 * number_of_rotations * np.pi
 
@@ -109,7 +113,7 @@ class SelonoidsBC(FreeRod):
         self.director_start = director_start
 
     def constrain_values(self, rod, time):
-        if time > self.twisting_time:
+        if time > self.twisting_time + self.time_twis_start:
             rod.position_collection[..., 0] = self.position_start
             rod.position_collection[0, -1] = 0.0
             rod.position_collection[2, -1] = 0.0
@@ -118,12 +122,16 @@ class SelonoidsBC(FreeRod):
             rod.director_collection[..., -1] = self.final_end_directors
 
     def constrain_rates(self, rod, time):
-        if time > self.twisting_time:
+        if time > self.twisting_time + self.time_twis_start:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0
 
             rod.velocity_collection[..., -1] = 0.0
             rod.omega_collection[..., -1] = 0.0
+
+        elif time < self.time_twis_start:
+            rod.velocity_collection[..., 0] = 0.0
+            rod.omega_collection[..., 0] = 0.0
 
         else:
             rod.velocity_collection[..., 0] = 0.0
@@ -133,17 +141,20 @@ class SelonoidsBC(FreeRod):
             rod.velocity_collection[2, -1] = 0.0
             rod.omega_collection[..., -1] = -self.ang_vel
 
+            rod.velocity_collection[2, int(rod.n_elems / 2)] -= 1e-4
+
 
 plectonemes_sim.constrain(sherable_rod).using(
     SelonoidsBC,
     constrained_position_idx=(0, -1),
     constrained_director_idx=(0, -1),
+    time_twis_start=time_start_twist,
     twisting_time=time_twist,
-    number_of_rotations=10,
+    number_of_rotations=number_of_rotations,
 )
 
 # Add self contact to prevent penetration
-# plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10)
+plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10)
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
