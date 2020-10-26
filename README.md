@@ -6,11 +6,14 @@ We can add dev release notes to this section and delete before publishing.
 # PyElastica 
 [![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)](https://travis-ci.com/github/GazzolaLab/PyElastica)  [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)  [![Downloads](https://pepy.tech/badge/pyelastica)](https://pepy.tech/project/pyelastica) [![](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb)
 
-
-
 PyElastica is the python implementation of **Elastica**, which is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional structures using Cosserat Rod theory. More information about Elastica and Cosserat rod theory is available at the Elastica [project website](https://cosseratrods.org)
 
-The current version of PyElastica released here is the educational version. This version is a straight forward Python implementation of the Elastica code making heavy use of numpy. As such, it is very slow. We are working on a significantly accelerated Python version of the code that we hope to release soon.
+## New this Release
+This release of PyElastica uses the Python package `numba` to enable just in time compilation leading to a ~8x speedup over the previous version. Numba is not required to run PyElastica and if numba is not installed, PyElastica will defualt to the non-numba implementation. As such, if you wish to take advantage of the speed-up afforded by numba, please be sure to install it separately (`pip install numba`). 
+
+Future releases of PyElastica will require numba and we will no longer be maintaining the non-numba code beyond this release. 
+
+We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder (`examples/visualization`).
 
 ## Installation 
 [![PyPI version](https://badge.fury.io/py/PyElastica.svg)](https://badge.fury.io/py/PyElastica)
@@ -20,6 +23,8 @@ PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyEla
 ~~~bash
 $ pip install pyelastica 
 ~~~
+
+Previous PyElastica releases are available as branches. 
 
 ## Documentation
 [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest)
