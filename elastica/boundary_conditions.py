@@ -65,12 +65,12 @@ class OneEndFixedRod(FreeRod):
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
 
-        Attributes
-        ----------
-        fixed_positions : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
+    Attributes
+    ----------
+    fixed_positions : numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+    fixed_directors : numpy.ndarray
+        3D (dim, dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, fixed_position, fixed_directors):
@@ -103,28 +103,28 @@ class HelicalBucklingBC(FreeRod):
     The applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
 
-        Attributes
-        ----------
-        twisting_time: float
-            Time to complete twist.
-        final_start_position: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Position of first node of rod after twist completed.
-        final_end_position: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Position of last node of rod after twist completed.
-        ang_vel: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Angular velocity of rod during twisting time.
-        shrink_vel: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Shrink velocity of rod during twisting time.
-        final_start_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
-            Directors of first element of rod after twist completed.
-        final_end_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
-            Directors of last element of rod after twist completed.
+    Attributes
+    ----------
+    twisting_time: float
+        Time to complete twist.
+    final_start_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Position of first node of rod after twist completed.
+    final_end_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Position of last node of rod after twist completed.
+    ang_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Angular velocity of rod during twisting time.
+    shrink_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Shrink velocity of rod during twisting time.
+    final_start_directors: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+        Directors of first element of rod after twist completed.
+    final_end_directors: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+        Directors of last element of rod after twist completed.
 
 
     """
