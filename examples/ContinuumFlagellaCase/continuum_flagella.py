@@ -7,13 +7,20 @@ sys.path.append("../../")
 
 import os
 from collections import defaultdict
-from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.external_forces import MuscleTorques
-from elastica.interaction import SlenderBodyTheory
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.external_forces import MuscleTorques
+# from elastica.interaction import SlenderBodyTheory
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+# from elastica.timestepper import integrate
+from elastica import *
 from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
     plot_velocity,
     plot_video,
@@ -68,6 +75,7 @@ def run_flagella(
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
+        rest_lengths=shearable_rod.rest_lengths,
         ramp_up_time=period,
         direction=normal,
         with_spline=True,

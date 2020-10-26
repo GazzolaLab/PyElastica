@@ -1,0 +1,4 @@
+data/
+*.mp4
+*.inc
+cylinder_to_povray.py

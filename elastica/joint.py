@@ -1,8 +1,8 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-
-
+__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact"]
 import numpy as np
-from elastica.utils import Tolerance
+from elastica.utils import Tolerance, MaxDimension
+from elastica import IMPORT_NUMBA
 
 
 class FreeJoint:
@@ -11,12 +11,12 @@ class FreeJoint:
     joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
-    Attributes
-    ----------
-    k: float
-        Stiffness coefficient of the joint.
-    nu: float
-        Damping coefficient of the joint.
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
 
     Note
     ----
@@ -128,16 +128,16 @@ class HingeJoint(FreeJoint):
     implementation details, refer to Zhang et. al. Nature
     Communications (2019).
 
-    Attributes
-    ----------
-    k: float
-        Stiffness coefficient of the joint.
-    nu: float
-        Damping coefficient of the joint.
-    kt: float
-        Rotational stiffness coefficient of the joint.
-    normal_direction: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
+        normal_direction: numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
@@ -200,14 +200,14 @@ class FixedJoint(FreeJoint):
     For implementation details, refer to Zhang et al. Nature
     Communications (2019).
 
-    Attributes
-    ----------
-    k: float
-        Stiffness coefficient of the joint.
-    nu: float
-        Damping coefficient of the joint.
-    kt: float
-        Rotational stiffness coefficient of the joint.
+        Attributes
+        ----------
+        k: float
+            Stiffness coefficient of the joint.
+        nu: float
+            Damping coefficient of the joint.
+        kt: float
+            Rotational stiffness coefficient of the joint.
     """
 
     def __init__(self, k, nu, kt):
@@ -266,3 +266,9 @@ class FixedJoint(FreeJoint):
         rod_two.external_torques[..., index_two] += (
             rod_two.director_collection[..., index_two] @ torque
         )
+
+
+if IMPORT_NUMBA:
+    from elastica._elastica_numba._joint import ExternalContact
+else:
+    from elastica._elastica_numpy._joint import ExternalContact
