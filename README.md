@@ -1,3 +1,8 @@
+# Delete this section before publishing:
+This branch is for the preperation of the public v0.1.0 PyElastica release. We will merge the numba code to it and add POVray example scripts and push it to the public repo. 
+
+We can add dev release notes to this section and delete before publishing. 
+
 # PyElastica 
 [![Build_status](https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master)](https://travis-ci.com/github/GazzolaLab/PyElastica)  [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest) [![codecov](https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg)](https://codecov.io/gh/GazzolaLab/PyElastica)  [![Downloads](https://pepy.tech/badge/pyelastica)](https://pepy.tech/project/pyelastica) [![](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb)
 
