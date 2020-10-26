@@ -5,21 +5,24 @@ import sys
 
 sys.path.append("../../")
 
-import os
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Connections,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.joint import FreeJoint
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+
+# import os
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Connections,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.boundary_conditions import OneEndFixedRod
+# from elastica.joint import FreeJoint
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+# from elastica.timestepper import integrate
+from elastica import *
+
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )

@@ -15,7 +15,7 @@ from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
-from convergence_functions import calculate_error_norm, plot_convergence
+from examples.convergence_functions import calculate_error_norm, plot_convergence
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):

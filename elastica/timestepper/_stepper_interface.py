@@ -1,11 +1,10 @@
-__doc__ = "Interface"
+__doc__ = "Time stepper interface"
 
 import numpy as np
 
 
 class _TimeStepper:
-    """ Interface classes for all time-steppers
-    """
+    """Interface classes for all time-steppers"""
 
     def __init__(self):
         pass
@@ -58,7 +57,7 @@ class _LinearExponentialIntegratorMixin:
         return time + dt
 
     def _first_prefactor(self, dt):
-        """ Prefactor call to satisfy interface of SymplecticStepper. Should never
+        """Prefactor call to satisfy interface of SymplecticStepper. Should never
         be used in actual code.
 
         Parameters

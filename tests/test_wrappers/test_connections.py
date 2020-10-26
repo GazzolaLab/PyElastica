@@ -1,7 +1,4 @@
-"""
-test_connections
-----------------
-"""
+__doc__ = """ Test wrappers for connections """
 import numpy as np
 import pytest
 

@@ -6,14 +6,21 @@ import sys
 sys.path.append("../../")
 
 import os
-from collections import defaultdict
-from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.external_forces import GravityForces, MuscleTorques
-from elastica.interaction import AnisotropicFrictionalPlane
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+
+# from collections import defaultdict
+# from elastica.wrappers import (
+#     BaseSystemCollection,
+#     Constraints,
+#     Forcing,
+#     CallBacks,
+# )
+# from elastica.rod.cosserat_rod import CosseratRod
+# from elastica.external_forces import GravityForces, MuscleTorques
+# from elastica.interaction import AnistropicFrictionalPlane
+# from elastica.callback_functions import CallBackBaseClass
+# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+# from elastica.timestepper import integrate
+from elastica import *
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
@@ -74,6 +81,7 @@ def run_snake(
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
+        rest_lengths=shearable_rod.rest_lengths,
         ramp_up_time=period,
         direction=normal,
         with_spline=True,

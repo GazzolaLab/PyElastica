@@ -1,9 +1,8 @@
-import numpy as np
+# import numpy as np
+#
+# from elastica._linalg import _batch_matvec
 
-from elastica._linalg import _batch_matvec
 
-
-# TODO : What needs to be ported here?
 class RodBase:
     """
     Base class for all rods.

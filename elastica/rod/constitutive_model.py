@@ -1,6 +1,4 @@
-__doc__ = """
-Rod constitutive model implementations.
-"""
+__doc__ = """ Rod constitutive model mixins (This file is depreciated)"""
 import numpy as np
 
 from elastica._linalg import _batch_matvec
@@ -73,6 +71,10 @@ class _LinearConstitutiveModelMixin:
             + self.bend_matrix[..., :-1] * rest_lengths[0:-1]
         ) / (rest_lengths[1:] + rest_lengths[:-1])
 
+        # Initialize sigma and kappa at the begining of simulation
+        self.sigma = np.zeros((3, n_elements))
+        self.kappa = np.zeros((3, n_elements - 1))
+
     def _compute_internal_shear_stretch_stresses_from_model(self):
         """
         This method computes shear and stretch stresses on the rod elements.
@@ -82,7 +84,21 @@ class _LinearConstitutiveModelMixin:
 
         """
         self._compute_shear_stretch_strains()  # concept : needs to compute sigma
+        # self.compute_shear_stretch_strains_numba(
+        #     self.position_collection,
+        #     self.volume,
+        #     self.lengths,
+        #     self.tangents,
+        #     self.radius,
+        #     self.rest_lengths,
+        #     self.rest_voronoi_lengths,
+        #     self.dilatation,
+        #     self.voronoi_dilatation,
+        #     self.director_collection,
+        #     self.sigma,
+        # )
         # TODO : the _batch_matvec kernel needs to depend on the representation of Shearmatrix
+        # FIXME: change memory overload instead for the below calls!
         self.internal_stress = _batch_matvec(
             self.shear_matrix, self.sigma - self.rest_sigma
         )
@@ -95,8 +111,12 @@ class _LinearConstitutiveModelMixin:
         -------
 
         """
-        self._compute_bending_twist_strains()  # concept : needs to compute kappa
+        # self._compute_bending_twist_strains()  # concept : needs to compute kappa
+        self.compute_bending_twist_strains_numba(
+            self.director_collection, self.rest_voronoi_lengths, self.kappa
+        )
         # TODO : the _batch_matvec kernel needs to depend on the representation of Bendmatrix
+        # FIXME: change memory overload instead for the below calls!
         self.internal_couple = _batch_matvec(
             self.bend_matrix, self.kappa - self.rest_kappa
         )

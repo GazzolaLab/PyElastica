@@ -1,4 +1,5 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
+__all__ = ["CallBackBaseClass", "MyCallBack"]
 
 
 class CallBackBaseClass:
