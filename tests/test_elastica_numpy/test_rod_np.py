@@ -100,7 +100,7 @@ def test_bootstrapping_types_for_symplectic_steppers(load_data_for_bootstrapping
 
 # TODO Add realistic example with states used in a real time-stepper to solve some ODE
 class LoadStates:
-    """ Mixin class for testing explicit and symplectic
+    """Mixin class for testing explicit and symplectic
     stepper behaviors that manipulate state objects
     """
 

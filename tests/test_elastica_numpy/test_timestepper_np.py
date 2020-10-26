@@ -341,7 +341,7 @@ class TestSteppersAgainstCollectiveSystems:
 
 
 class TestSteppersAgainstRodLikeSystems:
-    """ The rods compose specific data-structures that
+    """The rods compose specific data-structures that
     act as an interface to timesteppers (see `rod/data_structures.py`)
     """
 

@@ -12,6 +12,7 @@ from elastica._elastica_numpy._linalg import (
     levi_civita_tensor,
 )
 
+
 # NOTE : Testing Levi-Civita only for commonly used cases of two and three dimensions
 @pytest.mark.parametrize("dim", [2, 3])
 def test_levi_civita_first_index_product(dim):

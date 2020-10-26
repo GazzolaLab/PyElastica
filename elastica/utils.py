@@ -115,7 +115,7 @@ def perm_parity(lst):
 
 
 def grouper(iterable, n):
-    """ Collect data into fixed-length chunks or blocks"
+    """Collect data into fixed-length chunks or blocks"
 
     Parameters
     ----------
@@ -144,7 +144,7 @@ def grouper(iterable, n):
 
 
 def extend_instance(obj, cls):
-    """ Apply mixins to a class instance after creation
+    """Apply mixins to a class instance after creation
     Parameters
     ----------
     obj : object (not class!) targeted for interface extension
@@ -166,7 +166,7 @@ def extend_instance(obj, cls):
 
 
 def _bspline(t_coeff, l_centerline=1.0):
-    """ Generates a bspline object that plots the spline interpolant for
+    """Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
     default and keep_pts for keeping record of control points
 
@@ -199,8 +199,7 @@ def _bspline(t_coeff, l_centerline=1.0):
 
 
 def __bspline_impl__(x_pts, t_c, b_head, b_tail, t_k):
-    """
-        """
+    """"""
     from scipy.interpolate import BSpline
 
     # Update the coefficients

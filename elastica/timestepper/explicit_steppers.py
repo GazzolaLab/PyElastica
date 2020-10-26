@@ -101,7 +101,7 @@ class _SystemCollectionStepper:
 
 
 class ExplicitStepperMethods:
-    """ Base class for all explicit steppers
+    """Base class for all explicit steppers
     Can also be used as a mixin with optional cls argument below
     """
 

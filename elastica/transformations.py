@@ -168,14 +168,14 @@ def inv_skew_symmetrize(matrix_collection):
 
 def rotate(matrix, scale, axis):
     """
-        This function takes single or multiple frames as matrix. Then rotates these frames
-        around a single axis for all frames, or can rotate each frame around its own
-        rotation axis as defined by user. Scale determines how much frames rotates
-        around this axis.
+    This function takes single or multiple frames as matrix. Then rotates these frames
+    around a single axis for all frames, or can rotate each frame around its own
+    rotation axis as defined by user. Scale determines how much frames rotates
+    around this axis.
 
-        matrix: minimum shape = dim**2x1, supports shape = 3x3xn
-        axis: minimum dim = 3x1, 1x3, supports dim = 3xn, nx3
-        scale: minimum float, supports 1D vectors also dim = n
+    matrix: minimum shape = dim**2x1, supports shape = 3x3xn
+    axis: minimum dim = 3x1, 1x3, supports dim = 3xn, nx3
+    scale: minimum float, supports 1D vectors also dim = n
 
     """
 

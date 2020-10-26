@@ -89,7 +89,7 @@ class Sphere(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         pass
 
     def update_accelerations(self):
-        """ TODO Do we need to make the collection members abstract?
+        """TODO Do we need to make the collection members abstract?
 
         Parameters
         ----------

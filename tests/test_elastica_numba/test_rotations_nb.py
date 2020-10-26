@@ -257,7 +257,7 @@ def test_inv_rotate_correctness_simple_in_three_dimensions():
 def test_inv_rotate_correctness_on_circle_in_two_dimensions(
     blocksize, point_distribution
 ):
-    """ Construct a unit circle, which we know has constant curvature,
+    """Construct a unit circle, which we know has constant curvature,
     and see if inv_rotate gives us the correct axis of rotation and
     the angle of change
 
@@ -323,7 +323,7 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions(
 def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_directors(
     blocksize,
 ):
-    """ Construct a unit circle, which we know has constant curvature,
+    """Construct a unit circle, which we know has constant curvature,
     and see if inv_rotate gives us the correct axis of rotation and
     the angle of change
 

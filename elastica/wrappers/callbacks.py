@@ -135,7 +135,7 @@ class _CallBack:
         return self._sys_idx
 
     def __call__(self, *args, **kwargs):
-        """ Constructs a callback functions after checks
+        """Constructs a callback functions after checks
 
         Parameters
         ----------

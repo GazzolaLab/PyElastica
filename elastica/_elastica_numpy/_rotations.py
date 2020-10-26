@@ -35,7 +35,7 @@ def _generate_skew_map(dim: int):
 
 @functools.lru_cache(maxsize=1)
 def _get_skew_map(dim):
-    """ Generates mapping from src to target skew-symmetric operator
+    """Generates mapping from src to target skew-symmetric operator
 
     For input vector V and output Matrix M (represented in lexicographical index),
     we calculate mapping from
@@ -69,7 +69,7 @@ def _get_inv_skew_map(dim):
 
 @functools.lru_cache(maxsize=1)
 def _get_diag_map(dim):
-    """ Generates lexicographic mapping to diagonal in a serialized matrix-type
+    """Generates lexicographic mapping to diagonal in a serialized matrix-type
 
     For input dimension dim  we calculate mapping to * in Matrix M below
 

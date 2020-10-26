@@ -23,7 +23,7 @@ class NoForces:
         pass
 
     def apply_forces(self, system, time: np.float = 0.0):
-        """ Apply forces to a rod-like object.
+        """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
 
@@ -43,7 +43,7 @@ class NoForces:
         pass
 
     def apply_torques(self, system, time: np.float = 0.0):
-        """ Apply torques to a rod-like object.
+        """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
 

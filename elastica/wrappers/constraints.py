@@ -148,7 +148,7 @@ class _Constraint:
         return self._sys_idx
 
     def __call__(self, rod, *args, **kwargs):
-        """ Constructs a constraint after checks
+        """Constructs a constraint after checks
 
         Parameters
         ----------

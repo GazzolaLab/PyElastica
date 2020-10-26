@@ -413,7 +413,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
     def update_accelerations(self, time):
-        """ TODO Do we need to make the collection members abstract?
+        """TODO Do we need to make the collection members abstract?
 
         Parameters
         ----------

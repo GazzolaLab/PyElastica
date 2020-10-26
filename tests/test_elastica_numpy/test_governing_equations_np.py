@@ -232,11 +232,11 @@ class TestingClass:
     @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
     def test_case_compute_shear_stretch_strains(self, n_elem, dilatation):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation  strains.
-            This test function tests
-                _compute_shear_stretch_strains
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation  strains.
+        This test function tests
+            _compute_shear_stretch_strains
         """
         initial, test_rod = constructor(n_elem)
         test_rod.position_collection *= dilatation
@@ -252,11 +252,11 @@ class TestingClass:
         self, n_elem, dilatation
     ):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation stresses.
-            This test function tests
-                _compute_internal_shear_stretch_stresses_from_model
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation stresses.
+        This test function tests
+            _compute_internal_shear_stretch_stresses_from_model
         """
 
         initial, test_rod = constructor(n_elem)
@@ -273,11 +273,11 @@ class TestingClass:
     @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
     def test_case_compute_internal_forces(self, n_elem, dilatation):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation stresses.
-            This test function tests
-                _compute_internal_shear_stretch_stresses_from_model
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation stresses.
+        This test function tests
+            _compute_internal_shear_stretch_stresses_from_model
         """
         initial, test_rod = constructor(n_elem)
         test_rod.position_collection *= dilatation
@@ -289,14 +289,14 @@ class TestingClass:
     @pytest.mark.parametrize("nu", [0.1, 0.2, 0.5, 2])
     def test_compute_damping_forces_torques(self, n_elem, nu):
         """
-            In this test case, we initialize a straight rod and modify
-            velocities of nodes and angular velocities of elements.
-            By doing that we can test damping forces on nodes and
-            damping torques on elements.
-            This test function tests
-                _compute_damping_forces
-                _compute_damping_torques
-         """
+        In this test case, we initialize a straight rod and modify
+        velocities of nodes and angular velocities of elements.
+        By doing that we can test damping forces on nodes and
+        damping torques on elements.
+        This test function tests
+            _compute_damping_forces
+            _compute_damping_torques
+        """
         # This is an artificial test, this part exists just to
         # keep our coverage percentage.
 
@@ -332,16 +332,16 @@ class TestingClass:
     @pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
     def test_case_bend_straight_rod(self, alpha):
         """
-            In this test case we initialize a straight rod with 2 elements
-            and numerically bend the rod. We modify node positions and directors
-            to make a isosceles triangle. Then first we compute curvature
-            between two elements and compute the angle between them.
-            Finally, we compute bend twist couples and compare with
-            correct solution.
-            This test function tests
-                _compute_bending_twist_strains
-                _compute_internal_torques
-                only bend_twist_couple terms.
+        In this test case we initialize a straight rod with 2 elements
+        and numerically bend the rod. We modify node positions and directors
+        to make a isosceles triangle. Then first we compute curvature
+        between two elements and compute the angle between them.
+        Finally, we compute bend twist couples and compare with
+        correct solution.
+        This test function tests
+            _compute_bending_twist_strains
+            _compute_internal_torques
+            only bend_twist_couple terms.
         """
 
         n_elem = 2
@@ -448,16 +448,16 @@ class TestingClass:
 
     def test_case_shear_torque(self):
         """
-            In this test case we initialize a straight rod with two elements
-            and set bending matrix to zero. This gives us opportunity decouple
-            shear torque from twist and bending torques in internal torques
-            equation. Then we modify node positions of second element and
-            introduce artificial bending. Finally, we compute shear torque
-            using internal torque function and compare with analytical value.
-            This test case is for testing shear torque term,
-            in internal torques equation.
-            Tested function
-                _compute_internal_torques
+        In this test case we initialize a straight rod with two elements
+        and set bending matrix to zero. This gives us opportunity decouple
+        shear torque from twist and bending torques in internal torques
+        equation. Then we modify node positions of second element and
+        introduce artificial bending. Finally, we compute shear torque
+        using internal torque function and compare with analytical value.
+        This test case is for testing shear torque term,
+        in internal torques equation.
+        Tested function
+            _compute_internal_torques
 
         """
         n_elem = 2
@@ -498,22 +498,22 @@ class TestingClass:
 
     def test_case_lagrange_transport_unsteady_dilatation(self):
         """
-            In this test case, we initialize a straight rod. Then we modify
-            angular velocity of elements and set mass moment of inertia
-            to identity matrix. By doing this we need to get zero torque
-            due lagrangian transport term, because of Jwxw, J=I, wxw=0.
-            Next we test unsteady dilatation contribution to internal
-            torques, by setting dilatation rate to 1 and recover initialized
-            angular velocity back, de/dt * Jw = w , de/dt=1 J=I.
+        In this test case, we initialize a straight rod. Then we modify
+        angular velocity of elements and set mass moment of inertia
+        to identity matrix. By doing this we need to get zero torque
+        due lagrangian transport term, because of Jwxw, J=I, wxw=0.
+        Next we test unsteady dilatation contribution to internal
+        torques, by setting dilatation rate to 1 and recover initialized
+        angular velocity back, de/dt * Jw = w , de/dt=1 J=I.
 
-            This test function tests
-                _compute_internal_torques
-            only lagrange transport and
-            unsteady dilatation terms, tested numerically.
-            Note that, viscous dissipation set to 0,
-            since we don't want any contribution from
-            damping torque.
-       """
+        This test function tests
+            _compute_internal_torques
+        only lagrange transport and
+        unsteady dilatation terms, tested numerically.
+        Note that, viscous dissipation set to 0,
+        since we don't want any contribution from
+        damping torque.
+        """
 
         n_elem = 2
         initial, test_rod = constructor(n_elem, nu=0.0)
@@ -573,24 +573,24 @@ class TestingClass:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_get_functions(self, n_elem):
         """
-            In this test case, we initialize a straight rod. First
-            we set velocity and angular velocity to random values,
-            and we recover back initialized values using `get_velocity`
-            and `get_angular_velocity` functions. Then, we set random
-            external forces and torques. We compute translational
-            accelerations and angular accelerations based on external
-            forces and torques. Finally we use `get_acceleration` and
-            `get_angular_acceleration` functions and compare returned
-            translational acceleration and angular acceleration with
-            analytically computed ones.
-            This test case tests,
-                get_velocity
-                get_angular_velocity
-                get_acceleration
-                get_angular_acceleration
-            Note that, viscous dissipation set to 0,
-            since we don't want any contribution from
-            damping torque.
+        In this test case, we initialize a straight rod. First
+        we set velocity and angular velocity to random values,
+        and we recover back initialized values using `get_velocity`
+        and `get_angular_velocity` functions. Then, we set random
+        external forces and torques. We compute translational
+        accelerations and angular accelerations based on external
+        forces and torques. Finally we use `get_acceleration` and
+        `get_angular_acceleration` functions and compare returned
+        translational acceleration and angular acceleration with
+        analytically computed ones.
+        This test case tests,
+            get_velocity
+            get_angular_velocity
+            get_acceleration
+            get_angular_acceleration
+        Note that, viscous dissipation set to 0,
+        since we don't want any contribution from
+        damping torque.
         """
 
         initial, test_rod = constructor(n_elem, nu=0.0)

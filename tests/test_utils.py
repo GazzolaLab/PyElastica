@@ -37,7 +37,7 @@ def test_perm_parity_correctness_on_odd_sequences(seq):
 
 @pytest.mark.parametrize("chunksize", [2, 3])
 def test_grouper_correctness_for_perfect_sequences(chunksize):
-    """ Checks correctness when the length of the sequence is divisible
+    """Checks correctness when the length of the sequence is divisible
     by chunksize
 
     Parameters
@@ -67,7 +67,7 @@ def test_grouper_correctness_for_perfect_sequences(chunksize):
 
 @pytest.mark.parametrize("chunksize", [2, 3])
 def test_grouper_correctness_for_imperfect_sequences(chunksize):
-    """ Checks correctness when the length of the sequence is NOT divisible
+    """Checks correctness when the length of the sequence is NOT divisible
     by chunksize
 
     Parameters

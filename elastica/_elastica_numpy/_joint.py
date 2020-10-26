@@ -35,7 +35,7 @@ class ExternalContact(FreeJoint):
         return np.any(np.logical_or(first_max_second_min, first_min_second_max))
 
     def __find_min_dist(self, x1, e1, x2, e2):
-        """ Assumes x2, e2 is one elment for now
+        """Assumes x2, e2 is one elment for now
 
         Will definitely get speedup from numba
         """

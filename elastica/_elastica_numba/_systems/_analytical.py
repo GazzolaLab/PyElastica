@@ -329,8 +329,7 @@ class SecondOrderHybridSystem:
     """
 
     def __init__(self, init_x=5.0, init_f=3.0, init_v=1.0, init_w=1.0):
-        """
-        """
+        """"""
         # Contains initial_values for all dofs
         self.initial_value = np.array([init_x, init_f, init_v, init_w])
         self.state = self.initial_value.copy()

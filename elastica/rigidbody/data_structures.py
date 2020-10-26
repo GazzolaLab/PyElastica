@@ -111,7 +111,7 @@ class _RigidRodSymplecticStepperMixin:
 
 
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
-    """ Returns states wrapping numpy arrays based on the time-stepping algorithm
+    """Returns states wrapping numpy arrays based on the time-stepping algorithm
 
     Convenience method that takes in rod internal (raw np.ndarray) data, create views
     (references) from it, and outputs State classes that are used in the time-stepping
@@ -179,7 +179,7 @@ Explicit stepper interface
 
 
 class _State:
-    """ State for explicit steppers.
+    """State for explicit steppers.
 
     Wraps data as state, with overloaded methods for explicit steppers
     (steppers that integrate all states in one-step/stage).
@@ -211,7 +211,7 @@ class _State:
         self.kinematic_rate_collection = kinematic_rate_collection_view
 
     def __iadd__(self, scaled_deriv_array):
-        """ overloaded += operator
+        """overloaded += operator
 
         The add for directors is customized to reflect Rodrigues' rotation
         formula.
@@ -280,7 +280,7 @@ class _State:
         return self
 
     def __add__(self, scaled_derivative_state):
-        """ overloaded + operator, useful in state.k1 = state + dt * deriv_state
+        """overloaded + operator, useful in state.k1 = state + dt * deriv_state
 
         The add for directors is customized to reflect Rodrigues' rotation
         formula.
@@ -325,7 +325,7 @@ class _State:
 
 
 class _DerivativeState:
-    """ TimeDerivative of States for explicit steppers.
+    """TimeDerivative of States for explicit steppers.
 
     Wraps time-derivative data as state, with overloaded methods for
     explicit steppers (steppers that integrate all states in one-step/stage).
@@ -345,7 +345,7 @@ class _DerivativeState:
         self.rate_collection = rate_collection_view
 
     def __rmul__(self, scalar):
-        """ overloaded scalar * self,
+        """overloaded scalar * self,
 
         Parameters
         ----------
@@ -393,7 +393,7 @@ class _DerivativeState:
         return scalar * self.rate_collection
 
     def __mul__(self, scalar):
-        """ overloaded self * scalar
+        """overloaded self * scalar
 
         TODO Check if this pattern (forwarding to __mul__) has
         any disdvantages apart from extra function call penalty
@@ -416,7 +416,7 @@ Symplectic stepper interface
 
 
 class _KinematicState:
-    """ State storing (x,Q) for symplectic steppers.
+    """State storing (x,Q) for symplectic steppers.
 
     Wraps data as state, with overloaded methods for symplectic steppers.
     Allows for separating implementation of stepper from actual
@@ -442,7 +442,7 @@ class _KinematicState:
         self.director_collection = director_collection_view
 
     def __iadd__(self, scaled_deriv_array):
-        """ overloaded += operator
+        """overloaded += operator
 
         The add for directors is customized to reflect Rodrigues' rotation
         formula.
@@ -477,7 +477,7 @@ class _KinematicState:
 
 
 class _DynamicState:
-    """ State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.
+    """State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.
 
     Wraps data as state, with overloaded methods for symplectic steppers.
     Allows for separating implementation of stepper from actual
@@ -501,7 +501,7 @@ class _DynamicState:
         self.rate_collection = rate_collection_view
 
     def __iadd__(self, scaled_second_deriv_array):
-        """ overloaded += operator, updating dynamic_rates
+        """overloaded += operator, updating dynamic_rates
 
         Parameters
         ----------
@@ -523,7 +523,7 @@ class _DynamicState:
         return self
 
     def kinematic_rates(self, time, *args, **kwargs):
-        """ Yields kinematic rates to interact with _KinematicState
+        """Yields kinematic rates to interact with _KinematicState
 
         Returns
         -------
@@ -540,7 +540,7 @@ class _DynamicState:
         return self.rate_collection[..., : self.n_kinematic_rates]
 
     def dynamic_rates(self, time, *args, **kwargs):
-        """ Yields dynamic rates to add to with _DynamicState
+        """Yields dynamic rates to add to with _DynamicState
 
         Returns
         -------

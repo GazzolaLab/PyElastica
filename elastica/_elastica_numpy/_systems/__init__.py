@@ -70,7 +70,7 @@ def make_memory_for_explicit_stepper(stepper, system):
 
 
 class MemoryCollection:
-    """ Slots of memories for timestepper in a cohesive unit.
+    """Slots of memories for timestepper in a cohesive unit.
 
     A `MemoryCollection` object is meant to be used in conjunction
     with a `SystemCollection`, where each independent `System` to

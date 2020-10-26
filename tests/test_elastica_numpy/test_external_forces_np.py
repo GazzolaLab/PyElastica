@@ -33,7 +33,7 @@ MockRod = type("MockRod", (object,), {"__init__": mock_rod_init})
 
 class TestNoForces:
     def test_no_forces_applied(self):
-        """ No force on the rod. Test purely
+        """No force on the rod. Test purely
         to improve coverage characteristics
         """
         mock_rod = MockRod()
@@ -49,7 +49,7 @@ class TestNoForces:
         )
 
     def test_no_torques_applied(self):
-        """ No torques on the rod. Test purely
+        """No torques on the rod. Test purely
         to improve coverage characteristics
         """
         mock_rod = MockRod()

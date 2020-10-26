@@ -132,7 +132,7 @@ class SymplecticStepperMethods:
         # ]
 
         def mirror(in_list):
-            """ Mirrors an input list ignoring the last element
+            """Mirrors an input list ignoring the last element
             If steps = [A, B, C]
             then this call makes it [A, B, C, B, A]
 
