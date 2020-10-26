@@ -48,12 +48,12 @@ class MyCallBack(CallBackBaseClass):
     This is just an example of a callback class, this class as an example/template to write
     new call back classes in your client file.
 
-        Attributes
-        ----------
-        sample_every: int
-            Collect data using make_callback method every sampling step.
-        callback_params: dict
-            Collected callback data is saved in this dictionary.
+    Attributes
+    ----------
+    sample_every: int
+        Collect data using make_callback method every sampling step.
+    callback_params: dict
+        Collected callback data is saved in this dictionary.
     """
 
     def __init__(self, step_skip: int, callback_params):

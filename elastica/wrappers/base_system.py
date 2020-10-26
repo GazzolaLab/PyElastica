@@ -18,14 +18,14 @@ class BaseSystemCollection(MutableSequence):
     must be derived from the BaseSystemCollection class; otherwise the simulation will
     proceed.
 
-        Attributes
-        ----------
-        allowed_sys_types: tuple
-            Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
-        _systems: list
-            List of rod-like objects.
-        _features: list
-            List of classes acting on the rod-like object, such as external forces classes.
+    Attributes
+    ----------
+    allowed_sys_types: tuple
+        Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
+    _systems: list
+        List of rod-like objects.
+    _features: list
+        List of classes acting on the rod-like object, such as external forces classes.
 
     """
 

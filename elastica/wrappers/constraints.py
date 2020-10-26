@@ -14,10 +14,10 @@ class Constraints:
     To enforce boundary conditions on rod-like objects, the simulator class
     must be derived from Constraints class.
 
-        Attributes
-        ----------
-        _constraints: list
-            List of boundary condition classes defined for rod-like objects.
+    Attributes
+    ----------
+    _constraints: list
+        List of boundary condition classes defined for rod-like objects.
     """
 
     def __init__(self):
