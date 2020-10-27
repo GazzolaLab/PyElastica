@@ -3,7 +3,8 @@ from elastica.external_forces import NoForces
 
 # Force class. This force class is used only for joint test cases
 class EndpointForcesSinusoidal(NoForces):
-    """Applies sinusoidal forces on endpoints"""
+    """ Applies sinusoidal forces on endpoints
+    """
 
     def __init__(
         self,

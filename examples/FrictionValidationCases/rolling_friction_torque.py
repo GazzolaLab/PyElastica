@@ -1,18 +1,17 @@
-# import numpy as np
+import numpy as np
 
 # FIXME without appending sys.path make it more generic
 import sys
 
 sys.path.append("../../")
 
-# from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-# from elastica.rod.cosserat_rod import CosseratRod
-# from elastica.boundary_conditions import FreeRod
-# from elastica.external_forces import GravityForces, UniformTorques
-# from elastica.interaction import AnistropicFrictionalPlane
-# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-# from elastica.timestepper import integrate
-from elastica import *
+from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
+from elastica.rod.cosserat_rod import CosseratRod
+from elastica.boundary_conditions import FreeRod
+from elastica.external_forces import GravityForces, UniformTorques
+from elastica.interaction import AnisotropicFrictionalPlane
+from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper import integrate
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )

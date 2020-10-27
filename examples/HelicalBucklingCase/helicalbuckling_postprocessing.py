@@ -37,7 +37,8 @@ def envelope(arg_pos):
 
 
 def analytical_solution(L, n_elem=10000):
-    """Gives the analytical solution of the helicalbuckling case"""
+    """ Gives the analytical solution of the helicalbuckling case
+    """
     # Physical parameters, set from the simulation
     B = 1.345
     C = 0.789
