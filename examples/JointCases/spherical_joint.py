@@ -118,7 +118,7 @@ class TestJoints(CallBackBaseClass):
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-# FIXME change callback_of to collect_diagnostics
+
 spherical_joint_sim.collect_diagnostics(rod1).using(
     TestJoints, step_skip=1000, callback_params=pp_list_rod1
 )
