@@ -1,19 +1,9 @@
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+methods section."""
+
 import numpy as np
 import sys
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Connections,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.joint import FreeJoint
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )

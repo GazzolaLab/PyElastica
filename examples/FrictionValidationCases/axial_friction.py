@@ -1,12 +1,8 @@
+__doc__ = """Axial friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018  
+section 4.1.4 and Appendix G """
 import numpy as np
 import sys
-from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import FreeRod
-from elastica.external_forces import GravityForces, UniformForces
-from elastica.interaction import AnisotropicFrictionalPlane
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_axial_friction_validation,
 )

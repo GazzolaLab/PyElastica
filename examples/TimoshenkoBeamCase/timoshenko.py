@@ -1,11 +1,9 @@
+__doc__ = """Timoshenko beam validation case, for detailed explanation refer to 
+Gazzola et. al. R. Soc. 2018  section 3.4.3 """
+
 import numpy as np
 import sys
-from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod, FreeRod
-from elastica.external_forces import EndpointForces
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 # FIXME without appending sys.path make it more generic
