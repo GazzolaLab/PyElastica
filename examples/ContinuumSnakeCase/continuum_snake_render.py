@@ -127,7 +127,11 @@ if __name__ == "__main__":
 
             # If the data contains multiple rod, this part can be modified to include
             # multiple rods.
-            rod_object = pyelastica_rod(x=xs[frame_number], r=base_radius[frame_number])
+            rod_object = pyelastica_rod(
+                x=xs[frame_number],
+                r=base_radius[frame_number],
+                color='rgb<0.45,0.39,1>'
+            )
             script.append(rod_object)
 
             # Render

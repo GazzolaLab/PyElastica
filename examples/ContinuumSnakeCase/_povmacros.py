@@ -12,7 +12,7 @@ from collections import defaultdict
 def pyelastica_rod(
     x,
     r,
-    color="Red",
+    color='rgb<0.45,0.39,1>',
     transmit=0.0,
     interpolation="linear_spline",
     deform=None,
