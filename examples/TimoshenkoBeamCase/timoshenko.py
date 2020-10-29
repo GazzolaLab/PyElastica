@@ -1,10 +1,5 @@
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
 from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import OneEndFixedRod, FreeRod
@@ -12,6 +7,9 @@ from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
 from elastica.timestepper import integrate
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):

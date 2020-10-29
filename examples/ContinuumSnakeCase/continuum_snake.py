@@ -1,10 +1,5 @@
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
 import os
 from collections import defaultdict
 from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
@@ -19,6 +14,9 @@ from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_video,
     compute_projected_velocity,
 )
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
@@ -38,7 +36,6 @@ def run_snake(
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
     density = 1000
     nu = 5.0
     E = 1e7

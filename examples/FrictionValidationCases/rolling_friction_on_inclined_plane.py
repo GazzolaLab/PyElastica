@@ -1,10 +1,5 @@
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
 from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.boundary_conditions import FreeRod
@@ -15,6 +10,9 @@ from elastica.timestepper import integrate
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
 )
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class RollingFrictionOnInclinedPlaneSimulator(

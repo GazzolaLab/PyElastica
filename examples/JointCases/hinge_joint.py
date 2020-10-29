@@ -1,11 +1,5 @@
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
-import os
 from collections import defaultdict
 from elastica.wrappers import (
     BaseSystemCollection,
@@ -29,6 +23,9 @@ from examples.JointCases.joint_cases_postprocessing import (
     plot_video_xy,
     plot_video_xz,
 )
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class HingeJointSimulator(
@@ -105,6 +102,7 @@ hinge_joint_sim.add_forcing_to(rod2).using(
     tangent_direction=direction,
     normal_direction=normal,
 )
+
 
 # Callback functions
 # Add call backs
