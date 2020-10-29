@@ -206,11 +206,11 @@ class Stages:
         """
         light_id = len(self.lights)
         self.lights.append(self.Light(**kwargs))
-        if isinstance(camera_id) is list or isinstance(camera_id) is tuple:
+        if isinstance(camera_id, list) or isinstance(camera_id, tuple):
             camera_id = list(set(camera_id))
             for idx in camera_id:
                 self._light_assign[idx].append(light_id)
-        elif isinstance(camera_id) is int:
+        elif isinstance(camera_id, int):
             self._light_assign[camera_id].append(light_id)
         else:
             raise NotImplementedError("camera_id can only be a list or int")
@@ -273,9 +273,9 @@ class Stages:
             return self.str
 
         def _color2str(self, color):
-            if isinstance(color) is str:
+            if isinstance(color, str):
                 return color
-            elif isinstance(color) is list and len(color) == 3:
+            elif isinstance(color, list) and len(color) == 3:
                 # RGB
                 return "rgb<{},{},{}>".format(*color)
             else:
