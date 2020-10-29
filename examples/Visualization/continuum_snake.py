@@ -150,14 +150,7 @@ if __name__ == "__main__":
     SAVE_RESULTS = True
 
     # Add muscle forces on the rod
-    if os.path.exists("optimized_coefficients.txt"):
-        t_coeff_optimized = np.genfromtxt(
-            "optimized_coefficients.txt", delimiter=","
-        )
-        wave_length = 0.97 * 1.0  # 1.0 is base length
-        t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
-    else:
-        t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
+    t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
 
     # run the simulation
     pp_list = run_snake(
