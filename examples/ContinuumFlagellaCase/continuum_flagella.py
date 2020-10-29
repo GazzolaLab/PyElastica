@@ -68,6 +68,7 @@ def run_flagella(
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
+        rest_lengths=shearable_rod.rest_lengths,
         ramp_up_time=period,
         direction=normal,
         with_spline=True,
