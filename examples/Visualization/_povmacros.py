@@ -32,7 +32,7 @@ def pyelastica_rod(
         Radius vector
         Expected shape: [num_time_step, num_element]
     color : str
-        Color of the rod (default: Red)
+        Color of the rod (default: Purple <0.45,0.39,1>)
     transmit : float
         Transparency (0.0 to 1.0).
     interpolation : str
