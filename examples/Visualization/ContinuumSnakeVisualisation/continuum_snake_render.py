@@ -21,7 +21,7 @@ from moviepy.editor import ImageSequenceClip
 from scipy import interpolate
 from tqdm import tqdm
 
-from _povmacros import Stages, pyelastica_rod, render
+from examples.Visualization._povmacros import Stages, pyelastica_rod, render
 
 # Setup (USER DEFINE)
 DATA_PATH = "continuum_snake.dat"  # Path to the simulation data
@@ -75,7 +75,7 @@ stage_scripts = stages.generate_scripts()
 # Externally Including Files (USER DEFINE)
 # If user wants to include other POVray objects such as grid or coordinate axes,
 # objects can be defined externally and included separately.
-included = ['default.inc']
+included = ['../default.inc']
 
 # Multiprocessing Configuration (USER DEFINE)
 MULTIPROCESSING = True
