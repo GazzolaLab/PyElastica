@@ -27,9 +27,9 @@ jobs:
 before_install:
         - python3 --version
         - pip3 install --upgrade pip
-        - pip3 install -r requirements.txt
-        - pip3 install -r tests/requirements.txt
-        - pip3 install -r optional-requirements.txt
+        - pip3 install -r requirements.txt --use-feature=2020-resolver
+        - pip3 install -r tests/requirements.txt --use-feature=2020-resolver
+        - pip3 install -r optional-requirements.txt --use-feature=2020-resolver
 
 # command to run tests
 script:
