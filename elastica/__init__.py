@@ -21,4 +21,3 @@ from elastica.callback_functions import *
 from collections import defaultdict
 from elastica.interaction import *
 from elastica.joint import *
-from elastica.hierarchical_muscles import *
