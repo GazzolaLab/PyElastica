@@ -27,7 +27,7 @@ def run_snake(
     snake_sim = SnakeSimulator()
 
     # setting up test params
-    n_elem = 50
+    n_elem = 20
     start = np.zeros((3,))
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([0.0, 1.0, 0.0])
@@ -128,7 +128,7 @@ def run_snake(
     # timestepper = PEFRL()
 
     final_time = (11.0 + 0.01) * period
-    dt = 1.0e-5 * period
+    dt = 5.0e-5 * period
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, snake_sim, final_time, total_steps)
