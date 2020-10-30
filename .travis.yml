@@ -1,7 +1,8 @@
 language: python
 notifications:
         email: false
-
+env:
+        - CODECOV_TOKEN="94895f9a-26ac-4621-8091-2a2d04dd7e87"
 jobs:
     include:
            # LINUX MACHINE #
