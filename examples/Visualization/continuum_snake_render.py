@@ -12,6 +12,8 @@ Notes
 """
 
 import os
+import multiprocessing
+from multiprocessing import Pool
 
 import numpy as np
 from moviepy.editor import ImageSequenceClip
@@ -73,6 +75,11 @@ stage_scripts = stages.generate_scripts()
 # If user wants to include other POVray objects such as grid or coordinate axes,
 # objects can be defined externally and included separately.
 included = ['default.inc']
+
+# Multiprocessing Configuration (USER DEFINE)
+MULTIPROCESSING = True
+THREAD_PER_AGENT = 4  # Number of thread use per rendering process.
+NUM_AGENT = multiprocessing.cpu_count() // 2  # number of parallel rendering.
 
 # Execute
 if __name__ == "__main__":
@@ -147,14 +154,18 @@ if __name__ == "__main__":
 
     # Process POVray
     # For each frames, a 'png' image file is generated in OUTPUT_IMAGE_DIR directory.
-    for script_file, image_file in tqdm(zip(batch_in, batch_out), total=total_frame):
-        render(
-            script_file,
-            image_file,
-            width=WIDTH,
-            height=HEIGHT,
-            display=DISPLAY_FRAMES,
-        )
+    if MULTIPROCESSING:
+        pass
+    else:
+        for script_file, image_file in tqdm(zip(batch_in, batch_out), total=total_frame):
+            render(
+                script_file,
+                image_file,
+                width=WIDTH,
+                height=HEIGHT,
+                display=DISPLAY_FRAMES,
+                pov_thread=multiprocessing.cpu_count()
+            )
 
     # Create Video using moviepy
     for view_name in stage_scripts.keys():
