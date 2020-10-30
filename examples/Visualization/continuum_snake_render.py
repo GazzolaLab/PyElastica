@@ -11,8 +11,9 @@ Notes
     The module requires POVray installed.
 """
 
-import os
 import multiprocessing
+import os
+from functools import partial
 from multiprocessing import Pool
 
 import numpy as np
@@ -120,12 +121,11 @@ if __name__ == "__main__":
 
     # Rendering
     # For each frame, a 'pov' script file is generated in OUTPUT_IMAGE_DIR directory.
-    batch_in = []
-    batch_out = []
+    batch = []
     for view_name in stage_scripts.keys(): # Make Directory
         output_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
         os.makedirs(output_path, exist_ok=True)
-    for frame_number in tqdm(range(total_frame)):
+    for frame_number in tqdm(range(total_frame), desc='Scripting'):
         for view_name, stage_script in stage_scripts.items():
             output_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
 
@@ -145,27 +145,35 @@ if __name__ == "__main__":
             pov_script = "\n".join(script)
 
             # Write .pov script file
-            pov_file = os.path.join(output_path, "frame_{:04d}.pov".format(frame_number))
-            image_file = os.path.join(output_path, "frame_{:04d}.png".format(frame_number))
-            with open(pov_file, "w+") as f:
+            file_path = os.path.join(output_path, "frame_{:04d}".format(frame_number))
+            with open(file_path+'.pov', "w+") as f:
                 f.write(pov_script)
-            batch_in.append(pov_file)
-            batch_out.append(image_file)
+            batch.append(file_path)
 
     # Process POVray
     # For each frames, a 'png' image file is generated in OUTPUT_IMAGE_DIR directory.
+    pbar = tqdm(total=len(batch), desc='Rendering')  # Progress Bar
     if MULTIPROCESSING:
-        pass
+        func = partial(
+                render,
+                width=WIDTH,
+                height=HEIGHT,
+                display=DISPLAY_FRAMES,
+                pov_thread=THREAD_PER_AGENT
+            )
+        with Pool(NUM_AGENT) as p:
+            for i, _ in enumerate(p.imap_unordered(func, batch)):
+                pbar.update()
     else:
-        for script_file, image_file in tqdm(zip(batch_in, batch_out), total=total_frame):
+        for filename in batch:
             render(
-                script_file,
-                image_file,
+                filename,
                 width=WIDTH,
                 height=HEIGHT,
                 display=DISPLAY_FRAMES,
                 pov_thread=multiprocessing.cpu_count()
             )
+            pbar.update()
 
     # Create Video using moviepy
     for view_name in stage_scripts.keys():
