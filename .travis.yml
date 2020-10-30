@@ -1,15 +1,15 @@
 language: python
 notifications:
         email: false
-env:
-        - CODECOV_TOKEN="94895f9a-26ac-4621-8091-2a2d04dd7e87"
+
 jobs:
     include:
            # LINUX MACHINE #
            - name: " Python 3.6 Linux "
              python: 3.6
-             #env: 
-                     #                - NUMBA_DISABLE_JIT=1
+             env: 
+                 - NUMBA_DISABLE_JIT=1
+                 - CODECOV_TOKEN="94895f9a-26ac-4621-8091-2a2d04dd7e87"
            - name: " Python 3.7 Linux "
              python: 3.7
            
