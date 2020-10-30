@@ -73,8 +73,7 @@ def pyelastica_rod(
 
 
 def render(
-    script_file,
-    image_file,
+    filename,
     width,
     height,
     antialias="on",
@@ -89,10 +88,8 @@ def render(
 
     Parameters
     ----------
-    script_file : str
-        Input .pov file path
-    image_file : str
-        Output .png file path
+    filename : str
+        POV filename (without extension)
     width : int
         The width of the output image.
     height : int
@@ -116,6 +113,10 @@ def render(
         this method will raise IOerror.
 
     """
+
+    # Define script path and image path
+    script_file = filename + '.pov'
+    image_file = filename + '.png'
 
     # Run Povray as subprocess
     cmds = [
