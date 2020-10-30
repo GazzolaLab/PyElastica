@@ -112,7 +112,9 @@ if __name__ == "__main__":
     base_radius = np.ones_like(xs[:, 0, :]) * 0.050  # (TODO) radius could change
 
     # Rendering
-    # For each frames, a 'png' image file is generated in OUTPUT_IMAGE_DIR directory.
+    # For each frame, a 'pov' script file is generated in OUTPUT_IMAGE_DIR directory.
+    batch_in = []
+    batch_out = []
     for view_name in stage_scripts.keys(): # Make Directory
         output_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
         os.makedirs(output_path, exist_ok=True)
@@ -133,17 +135,26 @@ if __name__ == "__main__":
                 color='rgb<0.45,0.39,1>'
             )
             script.append(rod_object)
-
-            # Render
             pov_script = "\n".join(script)
-            render(
-                pov_script,
-                frame_number,
-                width=WIDTH,
-                height=HEIGHT,
-                directory=output_path,
-                display=DISPLAY_FRAMES,
-            )
+
+            # Write .pov script file
+            pov_file = os.path.join(output_path, "frame_{:04d}.pov".format(frame_number))
+            image_file = os.path.join(output_path, "frame_{:04d}.png".format(frame_number))
+            with open(pov_file, "w+") as f:
+                f.write(pov_script)
+            batch_in.append(pov_file)
+            batch_out.append(image_file)
+
+    # Process POVray
+    # For each frames, a 'png' image file is generated in OUTPUT_IMAGE_DIR directory.
+    for script_file, image_file in tqdm(zip(batch_in, batch_out), total=total_frame):
+        render(
+            script_file,
+            image_file,
+            width=WIDTH,
+            height=HEIGHT,
+            display=DISPLAY_FRAMES,
+        )
 
     # Create Video using moviepy
     for view_name in stage_scripts.keys():

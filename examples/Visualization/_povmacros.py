@@ -73,14 +73,14 @@ def pyelastica_rod(
 
 
 def render(
-    script,
-    frame_number,
+    script_file,
+    image_file,
     width,
     height,
     antialias="on",
-    directory="frames",
     quality=11,
     display="Off",
+    pov_thread=4
 ):
     """Rendering frame
 
@@ -89,22 +89,25 @@ def render(
 
     Parameters
     ----------
-    script : str
-        The povray script in string
-    frame_number : int
-        The frame number to export
+    script_file : str
+        Input .pov file path
+    image_file : str
+        Output .png file path
     width : int
         The width of the output image.
     height : int
         The height of the output image.
     antialias : str ['on', 'off']
         Turns anti-aliasing on/off [default='on']
-    directory : str
-        Output directory. [default='frames']
     quality : int
         Image output quality. [default=11]
     display : str
         Turns display option on/off during POVray rendering. [default='off']
+    pov_thread : int
+        Number of thread per povray process. [default=4]
+        Acceptable range is (4,512).
+        Refer 'Symmetric Multiprocessing (SMP)' for further details
+        https://www.povray.org/documentation/3.7.0/r3_2.html#r3_2_8_1
 
     Raises
     ------
@@ -114,19 +117,18 @@ def render(
 
     """
 
-    # Define file names
-    image_file = os.path.join(directory, "frame_{:04d}.png".format(frame_number))
-    pov_file = os.path.join(directory, "frame_{:04d}.pov".format(frame_number))
-
-    # Write - POVray script
-    with open(pov_file, "w+") as f:
-        f.write(script)
-
     # Run Povray as subprocess
-    cmds = ["povray", "+I" + pov_file, "+O" + image_file, f"-H{height}", f"-W{width}"]
-    cmds.append(f"Antialias={antialias}")
-    cmds.append(f"Quality={quality}")
-    cmds.append(f"Display={display}")
+    cmds = [
+        "povray",
+        "+I" + script_file,
+        "+O" + image_file,
+        f"-H{height}",
+        f"-W{width}",
+        f"Work_Threads={pov_thread}",
+        f"Antialias={antialias}",
+        f"Quality={quality}",
+        f"Display={display}"
+    ]
     process = subprocess.Popen(
         cmds, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE
     )
