@@ -162,7 +162,8 @@ if __name__ == "__main__":
                 pov_thread=THREAD_PER_AGENT
             )
         with Pool(NUM_AGENT) as p:
-            for i, _ in enumerate(p.imap_unordered(func, batch)):
+            for message in p.imap_unordered(func, batch):
+                #(TODO) POVray error within child process could be an issue
                 pbar.update()
     else:
         for filename in batch:
