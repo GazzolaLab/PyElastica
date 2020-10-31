@@ -1,11 +1,14 @@
 """ If Numba module present, use Numba functions"""
-
+import os
 import numpy as np
 
 try:
     import numba
 
-    # raise ImportError
+    if 'IMPORT_TEST_NUMPY' in os.environ:
+        # This is used to test if numpy version of classes can be imported.
+        raise ImportError
+
     IMPORT_NUMBA = True
 
 except ImportError:

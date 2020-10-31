@@ -6,6 +6,8 @@ from elastica.joint import FreeJoint, HingeJoint, FixedJoint
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica.rod.cosserat_rod import CosseratRod
+import importlib
+import elastica
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
@@ -344,6 +346,68 @@ def test_fixedjoint():
     )
     assert_allclose(
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
+    )
+
+
+def test_import_numpy_version_of_contact_modules(monkeypatch):
+    """
+    Testing import of the Numpy contact module. In case there is ImportError and Numba cannot be found,
+    then automatically Numpy code has to be imported.  In order to generate an ImportError we create an environment
+    variable called IMPORT_TEST_NUMPY and it is only used for raising ImportError. This test case imports Numpy code
+    and compares the manually imported Numpy module.
+
+    Returns
+    -------
+
+    """
+
+    # First change the environment variable to import Numpy
+    monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
+    # After changing the import flag reload the modules.
+    importlib.reload(elastica)
+    importlib.reload(elastica.joint)
+
+    # Test importing ExternalContact class
+    from elastica._elastica_numpy._joint import (
+        ExternalContact as ExternalContact_numpy,
+    )
+    from elastica.joint import ExternalContact
+
+    assert ExternalContact == ExternalContact_numpy, str(
+        " Imported modules are not matching "
+        + str(ExternalContact)
+        + " and "
+        + str(ExternalContact_numpy)
+    )
+
+    # Remove the import flag
+    monkeypatch.delenv("IMPORT_TEST_NUMPY")
+    # Reload the elastica after changing flag
+    importlib.reload(elastica)
+    importlib.reload(elastica.joint)
+
+
+def test_import_numba_version_of_contact_modules(monkeypatch):
+    """
+    Testing import of the Numba contact module. This test case imports Numba code
+    and compares the manually imported Numba module.
+
+    Returns
+    -------
+
+    """
+
+    # Test importing ExternalContact class
+    from elastica._elastica_numba._joint import (
+        ExternalContact as ExternalContact_numba,
+    )
+    from elastica.joint import ExternalContact
+
+    assert ExternalContact == ExternalContact_numba, str(
+        " Imported modules are not matching "
+        + str(ExternalContact)
+        + " and "
+        + str(ExternalContact_numba)
     )
 
 
