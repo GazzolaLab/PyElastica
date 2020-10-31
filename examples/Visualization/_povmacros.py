@@ -12,7 +12,7 @@ from collections import defaultdict
 def pyelastica_rod(
     x,
     r,
-    color='rgb<0.45,0.39,1>',
+    color="rgb<0.45,0.39,1>",
     transmit=0.0,
     interpolation="linear_spline",
     deform=None,
@@ -73,13 +73,7 @@ def pyelastica_rod(
 
 
 def render(
-    filename,
-    width,
-    height,
-    antialias="on",
-    quality=11,
-    display="Off",
-    pov_thread=4
+    filename, width, height, antialias="on", quality=11, display="Off", pov_thread=4
 ):
     """Rendering frame
 
@@ -115,8 +109,8 @@ def render(
     """
 
     # Define script path and image path
-    script_file = filename + '.pov'
-    image_file = filename + '.png'
+    script_file = filename + ".pov"
+    image_file = filename + ".png"
 
     # Run Povray as subprocess
     cmds = [
@@ -128,7 +122,7 @@ def render(
         f"Work_Threads={pov_thread}",
         f"Antialias={antialias}",
         f"Quality={quality}",
-        f"Display={display}"
+        f"Display={display}",
     ]
     process = subprocess.Popen(
         cmds, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE
@@ -266,7 +260,7 @@ class Stages:
         """
 
         def __init__(self):
-            self.str = ''
+            self.str = ""
             self.update_script()
 
         def update_script(self):

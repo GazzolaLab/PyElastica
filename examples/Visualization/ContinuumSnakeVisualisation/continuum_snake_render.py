@@ -42,7 +42,7 @@ stages.add_camera(
     location=[15.0, 10.5, -15.0],
     angle=30,
     look_at=[4.0, 2.7, 2.0],
-    name='diag'
+    name="diag",
 )
 stages.add_camera(
     # Add top viewpoint
@@ -50,12 +50,12 @@ stages.add_camera(
     angle=30,
     look_at=[0.0, 0, 3],
     sky=[-1, 0, 0],
-    name='top'
+    name="top",
 )
 stages.add_light(
     # Sun light
     position=[1500, 2500, -1000],
-    color='White',
+    color="White",
     camera_id=-1,
 )
 stages.add_light(
@@ -75,7 +75,7 @@ stage_scripts = stages.generate_scripts()
 # Externally Including Files (USER DEFINE)
 # If user wants to include other POVray objects such as grid or coordinate axes,
 # objects can be defined externally and included separately.
-included = ['../default.inc']
+included = ["../default.inc"]
 
 # Multiprocessing Configuration (USER DEFINE)
 MULTIPROCESSING = True
@@ -122,10 +122,10 @@ if __name__ == "__main__":
     # Rendering
     # For each frame, a 'pov' script file is generated in OUTPUT_IMAGE_DIR directory.
     batch = []
-    for view_name in stage_scripts.keys(): # Make Directory
+    for view_name in stage_scripts.keys():  # Make Directory
         output_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
         os.makedirs(output_path, exist_ok=True)
-    for frame_number in tqdm(range(total_frame), desc='Scripting'):
+    for frame_number in tqdm(range(total_frame), desc="Scripting"):
         for view_name, stage_script in stage_scripts.items():
             output_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
 
@@ -139,31 +139,31 @@ if __name__ == "__main__":
             rod_object = pyelastica_rod(
                 x=xs[frame_number],
                 r=base_radius[frame_number],
-                color='rgb<0.45,0.39,1>'
+                color="rgb<0.45,0.39,1>",
             )
             script.append(rod_object)
             pov_script = "\n".join(script)
 
             # Write .pov script file
             file_path = os.path.join(output_path, "frame_{:04d}".format(frame_number))
-            with open(file_path+'.pov', "w+") as f:
+            with open(file_path + ".pov", "w+") as f:
                 f.write(pov_script)
             batch.append(file_path)
 
     # Process POVray
     # For each frames, a 'png' image file is generated in OUTPUT_IMAGE_DIR directory.
-    pbar = tqdm(total=len(batch), desc='Rendering')  # Progress Bar
+    pbar = tqdm(total=len(batch), desc="Rendering")  # Progress Bar
     if MULTIPROCESSING:
         func = partial(
-                render,
-                width=WIDTH,
-                height=HEIGHT,
-                display=DISPLAY_FRAMES,
-                pov_thread=THREAD_PER_AGENT
-            )
+            render,
+            width=WIDTH,
+            height=HEIGHT,
+            display=DISPLAY_FRAMES,
+            pov_thread=THREAD_PER_AGENT,
+        )
         with Pool(NUM_AGENT) as p:
             for message in p.imap_unordered(func, batch):
-                #(TODO) POVray error within child process could be an issue
+                # (TODO) POVray error within child process could be an issue
                 pbar.update()
     else:
         for filename in batch:
@@ -172,16 +172,19 @@ if __name__ == "__main__":
                 width=WIDTH,
                 height=HEIGHT,
                 display=DISPLAY_FRAMES,
-                pov_thread=multiprocessing.cpu_count()
+                pov_thread=multiprocessing.cpu_count(),
             )
             pbar.update()
 
     # Create Video using moviepy
     for view_name in stage_scripts.keys():
         imageset_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
-        imageset = [os.path.join(imageset_path, path)
-                for path in os.listdir(imageset_path) if path[-3:]=='png']
+        imageset = [
+            os.path.join(imageset_path, path)
+            for path in os.listdir(imageset_path)
+            if path[-3:] == "png"
+        ]
         imageset.sort()
-        filename = OUTPUT_FILENAME + '_' + view_name + '.mp4'
+        filename = OUTPUT_FILENAME + "_" + view_name + ".mp4"
         clip = ImageSequenceClip(imageset, fps=FPS)
         clip.write_videofile(filename, fps=FPS)

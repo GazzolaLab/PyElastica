@@ -20,9 +20,7 @@ class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
     pass
 
 
-def run_snake(
-    b_coeff, SAVE_RESULTS=False
-):
+def run_snake(b_coeff, SAVE_RESULTS=False):
 
     snake_sim = SnakeSimulator()
 
@@ -153,8 +151,6 @@ if __name__ == "__main__":
     t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
 
     # run the simulation
-    pp_list = run_snake(
-        t_coeff_optimized, SAVE_RESULTS
-    )
+    pp_list = run_snake(t_coeff_optimized, SAVE_RESULTS)
 
     print("Datafile Created")

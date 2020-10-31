@@ -5,7 +5,7 @@ import numpy as np
 try:
     import numba
 
-    if 'IMPORT_TEST_NUMPY' in os.environ:
+    if "IMPORT_TEST_NUMPY" in os.environ:
         # This is used to test if numpy version of classes can be imported.
         raise ImportError
 

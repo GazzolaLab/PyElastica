@@ -150,7 +150,6 @@ else:
     )
 
 
-
 class StatefulRungeKutta4(_StatefulStepper):
     """
     Stores all states of Rk within the time-stepper. Works as long as the states

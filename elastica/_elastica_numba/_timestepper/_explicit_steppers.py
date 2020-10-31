@@ -73,5 +73,3 @@ class EulerForward:
     def _first_update(self, System, Memory, time, dt):
         System.state += dt * System(time, dt)
         return time + dt
-
-
