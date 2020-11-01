@@ -50,33 +50,33 @@ def test_import_numpy_version_of_interaction_modules(monkeypatch):
         + str(InteractionPlane_numpy)
     )
 
-    # Test importing AnisotropicFrictionalPlaneRigidBody
-    from elastica._elastica_numpy._interaction import (
-        AnisotropicFrictionalPlaneRigidBody as AnisotropicFrictionalPlaneRigidBody_numpy,
-    )
-    from elastica.interaction import AnisotropicFrictionalPlaneRigidBody
-
-    assert (
-        AnisotropicFrictionalPlaneRigidBody == AnisotropicFrictionalPlaneRigidBody_numpy
-    ), str(
-        " Imported modules are not matching "
-        + str(AnisotropicFrictionalPlaneRigidBody)
-        + " and "
-        + str(AnisotropicFrictionalPlaneRigidBody_numpy)
-    )
-
-    # Test importing InteractionPlaneRigidBody
-    from elastica._elastica_numpy._interaction import (
-        InteractionPlaneRigidBody as InteractionPlaneRigidBody_numpy,
-    )
-    from elastica.interaction import InteractionPlaneRigidBody
-
-    assert InteractionPlaneRigidBody == InteractionPlaneRigidBody_numpy, str(
-        " Imported modules are not matching "
-        + str(InteractionPlaneRigidBody)
-        + " and "
-        + str(InteractionPlaneRigidBody_numpy)
-    )
+    # # Test importing AnisotropicFrictionalPlaneRigidBody
+    # from elastica._elastica_numpy._interaction import (
+    #     AnisotropicFrictionalPlaneRigidBody as AnisotropicFrictionalPlaneRigidBody_numpy,
+    # )
+    # from elastica.interaction import AnisotropicFrictionalPlaneRigidBody
+    #
+    # assert (
+    #     AnisotropicFrictionalPlaneRigidBody == AnisotropicFrictionalPlaneRigidBody_numpy
+    # ), str(
+    #     " Imported modules are not matching "
+    #     + str(AnisotropicFrictionalPlaneRigidBody)
+    #     + " and "
+    #     + str(AnisotropicFrictionalPlaneRigidBody_numpy)
+    # )
+    #
+    # # Test importing InteractionPlaneRigidBody
+    # from elastica._elastica_numpy._interaction import (
+    #     InteractionPlaneRigidBody as InteractionPlaneRigidBody_numpy,
+    # )
+    # from elastica.interaction import InteractionPlaneRigidBody
+    #
+    # assert InteractionPlaneRigidBody == InteractionPlaneRigidBody_numpy, str(
+    #     " Imported modules are not matching "
+    #     + str(InteractionPlaneRigidBody)
+    #     + " and "
+    #     + str(InteractionPlaneRigidBody_numpy)
+    # )
 
     # Test importing SlenderBodyTheory
     from elastica._elastica_numpy._interaction import (
@@ -134,33 +134,33 @@ def test_import_numba_version_of_interaction_modules(monkeypatch):
         + str(InteractionPlane_numba)
     )
 
-    # Test importing AnisotropicFrictionalPlaneRigidBody
-    from elastica._elastica_numba._interaction import (
-        AnisotropicFrictionalPlaneRigidBody as AnisotropicFrictionalPlaneRigidBody_numba,
-    )
-    from elastica.interaction import AnisotropicFrictionalPlaneRigidBody
-
-    assert (
-        AnisotropicFrictionalPlaneRigidBody == AnisotropicFrictionalPlaneRigidBody_numba
-    ), str(
-        " Imported modules are not matching "
-        + str(AnisotropicFrictionalPlaneRigidBody)
-        + " and "
-        + str(AnisotropicFrictionalPlaneRigidBody_numba)
-    )
-
-    # Test importing InteractionPlaneRigidBody
-    from elastica._elastica_numba._interaction import (
-        InteractionPlaneRigidBody as InteractionPlaneRigidBody_numba,
-    )
-    from elastica.interaction import InteractionPlaneRigidBody
-
-    assert InteractionPlaneRigidBody == InteractionPlaneRigidBody_numba, str(
-        " Imported modules are not matching "
-        + str(InteractionPlaneRigidBody)
-        + " and "
-        + str(InteractionPlaneRigidBody_numba)
-    )
+    # # Test importing AnisotropicFrictionalPlaneRigidBody
+    # from elastica._elastica_numba._interaction import (
+    #     AnisotropicFrictionalPlaneRigidBody as AnisotropicFrictionalPlaneRigidBody_numba,
+    # )
+    # from elastica.interaction import AnisotropicFrictionalPlaneRigidBody
+    #
+    # assert (
+    #     AnisotropicFrictionalPlaneRigidBody == AnisotropicFrictionalPlaneRigidBody_numba
+    # ), str(
+    #     " Imported modules are not matching "
+    #     + str(AnisotropicFrictionalPlaneRigidBody)
+    #     + " and "
+    #     + str(AnisotropicFrictionalPlaneRigidBody_numba)
+    # )
+    #
+    # # Test importing InteractionPlaneRigidBody
+    # from elastica._elastica_numba._interaction import (
+    #     InteractionPlaneRigidBody as InteractionPlaneRigidBody_numba,
+    # )
+    # from elastica.interaction import InteractionPlaneRigidBody
+    #
+    # assert InteractionPlaneRigidBody == InteractionPlaneRigidBody_numba, str(
+    #     " Imported modules are not matching "
+    #     + str(InteractionPlaneRigidBody)
+    #     + " and "
+    #     + str(InteractionPlaneRigidBody_numba)
+    # )
 
     # Test importing SlenderBodyTheory
     from elastica._elastica_numba._interaction import (
