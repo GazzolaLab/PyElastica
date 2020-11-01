@@ -4,8 +4,8 @@ from copy import copy
 
 from elastica.timestepper._stepper_interface import (
     _TimeStepper,
-    _LinearExponentialIntegratorMixin,
-    _StatefulStepper,
+    # _LinearExponentialIntegratorMixin,
+    # _StatefulStepper,
 )
 
 from elastica import IMPORT_NUMBA
@@ -150,22 +150,22 @@ else:
     )
 
 
-class StatefulRungeKutta4(_StatefulStepper):
-    """
-    Stores all states of Rk within the time-stepper. Works as long as the states
-    are all one big numpy array, made possible by carefully using views.
-
-    Convenience wrapper around Stateless that provides memory
-    """
-
-    def __init__(self):
-        super(StatefulRungeKutta4, self).__init__()
-        self.stepper = RungeKutta4()
-        self.initial_state = None
-        self.k_1 = None
-        self.k_2 = None
-        self.k_3 = None
-        self.k_4 = None
+# class StatefulRungeKutta4(_StatefulStepper):
+#     """
+#     Stores all states of Rk within the time-stepper. Works as long as the states
+#     are all one big numpy array, made possible by carefully using views.
+#
+#     Convenience wrapper around Stateless that provides memory
+#     """
+#
+#     def __init__(self):
+#         super(StatefulRungeKutta4, self).__init__()
+#         self.stepper = RungeKutta4()
+#         self.initial_state = None
+#         self.k_1 = None
+#         self.k_2 = None
+#         self.k_3 = None
+#         self.k_4 = None
 
 
 """
@@ -187,10 +187,10 @@ Classical EulerForward
 #         return time + dt
 
 
-class StatefulEulerForward(_StatefulStepper):
-    def __init__(self):
-        super(StatefulEulerForward, self).__init__()
-        self.stepper = EulerForward()
+# class StatefulEulerForward(_StatefulStepper):
+#     def __init__(self):
+#         super(StatefulEulerForward, self).__init__()
+#         self.stepper = EulerForward()
 
 
 """

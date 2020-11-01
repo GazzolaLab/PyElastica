@@ -2,10 +2,10 @@ __doc__ = """Symplectic time steppers and concepts for integrating the kinematic
 
 import numpy as np
 
-from elastica.timestepper._stepper_interface import (
-    _TimeStepper,
-    _LinearExponentialIntegratorMixin,
-)
+# from elastica.timestepper._stepper_interface import (
+#     _TimeStepper,
+#     _LinearExponentialIntegratorMixin,
+# )
 from elastica import IMPORT_NUMBA
 
 """

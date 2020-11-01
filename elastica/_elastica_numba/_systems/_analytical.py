@@ -117,7 +117,7 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         )
         return np.array([analytical_position, analytical_velocity])
 
-    def __call__(self, time):
+    def __call__(self, time, *args, **kwargs):
         return self.A_matrix @ self._state
 
 

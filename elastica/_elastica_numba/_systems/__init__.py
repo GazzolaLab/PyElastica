@@ -41,7 +41,10 @@ def is_system_a_collection(system):
 def make_memory_for_explicit_stepper(stepper, system):
     # TODO Automated logic (class creation, memory management logic) agnostic of stepper details (RK, AB etc.)
 
-    from elastica._elastica_numba._timestepper._explicit_steppers import RungeKutta4
+    from elastica._elastica_numba._timestepper._explicit_steppers import (
+        RungeKutta4,
+        EulerForward,
+    )
 
     is_this_system_a_collection = is_system_a_collection(system)
 
@@ -58,6 +61,8 @@ def make_memory_for_explicit_stepper(stepper, system):
                 self.k_4 = None
 
         memory_cls = MemoryRungeKutta4
+    elif EulerForward in stepper.__class__.mro():
+        memory_cls = NotImplementedError
     else:
         # TODO Memory allocation for other integrators
         raise NotImplementedError("Making memory for other types not supported")
