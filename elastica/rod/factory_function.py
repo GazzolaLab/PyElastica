@@ -112,7 +112,7 @@ def allocate(
             _batch_cross(d3, d1),
             d2,
             atol=Tolerance.atol(),
-            err_msg=(" d3 x d1 != d1 of input director matrix"),
+            err_msg=(" d3 x d1 != d2 of input director matrix"),
         )
 
         # Check if computed tangents from position is the same with d3

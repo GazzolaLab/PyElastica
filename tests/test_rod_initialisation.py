@@ -454,6 +454,60 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
     )
 
 
+@pytest.mark.xfail(raises=AssertionError)
+def test_director_if_tangent_and_d3_are_not_same():
+    """
+    This test is checking the case if the tangent and d3 of the directors
+    are not equal to each other.
+
+    Returns
+    -------
+
+    """
+    n_elems = 10
+    start = np.array([0.0, 0.0, 0.0])
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 0.0, 1.0])
+    base_length = 1.0
+    base_radius = 0.25
+    density = 1000
+    nu = 0.1
+    youngs_modulus = 1e6
+    poisson_ratio = 0.3
+
+    position = np.zeros((3, n_elems + 1))
+    end = start + direction * base_length
+    for i in range(0, 3):
+        position[i, ...] = np.linspace(start[i], end[i], n_elems + 1)
+
+    # Set the directors such that tangent and d3 are not same.
+    input_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
+    binormal = np.cross(direction, normal)
+    normal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
+    binormal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
+    new_direction = np.cross(binormal, normal)
+    direction_collection = np.repeat(new_direction[:, np.newaxis], n_elems, axis=1)
+
+    input_directors[0, ...] = normal_collection
+    input_directors[1, ...] = binormal_collection
+    input_directors[2, ...] = direction_collection
+
+    MockRodForTest.straight_rod(
+        n_elems,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        youngs_modulus,
+        poisson_ratio,
+        position=position,
+        directors=input_directors,
+    )
+
+
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
 def test_compute_radius_using_base_radius(n_elems):
     """
@@ -1390,64 +1444,6 @@ def test_straight_rod(n_elems):
         )
     for i in range(n_elems - 1):
         assert_allclose(mockrod.bend_matrix[..., i], bend_matrix, atol=Tolerance.atol())
-
-
-# tests Initialisation of straight rigid body rod
-def test_straight_rigid_rod():
-    # setting up test params
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
-    direction_norm = np.linalg.norm(direction)
-    direction /= direction_norm
-    normal = np.array((direction[1], -direction[0], 0))
-    base_length = 10
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
-    mass = density * np.pi * base_radius ** 2 * base_length
-
-    # Second moment of inertia
-    A0 = np.pi * base_radius * base_radius
-    I0_1 = A0 * A0 / (4.0 * np.pi)
-    I0_2 = I0_1
-    I0_3 = 2.0 * I0_2
-    I0 = np.array([I0_1, I0_2, I0_3])
-    # Mass second moment of inertia for disk cross-section
-    mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length)
-    # Inverse mass second of inertia
-    inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
-
-    test_rod = Cylinder(start, direction, normal, base_length, base_radius, density)
-    # checking origin and length of rod
-    assert_allclose(
-        test_rod.position_collection[..., -1],
-        start + base_length / 2 * direction,
-        atol=Tolerance.atol(),
-    )
-
-    # element lengths are equal for all rod.
-    # checking velocities, omegas and rest strains
-    # density and mass
-    rod_length = np.linalg.norm(test_rod.length)
-    assert_allclose(rod_length, base_length, atol=Tolerance.atol())
-    assert_allclose(
-        test_rod.velocity_collection, np.zeros((3, 1)), atol=Tolerance.atol()
-    )
-    assert_allclose(test_rod.omega_collection, np.zeros((3, 1)), atol=Tolerance.atol())
-
-    assert_allclose(test_rod.density, density, atol=Tolerance.atol())
-
-    # Check mass at each node. Note that, node masses is
-    # half of element mass at the first and last node.
-    assert_allclose(test_rod.mass, mass, atol=Tolerance.atol())
-
-    # checking directors, rest length
-    # and shear, bend matrices and moment of inertia
-    assert_allclose(
-        test_rod.inv_mass_second_moment_of_inertia[..., -1],
-        inv_mass_second_moment_of_inertia,
-        atol=Tolerance.atol(),
-    )
 
 
 if __name__ == "__main__":
