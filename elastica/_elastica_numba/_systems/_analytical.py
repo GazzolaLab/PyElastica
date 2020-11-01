@@ -71,17 +71,17 @@ class TestDynamicState:
         self.n_kinematic_rates = blocksize
 
 
-class BaseLinearStatefulSystem:
-    def __init__(self):
-        pass
-
-    @property
-    def linearly_evolving_state(self):
-        return self._state
-
-    @linearly_evolving_state.setter
-    def linearly_evolving_state(self, new_state):
-        self._state = new_state
+# class BaseLinearStatefulSystem:
+#     def __init__(self):
+#         pass
+#
+#     @property
+#     def linearly_evolving_state(self):
+#         return self._state
+#
+#     @linearly_evolving_state.setter
+#     def linearly_evolving_state(self, new_state):
+#         self._state = new_state
 
 
 class ScalarExponentialDecaySystem(BaseStatefulSystem):
