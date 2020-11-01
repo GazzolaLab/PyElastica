@@ -93,13 +93,13 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         return self.A_matrix @ self._state
 
 
-class UndampedSimpleHarmonicOscillatorSystem(
-    BaseUndampedSimpleHarmonicOscillatorSystem, BaseStatefulSystem
-):
-    def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
-        BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
-            self, omega=omega, init_val=init_val
-        )
+# class UndampedSimpleHarmonicOscillatorSystem(
+#     BaseUndampedSimpleHarmonicOscillatorSystem, BaseStatefulSystem
+# ):
+#     def __init__(self, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
+#         BaseUndampedSimpleHarmonicOscillatorSystem.__init__(
+#             self, omega=omega, init_val=init_val
+#         )
 
 
 class SymplecticUndampedSimpleHarmonicOscillatorSystem(
@@ -175,103 +175,103 @@ class DampedSimpleHarmonicOscillatorSystem(
         return np.array([analytical_position, analytical_velocity])
 
 
-class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
-    def __init__(self, n_frames=128):
-        super(MultipleFrameRotationSystem, self).__init__()
-        self.initial_value = np.tile(
-            np.eye(3, 3).reshape(3, 3, 1), n_frames
-        )  # Start aligned initially
-        self.omega = np.random.randn(3, n_frames)  # Randomly rotate frames
-        # self.omega /= np.norm(self.omega, ord=2, axis=0)
-        self._state = self.initial_value.copy()
+# class MultipleFrameRotationSystem(BaseLinearStatefulSystem):
+#     def __init__(self, n_frames=128):
+#         super(MultipleFrameRotationSystem, self).__init__()
+#         self.initial_value = np.tile(
+#             np.eye(3, 3).reshape(3, 3, 1), n_frames
+#         )  # Start aligned initially
+#         self.omega = np.random.randn(3, n_frames)  # Randomly rotate frames
+#         # self.omega /= np.norm(self.omega, ord=2, axis=0)
+#         self._state = self.initial_value.copy()
+#
+#     def analytical_solution(self, time):
+#         # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+#         # return _batch_matmul(self._state, _get_rotation_matrix(time, self.omega))
+#         return np.einsum(
+#             "ijk,ljk->ilk", self.initial_value, _get_rotation_matrix(time, self.omega)
+#         )
+#
+#     def get_linear_state_transition_operator(self, time, dt):
+#         return _get_rotation_matrix(dt, self.omega)
 
-    def analytical_solution(self, time):
-        # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
-        # return _batch_matmul(self._state, _get_rotation_matrix(time, self.omega))
-        return np.einsum(
-            "ijk,ljk->ilk", self.initial_value, _get_rotation_matrix(time, self.omega)
-        )
 
-    def get_linear_state_transition_operator(self, time, dt):
-        return _get_rotation_matrix(dt, self.omega)
-
-
-class SecondOrderHybridSystem:
-    r"""
-    Integrate a simple, non-linear ODE:
-
-    .. math::
-
-        \frac{{dx}}{{dt}} = v\\
-
-    .. math::
-
-        \frac{{df}}{{dt}} =  - f\omega \\
-
-    (f is short for frame, for lack of better notation)
-
-    .. math::
-
-        \frac{{dv}}{{dt}} =  - {v^2}\\
-
-    .. math::
-
-        \frac{{d\omega }}{{dt}} =  - {\omega ^2}\\
-
-    Dofs: :math:`[x, f, v, ω]`, with the convention that
-    _state in this case are :math:`[x, v, ω]`
-    linear_states are :math:`[f]`
-    _kin_state are :math:`[x]`, taken as a slice
-    _dyn_state are :math:`[v, ω]`, taken as a slice
-    """
-
-    def __init__(self, init_x=5.0, init_f=3.0, init_v=1.0, init_w=1.0):
-        """"""
-        # Contains initial_values for all dofs
-        self.initial_value = np.array([init_x, init_f, init_v, init_w])
-        self.state = self.initial_value.copy()
-        self.kinematic_states = self.state[0:1]  # Create a view instead
-        self.dynamic_states = self.state[2:4]  # Create a view instead
-        self.linearly_evolving_state = self.state[1].reshape(
-            -1, 1, 1
-        )  # Requirements of linear_stepper
-
-    def get_linear_state_transition_operator(self, time, prefac):
-        return np.array([np.exp(-self.state[3] * prefac)]).reshape(-1, 1, 1)
-
-    def analytical_solution(self, time):
-        # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
-        # return _batch_matmul(self._state, _get_rotation_matrix(time, self.omega))
-        v_factor = 1.0 / self.initial_value[2]
-        w_factor = 1.0 / self.initial_value[3]
-        x = self.initial_value[0] + np.log(1.0 + time / v_factor)
-        f = self.initial_value[1] / (1.0 + time / w_factor)
-        v = 1.0 / (v_factor + time)
-        w = 1.0 / (w_factor + time)
-        return np.array([x, f, v, w])
-
-    def kinematic_rates(self, time, prefac):
-        return self.dynamic_states[0]  # dx/dt = v
-
-    def dynamic_rates(self, time, prefac):
-        return -self.dynamic_states ** 2  # d(v,w)/dt = -(v,w)**2
-
-    def final_solution(self, time):
-        if np.allclose(self.linearly_evolving_state[0, 0, 0], self.initial_value[1]):
-            val = self.state[1]
-        else:
-            val = self.linearly_evolving_state[0, 0, 0]
-        return np.array([self.state[0], val, self.state[2], self.state[3]])
-
-    def __call__(self, *args, **kwargs):
-        return np.array(
-            [
-                self.state[2],
-                -self.state[1] * self.state[3],
-                -self.state[2] ** 2,
-                -self.state[3] ** 2,
-            ]
-        )
+# class SecondOrderHybridSystem:
+#     r"""
+#     Integrate a simple, non-linear ODE:
+#
+#     .. math::
+#
+#         \frac{{dx}}{{dt}} = v\\
+#
+#     .. math::
+#
+#         \frac{{df}}{{dt}} =  - f\omega \\
+#
+#     (f is short for frame, for lack of better notation)
+#
+#     .. math::
+#
+#         \frac{{dv}}{{dt}} =  - {v^2}\\
+#
+#     .. math::
+#
+#         \frac{{d\omega }}{{dt}} =  - {\omega ^2}\\
+#
+#     Dofs: :math:`[x, f, v, ω]`, with the convention that
+#     _state in this case are :math:`[x, v, ω]`
+#     linear_states are :math:`[f]`
+#     _kin_state are :math:`[x]`, taken as a slice
+#     _dyn_state are :math:`[v, ω]`, taken as a slice
+#     """
+#
+#     def __init__(self, init_x=5.0, init_f=3.0, init_v=1.0, init_w=1.0):
+#         """"""
+#         # Contains initial_values for all dofs
+#         self.initial_value = np.array([init_x, init_f, init_v, init_w])
+#         self.state = self.initial_value.copy()
+#         self.kinematic_states = self.state[0:1]  # Create a view instead
+#         self.dynamic_states = self.state[2:4]  # Create a view instead
+#         self.linearly_evolving_state = self.state[1].reshape(
+#             -1, 1, 1
+#         )  # Requirements of linear_stepper
+#
+#     def get_linear_state_transition_operator(self, time, prefac):
+#         return np.array([np.exp(-self.state[3] * prefac)]).reshape(-1, 1, 1)
+#
+#     def analytical_solution(self, time):
+#         # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
+#         # return _batch_matmul(self._state, _get_rotation_matrix(time, self.omega))
+#         v_factor = 1.0 / self.initial_value[2]
+#         w_factor = 1.0 / self.initial_value[3]
+#         x = self.initial_value[0] + np.log(1.0 + time / v_factor)
+#         f = self.initial_value[1] / (1.0 + time / w_factor)
+#         v = 1.0 / (v_factor + time)
+#         w = 1.0 / (w_factor + time)
+#         return np.array([x, f, v, w])
+#
+#     def kinematic_rates(self, time, prefac):
+#         return self.dynamic_states[0]  # dx/dt = v
+#
+#     def dynamic_rates(self, time, prefac):
+#         return -self.dynamic_states ** 2  # d(v,w)/dt = -(v,w)**2
+#
+#     def final_solution(self, time):
+#         if np.allclose(self.linearly_evolving_state[0, 0, 0], self.initial_value[1]):
+#             val = self.state[1]
+#         else:
+#             val = self.linearly_evolving_state[0, 0, 0]
+#         return np.array([self.state[0], val, self.state[2], self.state[3]])
+#
+#     def __call__(self, *args, **kwargs):
+#         return np.array(
+#             [
+#                 self.state[2],
+#                 -self.state[1] * self.state[3],
+#                 -self.state[2] ** 2,
+#                 -self.state[3] ** 2,
+#             ]
+#         )
 
 
 class CollectiveSystem:

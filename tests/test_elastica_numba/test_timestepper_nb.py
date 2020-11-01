@@ -5,11 +5,11 @@ from numpy.testing import assert_allclose
 
 from elastica._elastica_numba._systems._analytical import (
     ScalarExponentialDecaySystem,
-    UndampedSimpleHarmonicOscillatorSystem,
+    # UndampedSimpleHarmonicOscillatorSystem,
     SymplecticUndampedSimpleHarmonicOscillatorSystem,
-    DampedSimpleHarmonicOscillatorSystem,
-    MultipleFrameRotationSystem,
-    SecondOrderHybridSystem,
+    # DampedSimpleHarmonicOscillatorSystem,
+    # MultipleFrameRotationSystem,
+    # SecondOrderHybridSystem,
     SymplecticUndampedHarmonicOscillatorCollectiveSystem,
     ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
 )
@@ -272,6 +272,8 @@ class TestSymplecticSteppers:
         #     atol=Tolerance.atol(),
         # )
 
+
+"""
     @pytest.mark.xfail
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
@@ -288,6 +290,7 @@ class TestSymplecticSteppers:
             rtol=Tolerance.rtol() * 1e2,
             atol=Tolerance.atol(),
         )
+"""
 
 
 class TestSteppersAgainstCollectiveSystems:
