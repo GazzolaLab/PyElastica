@@ -1,6 +1,6 @@
-# import numpy as np
-#
-# from elastica._linalg import _batch_matvec
+__doc__ = """Rod classes and its data structures """
+
+from elastica.rod.data_structures import *
 
 
 class RodBase:
