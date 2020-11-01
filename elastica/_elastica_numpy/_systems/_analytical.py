@@ -359,6 +359,9 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         # Givees position, director etc.
         super(SimpleSystemWithPositionsDirectors, self).__init__()
 
+    def _compute_internal_forces_and_torques(self, time):
+        pass
+
     def update_accelerations(self, time):
         np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
         np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)

@@ -96,7 +96,7 @@ def test_cylinder_compute_internal_forces_and_torques():
         start, direction, normal, base_length, base_radius, density
     )
 
-    test_cylinder._compute_internal_forces_and_torques()
+    test_cylinder._compute_internal_forces_and_torques(time=0)
 
     assert_allclose(
         np.zeros((3, 1)), test_cylinder.internal_forces, atol=Tolerance.atol()
@@ -143,7 +143,7 @@ def test_cylinder_update_accelerations():
     test_cylinder.external_forces[:] = external_forces
     test_cylinder.external_torques[:] = external_torques
 
-    test_cylinder.update_accelerations()
+    test_cylinder.update_accelerations(time=0)
 
     assert_allclose(
         correct_acceleration,

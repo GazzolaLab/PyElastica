@@ -93,7 +93,7 @@ def test_sphere_compute_internal_forces_and_torques():
     density = np.random.uniform(1, 10)
     test_sphere = Sphere(start, base_radius, density)
 
-    test_sphere._compute_internal_forces_and_torques()
+    test_sphere._compute_internal_forces_and_torques(time=0)
 
     assert_allclose(
         np.zeros((3, 1)), test_sphere.internal_forces, atol=Tolerance.atol()
@@ -133,7 +133,7 @@ def test_cylinder_update_accelerations():
     test_sphere.external_forces[:] = external_forces
     test_sphere.external_torques[:] = external_torques
 
-    test_sphere.update_accelerations()
+    test_sphere.update_accelerations(time=0)
 
     assert_allclose(
         correct_acceleration, test_sphere.acceleration_collection, atol=Tolerance.atol()

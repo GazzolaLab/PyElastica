@@ -25,6 +25,7 @@ class _SystemInstanceStepper:
         for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
             kin_step(TimeStepper, System, time, dt)
             time += kin_prefactor(TimeStepper, dt)
+            System.update_internal_forces_and_torques(time)
             dyn_step(TimeStepper, System, time, dt)
 
         # Peel the last kinematic step and prefactor alone
