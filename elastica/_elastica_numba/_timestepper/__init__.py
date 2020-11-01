@@ -21,8 +21,8 @@ def extend_stepper_interface(Stepper, System):
     # by checking for the [] method
     is_this_system_a_collection = is_system_a_collection(System)
 
-    """ 
-    # Stateful steppers are no more used so remove them 
+    """
+    # Stateful steppers are no more used so remove them
     ConcreteStepper = (
         Stepper.stepper if _StatefulStepper in Stepper.__class__.mro() else Stepper
     )
