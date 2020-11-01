@@ -1,4 +1,4 @@
-__doc__ = """Test for rod initialisation module"""
+__doc__ = """Tests for rod initialisation module"""
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -9,7 +9,6 @@ import sys
 
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 from elastica.rod.factory_function import allocate
-from elastica.rigidbody import Cylinder
 
 
 class MockRodForTest(_RodSymplecticStepperMixin):
