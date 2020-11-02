@@ -66,7 +66,7 @@ class TestBaseSystemCollection:
         load_collection.insert(10, mock_rod)
 
     def test_str(self, load_collection):
-        assert str(load_collection[0]) == "3"
+        assert str(load_collection)[1] == "3"
 
     def test_extend_allowed_types(self, load_collection):
         bsc = load_collection
