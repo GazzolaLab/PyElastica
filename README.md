@@ -4,7 +4,7 @@
 PyElastica is the python implementation of **Elastica**, which is a *free* and *open-source* software project for the simulation of assemblies of slender, one-dimensional structures using Cosserat Rod theory. More information about Elastica and Cosserat rod theory is available at the Elastica [project website](https://cosseratrods.org)
 
 ## New this Release
-This release of PyElastica uses the Python package `numba` to enable just in time compilation leading to a ~8x speedup over the previous version. Numba is not required to run PyElastica and if numba is not installed, PyElastica will defualt to the non-numba implementation. As such, if you wish to take advantage of the speed-up afforded by numba, please be sure to install it separately (`pip install numba`). 
+This release of PyElastica uses the Python package `numba` to enable just in time compilation leading to a ~8x speedup over the previous version. Numba is not required to run PyElastica and if numba is not installed, PyElastica will defualt to the non-numba implementation. As such, if you wish to take advantage of the speed-up afforded by numba, please be sure to install it separately.
 
 Future releases of PyElastica will require numba and we will no longer be maintaining the non-numba code beyond this release. 
 
@@ -17,6 +17,11 @@ PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyEla
 
 ~~~bash
 $ pip install pyelastica 
+~~~
+
+This command will also install numba. If you need to install PyElastica without numba you can do so with the command
+~~~bash
+$ pip install pyelastica-no-numba 
 ~~~
 
 Previous PyElastica releases are available as branches. 
