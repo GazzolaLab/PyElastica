@@ -157,7 +157,6 @@ class BaseSystemCollection(MutableSequence):
         for feature in self._features:
             feature(self, time)
 
-    # TODO: remove synchronizeBC below
     def constrain_values(self, time):
         # Calls all constraints, connections, controls etc.
         for feature in self._features_that_constrain_values:
