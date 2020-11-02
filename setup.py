@@ -17,12 +17,11 @@ REQUIRES_PYTHON = ">=3.4.0"
 VERSION = "0.1.0"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm"]
+REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
 
 # What packages are optional?
 EXTRAS = {
     "Optimization and Inverse Design": ["cma"],
-    "Kernel acceleration": ["numba"],
 }
 
 here = os.path.abspath(os.path.dirname(__file__))
