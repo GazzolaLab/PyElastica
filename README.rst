@@ -29,3 +29,4 @@ Elastica++
 Elastica++ is a C++ implementation of Elastica. 
 
 .. _project website: https://cosserat-rods.github.io/
+
