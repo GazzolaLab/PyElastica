@@ -91,7 +91,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=["elastica, examples"],
+    packages=["elastica"],
     package_dir={"elastica": "./elastica"},
     license="MIT",
     classifiers=[
