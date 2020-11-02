@@ -9,7 +9,7 @@ jobs:
              python: 3.6
              env: 
                  - NUMBA_DISABLE_JIT=1
-                 - CODECOV_TOKEN="ca23d33f-c704-4cf8-b5ff-dacefe26c494"
+              #   - CODECOV_TOKEN="ca23d33f-c704-4cf8-b5ff-dacefe26c494"
            - name: " Python 3.7 Linux "
              python: 3.7
            
