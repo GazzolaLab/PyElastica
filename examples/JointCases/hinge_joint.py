@@ -2,6 +2,9 @@ __doc__ = """Hinge joint example, for detailed explanation refer to Zhang et. al
 
 import numpy as np
 import sys
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 from elastica import *
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
@@ -12,9 +15,6 @@ from examples.JointCases.joint_cases_postprocessing import (
     plot_video_xy,
     plot_video_xz,
 )
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 
 
 class HingeJointSimulator(

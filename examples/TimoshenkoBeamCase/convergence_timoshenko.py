@@ -3,15 +3,15 @@ Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
 import sys
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
 from examples.convergence_functions import calculate_error_norm, plot_convergence
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):

@@ -3,6 +3,9 @@ __doc__ = """Helical buckling convergence study, for detailed explanation refer 
 
 import numpy as np
 import sys
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
@@ -10,9 +13,6 @@ from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     plot_helicalbuckling,
 )
 from examples.convergence_functions import plot_convergence, calculate_error_norm
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):

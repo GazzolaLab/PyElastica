@@ -3,6 +3,9 @@ section 5.2 """
 
 import numpy as np
 import sys
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 import os
 from elastica import *
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
@@ -10,9 +13,6 @@ from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_video,
     compute_projected_velocity,
 )
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 
 
 class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
