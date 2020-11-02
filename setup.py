@@ -13,7 +13,7 @@ DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that
 URL = "https://github.com/GazzolaLab/PyElastica"
 EMAIL = "armant2@illinois.edu"
 AUTHOR = "GazzolaLab"
-REQUIRES_PYTHON = ">=3.4.0"
+REQUIRES_PYTHON = ">=3.5.0"
 VERSION = "0.1.0"
 
 # What packages are required for this module to be executed?
