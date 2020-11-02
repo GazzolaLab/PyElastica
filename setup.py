@@ -90,8 +90,9 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=["elastica"],
+    #packages=["elastica"],
     package_dir={"elastica": "./elastica"},
+    packages=find_packages(),
     license="MIT",
     classifiers=[
         # Trove classifiers
