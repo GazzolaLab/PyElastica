@@ -60,7 +60,7 @@ class TestCallBacks:
         assert "Unable to construct" in str(excinfo.value)
 
 
-class TestConstraintsMixin:
+class TestCallBacksMixin:
     from elastica.wrappers import BaseSystemCollection
 
     class SystemCollectionWithCallBacksMixedin(BaseSystemCollection, CallBacks):
@@ -89,7 +89,7 @@ class TestConstraintsMixin:
     START
     """
 
-    def test_constrain_with_illegal_index_throws(self, load_system_with_callbacks):
+    def test_callback_with_illegal_index_throws(self, load_system_with_callbacks):
         scwc = load_system_with_callbacks
 
         with pytest.raises(AssertionError) as excinfo:
@@ -100,7 +100,7 @@ class TestConstraintsMixin:
             scwc.collect_diagnostics(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_constrain_with_unregistered_system_throws(
+    def test_callback_with_unregistered_system_throws(
         self, load_system_with_callbacks
     ):
         scwc = load_system_with_callbacks
@@ -112,7 +112,7 @@ class TestConstraintsMixin:
             scwc.collect_diagnostics(mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
-    def test_constrain_with_illegal_system_throws(self, load_system_with_callbacks):
+    def test_callback_with_illegal_system_throws(self, load_system_with_callbacks):
         scwc = load_system_with_callbacks
 
         # Not a rod, but a list!
@@ -126,7 +126,7 @@ class TestConstraintsMixin:
     END of testing BaseSystem calls
     """
 
-    def test_constrain_registers_and_returns_Constraint(
+    def test_callback_registers_and_returns_Callback(
         self, load_system_with_callbacks
     ):
         scwc = load_system_with_callbacks
@@ -164,7 +164,7 @@ class TestConstraintsMixin:
 
         return scwc, MockCallBack
 
-    def test_constrain_finalize_correctness(self, load_rod_with_callbacks):
+    def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
 
         scwc._finalize()
