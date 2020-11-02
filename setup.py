@@ -10,9 +10,9 @@ from setuptools import Command, find_packages, setup
 # Package meta-data.
 NAME = "pyelastica"
 DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
-URL = "https://github.com/mattialabteam/elastica-python"
+URL = "https://github.com/GazzolaLab/PyElastica"
 EMAIL = "armant2@illinois.edu"
-AUTHOR = "MattiaLab"
+AUTHOR = "GazzolaLab"
 REQUIRES_PYTHON = ">=3.4.0"
 VERSION = "0.1.0"
 
@@ -109,7 +109,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
     ],
-    download_url="https://github.com/mattialab/elastica-python/archive/master.zip",
+    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.1.0.tar.gz",
     install_requires=REQUIRED,
     extras_require=EXTRAS,
 )
