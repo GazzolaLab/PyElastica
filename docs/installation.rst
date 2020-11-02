@@ -22,5 +22,5 @@ Elastica++
 
 Download the elastica++ code from the Github repository here_
 
-.. _Github: http://github.com/mattialabteam/ 
-.. _here:  http://github.com/mattialabteam/elastica
+.. _Github: http://github.com/GazzolaLab
+.. _here:  http://github.com/GazzolaLab/PyElastica
