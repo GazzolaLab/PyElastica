@@ -1,1 +1,4 @@
+numba
 cma
+moviepy
+ffmpeg

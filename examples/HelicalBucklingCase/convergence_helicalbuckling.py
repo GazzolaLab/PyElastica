@@ -1,20 +1,18 @@
+__doc__ = """Helical buckling convergence study, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
+  section 3.4.1 """
+
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import HelicalBucklingBC
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
     plot_helicalbuckling,
 )
 from examples.convergence_functions import plot_convergence, calculate_error_norm
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):

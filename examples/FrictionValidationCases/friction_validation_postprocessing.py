@@ -46,7 +46,7 @@ def plot_friction_validation(results, SAVE_FIGURE, filename):
     )
 
     # fig.legend(prop={"size": 20})
-    legend = ax.legend(loc="upper left", fontsize="xx-large", prop={"size": 20})
+    ax.legend(loc="upper left", fontsize="xx-large", prop={"size": 20})
     if SAVE_FIGURE:
         assert filename != "", "provide a file name for figure"
         fig.savefig(filename)
@@ -90,7 +90,7 @@ def plot_axial_friction_validation(results, SAVE_FIGURE, filename):
     )
 
     # fig.legend(prop={"size": 20})
-    legend = ax.legend(loc="upper center", fontsize="xx-large", prop={"size": 20})
+    ax.legend(loc="upper center", fontsize="xx-large", prop={"size": 20})
     if SAVE_FIGURE:
         assert filename != "", "provide a file name for figure"
         fig.savefig(filename)

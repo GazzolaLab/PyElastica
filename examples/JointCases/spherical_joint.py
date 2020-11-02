@@ -1,25 +1,9 @@
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+methods section."""
+
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
-import os
-from collections import defaultdict
-from elastica.wrappers import (
-    BaseSystemCollection,
-    Connections,
-    Constraints,
-    Forcing,
-    CallBacks,
-)
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.joint import FreeJoint
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )
@@ -29,6 +13,9 @@ from examples.JointCases.joint_cases_postprocessing import (
     plot_video_xy,
     plot_video_xz,
 )
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class SphericalJointSimulator(
@@ -106,6 +93,7 @@ spherical_joint_sim.add_forcing_to(rod2).using(
     normal_direction=normal,
 )
 
+
 # Callback functions
 # Add call backs
 class TestJoints(CallBackBaseClass):
@@ -130,14 +118,13 @@ class TestJoints(CallBackBaseClass):
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-# FIXME change callback_of to collect_diagnostics
+
 spherical_joint_sim.collect_diagnostics(rod1).using(
     TestJoints, step_skip=1000, callback_params=pp_list_rod1
 )
 spherical_joint_sim.collect_diagnostics(rod2).using(
     TestJoints, step_skip=1000, callback_params=pp_list_rod2
 )
-
 
 spherical_joint_sim.finalize()
 timestepper = PositionVerlet()

@@ -14,10 +14,10 @@ class CallBacks:
     wants to collect data from the simulation, the simulator class has to be derived
     from the CallBacks class.
 
-    Attributes
-    ----------
-    _callbacks: list
-        List of call back classes defined for rod-like objects.
+        Attributes
+        ----------
+        _callbacks: list
+            List of call back classes defined for rod-like objects.
     """
 
     def __init__(self):
@@ -135,7 +135,7 @@ class _CallBack:
         return self._sys_idx
 
     def __call__(self, *args, **kwargs):
-        """ Constructs a callback functions after checks
+        """Constructs a callback functions after checks
 
         Parameters
         ----------

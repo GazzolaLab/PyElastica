@@ -1,9 +1,8 @@
-import numpy as np
+__doc__ = """Rod classes and its data structures """
 
-from elastica._linalg import _batch_matvec
+from elastica.rod.data_structures import *
 
 
-# TODO : What needs to be ported here?
 class RodBase:
     """
     Base class for all rods.

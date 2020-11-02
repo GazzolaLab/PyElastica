@@ -1,21 +1,17 @@
+__doc__ = """Timoshenko beam convergence study, for detailed explanation refer to 
+Gazzola et. al. R. Soc. 2018  section 3.4.3 """
+
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
 import sys
-
-sys.path.append("../../")
-
-from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod, FreeRod
-from elastica.external_forces import EndpointForces
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
     analytical_shearable,
 )
 from examples.convergence_functions import calculate_error_norm, plot_convergence
+
+# FIXME without appending sys.path make it more generic
+sys.path.append("../../")
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):
@@ -41,7 +37,6 @@ def simulate_timoshenko_beam_with(
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 3.0
     base_radius = 0.25
-    base_area = np.pi * base_radius ** 2
     density = 5000
     nu = 0.1
     E = 1e6

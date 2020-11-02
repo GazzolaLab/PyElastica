@@ -1,7 +1,4 @@
-"""
-test_forcings
-----------------
-"""
+__doc__ = """ Test wrappers for forcings """
 import numpy as np
 import pytest
 

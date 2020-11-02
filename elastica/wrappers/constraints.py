@@ -14,10 +14,10 @@ class Constraints:
     To enforce boundary conditions on rod-like objects, the simulator class
     must be derived from Constraints class.
 
-    Attributes
-    ----------
-    _constraints: list
-        List of boundary condition classes defined for rod-like objects.
+        Attributes
+        ----------
+        _constraints: list
+            List of boundary condition classes defined for rod-like objects.
     """
 
     def __init__(self):
@@ -70,12 +70,22 @@ class Constraints:
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)
         # TODO: you may need to change naming of _callBC
-        self._callBC(time=0.0)
+        self._constrain_values(time=0.0)
+        self._constrain_rates(time=0.0)
+        # self._callBC(time=0.0)
 
-    # TODO: same as above naming of _callBC function
-    def _callBC(self, time, *args, **kwargs):
+    # # TODO: same as above naming of _callBC function
+    # def _callBC(self, time, *args, **kwargs):
+    #     for sys_id, constraint in self._constraints:
+    #         constraint.constrain_values(self._systems[sys_id], time, *args, **kwargs)
+    #         constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
+
+    def _constrain_values(self, time, *args, **kwargs):
         for sys_id, constraint in self._constraints:
             constraint.constrain_values(self._systems[sys_id], time, *args, **kwargs)
+
+    def _constrain_rates(self, time, *args, **kwargs):
+        for sys_id, constraint in self._constraints:
             constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
 
 
@@ -138,7 +148,7 @@ class _Constraint:
         return self._sys_idx
 
     def __call__(self, rod, *args, **kwargs):
-        """ Constructs a constraint after checks
+        """Constructs a constraint after checks
 
         Parameters
         ----------

@@ -8,20 +8,21 @@ from shutil import rmtree
 from setuptools import Command, find_packages, setup
 
 # Package meta-data.
-NAME = "PyElastica"
+NAME = "pyelastica"
 DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
-URL = "https://github.com/gazzolalab/pyelastica"
+URL = "https://github.com/mattialabteam/elastica-python"
 EMAIL = "armant2@illinois.edu"
-AUTHOR = "Gazzola Lab"
+AUTHOR = "MattiaLab"
 REQUIRES_PYTHON = ">=3.4.0"
-VERSION = "0.0.2"
+VERSION = "0.0.1"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
+REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm"]
 
 # What packages are optional?
 EXTRAS = {
-    "Optimization and Inverse Design": ["cma"]
+    "Optimization and Inverse Design": ["cma"],
+    "Kernel acceleration": ["numba"],
 }
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -90,7 +91,8 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(),
+    packages=["elastica, examples"],
+    package_dir={"elastica": "./elastica"},
     license="MIT",
     classifiers=[
         # Trove classifiers
@@ -107,7 +109,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
     ],
-    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.0.2.tar.gz",
+    download_url="https://github.com/mattialab/elastica-python/archive/master.zip",
     install_requires=REQUIRED,
     extras_require=EXTRAS,
 )
