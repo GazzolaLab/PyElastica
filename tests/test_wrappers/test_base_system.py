@@ -39,12 +39,6 @@ class TestBaseSystemCollection:
         assert load_collection[0] == 3
         assert load_collection[2] == "a"
 
-    #
-    # @pytest.mark.xfail
-    # def test_delitem(self, load_collection):
-    #     del load_collection[0]
-    #     assert load_collection[0] == 3
-
     @pytest.mark.xfail
     def test_getitem_with_faulty_index_fails(self, load_collection):
         # Fails and exception is raised
@@ -139,7 +133,10 @@ class TestBaseSystemCollection:
     def test_get_sys_index_returns_correct_idx(self, load_collection):
         assert load_collection._get_sys_idx_if_valid(1) == 1
 
-    # TODO : Check synchronize calls
+    @pytest.mark.xfail
+    def test_delitem(self, load_collection):
+        del load_collection[0]
+        assert load_collection[0] == 3
 
 
 class GenericSimulatorClass(
