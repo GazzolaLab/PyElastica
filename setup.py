@@ -14,7 +14,7 @@ URL = "https://github.com/mattialabteam/elastica-python"
 EMAIL = "armant2@illinois.edu"
 AUTHOR = "MattiaLab"
 REQUIRES_PYTHON = ">=3.4.0"
-VERSION = "0.0.1"
+VERSION = "0.1.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm"]
