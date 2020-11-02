@@ -202,6 +202,8 @@ class TestSteppersAgainstRigidBodyLikeSystems:
         importlib.reload(elastica)
         importlib.reload(elastica.timestepper.symplectic_steppers)
         importlib.reload(elastica.timestepper)
+        from elastica.timestepper.symplectic_steppers import PositionVerlet
+        from elastica.timestepper import integrate
 
     def test_symplectics_against_ellipse_motion_with_numpy_PEFRL(self, monkeypatch):
         monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
@@ -255,3 +257,5 @@ class TestSteppersAgainstRigidBodyLikeSystems:
         importlib.reload(elastica)
         importlib.reload(elastica.timestepper.symplectic_steppers)
         importlib.reload(elastica.timestepper)
+        from elastica.timestepper.symplectic_steppers import PEFRL
+        from elastica.timestepper import integrate
