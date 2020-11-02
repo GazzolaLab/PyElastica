@@ -19,12 +19,9 @@ PyElastica is compatible with Python 3.5 - 3.8. The easiest way to install PyEla
 $ pip install pyelastica 
 ~~~
 
-This command will also install numba. If you need to install PyElastica without numba you can do so with the command
-~~~bash
-$ pip install pyelastica-no-numba 
-~~~
+To provide the best performance, this package requires the numba package. If for some reason you can not use numba you can still download PyElastica from here and run it locally without numba installed. 
 
-Previous PyElastica releases are available as branches. 
+Previous PyElastica releases are available in the branches. 
 
 ## Documentation
 [![Documentation Status](https://readthedocs.org/projects/pyelastica/badge/?version=latest)](https://docs.cosseratrods.org/en/latest/?badge=latest)
