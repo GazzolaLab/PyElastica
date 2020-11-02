@@ -100,9 +100,7 @@ class TestCallBacksMixin:
             scwc.collect_diagnostics(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
-    def test_callback_with_unregistered_system_throws(
-        self, load_system_with_callbacks
-    ):
+    def test_callback_with_unregistered_system_throws(self, load_system_with_callbacks):
         scwc = load_system_with_callbacks
 
         # Don't register this rod
@@ -126,9 +124,7 @@ class TestCallBacksMixin:
     END of testing BaseSystem calls
     """
 
-    def test_callback_registers_and_returns_Callback(
-        self, load_system_with_callbacks
-    ):
+    def test_callback_registers_and_returns_Callback(self, load_system_with_callbacks):
         scwc = load_system_with_callbacks
 
         mock_rod = self.MockRod(2, 3, 4, 5)
