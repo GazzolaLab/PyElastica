@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6] #[3.6, 3.7]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -78,7 +78,17 @@ jobs:
       # Formatting test with black and flake8
       - name: Black and Flake8 formatting tests
         run: |
-          if [${{ matrix.python-version }} == '3.6']; then black --version && black --check elastica tests; flake8 --version && flake8 elastica tests; fi
+          if [${{ matrix.python-version }} == 3.6]; then 
+            black --version && black --check elastica tests
+            flake8 --version && flake8 elastica tests 
+          fi
+
+#       # Test Pyelastica using pytest
+#       - name: Test PyElastica using pytest
+#         run: |
+#           if [${{ matrix.python-version }} == 3.6]; then
+#             python3 -m pytest --cov=elastica --cov-report=xml;
+          
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
