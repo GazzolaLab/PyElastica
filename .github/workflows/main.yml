@@ -19,7 +19,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest] # [ubuntu-latest, macos-latest] # Run macos tests if really required, since GitHub charges 10 times more for macOS builds
+        # Run macos tests if really required, since GitHub charges 10 times more for macOS builds.
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest] 
         python-version: [3.6, 3.7, 3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
