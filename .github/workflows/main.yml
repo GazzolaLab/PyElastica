@@ -79,8 +79,10 @@ jobs:
       - name: Black and Flake8 formatting tests
         run: |
           if ${{ matrix.python-version }} == 3.6; then 
-            black --version && black --check elastica tests
-            flake8 --version && flake8 elastica tests 
+            black --version
+            black --check elastica tests
+            flake8 --version
+            flake8 elastica tests 
           fi
 
 #       # Test Pyelastica using pytest
