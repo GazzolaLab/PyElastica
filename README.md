@@ -11,8 +11,8 @@ Future releases of PyElastica will require numba and we will no longer be mainta
 We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder (`examples/visualization`).
 
 ## Installation 
-[![PyPI version](https://badge.fury.io/py/PyElastica.svg)](https://badge.fury.io/py/PyElastica)
- 
+[![PyPI version](https://badge.fury.io/py/pyelastica.svg)](https://badge.fury.io/py/pyelastica)
+
 PyElastica is compatible with Python 3.6 - 3.8. The easiest way to install PyElastica is with PIP. 
 
 ~~~bash
