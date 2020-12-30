@@ -2,7 +2,7 @@ __doc__ = "Data structure wrapper for rod components of Elastica Numba implement
 
 import numpy as np
 import numba
-from numba import njit, jitclass, uint32, float64
+from numba import njit
 from elastica._elastica_numba._rotations import _get_rotation_matrix, _rotate
 from elastica._elastica_numba._linalg import _batch_matmul
 
