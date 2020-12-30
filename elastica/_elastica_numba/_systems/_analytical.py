@@ -2,7 +2,6 @@ __doc__ = "Analytically integrable systems, used primarily for testing time-step
 
 import numpy as np
 import numba
-from numba import jitclass, float64, uint64
 from elastica._elastica_numba._rotations import _get_rotation_matrix, _rotate
 from elastica._elastica_numba._linalg import _batch_matmul
 from elastica._elastica_numba._rod._data_structures import _RodSymplecticStepperMixin
