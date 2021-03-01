@@ -11,6 +11,10 @@ Notes
     The module requires POVray installed.
 """
 
+import sys
+
+sys.path.append("../../../")
+
 import multiprocessing
 import os
 from functools import partial
