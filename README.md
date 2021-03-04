@@ -38,11 +38,10 @@ We have created several Jupyter notebooks and Python scripts to help get users s
 ## Citation
 We ask that any publications which use Elastica cite the following papers:  
 
-Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
-
+Overall and for single rods:  
 Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628](https://doi.org/10.1098/rsos.171628)
 ```
-@article{gazzola2018forward,
+@article{Gazzola2018,
   title={Forward and inverse problems in the mechanics of soft filaments},
   author={Gazzola, M and Dudte, LH and McCormick, AG and Mahadevan, L},
   journal={Royal Society open science},
@@ -56,8 +55,10 @@ Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in th
 }
 ```
 
+For assemblies of rods:  
+Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
 ```
-@article{zhang2019modeling,
+@article{Zhang2019,
   title={Modeling and simulation of complex dynamic musculoskeletal architectures},
   author={Zhang, X and Chan, FK and Parthasarathy, T and Gazzola, M},
   journal={Nature Communications},
@@ -70,3 +71,19 @@ Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in th
   url = {https://doi.org/10.1038/s41467-019-12759-5},
 }
 ```
+
+For control of soft robots:  
+Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica: A compliant mechanics environment for soft robotic control</strong>, IEEE Robotics and Automation Letters, 2021. doi: [10.1109/LRA.2021.3063698](https://doi.org/10.1109/LRA.2021.3063698)
+```
+@article{Naughton2021,
+  author={Naughton, N and Sun, J and Tekinalp, A and Parthasarathy, T and Chowdhary, G and Gazzola, M},
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Elastica: A compliant mechanics environment for soft robotic control}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={1-1},
+  doi={10.1109/LRA.2021.3063698}
+}
+```
+
