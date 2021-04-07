@@ -123,6 +123,8 @@ def allocate(
             err_msg=" Tangent vector computed using node positions is different than d3 vector of input directors",
         )
 
+        directors[:] = directors_temp[:]
+
     else:
         # Construct directors using tangents and normal
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)

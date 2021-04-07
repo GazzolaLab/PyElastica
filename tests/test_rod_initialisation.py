@@ -408,6 +408,61 @@ def test_directors_using_input_position_array(n_elems):
     assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
 
 
+@pytest.mark.parametrize("n_elems", [5, 10, 50])
+def test_directors_using_input_directory_array(n_elems):
+    """
+    This test is testing the case for which directors are given as user input.
+
+    Parameters
+    ----------
+    n_elems
+
+    Returns
+    -------
+
+    """
+    start = np.array([0.0, 0.0, 0.0])
+    direction = np.array([1.0, 0.0, 0.0])
+    angle = np.random.uniform(0, 2 * np.pi)
+    normal = np.array([0.0, np.cos(angle), np.sin(angle)])
+    base_length = 1.0
+    base_radius = 0.25
+    density = 1000
+    nu = 0.1
+    youngs_modulus = 1e6
+    poisson_ratio = 0.3
+    # Check directors, give position as input and let allocate function to compute directors.
+    input_position = np.zeros((3, n_elems + 1))
+    input_position[0, :] = np.linspace(start[0], start[0] + base_length, n_elems + 1)
+
+    correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
+    binormal = np.cross(direction, normal)
+    tangent_collection = np.repeat(direction[:, np.newaxis], n_elems, axis=1)
+    normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
+    binormal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
+
+    correct_directors[0, ...] = normal_collection
+    correct_directors[1, ...] = binormal_collection
+    correct_directors[2, ...] = tangent_collection
+
+    mockrod = MockRodForTest.straight_rod(
+        n_elems,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        youngs_modulus,
+        poisson_ratio,
+        position=input_position,
+        directors=correct_directors,
+    )
+    test_directors = mockrod.director_collection
+    assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
+
+
 @pytest.mark.xfail(raises=AssertionError)
 def test_director_if_d3_cross_d2_notequal_to_d1():
     """
