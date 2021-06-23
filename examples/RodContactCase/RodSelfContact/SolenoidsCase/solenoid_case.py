@@ -192,6 +192,7 @@ class RodCallBack(CallBackBaseClass):
                 + system.compute_shear_energy()
             )
             self.callback_params["total_energy"].append(total_energy)
+            self.callback_params["directors"].append(system.director_collection.copy())
 
             return
 
@@ -221,4 +222,24 @@ plot_video_with_surface(
     x_limits=[-0.5, 0.5],
     y_limits=[-0.1, 1.4],
     z_limits=[-0.5, 0.5],
+)
+
+# Save data for post-processing and computing topological quantities
+import os
+
+save_folder = os.path.join(os.getcwd(), "data")
+os.makedirs(save_folder, exist_ok=True)
+
+time = np.array(post_processing_dict["time"])
+position_history = np.array(post_processing_dict["position"])
+radius_history = np.array(post_processing_dict["radius"])
+director_history = np.array(post_processing_dict["directors"])
+
+np.savez(
+    os.path.join(save_folder, "solenoid_case_data.npz"),
+    time=time,
+    position_history=position_history,
+    radius_history=radius_history,
+    director_history=director_history,
+    base_length = np.array(base_length),
 )
