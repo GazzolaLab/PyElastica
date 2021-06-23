@@ -69,6 +69,8 @@ def plot_video_with_surface(
 
         for rod_idx in range(n_visualized_rods):
             inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+            if not inst_position.shape[1] == inst_radius.shape[0]:
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
 
             rod_scatters[rod_idx] = ax.scatter(
                 inst_position[0],
@@ -77,7 +79,7 @@ def plot_video_with_surface(
                 s=np.pi * (scaling_factor * inst_radius) ** 2,
             )
 
-        ax.set_aspect("equal")
+        # ax.set_aspect("equal")
         video_name_3D = "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
@@ -88,9 +90,10 @@ def plot_video_with_surface(
                         inst_position, inst_radius = rod_history_unpacker(
                             rod_idx, time_idx
                         )
-                        inst_position = 0.5 * (
-                            inst_position[..., 1:] + inst_position[..., :-1]
-                        )
+                        if not inst_position.shape[1] == inst_radius.shape[0]:
+                            inst_position = 0.5 * (
+                                    inst_position[..., 1:] + inst_position[..., :-1]
+                            )
 
                         rod_scatters[rod_idx]._offsets3d = (
                             inst_position[0],
@@ -124,7 +127,8 @@ def plot_video_with_surface(
 
         for rod_idx in range(n_visualized_rods):
             inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-            inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
+            if not inst_position.shape[1] == inst_radius.shape[0]:
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
             rod_lines[rod_idx] = ax.plot(
                 inst_position[0], inst_position[1], "r", lw=0.5
             )[0]
@@ -148,9 +152,10 @@ def plot_video_with_surface(
                         inst_position, inst_radius = rod_history_unpacker(
                             rod_idx, time_idx
                         )
-                        inst_position = 0.5 * (
-                            inst_position[..., 1:] + inst_position[..., :-1]
-                        )
+                        if not inst_position.shape[1] == inst_radius.shape[0]:
+                            inst_position = 0.5 * (
+                                    inst_position[..., 1:] + inst_position[..., :-1]
+                            )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
                         rod_lines[rod_idx].set_ydata(inst_position[1])
@@ -186,7 +191,8 @@ def plot_video_with_surface(
 
         for rod_idx in range(n_visualized_rods):
             inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-            inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
+            if not inst_position.shape[1] == inst_radius.shape[0]:
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
             rod_lines[rod_idx] = ax.plot(
                 inst_position[2], inst_position[1], "r", lw=0.5
             )[0]
@@ -210,9 +216,10 @@ def plot_video_with_surface(
                         inst_position, inst_radius = rod_history_unpacker(
                             rod_idx, time_idx
                         )
-                        inst_position = 0.5 * (
-                            inst_position[..., 1:] + inst_position[..., :-1]
-                        )
+                        if not inst_position.shape[1] == inst_radius.shape[0]:
+                            inst_position = 0.5 * (
+                                    inst_position[..., 1:] + inst_position[..., :-1]
+                            )
 
                         rod_lines[rod_idx].set_xdata(inst_position[2])
                         rod_lines[rod_idx].set_ydata(inst_position[1])
@@ -249,7 +256,8 @@ def plot_video_with_surface(
 
         for rod_idx in range(n_visualized_rods):
             inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-            inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
+            if not inst_position.shape[1] == inst_radius.shape[0]:
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
             rod_lines[rod_idx] = ax.plot(
                 inst_position[0], inst_position[2], "r", lw=0.5
             )[0]
@@ -273,9 +281,10 @@ def plot_video_with_surface(
                         inst_position, inst_radius = rod_history_unpacker(
                             rod_idx, time_idx
                         )
-                        inst_position = 0.5 * (
-                            inst_position[..., 1:] + inst_position[..., :-1]
-                        )
+                        if not inst_position.shape[1] == inst_radius.shape[0]:
+                            inst_position = 0.5 * (
+                                    inst_position[..., 1:] + inst_position[..., :-1]
+                            )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
                         rod_lines[rod_idx].set_ydata(inst_position[2])
