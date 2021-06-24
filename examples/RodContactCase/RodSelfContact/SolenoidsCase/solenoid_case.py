@@ -235,6 +235,15 @@ position_history = np.array(post_processing_dict["position"])
 radius_history = np.array(post_processing_dict["radius"])
 director_history = np.array(post_processing_dict["directors"])
 
+# Compute twist density
+theta = 2.0 * number_of_rotations * np.pi
+angel_vel_scalar = theta / time_twist
+
+twist_time_interval_start_idx = np.where(time>time_start_twist)[0][0]
+twist_time_interval_end_idx = np.where(time<(time_relax + time_twist))[0][-1]
+
+twist_density = (time[twist_time_interval_start_idx:twist_time_interval_end_idx]-time_start_twist)*angel_vel_scalar * base_radius
+
 np.savez(
     os.path.join(save_folder, "solenoid_case_data.npz"),
     time=time,
@@ -242,4 +251,5 @@ np.savez(
     radius_history=radius_history,
     director_history=director_history,
     base_length = np.array(base_length),
+    twist_density = twist_density,
 )
