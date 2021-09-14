@@ -189,7 +189,7 @@ class Stages:
         self._light_assign = defaultdict(list)
 
     def add_camera(self, name, **kwargs):
-        """ Add camera (viewpoint) """
+        """Add camera (viewpoint)"""
         self.cameras.append(self.Camera(name=name, **kwargs))
 
     def add_light(self, camera_id=-1, **kwargs):
