@@ -14,7 +14,7 @@ URL = "https://github.com/GazzolaLab/PyElastica"
 EMAIL = "armant2@illinois.edu"
 AUTHOR = "GazzolaLab"
 REQUIRES_PYTHON = ">=3.5.0"
-VERSION = "0.1.0.post2"
+VERSION = "0.1.0.post3"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
@@ -108,7 +108,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
     ],
-    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.1.0.post2.tar.gz",
+    download_url="https://github.com/GazzolaLab/PyElastica/archive/0.1.0.post3.tar.gz",
     install_requires=REQUIRED,
     extras_require=EXTRAS,
 )
