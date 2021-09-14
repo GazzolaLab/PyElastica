@@ -37,7 +37,7 @@ from elastica.utils import Tolerance
 
 
 class TestExtendStepperInterface:
-    """ TODO add documentation """
+    """TODO add documentation"""
 
     class MockSymplecticStepper:
         Tag = SymplecticStepperTag()

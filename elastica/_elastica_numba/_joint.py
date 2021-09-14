@@ -186,7 +186,7 @@ def _calculate_contact_forces(
 
 @numba.njit(cache=True)
 def _aabbs_not_intersecting(aabb_one, aabb_two):
-    """ Returns true if not intersecting else false"""
+    """Returns true if not intersecting else false"""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
         return 1
     if (aabb_one[1, 1] < aabb_two[1, 0]) | (aabb_one[1, 0] > aabb_two[1, 1]):

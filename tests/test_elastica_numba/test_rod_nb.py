@@ -26,7 +26,7 @@ class TestRod:
 # https://docs.pytest.org/en/latest/fixture.html
 @pytest.fixture(scope="module", params=[15, 31])
 def load_data_for_bootstrapping_state(request):
-    """ Yield states for bootstrapping """
+    """Yield states for bootstrapping"""
     n_elem = request.param
     n_nodes = n_elem + 1
     dim = 3
