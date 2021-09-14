@@ -46,6 +46,7 @@ def _get_rotation_matrix(scale: float, axis_collection):
     return rot_mat
 
 
+@njit(cache=True)
 def _rotate(director_collection, scale: float, axis_collection):
     """
     Does alibi rotations
