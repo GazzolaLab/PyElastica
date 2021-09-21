@@ -87,3 +87,6 @@ Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica:
 }
 ```
 
+## List of Publication
+
+- [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (In Review: IEEE RA-L 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
