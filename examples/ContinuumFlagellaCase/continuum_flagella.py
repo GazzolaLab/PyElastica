@@ -54,10 +54,12 @@ def run_flagella(
 
     period = 1.0
     wave_length = b_coeff[-1]
+    # Head and tail control points are zero.
+    control_points = np.hstack((0, b_coeff[:-1], 0))
     flagella_sim.add_forcing_to(shearable_rod).using(
         MuscleTorques,
         base_length=base_length,
-        b_coeff=b_coeff[:-1],
+        b_coeff=control_points,#b_coeff[:-1],
         period=period,
         wave_number=2.0 * np.pi / (wave_length),
         phase_shift=0.0,
