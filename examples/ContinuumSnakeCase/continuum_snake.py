@@ -5,11 +5,13 @@ import sys
 sys.path.append("../../")
 from elastica import *
 
+# from collections import defaultdict
+from examples.SnakeFrictionCase.external_force_class_for_snake import MuscleTorques
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
     compute_projected_velocity,
-    plot_curvature
+    plot_curvature,
 )
 
 
@@ -40,7 +42,7 @@ def run_snake(
     base_radius = base_length * 0.011
     density = 1000
     nu = 1e-4
-    E = 1e6 
+    E = 1e6
     poisson_ratio = 0.5
 
     shearable_rod = CosseratRod.straight_rod(
@@ -88,7 +90,7 @@ def run_snake(
     kinetic_mu_array = np.array(
         [mu, 1.5 * mu, 2.0 * mu]
     )  # [forward, backward, sideways]
-    static_mu_array = np.zeros(kinetic_mu_array.shape) 
+    static_mu_array = np.zeros(kinetic_mu_array.shape)
     snake_sim.add_forcing_to(shearable_rod).using(
         AnisotropicFrictionalPlane,
         k=1.0,
@@ -130,9 +132,7 @@ def run_snake(
                 self.callback_params["center_of_mass"].append(
                     system.compute_position_center_of_mass()
                 )
-                self.callback_params["curvature"].append(
-                    system.kappa.copy()
-                )
+                self.callback_params["curvature"].append(system.kappa.copy())
 
                 return
 
@@ -148,12 +148,14 @@ def run_snake(
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
-        #plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        # plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
         plot_curvature(pp_list, shearable_rod.rest_lengths, period, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_snake.mp4"
-            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=rendering_fps)
+            plot_video(
+                pp_list, video_name=filename_video, margin=0.2, fps=rendering_fps
+            )
 
     if SAVE_RESULTS:
         import pickle
