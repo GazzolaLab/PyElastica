@@ -186,12 +186,12 @@ def _bspline(t_coeff, l_centerline=1.0):
         which the spline needs to be evaluated.
     """
     # Divide into n_control_pts number of points (n_ctr_pts-1) regions
-    control_pts = l_centerline * np.linspace(0.0, 1.0, t_coeff.shape[0]-2)
+    control_pts = l_centerline * np.linspace(0.0, 1.0, t_coeff.shape[0] - 2)
 
     # Degree of b-spline required. Set to cubic
     degree = 3
 
-    return __bspline_impl__(control_pts, t_coeff,  degree)
+    return __bspline_impl__(control_pts, t_coeff, degree)
 
 
 def __bspline_impl__(x_pts, t_c, degree):
@@ -203,9 +203,9 @@ def __bspline_impl__(x_pts, t_c, degree):
     # Generate the knots
     knots_updated = np.zeros(n_upd)
     # Fix first degree-1 knots into head
-    knots_updated[: degree] = x_pts[0]
+    knots_updated[:degree] = x_pts[0]
     # Middle knot locations correspond to x_locations
-    knots_updated[degree : n_upd - (degree )] = x_pts
+    knots_updated[degree : n_upd - (degree)] = x_pts
     # Fix first degree-1 knots into tail
     knots_updated[n_upd - (degree) :] = x_pts[-1]
 

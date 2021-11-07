@@ -123,7 +123,7 @@ class TestExtendInstance:
 
 def test_bspline_implementation():
 
-    t_coeff = np.array([1.0, 1.0, 1.0])
+    t_coeff = np.array([0.0, 1.0, 1.0, 1.0, 0.0])
     base_length = 2.0
     position = np.linspace(0, base_length, 10)
 
