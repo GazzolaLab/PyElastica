@@ -1,17 +1,15 @@
-__doc__ = """Continuum snake example, for detailed explanation refer to Gazzola et. al. R. Soc. 2018  
-section 5.2 """
+__doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
-import numpy as np
 import sys
 
-# FIXME without appending sys.path make it more generic
 sys.path.append("../../")
-import os
 from elastica import *
+
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
     compute_projected_velocity,
+    plot_curvature
 )
 
 
@@ -22,19 +20,27 @@ class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
 def run_snake(
     b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False
 ):
-
+    # Initialize the simulation class
     snake_sim = SnakeSimulator()
+
+    # Simulation parameters
+    period = 2
+    final_time = (11.0 + 0.01) * period
+    time_step = 8e-6
+    total_steps = int(final_time / time_step)
+    rendering_fps = 60
+    step_skip = int(1.0 / (rendering_fps * time_step))
 
     # setting up test params
     n_elem = 50
     start = np.zeros((3,))
     direction = np.array([0.0, 0.0, 1.0])
     normal = np.array([0.0, 1.0, 0.0])
-    base_length = 1.0
-    base_radius = 0.025
+    base_length = 0.35
+    base_radius = base_length * 0.011
     density = 1000
-    nu = 5.0
-    E = 1e7
+    nu = 1e-4
+    E = 1e6 
     poisson_ratio = 0.5
 
     shearable_rod = CosseratRod.straight_rod(
@@ -58,8 +64,8 @@ def run_snake(
         GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
     )
 
-    period = 1.0
-    wave_length = b_coeff[-1]
+    # Add muscle torques
+    wave_length = 1
     snake_sim.add_forcing_to(shearable_rod).using(
         MuscleTorques,
         base_length=base_length,
@@ -82,7 +88,7 @@ def run_snake(
     kinetic_mu_array = np.array(
         [mu, 1.5 * mu, 2.0 * mu]
     )  # [forward, backward, sideways]
-    static_mu_array = 2 * kinetic_mu_array
+    static_mu_array = np.zeros(kinetic_mu_array.shape) 
     snake_sim.add_forcing_to(shearable_rod).using(
         AnisotropicFrictionalPlane,
         k=1.0,
@@ -124,31 +130,30 @@ def run_snake(
                 self.callback_params["center_of_mass"].append(
                     system.compute_position_center_of_mass()
                 )
+                self.callback_params["curvature"].append(
+                    system.kappa.copy()
+                )
 
                 return
 
     pp_list = defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
-        ContinuumSnakeCallBack, step_skip=200, callback_params=pp_list
+        ContinuumSnakeCallBack, step_skip=step_skip, callback_params=pp_list
     )
 
     snake_sim.finalize()
-    timestepper = PositionVerlet()
-    # timestepper = PEFRL()
 
-    final_time = (11.0 + 0.01) * period
-    dt = 1.0e-5 * period
-    total_steps = int(final_time / dt)
-    print("Total steps", total_steps)
+    timestepper = PositionVerlet()
     integrate(timestepper, snake_sim, final_time, total_steps)
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
-        plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        #plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        plot_curvature(pp_list, shearable_rod.rest_lengths, period, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_snake.mp4"
-            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=500)
+            plot_video(pp_list, video_name=filename_video, margin=0.2, fps=rendering_fps)
 
     if SAVE_RESULTS:
         import pickle
@@ -168,8 +173,8 @@ if __name__ == "__main__":
 
     # Options
     PLOT_FIGURE = True
-    SAVE_FIGURE = False
-    SAVE_VIDEO = False
+    SAVE_FIGURE = True
+    SAVE_VIDEO = True
     SAVE_RESULTS = False
     CMA_OPTION = False
 
@@ -191,7 +196,7 @@ if __name__ == "__main__":
         # Optimize snake for forward velocity. In cma.fmin first input is function
         # to be optimized, second input is initial guess for coefficients you are optimizing
         # for and third input is standard deviation you initially set.
-        optimized_spline_coefficients = cma.fmin(optimize_snake, 5 * [0], 0.5)
+        optimized_spline_coefficients = cma.fmin(optimize_snake, 7 * [0], 0.5)
 
         # Save the optimized coefficients to a file
         filename_data = "optimized_coefficients.txt"
@@ -205,11 +210,12 @@ if __name__ == "__main__":
             t_coeff_optimized = np.genfromtxt(
                 "optimized_coefficients.txt", delimiter=","
             )
-            wave_length = 0.97 * 1.0  # 1.0 is base length
-            t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
-
         else:
-            t_coeff_optimized = np.array([17.4, 48.5, 5.4, 14.7, 0.97])
+            wave_length = 4.0 * np.pi
+            t_coeff_optimized = np.array(
+                [3.4e-3, 3.3e-3, 4.2e-3, 2.6e-3, 3.6e-3, 3.5e-3]
+            )
+            t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
 
         # run the simulation
         [avg_forward, avg_lateral, pp_list] = run_snake(

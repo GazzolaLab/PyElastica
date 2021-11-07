@@ -53,14 +53,14 @@ def plot_video(
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     fig = plt.figure()
     plt.axis("equal")
-    with writer.saving(fig, video_name, dpi=100):
+    with writer.saving(fig, video_name, dpi=150):
         for time in range(1, len(plot_params["time"])):
             x = positions_over_time[time][2]
             y = positions_over_time[time][0]
             fig.clf()
-            plt.plot(x, y, "o")
-            plt.xlim([0 - margin, 10 + margin])
-            plt.ylim([-5 - margin, 5 + margin])
+            plt.plot(x, y)
+            plt.xlim([0 - margin, 5 + margin])
+            plt.ylim([-2 - margin, 2 + margin])
             writer.grab_frame()
 
 
@@ -120,3 +120,31 @@ def compute_projected_velocity(plot_params: dict, period):
         average_velocity_over_simulation[2],
         average_velocity_over_simulation[0],
     )
+
+def plot_curvature(plot_params: dict, rest_lengths, period,
+    save_fig = False, filename = 'snake_curvature'):
+    s = np.cumsum(rest_lengths)
+    L0 = s[-1]
+    s = s / L0
+    s = s[:-1].copy()
+    x = np.linspace(0,1,100)
+    curvature = np.array(plot_params['curvature'])
+    time = np.array(plot_params['time'])
+    peak_time = period * 0.125
+    dt = time[1] - time[0]
+    peak_idx = int(peak_time / (dt))
+    fig = plt.figure(figsize=(5,4), frameon=True, dpi=150)
+    ax = fig.add_subplot(111, label = '1')
+    try:
+        for i in range(peak_idx * 8, peak_idx * 8 * 2, peak_idx):
+            ax.plot(s, curvature[i,0,:]*L0, 'k')
+    except:
+        print('Simulation time not long enough to plot curvature')
+    ax.plot(x, 7 * np.cos(2*np.pi*x -0.80), '--')
+    ax.set_ylabel(r'$\kappa$', fontsize = 12)
+    ax.set_xlabel('s', fontsize = 12)
+    ax.set_xlim(0,1)
+    ax.set_ylim(-10,10)
+    plt.show()
+    if save_fig:
+        fig.savefig(filename)
