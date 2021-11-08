@@ -67,7 +67,7 @@ def run_snake(
     )
 
     # Add muscle torques
-    wave_length = 1
+    wave_length = b_coeff[-1]
     snake_sim.add_forcing_to(shearable_rod).using(
         MuscleTorques,
         base_length=base_length,
@@ -148,13 +148,17 @@ def run_snake(
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
-        # plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
+        plot_snake_velocity(pp_list, period, filename_plot, SAVE_FIGURE)
         plot_curvature(pp_list, shearable_rod.rest_lengths, period, SAVE_FIGURE)
 
         if SAVE_VIDEO:
             filename_video = "continuum_snake.mp4"
             plot_video(
-                pp_list, video_name=filename_video, margin=0.2, fps=rendering_fps
+                pp_list,
+                video_name=filename_video,
+                fps=rendering_fps,
+                xlim=(0, 4),
+                ylim=(-1, 1),
             )
 
     if SAVE_RESULTS:
@@ -213,7 +217,7 @@ if __name__ == "__main__":
                 "optimized_coefficients.txt", delimiter=","
             )
         else:
-            wave_length = 4.0 * np.pi
+            wave_length = 1.0
             t_coeff_optimized = np.array(
                 [3.4e-3, 3.3e-3, 4.2e-3, 2.6e-3, 3.6e-3, 3.5e-3]
             )
