@@ -187,6 +187,7 @@ class TestForcingMixin:
             kinetic_mu_array=[0, 0, 0],
         )
         # Add another forcing class
+
         def mock_init(self, *args, **kwargs):
             pass
 
