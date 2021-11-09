@@ -166,6 +166,40 @@ class TestForcingMixin:
 
         return scwf, MockForcing
 
+    def test_friction_plane_forcing_class_sorting(self, load_system_with_forcings):
+
+        scwf = load_system_with_forcings
+
+        mock_rod = self.MockRod(2, 3, 4, 5)
+        scwf.append(mock_rod)
+
+        from elastica.interaction import AnisotropicFrictionalPlane
+
+        # Add friction plane
+        scwf.add_forcing_to(1).using(
+            AnisotropicFrictionalPlane,
+            k=0,
+            nu=0,
+            plane_origin=np.zeros((3,)),
+            plane_normal=np.zeros((3,)),
+            slip_velocity_tol=0,
+            static_mu_array=[0, 0, 0],
+            kinetic_mu_array=[0, 0, 0],
+        )
+        # Add another forcing class
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        MockForcing = type(
+            "MockForcing", (self.NoForces, object), {"__init__": mock_init}
+        )
+        scwf.add_forcing_to(1).using(MockForcing, 2, 42)  # index based forcing
+
+        scwf._finalize()
+
+        # Now check if the Anisotropic friction is the last forcing class
+        assert isinstance(scwf._ext_forces_torques[-1][-1], AnisotropicFrictionalPlane)
+
     def test_constrain_finalize_correctness(self, load_rod_with_forcings):
         scwf, forcing_cls = load_rod_with_forcings
 
