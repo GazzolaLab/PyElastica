@@ -342,10 +342,11 @@ class MuscleTorques(NoForces):
         # torque. This coupled with the requirement that the sum of all muscle torques has
         # to be zero results in this condition.
         self.s = np.cumsum(rest_lengths)
+        self.s /= self.s[-1]
 
         if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
-            my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
+            my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff)
             self.my_spline = my_spline(self.s)
 
         else:

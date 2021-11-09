@@ -333,23 +333,6 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
         slip_function_along_axial_direction = find_slipping_elements(
             velocity_along_axial_direction, self.slip_velocity_tol
         )
-        kinetic_friction_force_along_axial_direction = -(
-            (1.0 - slip_function_along_axial_direction)
-            * kinetic_mu
-            * plane_response_force_mag
-            * velocity_sign_along_axial_direction
-            * axial_direction
-        )
-        # If rod element does not have any contact with plane, plane cannot apply friction
-        # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-        kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-        system.external_forces[..., :-1] += (
-            0.5 * kinetic_friction_force_along_axial_direction
-        )
-        system.external_forces[..., 1:] += (
-            0.5 * kinetic_friction_force_along_axial_direction
-        )
-
         # Now rolling kinetic friction
         rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
         torque_arm = -system.radius * normal_plane_collection
@@ -374,17 +357,43 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
         slip_velocity_along_rolling_direction = np.einsum(
             "j, ij->ij", slip_velocity_mag_along_rolling_direction, rolling_direction
         )
-        slip_velocity_sign_along_rolling_direction = np.sign(
-            slip_velocity_mag_along_rolling_direction
-        )
         slip_function_along_rolling_direction = find_slipping_elements(
             slip_velocity_along_rolling_direction, self.slip_velocity_tol
         )
+        # Compute unitized total slip velocity vector. We will use this to distribute the weight of the rod in axial
+        # and rolling directions.
+        unitized_total_velocity = (
+            slip_velocity_along_rolling_direction + velocity_along_axial_direction
+        )
+        unitized_total_velocity /= (
+            np.sqrt(
+                np.einsum("ij,ij->j", unitized_total_velocity, unitized_total_velocity)
+            )
+            + 1e-14
+        )
+        # Apply kinetic friction in axial direction.
+        kinetic_friction_force_along_axial_direction = -(
+            (1.0 - slip_function_along_axial_direction)
+            * kinetic_mu
+            * plane_response_force_mag
+            * np.einsum("ij,ij->j", unitized_total_velocity, axial_direction)
+            * axial_direction
+        )
+        # If rod element does not have any contact with plane, plane cannot apply friction
+        # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+        kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
+        system.external_forces[..., :-1] += (
+            0.5 * kinetic_friction_force_along_axial_direction
+        )
+        system.external_forces[..., 1:] += (
+            0.5 * kinetic_friction_force_along_axial_direction
+        )
+        # Apply kinetic friction in rolling direction.
         kinetic_friction_force_along_rolling_direction = -(
             (1.0 - slip_function_along_rolling_direction)
             * self.kinetic_mu_sideways
             * plane_response_force_mag
-            * slip_velocity_sign_along_rolling_direction
+            * np.einsum("ij,ij->j", unitized_total_velocity, rolling_direction)
             * rolling_direction
         )
         # If rod element does not have any contact with plane, plane cannot apply friction
