@@ -4,7 +4,9 @@ PyElastica
 
 This the the documentation page for PyElastica. For more information about PyElastica, see the `project website`_. 
 
-*Yikes! Something is wrong with the documentation. Please use the v0.0.2 version for now while we work on fixing this bug.*
+*Yikes! Something is wrong with the documentation. Please use the `v0.0.2'_ version for now while we work on fixing this bug.*
+
+
 
 Rods
 =====
@@ -137,3 +139,5 @@ Wrappers
 ..    :exclude-members: __weakref__
 
 .. _project website: https://cosseratrods.org/software/pyelastica
+.. _v0.0.2: https://docs.cosseratrods.org/en/0.0.2/documentation.html
+
