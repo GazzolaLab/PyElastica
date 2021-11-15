@@ -4,6 +4,8 @@ PyElastica
 
 This the the documentation page for PyElastica. For more information about PyElastica, see the `project website`_. 
 
+*Yikes! Something is wrong with the documentation. Please use the v0.0.2 version for now while we work on fixing this bug.*
+
 Rods
 =====
 .. automodule:: elastica.rod.__init__
