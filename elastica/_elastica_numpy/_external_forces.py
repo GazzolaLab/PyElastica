@@ -22,7 +22,7 @@ class NoForces:
         """
         pass
 
-    def apply_forces(self, system, time: np.float = 0.0):
+    def apply_forces(self, system, time: np.float64 = 0.0):
         """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -42,7 +42,7 @@ class NoForces:
 
         pass
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
         """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -156,7 +156,7 @@ class UniformTorques(NoForces):
         super(UniformTorques, self).__init__()
         self.torque = (torque * direction).reshape(3, 1)
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
         torque_on_one_element = self.torque / system.n_elems
         system.external_torques += _batch_matvec(
             system.director_collection, torque_on_one_element
@@ -187,7 +187,7 @@ class UniformForces(NoForces):
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
-    def apply_forces(self, system, time: np.float = 0.0):
+    def apply_forces(self, system, time: np.float64 = 0.0):
         force_on_one_element = self.force / system.n_elems
 
         system.external_forces += force_on_one_element
@@ -299,7 +299,7 @@ class MuscleTorques(NoForces):
 
             self.my_spline = constant_function(self.s)
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
 
         # Ramp up the muscle torque
         factor = min(1.0, time / self.ramp_up_time)
