@@ -106,8 +106,6 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         density,
         nu,
         youngs_modulus,
-        poisson_ratio,
-        alpha_c=4.0 / 3.0,
         *args,
         **kwargs
     ):
@@ -155,8 +153,6 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             density,
             nu,
             youngs_modulus,
-            poisson_ratio,
-            alpha_c=4.0 / 3.0,
             *args,
             **kwargs
         )

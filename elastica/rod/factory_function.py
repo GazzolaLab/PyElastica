@@ -1,10 +1,9 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
 __all__ = ["allocate"]
+import warnings
 import numpy as np
 from numpy.testing import assert_allclose
-
 from elastica.utils import MaxDimension, Tolerance
-
 from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
 
 
@@ -18,8 +17,8 @@ def allocate(
     density,
     nu,
     youngs_modulus,
-    poisson_ratio,
-    alpha_c=4.0 / 3.0,
+    # poisson_ratio,
+    # alpha_c=4.0 / 3.0,
     *args,
     **kwargs
 ):
@@ -216,7 +215,43 @@ def allocate(
         )
 
     # Shear/Stretch matrix
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    if kwargs.__contains__("shear_modulus"):
+        shear_modulus = kwargs.get("shear_modulus")
+        if kwargs.__contains__("poisson_ratio"):
+            poisson_ratio = kwargs.get("poisson_ratio")
+            message = (
+                " Poisson ratio ( "
+                + str(poisson_ratio)
+                + " ) given in kwargs is not used. \n"
+                + "Since shear modulus ( "
+                + str(shear_modulus)
+                + " ) is given in kwargs. \n"
+            )
+            warnings.warn(message, category=UserWarning)
+    else:
+        if kwargs.__contains__("poisson_ratio"):
+            poisson_ratio = kwargs.get("poisson_ratio")
+        else:
+            message = "Shear modulus or poisson ratio cannot be found in kwargs. Poisson ratio is taken as 0.5"
+            warnings.warn(message, category=UserWarning)
+            poisson_ratio = 0.5
+
+        shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+
+        message = (
+            "Shear modulus cannot be found in kwargs. \n"
+            "Poisson ratio "
+            + str(poisson_ratio)
+            + " is used to compute shear modulus "
+            + str(shear_modulus)
+            + ", "
+            "using the equation: shear_modulus = youngs_modulus / (poisson_ratio + 1.0)"
+        )
+
+        warnings.warn(message, category=UserWarning)
+
+    alpha_c = kwargs.get("alpha_c", 4.0 / 3.0)
+
     shear_matrix = np.zeros(
         (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
     )
