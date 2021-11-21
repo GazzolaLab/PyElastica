@@ -23,9 +23,10 @@ def test_freejoint():
     nu = 0.1
 
     # Youngs Modulus [Pa]
-    E = 1e6
+    youngs_modulus = 1e6
     # poisson ratio
     poisson_ratio = 0.5
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -44,8 +45,8 @@ def test_freejoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -56,8 +57,8 @@ def test_freejoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
 
     # Stiffness between points
@@ -120,9 +121,10 @@ def test_hingejoint():
     nu = 0.1
 
     # Youngs Modulus [Pa]
-    E = 1e6
+    youngs_modulus = 1e6
     # poisson ratio
     poisson_ratio = 0.5
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -141,8 +143,8 @@ def test_hingejoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -153,8 +155,8 @@ def test_hingejoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
 
     # Rod velocity
@@ -235,9 +237,10 @@ def test_fixedjoint():
     nu = 0.1
 
     # Youngs Modulus [Pa]
-    E = 1e6
+    youngs_modulus = 1e6
     # poisson ratio
     poisson_ratio = 0.5
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     # Origin of the rod
     origin1 = np.array([0.0, 0.0, 0.0])
@@ -256,8 +259,8 @@ def test_fixedjoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
         n,
@@ -268,8 +271,8 @@ def test_fixedjoint():
         base_radius,
         density,
         nu,
-        E,
-        poisson_ratio,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
     )
 
     # Rod velocity

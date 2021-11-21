@@ -13,10 +13,10 @@ from elastica._elastica_numpy._interaction import (
     # node_to_element_pos_or_vel,
     SlenderBodyTheory,
 )
-from test_rod_np import TestRod
+from test_rod_np import DummyTestRod
 
 
-class BaseRodClass(TestRod):
+class BaseRodClass(DummyTestRod):
     def __init__(self, n_elem):
         """
         This class initialize a straight rod,
