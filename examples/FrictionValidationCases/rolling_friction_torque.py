@@ -40,6 +40,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     E = 1e9
     # For shear modulus of 2E/3
     poisson_ratio = 0.5
+    shear_modulus = E / (poisson_ratio + 1.0)
 
     # Set shear matrix
     shear_matrix = np.repeat(1e4 * np.identity((3))[:, :, np.newaxis], n_elem, axis=2)
@@ -54,7 +55,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
         density,
         nu,
         E,
-        poisson_ratio,
+        shear_modulus=shear_modulus,
     )
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below

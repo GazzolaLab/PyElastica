@@ -38,6 +38,7 @@ density = 1750
 nu = 1e-3
 E = 3e7
 poisson_ratio = 0.5
+shear_modulus = E / (poisson_ratio + 1.0)
 
 start_rod_1 = np.zeros((3,))
 start_rod_2 = start_rod_1 + direction * base_length
@@ -53,7 +54,7 @@ rod1 = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod1)
 # Create rod 2
@@ -67,7 +68,7 @@ rod2 = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod2)
 

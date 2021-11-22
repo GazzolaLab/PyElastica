@@ -5,8 +5,6 @@ import sys
 sys.path.append("../../")
 from elastica import *
 
-# from collections import defaultdict
-from examples.SnakeFrictionCase.external_force_class_for_snake import MuscleTorques
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
@@ -44,6 +42,7 @@ def run_snake(
     nu = 1e-4
     E = 1e6
     poisson_ratio = 0.5
+    shear_modulus = E / (poisson_ratio + 1.0)
 
     shearable_rod = CosseratRod.straight_rod(
         n_elem,
@@ -55,7 +54,7 @@ def run_snake(
         density,
         nu,
         E,
-        poisson_ratio,
+        shear_modulus=shear_modulus,
     )
 
     snake_sim.append(shearable_rod)
