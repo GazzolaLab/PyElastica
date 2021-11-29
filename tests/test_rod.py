@@ -5,7 +5,7 @@ import numpy as np
 from elastica.utils import MaxDimension
 
 
-class TestRod:
+class DummyTestRod:
     def __init__(self):
         bs = 32
         self.position_collection = np.random.randn(MaxDimension.value(), bs)

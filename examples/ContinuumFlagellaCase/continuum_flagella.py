@@ -36,6 +36,7 @@ def run_flagella(
     nu = 5.0
     E = 1e7
     poisson_ratio = 0.5
+    shear_modulus = E / (poisson_ratio + 1.0)
 
     shearable_rod = CosseratRod.straight_rod(
         n_elem,
@@ -47,7 +48,7 @@ def run_flagella(
         density,
         nu,
         E,
-        poisson_ratio,
+        shear_modulus=shear_modulus,
     )
 
     flagella_sim.append(shearable_rod)
