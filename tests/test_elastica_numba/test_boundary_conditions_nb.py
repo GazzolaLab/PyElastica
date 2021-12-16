@@ -5,7 +5,7 @@ import sys
 
 # System imports
 import numpy as np
-from test_rod_nb import TestRod
+from test_rod_nb import DummyTestRod
 from elastica._elastica_numba._boundary_conditions import (
     FreeRod,
     OneEndFixedRod,
@@ -18,7 +18,7 @@ from pytest import main
 
 # tests free rod boundary conditions
 def test_free_rod():
-    test_rod = TestRod()
+    test_rod = DummyTestRod()
     free_rod = FreeRod()
     test_position_collection = np.random.rand(3, 20)
     test_rod.position_collection = (
@@ -55,7 +55,7 @@ def test_free_rod():
 
 def test_one_end_fixed_rod():
 
-    test_rod = TestRod()
+    test_rod = DummyTestRod()
     start_position_collection = np.random.rand(3)
     start_director_collection = np.random.rand(3, 3)
     fixed_rod = OneEndFixedRod(start_position_collection, start_director_collection)
@@ -106,7 +106,7 @@ def test_helical_buckling_bc():
     end_position_collection = np.array([100.0, 0.0, 0.0])
     end_director_collection = np.identity(3, float)
 
-    test_rod = TestRod()
+    test_rod = DummyTestRod()
 
     test_position_collection = np.random.rand(3, 20)
     test_position_collection[..., 0] = start_position_collection

@@ -1,19 +1,13 @@
-# import numpy as np
+__doc__ = """Timoshenko beam validation case, for detailed explanation refer to 
+Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
-# FIXME without appending sys.path make it more generic
+import numpy as np
 import sys
 
+# FIXME without appending sys.path make it more generic
 sys.path.append("../../")
-
-# from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-# from elastica.rod.cosserat_rod import CosseratRod
-# from elastica.boundary_conditions import OneEndFixedRod, FreeRod
-# from elastica.external_forces import EndpointForces
-# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-# from elastica.timestepper import integrate
-from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
-
 from elastica import *
+from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 
 class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):
@@ -27,7 +21,7 @@ final_time = 5000
 PLOT_FIGURE = True
 SAVE_FIGURE = False
 SAVE_RESULTS = False
-ADD_UNSHEARABLE_ROD = False
+ADD_UNSHEARABLE_ROD = True
 
 # setting up test params
 n_elem = 100
@@ -42,6 +36,7 @@ nu = 0.1
 E = 1e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 99
+shear_modulus = E / (poisson_ratio + 1.0)
 
 shearable_rod = CosseratRod.straight_rod(
     n_elem,
@@ -53,7 +48,7 @@ shearable_rod = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 timoshenko_sim.append(shearable_rod)
@@ -70,6 +65,7 @@ timoshenko_sim.add_forcing_to(shearable_rod).using(
 if ADD_UNSHEARABLE_ROD:
     # Start into the plane
     unshearable_start = np.array([0.0, -1.0, 0.0])
+    shear_modulus = E / (-0.7 + 1.0)
     unshearable_rod = CosseratRod.straight_rod(
         n_elem,
         unshearable_start,
@@ -81,7 +77,7 @@ if ADD_UNSHEARABLE_ROD:
         nu,
         E,
         # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
-        poisson_ratio=-0.7,
+        shear_modulus=shear_modulus,
     )
 
     timoshenko_sim.append(unshearable_rod)

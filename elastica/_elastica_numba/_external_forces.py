@@ -26,7 +26,7 @@ class NoForces:
         """
         pass
 
-    def apply_forces(self, system, time: np.float = 0.0):
+    def apply_forces(self, system, time: np.float64 = 0.0):
         """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -46,7 +46,7 @@ class NoForces:
 
         pass
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
         """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -221,7 +221,7 @@ class UniformTorques(NoForces):
         super(UniformTorques, self).__init__()
         self.torque = torque * direction
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
         n_elems = system.n_elems
         torque_on_one_element = (
             _batch_product_i_k_to_ik(self.torque, np.ones((n_elems))) / n_elems
@@ -255,7 +255,7 @@ class UniformForces(NoForces):
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
-    def apply_forces(self, system, time: np.float = 0.0):
+    def apply_forces(self, system, time: np.float64 = 0.0):
         force_on_one_element = self.force / system.n_elems
 
         system.external_forces += force_on_one_element
@@ -342,10 +342,11 @@ class MuscleTorques(NoForces):
         # torque. This coupled with the requirement that the sum of all muscle torques has
         # to be zero results in this condition.
         self.s = np.cumsum(rest_lengths)
+        self.s /= self.s[-1]
 
         if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
-            my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff, base_length)
+            my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff)
             self.my_spline = my_spline(self.s)
 
         else:
@@ -367,7 +368,7 @@ class MuscleTorques(NoForces):
 
             self.my_spline = constant_function(self.s)
 
-    def apply_torques(self, system, time: np.float = 0.0):
+    def apply_torques(self, system, time: np.float64 = 0.0):
         self.compute_muscle_torques(
             time,
             self.my_spline,

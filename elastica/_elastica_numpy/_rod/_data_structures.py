@@ -7,6 +7,7 @@ from elastica._elastica_numpy._linalg import _batch_matmul
 
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
+"""
 class _RodExplicitStepperMixin:
     def __init__(self):
         (
@@ -39,6 +40,7 @@ class _RodExplicitStepperMixin:
         else:
             print("Explicit states does not share memory")
         return self.__deriv_state
+"""
 
 
 class _RodSymplecticStepperMixin:

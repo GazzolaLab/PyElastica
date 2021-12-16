@@ -76,7 +76,7 @@ class Cylinder(RigidBodyBase, _RigidRodSymplecticStepperMixin):
 
         _RigidRodSymplecticStepperMixin.__init__(self)
 
-    def _compute_internal_forces_and_torques(self):
+    def _compute_internal_forces_and_torques(self, time):
         """
         This function here is only for integrator to work properly. We do not need
         internal forces and torques at all.
@@ -91,7 +91,7 @@ class Cylinder(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         self.internal_forces *= 0.0
         self.internal_torques *= 0.0
 
-    def update_accelerations(self):
+    def update_accelerations(self, time):
         """TODO Do we need to make the collection members abstract?
 
         Parameters

@@ -2,7 +2,7 @@ Names arranged alphabetically
 # Primary Authors
 
 - Arman Tekinalp
-- Noel Naughton
+- Noel Naughton 
 - Tejaswin Parthasarathy
 - Yashraj Bhosale
 

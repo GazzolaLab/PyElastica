@@ -2,13 +2,10 @@
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push request
-# events for the master branch, and pull request events for all branches.
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ '**' ]
+# Controls when the action will run. Triggers the workflow on push and pull request
+# events for the all branches.
+on: [push, pull_request]
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest] # [ubuntu-latest, macos-latest] # Run macos tests if really required, since they charge 10 times more for macos
+        os: [ubuntu-latest, macos-latest] 
         python-version: [3.6, 3.7, 3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -93,7 +90,7 @@ jobs:
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-            echo "CODECOV_TOKEN=94895f9a-26ac-4621-8091-2a2d04dd7e87" >> $GITHUB_ENV
+            echo "CODECOV_TOKEN=ca23d33f-c704-4cf8-b5ff-dacefe26c494" >> $GITHUB_ENV
           fi
         
       # Test Pyelastica using pytest

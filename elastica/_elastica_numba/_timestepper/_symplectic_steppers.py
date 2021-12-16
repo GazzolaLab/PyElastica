@@ -1,7 +1,6 @@
 __doc__ = """Symplectic timesteppers and concepts of Elastica Numba implementation"""
 import numpy as np
 import numba
-from numba import jitclass, float64
 from elastica._elastica_numba._rod._data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,

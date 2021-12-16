@@ -142,7 +142,7 @@ def test_clip_array():
 
     blocksize = 100
     input_array = np.hstack(
-        (np.random.rand(blocksize), -1.0 * np.random.rand(blocksize))
+        (10 * np.random.rand(blocksize), -10 * np.random.rand(blocksize))
     )
 
     vmin = -1

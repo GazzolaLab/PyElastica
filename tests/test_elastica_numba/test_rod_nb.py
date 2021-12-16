@@ -8,7 +8,7 @@ from elastica._elastica_numba._rod._data_structures import _bootstrap_from_data
 from elastica.utils import MaxDimension
 
 
-class TestRod:
+class DummyTestRod:
     def __init__(self):
         bs = 32
         self.position_collection = np.random.randn(MaxDimension.value(), bs)
@@ -26,7 +26,7 @@ class TestRod:
 # https://docs.pytest.org/en/latest/fixture.html
 @pytest.fixture(scope="module", params=[15, 31])
 def load_data_for_bootstrapping_state(request):
-    """ Yield states for bootstrapping """
+    """Yield states for bootstrapping"""
     n_elem = request.param
     n_nodes = n_elem + 1
     dim = 3

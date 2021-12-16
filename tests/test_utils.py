@@ -3,10 +3,18 @@
 __doc__ = """Test utility scripts"""
 
 import pytest
-
-from elastica.utils import isqrt, perm_parity, grouper, extend_instance
+import numpy as np
+from elastica.utils import (
+    isqrt,
+    perm_parity,
+    grouper,
+    extend_instance,
+    _bspline,
+    Tolerance,
+)
 from itertools import chain
 from numpy.random import randint
+from numpy.testing import assert_allclose
 
 
 def test_isqrt_with_zero():
@@ -111,3 +119,31 @@ class TestExtendInstance:
         assert ext_cls not in cls_obj.__class__.__bases__
         extend_instance(cls_obj, ext_cls)
         assert ext_cls in cls_obj.__class__.__bases__
+
+
+def test_bspline_implementation():
+
+    t_coeff = np.array([0.0, 1.0, 1.0, 1.0, 0.0])
+    base_length = 2.0
+    position = np.linspace(0, base_length, 10)
+
+    my_spline, ctr_pts, ctr_coeffs = _bspline(t_coeff, base_length)
+
+    correct_values = np.array(
+        [
+            0.0,
+            0.52949246,
+            0.82853224,
+            0.96296296,
+            0.99862826,
+            0.99862826,
+            0.96296296,
+            0.82853224,
+            0.52949246,
+            0.0,
+        ]
+    )
+
+    test_values = my_spline(position)
+
+    assert_allclose(test_values, correct_values, atol=Tolerance.atol())

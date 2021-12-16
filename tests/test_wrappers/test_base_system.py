@@ -3,7 +3,13 @@ __doc__ = """ Test wrappers for base systems """
 import pytest
 import numpy as np
 
-from elastica.wrappers import BaseSystemCollection
+from elastica.wrappers import (
+    BaseSystemCollection,
+    Constraints,
+    Forcing,
+    Connections,
+    CallBacks,
+)
 
 
 class TestBaseSystemCollection:
@@ -58,6 +64,9 @@ class TestBaseSystemCollection:
 
     def test_insert(self, load_collection, mock_rod):
         load_collection.insert(10, mock_rod)
+
+    def test_str(self, load_collection):
+        assert str(load_collection)[1] == "3"
 
     def test_extend_allowed_types(self, load_collection):
         bsc = load_collection
@@ -124,4 +133,66 @@ class TestBaseSystemCollection:
     def test_get_sys_index_returns_correct_idx(self, load_collection):
         assert load_collection._get_sys_idx_if_valid(1) == 1
 
-    # TODO : Check synchronize calls
+    @pytest.mark.xfail
+    def test_delitem(self, load_collection):
+        del load_collection[0]
+        assert load_collection[0] == 3
+
+
+class GenericSimulatorClass(
+    BaseSystemCollection, Constraints, Forcing, Connections, CallBacks
+):
+    pass
+
+
+class TestBaseSystemWithFeatures:
+    @pytest.fixture(scope="function")
+    def load_collection(self):
+        sc = GenericSimulatorClass()
+        from elastica.rod import RodBase
+
+        rod = RodBase()
+        # Bypass check, but its fine for testing
+        sc._systems.append(rod)
+
+        return sc, rod
+
+    from elastica.boundary_conditions import FreeRod
+
+    @pytest.mark.parametrize("legal_constraint", [FreeRod])
+    def test_constraint(self, load_collection, legal_constraint):
+        simulator_class, rod = load_collection
+        simulator_class.constrain(rod).using(legal_constraint)
+        simulator_class.finalize()
+        # After finalize check if the created constrain object is instance of the class we have given.
+        assert isinstance(simulator_class._constraints[-1][-1], legal_constraint)
+
+        # TODO: this is a dummy test for constrain values and rates find a better way to test them
+        simulator_class.constrain_values(time=0)
+        simulator_class.constrain_rates(time=0)
+
+    from elastica.external_forces import NoForces
+
+    @pytest.mark.parametrize("legal_forces", [NoForces])
+    def test_forcing(self, load_collection, legal_forces):
+        simulator_class, rod = load_collection
+        simulator_class.add_forcing_to(rod).using(legal_forces)
+        simulator_class.finalize()
+        # After finalize check if the created forcing object is instance of the class we have given.
+        assert isinstance(simulator_class._ext_forces_torques[-1][-1], legal_forces)
+
+        # TODO: this is a dummy test for synchronize find a better way to test them
+        simulator_class.synchronize(time=0)
+
+    from elastica.callback_functions import CallBackBaseClass
+
+    @pytest.mark.parametrize("legal_callback", [CallBackBaseClass])
+    def test_callback(self, load_collection, legal_callback):
+        simulator_class, rod = load_collection
+        simulator_class.collect_diagnostics(rod).using(legal_callback)
+        simulator_class.finalize()
+        # After finalize check if the created callback object is instance of the class we have given.
+        assert isinstance(simulator_class._callbacks[-1][-1], legal_callback)
+
+        # TODO: this is a dummy test for apply_callbacks find a better way to test them
+        simulator_class.apply_callbacks(time=0, current_step=0)

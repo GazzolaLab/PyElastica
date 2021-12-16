@@ -5,7 +5,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
 from elastica._elastica_numpy._linalg import _batch_matvec
-from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod
+from elastica._elastica_numpy._rod._cosserat_rod import CosseratRod, _get_z_vector
 import pytest
 
 
@@ -22,6 +22,7 @@ class BaseClass:
         self.nu = nu
         self.E = 1
         self.poisson_ratio = 0.5
+        self.shear_modulus = self.E / (self.poisson_ratio + 1.0)
 
 
 # @pytest.fixture  # (scope="function")
@@ -39,6 +40,7 @@ def constructor(n_elem, nu=0.0):
         cls.nu,
         cls.E,
         cls.poisson_ratio,
+        shear_modulus=cls.shear_modulus,
     )
     return cls, rod
 
@@ -569,80 +571,77 @@ class TestingClass:
         correct_torques = omega
         assert_allclose(test_torques, correct_torques, atol=Tolerance.atol())
 
-    @pytest.mark.skip(reason="expects deprecated rod interface")
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_get_functions(self, n_elem):
+    def test_compute_internal_forces_and_torques(self, n_elem):
         """
-        In this test case, we initialize a straight rod. First
-        we set velocity and angular velocity to random values,
-        and we recover back initialized values using `get_velocity`
-        and `get_angular_velocity` functions. Then, we set random
-        external forces and torques. We compute translational
-        accelerations and angular accelerations based on external
-        forces and torques. Finally we use `get_acceleration` and
-        `get_angular_acceleration` functions and compare returned
-        translational acceleration and angular acceleration with
-        analytically computed ones.
+        This function is only used to test the wrapper method in Cosserat Rod to call internal forces and torques.
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem, nu=0.0)
+
+        test_rod._compute_internal_forces_and_torques(time=0)
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_update_acceleration(self, n_elem):
+        """
+        In this test case, we initialize a straight rod.
+        We set correct parameters for rod mass, dilatation, mass moment of inertia
+        and call the function update_accelerations and compare the angular and
+        translational acceleration with the correct values.
         This test case tests,
-            get_velocity
-            get_angular_velocity
-            get_acceleration
-            get_angular_acceleration
-        Note that, viscous dissipation set to 0,
-        since we don't want any contribution from
-        damping torque.
+            update_accelerations
+
         """
 
         initial, test_rod = constructor(n_elem, nu=0.0)
         mass = test_rod.mass
 
-        velocity = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
         external_forces = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
-        omega = np.zeros(3 * n_elem).reshape(3, n_elem)
         external_torques = np.zeros(3 * n_elem).reshape(3, n_elem)
 
         for i in range(0, n_elem):
-            omega[..., i] = np.random.rand(3)
             external_torques[..., i] = np.random.rand(3)
 
         for i in range(0, n_elem + 1):
-            velocity[..., i] = np.random.rand(3)
             external_forces[..., i] = np.random.rand(3)
 
-        test_rod.velocity_collection = velocity
-        test_rod.omega_collection = omega
-
-        assert_allclose(test_rod.get_velocity(), velocity, atol=Tolerance.atol())
-        assert_allclose(test_rod.get_angular_velocity(), omega, atol=Tolerance.atol())
-
-        test_rod.external_forces = external_forces
-        test_rod.external_torques = external_torques
-
-        correct_acceleration = external_forces / mass
-        assert_allclose(
-            test_rod.get_acceleration(), correct_acceleration, atol=Tolerance.atol()
-        )
+        test_rod.external_forces[:] = external_forces
+        test_rod.external_torques[:] = external_torques
 
         # No dilatation in the rods
         dilatations = np.ones(n_elem)
 
-        # Set angular velocity zero, so that we dont have any
-        # contribution from lagrangian transport and unsteady dilatation.
-
-        test_rod.omega_collection[:] = 0.0
         # Set mass moment of inertia matrix to identity matrix for convenience.
         # Inverse of identity = identity
         inv_mass_moment_of_inertia = np.repeat(
             np.identity(3)[:, :, np.newaxis], n_elem, axis=2
         )
-        test_rod.inv_mass_second_moment_of_inertia = inv_mass_moment_of_inertia
+        test_rod.inv_mass_second_moment_of_inertia[:] = inv_mass_moment_of_inertia
+
+        # Compute acceleration
+        test_rod.update_accelerations(time=0)
+
+        correct_acceleration = external_forces / mass
+        assert_allclose(
+            test_rod.acceleration_collection,
+            correct_acceleration,
+            atol=Tolerance.atol(),
+        )
 
         correct_angular_acceleration = (
             _batch_matvec(inv_mass_moment_of_inertia, external_torques) * dilatations
         )
 
         assert_allclose(
-            test_rod.get_angular_acceleration(),
+            test_rod.alpha_collection,
             correct_angular_acceleration,
             atol=Tolerance.atol(),
         )
@@ -916,6 +915,18 @@ class TestingClass:
         test_shear_energy = test_rod.compute_shear_energy()
 
         assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
+
+def test_get_z_vector_function():
+    """
+    This functions test _get_z_vector function.
+
+    Returns
+    -------
+
+    """
+    correct_z_vector = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
+    assert_allclose(correct_z_vector, _get_z_vector(), atol=Tolerance.atol())
 
 
 if __name__ == "__main__":

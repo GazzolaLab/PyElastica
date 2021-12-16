@@ -478,19 +478,6 @@ def anisotropic_friction(
     slip_function_along_axial_direction = find_slipping_elements(
         velocity_along_axial_direction, slip_velocity_tol
     )
-    kinetic_friction_force_along_axial_direction = -(
-        (1.0 - slip_function_along_axial_direction)
-        * kinetic_mu
-        * plane_response_force_mag
-        * velocity_sign_along_axial_direction
-        * axial_direction
-    )
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-    kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-    elements_to_nodes_inplace(
-        kinetic_friction_force_along_axial_direction, external_forces
-    )
 
     # Now rolling kinetic friction
     rolling_direction = _batch_vec_oneD_vec_cross(axial_direction, plane_normal)
@@ -511,17 +498,35 @@ def anisotropic_friction(
     slip_velocity_along_rolling_direction = _batch_product_k_ik_to_ik(
         slip_velocity_mag_along_rolling_direction, rolling_direction
     )
-    slip_velocity_sign_along_rolling_direction = np.sign(
-        slip_velocity_mag_along_rolling_direction
-    )
     slip_function_along_rolling_direction = find_slipping_elements(
         slip_velocity_along_rolling_direction, slip_velocity_tol
     )
+    # Compute unitized total slip velocity vector. We will use this to distribute the weight of the rod in axial
+    # and rolling directions.
+    unitized_total_velocity = (
+        slip_velocity_along_rolling_direction + velocity_along_axial_direction
+    )
+    unitized_total_velocity /= _batch_norm(unitized_total_velocity + 1e-14)
+    # Apply kinetic friction in axial direction.
+    kinetic_friction_force_along_axial_direction = -(
+        (1.0 - slip_function_along_axial_direction)
+        * kinetic_mu
+        * plane_response_force_mag
+        * _batch_dot(unitized_total_velocity, axial_direction)
+        * axial_direction
+    )
+    # If rod element does not have any contact with plane, plane cannot apply friction
+    # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+    kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
+    elements_to_nodes_inplace(
+        kinetic_friction_force_along_axial_direction, external_forces
+    )
+    # Apply kinetic friction in rolling direction.
     kinetic_friction_force_along_rolling_direction = -(
         (1.0 - slip_function_along_rolling_direction)
         * kinetic_mu_sideways
         * plane_response_force_mag
-        * slip_velocity_sign_along_rolling_direction
+        * _batch_dot(unitized_total_velocity, rolling_direction)
         * rolling_direction
     )
     # If rod element does not have any contact with plane, plane cannot apply friction
@@ -836,421 +841,423 @@ class SlenderBodyTheory(NoForces):
         elements_to_nodes_inplace(stokes_force, system.external_forces)
 
 
-# base class for interaction
-# only applies normal force no friction
-class InteractionPlaneRigidBody:
-    def __init__(self, k, nu, plane_origin, plane_normal):
-        self.k = k
-        self.nu = nu
-        self.plane_origin = plane_origin.reshape(3, 1)
-        self.plane_normal = plane_normal.reshape(3)
-        self.surface_tol = 1e-4
+# TODO: Test cases needed for the rigid body interaction
 
-    def apply_normal_force(self, system):
-        """
-        This function computes the plane force response on the rigid body, in the
-        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
-        is used.
-        Parameters
-        ----------
-        system
-
-        Returns
-        -------
-        magnitude of the plane response
-        """
-        return apply_normal_force_numba_rigid_body(
-            self.plane_origin,
-            self.plane_normal,
-            self.surface_tol,
-            self.k,
-            self.nu,
-            system.length,
-            system.position_collection,
-            system.velocity_collection,
-            system.internal_forces,
-            system.external_forces,
-        )
-
-
-@njit(cache=True)
-def apply_normal_force_numba_rigid_body(
-    plane_origin,
-    plane_normal,
-    surface_tol,
-    k,
-    nu,
-    length,
-    position_collection,
-    velocity_collection,
-    internal_forces,
-    external_forces,
-):
-
-    # Compute plane response force
-    # total_forces = system.internal_forces + system.external_forces
-    total_forces = _batch_vector_sum(internal_forces, external_forces)
-    force_component_along_normal_direction = _batch_product_i_ik_to_k(
-        plane_normal, total_forces
-    )
-    forces_along_normal_direction = _batch_product_i_k_to_ik(
-        plane_normal, force_component_along_normal_direction
-    )
-    # If the total force component along the plane normal direction is greater than zero that means,
-    # total force is pushing rod away from the plane not towards the plane. Thus, response force
-    # applied by the surface has to be zero.
-    forces_along_normal_direction[
-        ..., np.where(force_component_along_normal_direction > 0)[0]
-    ] = 0.0
-    # Compute response force on the element. Plane response force
-    # has to be away from the surface and towards the element. Thus
-    # multiply forces along normal direction with negative sign.
-    plane_response_force = -forces_along_normal_direction
-
-    # Elastic force response due to penetration
-    element_position = position_collection
-    distance_from_plane = _batch_product_i_ik_to_k(
-        plane_normal, (element_position - plane_origin)
-    )
-    plane_penetration = np.minimum(distance_from_plane - length / 2, 0.0)
-    elastic_force = -k * _batch_product_i_k_to_ik(plane_normal, plane_penetration)
-
-    # Damping force response due to velocity towards the plane
-    element_velocity = velocity_collection
-    normal_component_of_element_velocity = _batch_product_i_ik_to_k(
-        plane_normal, element_velocity
-    )
-    damping_force = -nu * _batch_product_i_k_to_ik(
-        plane_normal, normal_component_of_element_velocity
-    )
-
-    # Compute total plane response force
-    plane_response_force_total = plane_response_force + elastic_force + damping_force
-
-    # Check if the rigid body is in contact with plane.
-    no_contact_point_idx = np.where((distance_from_plane - length / 2) > surface_tol)[0]
-    # If rod element does not have any contact with plane, plane cannot apply response
-    # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
-    plane_response_force[..., no_contact_point_idx] = 0.0
-    plane_response_force_total[..., no_contact_point_idx] = 0.0
-
-    # Update the external forces
-    external_forces += plane_response_force_total
-
-    return (_batch_norm(plane_response_force), no_contact_point_idx)
-
-
-class AnisotropicFrictionalPlaneRigidBody(NoForces, InteractionPlaneRigidBody):
-    def __init__(
-        self,
-        k,
-        nu,
-        plane_origin,
-        plane_normal,
-        slip_velocity_tol,
-        static_mu_array,
-        kinetic_mu_array,
-    ):
-        InteractionPlaneRigidBody.__init__(self, k, nu, plane_origin, plane_normal)
-        self.slip_velocity_tol = slip_velocity_tol
-        (
-            self.static_mu_forward,
-            self.static_mu_backward,
-            self.static_mu_sideways,
-        ) = static_mu_array
-        (
-            self.kinetic_mu_forward,
-            self.kinetic_mu_backward,
-            self.kinetic_mu_sideways,
-        ) = kinetic_mu_array
-
-    # kinetic and static friction should separate functions
-    # for now putting them together to figure out common variables
-    def apply_forces(self, system, time=0.0):
-        anisotropic_firction_numba_rigid_body(
-            self.plane_origin,
-            self.plane_normal,
-            self.surface_tol,
-            self.slip_velocity_tol,
-            self.k,
-            self.nu,
-            self.kinetic_mu_forward,
-            self.kinetic_mu_backward,
-            self.kinetic_mu_sideways,
-            self.static_mu_forward,
-            self.static_mu_backward,
-            self.static_mu_sideways,
-            system.length,
-            system.normal,
-            system.binormal,
-            system.position_collection,
-            system.director_collection,
-            system.velocity_collection,
-            system.omega_collection,
-            system.internal_forces,
-            system.external_forces,
-            system.internal_torques,
-            system.external_torques,
-        )
-
-
-@njit(cache=True)
-def anisotropic_firction_numba_rigid_body(
-    plane_origin,
-    plane_normal,
-    surface_tol,
-    slip_velocity_tol,
-    k,
-    nu,
-    kinetic_mu_forward,
-    kinetic_mu_backward,
-    kinetic_mu_sideways,
-    static_mu_forward,
-    static_mu_backward,
-    static_mu_sideways,
-    length,
-    rigid_body_normal,
-    rigid_body_binormal,
-    position_collection,
-    director_collection,
-    velocity_collection,
-    omega_collection,
-    internal_forces,
-    external_forces,
-    internal_torques,
-    external_torques,
-):
-    # calculate axial and rolling directions
-    # plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
-    (
-        plane_response_force_mag,
-        no_contact_point_idx,
-    ) = apply_normal_force_numba_rigid_body(
-        plane_origin,
-        plane_normal,
-        surface_tol,
-        k,
-        nu,
-        length,
-        position_collection,
-        velocity_collection,
-        internal_forces,
-        external_forces,
-    )
-    # normal_plane_collection = np.repeat(
-    #     self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
-    # )
-    # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
-    # axial direction has to be in plane, it cannot be out of plane. We are projecting rod element tangent vector in
-    # to the plane. So friction forces can only be in plane forces and not out of plane.
-    # tangent_along_normal_direction = np.einsum(
-    #     "ij, ij->j", system.tangents, normal_plane_collection
-    # )
-    # tangent_perpendicular_to_normal_direction = system.tangents - np.einsum(
-    #     "j, ij->ij", tangent_along_normal_direction, normal_plane_collection
-    # )
-    # tangent_perpendicular_to_normal_direction_mag = np.einsum(
-    #     "ij, ij->j",
-    #     tangent_perpendicular_to_normal_direction,
-    #     tangent_perpendicular_to_normal_direction,
-    # )
-    # # Normalize tangent_perpendicular_to_normal_direction. This is axial direction for plane. Here we are adding
-    # # small tolerance (1e-10) for normalization, in order to prevent division by 0.
-    # axial_direction = np.einsum(
-    #     "ij, j-> ij",
-    #     tangent_perpendicular_to_normal_direction,
-    #     1 / (tangent_perpendicular_to_normal_direction_mag + 1e-14),
-    # )
-    # FIXME: In future change the below part we should be able to compute the normal
-    axial_direction = rigid_body_normal  # system.tangents
-    element_velocity = velocity_collection
-
-    # first apply axial kinetic friction
-    # velocity_mag_along_axial_direction = np.einsum(
-    #     "ij,ij->j", element_velocity, axial_direction
-    # )
-    # velocity_along_axial_direction = np.einsum(
-    #     "j, ij->ij", velocity_mag_along_axial_direction, axial_direction
-    # )
-    velocity_mag_along_axial_direction = _batch_dot(element_velocity, axial_direction)
-    velocity_along_axial_direction = _batch_product_k_ik_to_ik(
-        velocity_mag_along_axial_direction, axial_direction
-    )
-    # Friction forces depends on the direction of velocity, in other words sign
-    # of the velocity vector.
-    velocity_sign_along_axial_direction = np.sign(velocity_mag_along_axial_direction)
-    # Check top for sign convention
-    kinetic_mu = 0.5 * (
-        kinetic_mu_forward * (1 + velocity_sign_along_axial_direction)
-        + kinetic_mu_backward * (1 - velocity_sign_along_axial_direction)
-    )
-    # Call slip function to check if elements slipping or not
-    slip_function_along_axial_direction = find_slipping_elements(
-        velocity_along_axial_direction, slip_velocity_tol
-    )
-    kinetic_friction_force_along_axial_direction = -(
-        (1.0 - slip_function_along_axial_direction)
-        * kinetic_mu
-        * plane_response_force_mag
-        * velocity_sign_along_axial_direction
-        * axial_direction
-    )
-
-    binormal_direction = rigid_body_binormal
-    velocity_mag_along_binormal_direction = _batch_dot(
-        element_velocity, binormal_direction
-    )
-    velocity_along_binormal_direction = _batch_product_k_ik_to_ik(
-        velocity_mag_along_binormal_direction, binormal_direction
-    )
-    # Friction forces depends on the direction of velocity, in other words sign
-    # of the velocity vector.
-    velocity_sign_along_binormal_direction = np.sign(
-        velocity_mag_along_binormal_direction
-    )
-    # Check top for sign convention
-    kinetic_mu = 0.5 * (
-        kinetic_mu_forward * (1 + velocity_sign_along_binormal_direction)
-        + kinetic_mu_backward * (1 - velocity_sign_along_binormal_direction)
-    )
-    # Call slip function to check if elements slipping or not
-    slip_function_along_binormal_direction = find_slipping_elements(
-        velocity_along_binormal_direction, slip_velocity_tol
-    )
-    kinetic_friction_force_along_binormal_direction = -(
-        (1.0 - slip_function_along_binormal_direction)
-        * kinetic_mu
-        * plane_response_force_mag
-        * velocity_mag_along_binormal_direction
-        * binormal_direction
-    )
-
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-    kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-    kinetic_friction_force_along_binormal_direction[..., no_contact_point_idx] = 0.0
-    external_forces += (
-        kinetic_friction_force_along_axial_direction
-        + kinetic_friction_force_along_binormal_direction
-    )
-
-    # # Now rolling kinetic friction
-    # rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
-    # torque_arm = -system.radius * normal_plane_collection
-    # velocity_along_rolling_direction = np.einsum(
-    #     "ij ,ij ->j ", element_velocity, rolling_direction
-    # )
-    # directors_transpose = np.einsum("ijk -> jik", system.director_collection)
-    # # w_rot = Q.T @ omega @ Q @ r
-    # rotation_velocity = _batch_matvec(
-    #     directors_transpose,
-    #     _batch_cross(
-    #         system.omega_collection,
-    #         _batch_matvec(system.director_collection, torque_arm),
-    #     ),
-    # )
-    # rotation_velocity_along_rolling_direction = np.einsum(
-    #     "ij,ij->j", rotation_velocity, rolling_direction
-    # )
-    # slip_velocity_mag_along_rolling_direction = (
-    #     velocity_along_rolling_direction + rotation_velocity_along_rolling_direction
-    # )
-    # slip_velocity_along_rolling_direction = np.einsum(
-    #     "j, ij->ij", slip_velocity_mag_along_rolling_direction, rolling_direction
-    # )
-    # slip_velocity_sign_along_rolling_direction = np.sign(
-    #     slip_velocity_mag_along_rolling_direction
-    # )
-    # slip_function_along_rolling_direction = find_slipping_elements(
-    #     slip_velocity_along_rolling_direction, self.slip_velocity_tol
-    # )
-    # kinetic_friction_force_along_rolling_direction = -(
-    #     (1.0 - slip_function_along_rolling_direction)
-    #     * self.kinetic_mu_sideways
-    #     * plane_response_force_mag
-    #     * slip_velocity_sign_along_rolling_direction
-    #     * rolling_direction
-    # )
-    # # If rod element does not have any contact with plane, plane cannot apply friction
-    # # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-    # kinetic_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
-    # system.external_forces += kinetic_friction_force_along_rolling_direction
-    #
-    # # torque = Q @ r @ Fr
-    # system.external_torques += _batch_matvec(
-    #     system.director_collection,
-    #     _batch_cross(torque_arm, kinetic_friction_force_along_rolling_direction),
-    # )
-
-    # # now axial static friction
-    # element_total_forces = _batch_vector_sum(internal_forces, external_forces)
-    # # force_component_along_axial_direction = np.einsum(
-    # #     "ij,ij->j", element_total_forces, axial_direction
-    # # )
-    # force_component_along_axial_direction = _batch_dot(
-    #     element_total_forces, axial_direction
-    # )
-    # force_component_sign_along_axial_direction = np.sign(
-    #     force_component_along_axial_direction
-    # )
-    # # check top for sign convention
-    # static_mu = 0.5 * (
-    #     static_mu_forward * (1 + force_component_sign_along_axial_direction)
-    #     + static_mu_backward * (1 - force_component_sign_along_axial_direction)
-    # )
-    # max_friction_force = (
-    #     slip_function_along_axial_direction * static_mu * plane_response_force_mag
-    # )
-    # # friction = min(mu N, pushing force)
-    # static_friction_force_along_axial_direction = -(
-    #     np.minimum(
-    #         np.fabs(force_component_along_axial_direction), max_friction_force
-    #     )
-    #     * force_component_sign_along_axial_direction
-    #     * axial_direction
-    # )
-    # # If rod element does not have any contact with plane, plane cannot apply friction
-    # # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
-    # static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-    # external_forces += static_friction_force_along_axial_direction
-
-    # # now rolling static friction
-    # # there is some normal, tangent and rolling directions inconsitency from Elastica
-    # total_torques = _batch_matvec(
-    #     directors_transpose, (system.internal_torques + system.external_torques)
-    # )
-    # # Elastica has opposite defs of tangents in interaction.h and rod.cpp
-    # total_torques_along_axial_direction = np.einsum(
-    #     "ij,ij->j", total_torques, axial_direction
-    # )
-    # force_component_along_rolling_direction = np.einsum(
-    #     "ij,ij->j", element_total_forces, rolling_direction
-    # )
-    # noslip_force = -(
-    #     (
-    #         system.radius * force_component_along_rolling_direction
-    #         - 2.0 * total_torques_along_axial_direction
-    #     )
-    #     / 3.0
-    #     / system.radius
-    # )
-    # max_friction_force = (
-    #     slip_function_along_rolling_direction
-    #     * self.static_mu_sideways
-    #     * plane_response_force_mag
-    # )
-    # noslip_force_sign = np.sign(noslip_force)
-    # static_friction_force_along_rolling_direction = (
-    #     np.minimum(np.fabs(noslip_force), max_friction_force)
-    #     * noslip_force_sign
-    #     * rolling_direction
-    # )
-    # # If rod element does not have any contact with plane, plane cannot apply friction
-    # # force on the element. Thus lets set plane static friction force to 0.0 for the no contact points.
-    # static_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
-    # system.external_forces += static_friction_force_along_rolling_direction
-
-    # system.external_torques += _batch_matvec(
-    #     system.director_collection,
-    #     _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
-    # )
+# # base class for interaction
+# # only applies normal force no friction
+# class InteractionPlaneRigidBody:
+#     def __init__(self, k, nu, plane_origin, plane_normal):
+#         self.k = k
+#         self.nu = nu
+#         self.plane_origin = plane_origin.reshape(3, 1)
+#         self.plane_normal = plane_normal.reshape(3)
+#         self.surface_tol = 1e-4
+#
+#     def apply_normal_force(self, system):
+#         """
+#         This function computes the plane force response on the rigid body, in the
+#         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+#         is used.
+#         Parameters
+#         ----------
+#         system
+#
+#         Returns
+#         -------
+#         magnitude of the plane response
+#         """
+#         return apply_normal_force_numba_rigid_body(
+#             self.plane_origin,
+#             self.plane_normal,
+#             self.surface_tol,
+#             self.k,
+#             self.nu,
+#             system.length,
+#             system.position_collection,
+#             system.velocity_collection,
+#             system.internal_forces,
+#             system.external_forces,
+#         )
+#
+#
+# @njit(cache=True)
+# def apply_normal_force_numba_rigid_body(
+#     plane_origin,
+#     plane_normal,
+#     surface_tol,
+#     k,
+#     nu,
+#     length,
+#     position_collection,
+#     velocity_collection,
+#     internal_forces,
+#     external_forces,
+# ):
+#
+#     # Compute plane response force
+#     # total_forces = system.internal_forces + system.external_forces
+#     total_forces = _batch_vector_sum(internal_forces, external_forces)
+#     force_component_along_normal_direction = _batch_product_i_ik_to_k(
+#         plane_normal, total_forces
+#     )
+#     forces_along_normal_direction = _batch_product_i_k_to_ik(
+#         plane_normal, force_component_along_normal_direction
+#     )
+#     # If the total force component along the plane normal direction is greater than zero that means,
+#     # total force is pushing rod away from the plane not towards the plane. Thus, response force
+#     # applied by the surface has to be zero.
+#     forces_along_normal_direction[
+#         ..., np.where(force_component_along_normal_direction > 0)[0]
+#     ] = 0.0
+#     # Compute response force on the element. Plane response force
+#     # has to be away from the surface and towards the element. Thus
+#     # multiply forces along normal direction with negative sign.
+#     plane_response_force = -forces_along_normal_direction
+#
+#     # Elastic force response due to penetration
+#     element_position = position_collection
+#     distance_from_plane = _batch_product_i_ik_to_k(
+#         plane_normal, (element_position - plane_origin)
+#     )
+#     plane_penetration = np.minimum(distance_from_plane - length / 2, 0.0)
+#     elastic_force = -k * _batch_product_i_k_to_ik(plane_normal, plane_penetration)
+#
+#     # Damping force response due to velocity towards the plane
+#     element_velocity = velocity_collection
+#     normal_component_of_element_velocity = _batch_product_i_ik_to_k(
+#         plane_normal, element_velocity
+#     )
+#     damping_force = -nu * _batch_product_i_k_to_ik(
+#         plane_normal, normal_component_of_element_velocity
+#     )
+#
+#     # Compute total plane response force
+#     plane_response_force_total = plane_response_force + elastic_force + damping_force
+#
+#     # Check if the rigid body is in contact with plane.
+#     no_contact_point_idx = np.where((distance_from_plane - length / 2) > surface_tol)[0]
+#     # If rod element does not have any contact with plane, plane cannot apply response
+#     # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
+#     plane_response_force[..., no_contact_point_idx] = 0.0
+#     plane_response_force_total[..., no_contact_point_idx] = 0.0
+#
+#     # Update the external forces
+#     external_forces += plane_response_force_total
+#
+#     return (_batch_norm(plane_response_force), no_contact_point_idx)
+#
+#
+# class AnisotropicFrictionalPlaneRigidBody(NoForces, InteractionPlaneRigidBody):
+#     def __init__(
+#         self,
+#         k,
+#         nu,
+#         plane_origin,
+#         plane_normal,
+#         slip_velocity_tol,
+#         static_mu_array,
+#         kinetic_mu_array,
+#     ):
+#         InteractionPlaneRigidBody.__init__(self, k, nu, plane_origin, plane_normal)
+#         self.slip_velocity_tol = slip_velocity_tol
+#         (
+#             self.static_mu_forward,
+#             self.static_mu_backward,
+#             self.static_mu_sideways,
+#         ) = static_mu_array
+#         (
+#             self.kinetic_mu_forward,
+#             self.kinetic_mu_backward,
+#             self.kinetic_mu_sideways,
+#         ) = kinetic_mu_array
+#
+#     # kinetic and static friction should separate functions
+#     # for now putting them together to figure out common variables
+#     def apply_forces(self, system, time=0.0):
+#         anisotropic_firction_numba_rigid_body(
+#             self.plane_origin,
+#             self.plane_normal,
+#             self.surface_tol,
+#             self.slip_velocity_tol,
+#             self.k,
+#             self.nu,
+#             self.kinetic_mu_forward,
+#             self.kinetic_mu_backward,
+#             self.kinetic_mu_sideways,
+#             self.static_mu_forward,
+#             self.static_mu_backward,
+#             self.static_mu_sideways,
+#             system.length,
+#             system.normal,
+#             system.binormal,
+#             system.position_collection,
+#             system.director_collection,
+#             system.velocity_collection,
+#             system.omega_collection,
+#             system.internal_forces,
+#             system.external_forces,
+#             system.internal_torques,
+#             system.external_torques,
+#         )
+#
+#
+# @njit(cache=True)
+# def anisotropic_firction_numba_rigid_body(
+#     plane_origin,
+#     plane_normal,
+#     surface_tol,
+#     slip_velocity_tol,
+#     k,
+#     nu,
+#     kinetic_mu_forward,
+#     kinetic_mu_backward,
+#     kinetic_mu_sideways,
+#     static_mu_forward,
+#     static_mu_backward,
+#     static_mu_sideways,
+#     length,
+#     rigid_body_normal,
+#     rigid_body_binormal,
+#     position_collection,
+#     director_collection,
+#     velocity_collection,
+#     omega_collection,
+#     internal_forces,
+#     external_forces,
+#     internal_torques,
+#     external_torques,
+# ):
+#     # calculate axial and rolling directions
+#     # plane_response_force_mag, no_contact_point_idx = self.apply_normal_force(system)
+#     (
+#         plane_response_force_mag,
+#         no_contact_point_idx,
+#     ) = apply_normal_force_numba_rigid_body(
+#         plane_origin,
+#         plane_normal,
+#         surface_tol,
+#         k,
+#         nu,
+#         length,
+#         position_collection,
+#         velocity_collection,
+#         internal_forces,
+#         external_forces,
+#     )
+#     # normal_plane_collection = np.repeat(
+#     #     self.plane_normal.reshape(3, 1), plane_response_force_mag.shape[0], axis=1
+#     # )
+#     # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
+#     # axial direction has to be in plane, it cannot be out of plane. We are projecting rod element tangent vector in
+#     # to the plane. So friction forces can only be in plane forces and not out of plane.
+#     # tangent_along_normal_direction = np.einsum(
+#     #     "ij, ij->j", system.tangents, normal_plane_collection
+#     # )
+#     # tangent_perpendicular_to_normal_direction = system.tangents - np.einsum(
+#     #     "j, ij->ij", tangent_along_normal_direction, normal_plane_collection
+#     # )
+#     # tangent_perpendicular_to_normal_direction_mag = np.einsum(
+#     #     "ij, ij->j",
+#     #     tangent_perpendicular_to_normal_direction,
+#     #     tangent_perpendicular_to_normal_direction,
+#     # )
+#     # # Normalize tangent_perpendicular_to_normal_direction. This is axial direction for plane. Here we are adding
+#     # # small tolerance (1e-10) for normalization, in order to prevent division by 0.
+#     # axial_direction = np.einsum(
+#     #     "ij, j-> ij",
+#     #     tangent_perpendicular_to_normal_direction,
+#     #     1 / (tangent_perpendicular_to_normal_direction_mag + 1e-14),
+#     # )
+#     # FIXME: In future change the below part we should be able to compute the normal
+#     axial_direction = rigid_body_normal  # system.tangents
+#     element_velocity = velocity_collection
+#
+#     # first apply axial kinetic friction
+#     # velocity_mag_along_axial_direction = np.einsum(
+#     #     "ij,ij->j", element_velocity, axial_direction
+#     # )
+#     # velocity_along_axial_direction = np.einsum(
+#     #     "j, ij->ij", velocity_mag_along_axial_direction, axial_direction
+#     # )
+#     velocity_mag_along_axial_direction = _batch_dot(element_velocity, axial_direction)
+#     velocity_along_axial_direction = _batch_product_k_ik_to_ik(
+#         velocity_mag_along_axial_direction, axial_direction
+#     )
+#     # Friction forces depends on the direction of velocity, in other words sign
+#     # of the velocity vector.
+#     velocity_sign_along_axial_direction = np.sign(velocity_mag_along_axial_direction)
+#     # Check top for sign convention
+#     kinetic_mu = 0.5 * (
+#         kinetic_mu_forward * (1 + velocity_sign_along_axial_direction)
+#         + kinetic_mu_backward * (1 - velocity_sign_along_axial_direction)
+#     )
+#     # Call slip function to check if elements slipping or not
+#     slip_function_along_axial_direction = find_slipping_elements(
+#         velocity_along_axial_direction, slip_velocity_tol
+#     )
+#     kinetic_friction_force_along_axial_direction = -(
+#         (1.0 - slip_function_along_axial_direction)
+#         * kinetic_mu
+#         * plane_response_force_mag
+#         * velocity_sign_along_axial_direction
+#         * axial_direction
+#     )
+#
+#     binormal_direction = rigid_body_binormal
+#     velocity_mag_along_binormal_direction = _batch_dot(
+#         element_velocity, binormal_direction
+#     )
+#     velocity_along_binormal_direction = _batch_product_k_ik_to_ik(
+#         velocity_mag_along_binormal_direction, binormal_direction
+#     )
+#     # Friction forces depends on the direction of velocity, in other words sign
+#     # of the velocity vector.
+#     velocity_sign_along_binormal_direction = np.sign(
+#         velocity_mag_along_binormal_direction
+#     )
+#     # Check top for sign convention
+#     kinetic_mu = 0.5 * (
+#         kinetic_mu_forward * (1 + velocity_sign_along_binormal_direction)
+#         + kinetic_mu_backward * (1 - velocity_sign_along_binormal_direction)
+#     )
+#     # Call slip function to check if elements slipping or not
+#     slip_function_along_binormal_direction = find_slipping_elements(
+#         velocity_along_binormal_direction, slip_velocity_tol
+#     )
+#     kinetic_friction_force_along_binormal_direction = -(
+#         (1.0 - slip_function_along_binormal_direction)
+#         * kinetic_mu
+#         * plane_response_force_mag
+#         * velocity_mag_along_binormal_direction
+#         * binormal_direction
+#     )
+#
+#     # If rod element does not have any contact with plane, plane cannot apply friction
+#     # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+#     kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
+#     kinetic_friction_force_along_binormal_direction[..., no_contact_point_idx] = 0.0
+#     external_forces += (
+#         kinetic_friction_force_along_axial_direction
+#         + kinetic_friction_force_along_binormal_direction
+#     )
+#
+#     # # Now rolling kinetic friction
+#     # rolling_direction = _batch_cross(axial_direction, normal_plane_collection)
+#     # torque_arm = -system.radius * normal_plane_collection
+#     # velocity_along_rolling_direction = np.einsum(
+#     #     "ij ,ij ->j ", element_velocity, rolling_direction
+#     # )
+#     # directors_transpose = np.einsum("ijk -> jik", system.director_collection)
+#     # # w_rot = Q.T @ omega @ Q @ r
+#     # rotation_velocity = _batch_matvec(
+#     #     directors_transpose,
+#     #     _batch_cross(
+#     #         system.omega_collection,
+#     #         _batch_matvec(system.director_collection, torque_arm),
+#     #     ),
+#     # )
+#     # rotation_velocity_along_rolling_direction = np.einsum(
+#     #     "ij,ij->j", rotation_velocity, rolling_direction
+#     # )
+#     # slip_velocity_mag_along_rolling_direction = (
+#     #     velocity_along_rolling_direction + rotation_velocity_along_rolling_direction
+#     # )
+#     # slip_velocity_along_rolling_direction = np.einsum(
+#     #     "j, ij->ij", slip_velocity_mag_along_rolling_direction, rolling_direction
+#     # )
+#     # slip_velocity_sign_along_rolling_direction = np.sign(
+#     #     slip_velocity_mag_along_rolling_direction
+#     # )
+#     # slip_function_along_rolling_direction = find_slipping_elements(
+#     #     slip_velocity_along_rolling_direction, self.slip_velocity_tol
+#     # )
+#     # kinetic_friction_force_along_rolling_direction = -(
+#     #     (1.0 - slip_function_along_rolling_direction)
+#     #     * self.kinetic_mu_sideways
+#     #     * plane_response_force_mag
+#     #     * slip_velocity_sign_along_rolling_direction
+#     #     * rolling_direction
+#     # )
+#     # # If rod element does not have any contact with plane, plane cannot apply friction
+#     # # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
+#     # kinetic_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
+#     # system.external_forces += kinetic_friction_force_along_rolling_direction
+#     #
+#     # # torque = Q @ r @ Fr
+#     # system.external_torques += _batch_matvec(
+#     #     system.director_collection,
+#     #     _batch_cross(torque_arm, kinetic_friction_force_along_rolling_direction),
+#     # )
+#
+#     # # now axial static friction
+#     # element_total_forces = _batch_vector_sum(internal_forces, external_forces)
+#     # # force_component_along_axial_direction = np.einsum(
+#     # #     "ij,ij->j", element_total_forces, axial_direction
+#     # # )
+#     # force_component_along_axial_direction = _batch_dot(
+#     #     element_total_forces, axial_direction
+#     # )
+#     # force_component_sign_along_axial_direction = np.sign(
+#     #     force_component_along_axial_direction
+#     # )
+#     # # check top for sign convention
+#     # static_mu = 0.5 * (
+#     #     static_mu_forward * (1 + force_component_sign_along_axial_direction)
+#     #     + static_mu_backward * (1 - force_component_sign_along_axial_direction)
+#     # )
+#     # max_friction_force = (
+#     #     slip_function_along_axial_direction * static_mu * plane_response_force_mag
+#     # )
+#     # # friction = min(mu N, pushing force)
+#     # static_friction_force_along_axial_direction = -(
+#     #     np.minimum(
+#     #         np.fabs(force_component_along_axial_direction), max_friction_force
+#     #     )
+#     #     * force_component_sign_along_axial_direction
+#     #     * axial_direction
+#     # )
+#     # # If rod element does not have any contact with plane, plane cannot apply friction
+#     # # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
+#     # static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
+#     # external_forces += static_friction_force_along_axial_direction
+#
+#     # # now rolling static friction
+#     # # there is some normal, tangent and rolling directions inconsitency from Elastica
+#     # total_torques = _batch_matvec(
+#     #     directors_transpose, (system.internal_torques + system.external_torques)
+#     # )
+#     # # Elastica has opposite defs of tangents in interaction.h and rod.cpp
+#     # total_torques_along_axial_direction = np.einsum(
+#     #     "ij,ij->j", total_torques, axial_direction
+#     # )
+#     # force_component_along_rolling_direction = np.einsum(
+#     #     "ij,ij->j", element_total_forces, rolling_direction
+#     # )
+#     # noslip_force = -(
+#     #     (
+#     #         system.radius * force_component_along_rolling_direction
+#     #         - 2.0 * total_torques_along_axial_direction
+#     #     )
+#     #     / 3.0
+#     #     / system.radius
+#     # )
+#     # max_friction_force = (
+#     #     slip_function_along_rolling_direction
+#     #     * self.static_mu_sideways
+#     #     * plane_response_force_mag
+#     # )
+#     # noslip_force_sign = np.sign(noslip_force)
+#     # static_friction_force_along_rolling_direction = (
+#     #     np.minimum(np.fabs(noslip_force), max_friction_force)
+#     #     * noslip_force_sign
+#     #     * rolling_direction
+#     # )
+#     # # If rod element does not have any contact with plane, plane cannot apply friction
+#     # # force on the element. Thus lets set plane static friction force to 0.0 for the no contact points.
+#     # static_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
+#     # system.external_forces += static_friction_force_along_rolling_direction
+#
+#     # system.external_torques += _batch_matvec(
+#     #     system.director_collection,
+#     #     _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
+#     # )

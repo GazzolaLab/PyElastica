@@ -12,11 +12,11 @@ from elastica._elastica_numba._interaction import (
     SlenderBodyTheory,
 )
 
-# from test_rod import TestRod
-from test_rod_nb import TestRod
+# from test_rod import DummyTestRod
+from test_rod_nb import DummyTestRod
 
 
-class BaseRodClass(TestRod):
+class BaseRodClass(DummyTestRod):
     def __init__(self, n_elem):
         """
         This class initialize a straight rod,
