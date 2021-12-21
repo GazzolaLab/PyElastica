@@ -264,8 +264,8 @@ class ExternalContact(FreeJoint):
             rod_one.lengths,
             cylinder_two.position_collection,
             cylinder_two.director_collection,
-            cylinder_two.radius,
-            cylinder_two.length,
+            cylinder_two.radius[0],
+            cylinder_two.length[0],
         ):
             return
 

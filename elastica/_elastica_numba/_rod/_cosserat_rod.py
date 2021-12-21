@@ -4,7 +4,6 @@ import numpy as np
 import functools
 import numba
 from elastica.rod import RodBase
-from elastica._elastica_numba._rod._data_structures import _RodSymplecticStepperMixin
 from elastica._elastica_numba._linalg import (
     _batch_cross,
     _batch_norm,
@@ -14,8 +13,8 @@ from elastica._elastica_numba._linalg import (
 from elastica._elastica_numba._rotations import _inv_rotate
 from elastica.rod.factory_function import allocate
 from elastica._calculus import (
-    quadrature_kernel,
-    difference_kernel,
+    quadrature_kernel_for_block_structure,
+    difference_kernel_for_block_structure,
     _difference,
     _average,
 )
@@ -30,12 +29,16 @@ def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-class CosseratRod(RodBase, _RodSymplecticStepperMixin):
+class CosseratRod(RodBase):
     def __init__(
         self,
         n_elements,
-        _vector_states,
-        _matrix_states,
+        position,
+        velocity,
+        omega,
+        acceleration,
+        angular_acceleration,
+        directors,
         radius,
         mass_second_moment_of_inertia,
         inv_mass_second_moment_of_inertia,
@@ -67,8 +70,12 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         damping_torques,
     ):
         self.n_elems = n_elements
-        self._vector_states = _vector_states
-        self._matrix_states = _matrix_states
+        self.position_collection = position
+        self.velocity_collection = velocity
+        self.omega_collection = omega
+        self.acceleration_collection = acceleration
+        self.alpha_collection = angular_acceleration
+        self.director_collection = directors
         self.radius = radius
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
         self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
@@ -98,8 +105,6 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
         self.internal_couple = internal_couple
         self.damping_forces = damping_forces
         self.damping_torques = damping_torques
-
-        _RodSymplecticStepperMixin.__init__(self)
 
         # Compute shear stretch and strains.
         _compute_shear_stretch_strains(
@@ -139,8 +144,12 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
 
         (
             n_elements,
-            _vector_states,
-            _matrix_states,
+            position,
+            velocities,
+            omegas,
+            accelerations,
+            angular_accelerations,
+            directors,
             radius,
             mass_second_moment_of_inertia,
             inv_mass_second_moment_of_inertia,
@@ -186,8 +195,12 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
 
         return cls(
             n_elements,
-            _vector_states,
-            _matrix_states,
+            position,
+            velocities,
+            omegas,
+            accelerations,
+            angular_accelerations,
+            directors,
             radius,
             mass_second_moment_of_inertia,
             inv_mass_second_moment_of_inertia,
@@ -219,7 +232,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             damping_torques,
         )
 
-    def _compute_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -252,6 +265,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             self.dissipation_constant_for_forces,
             self.damping_forces,
             self.internal_forces,
+            self.ghost_elems_idx,
         )
 
         _compute_internal_torques(
@@ -275,6 +289,7 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             self.dissipation_constant_for_torques,
             self.damping_torques,
             self.internal_torques,
+            self.ghost_voronoi_idx,
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
@@ -301,6 +316,11 @@ class CosseratRod(RodBase, _RodSymplecticStepperMixin):
             self.internal_torques,
             self.external_torques,
             self.dilatation,
+        )
+
+    def zeroed_out_external_forces_and_torques(self, time):
+        _zeroed_out_external_forces_and_torques(
+            self.external_forces, self.external_torques
         )
 
     def compute_translational_energy(self):
@@ -370,9 +390,11 @@ def _compute_geometry_from_state(
 
     # Note : we can use the two-point difference kernel, but it needs unnecessary padding
     # and hence will always be slower
-    # FIXME: change memory overload instead for the below calls!
     position_diff = position_difference_kernel(position_collection)
-    lengths[:] = _batch_norm(position_diff)
+    # FIXME: Here 1E-14 is added to fix ghost lengths, which is 0, and causes division by zero error!
+    lengths[:] = _batch_norm(position_diff) + 1e-14
+    # _reset_scalar_ghost(lengths, ghost_elems_idx, 1.0)
+
     for k in range(lengths.shape[0]):
         tangents[0, k] = position_diff[0, k] / lengths[k]
         tangents[1, k] = position_diff[1, k] / lengths[k]
@@ -548,12 +570,23 @@ def _compute_internal_bending_twist_stresses_from_model(
     _compute_bending_twist_strains(
         director_collection, rest_voronoi_lengths, kappa
     )  # concept : needs to compute kappa
-    internal_couple[:] = _batch_matvec(bend_matrix, kappa - rest_kappa)
+
+    blocksize = kappa.shape[1]
+    temp = np.empty((3, blocksize))
+    for i in range(3):
+        for k in range(blocksize):
+            temp[i, k] = kappa[i, k] - rest_kappa[i, k]
+
+    internal_couple[:] = _batch_matvec(bend_matrix, temp)
 
 
 @numba.njit(cache=True)
 def _compute_damping_forces(
-    damping_forces, velocity_collection, dissipation_constant_for_forces, lengths
+    damping_forces,
+    velocity_collection,
+    dissipation_constant_for_forces,
+    lengths,
+    ghost_elems_idx,
 ):
     # Internal damping foces.
     elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
@@ -569,7 +602,9 @@ def _compute_damping_forces(
                 * lengths[k]
             )
 
-    damping_forces[:] = quadrature_kernel(elemental_damping_forces)
+    damping_forces[:] = quadrature_kernel_for_block_structure(
+        elemental_damping_forces, ghost_elems_idx
+    )
 
 
 @numba.njit(cache=True)
@@ -592,6 +627,7 @@ def _compute_internal_forces(
     dissipation_constant_for_forces,
     damping_forces,
     internal_forces,
+    ghost_elems_idx,
 ):
     # Compute n_l and cache it using internal_stress
     # Be careful about usage though
@@ -628,10 +664,17 @@ def _compute_internal_forces(
     cosserat_internal_stress /= dilatation
 
     _compute_damping_forces(
-        damping_forces, velocity_collection, dissipation_constant_for_forces, lengths
+        damping_forces,
+        velocity_collection,
+        dissipation_constant_for_forces,
+        lengths,
+        ghost_elems_idx,
     )
 
-    internal_forces[:] = difference_kernel(cosserat_internal_stress) - damping_forces
+    internal_forces[:] = (
+        difference_kernel_for_block_structure(cosserat_internal_stress, ghost_elems_idx)
+        - damping_forces
+    )
 
 
 @numba.njit(cache=True)
@@ -670,6 +713,7 @@ def _compute_internal_torques(
     dissipation_constant_for_torques,
     damping_torques,
     internal_torques,
+    ghost_voronoi_idx,
 ):
     # Compute \tau_l and cache it using internal_couple
     # Be careful about usage though
@@ -690,14 +734,15 @@ def _compute_internal_torques(
     # FIXME: change memory overload instead for the below calls!
     voronoi_dilatation_inv_cube_cached = 1.0 / voronoi_dilatation ** 3
     # Delta(\tau_L / \Epsilon^3)
-    bend_twist_couple_2D = difference_kernel(
-        internal_couple * voronoi_dilatation_inv_cube_cached
+    bend_twist_couple_2D = difference_kernel_for_block_structure(
+        internal_couple * voronoi_dilatation_inv_cube_cached, ghost_voronoi_idx
     )
     # \mathcal{A}[ (\kappa x \tau_L ) * \hat{D} / \Epsilon^3 ]
-    bend_twist_couple_3D = quadrature_kernel(
+    bend_twist_couple_3D = quadrature_kernel_for_block_structure(
         _batch_cross(kappa, internal_couple)
         * rest_voronoi_lengths
-        * voronoi_dilatation_inv_cube_cached
+        * voronoi_dilatation_inv_cube_cached,
+        ghost_voronoi_idx,
     )
     # (Qt x n_L) * \hat{l}
     shear_stretch_couple = (
@@ -760,7 +805,6 @@ def _update_accelerations(
             acceleration_collection[i, k] = (
                 internal_forces[i, k] + external_forces[i, k]
             ) / mass[k]
-            external_forces[i, k] = 0.0
 
     alpha_collection *= 0.0
     for i in range(3):
@@ -771,5 +815,33 @@ def _update_accelerations(
                     * (internal_torques[j, k] + external_torques[j, k])
                 ) * dilatation[k]
 
-    # Reset torques
-    external_torques *= 0.0
+
+@numba.njit(cache=True)
+def _zeroed_out_external_forces_and_torques(external_forces, external_torques):
+    """
+    This function is to zeroed out external forces and torques.
+
+    Parameters
+    ----------
+    external_forces
+    external_torques
+
+    Returns
+    -------
+
+    Note
+    ----
+    Microbenchmark results 100 elements
+    python version: 3.32 µs ± 44.5 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    this version: 583 ns ± 1.94 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+    """
+    n_nodes = external_forces.shape[1]
+    n_elems = external_torques.shape[1]
+
+    for i in range(3):
+        for k in range(n_nodes):
+            external_forces[i, k] = 0.0
+
+    for i in range(3):
+        for k in range(n_elems):
+            external_torques[i, k] = 0.0

@@ -2,6 +2,10 @@ __doc__ = """ Quadrature and difference kernels Numpy implementation"""
 import numpy as np
 import functools
 
+from elastica._elastica_numpy._reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
+    _reset_vector_ghost,
+)
+
 
 @functools.lru_cache(maxsize=2)
 def _get_zero_array(dim, ndim):
@@ -42,6 +46,38 @@ def _trapezoidal(array_collection):
     return 0.5 * temp_collection
 
 
+def _trapezoidal_for_block_structure(array_collection, ghost_idx):
+    """
+    Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way. This form
+    specifically for the block structure implementation and there is a reset function call, to reset
+    ghosts.
+
+    Parameters
+    ----------
+    array_collection
+    ghost_idx
+
+    Returns
+    -------
+
+    Note
+    ----
+    User should use this function with extreme care, since this function is rewritten for
+    block structure.
+
+    """
+
+    _reset_vector_ghost(array_collection, ghost_idx)
+
+    temp_collection = np.empty(
+        array_collection.shape[:-1] + (array_collection.shape[-1] + 1,)
+    )
+    temp_collection[..., 0] = array_collection[..., 0]
+    temp_collection[..., -1] = array_collection[..., -1]
+    temp_collection[..., 1:-1] = array_collection[..., 1:] + array_collection[..., :-1]
+    return 0.5 * temp_collection
+
+
 def _two_point_difference(array_collection):
     """
 
@@ -64,6 +100,38 @@ def _two_point_difference(array_collection):
     - As an added bonus, this works for n-dimensions as long as last dimension
     is preserved
     """
+    temp_collection = np.empty(
+        array_collection.shape[:-1] + (array_collection.shape[-1] + 1,)
+    )
+    temp_collection[..., 0] = array_collection[..., 0]
+    temp_collection[..., -1] = -array_collection[..., -1]
+    temp_collection[..., 1:-1] = array_collection[..., 1:] - array_collection[..., :-1]
+    return temp_collection
+
+
+def _two_point_difference_for_block_structure(array_collection, ghost_idx):
+    """
+    This function does the differentiation, for Cosserat rod model equations. This form
+    specifically for the block structure implementation and there is a reset function call, to
+    reset ghosts.
+
+    Parameters
+    ----------
+    array_collection
+    ghost_idx
+
+    Returns
+    -------
+
+    Note
+    ----
+    User should use this function with extreme care, since this function is rewritten for
+    block structure.
+
+    """
+
+    _reset_vector_ghost(array_collection, ghost_idx)
+
     temp_collection = np.empty(
         array_collection.shape[:-1] + (array_collection.shape[-1] + 1,)
     )

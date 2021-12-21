@@ -371,9 +371,7 @@ def test_import_numpy_version_of_contact_modules(monkeypatch):
     importlib.reload(elastica.joint)
 
     # Test importing ExternalContact class
-    from elastica._elastica_numpy._joint import (
-        ExternalContact as ExternalContact_numpy,
-    )
+    from elastica._elastica_numpy._joint import ExternalContact as ExternalContact_numpy
     from elastica.joint import ExternalContact
 
     assert ExternalContact == ExternalContact_numpy, str(
@@ -401,9 +399,7 @@ def test_import_numba_version_of_contact_modules(monkeypatch):
     """
 
     # Test importing ExternalContact class
-    from elastica._elastica_numba._joint import (
-        ExternalContact as ExternalContact_numba,
-    )
+    from elastica._elastica_numba._joint import ExternalContact as ExternalContact_numba
     from elastica.joint import ExternalContact
 
     assert ExternalContact == ExternalContact_numba, str(

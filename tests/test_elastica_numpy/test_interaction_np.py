@@ -13,10 +13,10 @@ from elastica._elastica_numpy._interaction import (
     # node_to_element_pos_or_vel,
     SlenderBodyTheory,
 )
-from test_rod_np import DummyTestRod
+from test_rod_np import MockTestRod
 
 
-class BaseRodClass(DummyTestRod):
+class BaseRodClass(MockTestRod):
     def __init__(self, n_elem):
         """
         This class initialize a straight rod,
@@ -795,7 +795,6 @@ try:
 
             output = node_to_element_pos_or_vel(input_variable)
             assert_allclose(correct_output, output, atol=Tolerance.atol())
-
 
 except ImportError:
     pass

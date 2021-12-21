@@ -30,18 +30,17 @@ class PositionVerlet:
         prefac = self._first_prefactor(dt)
 
         overload_operator_kinematic_numba(
-            System.kinematic_states.n_nodes,
+            System.n_nodes,
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.kinematic_rates(time, prefac),
+            System.velocity_collection,
+            System.omega_collection,
         )
 
     def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
 
         overload_operator_dynamic_numba(
-            System.dynamic_states.n_kinematic_rates,
-            dt,
             System.dynamic_states.rate_collection,
             System.dynamic_rates(time, dt),
         )
@@ -74,21 +73,20 @@ class PEFRL:
     def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._first_kinematic_prefactor(dt)
         overload_operator_kinematic_numba(
-            System.kinematic_states.n_nodes,
+            System.n_nodes,
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.kinematic_rates(time, prefac),
+            System.velocity_collection,
+            System.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self.lambda_dash_coeff * dt
         overload_operator_dynamic_numba(
-            System.dynamic_states.n_kinematic_rates,
-            prefac,
             System.dynamic_states.rate_collection,
-            System.dynamic_rates(time, dt),
+            System.dynamic_rates(time, prefac),
         )
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
 
@@ -98,21 +96,20 @@ class PEFRL:
     def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._second_kinematic_prefactor(dt)
         overload_operator_kinematic_numba(
-            System.kinematic_states.n_nodes,
+            System.n_nodes,
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.kinematic_rates(time, prefac),
+            System.velocity_collection,
+            System.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self.λ * dt
         overload_operator_dynamic_numba(
-            System.dynamic_states.n_kinematic_rates,
-            prefac,
             System.dynamic_states.rate_collection,
-            System.dynamic_rates(time, dt),
+            System.dynamic_rates(time, prefac),
         )
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
 
@@ -123,10 +120,11 @@ class PEFRL:
         prefac = self._third_kinematic_prefactor(dt)
         # Need to fill in
         overload_operator_kinematic_numba(
-            System.kinematic_states.n_nodes,
+            System.n_nodes,
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.kinematic_rates(time, prefac),
+            System.velocity_collection,
+            System.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)

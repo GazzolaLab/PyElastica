@@ -145,13 +145,24 @@ class GenericSimulatorClass(
     pass
 
 
-class TestBaseSystemWithFeatures:
+class TestBaseSystemWithFeaturesUsingCosseratRod:
     @pytest.fixture(scope="function")
     def load_collection(self):
         sc = GenericSimulatorClass()
-        from elastica.rod import RodBase
+        from elastica.rod.cosserat_rod import CosseratRod
 
-        rod = RodBase()
+        # rod = RodBase()
+        rod = CosseratRod.straight_rod(
+            n_elements=10,
+            start=np.zeros((3)),
+            direction=np.array([0, 1, 0.0]),
+            normal=np.array([1, 0, 0.0]),
+            base_length=1,
+            base_radius=1,
+            density=1,
+            nu=1,
+            youngs_modulus=1,
+        )
         # Bypass check, but its fine for testing
         sc._systems.append(rod)
 

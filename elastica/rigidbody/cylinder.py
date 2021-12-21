@@ -2,21 +2,20 @@ __doc__ = """ Cylinder rigid body class """
 
 import numpy as np
 
-from elastica._linalg import _batch_matvec, _batch_cross
+from elastica._linalg import _batch_cross
 from elastica.utils import MaxDimension
 from elastica.rigidbody.rigid_body import RigidBodyBase
-from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
 
-class Cylinder(RigidBodyBase, _RigidRodSymplecticStepperMixin):
+class Cylinder(RigidBodyBase):
     def __init__(self, start, direction, normal, base_length, base_radius, density):
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
         self.n_elems = 1
 
-        self.normal = normal.reshape(3, 1)
-        self.tangents = direction.reshape(3, 1)
-        self.binormal = np.cross(direction, normal).reshape(3, 1)
+        normal = normal.reshape(3, 1)
+        tangents = direction.reshape(3, 1)
+        binormal = _batch_cross(tangents, normal)
         self.radius = base_radius
         self.length = base_length
         self.density = density
@@ -37,95 +36,35 @@ class Cylinder(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         )
         np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * base_length)
 
+        self.mass_second_moment_of_inertia = mass_second_moment_of_inertia.reshape(
+            MaxDimension.value(), MaxDimension.value(), 1
+        )
+
         self.inv_mass_second_moment_of_inertia = np.linalg.inv(
             mass_second_moment_of_inertia
         ).reshape(MaxDimension.value(), MaxDimension.value(), 1)
 
         # position is at the center
-        position = np.zeros((MaxDimension.value(), 1))
-        position[:] = start.reshape(3, 1) + direction.reshape(3, 1) * base_length / 2
-
-        velocities = np.zeros((MaxDimension.value(), 1))
-        omegas = np.zeros((MaxDimension.value(), 1))
-        accelerations = 0.0 * velocities
-        angular_accelerations = 0.0 * omegas
-
-        directors = np.zeros((MaxDimension.value(), MaxDimension.value(), 1))
-        directors[0, ...] = self.normal
-        directors[1, ...] = _batch_cross(self.tangents, self.normal)
-        directors[2, ...] = self.tangents
-
-        self._vector_states = np.hstack(
-            (position, velocities, omegas, accelerations, angular_accelerations)
+        self.position_collection = np.zeros((MaxDimension.value(), 1))
+        self.position_collection[:] = (
+            start.reshape(3, 1) + direction.reshape(3, 1) * base_length / 2
         )
-        self._matrix_states = directors.copy()
 
-        self.internal_forces = np.zeros((MaxDimension.value())).reshape(
-            MaxDimension.value(), 1
+        self.velocity_collection = np.zeros((MaxDimension.value(), 1))
+        self.omega_collection = np.zeros((MaxDimension.value(), 1))
+        self.acceleration_collection = 0.0 * self.velocity_collection
+        self.alpha_collection = 0.0 * self.omega_collection
+
+        self.director_collection = np.zeros(
+            (MaxDimension.value(), MaxDimension.value(), 1)
         )
-        self.internal_torques = np.zeros((MaxDimension.value())).reshape(
-            MaxDimension.value(), 1
-        )
+        self.director_collection[0, ...] = normal
+        self.director_collection[1, ...] = binormal
+        self.director_collection[2, ...] = tangents
 
         self.external_forces = np.zeros((MaxDimension.value())).reshape(
             MaxDimension.value(), 1
         )
         self.external_torques = np.zeros((MaxDimension.value())).reshape(
             MaxDimension.value(), 1
-        )
-
-        _RigidRodSymplecticStepperMixin.__init__(self)
-
-    def _compute_internal_forces_and_torques(self, time):
-        """
-        This function here is only for integrator to work properly. We do not need
-        internal forces and torques at all.
-        Parameters
-        ----------
-        time
-
-        Returns
-        -------
-
-        """
-        self.internal_forces *= 0.0
-        self.internal_torques *= 0.0
-
-    def update_accelerations(self, time):
-        """TODO Do we need to make the collection members abstract?
-
-        Parameters
-        ----------
-        time
-
-        Returns
-        -------
-
-        """
-        np.copyto(
-            self.acceleration_collection,
-            (self.internal_forces + self.external_forces) / self.mass,
-        )
-        np.copyto(
-            self.alpha_collection,
-            _batch_matvec(
-                self.inv_mass_second_moment_of_inertia,
-                (self.internal_torques + self.external_torques),
-            ),
-        )
-
-        # Reset forces and torques
-        self.external_forces *= 0.0
-        self.external_torques *= 0.0
-
-    def compute_position_center_of_mass(self):
-        return self.position_collection[..., 0].copy()
-
-    def compute_translational_energy(self):
-        return (
-            0.5
-            * self.mass
-            * np.dot(
-                self.velocity_collection[..., -1], self.velocity_collection[..., -1]
-            )
         )

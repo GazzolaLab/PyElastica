@@ -138,13 +138,16 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         )
         self._kin_state = TestKinematicState(self._state[0:1])  # Create a view instead
         self._dyn_state = TestDynamicState(self._state[1:2])  # Create a view instead
+        self.n_nodes = self._kin_state.n_nodes
+        self.velocity_collection = self._dyn_state.rate_collection[..., 0].reshape(3, 1)
+        self.omega_collection = self._dyn_state.rate_collection[..., 1].reshape(3, 1)
 
     def dynamic_rates(self, time, *args, **kwargs):
         temp = super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
             *args, **kwargs
         )[-1]
         # Expand rate vector in order to be consistent with time-stepper implementation
-        blocksize = self._dyn_state.n_kinematic_rates
+        blocksize = 1  # self._dyn_state.n_kinematic_rates
         rate = np.zeros((3, blocksize))
         for k in range(blocksize):
             rate[:, k] = temp
@@ -163,6 +166,9 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         return current_energy, anal_energy
 
     def update_internal_forces_and_torques(self, time):
+        pass
+
+    def reset_external_forces_and_torques(self, time):
         pass
 
 
@@ -295,17 +301,20 @@ class DampedSimpleHarmonicOscillatorSystem(
 
 
 class CollectiveSystem:
+    """This collective system class is to test multiple memory structure blocks."""
+
     def __init__(self):
-        self.systems = []
+        self._memory_blocks = []
+        self.systems = self._memory_blocks
 
     def __getitem__(self, idx):
-        return self.systems[idx]
+        return self._memory_blocks[idx]
 
     def __len__(self):
-        return len(self.systems)
+        return len(self._memory_blocks)
 
     def __iter__(self):
-        return self.systems.__iter__()
+        return self._memory_blocks.__iter__()
 
     def synchronize(self, time):
         pass
@@ -323,12 +332,12 @@ class CollectiveSystem:
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
         super(SymplecticUndampedHarmonicOscillatorCollectiveSystem, self).__init__()
-        self.systems.append(
+        self._memory_blocks.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])
             )
         )
-        self.systems.append(
+        self._memory_blocks.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=1.0 * np.pi, init_val=np.array([0.0, 0.5])
             )
@@ -370,16 +379,41 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         self.omega_value = 1.0 * np.pi
         omegas[2, ...] = self.omega_value
         angular_accelerations = 0.0 * omegas
-        self._vector_states = np.hstack(
-            (all_positions, velocities, omegas, accelerations, angular_accelerations)
+
+        self.n_nodes = self.n_elems + 1
+        self.position_collection = all_positions.copy()
+        self.director_collection = start_director.copy()
+        # For the block structure time-stepper interface, we need to create views.
+        self.v_w_collection = np.zeros((2, 3 * self.n_nodes))
+        self.v_w_collection[0] = velocities.reshape(3 * self.n_nodes)
+        self.v_w_collection[1] = np.hstack((omegas.reshape(3), np.zeros((3))))
+        self.velocity_collection = np.lib.stride_tricks.as_strided(
+            self.v_w_collection[0], (3, self.n_nodes)
         )
+        self.omega_collection = np.lib.stride_tricks.as_strided(
+            self.v_w_collection[1],
+            (3, self.n_elems),
+        )
+
+        self.dvdt_dwdt_collection = np.zeros((2, 3 * self.n_nodes))
+        self.dvdt_dwdt_collection[0] = accelerations.reshape(3 * self.n_nodes)
+        self.dvdt_dwdt_collection[1] = np.hstack(
+            (angular_accelerations.reshape(3), np.zeros((3)))
+        )
+        self.acceleration_collection = np.lib.stride_tricks.as_strided(
+            self.dvdt_dwdt_collection[0], (3, self.n_nodes)
+        )
+        self.alpha_collection = np.lib.stride_tricks.as_strided(
+            self.dvdt_dwdt_collection[1],
+            (3, self.n_elems),
+        )
+
         self.init_dir = start_director.copy()
-        self._matrix_states = start_director.copy()
 
         # Givees position, director etc.
         super(SimpleSystemWithPositionsDirectors, self).__init__()
 
-    def _compute_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
     def update_accelerations(self, time):

@@ -11,12 +11,16 @@ from elastica.rod.data_structures import _RodSymplecticStepperMixin
 from elastica.rod.factory_function import allocate
 
 
-class MockRodForTest(_RodSymplecticStepperMixin):
+class MockRodForTest:
     def __init__(
         self,
         n_elements,
-        _vector_states,
-        _matrix_states,
+        position,
+        velocity,
+        omega,
+        acceleration,
+        angular_acceleration,
+        directors,
         radius,
         mass_second_moment_of_inertia,
         inv_mass_second_moment_of_inertia,
@@ -48,8 +52,12 @@ class MockRodForTest(_RodSymplecticStepperMixin):
         damping_torques,
     ):
         self.n_elems = n_elements
-        self._vector_states = _vector_states
-        self._matrix_states = _matrix_states
+        self.position_collection = position
+        self.velocity_collection = velocity
+        self.omega_collection = omega
+        self.acceleration_collection = acceleration
+        self.alpha_collection = angular_acceleration
+        self.director_collection = directors
         self.radius = radius
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia
         self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
@@ -80,8 +88,6 @@ class MockRodForTest(_RodSymplecticStepperMixin):
         self.damping_forces = damping_forces
         self.damping_torques = damping_torques
 
-        _RodSymplecticStepperMixin.__init__(self)
-
     @classmethod
     def straight_rod(
         cls,
@@ -101,8 +107,12 @@ class MockRodForTest(_RodSymplecticStepperMixin):
 
         (
             n_elements,
-            _vector_states,
-            _matrix_states,
+            position,
+            velocity,
+            omega,
+            acceleration,
+            angular_acceleration,
+            directors,
             radius,
             mass_second_moment_of_inertia,
             inv_mass_second_moment_of_inertia,
@@ -150,8 +160,12 @@ class MockRodForTest(_RodSymplecticStepperMixin):
 
         return cls(
             n_elements,
-            _vector_states,
-            _matrix_states,
+            position,
+            velocity,
+            omega,
+            acceleration,
+            angular_acceleration,
+            directors,
             radius,
             mass_second_moment_of_inertia,
             inv_mass_second_moment_of_inertia,

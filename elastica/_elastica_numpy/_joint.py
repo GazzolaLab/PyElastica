@@ -190,7 +190,7 @@ class ExternalContact(FreeJoint):
         cylinder_dimensions_in_world_FOR = cylinder_two.director_collection[
             ..., 0
         ].T @ np.array(
-            [[cylinder_two.radius], [cylinder_two.radius], [0.5 * cylinder_two.length]]
+            [cylinder_two.radius, cylinder_two.radius, 0.5 * cylinder_two.length]
         )
         np.amax(
             np.abs(cylinder_dimensions_in_world_FOR), axis=1, out=max_possible_dimension

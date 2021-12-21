@@ -11,6 +11,8 @@ if IMPORT_NUMBA:
         _average,
         _clip_array,
         _isnan_check,
+        _trapezoidal_for_block_structure,
+        _two_point_difference_for_block_structure,
     )
 
     position_difference_kernel = _difference
@@ -23,7 +25,11 @@ else:
         _clip_array,
         _isnan_check,
         _get_zero_array,
+        _trapezoidal_for_block_structure,
+        _two_point_difference_for_block_structure,
     )
 
 quadrature_kernel = _trapezoidal
 difference_kernel = _two_point_difference
+quadrature_kernel_for_block_structure = _trapezoidal_for_block_structure
+difference_kernel_for_block_structure = _two_point_difference_for_block_structure

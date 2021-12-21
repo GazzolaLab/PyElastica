@@ -2,4 +2,4 @@ numpy
 scipy
 matplotlib
 tqdm
-numba
+numba==0.51.0

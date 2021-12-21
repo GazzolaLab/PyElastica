@@ -64,28 +64,25 @@ class _SystemCollectionStepper:
         """
         for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
 
-            for system in SystemCollection:
+            for system in SystemCollection._memory_blocks:
                 kin_step(TimeStepper, system, time, dt)
 
             time += kin_prefactor(TimeStepper, dt)
 
-            # TODO: remove below line, it should be some other function synchronizeBC
-            # SystemCollection.synchronizeBC(time)
             # Constrain only values
             SystemCollection.constrain_values(time)
 
             # We need internal forces and torques because they are used by interaction module.
-            for system in SystemCollection:
+            for system in SystemCollection._memory_blocks:
                 system.update_internal_forces_and_torques(time)
                 # system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)
 
-            for system in SystemCollection:
+            for system in SystemCollection._memory_blocks:
                 dyn_step(TimeStepper, system, time, dt)
 
-            # TODO: remove below line, it should be some other function synchronizeBC
             # Constrain only rates
             SystemCollection.constrain_rates(time)
 
@@ -93,13 +90,17 @@ class _SystemCollectionStepper:
         last_kin_prefactor = _steps_and_prefactors[-1][0]
         last_kin_step = _steps_and_prefactors[-1][1]
 
-        for system in SystemCollection:
+        for system in SystemCollection._memory_blocks:
             last_kin_step(TimeStepper, system, time, dt)
         time += last_kin_prefactor(TimeStepper, dt)
         SystemCollection.constrain_values(time)
 
         # Call back function, will call the user defined call back functions and store data
         SystemCollection.apply_callbacks(time, int(time / dt))
+
+        # Zero out the external forces and torques
+        for system in SystemCollection._memory_blocks:
+            system.reset_external_forces_and_torques(time)
 
         return time
 

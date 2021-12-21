@@ -294,6 +294,8 @@ class TestSymplecticSteppers:
 
 
 class TestSteppersAgainstCollectiveSystems:
+    """Test collection of memory blocks."""
+
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectic_steppers(self, symplectic_stepper):
         collective_system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()

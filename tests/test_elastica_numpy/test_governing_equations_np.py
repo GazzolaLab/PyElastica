@@ -42,6 +42,11 @@ def constructor(n_elem, nu=0.0):
         cls.poisson_ratio,
         shear_modulus=cls.shear_modulus,
     )
+
+    # Ghost needed for Cosserat rod functions adapted for block structure.
+    rod.ghost_elems_idx = np.empty((0), dtype=int)
+    rod.ghost_voronoi_idx = np.empty((0), dtype=int)
+
     return cls, rod
 
 
@@ -587,7 +592,7 @@ class TestingClass:
 
         initial, test_rod = constructor(n_elem, nu=0.0)
 
-        test_rod._compute_internal_forces_and_torques(time=0)
+        test_rod.compute_internal_forces_and_torques(time=0)
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_update_acceleration(self, n_elem):
@@ -915,6 +920,28 @@ class TestingClass:
         test_shear_energy = test_rod.compute_shear_energy()
 
         assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_zerod_out_external_forces_and_torques(self, n_elem):
+        """
+        This test case is testing function to reset external forces and torques.
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem)
+
+        test_rod.zeroed_out_external_forces_and_torques(time=0.0)
+
+        assert_allclose(
+            test_rod.external_forces, np.zeros((3, n_elem + 1)), atol=Tolerance.atol()
+        )
 
 
 def test_get_z_vector_function():

@@ -9,6 +9,7 @@ from numpy import sqrt
 def _batch_matvec(matrix_collection, vector_collection):
     """
     This function does batch matrix and batch vector product
+
     Parameters
     ----------
     matrix_collection
@@ -19,8 +20,8 @@ def _batch_matvec(matrix_collection, vector_collection):
     Notes
     -----
     Benchmark results, for a blocksize of 100, using timeit
-    Python einsum: 9.74 µs ± 4.72 µs per loop
-    This version: 1.73 µs ± 452 ns per loop
+    Python einsum: 4.27 µs ± 66.1 ns per loop
+    This version: 1.18 µs ± 39.2 ns per loop
     """
     blocksize = vector_collection.shape[1]
     output_vector = np.zeros((3, blocksize))
@@ -50,59 +51,21 @@ def _batch_matmul(first_matrix_collection, second_matrix_collection):
     Notes
     Microbenchmark results showed that for a block size of 200,
     %timeit np.einsum("ijk,jlk->ilk", first_matrix_collection, second_matrix_collection)
-    12.8 µs ± 136 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    8.45 µs ± 18.6 ns per loop
     This version is
-    4.41 µs ± 395 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    2.13 µs ± 1.01 µs per loop
     """
     blocksize = first_matrix_collection.shape[2]
     output_matrix = np.zeros((3, 3, blocksize))
 
-    for k in range(blocksize):
-        output_matrix[0, 0, k] = (
-            first_matrix_collection[0, 0, k] * second_matrix_collection[0, 0, k]
-            + first_matrix_collection[0, 1, k] * second_matrix_collection[1, 0, k]
-            + first_matrix_collection[0, 2, k] * second_matrix_collection[2, 0, k]
-        )
-        output_matrix[0, 1, k] = (
-            first_matrix_collection[0, 0, k] * second_matrix_collection[0, 1, k]
-            + first_matrix_collection[0, 1, k] * second_matrix_collection[1, 1, k]
-            + first_matrix_collection[0, 2, k] * second_matrix_collection[2, 1, k]
-        )
-        output_matrix[0, 2, k] = (
-            first_matrix_collection[0, 0, k] * second_matrix_collection[0, 2, k]
-            + first_matrix_collection[0, 1, k] * second_matrix_collection[1, 2, k]
-            + first_matrix_collection[0, 2, k] * second_matrix_collection[2, 2, k]
-        )
-        output_matrix[1, 0, k] = (
-            first_matrix_collection[1, 0, k] * second_matrix_collection[0, 0, k]
-            + first_matrix_collection[1, 1, k] * second_matrix_collection[1, 0, k]
-            + first_matrix_collection[1, 2, k] * second_matrix_collection[2, 0, k]
-        )
-        output_matrix[1, 1, k] = (
-            first_matrix_collection[1, 0, k] * second_matrix_collection[0, 1, k]
-            + first_matrix_collection[1, 1, k] * second_matrix_collection[1, 1, k]
-            + first_matrix_collection[1, 2, k] * second_matrix_collection[2, 1, k]
-        )
-        output_matrix[1, 2, k] = (
-            first_matrix_collection[1, 0, k] * second_matrix_collection[0, 2, k]
-            + first_matrix_collection[1, 1, k] * second_matrix_collection[1, 2, k]
-            + first_matrix_collection[1, 2, k] * second_matrix_collection[2, 2, k]
-        )
-        output_matrix[2, 0, k] = (
-            first_matrix_collection[2, 0, k] * second_matrix_collection[0, 0, k]
-            + first_matrix_collection[2, 1, k] * second_matrix_collection[1, 0, k]
-            + first_matrix_collection[2, 2, k] * second_matrix_collection[2, 0, k]
-        )
-        output_matrix[2, 1, k] = (
-            first_matrix_collection[2, 0, k] * second_matrix_collection[0, 1, k]
-            + first_matrix_collection[2, 1, k] * second_matrix_collection[1, 1, k]
-            + first_matrix_collection[2, 2, k] * second_matrix_collection[2, 1, k]
-        )
-        output_matrix[2, 2, k] = (
-            first_matrix_collection[2, 0, k] * second_matrix_collection[0, 2, k]
-            + first_matrix_collection[2, 1, k] * second_matrix_collection[1, 2, k]
-            + first_matrix_collection[2, 2, k] * second_matrix_collection[2, 2, k]
-        )
+    for i in range(3):
+        for j in range(3):
+            for m in range(3):
+                for k in range(blocksize):
+                    output_matrix[i, m, k] += (
+                        first_matrix_collection[i, j, k]
+                        * second_matrix_collection[j, m, k]
+                    )
 
     return output_matrix
 
@@ -111,6 +74,7 @@ def _batch_matmul(first_matrix_collection, second_matrix_collection):
 def _batch_cross(first_vector_collection, second_vector_collection):
     """
     This function does cross product between two batch vectors.
+
     Parameters
     ----------
     first_vector_collection
@@ -151,8 +115,8 @@ def _batch_vec_oneD_vec_cross(first_vector_collection, second_vector):
     """
     This function does cross product between batch vector and a 1D vector.
     Idea of having this function is that, for friction calculations, we dont
-    want to repate and expand 1D plane normal vector. Thus instead we are writting
-    a new cross product operation, so we are not allocating unnecesary memory.
+    want to repeat and expand 1D plane normal vector. Thus instead we are writing
+    a new cross product operation, so we are not allocating unnecessary memory.
 
     Parameters
     ----------
@@ -204,18 +168,15 @@ def _batch_dot(first_vector, second_vector):
     Notes
     -----
     Benchmark results, for a blocksize of 100 using timeit
-    Python einsum: 3.89 µs ± 815 ns per loop
-    This version: 938 ns ± 14.1 ns per loop
+    Python einsum: 4.3 µs ± 730 ns per loop
+    This version: 1.08 µs ± 6.09 ns per loop
     """
     blocksize = first_vector.shape[1]
-    output_vector = np.empty((blocksize))
+    output_vector = np.zeros((blocksize))
 
-    for k in range(blocksize):
-        output_vector[k] = (
-            first_vector[0, k] * second_vector[0, k]
-            + first_vector[1, k] * second_vector[1, k]
-            + first_vector[2, k] * second_vector[2, k]
-        )
+    for i in range(3):
+        for k in range(blocksize):
+            output_vector[k] += first_vector[i, k] * second_vector[i, k]
 
     return output_vector
 
@@ -233,8 +194,8 @@ def _batch_norm(vector):
     Notes
     -----
     Benchmark results, for a blocksize of 100 using timeit
-    Python einsum: 5.03 µs ± 864 ns per loop
-    This version: 1.02 µs ± 104 ns per loop
+    Python einsum: 4.26 µs ± 25.9 ns per loop
+    This version: 801 ns ± 3.9 ns per loop
     """
     blocksize = vector.shape[1]
     output_vector = np.empty((blocksize))

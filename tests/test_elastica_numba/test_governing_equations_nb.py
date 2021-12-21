@@ -55,6 +55,11 @@ def constructor(n_elem, nu=0.0):
         cls.E,
         shear_modulus=cls.shear_modulus,
     )
+
+    # Ghost needed for Cosserat rod functions adapted for block structure.
+    rod.ghost_elems_idx = np.empty((0), dtype=int)
+    rod.ghost_voronoi_idx = np.empty((0), dtype=int)
+
     return cls, rod
 
 
@@ -378,6 +383,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            ghost_elems_idx=np.empty((0), dtype=int),
         )
 
         assert_allclose(
@@ -430,6 +436,7 @@ class TestingClass:
             test_rod.velocity_collection,
             test_rod.dissipation_constant_for_forces,
             test_rod.lengths,
+            test_rod.ghost_elems_idx,
         )
         _compute_damping_torques(
             test_rod.damping_torques,
@@ -605,6 +612,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         assert_allclose(
@@ -693,6 +701,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         assert_allclose(
@@ -766,6 +775,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            test_rod.ghost_elems_idx,
         )
 
         # Lets set angular velocity omega to arbitray numbers
@@ -796,6 +806,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            ghost_voronoi_idx=np.empty((0), dtype=int),
         )
 
         # computed internal torques has to be zero. Internal torques created by Lagrangian
@@ -849,6 +860,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         # Total internal torque has to be equal to angular velocity omega.
@@ -875,7 +887,7 @@ class TestingClass:
 
         initial, test_rod = constructor(n_elem, nu=0.0)
 
-        test_rod._compute_internal_forces_and_torques(time=0)
+        test_rod.compute_internal_forces_and_torques(time=0)
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_update_acceleration(self, n_elem):
@@ -1248,10 +1260,33 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            test_rod.ghost_elems_idx,
         )
         test_shear_energy = test_rod.compute_shear_energy()
 
         assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_zerod_out_external_forces_and_torques(self, n_elem):
+        """
+        This test case is testing function to reset external forces and torques.
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem)
+
+        test_rod.zeroed_out_external_forces_and_torques(time=0.0)
+
+        assert_allclose(
+            test_rod.external_forces, np.zeros((3, n_elem + 1)), atol=Tolerance.atol()
+        )
 
 
 def test_get_z_vector_function():

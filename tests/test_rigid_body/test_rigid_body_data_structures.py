@@ -26,6 +26,7 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         self.b = 1
         self.c = 2
         self.n_elems = 1
+        self.n_nodes = self.n_elems
         self.init_pos = start_position.reshape(3, self.n_elems)
         # final_pos = init_pos + start_director[2, : , 0].reshape(3, self.n_elems) * self.a
         # self.final_pos = end_position.reshape(3, self.n_elems)
@@ -43,6 +44,24 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         )
         self.init_dir = start_director.copy()
         self._matrix_states = start_director.copy()
+
+        self.v_w_collection = np.zeros((2, 3, 1))
+        self.dvdt_dwdt_collection = np.zeros((2, 3, 1))
+        self.velocity_collection = np.ndarray.view(self.v_w_collection[0, :, :])
+        self.omega_collection = np.ndarray.view(self.v_w_collection[1, :, :])
+        self.acceleration_collection = np.ndarray.view(
+            self.dvdt_dwdt_collection[0, :, :]
+        )
+        self.alpha_collection = np.ndarray.view(self.dvdt_dwdt_collection[1, :, :])
+
+        self.position_collection = self.init_pos
+        self.velocity_collection[:] = velocities
+        self.omega_collection[:] = omegas
+        self.acceleration_collection[:] = accelerations
+        self.alpha_collection[:] = angular_accelerations
+        self.director_collection = start_director
+        self.external_forces = np.zeros((3, 1))
+        self.external_torques = np.zeros((3, 1))
 
         # Givees position, director etc.
         super(SimpleSystemWithPositionsDirectors, self).__init__()
@@ -148,114 +167,116 @@ class TestSteppersAgainstRigidBodyLikeSystems:
             atol=Tolerance.atol(),
         )
 
-    def test_symplectics_against_ellipse_motion_with_numpy_PositionVerlet(
-        self, monkeypatch
-    ):
-        monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
-        # After changing the import flag reload the modules.
-        importlib.reload(elastica)
-        importlib.reload(elastica.timestepper.symplectic_steppers)
-        # importlib.reload(elastica.timestepper.integrate)
-        importlib.reload(elastica.timestepper)
-        from elastica.timestepper.symplectic_steppers import PositionVerlet
-        from elastica.timestepper import integrate
 
-        random_start_position = np.random.randn(3, 1)
-        random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
-        random_directors = random_directors.reshape(3, 3, 1)
-
-        rod_like_system = make_simple_system_with_positions_directors(
-            random_start_position, random_directors
-        )
-        final_time = 1.0
-        n_steps = 1000
-        stepper = PositionVerlet()
-
-        integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
-
-        assert_allclose(
-            rod_like_system.position_collection.reshape(3),
-            rod_like_system.analytical_solution("Positions", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        assert_allclose(
-            rod_like_system.velocity_collection.reshape(3),
-            rod_like_system.analytical_solution("Velocity", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        # Reshaping done in the director collection to prevent numba from
-        # complaining about returning multiple types
-        assert_allclose(
-            rod_like_system.director_collection.reshape(-1, 1),
-            rod_like_system.analytical_solution("Directors", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        # Remove the import flag
-        monkeypatch.delenv("IMPORT_TEST_NUMPY")
-        # Reload the elastica after changing flag
-        importlib.reload(elastica)
-        importlib.reload(elastica.timestepper.symplectic_steppers)
-        importlib.reload(elastica.timestepper)
-        from elastica.timestepper.symplectic_steppers import PositionVerlet
-        from elastica.timestepper import integrate
-
-    def test_symplectics_against_ellipse_motion_with_numpy_PEFRL(self, monkeypatch):
-        monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
-        # After changing the import flag reload the modules.
-        importlib.reload(elastica)
-        importlib.reload(elastica.timestepper.symplectic_steppers)
-        # importlib.reload(elastica.timestepper.integrate)
-        importlib.reload(elastica.timestepper)
-        from elastica.timestepper.symplectic_steppers import PEFRL
-        from elastica.timestepper import integrate
-
-        random_start_position = np.random.randn(3, 1)
-        random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
-        random_directors = random_directors.reshape(3, 3, 1)
-
-        rod_like_system = make_simple_system_with_positions_directors(
-            random_start_position, random_directors
-        )
-        final_time = 1.0
-        n_steps = 1000
-        stepper = PEFRL()
-
-        integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
-
-        assert_allclose(
-            rod_like_system.position_collection.reshape(3),
-            rod_like_system.analytical_solution("Positions", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        assert_allclose(
-            rod_like_system.velocity_collection.reshape(3),
-            rod_like_system.analytical_solution("Velocity", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        # Reshaping done in the director collection to prevent numba from
-        # complaining about returning multiple types
-        assert_allclose(
-            rod_like_system.director_collection.reshape(-1, 1),
-            rod_like_system.analytical_solution("Directors", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
-
-        # Remove the import flag
-        monkeypatch.delenv("IMPORT_TEST_NUMPY")
-        # Reload the elastica after changing flag
-        importlib.reload(elastica)
-        importlib.reload(elastica.timestepper.symplectic_steppers)
-        importlib.reload(elastica.timestepper)
-        from elastica.timestepper.symplectic_steppers import PEFRL
-        from elastica.timestepper import integrate
+# TODO: We are dropping Numpy code so remove the below code
+#     def test_symplectics_against_ellipse_motion_with_numpy_PositionVerlet(
+#         self, monkeypatch
+#     ):
+#         monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
+#         # After changing the import flag reload the modules.
+#         importlib.reload(elastica)
+#         importlib.reload(elastica.timestepper.symplectic_steppers)
+#         # importlib.reload(elastica.timestepper.integrate)
+#         importlib.reload(elastica.timestepper)
+#         from elastica.timestepper.symplectic_steppers import PositionVerlet
+#         from elastica.timestepper import integrate
+#
+#         random_start_position = np.random.randn(3, 1)
+#         random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+#         random_directors = random_directors.reshape(3, 3, 1)
+#
+#         rod_like_system = make_simple_system_with_positions_directors(
+#             random_start_position, random_directors
+#         )
+#         final_time = 1.0
+#         n_steps = 1000
+#         stepper = PositionVerlet()
+#
+#         integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
+#
+#         assert_allclose(
+#             rod_like_system.position_collection.reshape(3),
+#             rod_like_system.analytical_solution("Positions", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         assert_allclose(
+#             rod_like_system.velocity_collection.reshape(3),
+#             rod_like_system.analytical_solution("Velocity", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         # Reshaping done in the director collection to prevent numba from
+#         # complaining about returning multiple types
+#         assert_allclose(
+#             rod_like_system.director_collection.reshape(-1, 1),
+#             rod_like_system.analytical_solution("Directors", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         # Remove the import flag
+#         monkeypatch.delenv("IMPORT_TEST_NUMPY")
+#         # Reload the elastica after changing flag
+#         importlib.reload(elastica)
+#         importlib.reload(elastica.timestepper.symplectic_steppers)
+#         importlib.reload(elastica.timestepper)
+#         from elastica.timestepper.symplectic_steppers import PositionVerlet
+#         from elastica.timestepper import integrate
+#
+#     def test_symplectics_against_ellipse_motion_with_numpy_PEFRL(self, monkeypatch):
+#         monkeypatch.setenv("IMPORT_TEST_NUMPY", "True", prepend=False)
+#         # After changing the import flag reload the modules.
+#         importlib.reload(elastica)
+#         importlib.reload(elastica.timestepper.symplectic_steppers)
+#         # importlib.reload(elastica.timestepper.integrate)
+#         importlib.reload(elastica.timestepper)
+#         from elastica.timestepper.symplectic_steppers import PEFRL
+#         from elastica.timestepper import integrate
+#
+#         random_start_position = np.random.randn(3, 1)
+#         random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+#         random_directors = random_directors.reshape(3, 3, 1)
+#
+#         rod_like_system = make_simple_system_with_positions_directors(
+#             random_start_position, random_directors
+#         )
+#         final_time = 1.0
+#         n_steps = 1000
+#         stepper = PEFRL()
+#
+#         integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
+#
+#         assert_allclose(
+#             rod_like_system.position_collection.reshape(3),
+#             rod_like_system.analytical_solution("Positions", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         assert_allclose(
+#             rod_like_system.velocity_collection.reshape(3),
+#             rod_like_system.analytical_solution("Velocity", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         # Reshaping done in the director collection to prevent numba from
+#         # complaining about returning multiple types
+#         assert_allclose(
+#             rod_like_system.director_collection.reshape(-1, 1),
+#             rod_like_system.analytical_solution("Directors", final_time),
+#             rtol=Tolerance.rtol() * 1e1,
+#             atol=Tolerance.atol(),
+#         )
+#
+#         # Remove the import flag
+#         monkeypatch.delenv("IMPORT_TEST_NUMPY")
+#         # Reload the elastica after changing flag
+#         importlib.reload(elastica)
+#         importlib.reload(elastica.timestepper.symplectic_steppers)
+#         importlib.reload(elastica.timestepper)
+#         from elastica.timestepper.symplectic_steppers import PEFRL
+#         from elastica.timestepper import integrate

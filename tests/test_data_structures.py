@@ -51,9 +51,7 @@ def test_import_numpy_version_of_data_structures_modules(monkeypatch):
     )
 
     # Test importing _State
-    from elastica._elastica_numpy._rod._data_structures import (
-        _State as _State_numpy,
-    )
+    from elastica._elastica_numpy._rod._data_structures import _State as _State_numpy
     from elastica.rod.data_structures import _State
 
     assert _State == _State_numpy, str(
@@ -149,9 +147,7 @@ def test_import_numba_version_of_data_structures_modules(monkeypatch):
     )
 
     # Test importing _State
-    from elastica._elastica_numba._rod._data_structures import (
-        _State as _State_numpy,
-    )
+    from elastica._elastica_numba._rod._data_structures import _State as _State_numpy
     from elastica.rod.data_structures import _State
 
     assert _State == _State_numpy, str(

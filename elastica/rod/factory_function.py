@@ -329,10 +329,10 @@ def allocate(
     omegas = np.zeros((MaxDimension.value(), n_elements))
     accelerations = 0.0 * velocities
     angular_accelerations = 0.0 * omegas
-    _vector_states = np.hstack(
-        (position, velocities, omegas, accelerations, angular_accelerations)
-    )
-    _matrix_states = directors.copy()
+    # _vector_states = np.hstack(
+    #     (position, velocities, omegas, accelerations, angular_accelerations)
+    # )
+    # _matrix_states = directors.copy()
 
     internal_forces = 0.0 * accelerations
     internal_torques = 0.0 * angular_accelerations
@@ -358,14 +358,18 @@ def allocate(
 
     return (
         n_elements,
-        _vector_states,
-        _matrix_states,
+        position,
+        velocities,
+        omegas,
+        accelerations,
+        angular_accelerations,
+        directors,
         radius,
         mass_second_moment_of_inertia,
         inv_mass_second_moment_of_inertia,
         shear_matrix,
         bend_matrix,
-        density,
+        density_array,
         volume,
         mass,
         dissipation_constant_for_forces,

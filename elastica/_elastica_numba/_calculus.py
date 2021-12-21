@@ -4,6 +4,9 @@ import numpy as np
 from numpy import zeros, empty
 import numba
 from numba import njit
+from elastica._elastica_numba._reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
+    _reset_vector_ghost,
+)
 
 
 @njit(cache=True)
@@ -49,6 +52,54 @@ def _trapezoidal(array_collection):
 
 
 @njit(cache=True)
+def _trapezoidal_for_block_structure(array_collection, ghost_idx):
+    """
+    Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way. This form
+    specifically for the block structure implementation and there is a reset function call, to reset
+    ghosts.
+
+    Parameters
+    ----------
+    array_collection
+    ghost_idx
+
+    Returns
+    -------
+
+    Notes
+    -----
+    Micro benchmark results, for a block size of 100, using timeit
+    Python version: 8.21 µs per loop
+    This version: 1.03 µs per loop
+
+    User should use this function with extreme care, since this function is rewritten for
+    block structure.
+
+    """
+
+    _reset_vector_ghost(array_collection, ghost_idx)
+
+    blocksize = array_collection.shape[1]
+    temp_collection = np.empty((3, blocksize + 1))
+
+    temp_collection[0, 0] = 0.5 * array_collection[0, 0]
+    temp_collection[1, 0] = 0.5 * array_collection[1, 0]
+    temp_collection[2, 0] = 0.5 * array_collection[2, 0]
+
+    temp_collection[0, blocksize] = 0.5 * array_collection[0, blocksize - 1]
+    temp_collection[1, blocksize] = 0.5 * array_collection[1, blocksize - 1]
+    temp_collection[2, blocksize] = 0.5 * array_collection[2, blocksize - 1]
+
+    for i in range(3):
+        for k in range(1, blocksize):
+            temp_collection[i, k] = 0.5 * (
+                array_collection[i, k] + array_collection[i, k - 1]
+            )
+
+    return temp_collection
+
+
+@njit(cache=True)
 def _two_point_difference(array_collection):
     """
     This function does differentiation.
@@ -79,6 +130,52 @@ def _two_point_difference(array_collection):
         temp_collection[0, k] = array_collection[0, k] - array_collection[0, k - 1]
         temp_collection[1, k] = array_collection[1, k] - array_collection[1, k - 1]
         temp_collection[2, k] = array_collection[2, k] - array_collection[2, k - 1]
+
+    return temp_collection
+
+
+@njit(cache=True)
+def _two_point_difference_for_block_structure(array_collection, ghost_idx):
+    """
+    This function does the differentiation, for Cosserat rod model equations. This form
+    specifically for the block structure implementation and there is a reset function call, to
+    reset ghosts.
+
+    Parameters
+    ----------
+    array_collection
+    ghost_idx
+
+    Returns
+    -------
+
+    Note
+    ----
+    Micro benchmark results showed that for a block size of 100, using timeit
+    Python version: 7.1 µs per loop
+    This version: 1.01 µs per loop
+
+    User should use this function with extreme care, since this function is rewritten for
+    block structure.
+
+    """
+
+    _reset_vector_ghost(array_collection, ghost_idx)
+
+    blocksize = array_collection.shape[1]
+    temp_collection = np.empty((3, blocksize + 1))
+
+    temp_collection[0, 0] = array_collection[0, 0]
+    temp_collection[1, 0] = array_collection[1, 0]
+    temp_collection[2, 0] = array_collection[2, 0]
+
+    temp_collection[0, blocksize] = -array_collection[0, blocksize - 1]
+    temp_collection[1, blocksize] = -array_collection[1, blocksize - 1]
+    temp_collection[2, blocksize] = -array_collection[2, blocksize - 1]
+
+    for i in range(3):
+        for k in range(1, blocksize):
+            temp_collection[i, k] = array_collection[i, k] - array_collection[i, k - 1]
 
     return temp_collection
 

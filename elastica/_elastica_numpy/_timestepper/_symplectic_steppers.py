@@ -23,10 +23,10 @@ class PositionVerlet:
 
     def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._first_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+        System.kinematic_states += System.kinematic_rates(time, prefac)
 
     def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
-        System.dynamic_states += dt * System.dynamic_rates(
+        System.dynamic_states += System.dynamic_rates(
             time, dt
         )  # TODO : Why should we pass dt into System again?
 
@@ -57,22 +57,22 @@ class PEFRL:
 
     def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._first_kinematic_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+        System.kinematic_states += System.kinematic_rates(time, prefac)
 
     def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self.lambda_dash_coeff * dt
-        System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+        System.dynamic_states += System.dynamic_rates(time, prefac)
 
     def _second_kinematic_prefactor(self, dt):
         return self.χ * dt
 
     def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._second_kinematic_prefactor(dt)
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+        System.kinematic_states += System.kinematic_rates(time, prefac)
 
     def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self.λ * dt
-        System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+        System.dynamic_states += System.dynamic_rates(time, prefac)
 
     def _third_kinematic_prefactor(self, dt):
         return self.xi_chi_dash_coeff * dt
@@ -80,4 +80,4 @@ class PEFRL:
     def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
         prefac = self._third_kinematic_prefactor(dt)
         # Need to fill in
-        System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+        System.kinematic_states += System.kinematic_rates(time, prefac)

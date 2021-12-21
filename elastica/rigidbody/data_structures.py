@@ -3,6 +3,7 @@ __doc__ = "Data structure wrapper for rod components"
 import numpy as np
 
 from elastica._rotations import _get_rotation_matrix, _rotate
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 """
 # FIXME : Explicit Stepper doesn't work as States lose the
@@ -42,73 +43,16 @@ class _RigidRodExplicitStepperMixin:
 """
 
 
-class _RigidRodSymplecticStepperMixin:
+class _RigidRodSymplecticStepperMixin(_RodSymplecticStepperMixin):
     def __init__(self):
-        (
-            self.kinematic_states,
-            self.dynamic_states,
-            self.position_collection,
-            self.director_collection,
-            self.velocity_collection,
-            self.omega_collection,
-            self.acceleration_collection,
-            self.alpha_collection,  # angular acceleration
-        ) = _bootstrap_from_data(
-            "symplectic", self.n_elems, self._vector_states, self._matrix_states
-        )
+        super(_RigidRodSymplecticStepperMixin, self).__init__()
         # Expose rate returning functions in the interface
         # to be used by the time-stepping algorithm
         # dynamic rates needs to call update_accelerations and henc
         # is another function
-        self.kinematic_rates = self.dynamic_states.kinematic_rates
 
-    """
-    The following commented block of code is a test to ensure that
-    the time-integrator always updates the view of the
-    collection variables, and not an independent variable
-    (aka no copy is made). It exists only for legacy
-    purposes and will be either refactored or removed once
-    testing is done.
-    """
-    # def kinematic_rates(self, time, *args, **kwargs):
-    #     def shmem(a, b):
-    #         if np.shares_memory(
-    #                 a, b
-    #         ) : print("Shares memory ools")
-    #         else :
-    #             print("Explicit states does not share memory")
-    #
-    #     shmem(self.kinematic_states.position_collection, self.position_collection)
-    #     shmem(self.kinematic_states.director_collection, self.director_collection)
-    #
-    #     return self.dynamic_states.kinematic_rates(time, *args, **kwargs)
-
-    # TODO: find better way and place to compute internal forces and torques
-    def update_internal_forces_and_torques(self, time, *args, **kwargs):
-        self._compute_internal_forces_and_torques(time)
-
-    def dynamic_rates(self, time, *args, **kwargs):
-        self.update_accelerations(time)
-
-        """
-        The following commented block of code is a test to ensure that
-        the time-integrator always updates the view of the
-        collection variables, and not an independent variable
-        (aka no copy is made). It exists only for legacy
-        purposes and will be either refactored or removed once
-        testing is done.
-        """
-        # def shmem(x):
-        #     if np.shares_memory(
-        #             self.dynamic_states.rate_collection, x
-        #     ) : print("Shares memory")
-        #     else :
-        #         print("Explicit states does not share memory")
-        # shmem(self.velocity_collection)
-        # shmem(self.acceleration_collection)
-        # shmem(self.omega_collection)
-        # shmem(self.alpha_collection)
-        return self.dynamic_states.dynamic_rates(time, *args, **kwargs)
+    def update_internal_forces_and_torques(self, *args, **kwargs):
+        pass
 
 
 def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
@@ -145,7 +89,9 @@ def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_
     directors = np.ndarray.view(matrix_states)
     v_w_dvdt_dwdt = np.ndarray.view(vector_states[..., n_nodes:])
     output = ()
-    # TODO: Extend Rigid body data structures for Explicit steppers
+    # TODO:
+    # 11/01/2020: Extend Rigid body data structures for Explicit steppers
+    # 12/20/2021: Future work! If explicit stepper is gonna be dropped, remove.
     # if stepper_type == "explicit":
     #     v_w_states = np.ndarray.view(vector_states[..., n_nodes : n_nodes + 1])
     #     output += (
@@ -183,7 +129,8 @@ def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_
 Explicit stepper interface
 """
 
-
+# TODO
+# 12/20/2021: If explicit stepper is gonna be dropped, remove.
 # class _State:
 #     """State for explicit steppers.
 #
@@ -415,12 +362,13 @@ Explicit stepper interface
 #         """
 #         return self.__rmul__(scalar)
 
-
 """
 Symplectic stepper interface
 """
 
 
+# TODO: Maybe considerg removing. We no longer use bootstrap to initialize.
+# RigidBodySymplecticStepperMixin is now derived from RodSymplecticStepperMixin
 class _KinematicState:
     """State storing (x,Q) for symplectic steppers.
 
@@ -432,9 +380,7 @@ class _KinematicState:
     only these methods are provided.
     """
 
-    def __init__(
-        self, n_elems: int, position_collection_view, director_collection_view
-    ):
+    def __init__(self, position_collection_view, director_collection_view):
         """
         Parameters
         ----------
@@ -442,8 +388,6 @@ class _KinematicState:
         position_collection_view : view of positions (or) x
         director_collection_view : view of directors (or) Q
         """
-        super(_KinematicState, self).__init__()
-        self.n_nodes = n_elems
         self.position_collection = position_collection_view
         self.director_collection = director_collection_view
 
@@ -468,14 +412,14 @@ class _KinematicState:
         This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
         method
         """
+        velocity_collection = scaled_deriv_array[0]
+        omega_collection = scaled_deriv_array[1]
         # x += v*dt
-        self.position_collection += scaled_deriv_array[..., : self.n_nodes]
-        # TODO Avoid code repeat
+        self.position_collection += velocity_collection
         # Devs : see `_State.__iadd__` for reasons why we do matmul here
-        # print(_get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes:]))
         np.einsum(
             "ijk,jlk->ilk",
-            _get_rotation_matrix(1.0, scaled_deriv_array[..., self.n_nodes :]),
+            _get_rotation_matrix(1.0, omega_collection),
             self.director_collection.copy(),
             out=self.director_collection,
         )
@@ -493,7 +437,13 @@ class _DynamicState:
     only these methods are provided.
     """
 
-    def __init__(self, n_elems: int, rate_collection_view):
+    def __init__(
+        self,
+        v_w_collection,
+        dvdt_dwdt_collection,
+        velocity_collection,
+        omega_collection,
+    ):
         """
 
         Parameters
@@ -503,8 +453,10 @@ class _DynamicState:
         """
         super(_DynamicState, self).__init__()
         # Limit at which (v, w) end
-        self.n_kinematic_rates = 2 * n_elems
-        self.rate_collection = rate_collection_view
+        self.rate_collection = v_w_collection
+        self.dvdt_dwdt_collection = dvdt_dwdt_collection
+        self.velocity_collection = velocity_collection
+        self.omega_collection = omega_collection
 
     def __iadd__(self, scaled_second_deriv_array):
         """overloaded += operator, updating dynamic_rates
@@ -525,10 +477,10 @@ class _DynamicState:
         """
         # Always goes in LHS : that means the update is on the rates alone
         # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
-        self.rate_collection[..., : self.n_kinematic_rates] += scaled_second_deriv_array
+        self.rate_collection += scaled_second_deriv_array
         return self
 
-    def kinematic_rates(self, time, *args, **kwargs):
+    def kinematic_rates(self, time, prefac, *args, **kwargs):
         """Yields kinematic rates to interact with _KinematicState
 
         Returns
@@ -543,9 +495,9 @@ class _DynamicState:
         """
         # RHS functino call, gives v,w so that
         # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
-        return self.rate_collection[..., : self.n_kinematic_rates]
+        return prefac * self.velocity_collection, prefac * self.omega_collection
 
-    def dynamic_rates(self, time, *args, **kwargs):
+    def dynamic_rates(self, time, prefac, *args, **kwargs):
         """Yields dynamic rates to add to with _DynamicState
 
         Returns
@@ -558,4 +510,4 @@ class _DynamicState:
         as one expects the _Dynamic __add__ operator to interact
         with another _DynamicState. This is done for efficiency purposes.
         """
-        return self.rate_collection[..., self.n_kinematic_rates :]
+        return prefac * self.dvdt_dwdt_collection
