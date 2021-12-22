@@ -196,9 +196,9 @@ def allocate(
             mass_second_moment_of_inertia_temp[i, :],
         )
     # sanity check of mass second moment of inertia
-    for k in range(n_elements):
-        for i in range(0, MaxDimension.value()):
-            assert mass_second_moment_of_inertia[i, i, k] > Tolerance.atol()
+    if (mass_second_moment_of_inertia < Tolerance.atol()).all():
+        message = "Mass moment of inertia matrix smaller than tolerance, please check provided radius, density and length."
+        warnings.warn(message, category=UserWarning)
 
     # Inverse of second moment of inertia
     inv_mass_second_moment_of_inertia = np.zeros(
