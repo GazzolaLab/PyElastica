@@ -153,7 +153,7 @@ class MockRodForTest:
             nu,
             youngs_modulus,
             # poisson_ratio,
-            alpha_c=4.0 / 3.0,
+            alpha_c=0.964,
             *args,
             **kwargs
         )
@@ -742,8 +742,8 @@ def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            4 / 3 * shear_modulus * base_area,
-            4 / 3 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -802,8 +802,8 @@ def test_shear_matrix_for_varying_shear_modulus_warning_message_check_if_poisson
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            4 / 3 * shear_modulus * base_area,
-            4 / 3 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -860,8 +860,8 @@ def test_shear_matrix_for_varying_poisson_ratio_warning_message_check_if_no_shea
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            4 / 3 * shear_modulus * base_area,
-            4 / 3 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -917,8 +917,8 @@ def test_shear_matrix_for_no_shear_modulus_or_poisson_ratio_defined_warning_mess
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            4 / 3 * shear_modulus * base_area,
-            4 / 3 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
+            0.964 * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -985,10 +985,10 @@ def test_inertia_shear_bend_matrices_for_varying_radius():
 
     correct_shear_matrix = np.array(
         [
-            [32221.4631, 32221.46311, 31415.92654],
-            [128885.85245, 128885.8525, 125663.7061],
-            [289993.1680, 289993.1680, 282743.33882],
-            [515543.40982, 515543.41, 502654.82],
+            [23296.11783, 23296.11783, 31415.92654],
+            [93184.47129, 93184.47129, 125663.7061],
+            [209665.06048, 209665.06048, 282743.33882],
+            [372737.88191, 372737.88191, 502654.82],
         ]
     )
 
@@ -1682,7 +1682,7 @@ def test_straight_rod(n_elems):
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(shear_matrix, [4.0 * G * A0 / 3.0, 4.0 * G * A0 / 3.0, E * A0])
+    np.fill_diagonal(shear_matrix, [0.964 * G * A0, 0.964 * G * A0, E * A0])
     # Bend/Twist matrix
     bend_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(bend_matrix, [E * I0_1, E * I0_2, G * I0_3])
