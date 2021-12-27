@@ -18,7 +18,7 @@ def allocate(
     nu,
     youngs_modulus,
     # poisson_ratio,
-    # alpha_c=4.0 / 3.0,
+    # alpha_c=0.964,
     *args,
     **kwargs
 ):
@@ -217,7 +217,9 @@ def allocate(
     # Shear/Stretch matrix
     shear_modulus = get_shear_modulus(youngs_modulus, kwargs)
 
-    alpha_c = kwargs.get("alpha_c", 4.0 / 3.0)
+    # Value taken based on best correlation for Poisson ratio = 0.5, from
+    # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
+    alpha_c = kwargs.get("alpha_c", 0.964)
 
     shear_matrix = np.zeros(
         (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
