@@ -4,7 +4,7 @@ import sys
 # System imports
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
-from elastica.callback_functions import CallBackBaseClass, MyCallBack
+from elastica.callback_functions import CallBackBaseClass, MyCallBack, ExportCallBack
 from elastica.utils import Tolerance
 import pytest
 
@@ -110,3 +110,68 @@ class TestMyCallBackClass:
         assert_allclose(
             list_test["directors"], list_correct["directors"], atol=Tolerance.atol()
         )
+
+
+class TestExportCallBackClass:
+    @pytest.mark.parametrize("n_elem", [2, 4, 16])
+    def test_export_call_back_base_class(self, n_elem):
+        """
+        This test case is for testing ExportCallBack function.
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+        import pickle
+
+        mock_rod = MockRod()
+
+        time = np.random.rand(10)
+        current_step = list(range(10))
+        position_collection = np.random.rand(3, 10)
+        velocity_collection = np.random.rand(3, 10)
+        director_collection = np.random.rand(3, 3, 10)
+
+        # set arrays in mock rod
+        mock_rod.n_elems = n_elem
+        mock_rod.position_collection = position_collection
+        mock_rod.velocity_collection = velocity_collection
+        mock_rod.director_collection = director_collection
+
+        step_skip = 1
+        list_correct = {
+            "time": [],
+            "step": [],
+            "position": [],
+            "velocity": [],
+            "directors": [],
+        }
+
+        callback = ExportCallBack(step_skip, ".", "tempfile", save_every=10)
+        for i in range(10):
+            callback.make_callback(mock_rod, time[i], current_step[i])
+
+            list_correct["time"].append(time[i])
+            list_correct["step"].append(current_step[i])
+            list_correct["position"].append(position_collection)
+            list_correct["velocity"].append(velocity_collection)
+            list_correct["directors"].append(director_collection)
+
+        file = open(callback._tempfile.name, "rb")
+        list_test = pickle.load(file)
+        assert_allclose(list_test["time"], list_correct["time"], atol=Tolerance.atol())
+        assert_allclose(list_test["step"], list_correct["step"], atol=Tolerance.atol())
+        assert_allclose(
+            list_test["position"], list_correct["position"], atol=Tolerance.atol()
+        )
+        assert_allclose(
+            list_test["velocity"], list_correct["velocity"], atol=Tolerance.atol()
+        )
+        assert_allclose(
+            list_test["directors"], list_correct["directors"], atol=Tolerance.atol()
+        )
+
+        callback._tempfile.close()
