@@ -17,7 +17,7 @@ REQUIRES_PYTHON = ">=3.5.0"
 VERSION = "0.1.0.post5"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm", "numba"]
+REQUIRED = ["numpy>=1.19.2", "matplotlib>=3.3.2", "scipy>=1.5.2", "tqdm>=4.61.1", "numba==0.51.0"]
 
 # What packages are optional?
 EXTRAS = {

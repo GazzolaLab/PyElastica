@@ -1,6 +1,6 @@
 black:
 	@black --version
-	@black elastica tests
+	@black --required-version 21.12b0 elastica tests
 
 
 black_check:
