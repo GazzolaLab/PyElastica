@@ -24,7 +24,7 @@ Documentation of PyElastica is available [here][link-docs-website]
 ## Tutorials
 [![Binder][badge-binder-tutorial]][link-binder]
 
-We have created several Jupyter notebooks and Python scripts to help get users started with using PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica.
+We have created several Jupyter notebooks and Python scripts to help users get started with PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica.
 
 We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/visualization`](examples/visualization)).
 
@@ -34,9 +34,14 @@ If you would like to participate, please read our [contribution guideline](CONTR
 
 PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University of Illinois at Urbana-Champaign.
 
-## List of Publication
+## List of publications and submissions
 
+- [ Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
 - [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (In Review: IEEE RA-L 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
+- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (ACC 2021)
+- [Elastica: A compliant mechanics environment for soft robotic control](https://ieeexplore.ieee.org/document/9369003) (UIUC, 2021) (IEEE RA-L 2021)
+- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://arxiv.org/abs/2010.03368) (UIUC, 2020)
+- [Energy shaping control of a CyberOctopus soft arm](https://ieeexplore.ieee.org/document/9304408) (UIUC, 2020) (IEEE CDC 2020)
 
 ## Citation
 

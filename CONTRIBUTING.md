@@ -41,11 +41,11 @@ We provide [requirements.txt](requirements.txt) to include all the dependencies.
 $ pip install -r requirements.txt
 ```
 
-> **Note:** Make sure the **elastica** is not installed using pip.
+> **Note:** Make sure that **PyElastica** is not installed using pip.
 
 ### Project workflow
 
-We will create an `update_<version>` branch every couple of months, and we will release the branch once all related issues are resolved.
+We will create an `update_<version>` branch every couple of months, and will release the branch once all related issues are resolved.
 Every patch will be merged into the update branch only to organize major changes.
 Each version will have an associated collection of issues as `Milestones`.
 
@@ -60,17 +60,17 @@ We recommend making the **branch name start with related issue number** (ex. `1_
 
 <!-- We provide [bug report template][link-issue-bug-report] to guide you resolving issues faster.) -->
 
-* Please check if **related bug is not already issued**.
+* Please check if a **related bug is not already issued**.
 * Use a **clear and descriptive title** for the issue to identify the problem. Also, include appropriate **labels**.
 * Reporting **how to reproduce a bug** and **details of the problem (constraint, connection, etc.)** could help developers to resolve the issue. Including code is also a good idea.
 * **Explain the expected behavior and why.**
-* Include **any additional details** as much as possible.
+* Include **additional details** as much as possible.
 	* Including **screenshots or animated gifs** also helps.
 	* Which **version of PyElastica and dependencies** was used.
 	* If relevant, what **version and OS** was used.
 * Link any related issues using `#<issue number>`.
 
-> **Note:** If you find a **Closed** issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original (closed) issue in the description.
+> **Note:** If you find a **Closed** issue that seems like the same thing that you're experiencing, please open a new issue and include a link to the original (closed) issue in the description.
 
 ### Suggesting enhancements
 
@@ -88,25 +88,25 @@ This section guides you through submitting an enhancement suggestion, including 
 	
 ### Your first code contribution
 
-If you are unsure how to start contributing to PyElastica, you can look through `good first issue` and `help wanted` labels.
+If you are unsure regarding how to start contributing to PyElastica, you can look through `good first issue` and `help wanted` labels.
 Also, you might find `TODO` or `FIXME` marks in various places in the code with brief descriptions.
 
 * [Beginner issues][beginner] - issues that should only require a few lines of code, and a test or two.
-* [Help wanted issues][help-wanted] - issues which should be a bit more involved and might need some discussions.
+* [Help wanted issues][help-wanted] - issues which should be a bit more involved and might need some discussion.
 
-Once you find the issue that you are interested in, please leave a comment that you would like to resolve that issue.
+Once you find the issue that you are interested in, please leave a comment that you would like to resolve the issue.
 If you leave some questions in the comment, we will provide more detailed descriptions. 
 
 ### Side projects
 
-We also have many related projects in separate repositories that utilize the PyElastica in a core.
+We also have many related projects in separate repositories that utilize the PyElastica as a core library.
 
 ### Pull requests
 
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow the [styleguides](#styleguides)
-2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure all tests are passed. 
+2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass. 
 
 	In order to run pytest, run the following line from the top directory:
 
@@ -118,7 +118,7 @@ Please follow these steps to have your contribution considered by the maintainer
 
 The reviewer(s) may ask you to complete additional tests or changes before your pull request can be accepted.
 
-### Have questions about the source code
+### Have questions about the source code?
 
 Ask any question about **how to use PyElastica and detail implementation** in the **issue with label:question**.
 
@@ -134,7 +134,7 @@ Ask any question about **how to use PyElastica and detail implementation** in th
 
 We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/project/black/) for python style.
 
-You can install flake8 using pip :
+You can install flake8 using pip:
 
 `pip install flake8==3.8.3`
 
@@ -142,11 +142,11 @@ You can install black using pip:
 
 `pip install black`
 
-In order to format the code :
+In order to format the code:
 
 `make all`
 
-> **Note:** Format/refactoring patches that is not anything substantial to the context or functionality will likely be rejected. 
+> **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected. 
 
 ### Documentation styleguide
 
