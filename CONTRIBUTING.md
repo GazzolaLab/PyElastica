@@ -136,7 +136,7 @@ We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/p
 
 You can install flake8 using pip :
 
-`pip install flake8`
+`pip install flake8==3.8.3`
 
 You can install black using pip:
 
