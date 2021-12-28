@@ -28,12 +28,35 @@ class TestConnect:
             (np.array([50]), np.array([-120])),
             (np.array([50, 120]), np.array([-120, -50])),
             ([-50, 120], [-120, 50]),
+            # test for edge cases
+            (-102, 99),
+            (99, -102),
+            (-101, 101),
+            (101, -101),
         ],
     )
     def test_set_index_with_illegal_idx_throws(self, load_connect, illegal_idx):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.set_index(*illegal_idx)
         assert "Connection index of" in str(excinfo.value)
+
+    # idx between -100 and 99 passes,
+    # test combinations for first and second rod
+    @pytest.mark.parametrize(
+        "legal_idx",
+        [
+            # edge cases that should not throw
+            (-101, -101),
+            (-101, 100),
+            (100, -101),
+            (100, 100),
+        ],
+    )
+    def test_set_index_with_legal_idx_does_not_throw(self, load_connect, legal_idx):
+        try:
+            load_connect.set_index(*legal_idx)
+        except AssertionError:
+            pytest.fail("Unexpected AssertionError ..")
 
     # Test different idx types input by the user
     @pytest.mark.parametrize(
