@@ -2,11 +2,20 @@ __doc__ = """Symplectic time steppers and concepts for integrating the kinematic
 
 import numpy as np
 
+# from elastica._elastica_numba._timestepper._symplectic_steppers import (
+#     SymplecticStepperTag,
+#     PositionVerlet,
+#     PEFRL,
+# )
+
 # from elastica.timestepper._stepper_interface import (
 #     _TimeStepper,
 #     _LinearExponentialIntegratorMixin,
 # )
-from elastica import IMPORT_NUMBA
+from elastica.rod.data_structures import (
+    overload_operator_kinematic_numba,
+    overload_operator_dynamic_numba,
+)
 
 """
 Developer Note
@@ -190,15 +199,124 @@ class SymplecticStepperMethods:
         return len(self._steps_and_prefactors)
 
 
-if IMPORT_NUMBA:
-    from elastica._elastica_numba._timestepper._symplectic_steppers import (
-        SymplecticStepperTag,
-        PositionVerlet,
-        PEFRL,
-    )
-else:
-    from elastica._elastica_numpy._timestepper._symplectic_steppers import (
-        SymplecticStepperTag,
-        PositionVerlet,
-        PEFRL,
-    )
+class SymplecticStepperTag:
+    def __init__(self):
+        pass
+
+
+class PositionVerlet:
+    """
+    Position Verlet symplectic time stepper class, which
+    includes methods for second-order position Verlet.
+    """
+
+    Tag = SymplecticStepperTag()
+
+    def __init__(self):
+        pass
+
+    def _first_prefactor(self, dt):
+        return 0.5 * dt
+
+    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._first_prefactor(dt)
+
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            prefac,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+
+    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, dt),
+        )
+
+
+class PEFRL:
+    """
+    Position Extended Forest-Ruth Like Algorithm of
+    I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
+    http://arxiv.org/abs/cond-mat/0110585
+    """
+
+    # xi and chi are confusing, but be careful!
+    ξ = np.float64(0.1786178958448091e0)  # ξ
+    λ = -np.float64(0.2123418310626054e0)  # λ
+    χ = -np.float64(0.6626458266981849e-1)  # χ
+
+    # Pre-calculate other coefficients
+    lambda_dash_coeff = 0.5 * (1.0 - 2.0 * λ)
+    xi_chi_dash_coeff = 1.0 - 2.0 * (ξ + χ)
+
+    Tag = SymplecticStepperTag()
+
+    def __init__(self):
+        pass
+
+    def _first_kinematic_prefactor(self, dt):
+        return self.ξ * dt
+
+    def _first_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._first_kinematic_prefactor(dt)
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            prefac,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+        # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+    def _first_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self.lambda_dash_coeff * dt
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, prefac),
+        )
+        # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+
+    def _second_kinematic_prefactor(self, dt):
+        return self.χ * dt
+
+    def _second_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._second_kinematic_prefactor(dt)
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            prefac,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+        # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+    def _second_dynamic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self.λ * dt
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, prefac),
+        )
+        # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+
+    def _third_kinematic_prefactor(self, dt):
+        return self.xi_chi_dash_coeff * dt
+
+    def _third_kinematic_step(self, System, time: np.float64, dt: np.float64):
+        prefac = self._third_kinematic_prefactor(dt)
+        # Need to fill in
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            prefac,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+        # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)

@@ -4,8 +4,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica._elastica_numba._rod._data_structures import _bootstrap_from_data
-from elastica._elastica_numba._rod._data_structures import (
+from elastica.rod.data_structures import _bootstrap_from_data
+from elastica.rod.data_structures import (
     _KinematicState,
     _DynamicState,
 )
@@ -78,7 +78,7 @@ def assert_instance(obj, cls):
 
 def test_bootstrapping_types_for_explicit_steppers(load_data_for_bootstrapping_state):
     all_states = _bootstrap_from_data("explicit", *load_data_for_bootstrapping_state)
-    from elastica._elastica_numba._rod._data_structures import _State, _DerivativeState
+    from elastica.rod.data_structures import _State, _DerivativeState
 
     assert_instance(all_states[0], _State)
     assert_instance(all_states[1], _DerivativeState)
@@ -95,7 +95,7 @@ def test_bootstrapping_types_for_explicit_steppers(load_data_for_bootstrapping_s
 def test_bootstrapping_types_for_symplectic_steppers(load_data_for_bootstrapping_state):
     """For block structure we drop the boot strap from data function. Thus this test fails."""
     all_states = _bootstrap_from_data("symplectic", *load_data_for_bootstrapping_state)
-    from elastica._elastica_numba._rod._data_structures import (
+    from elastica.rod.data_structures import (
         _KinematicState,
         _DynamicState,
     )
@@ -342,7 +342,7 @@ class TestSymplecticStepperStateBehavior(LoadStatesForSymplecticStepper):
         )
 
     def test_dynamic_state_iadd(self, load_states):
-        from elastica._elastica_numba._rod._data_structures import (
+        from elastica.rod.data_structures import (
             overload_operator_dynamic_numba,
         )
 
@@ -367,7 +367,7 @@ class TestSymplecticStepperStateBehavior(LoadStatesForSymplecticStepper):
         assert np.all(np.in1d(temp.ravel(), dyn_state.rate_collection.ravel()))
 
     def test_kinematic_state_iadd(self, load_states):
-        from elastica._elastica_numba._rod._data_structures import (
+        from elastica.rod.data_structures import (
             overload_operator_kinematic_numba,
         )
 

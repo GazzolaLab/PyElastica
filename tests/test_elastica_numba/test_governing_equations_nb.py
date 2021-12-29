@@ -4,8 +4,8 @@ __doc__ = """Test Cosserat rod governing equations for Numba implementation"""
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._elastica_numba._linalg import _batch_matvec
-from elastica._elastica_numba._rod._cosserat_rod import (
+from elastica._linalg import _batch_matvec
+from elastica.rod.cosserat_rod import (
     CosseratRod,
     _compute_geometry_from_state,
     _compute_all_dilatations,

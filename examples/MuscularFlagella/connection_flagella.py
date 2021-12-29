@@ -1,5 +1,5 @@
 __doc__ = """Muscular flagella connection class Numba implementation. """
-__all__ = ["MuscularFlagellConnection"]
+__all__ = ["MuscularFlagellaConnection"]
 import numpy as np
 import numba
 from numba import njit
@@ -7,7 +7,7 @@ from elastica.joint import FreeJoint
 from elastica._linalg import _batch_matvec
 
 
-class MuscularFlagellConnection(FreeJoint):
+class MuscularFlagellaConnection(FreeJoint):
     """
     This connection class is for Muscular Flagella and it is not generalizable. Since our goal is to
     replicate the experimental data. We assume muscular flagella is not moving out of plane.
