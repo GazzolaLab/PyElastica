@@ -41,7 +41,7 @@ def is_system_a_collection(system):
 def make_memory_for_explicit_stepper(stepper, system):
     # TODO Automated logic (class creation, memory management logic) agnostic of stepper details (RK, AB etc.)
 
-    from elastica._elastica_numba._timestepper._explicit_steppers import (
+    from elastica.timestepper.explicit_steppers import (
         RungeKutta4,
         EulerForward,
     )

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._elastica_numba._interaction import (
+from elastica.interaction import (
     InteractionPlane,
     find_slipping_elements,
     AnisotropicFrictionalPlane,

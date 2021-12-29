@@ -6,7 +6,7 @@ import pytest
 from numpy.testing import assert_allclose
 import sys
 
-from elastica._elastica_numba._rotations import (
+from elastica._rotations import (
     _get_rotation_matrix,
     _rotate,
     _inv_rotate,

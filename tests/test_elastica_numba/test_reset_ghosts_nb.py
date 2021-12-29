@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica._elastica_numba._reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
+from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_scalar_ghost,
     _reset_vector_ghost,
 )

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica._elastica_numba._calculus import (
+from elastica._calculus import (
     _trapezoidal,
     _two_point_difference,
     _clip_array,

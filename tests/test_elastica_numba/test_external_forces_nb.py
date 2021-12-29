@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 import pytest
 
-from elastica._elastica_numba._external_forces import (
+from elastica.external_forces import (
     NoForces,
     GravityForces,
     EndpointForces,

@@ -2,10 +2,10 @@ __doc__ = "Analytically integrable systems, used primarily for testing time-step
 
 import numpy as np
 import numba
-from elastica._elastica_numba._rotations import _get_rotation_matrix, _rotate
-from elastica._elastica_numba._linalg import _batch_matmul
-from elastica._elastica_numba._rod._data_structures import _RodSymplecticStepperMixin
-from elastica._elastica_numba._rod._data_structures import _bootstrap_from_data
+from elastica._rotations import _get_rotation_matrix, _rotate
+from elastica._linalg import _batch_matmul
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
+from elastica.rod.data_structures import _bootstrap_from_data
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 
 
@@ -179,7 +179,7 @@ class DampedSimpleHarmonicOscillatorSystem(
         super(DampedSimpleHarmonicOscillatorSystem, self).__init__(omega, init_val)
         self.zeta = 0.5 * damping
         self.modified_omega = np.sqrt(
-            self.omega ** 2 - self.zeta ** 2, dtype=np.complex
+            self.omega ** 2 - self.zeta ** 2, dtype=np.complex128
         )
         self.A_matrix = np.array([[0.0, 1.0], [-self.omega ** 2, -damping]])
 

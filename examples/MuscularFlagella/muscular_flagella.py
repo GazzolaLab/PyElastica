@@ -11,10 +11,10 @@ from examples.MuscularFlagella.post_processing import (
     plot_com_position_vs_time,
     plot_position_vs_time_comparison_cpp,
 )
-from examples.MuscularFlagella.MuscularFlagellaConnection import (
-    MuscularFlagellConnection,
+from examples.MuscularFlagella.connection_flagella import (
+    MuscularFlagellaConnection,
 )
-from examples.MuscularFlagella.FlagellaMuscleForces import MuscleForces
+from examples.MuscularFlagella.muscle_forces_flagella import MuscleForces
 
 
 class MuscularFlagellaSimulator(
@@ -167,7 +167,7 @@ muscular_flagella_sim.connect(
     first_connect_idx=body_connection_idx,
     second_connect_idx=muscle_connection_idx,
 ).using(
-    MuscularFlagellConnection,
+    MuscularFlagellaConnection,
     k=k_connection,
     normal=normal,
 )

@@ -6,7 +6,7 @@ import sys
 # System imports
 import numpy as np
 from test_rod_nb import MockTestRod
-from elastica._elastica_numba._boundary_conditions import (
+from elastica.boundary_conditions import (
     FreeRod,
     OneEndFixedRod,
     HelicalBucklingBC,

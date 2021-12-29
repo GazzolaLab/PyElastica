@@ -4,10 +4,10 @@ import pytest
 from elastica.utils import Tolerance
 
 
-from elastica._elastica_numba._rod._data_structures import _RodSymplecticStepperMixin
-from elastica._elastica_numba._rotations import _get_rotation_matrix
+from elastica.rod.data_structures import _RodSymplecticStepperMixin
+from elastica._rotations import _get_rotation_matrix
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
-from elastica._elastica_numba._rod._data_structures import (
+from elastica.rod.data_structures import (
     overload_operator_dynamic_numba,
     overload_operator_kinematic_numba,
 )

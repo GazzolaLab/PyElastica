@@ -33,27 +33,27 @@ def make_block_memory_metadata(n_elems_in_rods):
     # n_voronoi_with_ghosts = np.sum(n_voronois_in_rods) + 3 * (n_rods - 1)
 
     # To be nulled
-    ghost_nodes_idx = np.zeros(((n_rods - 1),), dtype=np.int)
+    ghost_nodes_idx = np.zeros(((n_rods - 1),), dtype=np.int64)
     ghost_nodes_idx[:] = n_nodes_in_rods[:-1]
     ghost_nodes_idx = np.cumsum(ghost_nodes_idx)
     # Add [0, 1, 2, ... n_rods-2] to the ghost_nodes idx to accommodate miscounting
-    ghost_nodes_idx += np.arange(0, n_rods - 1, dtype=np.int)
+    ghost_nodes_idx += np.arange(0, n_rods - 1, dtype=np.int64)
 
-    ghost_elems_idx = np.zeros((2 * (n_rods - 1),), dtype=np.int)
+    ghost_elems_idx = np.zeros((2 * (n_rods - 1),), dtype=np.int64)
     ghost_elems_idx[::2] = n_elems_in_rods[:-1]
     ghost_elems_idx[1::2] = 1
     ghost_elems_idx = np.cumsum(ghost_elems_idx)
     # Add [0, 0, 1, 1, 2, 2, ... n_rods-2, n_rods-2] to the ghost_elems idx to accommodate miscounting
-    ghost_elems_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int), 2)
+    ghost_elems_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int64), 2)
 
-    ghost_voronoi_idx = np.zeros((3 * (n_rods - 1),), dtype=np.int)
+    ghost_voronoi_idx = np.zeros((3 * (n_rods - 1),), dtype=np.int64)
     ghost_voronoi_idx[::3] = n_voronois_in_rods[:-1]
     ghost_voronoi_idx[1::3] = 1
     ghost_voronoi_idx[2::3] = 1
     ghost_voronoi_idx = np.cumsum(ghost_voronoi_idx)
     # Add [0, 0, 0, 1, 1, 1, 2, 2, 2, ... n_rods-2, n_rods-2, n_rods-2] to the ghost_voronoi idx
     # to accommodate miscounting
-    ghost_voronoi_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int), 3)
+    ghost_voronoi_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int64), 3)
 
     return n_elems_with_ghosts, ghost_nodes_idx, ghost_elems_idx, ghost_voronoi_idx
 
@@ -70,7 +70,7 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
 
     def __init__(self, systems: Sequence):
 
-        self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int)
+        self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int64)
         self.n_rods = len(systems)
         (
             self.n_elems,

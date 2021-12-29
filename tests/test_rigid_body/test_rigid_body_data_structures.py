@@ -108,7 +108,7 @@ class TestSteppersAgainstRigidBodyLikeSystems:
     # @pytest.mark.xfail
     # @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
     # def test_explicit_against_ellipse_motion(self, explicit_stepper):
-    #     from elastica._elastica_numba._systems._analytical import (
+    #     from elastica._systems._analytical import (
     #         SimpleSystemWithPositionsDirectors,
     #     )
     #
