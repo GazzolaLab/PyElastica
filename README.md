@@ -96,6 +96,14 @@ Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica:
 }
 ```
 
+## Contributors ✨
+_Names arranged alphabetically_
+- Arman Tekinalp (LEAD)
+- Noel Naughton 
+- [Seung Hyun Kim](https://github.com/skim0119)
+- Tejaswin Parthasarathy
+- Yashraj Bhosale
+
 [//]: # (Collection of URLs.)
 
 [link-project-website]: https://cosseratrods.org
