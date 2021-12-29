@@ -214,16 +214,12 @@ class _Connect:
             # The addition of +1 and and <= check on the RHS is because
             # connections can be made to the node indices as well
             assert (
-                -(self._first_sys_n_lim + 1)
-                <= first_idx
-                <= self._first_sys_n_lim
+                -(self._first_sys_n_lim + 1) <= first_idx <= self._first_sys_n_lim
             ), "Connection index of first rod exceeds its dof : {}".format(
                 self._first_sys_n_lim
             )
             assert (
-                -(self._second_sys_n_lim + 1)
-                <= second_idx
-                <= self._second_sys_n_lim
+                -(self._second_sys_n_lim + 1) <= second_idx <= self._second_sys_n_lim
             ), "Connection index of second rod exceeds its dof : {}".format(
                 self._second_sys_n_lim
             )
