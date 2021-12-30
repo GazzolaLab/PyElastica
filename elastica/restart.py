@@ -41,7 +41,7 @@ def save_state(simulator, directory: str = "", time=0.0, verbose: bool = False):
     """
     os.makedirs(directory, exist_ok=True)
     for idx, rod in enumerate(simulator):
-        path = os.path.join(directory, "rod_{}.npz".format(idx))
+        path = os.path.join(directory, "system_{}.npz".format(idx))
         np.savez(path, time=time, **rod.__dict__)
 
     if verbose:
@@ -69,7 +69,7 @@ def load_state(simulator, directory: str = "", verbose: bool = False):
     """
     time_list = []  # Simulation time of rods when they are saved.
     for idx, rod in enumerate(simulator):
-        path = os.path.join(directory, "rod_{}.npz".format(idx))
+        path = os.path.join(directory, "system_{}.npz".format(idx))
         data = np.load(path, allow_pickle=True)
         for key, value in data.items():
             if key == "time":
