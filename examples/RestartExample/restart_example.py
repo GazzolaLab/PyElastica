@@ -44,8 +44,6 @@ shearable_rod = CosseratRod.straight_rod(
 )
 
 restart_example_simulator.append(shearable_rod)
-
-restart_example_simulator.append(shearable_rod)
 restart_example_simulator.constrain(shearable_rod).using(
     OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
