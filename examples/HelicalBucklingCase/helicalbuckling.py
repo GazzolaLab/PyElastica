@@ -1,15 +1,11 @@
-# import numpy as np
+__doc__ = """Helical buckling validation case, for detailed explanation refer to 
+Gazzola et. al. R. Soc. 2018  section 3.4.1 """
 
-# FIXME without appending sys.path make it more generic
+import numpy as np
 import sys
 
+# FIXME without appending sys.path make it more generic
 sys.path.append("../../")
-
-# from elastica.wrappers import BaseSystemCollection, Constraints, Forcing
-# from elastica.rod.cosserat_rod import CosseratRod
-# from elastica.boundary_conditions import HelicalBucklingBC
-# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-# from elastica.timestepper import integrate
 from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     plot_helicalbuckling,
@@ -40,9 +36,12 @@ nu = 0.01
 E = 1e6
 slack = 3
 number_of_rotations = 27
-# For shear modulus of 1e4, nu is 99!
-poisson_ratio = 99
-shear_matrix = np.repeat(1e5 * np.identity((3))[:, :, np.newaxis], n_elem, axis=2)
+# For shear modulus of 1e5, nu is 99!
+poisson_ratio = 9
+shear_modulus = E / (poisson_ratio + 1.0)
+shear_matrix = np.repeat(
+    shear_modulus * np.identity((3))[:, :, np.newaxis], n_elem, axis=2
+)
 temp_bend_matrix = np.zeros((3, 3))
 np.fill_diagonal(temp_bend_matrix, [1.345, 1.345, 0.789])
 bend_matrix = np.repeat(temp_bend_matrix[:, :, np.newaxis], n_elem - 1, axis=2)
@@ -57,7 +56,7 @@ shearable_rod = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
 

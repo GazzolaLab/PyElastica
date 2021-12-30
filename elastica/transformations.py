@@ -3,7 +3,7 @@ __all__ = ["skew_symmetrize", "inv_skew_symmetrize", "rotate"]
 
 import numpy as np
 
-from elastica._elastica_numpy._rotations import (
+from elastica._rotations import (
     _inv_skew_symmetrize,
     _skew_symmetrize,
     _rotate,

@@ -21,11 +21,11 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Elastica'
-copyright = '2020, Gazzola Lab'
+copyright = '2022, Gazzola Lab'
 author = 'Gazzola Lab'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '0.2.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -55,6 +55,8 @@ source_parsers = {
    '.md': 'recommonmark.parser.CommonMarkParser',
 }
 source_suffix = ['.rst', '.md']
+
+master_doc = 'index'
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

@@ -1,28 +1,12 @@
-import numpy as np
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+methods section."""
 
-# FIXME without appending sys.path make it more generic
+import numpy as np
 import sys
 
+# FIXME without appending sys.path make it more generic
 sys.path.append("../../")
-
-
-# import os
-# from collections import defaultdict
-# from elastica.wrappers import (
-#     BaseSystemCollection,
-#     Connections,
-#     Constraints,
-#     Forcing,
-#     CallBacks,
-# )
-# from elastica.rod.cosserat_rod import CosseratRod
-# from elastica.boundary_conditions import OneEndFixedRod
-# from elastica.joint import FreeJoint
-# from elastica.callback_functions import CallBackBaseClass
-# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-# from elastica.timestepper import integrate
 from elastica import *
-
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )
@@ -54,6 +38,7 @@ density = 1750
 nu = 1e-3
 E = 3e7
 poisson_ratio = 0.5
+shear_modulus = E / (poisson_ratio + 1.0)
 
 start_rod_1 = np.zeros((3,))
 start_rod_2 = start_rod_1 + direction * base_length
@@ -69,7 +54,7 @@ rod1 = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod1)
 # Create rod 2
@@ -83,7 +68,7 @@ rod2 = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod2)
 
@@ -109,6 +94,7 @@ spherical_joint_sim.add_forcing_to(rod2).using(
     normal_direction=normal,
 )
 
+
 # Callback functions
 # Add call backs
 class TestJoints(CallBackBaseClass):
@@ -133,14 +119,13 @@ class TestJoints(CallBackBaseClass):
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-# FIXME change callback_of to collect_diagnostics
+
 spherical_joint_sim.collect_diagnostics(rod1).using(
     TestJoints, step_skip=1000, callback_params=pp_list_rod1
 )
 spherical_joint_sim.collect_diagnostics(rod2).using(
     TestJoints, step_skip=1000, callback_params=pp_list_rod2
 )
-
 
 spherical_joint_sim.finalize()
 timestepper = PositionVerlet()
