@@ -96,13 +96,15 @@ Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica:
 }
 ```
 
-## Contributors ✨
+## Senior Developers ✨
 _Names arranged alphabetically_
-- Arman Tekinalp (LEAD)
-- Noel Naughton 
+- Arman Tekinalp
+- Chia-Hsien Shih (Cathy)
+- Fan Kiat Chan
+- Noel Naughton
 - [Seung Hyun Kim](https://github.com/skim0119)
-- Tejaswin Parthasarathy
-- Yashraj Bhosale
+- Tejaswin Parthasarathy (Teja)
+- Yashraj Bhosale (Yash)
 
 [//]: # (Collection of URLs.)
 
