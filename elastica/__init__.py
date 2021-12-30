@@ -11,3 +11,4 @@ from elastica.callback_functions import *
 from elastica.interaction import *
 from elastica.joint import *
 from elastica.timestepper import *
+from elastica.restart import *

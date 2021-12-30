@@ -68,7 +68,9 @@ def extend_stepper_interface(Stepper, System):
 
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
-def integrate(StatefulStepper, System, final_time: float, n_steps: int = 1000):
+def integrate(
+    StatefulStepper, System, final_time: float, n_steps: int = 1000, **kwargs
+):
     assert final_time > 0.0, "Final time is negative!"
     assert n_steps > 0, "Number of integration steps is negative!"
 
@@ -79,7 +81,7 @@ def integrate(StatefulStepper, System, final_time: float, n_steps: int = 1000):
     do_step, stages_and_updates = extend_stepper_interface(StatefulStepper, System)
 
     dt = np.float64(float(final_time) / n_steps)
-    time = np.float64(0.0)
+    time = kwargs.get("restart_time", np.float64(0.0))
 
     from tqdm import tqdm
 
@@ -87,4 +89,4 @@ def integrate(StatefulStepper, System, final_time: float, n_steps: int = 1000):
         time = do_step(StatefulStepper, stages_and_updates, System, time, dt)
 
     print("Final time of simulation is : ", time)
-    return
+    return time
