@@ -93,7 +93,7 @@ jobs:
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-            echo "CODECOV_TOKEN=94895f9a-26ac-4621-8091-2a2d04dd7e87" >> $GITHUB_ENV
+            echo "CODECOV_TOKEN=ca23d33f-c704-4cf8-b5ff-dacefe26c494" >> $GITHUB_ENV
           fi
         
       # Test Pyelastica using pytest
