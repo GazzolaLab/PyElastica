@@ -3,7 +3,7 @@ import numpy as np
 from typing import Sequence
 
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.memory_block import _reset_scalar_ghost
+from elastica.reset_functions_for_block_structure import _reset_scalar_ghost
 from elastica.rod.cosserat_rod import CosseratRod
 
 

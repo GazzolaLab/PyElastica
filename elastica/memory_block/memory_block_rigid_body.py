@@ -7,7 +7,7 @@ from elastica.rigidbody import RigidBodyBase, Cylinder
 # from elastica.rigidbody.rigid_body import RigidBody
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.memory_block import _reset_scalar_ghost
+from elastica.reset_functions_for_block_structure import _reset_scalar_ghost
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody import sphere, cylinder
 from elastica._linalg import _batch_matvec, _batch_cross
