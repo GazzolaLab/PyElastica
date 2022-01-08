@@ -9,7 +9,6 @@ def envelope(arg_pos):
     """
     Given points, computes the arc length and envelope of the curve
     """
-    n_points = arg_pos.shape[1]
 
     # Computes the direction in which the rod points
     # in our cases it should be the z-axis
@@ -37,16 +36,15 @@ def envelope(arg_pos):
 
 
 def analytical_solution(L, n_elem=10000):
-    """ Gives the analytical solution of the helicalbuckling case
-    """
+    """Gives the analytical solution of the helicalbuckling case"""
     # Physical parameters, set from the simulation
     B = 1.345
-    C = 0.789
-    gamma = C / B
-    R = 27.0 * 2.0 * np.pi
-    d = 0.03
-    D = d * L
-    nu = 1.0 / gamma - 1.0
+    # C = 0.789
+    # gamma = C / B
+    # R = 27.0 * 2.0 * np.pi
+    # d = 0.03
+    # D = d * L
+    # nu = 1.0 / gamma - 1.0
 
     # These are magic constants, but you can obtain them by solving
     # this equation (accoring to matlab syntax)
@@ -63,7 +61,7 @@ def analytical_solution(L, n_elem=10000):
 
     # Compute maximum envelope angle according to Eq. 13 of "Writhing
     # instabilities of twisted rods: from infinite to finite length", 2001
-    thetaMax = np.arccos(moment * moment / (2.0 * tension) - 1.0)
+    # thetaMax = np.arccos(moment * moment / (2.0 * tension) - 1.0)
 
     # Compute actual end torque and tension according to "Writhing
     # instabilities of twisted rods: from infinite to finite length", 2001
@@ -72,7 +70,7 @@ def analytical_solution(L, n_elem=10000):
 
     # Compute dimensionless load according to Eq. 30 of "Helical and localised
     # buckling in twisted rods: a unified analysis of the symmetric case", 2000
-    m = M / np.sqrt(B * T)
+    # m = M / np.sqrt(B * T)
 
     # Setup for analytical curve calculation
     s = np.linspace(-0.5, 0.5, n_elem)

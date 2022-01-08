@@ -10,19 +10,18 @@ from setuptools import Command, find_packages, setup
 # Package meta-data.
 NAME = "pyelastica"
 DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
-URL = "https://github.com/mattialabteam/elastica-python"
+URL = "https://github.com/GazzolaLab/PyElastica"
 EMAIL = "armant2@illinois.edu"
-AUTHOR = "MattiaLab"
-REQUIRES_PYTHON = ">=3.4.0"
-VERSION = "0.0.1"
+AUTHOR = "GazzolaLab"
+REQUIRES_PYTHON = ">=3.5.0"
+VERSION = "0.2.0.post1"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["numpy", "matplotlib", "scipy", "tqdm"]
+REQUIRED = ["numpy>=1.19.2", "matplotlib>=3.3.2", "scipy>=1.5.2", "tqdm>=4.61.1", "numba==0.51.0"]
 
 # What packages are optional?
 EXTRAS = {
     "Optimization and Inverse Design": ["cma"],
-    "Kernel acceleration": ["numba"],
 }
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -91,8 +90,9 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=["elastica, examples"],
+    #packages=["elastica"],
     package_dir={"elastica": "./elastica"},
+    packages=find_packages(),
     license="MIT",
     classifiers=[
         # Trove classifiers
@@ -100,7 +100,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -109,7 +108,11 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
     ],
-    download_url="https://github.com/mattialab/elastica-python/archive/master.zip",
+    download_url="https://github.com/GazzolaLab/PyElastica/archive/refs/tags/0.2.0.post1.tar.gz",
     install_requires=REQUIRED,
     extras_require=EXTRAS,
+    # $ setup.py publish support: We don't know how to use this part. We already know how to publish.!
+    #cmdclass={
+    #    'upload': UploadCommand,
+    #},
 )

@@ -229,3 +229,9 @@ outcmaes/*
 
 # pickle files
 *.pickle
+
+# zip files
+*.zip
+
+# csv files
+*.csv

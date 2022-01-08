@@ -1,0 +1,107 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push request
+# events for the master branch, and pull request events for all branches.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ '**' ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }} #ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest] # Run macos tests if really required, since they charge 10 times more for macos
+        python-version: [3.6, 3.7, 3.8]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      # Ref: https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      
+      # Cache the pip requirmenets for other tests. If requirements cached use them to speed up the build.
+      # Ref: https://github.com/actions/cache/blob/main/examples.md#python---pip 
+      - name: Cache pip Linux
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Cache pip MacOS
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'macOS')
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - name: Cache pip Windows
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Windows')
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          echo update pip
+          python -m pip install --upgrade pip
+          echo update requirments
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          echo update test requirements
+          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
+    
+      # Runs a single command using the runners shell
+      - name: Welcome message
+        run: echo Hello, world! Welcome PyElastica Build, lets start testing!
+      
+      # Formatting test with black and flake8
+      - name: Black and Flake8 formatting tests
+        run: |
+          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+            black --version
+            black --check elastica tests
+            flake8 --version
+            flake8 elastica tests 
+          fi
+          
+      # Set environment variables for coverage test. Coverage test is done using python 3.6
+      # For the coverage test we disable numba jit compilation, since it prevents generating coverage data.
+      - name: Set environment variables for coverage test
+        run: |
+          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+            echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
+            echo "CODECOV_TOKEN=ca23d33f-c704-4cf8-b5ff-dacefe26c494" >> $GITHUB_ENV
+          fi
+        
+      # Test Pyelastica using pytest
+      - name: Test PyElastica using pytest
+        run: |
+          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+            python3 -m pytest --cov=elastica --cov-report=xml
+            codecov
+          else
+            python3 -m pytest
+          fi

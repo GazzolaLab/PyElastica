@@ -9,16 +9,8 @@ sys.path.append("../../")
 from matplotlib import pyplot as plt
 
 
-# from elastica.wrappers import BaseSystemCollection, CallBacks
-# from elastica.rod.cosserat_rod import CosseratRod, _CosseratRodBase
-# from elastica.callback_functions import CallBackBaseClass
-# from elastica.utils import MaxDimension
-# from elastica.timestepper.symplectic_steppers import PositionVerlet
-# from elastica.timestepper import integrate
 from elastica import *
 from elastica.utils import MaxDimension
-
-# from elastica._elastica_numpy._rod._cosserat_rod import _CosseratRodBase
 
 
 class ButterflySimulator(BaseSystemCollection, CallBacks):
@@ -58,17 +50,6 @@ nu = 0.0
 youngs_modulus = 1e4
 poisson_ratio = 0.5
 
-# # FIXME: Make sure G=E/(poisson_ratio+1.0) in wikipedia it is different
-# # Shear Modulus
-# shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-#
-# # Second moment of inertia
-# A0 = np.pi * base_radius * base_radius
-# I0_1 = A0 * A0 / (4.0 * np.pi)
-# I0_2 = I0_1
-# I0_3 = 2.0 * I0_2
-# I0 = np.array([I0_1, I0_2, I0_3])
-
 positions = np.empty((MaxDimension.value(), n_elem + 1))
 dl = total_length / n_elem
 
@@ -85,65 +66,6 @@ positions[..., half_n_elem:] = positions[
     - np.sin(angle_of_inclination) * vertical_direction
 )
 
-# directors = np.empty((MaxDimension.value(), MaxDimension.value(), n_elem))
-# directors[..., :half_n_elem] = np.array(
-#     (
-#         [np.cos(angle_of_inclination), 0.0, -np.sin(angle_of_inclination)],
-#         [0.0, 1.0, 0.0],
-#         [np.sin(angle_of_inclination), 0.0, np.cos(angle_of_inclination)],
-#     )
-# ).reshape(3, 3, -1)
-# directors[..., half_n_elem:] = np.array(
-#     (
-#         [np.cos(angle_of_inclination), 0.0, np.sin(angle_of_inclination)],
-#         [0.0, 1.0, 0.0],
-#         [-np.sin(angle_of_inclination), 0.0, np.cos(angle_of_inclination)],
-#     )
-# ).reshape(3, 3, -1)
-#
-# position_diff = positions[..., 1:] - positions[..., :-1]
-# rest_lengths = np.sqrt(np.einsum("ij,ij->j", position_diff, position_diff))
-#
-#
-# # Mass second moment of inertia for disk cross-section
-# mass_second_moment_of_inertia = np.zeros(
-#     (MaxDimension.value(), MaxDimension.value()), np.float64
-# )
-# np.fill_diagonal(mass_second_moment_of_inertia, I0 * density * dl)
-# inertia_collection = np.repeat(
-#     mass_second_moment_of_inertia[:, :, np.newaxis], n_elem, axis=2
-# )
-
-# temporary_rod = _CosseratRodBase(
-#     n_elements=n_elem,
-#     position=positions,
-#     directors=directors,
-#     rest_lengths=rest_lengths,
-#     density=density,
-#     volume=np.pi * base_radius ** 2 * rest_lengths,
-#     mass_second_moment_of_inertia=inertia_collection,
-#     nu=nu,
-# )
-
-
-# # Shear/Stretch matrix
-# shear_matrix = np.zeros((MaxDimension.value(), MaxDimension.value()), np.float64)
-# np.fill_diagonal(
-#     shear_matrix,
-#     [
-#         4.0 / 3.0 * shear_modulus * A0,
-#         4.0 / 3.0 * shear_modulus * A0,
-#         youngs_modulus * A0,
-#     ],
-# )
-#
-# # Bend/Twist matrix
-# bend_matrix = np.zeros((MaxDimension.value(), MaxDimension.value()), np.float64)
-# np.fill_diagonal(
-#     bend_matrix, [youngs_modulus * I0_1, youngs_modulus * I0_2, shear_modulus * I0_3],
-# )
-
-# butterfly_rod = CosseratRod(n_elem, shear_matrix, bend_matrix, temporary_rod)
 butterfly_rod = CosseratRod.straight_rod(
     n_elem,
     start=origin.reshape(3),

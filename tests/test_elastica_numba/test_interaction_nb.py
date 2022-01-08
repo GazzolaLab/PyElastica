@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._elastica_numba._interaction import (
+from elastica.interaction import (
     InteractionPlane,
     find_slipping_elements,
     AnisotropicFrictionalPlane,
@@ -12,11 +12,10 @@ from elastica._elastica_numba._interaction import (
     SlenderBodyTheory,
 )
 
-# from test_rod import TestRod
-from test_rod_nb import TestRod
+from test_rod_nb import MockTestRod
 
 
-class BaseRodClass(TestRod):
+class BaseRodClass(MockTestRod):
     def __init__(self, n_elem):
         """
         This class initialize a straight rod,
@@ -795,7 +794,6 @@ try:
 
             output = node_to_element_pos_or_vel(input_variable)
             assert_allclose(correct_output, output, atol=Tolerance.atol())
-
 
 except ImportError:
     pass

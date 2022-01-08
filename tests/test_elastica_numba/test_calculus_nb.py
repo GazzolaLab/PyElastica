@@ -5,11 +5,13 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica._elastica_numba._calculus import (
+from elastica._calculus import (
     _trapezoidal,
     _two_point_difference,
     _clip_array,
     _isnan_check,
+    _trapezoidal_for_block_structure,
+    _two_point_difference_for_block_structure,
 )
 
 
@@ -100,6 +102,34 @@ def test_trapezoidal_correctness():
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
+def test_trapezoidal_for_block_structure_correctness():
+    """
+    This test is testing the validity of trapezoidal rule for block structure implementation.
+    Here we are using the _trapezoidal for validity check, because it is already tested in the
+    above test function.
+
+    Returns
+    -------
+
+    """
+
+    blocksize = 30
+    ghost_idx = np.array([14, 15])
+    input_vector = np.random.randn(3, blocksize)
+
+    correct_vector = np.hstack(
+        (
+            _trapezoidal(input_vector[..., : ghost_idx[0]]),
+            np.zeros((3, 1)),
+            _trapezoidal(input_vector[..., ghost_idx[1] + 1 :]),
+        )
+    )
+
+    test_vector = _trapezoidal_for_block_structure(input_vector, ghost_idx)
+
+    assert_allclose(test_vector, correct_vector, atol=Tolerance.atol())
+
+
 def test_two_point_difference_correctness():
     """
     Tests difference of a function f:[a,b]-> R, i.e
@@ -132,6 +162,34 @@ def test_two_point_difference_correctness():
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
+def test_two_point_difference_for_block_structure_correctness():
+    """
+    This test is testing the validity of two_point_difference rule for block structure implementation.
+    Here we are using the _two_point_difference for validity check, because it is already tested in the
+    above test function.
+
+    Returns
+    -------
+
+    """
+
+    blocksize = 30
+    ghost_idx = np.array([14, 15])
+    input_vector = np.random.randn(3, blocksize)
+
+    correct_vector = np.hstack(
+        (
+            _two_point_difference(input_vector[..., : ghost_idx[0]]),
+            np.zeros((3, 1)),
+            _two_point_difference(input_vector[..., ghost_idx[1] + 1 :]),
+        )
+    )
+
+    test_vector = _two_point_difference_for_block_structure(input_vector, ghost_idx)
+
+    assert_allclose(test_vector, correct_vector, atol=Tolerance.atol())
+
+
 def test_clip_array():
     """
     Test _clip array function.
@@ -142,7 +200,7 @@ def test_clip_array():
 
     blocksize = 100
     input_array = np.hstack(
-        (np.random.rand(blocksize), -1.0 * np.random.rand(blocksize))
+        (10 * np.random.rand(blocksize), -10 * np.random.rand(blocksize))
     )
 
     vmin = -1

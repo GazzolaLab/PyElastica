@@ -4,8 +4,8 @@ __doc__ = """Test Cosserat rod governing equations for Numba implementation"""
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
-from elastica._elastica_numba._linalg import _batch_matvec
-from elastica._elastica_numba._rod._cosserat_rod import (
+from elastica._linalg import _batch_matvec
+from elastica.rod.cosserat_rod import (
     CosseratRod,
     _compute_geometry_from_state,
     _compute_all_dilatations,
@@ -18,6 +18,8 @@ from elastica._elastica_numba._rod._cosserat_rod import (
     _compute_bending_twist_strains,
     _compute_damping_torques,
     _compute_internal_torques,
+    _update_accelerations,
+    _get_z_vector,
 )
 import pytest
 
@@ -35,6 +37,7 @@ class BaseClass:
         self.nu = nu
         self.E = 1
         self.poisson_ratio = 0.5
+        self.shear_modulus = self.E / (self.poisson_ratio + 1.0)
 
 
 def constructor(n_elem, nu=0.0):
@@ -50,8 +53,13 @@ def constructor(n_elem, nu=0.0):
         cls.density,
         cls.nu,
         cls.E,
-        cls.poisson_ratio,
+        shear_modulus=cls.shear_modulus,
     )
+
+    # Ghost needed for Cosserat rod functions adapted for block structure.
+    rod.ghost_elems_idx = np.empty((0), dtype=int)
+    rod.ghost_voronoi_idx = np.empty((0), dtype=int)
+
     return cls, rod
 
 
@@ -278,11 +286,11 @@ class TestingClass:
     @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
     def test_case_compute_shear_stretch_strains(self, n_elem, dilatation):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation  strains.
-            This test function tests
-                _compute_shear_stretch_strains
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation  strains.
+        This test function tests
+            _compute_shear_stretch_strains
         """
         initial, test_rod = constructor(n_elem)
         test_rod.position_collection *= dilatation
@@ -310,11 +318,11 @@ class TestingClass:
         self, n_elem, dilatation
     ):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation stresses.
-            This test function tests
-                _compute_internal_shear_stretch_stresses_from_model
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation stresses.
+        This test function tests
+            _compute_internal_shear_stretch_stresses_from_model
         """
 
         initial, test_rod = constructor(n_elem)
@@ -346,11 +354,11 @@ class TestingClass:
     @pytest.mark.parametrize("dilatation", [0.1, 0.2, 0.3, 0.5, 1.0, 1.1])
     def test_case_compute_internal_forces(self, n_elem, dilatation):
         """
-            This test case initializes a straight rod. We modify node positions
-            and compress the rod numerically. By doing that we impose shear stress
-            in the rod and check, computation stresses.
-            This test function tests
-                _compute_internal_shear_stretch_stresses_from_model
+        This test case initializes a straight rod. We modify node positions
+        and compress the rod numerically. By doing that we impose shear stress
+        in the rod and check, computation stresses.
+        This test function tests
+            _compute_internal_shear_stretch_stresses_from_model
         """
         initial, test_rod = constructor(n_elem)
         test_rod.position_collection *= dilatation
@@ -375,6 +383,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            ghost_elems_idx=np.empty((0), dtype=int),
         )
 
         assert_allclose(
@@ -385,14 +394,14 @@ class TestingClass:
     @pytest.mark.parametrize("nu", [0.1, 0.2, 0.5, 2])
     def test_compute_damping_forces_torques(self, n_elem, nu):
         """
-            In this test case, we initialize a straight rod and modify
-            velocities of nodes and angular velocities of elements.
-            By doing that we can test damping forces on nodes and
-            damping torques on elements.
-            This test function tests
-                _compute_damping_forces
-                _compute_damping_torques
-         """
+        In this test case, we initialize a straight rod and modify
+        velocities of nodes and angular velocities of elements.
+        By doing that we can test damping forces on nodes and
+        damping torques on elements.
+        This test function tests
+            _compute_damping_forces
+            _compute_damping_torques
+        """
         # This is an artificial test, this part exists just to
         # keep our coverage percentage.
 
@@ -427,6 +436,7 @@ class TestingClass:
             test_rod.velocity_collection,
             test_rod.dissipation_constant_for_forces,
             test_rod.lengths,
+            test_rod.ghost_elems_idx,
         )
         _compute_damping_torques(
             test_rod.damping_torques,
@@ -445,16 +455,16 @@ class TestingClass:
     @pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
     def test_case_bend_straight_rod(self, alpha):
         """
-            In this test case we initialize a straight rod with 2 elements
-            and numerically bend the rod. We modify node positions and directors
-            to make a isosceles triangle. Then first we compute curvature
-            between two elements and compute the angle between them.
-            Finally, we compute bend twist couples and compare with
-            correct solution.
-            This test function tests
-                _compute_bending_twist_strains
-                _compute_internal_torques
-                only bend_twist_couple terms.
+        In this test case we initialize a straight rod with 2 elements
+        and numerically bend the rod. We modify node positions and directors
+        to make a isosceles triangle. Then first we compute curvature
+        between two elements and compute the angle between them.
+        Finally, we compute bend twist couples and compare with
+        correct solution.
+        This test function tests
+            _compute_bending_twist_strains
+            _compute_internal_torques
+            only bend_twist_couple terms.
         """
 
         n_elem = 2
@@ -602,6 +612,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         assert_allclose(
@@ -610,16 +621,16 @@ class TestingClass:
 
     def test_case_shear_torque(self):
         """
-            In this test case we initialize a straight rod with two elements
-            and set bending matrix to zero. This gives us opportunity decouple
-            shear torque from twist and bending torques in internal torques
-            equation. Then we modify node positions of second element and
-            introduce artificial bending. Finally, we compute shear torque
-            using internal torque function and compare with analytical value.
-            This test case is for testing shear torque term,
-            in internal torques equation.
-            Tested function
-                _compute_internal_torques
+        In this test case we initialize a straight rod with two elements
+        and set bending matrix to zero. This gives us opportunity decouple
+        shear torque from twist and bending torques in internal torques
+        equation. Then we modify node positions of second element and
+        introduce artificial bending. Finally, we compute shear torque
+        using internal torque function and compare with analytical value.
+        This test case is for testing shear torque term,
+        in internal torques equation.
+        Tested function
+            _compute_internal_torques
 
         """
         n_elem = 2
@@ -690,6 +701,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         assert_allclose(
@@ -698,22 +710,22 @@ class TestingClass:
 
     def test_case_lagrange_transport_unsteady_dilatation(self):
         """
-            In this test case, we initialize a straight rod. Then we modify
-            angular velocity of elements and set mass moment of inertia
-            to identity matrix. By doing this we need to get zero torque
-            due lagrangian transport term, because of Jwxw, J=I, wxw=0.
-            Next we test unsteady dilatation contribution to internal
-            torques, by setting dilatation rate to 1 and recover initialized
-            angular velocity back, de/dt * Jw = w , de/dt=1 J=I.
+        In this test case, we initialize a straight rod. Then we modify
+        angular velocity of elements and set mass moment of inertia
+        to identity matrix. By doing this we need to get zero torque
+        due lagrangian transport term, because of Jwxw, J=I, wxw=0.
+        Next we test unsteady dilatation contribution to internal
+        torques, by setting dilatation rate to 1 and recover initialized
+        angular velocity back, de/dt * Jw = w , de/dt=1 J=I.
 
-            This test function tests
-                _compute_internal_torques
-            only lagrange transport and
-            unsteady dilatation terms, tested numerically.
-            Note that, viscous dissipation set to 0,
-            since we don't want any contribution from
-            damping torque.
-       """
+        This test function tests
+            _compute_internal_torques
+        only lagrange transport and
+        unsteady dilatation terms, tested numerically.
+        Note that, viscous dissipation set to 0,
+        since we don't want any contribution from
+        damping torque.
+        """
 
         n_elem = 2
         initial, test_rod = constructor(n_elem, nu=0.0)
@@ -763,6 +775,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            test_rod.ghost_elems_idx,
         )
 
         # Lets set angular velocity omega to arbitray numbers
@@ -793,6 +806,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            ghost_voronoi_idx=np.empty((0), dtype=int),
         )
 
         # computed internal torques has to be zero. Internal torques created by Lagrangian
@@ -846,6 +860,7 @@ class TestingClass:
             test_rod.dissipation_constant_for_torques,
             test_rod.damping_torques,
             test_rod.internal_torques,
+            test_rod.ghost_voronoi_idx,
         )
 
         # Total internal torque has to be equal to angular velocity omega.
@@ -856,80 +871,78 @@ class TestingClass:
             test_rod.internal_torques, correct_torques, atol=Tolerance.atol()
         )
 
-    @pytest.mark.skip(reason="expects deprecated rod interface")
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_get_functions(self, n_elem):
+    def test_compute_internal_forces_and_torques(self, n_elem):
         """
-            In this test case, we initialize a straight rod. First
-            we set velocity and angular velocity to random values,
-            and we recover back initialized values using `get_velocity`
-            and `get_angular_velocity` functions. Then, we set random
-            external forces and torques. We compute translational
-            accelerations and angular accelerations based on external
-            forces and torques. Finally we use `get_acceleration` and
-            `get_angular_acceleration` functions and compare returned
-            translational acceleration and angular acceleration with
-            analytically computed ones.
-            This test case tests,
-                get_velocity
-                get_angular_velocity
-                get_acceleration
-                get_angular_acceleration
-            Note that, viscous dissipation set to 0,
-            since we don't want any contribution from
-            damping torque.
+        This function is only used to test the wrapper method in Cosserat Rod to call internal forces and torques.
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem, nu=0.0)
+
+        test_rod.compute_internal_forces_and_torques(time=0)
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_update_acceleration(self, n_elem):
+        """
+        In this test case, we initialize a straight rod.
+        We set correct parameters for rod mass, dilatation, mass moment of inertia
+        and call the function update_accelerations and compare the angular and
+        translational acceleration with the correct values.
+        This test case tests,
+            update_accelerations
+            _update_accelerations
+
         """
 
         initial, test_rod = constructor(n_elem, nu=0.0)
         mass = test_rod.mass
 
-        velocity = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
         external_forces = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
-        omega = np.zeros(3 * n_elem).reshape(3, n_elem)
         external_torques = np.zeros(3 * n_elem).reshape(3, n_elem)
 
         for i in range(0, n_elem):
-            omega[..., i] = np.random.rand(3)
             external_torques[..., i] = np.random.rand(3)
 
         for i in range(0, n_elem + 1):
-            velocity[..., i] = np.random.rand(3)
             external_forces[..., i] = np.random.rand(3)
 
-        test_rod.velocity_collection = velocity
-        test_rod.omega_collection = omega
-
-        assert_allclose(test_rod.get_velocity(), velocity, atol=Tolerance.atol())
-        assert_allclose(test_rod.get_angular_velocity(), omega, atol=Tolerance.atol())
-
-        test_rod.external_forces = external_forces
-        test_rod.external_torques = external_torques
-
-        correct_acceleration = external_forces / mass
-        assert_allclose(
-            test_rod.get_acceleration(), correct_acceleration, atol=Tolerance.atol()
-        )
+        test_rod.external_forces[:] = external_forces
+        test_rod.external_torques[:] = external_torques
 
         # No dilatation in the rods
         dilatations = np.ones(n_elem)
 
-        # Set angular velocity zero, so that we dont have any
-        # contribution from lagrangian transport and unsteady dilatation.
-
-        test_rod.omega_collection[:] = 0.0
         # Set mass moment of inertia matrix to identity matrix for convenience.
         # Inverse of identity = identity
         inv_mass_moment_of_inertia = np.repeat(
             np.identity(3)[:, :, np.newaxis], n_elem, axis=2
         )
-        test_rod.inv_mass_second_moment_of_inertia = inv_mass_moment_of_inertia
+        test_rod.inv_mass_second_moment_of_inertia[:] = inv_mass_moment_of_inertia
+
+        # Compute acceleration
+        test_rod.update_accelerations(time=0)
+
+        correct_acceleration = external_forces / mass
+        assert_allclose(
+            test_rod.acceleration_collection,
+            correct_acceleration,
+            atol=Tolerance.atol(),
+        )
 
         correct_angular_acceleration = (
             _batch_matvec(inv_mass_moment_of_inertia, external_torques) * dilatations
         )
 
         assert_allclose(
-            test_rod.get_angular_acceleration(),
+            test_rod.alpha_collection,
             correct_angular_acceleration,
             atol=Tolerance.atol(),
         )
@@ -1247,10 +1260,45 @@ class TestingClass:
             test_rod.dissipation_constant_for_forces,
             test_rod.damping_forces,
             test_rod.internal_forces,
+            test_rod.ghost_elems_idx,
         )
         test_shear_energy = test_rod.compute_shear_energy()
 
         assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_zerod_out_external_forces_and_torques(self, n_elem):
+        """
+        This test case is testing function to reset external forces and torques.
+
+        Parameters
+        ----------
+        n_elem
+
+        Returns
+        -------
+
+        """
+
+        initial, test_rod = constructor(n_elem)
+
+        test_rod.zeroed_out_external_forces_and_torques(time=0.0)
+
+        assert_allclose(
+            test_rod.external_forces, np.zeros((3, n_elem + 1)), atol=Tolerance.atol()
+        )
+
+
+def test_get_z_vector_function():
+    """
+    This functions test _get_z_vector function.
+
+    Returns
+    -------
+
+    """
+    correct_z_vector = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
+    assert_allclose(correct_z_vector, _get_z_vector(), atol=Tolerance.atol())
 
 
 if __name__ == "__main__":

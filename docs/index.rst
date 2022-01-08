@@ -3,17 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-*********
-Elastica
-*********
+**********************
+Elastica Documentation
+**********************
 
-.. include:: README.rst
+.. include:: intro_page.rst
 
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Elastica Info:
+   :caption: Elastica Overview:
 
    welcome_page
    installation

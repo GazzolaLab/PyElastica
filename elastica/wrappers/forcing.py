@@ -5,6 +5,7 @@ Forcing
 Provides the forcing interface to apply forces and torques to rod-like objects
 (external point force, muscle torques, etc).
 """
+from elastica.interaction import AnisotropicFrictionalPlane
 
 
 class Forcing:
@@ -65,6 +66,17 @@ class Forcing:
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort _ext_forces_torques.
         self._ext_forces_torques.sort(key=lambda x: x[0])
+
+        # Find if there are any friction plane forcing, if add them to the end of the list,
+        # since friction planes uses external forces.
+        friction_plane_index = []
+        for idx, ext_force_torque in enumerate(self._ext_forces_torques):
+            if isinstance(ext_force_torque[1], AnisotropicFrictionalPlane):
+                friction_plane_index.append(idx)
+
+        # Move to the friction forces to the end of the external force and torques list.
+        for index in friction_plane_index:
+            self._ext_forces_torques.append(self._ext_forces_torques.pop(index))
 
     def __call__(self, time, *args, **kwargs):
         for sys_id, ext_force_torque in self._ext_forces_torques:
@@ -133,7 +145,7 @@ class _ExtForceTorque:
         return self._sys_idx
 
     def __call__(self, *args, **kwargs):
-        """ Constructs a constraint after checks
+        """Constructs a constraint after checks
 
         Parameters
         ----------

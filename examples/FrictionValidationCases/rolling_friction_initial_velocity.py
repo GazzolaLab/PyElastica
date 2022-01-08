@@ -1,17 +1,11 @@
-# import numpy as np
+__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018  
+section 4.1.4 and Appendix G """
 
-# FIXME without appending sys.path make it more generic
+import numpy as np
 import sys
 
+# FIXME without appending sys.path make it more generic
 sys.path.append("../../")
-
-# from elastica.wrappers import BaseSystemCollection, Connections, Constraints, Forcing
-# from elastica.rod.cosserat_rod import CosseratRod
-# from elastica.boundary_conditions import FreeRod
-# from elastica.external_forces import GravityForces, UniformTorques
-# from elastica.interaction import AnistropicFrictionalPlane
-# from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-# from elastica.timestepper import integrate
 from elastica import *
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
@@ -48,6 +42,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     E = 1e9
     # For shear modulus of 2E/3
     poisson_ratio = 0.5
+    shear_modulus = E / (poisson_ratio + 1.0)
 
     # Set shear matrix
     shear_matrix = np.repeat(1e4 * np.identity((3))[:, :, np.newaxis], n_elem, axis=2)
@@ -62,7 +57,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
         density,
         nu,
         E,
-        poisson_ratio,
+        shear_modulus=shear_modulus,
     )
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below

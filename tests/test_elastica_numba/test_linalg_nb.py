@@ -6,7 +6,7 @@ __doc__ = (
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from elastica._elastica_numba._linalg import (
+from elastica._linalg import (
     _batch_matvec,
     _batch_matmul,
     _batch_cross,

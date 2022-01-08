@@ -3,28 +3,30 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica._elastica_numba._systems._analytical import (
+from elastica.systems.analytical import (
     ScalarExponentialDecaySystem,
-    UndampedSimpleHarmonicOscillatorSystem,
+    # UndampedSimpleHarmonicOscillatorSystem,
     SymplecticUndampedSimpleHarmonicOscillatorSystem,
-    DampedSimpleHarmonicOscillatorSystem,
-    MultipleFrameRotationSystem,
-    SecondOrderHybridSystem,
+    # DampedSimpleHarmonicOscillatorSystem,
+    # MultipleFrameRotationSystem,
+    # SecondOrderHybridSystem,
     SymplecticUndampedHarmonicOscillatorCollectiveSystem,
     ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
 )
-from elastica._elastica_numba._timestepper import integrate, extend_stepper_interface
+from elastica.timestepper import integrate, extend_stepper_interface
 from elastica.timestepper._stepper_interface import _TimeStepper
 
-from elastica._elastica_numba._timestepper._explicit_steppers import (
+from elastica.timestepper.explicit_steppers import (
     RungeKutta4,
     ExplicitStepperTag,
+    EulerForward,
 )
-from elastica.timestepper.explicit_steppers import (
-    StatefulRungeKutta4,
-    StatefulEulerForward,
-)
-from elastica._elastica_numba._timestepper._symplectic_steppers import (
+
+# from elastica.timestepper.explicit_steppers import (
+#     StatefulRungeKutta4,
+#     StatefulEulerForward,
+# )
+from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
     SymplecticStepperTag,
@@ -35,7 +37,7 @@ from elastica.utils import Tolerance
 
 
 class TestExtendStepperInterface:
-    """ TODO add documentation """
+    """TODO add documentation"""
 
     class MockSymplecticStepper:
         Tag = SymplecticStepperTag()
@@ -152,8 +154,8 @@ def test_integrate_throws_an_assert_for_negative_total_steps():
 # Added automatic discovery of Stateful explicit integrators
 # ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
 # SymplecticSteppers = SymplecticStepper.__subclasses__()
-StatefulExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
-ExplicitSteppers = [RungeKutta4]
+# StatefulExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
+ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
 
 
@@ -270,6 +272,8 @@ class TestSymplecticSteppers:
         #     atol=Tolerance.atol(),
         # )
 
+
+"""
     @pytest.mark.xfail
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_hybrid_symplectic_against_analytical_system(self, symplectic_stepper):
@@ -286,9 +290,12 @@ class TestSymplecticSteppers:
             rtol=Tolerance.rtol() * 1e2,
             atol=Tolerance.atol(),
         )
+"""
 
 
 class TestSteppersAgainstCollectiveSystems:
+    """Test collection of memory blocks."""
+
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectic_steppers(self, symplectic_stepper):
         collective_system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()
@@ -304,12 +311,19 @@ class TestSteppersAgainstCollectiveSystems:
                 atol=Tolerance.atol(),
             )
 
-    @pytest.mark.xfail
     @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers)
     def test_explicit_steppers(self, explicit_stepper):
         collective_system = ScalarExponentialDampedHarmonicOscillatorCollectiveSystem()
         final_time = 1.0
-        n_steps = 500
+        if explicit_stepper == EulerForward:
+            # Euler requires very small time-steps and in order not to slow down test,
+            # we are scaling the difference between analytical and numerical solution.
+            n_steps = 25000
+            scale = 1e3
+        else:
+            n_steps = 500
+            scale = 1
+
         stepper = explicit_stepper()
 
         dt = np.float64(float(final_time) / n_steps)
@@ -318,22 +332,31 @@ class TestSteppersAgainstCollectiveSystems:
 
         # Before stepping, let's extend the interface of the stepper
         # while providing memory slots
-        from elastica._elastica_numba._systems import make_memory_for_explicit_stepper
+        from elastica.systems import make_memory_for_explicit_stepper
 
         memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
         from elastica.timestepper import extend_stepper_interface
 
-        extend_stepper_interface(stepper, collective_system)
+        do_step, stagets_and_updates = extend_stepper_interface(
+            stepper, collective_system
+        )
 
         while np.abs(final_time - time) > 1e5 * tol:
-            time = stepper.do_step(collective_system, memory_collection, time, dt)
+            time = do_step(
+                stepper,
+                stagets_and_updates,
+                collective_system,
+                memory_collection,
+                time,
+                dt,
+            )
 
         for system in collective_system:
             assert_allclose(
                 system.state,
                 system.analytical_solution(final_time),
-                rtol=Tolerance.rtol(),
-                atol=Tolerance.atol(),
+                rtol=Tolerance.rtol() * scale,
+                atol=Tolerance.atol() * scale,
             )
 
     # @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
@@ -341,37 +364,37 @@ class TestSteppersAgainstCollectiveSystems:
 
 
 class TestSteppersAgainstRodLikeSystems:
-    """ The rods compose specific data-structures that
+    """The rods compose specific data-structures that
     act as an interface to timesteppers (see `rod/data_structures.py`)
     """
 
     # TODO : Figure out a way of integrating rods with explicit timesteppers
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
-    def test_explicit_against_ellipse_motion(self, explicit_stepper):
-        from elastica._elastica_numba._systems._analytical import (
-            SimpleSystemWithPositionsDirectors,
-        )
-
-        rod_like_system = SimpleSystemWithPositionsDirectors(
-            np.array([0.0, 0.0, 0.0]), np.random.randn(3, 3, 1)
-        )
-        final_time = 1.0
-        n_steps = 500
-        stepper = explicit_stepper()
-
-        integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
-
-        assert_allclose(
-            rod_like_system.position_collection,
-            rod_like_system.analytical_solution("Positions", final_time),
-            rtol=Tolerance.rtol() * 1e1,
-            atol=Tolerance.atol(),
-        )
+    # @pytest.mark.xfail
+    # @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
+    # def test_explicit_against_ellipse_motion(self, explicit_stepper):
+    #     from elastica._systems._analytical import (
+    #         SimpleSystemWithPositionsDirectors,
+    #     )
+    #
+    #     rod_like_system = SimpleSystemWithPositionsDirectors(
+    #         np.array([0.0, 0.0, 0.0]), np.random.randn(3, 3, 1)
+    #     )
+    #     final_time = 1.0
+    #     n_steps = 500
+    #     stepper = explicit_stepper()
+    #
+    #     integrate(stepper, rod_like_system, final_time=final_time, n_steps=n_steps)
+    #
+    #     assert_allclose(
+    #         rod_like_system.position_collection,
+    #         rod_like_system.analytical_solution("Positions", final_time),
+    #         rtol=Tolerance.rtol() * 1e1,
+    #         atol=Tolerance.atol(),
+    #     )
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
-        from elastica._elastica_numba._systems._analytical import (
+        from elastica.systems.analytical import (
             make_simple_system_with_positions_directors,
             SimpleSystemWithPositionsDirectors,
         )

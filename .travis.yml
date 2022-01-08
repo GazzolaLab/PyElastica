@@ -7,8 +7,9 @@ jobs:
            # LINUX MACHINE #
            - name: " Python 3.6 Linux "
              python: 3.6
-             #env: 
-                     #                - NUMBA_DISABLE_JIT=1
+             env: 
+                 - NUMBA_DISABLE_JIT=1
+                 - CODECOV_TOKEN="ca23d33f-c704-4cf8-b5ff-dacefe26c494"
            - name: " Python 3.7 Linux "
              python: 3.7
            
@@ -26,9 +27,9 @@ jobs:
 before_install:
         - python3 --version
         - pip3 install --upgrade pip
-        - pip3 install -r requirements.txt
-        - pip3 install -r tests/requirements.txt
-        - pip3 install -r optional-requirements.txt
+        - pip3 install -r requirements.txt --use-feature=2020-resolver
+        - pip3 install -r tests/requirements.txt --use-feature=2020-resolver
+        - pip3 install -r optional-requirements.txt --use-feature=2020-resolver
 
 # command to run tests
 script:

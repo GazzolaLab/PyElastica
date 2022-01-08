@@ -1,120 +1,130 @@
-## elastica-python [![Build_status](https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master)](https://travis-ci.com/mattialabteam) [![codecov](https://codecov.io/gh/mattialabteam/elastica-python/branch/master/graph/badge.svg?token=O8nBw9I5vr)](https://codecov.io/gh/mattialabteam/elastica-python)
+# PyElastica 
+[![Build_status][badge-travis]][link-travis] [![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![Binder][badge-binder]][link-binder]
 
-Python version of elastica for use in the [NCSA-NVIDIA AI Hackathon](http://www.ncsa.illinois.edu/enabling/data/deep_learning/news/2020_ai_hack_3) held at the University of Illinois from March 7-8 2020.
+PyElastica is the python implementation of **Elastica**: an *open-source* project for simulating assemblies of slender, one-dimensional structures using Cosserat Rod theory.
 
-# Hackathon readme
+[![gallery](https://github.com/skim0119/elastica-python/blob/assets_logo/assets/alpha_gallery.gif)][link-project-website]
 
-## Problem Statement
-The objective is to train a model to move a (cyber)-octopus with two soft arms and a head to reach a target location, and then grab an object. The octopus is modeled as an assembly of Cosserat rods and is activated by muscles surrounding its arms. Input to the mechanical model is the activation signals to the surrounding muscles, which causes it to contract, thus moving the arms. The output of the model comes from the octopus' environment. The mechanical model will be provided both for the octopus and its interaction with its environment. The goal is to find the correct muscle activation signals that make the octopus crawl to reach the target location and then make one arm to grab the object.
+Visit [cosseratrods.org][link-project-website] for more information and learn about Elastica and Cosserat rod theory.
 
-## Progression of specific goals
-These goals build on each other, you need to successfully accomplish all prior goals to get credit for later goals.  
+## Installation 
+[![PyPI version][badge-pypi]][link-pypi]
 
-1) Make octopus crawl towards some direction. (5 points)
-2) Make your octopus crawl to the target location. (7.5 points)  
-3) Make octopus to move the object using its arms. (7.5 points)
-4) Have your octopus grab the object by wrapping one arm around the object. (10 points) 
-5) Make your octopus return to its starting location with the object. (20 points)
-6) Generalize your policy to perform these tasks for an arbitrarily located object. (50 points)   
+PyElastica is compatible with Python 3.6 - 3.8. The easiest way to install PyElastica is with PIP. 
 
-## Problem Context
-Octopuses have flexible limbs made up of muscles with no internal bone structure. These limbs, know as muscular hydrostats, have an almost infinite number of degrees of freedom, allowing an octopus to perform complex actions with its arms, but also making them difficult to mathematically model. Attempts to model octopus arms are motivated not only by a desire to understand them biologically, but also to adapt their control ability and decision making processes to the rapidly developing field of soft robotics. We have developed a simulation package Elastica that models flexible 1-d rods, which can be used to represent octopus arms as a long, slender rod. We now want to learn methods for controlling these arms. 
+~~~bash
+$ pip install pyelastica 
+~~~
 
-You are being provided with a model of an octopus that consists of two arms connected by a head. Each arm can be controlled independently. These arms are actuated through the contraction of muscles in the arms. This muscle activation produces a torque profile along the arm, resulting in movement of the arm. The arms interact with the ground through friction. Your goal is to teach the octopus to crawl towards an object, grab it, and bring it back to where the octopus started. 
+## Documentation
+[![Documentation Status][badge-docs-status]][link-docs-status]
 
-## Controlling octopus arms with hierarchical basis functions
-For this problem, we abstract the activation of the octopus muscles to the generation of a torque profile defined by the activation of a set of hierarchical radial basis function. Here we are using Gaussian basis functions. 
+Documentation of PyElastica is available [here][link-docs-website]
 
-<img src="assets/basis.png" alt="image name" width="400"/>
+## Tutorials
+[![Binder][badge-binder-tutorial]][link-binder]
 
-<img src="assets/rotation.png" alt="image name" width="500"/>
+We have created several Jupyter notebooks and Python scripts to help users get started with PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica.
 
-There are three levels of these basis functions, with 1 basis function in the first level, 2 in the second level and 4 in the third, leading to 7 basis functions in set. These levels have different maximum levels of activation. The lower levels have larger magnitudes than the higher levels, meaning they represent bulk motion of the rod while the higher levels allow finer control of the rod along the interval. In the code, the magnitude of each level will be fixed but you can choose the amount of activation at each level by setting the activation level between -1 and 1. 
+We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/visualization`](examples/visualization)).
 
-There are two bending modes (in the normal and binormal directions) and a twisting mode (in the tangent direction), so we define torques in these three different directions and independently for each arm. This yields six different sets of basis functions that can be activated for a total of 42 inputs. 
+## Contribution
 
+If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md)
 
-## Overview of provided Elastica code
-We are providing you the Elastica software package which is written in Python. Elastica simulates the dynamics and kinematics of 1-d slender rods. We have set up the model for you such that you do not need to worry about the details of the model, only the activation patterns of the muscle. 
-In the provided `examples/ArmWithBasisFunctions/two_arm_octopus_ai_imp.py` file you will import the `Environment` class which will define and setup the simulation. 
+PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University of Illinois at Urbana-Champaign.
 
-`Environment` has three relevant functions:  
-* `Environment.reset(self)`:  setups and initializes the simulation environment. Call this prior to running any simulations.  
-* `Environment.step(self, activation_array_list, time)`: takes one timestep for muscle activations defined in `activation_array_list`. 
-* `Environment.post_processing(self, filename_video)`: Makes 3D video based on saved data from simulation. Requires `ffmpeg`.  
-We do not suggest changing `Environment` as it may cause unintended consequences to the simulation. 
+## List of publications and submissions
 
+- [ Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
+- [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (In Review: IEEE RA-L 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
+- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (ACC 2021)
+- [Elastica: A compliant mechanics environment for soft robotic control](https://ieeexplore.ieee.org/document/9369003) (UIUC, 2021) (IEEE RA-L 2021)
+- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://arxiv.org/abs/2010.03368) (UIUC, 2020)
+- [Energy shaping control of a CyberOctopus soft arm](https://ieeexplore.ieee.org/document/9304408) (UIUC, 2020) (IEEE CDC 2020)
 
-You will want to work within `main()` to interface with the simulations and develop your learning model. In `main()`, the first thing you need to define is the length of your simulation and initialize the environment. `final_time` is the length of time that your simulation will run unless exited early. You want to give your octopus enough time to complete the task, but too much time will lead to excessively long simulation times.
+## Citation
 
-```python 
-    # Set simulation final time
-    final_time = 10.0
+We ask that any publications which use Elastica cite the following papers:
 
-    # Initialize the environment
-    target_position = np.array([-0.4, 0.0, 0.5])
-    env = Environment(final_time, target_position, COLLECT_DATA_FOR_POSTPROCESSING=True)
-    total_steps, systems = env.reset()
+Overall and for single rods:  
+Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628](https://doi.org/10.1098/rsos.171628)
+```
+@article{Gazzola2018,
+  title={Forward and inverse problems in the mechanics of soft filaments},
+  author={Gazzola, M and Dudte, LH and McCormick, AG and Mahadevan, L},
+  journal={Royal Society open science},
+  volume={5},
+  number={6},
+  pages={171628},
+  year={2018},
+  publisher={The Royal Society Publishing},
+  doi = {10.1098/rsos.171628},
+  url = {https://doi.org/10.1098/rsos.171628},
+}
 ```
 
-With your system initialized, you are now ready to perform the simulation. To perform the simulation there are two steps:  
-1) Evaluate the reward function and define the basis function activations
-2) Perform time step  
-
-There is also a user defined stopping condition. When met, this will immediately end the simulation. This can be useful to end the simulation if the octopus successfully complete the task early, or has a sufficiently low reward function that there is no point continuing the simulation. 
-
-```python
-    for i_sim in tqdm(range(total_steps)):
-	""" Learning loop """
-	if i_sim % 200:
-           """ Add your learning algorithm here to define activation """
-           # This will be based on your observations of the system and 
-           # evaluation of your reward function.  
-           shearable_rod = systems[0]
-           rigid_body = systems[1]   
-           reward = reward_function()   
-           activation = segment_activation_function()
-
-        """ Perform time step """
-        time, systems, done = env.step(activation, time)
-
-        """ User defined condition to exit simulation loop """
-        done = user_defined_condition_function(reward, systems, time)
-        if done:
-            break
+For assemblies of rods:  
+Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
+```
+@article{Zhang2019,
+  title={Modeling and simulation of complex dynamic musculoskeletal architectures},
+  author={Zhang, X and Chan, FK and Parthasarathy, T and Gazzola, M},
+  journal={Nature Communications},
+  volume={10},
+  number={1},
+  pages={1--12},
+  year={2019},
+  publisher={Nature Publishing Group},
+  doi = {10.1038/s41467-019-12759-5},
+  url = {https://doi.org/10.1038/s41467-019-12759-5},
+}
 ```
 
-The state of the octopus is available in `shearable_rod`. The octopus consists of a series of 121 nodes. Nodes 0-49 relate to one arm, nodes 50-70 relate to the head, and nodes 71-120 relate to the second arm. `shearable_rod.position_collection` returns an array with entries relating to the position of each node.
-The state of the target object is available in `rigid_body`.
-
-It is important to properly define the activation function. It consists of a list of lists defining the activation of the two arms in each of the the three modes of deformation. The activation function should be a list with three entries for the three modes of deformation. Each of these entries is in turn a list with two entries, which are arrays of the basis function activations for the two arms. 
-
-```python
-    activation = [
-        [arm_1_normal,   arm_2_normal],    # activation in normal direction
-        [arm_1_binormal, arm_2_binormal],  # activation in binormal direction
-        [arm_1_tangent,  arm_2_tangent],   # activation in tangent direction
-        ]
+For control of soft robots:  
+Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica: A compliant mechanics environment for soft robotic control</strong>, IEEE Robotics and Automation Letters, 2021. doi: [10.1109/LRA.2021.3063698](https://doi.org/10.1109/LRA.2021.3063698)
+```
+@article{Naughton2021,
+  author={Naughton, N and Sun, J and Tekinalp, A and Parthasarathy, T and Chowdhary, G and Gazzola, M},
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Elastica: A compliant mechanics environment for soft robotic control}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={1-1},
+  doi={10.1109/LRA.2021.3063698}
+}
 ```
 
-Each activation array has 7 entries that relate to the activation of different basis functions. The ordering goes from the top level to the bottom level of the hierarchy. Each entry can vary from -1 to 1.
+## Senior Developers ✨
+_Names arranged alphabetically_
+- Arman Tekinalp
+- Chia-Hsien Shih (Cathy)
+- Fan Kiat Chan
+- Noel Naughton
+- [Seung Hyun Kim](https://github.com/skim0119)
+- Tejaswin Parthasarathy (Teja)
+- Yashraj Bhosale (Yash)
 
-`activation_array[0]  ` -- One top level muscle segment  
-`activation_array[1:3]` -- Two mid level muscle segment  
-`activation_array[3:7]` -- Four bottom level muscle segment  
+[//]: # (Collection of URLs.)
 
- 
+[link-project-website]: https://cosseratrods.org
+[link-lab-website]: http://mattia-lab.com/
+[link-docs-website]: https://docs.cosseratrods.org/
 
-#### A few practical notes
-1) To save a video of the octopus with `Environment.post_processing()`, you need to install `ffmeg`. You can download and install it [here](https://www.ffmpeg.org/). 
+[badge-pypi]: https://badge.fury.io/py/pyelastica.svg
+[badge-travis]: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master
+[badge-CI]: https://github.com/GazzolaLab/PyElastica/workflows/CI/badge.svg
+[badge-docs-status]: https://readthedocs.org/projects/pyelastica/badge/?version=latest
+[badge-binder]: https://mybinder.org/badge_logo.svg
+[badge-pepy-download-count]: https://pepy.tech/badge/pyelastica
+[badge-codecov]: https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg
+[link-pypi]: https://badge.fury.io/py/pyelastica
+[link-travis]: https://travis-ci.com/github/GazzolaLab/PyElastica
+[link-CI]: https://github.com/GazzolaLab/PyElastica/actions
+[link-docs-status]: https://docs.cosseratrods.org/en/latest/?badge=latest
+[link-pepy-download-count]: https://pepy.tech/project/pyelastica
+[link-codecov]: https://codecov.io/gh/GazzolaLab/PyElastica
 
-2) The timestep size is set to 40 μs. This is necessary to keep the simulation stable, however, you may not need to update your muscle activations that often. Varying the learning time step will change how often your octopus updates its behaviour.
-
-3) There is a 15-20 second startup delay while the simulation is initialized. This is a one time cost whenever the Python script is run and resetting the simulation using `.rest()` does not incur this delay for subsequent simulations. 
-
-4) We suggest installing `requirements.txt` and `optional-requirements.txt`, to run Elastica without any problem.
-
-
-
-
-
+[badge-binder-tutorial]: https://img.shields.io/badge/Launch-PyElastica%20Tutorials-579ACA.svg?logo=data:image/png;base64,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
+[link-binder]: https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb

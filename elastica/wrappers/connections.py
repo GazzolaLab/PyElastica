@@ -5,7 +5,7 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
-
+import numpy as np
 from elastica.joint import FreeJoint
 
 
@@ -26,7 +26,7 @@ class Connections:
         super(Connections, self).__init__()
 
     def connect(
-        self, first_rod, second_rod, first_connect_idx=0, second_connect_idx=-1
+        self, first_rod, second_rod, first_connect_idx=None, second_connect_idx=None
     ):
         """
         This method connects two rod-like objects using the selected joint class.
@@ -147,18 +147,82 @@ class _Connect:
         self.first_sys_connection_idx = None
         self.second_sys_connection_idx = None
 
-    def set_index(self, first_idx: int, second_idx: int):
+    def set_index(self, first_idx, second_idx):
         # TODO assert range
-        assert (
-            -self._first_sys_n_lim <= first_idx < self._first_sys_n_lim
-        ), "Connection index of first rod exceeds its dof : {}".format(
-            self._first_sys_n_lim
+        # First check if the types of first rod idx and second rod idx variable are same.
+        assert type(first_idx) == type(
+            second_idx
+        ), "Type of first_connect_idx :{}".format(
+            type(first_idx)
+        ) + " is different than second_connect_idx :{}".format(
+            type(second_idx)
         )
-        assert (
-            -self._second_sys_n_lim <= second_idx < self._second_sys_n_lim
-        ), "Connection index of second rod exceeds its dof : {}".format(
-            self._second_sys_n_lim
+
+        # Check if the type of idx variables are correct.
+        assert isinstance(
+            first_idx, (int, np.int_, list, tuple, np.ndarray, type(None))
+        ), "Connection index type is not supported :{}".format(
+            type(first_idx)
+        ) + ", please try one of the following :{}".format(
+            (int, np.int_, list, tuple, np.ndarray)
         )
+
+        # If type of idx variables are tuple or list or np.ndarray, check validity of each entry.
+        if (
+            isinstance(first_idx, tuple)
+            or isinstance(first_idx, list)
+            or isinstance(first_idx, np.ndarray)
+        ):
+
+            for i in range(len(first_idx)):
+                assert isinstance(first_idx[i], (int, np.int_)), (
+                    "Connection index of first rod is not integer :{}".format(
+                        first_idx[i]
+                    )
+                    + " It should be :{}".format((int, np.int_))
+                    + " Check your input!"
+                )
+                assert isinstance(second_idx[i], (int, np.int_)), (
+                    "Connection index of second rod is not integer :{}".format(
+                        second_idx[i]
+                    )
+                    + " It should be :{}".format((int, np.int_))
+                    + " Check your input!"
+                )
+
+                # The addition of +1 and and <= check on the RHS is because
+                # connections can be made to the node indices as well
+                assert (
+                    -(self._first_sys_n_lim + 1)
+                    <= first_idx[i]
+                    <= self._first_sys_n_lim
+                ), "Connection index of first rod exceeds its dof : {}".format(
+                    self._first_sys_n_lim
+                )
+                assert (
+                    -(self._second_sys_n_lim + 1)
+                    <= second_idx[i]
+                    <= self._second_sys_n_lim
+                ), "Connection index of second rod exceeds its dof : {}".format(
+                    self._second_sys_n_lim
+                )
+        elif first_idx is None:
+            # Do nothing if idx are None
+            pass
+        else:
+
+            # The addition of +1 and and <= check on the RHS is because
+            # connections can be made to the node indices as well
+            assert (
+                -(self._first_sys_n_lim + 1) <= first_idx <= self._first_sys_n_lim
+            ), "Connection index of first rod exceeds its dof : {}".format(
+                self._first_sys_n_lim
+            )
+            assert (
+                -(self._second_sys_n_lim + 1) <= second_idx <= self._second_sys_n_lim
+            ), "Connection index of second rod exceeds its dof : {}".format(
+                self._second_sys_n_lim
+            )
 
         self.first_sys_connection_idx = first_idx
         self.second_sys_connection_idx = second_idx

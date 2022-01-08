@@ -25,12 +25,88 @@ class TestConnect:
             (-50, -120),
             (-120, 50),
             (50, -120),
+            (np.array([50]), np.array([-120])),
+            (np.array([50, 120]), np.array([-120, -50])),
+            ([-50, 120], [-120, 50]),
+            # test for edge cases
+            (-102, 99),
+            (99, -102),
+            (-101, 101),
+            (101, -101),
         ],
     )
     def test_set_index_with_illegal_idx_throws(self, load_connect, illegal_idx):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.set_index(*illegal_idx)
         assert "Connection index of" in str(excinfo.value)
+
+    # idx between -100 and 99 passes,
+    # test combinations for first and second rod
+    @pytest.mark.parametrize(
+        "legal_idx",
+        [
+            # edge cases that should not throw
+            (-101, -101),
+            (-101, 100),
+            (100, -101),
+            (100, 100),
+        ],
+    )
+    def test_set_index_with_legal_idx_does_not_throw(self, load_connect, legal_idx):
+        try:
+            load_connect.set_index(*legal_idx)
+        except AssertionError:
+            pytest.fail("Unexpected AssertionError ..")
+
+    # Test different idx types input by the user
+    @pytest.mark.parametrize(
+        "different_type_idx",
+        [(10, 10.0), (11, np.array([5])), ((10, 5), 1), ([4, 6], 1)],
+    )
+    def test_set_index_with_different_type_idx_throws(
+        self, load_connect, different_type_idx
+    ):
+        with pytest.raises(AssertionError) as excinfo:
+            load_connect.set_index(*different_type_idx)
+        assert "Type of first_connect_idx" in str(excinfo)
+
+    # Test illegal idx types input by the user
+    @pytest.mark.parametrize(
+        "illegal_type_idx",
+        [(10.0, 5.0), (np.array([5.0])[0], np.array([7.0])[0]), (str("3"), str("5"))],
+    )
+    def test_set_index_with_illegal_type_idx_throws(
+        self, load_connect, illegal_type_idx
+    ):
+        with pytest.raises(AssertionError) as excinfo:
+            load_connect.set_index(*illegal_type_idx)
+        assert "Connection index type is not supported" in str(excinfo)
+
+    # Test illegal idx types for first rod index.
+    @pytest.mark.parametrize(
+        "illegal_type_first_idx", [(np.array([5.0]), np.array([6])), ([2.0], [5])]
+    )
+    def test_set_index_with_illegal_type_first_idx_throws(
+        self, load_connect, illegal_type_first_idx
+    ):
+        with pytest.raises(AssertionError) as excinfo:
+            load_connect.set_index(*illegal_type_first_idx)
+        assert "Connection index of first rod" in str(excinfo)
+
+    # Test illegal idx types for second rod index.
+    @pytest.mark.parametrize(
+        "illegal_type_second_idx", [(np.array([5]), np.array([6.0])), ([2], [5.0])]
+    )
+    def test_set_index_with_illegal_type_second_idx_throws(
+        self, load_connect, illegal_type_second_idx
+    ):
+        with pytest.raises(AssertionError) as excinfo:
+            load_connect.set_index(*illegal_type_second_idx)
+        assert "Connection index of second rod is not integer" in str(excinfo)
+
+    # Below test is to increase code coverage. If we pass nothing or idx=None, then do nothing.
+    def test_set_index_no_input(self, load_connect):
+        load_connect.set_index(first_idx=None, second_idx=None)
 
     @pytest.mark.parametrize(
         "legal_idx", [(80, 80), (0, 50), (50, 0), (-20, -20), (-20, 50), (-50, -20)]
@@ -213,7 +289,7 @@ class TestConnectionsMixin:
         assert _mock_connect in scwc._connections
         assert _mock_connect.__class__ == _Connect
         # check sane defaults provided for connection indices
-        assert 0 in _mock_connect.id() and -1 in _mock_connect.id()
+        assert None in _mock_connect.id() and None in _mock_connect.id()
 
     from elastica.joint import FreeJoint
 
@@ -253,8 +329,8 @@ class TestConnectionsMixin:
         for (fidx, sidx, fconnect, sconnect, connect) in scwc._connections:
             assert type(fidx) is int
             assert type(sidx) is int
-            assert type(fconnect) is int
-            assert type(sconnect) is int
+            assert fconnect is None
+            assert sconnect is None
             assert type(connect) is connect_cls
 
     def test_connect_call_on_systems(self):

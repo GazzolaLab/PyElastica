@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 import pytest
 
-from elastica._elastica_numba._external_forces import (
+from elastica.external_forces import (
     NoForces,
     GravityForces,
     EndpointForces,
@@ -35,7 +35,7 @@ MockRod = type("MockRod", (object,), {"__init__": mock_rod_init})
 
 class TestNoForces:
     def test_no_forces_applied(self):
-        """ No force on the rod. Test purely
+        """No force on the rod. Test purely
         to improve coverage characteristics
         """
         mock_rod = MockRod()
@@ -51,7 +51,7 @@ class TestNoForces:
         )
 
     def test_no_torques_applied(self):
-        """ No torques on the rod. Test purely
+        """No torques on the rod. Test purely
         to improve coverage characteristics
         """
         mock_rod = MockRod()
