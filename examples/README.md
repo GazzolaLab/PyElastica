@@ -45,6 +45,17 @@ Examples can serve as a starting template for customized usages.
 * [Visualization](./Visualization)
     * __Purpose__: Include simple examples of raytrace rendering data.
     * __Features__: POVray
+* [RodContactCase](./RodContactCase)
+  * [RodRodContact](./RodContactCase/RodRodContact)
+    * __Purpose__: Demonstrates contact between two rods, for different initial conditions. 
+    * __Features__: CosseratRod, ExternalContact
+  * [RodSelfContact](./RodContactCase/RodSelfContact)
+    * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
+      * __Purpose__: Demonstrates rod self contact with Plectoneme example.
+      * __Features__: CosseratRod, SelonoidsBC, SelfContact
+    * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
+      * __Purpose__: Demonstrates rod self contact with Solenoid example.
+      * __Features__: CosseratRod, SelonoidsBC, SelfContact
 
 ## Advanced Cases
 
