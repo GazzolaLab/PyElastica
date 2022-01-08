@@ -92,14 +92,19 @@ If you are unsure regarding how to start contributing to PyElastica, you can loo
 Also, you might find `TODO` or `FIXME` marks in various places in the code with brief descriptions.
 
 * [Beginner issues][beginner] - issues that should only require a few lines of code, and a test or two.
-* [Help wanted issues][help-wanted] - issues which should be a bit more involved and might need some discussion.
+* [Help wanted issues][help-wanted] - issues which should be a bit more involved and might need some discussion. You might need more in-depth understanding of the theory and implementation to resolve issues with this tag.
 
 Once you find the issue that you are interested in, please leave a comment that you would like to resolve the issue.
-If you leave some questions in the comment, we will provide more detailed descriptions. 
+If you leave some questions in the comment, we will provide more detailed descriptions.
+
+You are also welcomed to help us pushing this project further. 
+Please don't hesitate improving documentation or code-coverage.
 
 ### Side projects
 
 We also have many related projects in separate repositories that utilize the PyElastica as a core library.
+Since the package is often used for research purpose, many on-going projects are typically not published.
+If you are interested in hearing more, please contact one of our the maintainer.
 
 ### Pull requests
 
@@ -152,5 +157,5 @@ In order to format the code:
 
 We follow [NumPy documentation guidelines](https://numpydoc.readthedocs.io/en/latest/format.html) for PyElastica documentation.
 
-[beginner]: https://github.com/GazzolaLab/elastica-python/labels/good%20first%20issue
-[help-wanted]: https://github.com/GazzolaLab/elastica-python/labels/help%20wanted
+[beginner]: https://github.com/GazzolaLab/PyElastica/labels/good%20first%20issue
+[help-wanted]: https://github.com/GazzolaLab/PyElastica/labels/help%20wanted
