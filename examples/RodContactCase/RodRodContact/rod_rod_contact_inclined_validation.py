@@ -32,6 +32,7 @@ density = 1750
 nu = 0.001
 E = 3e5
 poisson_ratio = 0.5
+shear_modulus = E / (poisson_ratio + 1.0)
 
 # Rod orientations
 start = np.zeros(3,)
@@ -55,6 +56,7 @@ rod_one = CosseratRod.straight_rod(
     nu,
     E,
     poisson_ratio,
+    shear_modulus = shear_modulus,
 )
 
 rod_one.velocity_collection[:] += 0.05 * -normal.reshape(3, 1)
@@ -80,6 +82,7 @@ rod_two = CosseratRod.straight_rod(
     nu,
     E,
     poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 inclined_rod_rod_contact_sim.append(rod_two)

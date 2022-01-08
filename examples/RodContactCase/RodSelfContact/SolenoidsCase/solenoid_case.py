@@ -40,6 +40,7 @@ density = mass / volume
 nu = 2.0
 E = 1e6
 poisson_ratio = 0.5
+shear_modulus = E / (poisson_ratio + 1.0)
 
 direction = np.array([0.0, 1.0, 0])
 normal = np.array([0.0, 0.0, 1.0])
@@ -58,7 +59,7 @@ sherable_rod = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 
