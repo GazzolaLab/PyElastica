@@ -169,8 +169,8 @@ if PLOT_FIGURE:
     energy_fig.show()
 
     if SAVE_FIGURE:
-        fig.savefig("butterfly.pdf")
-        energy_fig.savefig("energies.pdf")
+        fig.savefig("butterfly.png")
+        energy_fig.savefig("energies.png")
 
     plt.show()
 
