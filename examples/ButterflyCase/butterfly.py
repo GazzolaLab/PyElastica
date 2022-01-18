@@ -5,8 +5,9 @@ sys.path.append("../")
 sys.path.append("../../")
 
 # from collections import defaultdict
-# import numpy as np
+import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.colors import to_rgb
 
 
 from elastica import *
@@ -98,8 +99,13 @@ class VelocityCallBack(CallBackBaseClass):
         if current_step % self.every == 0:
 
             self.callback_params["time"].append(time)
-            # Collect only x
+            # Collect x
             self.callback_params["position"].append(system.position_collection.copy())
+            # Collect energies as well
+            self.callback_params["te"].append(system.compute_translational_energy())
+            self.callback_params["re"].append(system.compute_rotational_energy())
+            self.callback_params["se"].append(system.compute_shear_energy())
+            self.callback_params["be"].append(system.compute_bending_energy())
             return
 
 
@@ -107,6 +113,10 @@ recorded_history = defaultdict(list)
 # initially record history
 recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
+recorded_history["te"].append(butterfly_rod.compute_translational_energy())
+recorded_history["re"].append(butterfly_rod.compute_rotational_energy())
+recorded_history["se"].append(butterfly_rod.compute_shear_energy())
+recorded_history["be"].append(butterfly_rod.compute_bending_energy())
 
 butterfly_sim.collect_diagnostics(butterfly_rod).using(
     VelocityCallBack, step_skip=100, callback_params=recorded_history
@@ -123,7 +133,8 @@ print("Total steps", total_steps)
 integrate(timestepper, butterfly_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
-    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
+    # Plot the histories
+    fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
     positions = recorded_history["position"]
     # record first position
@@ -136,9 +147,32 @@ if PLOT_FIGURE:
     # final position is also separate
     last_position = positions.pop()
     ax.plot(last_position[2, ...], last_position[0, ...], "k--", lw=2.0)
-    plt.show()
+    # don't block
+    fig.show()
+
+    # Plot the energies
+    energy_fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+    energy_ax = energy_fig.add_subplot(111)
+    times = np.asarray(recorded_history["time"])
+    te = np.asarray(recorded_history["te"])
+    re = np.asarray(recorded_history["re"])
+    be = np.asarray(recorded_history["be"])
+    se = np.asarray(recorded_history["se"])
+
+    energy_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translations")
+    energy_ax.plot(times, re, c=to_rgb("xkcd:bluish"), lw=2.0, label="Rotation")
+    energy_ax.plot(times, be, c=to_rgb("xkcd:burple"), lw=2.0, label="Bend")
+    energy_ax.plot(times, se, c=to_rgb("xkcd:goldenrod"), lw=2.0, label="Shear")
+    energy_ax.plot(times, te + re + be + se, c="k", lw=2.0, label="Total energy")
+    energy_ax.legend()
+    # don't block
+    energy_fig.show()
+
     if SAVE_FIGURE:
         fig.savefig("butterfly.pdf")
+        energy_fig.savefig("energies.pdf")
+
+    plt.show()
 
 if SAVE_RESULTS:
     import pickle
