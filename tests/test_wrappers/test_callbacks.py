@@ -131,7 +131,7 @@ class TestCallBacksMixin:
         scwc.append(mock_rod)
 
         _mock_callback = scwc.collect_diagnostics(mock_rod)
-        assert _mock_callback in scwc._callbacks
+        assert _mock_callback in scwc._callback_list
         assert _mock_callback.__class__ == _CallBack
 
     from elastica.callback_functions import CallBackBaseClass
@@ -165,7 +165,7 @@ class TestCallBacksMixin:
 
         scwc._finalize()
 
-        for (x, y) in scwc._callbacks:
+        for (x, y) in scwc._callback_list:
             assert type(x) is int
             assert type(y) is callback_cls
 
@@ -177,6 +177,6 @@ class TestCallBacksMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwc._callbacks:
+        for (x, _) in scwc._callback_list:
             assert num < x
             num = x

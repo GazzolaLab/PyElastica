@@ -131,6 +131,10 @@ class BaseSystemCollection(MutableSequence):
 
         """
 
+        # FIXME: This is probably the most bizarre way to collect the functions. It is definitely
+        # impressive and even surprising that it is working, but it is far from readable and maintainable.
+        # The code is difficult to debug, because the behavior is un-interpretable except during run-time.
+        # We need a lot more documentation on this part: clear explanation and reasoning.
         def get_methods_from_feature_classes(method_name: str):
             methods = [
                 [v for (k, v) in cls.__dict__.items() if k.endswith(method_name)]
@@ -146,7 +150,9 @@ class BaseSystemCollection(MutableSequence):
         self._features_that_constrain_rates = get_methods_from_feature_classes(
             "_constrain_rates"
         )
-        self._callback_features = get_methods_from_feature_classes("_callBack")
+        self._callback_features = get_methods_from_feature_classes(
+            "_callback_execution"
+        )
         finalize_methods = get_methods_from_feature_classes("_finalize")
 
         # construct memory block

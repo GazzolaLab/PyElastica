@@ -16,12 +16,12 @@ class CallBacks:
 
         Attributes
         ----------
-        _callbacks: list
+        _callback_list: list
             List of call back classes defined for rod-like objects.
     """
 
     def __init__(self):
-        self._callbacks = []
+        self._callback_list = []
         super(CallBacks, self).__init__()
 
     def collect_diagnostics(self, system):
@@ -43,7 +43,7 @@ class CallBacks:
 
         # Create _Constraint object, cache it and return to user
         _callbacks = _CallBack(sys_idx)
-        self._callbacks.append(_callbacks)
+        self._callback_list.append(_callbacks)
 
         return _callbacks
 
@@ -54,9 +54,9 @@ class CallBacks:
         # dev : the first index stores the rod index to collect data.
         # Technically we can use another array but it its one more book-keeping
         # step. Being lazy, I put them both in the same array
-        self._callbacks[:] = [
+        self._callback_list[:] = [
             (callback.id(), callback(self._systems[callback.id()]))
-            for callback in self._callbacks
+            for callback in self._callback_list
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
@@ -65,13 +65,12 @@ class CallBacks:
         # [(0, MyCallBack), (1, MyVelocityCallBack), ... ]
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort callbacks.
-        self._callbacks.sort(key=lambda x: x[0])
+        self._callback_list.sort(key=lambda x: x[0])
 
-        self._callBack(time=0.0, current_step=0)
+        self._callback_execution(time=0.0, current_step=0)
 
-    # TODO: same as above naming of _callBack function
-    def _callBack(self, time, current_step: int, *args, **kwargs):
-        for sys_id, callback in self._callbacks:
+    def _callback_execution(self, time, current_step: int, *args, **kwargs):
+        for sys_id, callback in self._callback_list:
             callback.make_callback(
                 self._systems[sys_id], time, current_step, *args, **kwargs
             )
@@ -97,6 +96,7 @@ class _CallBack:
         Parameters
         ----------
         sys_idx: int
+            rod object index
         """
         self._sys_idx = sys_idx
         self._callback_cls = None
@@ -112,10 +112,6 @@ class _CallBack:
         ----------
         callback_cls: object
             User defined callback class.
-        *args
-            Variable length argument list
-        **kwargs
-            Arbitrary keyword arguments.
 
         Returns
         -------
@@ -134,18 +130,8 @@ class _CallBack:
     def id(self):
         return self._sys_idx
 
-    def __call__(self, *args, **kwargs):
-        """Constructs a callback functions after checks
-
-        Parameters
-        ----------
-        args
-        kwargs
-
-        Returns
-        -------
-
-        """
+    def __call__(self, *args, **kwargs) -> CallBackBaseClass:
+        """Constructs a callback functions after checks"""
         if not self._callback_cls:
             raise RuntimeError(
                 "No callback provided to act on rod id {0}"
