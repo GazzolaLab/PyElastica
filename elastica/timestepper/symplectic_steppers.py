@@ -1,6 +1,7 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
 import numpy as np
+import math
 
 # from elastica._elastica_numba._timestepper._symplectic_steppers import (
 #     SymplecticStepperTag,
@@ -105,7 +106,7 @@ class _SystemCollectionStepper:
         SystemCollection.constrain_values(time)
 
         # Call back function, will call the user defined call back functions and store data
-        SystemCollection.apply_callbacks(time, int(time / dt))
+        SystemCollection.apply_callbacks(time, round(time / dt))
 
         # Zero out the external forces and torques
         for system in SystemCollection._memory_blocks:
