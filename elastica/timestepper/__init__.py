@@ -9,6 +9,7 @@ __all__ = [
 ]
 
 import numpy as np
+from tqdm import tqdm
 from elastica.timestepper.symplectic_steppers import (
     SymplecticStepperTag,
     PositionVerlet,
@@ -21,6 +22,8 @@ from elastica.timestepper.explicit_steppers import (
 )
 
 
+# TODO: Both extend_stepper_interface and integrate should be in separate file.
+# __init__ is probably not an ideal place to have these scripts.
 def extend_stepper_interface(Stepper, System):
     from elastica.utils import extend_instance
     from elastica.systems import is_system_a_collection
@@ -69,8 +72,31 @@ def extend_stepper_interface(Stepper, System):
 
 # TODO Improve interface of this function to take args and kwargs for ease of use
 def integrate(
-    StatefulStepper, System, final_time: float, n_steps: int = 1000, **kwargs
+    StatefulStepper,
+    System,
+    final_time: float,
+    n_steps: int = 1000,
+    restart_time: float = 0.0,
+    progress_bar: bool = True,
+    **kwargs
 ):
+    """
+
+    Parameters
+    ----------
+    StatefulStepper :
+        Stepper algorithm to use.
+    System :
+        The elastica-system to simulate.
+    final_time : float
+        Total simulation time. The timestep is determined by final_time / n_steps.
+    n_steps : int
+        Number of steps for the simulation. (default: 1000)
+    restart_time : float
+        The timestamp of the first integration step. (default: 0.0)
+    progress_bar : bool
+        Toggle the tqdm progress bar. (default: True)
+    """
     assert final_time > 0.0, "Final time is negative!"
     assert n_steps > 0, "Number of integration steps is negative!"
 
@@ -81,11 +107,9 @@ def integrate(
     do_step, stages_and_updates = extend_stepper_interface(StatefulStepper, System)
 
     dt = np.float64(float(final_time) / n_steps)
-    time = kwargs.get("restart_time", np.float64(0.0))
+    time = restart_time
 
-    from tqdm import tqdm
-
-    for i in tqdm(range(n_steps)):
+    for i in tqdm(range(n_steps), disable=(not progress_bar)):
         time = do_step(StatefulStepper, stages_and_updates, System, time, dt)
 
     print("Final time of simulation is : ", time)
