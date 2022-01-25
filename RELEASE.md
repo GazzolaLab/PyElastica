@@ -9,7 +9,9 @@ However, in future releases we have to add unit tests for contact model function
 
 ## Notable Changes
 - #31: Merge contact model to master [PR #40 in public](https://github.com/GazzolaLab/PyElastica/pull/40)
- 
+- #46: The progress bar can be disabled by passing an argument to `integrate`.
+- #48: Experimental modules are added to hold functions that are in test phase.
+- 
 ### Release Note
 <details>
   <summary>Click to expand</summary>
@@ -17,6 +19,9 @@ However, in future releases we have to add unit tests for contact model function
 - Rod-Rod contact and Rod self contact is added.
 - Two example cases for rod-rod contact is added, i.e. two rods colliding to each other in space. 
 - Two example cases for rod self contact is added, i.e. plectonemes and solenoids.
+- Progress bar can be disabled by passing an argument to `integrate` function.
+- Experimental module added.
+- Bugfix in callback mechanism
 
 </details>
 
