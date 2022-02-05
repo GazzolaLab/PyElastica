@@ -5,10 +5,6 @@
 More information about Elastica is available at the `project website`_
 
 
-Implementations
-----------------
-There are currently two versions of Elastica. 
-
 PyElastica
 ~~~~~~~~~~
 .. image:: https://travis-ci.com/mattialabteam/elastica-python.svg?token=bhmh1TG9yLmXa4ZM4ZgQ&branch=master 
@@ -19,7 +15,7 @@ PyElastica
 	:target: https://codecov.io/gh/mattialabteam/elastica-python
 	:alt: codecov
 	
-PyElastica is the python implementation of Elastica. The easiest way to install PyElastica is with PIP: 
+PyElastica is the python (3.6-3.8) implementation of Elastica. The easiest way to install PyElastica is with PIP: 
 
 .. code:: console
 
@@ -27,7 +23,7 @@ PyElastica is the python implementation of Elastica. The easiest way to install 
 
 Elastica++
 ~~~~~~~~~~
-Elastica++ is a C++ implementation of Elastica. 
+Elastica++ is a C++ implementation of Elastica. The package is currently under development. We expect the early-version to be released in 2022 Q2.
 
 .. _project website: https://cosseratrods.org
 
