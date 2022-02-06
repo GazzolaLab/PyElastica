@@ -33,8 +33,6 @@ class CosseratRod(RodBase):
     """
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
     of the essential base classes.
-    Although the attributes of this CosseratRod class are inherited from its parent classes, for convenience and easy access, the variable
-    names are given below.
 
     Attributes
     ----------
