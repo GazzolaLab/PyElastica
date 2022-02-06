@@ -85,12 +85,11 @@ class FixNode(FreeRod):
         FreeRod.__init__(self)
 
         self.fixed_position_collection = fixed_position
-
-        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
+        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None) 
         self.fixed_position_idx = np.array(fixed_position_idx)
 
     def constrain_values(self, rod, time):
-        self.compute_constrain_values( rod.position_collection,self.fixed_position_idx, self.fixed_position_collection,)
+        self.compute_constrain_values(rod.position_collection, self.fixed_position_idx, self.fixed_position_collection,)
 
     def constrain_rates(self, rod, time):
         self.compute_constrain_rates(rod.velocity_collection, self.fixed_position_idx,)
