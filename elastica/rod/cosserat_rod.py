@@ -114,7 +114,7 @@ class CosseratRod(RodBase):
         Rod element dilatation rates.
 
     """
-    
+
     def __init__(
         self,
         n_elements,
@@ -154,7 +154,7 @@ class CosseratRod(RodBase):
         damping_forces,
         damping_torques,
     ):
-    
+
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
