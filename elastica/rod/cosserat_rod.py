@@ -154,6 +154,7 @@ class CosseratRod(RodBase):
         Rod element dilatation rates.
 
     """
+    
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
