@@ -30,6 +30,91 @@ def _get_z_vector():
 
 
 class CosseratRod(RodBase):
+    """
+    Cosserat Rod class. This is the preferred class for rods because it is derived from some
+    of the essential base classes.
+    Although the attributes of this CosseratRod class are inherited from its parent classes, for convenience and easy access, the variable
+    names are given below.
+
+    Attributes
+    ----------
+    n_elems: int
+        The number of elements of the rod.
+    position_collection: numpy.ndarray
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node position vectors.
+    velocity_collection: numpy.ndarray
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node velocity vectors.
+    acceleration_collection: numpy.ndarray
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node acceleration vectors.
+    omega_collection: numpy.ndarray
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array containing element angular velocity vectors.
+    alpha_collection: numpy.ndarray
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array contining element angular acceleration vectors.
+    director_collection: numpy.ndarray
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Array containing element director matrices.
+    rest_lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element lengths at rest configuration.
+    density: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod elements densities.
+    volume: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element volumes.
+    mass: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod node masses. Note that masses are stored on the nodes, not on elements.
+    mass_second_moment_of_inertia: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+        Rod element mass second moment of interia.
+    inv_mass_second_moment_of_inertia: numpy.ndarray
+        3D (dim, dim, blocksize) array containing data with 'float' type.
+        Rod element inverse mass moment of inertia.
+    nu: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element dissipation coefficient.
+    rest_voronoi_lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod lengths on the voronoi domain at the rest configuration.
+    internal_forces: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        Rod node internal forces. Note that internal forces are stored on the node, not on elements.
+    internal_torques: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        Rod element internal torques.
+    external_forces: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        External forces acting on rod nodes.
+    external_torques: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        External torques acting on rod elements.
+    lengths: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element lengths.
+    tangents: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        Rod element tangent vectors.
+    radius: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element radius.
+    dilatation: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element dilatation.
+    voronoi_dilatation: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod dilatation on voronoi domain.
+    dilatation_rate: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod element dilatation rates.
+
+    """
+    
     def __init__(
         self,
         n_elements,
@@ -69,90 +154,6 @@ class CosseratRod(RodBase):
         damping_forces,
         damping_torques,
     ):
-        """
-        Cosserat Rod class. This is the preferred class for rods because it is derived from some
-        of the essential base classes.
-        Although the attributes of this CosseratRod class are inherited from its parent classes, for convenience and easy access, the variable
-        names are given below.
-
-        Attributes
-        ----------
-        n_elems: int
-            The number of elements of the rod.
-        position_collection: numpy.ndarray
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node position vectors.
-        velocity_collection: numpy.ndarray
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node velocity vectors.
-        acceleration_collection: numpy.ndarray
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node acceleration vectors.
-        omega_collection: numpy.ndarray
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array containing element angular velocity vectors.
-        alpha_collection: numpy.ndarray
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array contining element angular acceleration vectors.
-        director_collection: numpy.ndarray
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Array containing element director matrices.
-        rest_lengths: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element lengths at rest configuration.
-        density: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod elements densities.
-        volume: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element volumes.
-        mass: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod node masses. Note that masses are stored on the nodes, not on elements.
-        mass_second_moment_of_inertia: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
-            Rod element mass second moment of interia.
-        inv_mass_second_moment_of_inertia: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
-            Rod element inverse mass moment of inertia.
-        nu: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element dissipation coefficient.
-        rest_voronoi_lengths: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod lengths on the voronoi domain at the rest configuration.
-        internal_forces: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
-            Rod node internal forces. Note that internal forces are stored on the node, not on elements.
-        internal_torques: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
-            Rod element internal torques.
-        external_forces: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
-            External forces acting on rod nodes.
-        external_torques: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
-            External torques acting on rod elements.
-        lengths: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element lengths.
-        tangents: numpy.ndarray
-            2D (dim, blocksize) array containing data with 'float' type.
-            Rod element tangent vectors.
-        radius: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element radius.
-        dilatation: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element dilatation.
-        voronoi_dilatation: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod dilatation on voronoi domain.
-        dilatation_rate: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type.
-            Rod element dilatation rates.
-
-        """
     
         self.n_elems = n_elements
         self.position_collection = position
