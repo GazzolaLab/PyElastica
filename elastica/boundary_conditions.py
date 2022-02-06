@@ -63,6 +63,75 @@ class FreeRod:
         """
         pass
 
+class FixNode(FreeRod):
+    """
+    This boundary condition class fixes the specified nodes. If does not 
+    fix the directors, meaning the rod can spin around the fixed node.
+
+        Attributes
+        ----------
+        fixed_position : numpy.ndarray
+            1D (dim, 1) array containing idx of fixed directors with 'int' type.
+    """
+
+    def __init__(self, fixed_position):
+        """
+
+        Parameters
+        ----------
+        fixed_position : numpy.ndarray
+            1D (dim, 1) array containing idx of fixed directors with 'int' type.
+        """
+        FreeRod.__init__(self)
+
+        self.fixed_position_collection = fixed_position
+
+        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
+        self.fixed_position_idx = np.array(fixed_position_idx)
+
+    def constrain_values(self, rod, time):
+        self.compute_constrain_values( rod.position_collection,self.fixed_position_idx, self.fixed_position_collection,)
+
+    def constrain_rates(self, rod, time):
+        self.compute_constrain_rates(rod.velocity_collection, self.fixed_position_idx,)
+
+    @staticmethod
+    @njit(cache=True)
+    def compute_constrain_values(
+        position_collection, fixed_position_idx, fixed_position_collection
+    ):
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        fixed_position : numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+
+        Returns
+        -------
+
+        """
+        position_collection[..., fixed_position_idx] = fixed_position_collection
+
+    @staticmethod
+    @njit(cache=True)
+    def compute_constrain_rates(velocity_collection, fixed_position_idx):
+        """
+        Compute contrain rates in numba njit decorator
+        Parameters
+        ----------
+        velocity_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+
+        Returns
+        -------
+
+        """
+        velocity_collection[..., fixed_position_idx] = 0.0
+
+
 class FixedRod(FreeRod):
     """
     This boundary condition class fixes the provided position and element locations.
@@ -77,7 +146,7 @@ class FixedRod(FreeRod):
             1D (dim, dim, 1) array containing idx of fixed directors with 'int' type.
     """
 
-    def __init__(self, fixed_position_idx, fixed_element_idx):
+    def __init__(self, fixed_position, fixed_directors):
         """
         There could be a cleaner way of handling the three cases, however, this option
         was selected to reduce the amount of numba code that needs to be rewritten.
@@ -90,38 +159,26 @@ class FixedRod(FreeRod):
             1D (dim, dim, 1) array containing idx of fixed directors with 'int' type.
         """
         FreeRod.__init__(self)
+
+        self.fixed_position_collectionfixed_position = fixed_position
+        self.fixed_director_collection = fixed_directors
+
+        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
+        fixed_element_idx = self._kwargs.pop("constrained_director_idx", None)  # calculate director indices as a tuple
         self.fixed_position_idx = np.array(fixed_position_idx)
         self.fixed_element_idx = np.array(fixed_element_idx)
 
-        if self.fixed_element_idx == [None]:
-            self.constrain_values = self.constrain_positions_only
-            self.constrain_rates = self.constrain_velocity_only
-
-        elif self.fixed_position_idx == [None]:
-            self.constrain_values = self.constrain_elements_only
-            self.constrain_rates = self.constrain_omega_only
-
-        else:
-            self.constrain_values = self.constrain_positions_and_elements
-            self.constrain_rates = self.constrain_velocity_and_omega
-
-        print(self.fixed_position_idx, self.fixed_element_idx )
-
-    def constrain_positions_and_elements(self, rod, time):
+    def constrain_values(self, rod, time):
         self.compute_constrain_values( 
             rod.position_collection,
             self.fixed_position_idx,
+            self.fixed_position_collection,
             rod.director_collection,
             self.fixed_element_idx,
+            self.fixed_director_collection
         )
 
-    def constrain_positions_only(self, rod, time):
-        self.compute_constrain_values(rod.position_collection,self.fixed_position_idx,np.array([0]),0)
-
-    def constrain_elements_only(self, rod, time):
-        self.compute_constrain_values(np.array([0]),0,rod.director_collection,self.fixed_element_idx,)
-
-    def constrain_velocity_and_omega(self, rod, time):
+    def constrain_rates(self, rod, time):
         self.compute_constrain_rates(
             rod.velocity_collection, 
             self.fixed_position_idx,
@@ -129,16 +186,10 @@ class FixedRod(FreeRod):
             self.fixed_element_idx,
             )
 
-    def constrain_velocity_only(self, rod, time):
-        self.compute_constrain_rates(rod.velocity_collection, self.fixed_position_idx,np.array([0]),0)
-
-    def constrain_omega_only(self, rod, time):
-        self.compute_constrain_rates(np.array([0]),0,rod.omega_collection, self.fixed_element_idx,)
-
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection, fixed_position_idx, director_collection, fixed_element_idx
+        position_collection, fixed_position_idx, fixed_position_collection, director_collection, fixed_element_idx, fixed_director_collection
     ):
         """
         Computes constrain values in numba njit decorator
@@ -157,8 +208,8 @@ class FixedRod(FreeRod):
         -------
 
         """
-        position_collection[..., fixed_position_idx] = 0
-        director_collection[..., fixed_element_idx] = 0
+        position_collection[..., fixed_position_idx] = fixed_position_collection
+        director_collection[..., fixed_element_idx] = fixed_director_collection
 
     @staticmethod
     @njit(cache=True)
