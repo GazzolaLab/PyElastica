@@ -69,7 +69,6 @@ class CosseratRod(RodBase):
         damping_forces,
         damping_torques,
     ):
-        
         """
         Cosserat Rod class. This is the preferred class for rods because it is derived from some
         of the essential base classes.
