@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
     'sphinx.ext.mathjax',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,9 +53,8 @@ exclude_patterns = []
 autodoc_default_flags = ['members',  'private-members', 'special-members',  'show-inheritance']
 
 source_parsers = {
-   '.md': 'recommonmark.parser.CommonMarkParser',
 }
-source_suffix = ['.rst', '.md']
+source_suffix = ['.rst']
 
 master_doc = 'index'
 # -- Options for HTML output -------------------------------------------------
