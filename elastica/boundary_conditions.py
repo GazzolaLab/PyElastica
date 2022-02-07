@@ -63,7 +63,7 @@ class FreeRod:
         """
         pass
 
-class FixNode(FreeRod):
+class FixedNodeBC(FreeRod):
     """
     This boundary condition class fixes the specified nodes. If does not 
     fix the directors, meaning the rod can spin around the fixed node.
@@ -130,8 +130,7 @@ class FixNode(FreeRod):
         """
         velocity_collection[..., fixed_position_idx] = 0.0
 
-
-class FixedRod(FreeRod):
+class FixedRodBC(FreeRod):
     """
     This boundary condition class fixes the provided position and element locations.
     This is designed to be a more flexible extension of the OneEndFixedRod BC which 
@@ -159,7 +158,7 @@ class FixedRod(FreeRod):
         """
         FreeRod.__init__(self)
 
-        self.fixed_position_collectionfixed_position = fixed_position
+        self.fixed_position_collection = fixed_position
         self.fixed_director_collection = fixed_directors
 
         fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
@@ -254,28 +253,41 @@ class OneEndFixedRod(FreeRod):
             3D (dim, dim, 1) array containing data with 'float' type.
         """
         FreeRod.__init__(self)
-        self.fixed_position = fixed_position
-        self.fixed_directors = fixed_directors
+        self.fixed_position_collection = fixed_position
+        self.fixed_directors_collection = fixed_directors
+
+        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
+        fixed_element_idx = self._kwargs.pop("constrained_director_idx", None)  # calculate director indices as a tuple
+        self.fixed_position_idx = np.array(fixed_position_idx)
+        self.fixed_element_idx = np.array(fixed_element_idx)
+
 
     def constrain_values(self, rod, time):
         # rod.position_collection[..., 0] = self.fixed_position
         # rod.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
             rod.position_collection,
-            self.fixed_position,
+            self.fixed_position_idx,
+            self.fixed_position_collection,
             rod.director_collection,
-            self.fixed_directors,
+            self.fixed_element_idx,
+            self.fixed_directors_collection,
         )
 
     def constrain_rates(self, rod, time):
         # rod.velocity_collection[..., 0] = 0.0
         # rod.omega_collection[..., 0] = 0.0
-        self.compute_constrain_rates(rod.velocity_collection, rod.omega_collection)
+        self.compute_constrain_rates(
+            rod.velocity_collection, 
+            self.fixed_position_idx, 
+            rod.omega_collection, 
+            self.fixed_element_idx
+        )
 
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection, fixed_position, director_collection, fixed_directors
+        position_collection, fixed_position_idx, fixed_position_collection, director_collection, fixed_element_idx, fixed_directors_collection
     ):
         """
         Computes constrain values in numba njit decorator
@@ -294,12 +306,12 @@ class OneEndFixedRod(FreeRod):
         -------
 
         """
-        position_collection[..., 0] = fixed_position
-        director_collection[..., 0] = fixed_directors
+        position_collection[..., fixed_position_idx] = fixed_position_collection
+        director_collection[..., fixed_element_idx] = fixed_directors_collection
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, omega_collection):
+    def compute_constrain_rates(velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx):
         """
         Compute contrain rates in numba njit decorator
         Parameters
@@ -313,9 +325,8 @@ class OneEndFixedRod(FreeRod):
         -------
 
         """
-        velocity_collection[..., 0] = 0.0
-        omega_collection[..., 0] = 0.0
-
+        velocity_collection[..., fixed_position_idx] = 0.0
+        omega_collection[..., fixed_element_idx] = 0.0
 
 class HelicalBucklingBC(FreeRod):
     """
