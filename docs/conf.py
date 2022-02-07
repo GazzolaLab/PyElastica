@@ -49,7 +49,9 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = [
+        "README.md", # File reserved to explain how documentationing works.
+    ]
 
 autodoc_default_flags = ['members',  'private-members', 'special-members',  'show-inheritance']
 

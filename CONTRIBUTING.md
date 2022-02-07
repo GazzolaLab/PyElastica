@@ -98,7 +98,7 @@ Once you find the issue that you are interested in, please leave a comment that 
 If you leave some questions in the comment, we will provide more detailed descriptions.
 
 You are also welcomed to help us pushing this project further. 
-Please don't hesitate improving documentation or code-coverage.
+Please don't hesitate improving [documentation](https://github.com/GazzolaLab/PyElastica/tree/master/docs) or code-coverage.
 
 ### Side projects
 
@@ -155,7 +155,11 @@ In order to format the code:
 
 ### Documentation styleguide
 
-We follow [NumPy documentation guidelines](https://numpydoc.readthedocs.io/en/latest/format.html) for PyElastica documentation.
+We follow [NumPy documentation guidelines][numpydoc-guideline] for PyElastica documentation.
+If you are interested in contributing or modifying the documentation, please refer [docs-readme][docs-readme] file.
 
 [beginner]: https://github.com/GazzolaLab/PyElastica/labels/good%20first%20issue
 [help-wanted]: https://github.com/GazzolaLab/PyElastica/labels/help%20wanted
+
+[numpydoc-guideline]: https://numpydoc.readthedocs.io/en/latest/format.html
+[docs-readme]: https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md
