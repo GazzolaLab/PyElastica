@@ -13,8 +13,8 @@ class FreeRod:
     """
     This is the base class for displacement boundary conditions. It applies no constraints or displacements to the rod.
 
-    Note
-    ----
+    Notes
+    -----
     Every new displacement boundary condition class must be
     derived from FreeRod class.
     """
