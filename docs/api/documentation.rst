@@ -14,7 +14,7 @@ Cosserat Rod
 ~~~~~~~~~~~~
 .. automodule:: elastica.rod.cosserat_rod
    :members:
-   :exclude-members: __weakref__, _get_z_vector, __init__, _CosseratRodBase
+   :exclude-members: __weakref__, __init__,
 
 .. Constitutive Models
 .. ~~~~~~~~~~~~~~~~~~~

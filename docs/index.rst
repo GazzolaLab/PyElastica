@@ -15,16 +15,24 @@ Elastica Documentation
    :maxdepth: 2
    :caption: Elastica Overview:
 
-   welcome_page
-   installation
-   getting_started
+   overview/welcome_page
+   overview/installation
+   overview/getting_started
 
 .. toctree::
    :maxdepth: 2
-   :caption: Documentation:
+   :caption: User Guide
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Gallary
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Documentation:
    
-   documentation
-   elastica++
+   api/documentation
+   api/elastica++
 
 
 ---------

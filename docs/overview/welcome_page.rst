@@ -10,6 +10,6 @@ Elastic is developed and maintained by the Gazzola Lab at the University of Illi
 
 Funding for the development of Elastica has been provided by: 
 
-.. image:: logos_updated.png
+.. image:: ../logos_updated.png
     :align: center
     :alt: alternate text
