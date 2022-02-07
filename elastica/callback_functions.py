@@ -11,8 +11,8 @@ class CallBackBaseClass:
     """
     This is the base class for callbacks for rod-like objects.
 
-    Note
-    ----
+    Notes
+    -----
     Every new callback class must be derived from
     CallBackBaseClass.
 
@@ -96,8 +96,8 @@ class ExportCallBack(CallBackBaseClass):
     If one wants to customize the saving data, we recommend to
     override `make_callback` method.
 
-        Class Attributes
-        ----------------
+        Attributes
+        ----------
         AVAILABLE_METHOD
             Supported method to save the file. We recommend
             binary save to maintain the tensor structure of

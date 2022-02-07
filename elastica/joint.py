@@ -13,17 +13,16 @@ class FreeJoint:
     joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
+    Notes
+    -----
+    Every new joint class must be derived from the FreeJoint class.
+
         Attributes
         ----------
         k: float
             Stiffness coefficient of the joint.
         nu: float
             Damping coefficient of the joint.
-
-    Note
-    ----
-    Every new joint class must be derived from the FreeJoint class.
-
 
     """
 

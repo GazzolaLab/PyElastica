@@ -7,10 +7,9 @@ class RodBase:
     """
     Base class for all rods.
 
-    Note
-    ----
+    Notes
+    -----
     All new rod classes must be derived from this RodBase class.
-
 
     """
 

@@ -21,8 +21,8 @@ class NoForces:
     """
     This is the base class for external forcing boundary conditions applied to rod-like objects.
 
-    Note
-    ----
+    Notes
+    -----
     Every new external forcing class must be derived
     from NoForces class.
 
