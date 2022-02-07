@@ -23,6 +23,8 @@ Use `make help` for other options.
 
 # Contribution
 
+The documentation-related commits will be collected in the branch `doc_**` separate from `master` branch, and merged into `master` collectively. Ideally, the updates in the documentation branch will seek up-coming version update (i.e. `update-**` branch), and merged shortly after the version release. If an update is critical and urgent, create PR directly to `master` branch.
+
 ## User Guide
 
 User guidelines and tutorials are written in `.rst` or `.md` format.
@@ -50,7 +52,7 @@ y : type
 """
 ```
 
-will be parsed and displayed in API documentation.
+will be parsed and displayed in API documentation. See `numpydoc` for more details.
 
 ## ReadtheDocs
 
