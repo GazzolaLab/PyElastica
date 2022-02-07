@@ -31,7 +31,7 @@ Or download the source code from the `GitHub repo`_
 
 Elastica++
 ~~~~~~~~~~
-Elastica++ is a C++ implementation of Elastica that is still under development
+Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2022 Q2.
 
 .. _project website: https://cosseratrods.org
 .. _GitHub repo: https://github.com/GazzolaLab/PyElastica
