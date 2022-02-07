@@ -1,8 +1,8 @@
 # Elastica Documentation
 
-We use [`Sphinx`](https://www.sphinx-doc.org/en/master/) and [`ReadtheDocs`](https://readthedocs.org/) to keep organize our [documentation page](https://docs.cosseratrods.org/en/latest/).
+We use [`Sphinx`](https://www.sphinx-doc.org/en/master/) and [`ReadtheDocs`](https://readthedocs.org/) to organize our [documentation page](https://docs.cosseratrods.org/en/latest/).
 
-In addition, we utilize following extensions to enhance the documentation :coffee:
+In addition, we utilize the following extensions to enhance the documentation :coffee:
 - `numpydoc`: We favor [numpy documentation style](https://numpydoc.readthedocs.io/en/latest/format.html) for API documentation.
 - `myst_parser`: We like to write documentation and guidelines in `markdown` format.
 
@@ -23,7 +23,7 @@ Use `make help` for other options.
 
 # Contribution
 
-The documentation-related commits will be collected in the branch `doc_**` separate from `master` branch, and merged into `master` collectively. Ideally, the updates in the documentation branch will seek up-coming version update (i.e. `update-**` branch), and merged shortly after the version release. If an update is critical and urgent, create PR directly to `master` branch.
+The documentation-related commits will be collected in the branch `doc_**` separate from `master` branch, and merged into `master` collectively. Ideally, the updates in the documentation branch will seek upcoming version update (i.e. `update-**` branch) and merged shortly after the version release. If an update is critical and urgent, create PR directly to `master` branch.
 
 ## User Guide
 
