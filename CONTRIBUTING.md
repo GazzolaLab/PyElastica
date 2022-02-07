@@ -156,7 +156,7 @@ In order to format the code:
 ### Documentation styleguide
 
 We follow [NumPy documentation guidelines][numpydoc-guideline] for PyElastica documentation.
-If you are interested in contributing or modifying the documentation, please refer [docs-readme][docs-readme] file.
+If you are interested in contributing or modifying the documentation, please refer to the [docs-readme][docs-readme] file.
 
 [beginner]: https://github.com/GazzolaLab/PyElastica/labels/good%20first%20issue
 [help-wanted]: https://github.com/GazzolaLab/PyElastica/labels/help%20wanted
