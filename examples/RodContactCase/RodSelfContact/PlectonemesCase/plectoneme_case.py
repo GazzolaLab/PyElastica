@@ -45,9 +45,7 @@ shear_modulus = E / (poisson_ratio + 1.0)
 
 direction = np.array([0.0, 1.0, 0])
 normal = np.array([0.0, 0.0, 1.0])
-start = np.zeros(
-    3,
-)
+start = np.zeros(3,)
 
 sherable_rod = CosseratRod.straight_rod(
     n_elem,
@@ -72,7 +70,9 @@ from elastica._rotations import _get_rotation_matrix
 
 
 class SelonoidsBC(FreeRod):
-    """ """
+    """
+
+    """
 
     def __init__(
         self,
@@ -159,7 +159,9 @@ plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
-    """ """
+    """
+
+    """
 
     def __init__(self, step_skip: int, callback_params: dict):
         CallBackBaseClass.__init__(self)
@@ -191,9 +193,7 @@ class RodCallBack(CallBackBaseClass):
 post_processing_dict = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 plectonemes_sim.collect_diagnostics(sherable_rod).using(
-    RodCallBack,
-    step_skip=step_skip,
-    callback_params=post_processing_dict,
+    RodCallBack, step_skip=step_skip, callback_params=post_processing_dict,
 )
 
 # finalize simulation
