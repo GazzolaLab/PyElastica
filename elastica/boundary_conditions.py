@@ -1,6 +1,6 @@
 __doc__ = """ Numba implementation module for boundary condition implementations that constrain or
 define displacement conditions on the rod"""
-__all__ = ["FreeRod", "FixedRod", "OneEndFixedRod", "HelicalBucklingBC"]
+__all__ = ["FreeRod", "FixedNodeBC", "FixedRodBC", "OneEndFixedRod", "HelicalBucklingBC"]
 
 import numpy as np
 from elastica._rotations import _get_rotation_matrix
