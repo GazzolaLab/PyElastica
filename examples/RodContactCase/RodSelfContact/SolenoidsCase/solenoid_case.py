@@ -44,7 +44,9 @@ shear_modulus = E / (poisson_ratio + 1.0)
 
 direction = np.array([0.0, 1.0, 0])
 normal = np.array([0.0, 0.0, 1.0])
-start = np.zeros(3,)
+start = np.zeros(
+    3,
+)
 
 F_pulling_scalar = 300
 
@@ -70,9 +72,7 @@ from elastica._rotations import _get_rotation_matrix
 
 
 class SelonoidsBC(FreeRod):
-    """
-
-    """
+    """ """
 
     def __init__(
         self,
@@ -156,7 +156,9 @@ solenoid_sim.constrain(sherable_rod).using(
 
 solenoid_sim.add_forcing_to(sherable_rod).using(
     EndpointForces,
-    np.zeros(3,),
+    np.zeros(
+        3,
+    ),
     F_pulling_scalar * direction,
     ramp_up_time=time_start_twist - 1,
 )
@@ -166,9 +168,7 @@ solenoid_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
-    """
-
-    """
+    """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
         CallBackBaseClass.__init__(self)
@@ -201,7 +201,9 @@ class RodCallBack(CallBackBaseClass):
 post_processing_dict = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 solenoid_sim.collect_diagnostics(sherable_rod).using(
-    RodCallBack, step_skip=step_skip, callback_params=post_processing_dict,
+    RodCallBack,
+    step_skip=step_skip,
+    callback_params=post_processing_dict,
 )
 
 # finalize simulation
@@ -240,10 +242,14 @@ director_history = np.array(post_processing_dict["directors"])
 theta = 2.0 * number_of_rotations * np.pi
 angel_vel_scalar = theta / time_twist
 
-twist_time_interval_start_idx = np.where(time>time_start_twist)[0][0]
-twist_time_interval_end_idx = np.where(time<(time_relax + time_twist))[0][-1]
+twist_time_interval_start_idx = np.where(time > time_start_twist)[0][0]
+twist_time_interval_end_idx = np.where(time < (time_relax + time_twist))[0][-1]
 
-twist_density = (time[twist_time_interval_start_idx:twist_time_interval_end_idx]-time_start_twist)*angel_vel_scalar * base_radius
+twist_density = (
+    (time[twist_time_interval_start_idx:twist_time_interval_end_idx] - time_start_twist)
+    * angel_vel_scalar
+    * base_radius
+)
 
 np.savez(
     os.path.join(save_folder, "solenoid_case_data.npz"),
@@ -251,6 +257,6 @@ np.savez(
     position_history=position_history,
     radius_history=radius_history,
     director_history=director_history,
-    base_length = np.array(base_length),
-    twist_density = twist_density,
+    base_length=np.array(base_length),
+    twist_density=twist_density,
 )

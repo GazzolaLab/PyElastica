@@ -3,8 +3,10 @@ This script is an example to how to use Pyelastica restart functionality.
 """
 
 import sys
+
 sys.path.append("../../")
 from elastica import *
+
 
 class RestartExampleSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
     pass
@@ -62,7 +64,7 @@ restart_example_simulator.finalize()
 
 # After finalize you can load restart file. This step is important for current implementation of restart functions,
 # it is required to load restart files after the finalize step.
-LOAD_FROM_RESTART = False 
+LOAD_FROM_RESTART = False
 SAVE_DATA_RESTART = True
 restart_file_location = "data/"
 
@@ -76,11 +78,16 @@ dl = base_length / n_elem
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
 
-time = integrate(timestepper, restart_example_simulator, final_time, total_steps, restart_time=restart_time)
+time = integrate(
+    timestepper,
+    restart_example_simulator,
+    final_time,
+    total_steps,
+    restart_time=restart_time,
+)
 
 # Save all the systems appended on the simulator class. Since in this example have only one system, under the
 # `restart_file_location` directory there is one file called system_0.npz . For each system appended on the simulator
 # separate system_#.npz file will be created.
 if SAVE_DATA_RESTART:
     save_state(restart_example_simulator, restart_file_location, time, True)
-

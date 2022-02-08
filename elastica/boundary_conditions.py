@@ -63,9 +63,10 @@ class FreeRod:
         """
         pass
 
+
 class FixedNodeBC(FreeRod):
     """
-    This boundary condition class fixes the specified nodes. If does not 
+    This boundary condition class fixes the specified nodes. If does not
     fix the directors, meaning the rod can spin around the fixed node.
 
         Attributes
@@ -85,14 +86,21 @@ class FixedNodeBC(FreeRod):
         FreeRod.__init__(self)
 
         self.fixed_position_collection = fixed_position
-        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None) 
+        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)
         self.fixed_position_idx = np.array(fixed_position_idx)
 
     def constrain_values(self, rod, time):
-        self.compute_constrain_values(rod.position_collection, self.fixed_position_idx, self.fixed_position_collection,)
+        self.compute_constrain_values(
+            rod.position_collection,
+            self.fixed_position_idx,
+            self.fixed_position_collection,
+        )
 
     def constrain_rates(self, rod, time):
-        self.compute_constrain_rates(rod.velocity_collection, self.fixed_position_idx,)
+        self.compute_constrain_rates(
+            rod.velocity_collection,
+            self.fixed_position_idx,
+        )
 
     @staticmethod
     @njit(cache=True)
@@ -130,10 +138,11 @@ class FixedNodeBC(FreeRod):
         """
         velocity_collection[..., fixed_position_idx] = 0.0
 
+
 class FixedRodBC(FreeRod):
     """
     This boundary condition class fixes the provided position and element locations.
-    This is designed to be a more flexible extension of the OneEndFixedRod BC which 
+    This is designed to be a more flexible extension of the OneEndFixedRod BC which
     only fixes the first location. It can also handle having only nodes or elements fixed.
 
         Attributes
@@ -161,33 +170,42 @@ class FixedRodBC(FreeRod):
         self.fixed_position_collection = fixed_position
         self.fixed_director_collection = fixed_directors
 
-        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
-        fixed_element_idx = self._kwargs.pop("constrained_director_idx", None)  # calculate director indices as a tuple
+        fixed_position_idx = self._kwargs.pop(
+            "constrained_position_idx", None
+        )  # calculate position indices as a tuple
+        fixed_element_idx = self._kwargs.pop(
+            "constrained_director_idx", None
+        )  # calculate director indices as a tuple
         self.fixed_position_idx = np.array(fixed_position_idx)
         self.fixed_element_idx = np.array(fixed_element_idx)
 
     def constrain_values(self, rod, time):
-        self.compute_constrain_values( 
+        self.compute_constrain_values(
             rod.position_collection,
             self.fixed_position_idx,
             self.fixed_position_collection,
             rod.director_collection,
             self.fixed_element_idx,
-            self.fixed_director_collection
+            self.fixed_director_collection,
         )
 
     def constrain_rates(self, rod, time):
         self.compute_constrain_rates(
-            rod.velocity_collection, 
+            rod.velocity_collection,
             self.fixed_position_idx,
-            rod.omega_collection, 
+            rod.omega_collection,
             self.fixed_element_idx,
-            )
+        )
 
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection, fixed_position_idx, fixed_position_collection, director_collection, fixed_element_idx, fixed_director_collection
+        position_collection,
+        fixed_position_idx,
+        fixed_position_collection,
+        director_collection,
+        fixed_element_idx,
+        fixed_director_collection,
     ):
         """
         Computes constrain values in numba njit decorator
@@ -211,7 +229,9 @@ class FixedRodBC(FreeRod):
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx):
+    def compute_constrain_rates(
+        velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx
+    ):
         """
         Compute contrain rates in numba njit decorator
         Parameters
@@ -227,6 +247,7 @@ class FixedRodBC(FreeRod):
         """
         velocity_collection[..., fixed_position_idx] = 0.0
         omega_collection[..., fixed_element_idx] = 0.0
+
 
 class OneEndFixedRod(FreeRod):
     """
@@ -256,11 +277,14 @@ class OneEndFixedRod(FreeRod):
         self.fixed_position_collection = fixed_position
         self.fixed_directors_collection = fixed_directors
 
-        fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)  # calculate position indices as a tuple
-        fixed_element_idx = self._kwargs.pop("constrained_director_idx", None)  # calculate director indices as a tuple
+        fixed_position_idx = self._kwargs.pop(
+            "constrained_position_idx", None
+        )  # calculate position indices as a tuple
+        fixed_element_idx = self._kwargs.pop(
+            "constrained_director_idx", None
+        )  # calculate director indices as a tuple
         self.fixed_position_idx = np.array(fixed_position_idx)
         self.fixed_element_idx = np.array(fixed_element_idx)
-
 
     def constrain_values(self, rod, time):
         # rod.position_collection[..., 0] = self.fixed_position
@@ -278,16 +302,21 @@ class OneEndFixedRod(FreeRod):
         # rod.velocity_collection[..., 0] = 0.0
         # rod.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
-            rod.velocity_collection, 
-            self.fixed_position_idx, 
-            rod.omega_collection, 
-            self.fixed_element_idx
+            rod.velocity_collection,
+            self.fixed_position_idx,
+            rod.omega_collection,
+            self.fixed_element_idx,
         )
 
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection, fixed_position_idx, fixed_position_collection, director_collection, fixed_element_idx, fixed_directors_collection
+        position_collection,
+        fixed_position_idx,
+        fixed_position_collection,
+        director_collection,
+        fixed_element_idx,
+        fixed_directors_collection,
     ):
         """
         Computes constrain values in numba njit decorator
@@ -311,7 +340,9 @@ class OneEndFixedRod(FreeRod):
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx):
+    def compute_constrain_rates(
+        velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx
+    ):
         """
         Compute contrain rates in numba njit decorator
         Parameters
@@ -327,6 +358,7 @@ class OneEndFixedRod(FreeRod):
         """
         velocity_collection[..., fixed_position_idx] = 0.0
         omega_collection[..., fixed_element_idx] = 0.0
+
 
 class HelicalBucklingBC(FreeRod):
     """
