@@ -32,10 +32,11 @@ class ConstraintBase(ABC):
     ----
     Constraint class must inherit BaseConstraint class.
 
-    Methods
-    -------
-    get_system
-
+        Attributes
+        -------
+        system : RodBase
+        node_indices : None or numpy.ndarray
+        element_indices : None or numpy.ndarray
 
     """
 

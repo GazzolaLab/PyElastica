@@ -315,6 +315,22 @@ class TestConstraintsMixin:
             assert type(x) is int
             assert type(y) is bc_cls
 
+    def test_constraint_properties(self, load_rod_with_constraints):
+        scwc, _ = load_rod_with_constraints
+        scwc._finalize()
+
+        for i in [0, 1, -1]:
+            x, y = scwc._constraints[i]
+            mock_rod = scwc._systems[i]
+            # Test system
+            assert type(x) is int
+            assert type(y.system) is type(mock_rod)
+            assert y.system is mock_rod, f"{len(scwc._systems)}"
+            # Test node indices
+            assert y.node_indices == [None, None, None][i]
+            # Test element indices. TODO: maybe add more generalized test
+            assert y.element_indices == [None, None, None][i]
+
     @pytest.mark.xfail
     def test_constrain_finalize_sorted(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
