@@ -284,7 +284,7 @@ class TestConstraintsMixin:
         assert _mock_constraint in scwc._constraints
         assert _mock_constraint.__class__ == _Constraint
 
-    from elastica.boundary_conditions import FreeBC as TestBC
+    from elastica.boundary_conditions import ConstraintBase
 
     @pytest.fixture
     def load_rod_with_constraints(self, load_system_with_constraints):
@@ -293,11 +293,18 @@ class TestConstraintsMixin:
         mock_rod = self.MockRod(2, 3, 4, 5)
         scwc.append(mock_rod)
 
-        def mock_init(self, *args, **kwargs):
-            pass
-
         # in place class
-        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
+        class MockBC(self.ConstraintBase):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
+            def constrain_values(self, *args, **kwargs) -> None:
+                pass
+
+            def constrain_rates(self, *args, **kwargs) -> None:
+                pass
+
+        # MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         # Constrain any and all systems
         scwc.constrain(1).using(MockBC, 2, 42)  # index based constraint
@@ -327,9 +334,9 @@ class TestConstraintsMixin:
             assert type(y.system) is type(mock_rod)
             assert y.system is mock_rod, f"{len(scwc._systems)}"
             # Test node indices
-            assert y.position_indices == [None, None, None][i]
+            assert y.constrained_position_idx.size == 0
             # Test element indices. TODO: maybe add more generalized test
-            assert y.director_indices == [None, None, None][i]
+            assert y.constrained_director_idx.size == 0
 
     @pytest.mark.xfail
     def test_constrain_finalize_sorted(self, load_rod_with_constraints):

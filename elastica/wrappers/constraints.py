@@ -161,10 +161,10 @@ class _Constraint:
 
         # If there is position, director in kwargs, deal with it first
         # Returns None if not found
-        pos_indices = self._kwargs.pop(
+        pos_indices = self._kwargs.get(
             "constrained_position_idx", None
         )  # calculate position indices as a tuple
-        director_indices = self._kwargs.pop(
+        director_indices = self._kwargs.get(
             "constrained_director_idx", None
         )  # calculate director indices as a tuple
 
@@ -181,10 +181,9 @@ class _Constraint:
             else []
         )
         try:
-            bc = self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
-            bc._system = rod
-            bc._position_indices = np.array(pos_indices)
-            bc._director_indices = np.array(director_indices)
+            bc = self._bc_cls(
+                *positions, *directors, *self._args, _system=rod, **self._kwargs
+            )
             return bc
         except (TypeError, IndexError):
             raise TypeError(

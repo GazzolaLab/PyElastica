@@ -40,12 +40,23 @@ class ConstraintBase(ABC):
     """
 
     _system: Type[RodBase]
-    _position_indices: np.ndarray
-    _director_indices: np.ndarray
+    _constrained_position_idx: np.ndarray
+    _constrained_director_idx: np.ndarray
 
     def __init__(self, *args, **kwargs):
         """Initialize boundary condition"""
-        pass
+        try:
+            self._system = kwargs["_system"]
+            self._constrained_position_idx = np.array(
+                kwargs.get("constrained_position_idx", []), dtype=int
+            )
+            self._constrained_director_idx = np.array(
+                kwargs.get("constrained_director_idx", []), dtype=int
+            )
+        except KeyError:
+            raise KeyError(
+                "Please use simulator.constrain(...).using(...) syntax to establish constraint."
+            )
 
     @property
     def system(self) -> Type[RodBase]:
@@ -53,16 +64,16 @@ class ConstraintBase(ABC):
         return self._system
 
     @property
-    def position_indices(self) -> Optional[np.ndarray]:
+    def constrained_position_idx(self) -> Optional[np.ndarray]:
         """get position-indices passed to "using" """
         # TODO: This should be immutable somehow
-        return self._position_indices
+        return self._constrained_position_idx
 
     @property
-    def director_indices(self) -> Optional[np.ndarray]:
+    def constrained_director_idx(self) -> Optional[np.ndarray]:
         """get director-indices passed to "using" """
         # TODO: This should be immutable somehow
-        return self._director_indices
+        return self._constrained_director_idx
 
     @abstractmethod
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
@@ -97,6 +108,9 @@ class ConstraintBase(ABC):
 
 
 class FreeBC(ConstraintBase):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         """In FreeBC, this routine simply passes."""
         pass
@@ -129,7 +143,7 @@ class OneEndFixedBC(ConstraintBase):
             3D (dim, dim, 1) array containing data with 'float' type.
     """
 
-    def __init__(self, fixed_position, fixed_directors):
+    def __init__(self, fixed_position, fixed_directors, **kwargs):
         """
 
         Parameters
@@ -139,7 +153,7 @@ class OneEndFixedBC(ConstraintBase):
         fixed_directors : numpy.ndarray
             3D (dim, dim, 1) array containing data with 'float' type.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.fixed_position_collection = np.array(fixed_position)
         self.fixed_directors_collection = np.array(fixed_directors)
 
@@ -243,7 +257,7 @@ class FixedConstraint(ConstraintBase):
     ... )
     """
 
-    def __init__(self, *fixed_data):
+    def __init__(self, *fixed_data, **kwargs):
         """
 
         Parameters
@@ -251,7 +265,7 @@ class FixedConstraint(ConstraintBase):
         fixed_data : tuple
             Tuple of position and directors
         """
-        super().__init__()
+        super().__init__(**kwargs)
         pos, dir = [], []
         for data in fixed_data:
             if isinstance(data, np.ndarray) and data.shape == (3,):
@@ -268,29 +282,29 @@ class FixedConstraint(ConstraintBase):
         self.fixed_directors = np.array(dir)
 
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
-        if self.position_indices.size:
+        if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 rod.position_collection,
                 self.fixed_positions,
-                self.position_indices,
+                self.constrained_position_idx,
             )
-        if self.director_indices.size:
+        if self.constrained_director_idx.size:
             self.nb_constraint_rotational_values(
                 rod.director_collection,
                 self.fixed_directors,
-                self.director_indices,
+                self.constrained_director_idx,
             )
 
     def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
-        if self.position_indices.size:
+        if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 rod.velocity_collection,
-                self.position_indices,
+                self.constrained_position_idx,
             )
-        if self.director_indices.size:
+        if self.constrained_director_idx.size:
             self.nb_constrain_rotational_rates(
                 rod.omega_collection,
-                self.director_indices,
+                self.constrained_director_idx,
             )
 
     @staticmethod
@@ -422,6 +436,7 @@ class HelicalBucklingBC(ConstraintBase):
         twisting_time: float,
         slack: float,
         number_of_rotations: float,
+        **kwargs
     ):
         """
 
@@ -447,7 +462,7 @@ class HelicalBucklingBC(ConstraintBase):
         number_of_rotations : float
             Number of rotations applied to rod.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.twisting_time = twisting_time
 
         angel_vel_scalar = (

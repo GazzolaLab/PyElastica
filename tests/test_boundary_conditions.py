@@ -16,6 +16,13 @@ from elastica.utils import Tolerance
 import pytest
 from pytest import main
 
+test_built_in_boundary_condition_impls = [
+    FreeBC,
+    OneEndFixedBC,
+    FixedConstraint,
+    HelicalBucklingBC,
+]
+
 
 def test_constraint_base():
     test_rod = MockTestRod()
@@ -25,6 +32,9 @@ def test_constraint_base():
     test_rod.omega_collection = np.ones(3) * 11.0
 
     class TestBC(ConstraintBase):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
         def constrain_values(self, rod, time):
             rod.position_collection *= time
             rod.director_collection *= time
@@ -33,7 +43,7 @@ def test_constraint_base():
             rod.velocity_collection *= time
             rod.omega_collection *= time
 
-    testBC = TestBC()
+    testBC = TestBC(_system=test_rod)
     testBC.constrain_values(test_rod, 2)
     testBC.constrain_rates(test_rod, 2)
     assert_allclose(test_rod.position_collection, 6.0, atol=Tolerance.atol())
@@ -42,10 +52,38 @@ def test_constraint_base():
     assert_allclose(test_rod.omega_collection, 22.0, atol=Tolerance.atol())
 
 
+def test_constraint_base_properties_access():
+    test_rod = MockTestRod()
+
+    class TestBC(ConstraintBase):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Able to access properties in constraint class
+            assert self._system == test_rod
+            assert self.constrained_position_idx == 11
+            assert self.constrained_director_idx == 17
+
+        def constrain_values(self, rod, time):
+            assert self._system == test_rod
+            assert self.constrained_position_idx == 11
+            assert self.constrained_director_idx == 17
+
+        def constrain_rates(self, rod, time):
+            assert self._system == test_rod
+            assert self.constrained_position_idx == 11
+            assert self.constrained_director_idx == 17
+
+    testBC = TestBC(
+        constrained_position_idx=11, constrained_director_idx=17, _system=test_rod
+    )
+    testBC.constrain_values(test_rod, 2)
+    testBC.constrain_rates(test_rod, 2)
+
+
 # tests free rod boundary conditions
 def test_free_rod():
     test_rod = MockTestRod()
-    free_rod = FreeBC()
+    free_rod = FreeBC(_system=test_rod)
     test_position_collection = np.random.rand(3, 20)
     test_rod.position_collection = (
         test_position_collection.copy()
@@ -84,7 +122,9 @@ def test_one_end_fixed_bc():
     test_rod = MockTestRod()
     start_position_collection = np.random.rand(3)
     start_director_collection = np.random.rand(3, 3)
-    fixed_rod = OneEndFixedBC(start_position_collection, start_director_collection)
+    fixed_rod = OneEndFixedBC(
+        start_position_collection, start_director_collection, _system=test_rod
+    )
     test_position_collection = np.random.rand(3, 20)
     test_rod.position_collection = (
         test_position_collection.copy()
@@ -132,11 +172,13 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod = MockTestRod()
     start_position_collection = rng.random((n_position_constraint, 3))
     start_director_collection = rng.random((n_director_constraint, 3, 3))
-    fixed_rod = FixedConstraint(*start_position_collection, *start_director_collection)
+    fixed_rod = FixedConstraint(
+        *start_position_collection, *start_director_collection, _system=test_rod
+    )
     pos_indices = rng.choice(N, size=n_position_constraint, replace=False)
     dir_indices = rng.choice(N, size=n_director_constraint, replace=False)
-    fixed_rod._position_indices = pos_indices.copy()
-    fixed_rod._director_indices = dir_indices.copy()
+    fixed_rod._constrained_position_idx = pos_indices.copy()
+    fixed_rod._constrained_director_idx = dir_indices.copy()
 
     test_position_collection = rng.random((3, N))
     test_rod.position_collection = (
@@ -224,6 +266,7 @@ def test_helical_buckling_bc():
         twisting_time,
         slack,
         number_of_rotations,
+        _system=test_rod,
     )
 
     # Check Neumann BC
