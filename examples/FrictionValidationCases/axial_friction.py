@@ -61,7 +61,7 @@ def simulate_axial_friction_with(force=0.0):
     shearable_rod.shear_matrix = shear_matrix
 
     axial_friction_sim.append(shearable_rod)
-    axial_friction_sim.constrain(shearable_rod).using(FreeRod)
+    axial_friction_sim.constrain(shearable_rod).using(FreeBC)
 
     # Add gravitational forces
     gravitational_acc = -9.80665
