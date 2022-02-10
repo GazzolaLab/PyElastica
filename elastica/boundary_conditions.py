@@ -6,8 +6,7 @@ __all__ = [
     "FreeRod", # Deprecated: remove v0.3.0
     "OneEndFixedBC",
     "OneEndFixedRod", # Deprecated: remove v0.3.0
-    # "FixedNodeBC",
-    # "FixedRodBC",
+    "FixedConstraint",
     "HelicalBucklingBC",
 ]
 
@@ -41,8 +40,8 @@ class ConstraintBase(ABC):
     """
 
     _system: Type[RodBase]
-    _node_indices: Optional[np.ndarray]
-    _element_indices: Optional[np.ndarray]
+    _position_indices: np.ndarray
+    _director_indices: np.ndarray
 
     def __init__(self, *args, **kwargs):
         """Initialize boundary condition"""
@@ -53,12 +52,14 @@ class ConstraintBase(ABC):
         return self._system
 
     @property
-    def node_indices(self) -> Optional[np.ndarray]:
-        return self._node_indices.copy()
+    def position_indices(self) -> Optional[np.ndarray]:
+        # TODO: This should be immutable somehow
+        return self._position_indices
 
     @property
-    def element_indices(self) -> Optional[np.ndarray]:
-        return self._element_indices.copy()
+    def director_indices(self) -> Optional[np.ndarray]:
+        # TODO: This should be immutable somehow
+        return self._director_indices
 
     @abstractmethod
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
@@ -214,188 +215,150 @@ class OneEndFixedRod(OneEndFixedBC):
     )
 
 
-# class FixedNodeBC(ConstraintBase):
-#     """
-#     This boundary condition class fixes the specified nodes. It does not
-#     fix the directors, meaning the rod can spin around the fixed node.
+class FixedConstraint(ConstraintBase):
+    """
+    This boundary condition class fixes the specified node or orientations. 
+    Index can be passed as "constrained_position_idx" and "constrained_director_index".
+    Constraining position is equivalent to setting 0 translational DOF.
+    Constraining director is equivalent to setting 0 rotational DOF.
 
-#         Attributes
-#         ----------
-#         fixed_position : numpy.ndarray
-#             1D (dim, 1) array containing idx of fixed directors with 'int' type.
-#     """
+    Examples
+    --------
+    TODO
+    """
 
-#     def __init__(self, fixed_position):
-#         """
+    def __init__(self, *fixed_data):
+        """
 
-#         Parameters
-#         ----------
-#         fixed_position : numpy.ndarray
-#             1D (dim, 1) array containing idx of fixed directors with 'int' type.
-#         """
-#         super().__init__()
+        Parameters
+        ----------
+        fixed_data : tuple
+            Tuple of position and directors
+        """
+        super().__init__()
+        pos, dir = [], []
+        for data in fixed_data:
+            if isinstance(data, np.ndarray) and data.shape == (3,):
+                pos.append(data)
+            elif isinstance(data, np.ndarray) and data.shape == (3,3,):
+                dir.append(data)
+            else:
+                # TODO: This part is prone to error.
+                break
+        self.fixed_positions = np.array(pos)
+        self.fixed_directors = np.array(dir)
 
-#         self.fixed_position_collection = fixed_position
-#         fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)
-#         self.fixed_position_idx = np.array(fixed_position_idx)
+    def constrain_values(self, rod, time):
+        if self.position_indices.size:
+            self.nb_constrain_translational_values(
+                rod.position_collection,
+                self.fixed_positions,
+                self.position_indices,
+            )
+        if self.director_indices.size:
+            self.nb_constraint_rotational_values(
+                rod.director_collection,
+                self.fixed_directors,
+                self.director_indices,
+            )
 
-#     def constrain_values(self, rod, time):
-#         self.compute_constrain_values(
-#             rod.position_collection,
-#             self.fixed_position_idx,
-#             self.fixed_position_collection,
-#         )
+    def constrain_rates(self, rod, time):
+        if self.position_indices.size:
+            self.nb_constrain_translational_rates(
+                rod.velocity_collection,
+                self.position_indices,
+            )
+        if self.director_indices.size:
+            self.nb_constrain_rotational_rates(
+                rod.omega_collection,
+                self.director_indices,
+            )
 
-#     def constrain_rates(self, rod, time):
-#         self.compute_constrain_rates(
-#             rod.velocity_collection,
-#             self.fixed_position_idx,
-#         )
+    @staticmethod
+    @njit(cache=True)
+    def nb_constraint_rotational_values(
+        director_collection, fixed_director_collection, indices
+    ) -> None:
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        fixed_director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
 
-#     @staticmethod
-#     @njit(cache=True)
-#     def compute_constrain_values(
-#         position_collection, fixed_position_idx, fixed_position_collection
-#     ):
-#         """
-#         Computes constrain values in numba njit decorator
-#         Parameters
-#         ----------
-#         position_collection : numpy.ndarray
-#             2D (dim, blocksize) array containing data with `float` type.
-#         fixed_position : numpy.ndarray
-#             2D (dim, 1) array containing data with 'float' type.
+        """
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            director_collection[..., k] = fixed_director_collection[i, ...]
 
-#         Returns
-#         -------
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_translational_values(
+        position_collection, fixed_position_collection, indices
+    ) -> None:
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        fixed_position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
 
-#         """
-#         position_collection[..., fixed_position_idx] = fixed_position_collection
+        """
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            position_collection[0, k] = fixed_position_collection[i, 0]
+            position_collection[1, k] = fixed_position_collection[i, 1]
+            position_collection[2, k] = fixed_position_collection[i, 2]
 
-#     @staticmethod
-#     @njit(cache=True)
-#     def compute_constrain_rates(velocity_collection, fixed_position_idx):
-#         """
-#         Compute contrain rates in numba njit decorator
-#         Parameters
-#         ----------
-#         velocity_collection : numpy.ndarray
-#             2D (dim, blocksize) array containing data with `float` type.
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_translational_rates(velocity_collection, indices) -> None:
+        """
+        Compute constrain rates in numba njit decorator
+        Parameters
+        ----------
+        velocity_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
 
-#         Returns
-#         -------
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            velocity_collection[0, k] = 0.0
+            velocity_collection[1, k] = 0.0
+            velocity_collection[2, k] = 0.0
 
-#         """
-#         velocity_collection[..., fixed_position_idx] = 0.0
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_rotational_rates(omega_collection, indices) -> None:
+        """
+        Compute constrain rates in numba njit decorator
+        Parameters
+        ----------
+        omega_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
 
-# class FixedRodBC(ConstraintBase):
-#     """
-#     This boundary condition class fixes the provided position and element locations.
-#     This is designed to be a more flexible extension of the OneEndFixedBC which
-#     only fixes the first location. It can also handle having only nodes or elements fixed.
-
-#         Attributes
-#         ----------
-#         fixed_position : numpy.ndarray
-#             1D (dim, 1) array containing idx of fixed directors with 'int' type.
-#         fixed_directors : numpy.ndarray
-#             1D (dim, dim, 1) array containing idx of fixed directors with 'int' type.
-#     """
-
-#     def __init__(self, fixed_position, fixed_directors):
-#         """
-#         There could be a cleaner way of handling the three cases, however, this option
-#         was selected to reduce the amount of numba code that needs to be rewritten.
-
-#         Parameters
-#         ----------
-#         fixed_position : numpy.ndarray
-#             1D (dim, 1) array containing idx of fixed directors with 'int' type.
-#         fixed_directors : numpy.ndarray
-#             1D (dim, dim, 1) array containing idx of fixed directors with 'int' type.
-#         """
-#         super().__init__()
-
-#         self.fixed_position_collection = fixed_position
-#         self.fixed_director_collection = fixed_directors
-
-#         fixed_position_idx = self._kwargs.pop(
-#             "constrained_position_idx", None
-#         )  # calculate position indices as a tuple
-#         fixed_element_idx = self._kwargs.pop(
-#             "constrained_director_idx", None
-#         )  # calculate director indices as a tuple
-#         self.fixed_position_idx = np.array(fixed_position_idx)
-#         self.fixed_element_idx = np.array(fixed_element_idx)
-
-#     def constrain_values(self, rod, time):
-#         self.compute_constrain_values(
-#             rod.position_collection,
-#             self.fixed_position_idx,
-#             self.fixed_position_collection,
-#             rod.director_collection,
-#             self.fixed_element_idx,
-#             self.fixed_director_collection,
-#         )
-
-#     def constrain_rates(self, rod, time):
-#         self.compute_constrain_rates(
-#             rod.velocity_collection,
-#             self.fixed_position_idx,
-#             rod.omega_collection,
-#             self.fixed_element_idx,
-#         )
-
-#     @staticmethod
-#     @njit(cache=True)
-#     def compute_constrain_values(
-#         position_collection,
-#         fixed_position_idx,
-#         fixed_position_collection,
-#         director_collection,
-#         fixed_element_idx,
-#         fixed_director_collection,
-#     ):
-#         """
-#         Computes constrain values in numba njit decorator
-#         Parameters
-#         ----------
-#         position_collection : numpy.ndarray
-#             2D (dim, blocksize) array containing data with `float` type.
-#         fixed_position : numpy.ndarray
-#             2D (dim, 1) array containing data with 'float' type.
-#         director_collection : numpy.ndarray
-#             3D (dim, dim, blocksize) array containing data with `float` type.
-#         fixed_directors : numpy.ndarray
-#             3D (dim, dim, 1) array containing data with 'float' type.
-
-#         Returns
-#         -------
-
-#         """
-#         position_collection[..., fixed_position_idx] = fixed_position_collection
-#         director_collection[..., fixed_element_idx] = fixed_director_collection
-
-#     @staticmethod
-#     @njit(cache=True)
-#     def compute_constrain_rates(
-#         velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx
-#     ):
-#         """
-#         Compute contrain rates in numba njit decorator
-#         Parameters
-#         ----------
-#         velocity_collection : numpy.ndarray
-#             2D (dim, blocksize) array containing data with `float` type.
-#         omega_collection : numpy.ndarray
-#             2D (dim, blocksize) array containing data with `float` type.
-
-#         Returns
-#         -------
-
-#         """
-#         velocity_collection[..., fixed_position_idx] = 0.0
-#         omega_collection[..., fixed_element_idx] = 0.0
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            omega_collection[0, k] = 0.0
+            omega_collection[1, k] = 0.0
+            omega_collection[2, k] = 0.0
 
 
 class HelicalBucklingBC(ConstraintBase):

@@ -327,9 +327,9 @@ class TestConstraintsMixin:
             assert type(y.system) is type(mock_rod)
             assert y.system is mock_rod, f"{len(scwc._systems)}"
             # Test node indices
-            assert y.node_indices == [None, None, None][i]
+            assert y.position_indices == [None, None, None][i]
             # Test element indices. TODO: maybe add more generalized test
-            assert y.element_indices == [None, None, None][i]
+            assert y.director_indices == [None, None, None][i]
 
     @pytest.mark.xfail
     def test_constrain_finalize_sorted(self, load_rod_with_constraints):

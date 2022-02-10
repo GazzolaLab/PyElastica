@@ -8,10 +8,12 @@ from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
     OneEndFixedBC,
+    FixedConstraint,
     HelicalBucklingBC,
 )
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
+import pytest
 from pytest import main
 
 # test base class
@@ -77,7 +79,7 @@ def test_free_rod():
     )
 
 
-def test_one_end_fixed_rod():
+def test_one_end_fixed_bc():
 
     test_rod = MockTestRod()
     start_position_collection = np.random.rand(3)
@@ -119,6 +121,57 @@ def test_one_end_fixed_rod():
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
 
+@pytest.mark.parametrize("seed", [1,10,100])
+@pytest.mark.parametrize("n_position_constraint", [0, 1, 3, 5])
+@pytest.mark.parametrize("n_director_constraint", [0, 2, 6, 9])
+def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
+    rng = np.random.default_rng(seed)
+    N = 20
+
+    test_rod = MockTestRod()
+    start_position_collection = rng.random((n_position_constraint, 3))
+    start_director_collection = rng.random((n_director_constraint, 3, 3))
+    fixed_rod = FixedConstraint(*start_position_collection, *start_director_collection)
+    pos_indices = rng.choice(N, size=n_position_constraint, replace=False)
+    dir_indices = rng.choice(N, size=n_director_constraint, replace=False)
+    fixed_rod._position_indices = pos_indices.copy()
+    fixed_rod._director_indices = dir_indices.copy()
+
+    test_position_collection = rng.random((3, N))
+    test_rod.position_collection = (
+        test_position_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_director_collection = rng.random((3, 3, N))
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    fixed_rod.constrain_values(test_rod, time=0)
+    test_position_collection[..., pos_indices] = start_position_collection.transpose((1,0))
+    test_director_collection[..., dir_indices] = start_director_collection.transpose((1,2,0))
+    assert_allclose(
+        test_position_collection, test_rod.position_collection, atol=Tolerance.atol()
+    )
+    assert_allclose(
+        test_director_collection, test_rod.director_collection, atol=Tolerance.atol()
+    )
+
+    test_velocity_collection = rng.random((3, N))
+    test_rod.velocity_collection = (
+        test_velocity_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, N))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    fixed_rod.constrain_rates(test_rod, time=0)
+    test_velocity_collection[..., pos_indices] = 0.0
+    test_omega_collection[..., dir_indices] = 0.0
+    assert_allclose(
+        test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()
+    )
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
 
 def test_helical_buckling_bc():
 

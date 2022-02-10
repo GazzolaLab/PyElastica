@@ -183,8 +183,8 @@ class _Constraint:
         try:
             bc = self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
             bc._system = rod
-            bc._node_indices = np.array(pos_indices)
-            bc._element_indices = np.array(director_indices)
+            bc._position_indices = np.array(pos_indices)
+            bc._director_indices = np.array(director_indices)
             return bc
         except (TypeError, IndexError):
             raise TypeError(
