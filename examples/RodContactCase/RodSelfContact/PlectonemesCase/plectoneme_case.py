@@ -69,7 +69,7 @@ plectonemes_sim.append(sherable_rod)
 from elastica._rotations import _get_rotation_matrix
 
 
-class SelonoidsBC(FreeRod):
+class SelonoidsBC(ConstraintBase):
     """
 
     """
@@ -84,7 +84,7 @@ class SelonoidsBC(FreeRod):
         time_twis_start,
         number_of_rotations,
     ):
-        FreeRod.__init__(self)
+        super.__init__()
         self.twisting_time = twisting_time
         self.time_twis_start = time_twis_start
 

@@ -7,7 +7,7 @@ import sys
 import numpy as np
 from test_rod_nb import MockTestRod
 from elastica.boundary_conditions import (
-    FreeRod,
+    FreeBC,
     OneEndFixedRod,
     HelicalBucklingBC,
 )
@@ -19,7 +19,7 @@ from pytest import main
 # tests free rod boundary conditions
 def test_free_rod():
     test_rod = MockTestRod()
-    free_rod = FreeRod()
+    free_rod = FreeBC()
     test_position_collection = np.random.rand(3, 20)
     test_rod.position_collection = (
         test_position_collection.copy()

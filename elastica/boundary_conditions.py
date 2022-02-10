@@ -1,61 +1,63 @@
 __doc__ = """ Numba implementation module for boundary condition implementations that constrain or
 define displacement conditions on the rod"""
 __all__ = [
-    "FreeRod",
+    "ConstraintBase",
+    "FreeBC",
+    "FreeRod", # Deprecated
+    "OneEndFixedBC",
+    "OneEndFixedRod", # Deprecated
     "FixedNodeBC",
     "FixedRodBC",
-    "OneEndFixedRod",
     "HelicalBucklingBC",
 ]
 
+import warnings
+from typing import Optional, Type
+
 import numpy as np
-from elastica._rotations import _get_rotation_matrix
+
+from abc import ABC, abstractmethod
 
 import numba
 from numba import njit
 
+from elastica._rotations import _get_rotation_matrix
+from elastica.wrappers.constraints import ConstraintBase
+from elastica.rod import RodBase
 
-class FreeRod:
-    """
-    This is the base class for displacement boundary conditions. It applies no constraints or displacements to the rod.
+
+class ConstraintBase(ABC):
+    """Base class for constraint and boundary condition implementation.
 
     Note
     ----
-    Every new displacement boundary condition class must be
-    derived from FreeRod class.
+    Constraint class must inherit BaseConstraint class.
+
     """
 
     def __init__(self):
-        """
-        Free rod has no input parameters.
-        """
+        """Initialize boundary condition"""
         pass
 
-    def constrain_values(self, rod, time):
+    @abstractmethod
+    def constrain_values(self, rod: Type[RodBase], time:float) -> None:
         """
         Constrain values (position and/or directors) of a rod object.
 
-        In FreeRod class, this routine simply passes.
-
         Parameters
         ----------
         rod : object
             Rod-like object.
         time : float
             The time of simulation.
-
-        Returns
-        -------
-
         """
         pass
 
-    def constrain_rates(self, rod, time):
+    @abstractmethod
+    def constrain_rates(self, rod: Type[RodBase], time:float) -> None:
         """
         Constrain rates (velocity and/or omega) of a rod object.
 
-        In FreeRod class, this routine simply passes.
-
         Parameters
         ----------
         rod : object
@@ -63,14 +65,28 @@ class FreeRod:
         time : float
             The time of simulation.
 
-        Returns
-        -------
-
         """
         pass
 
 
-class FixedNodeBC(FreeRod):
+class FreeBC(ConstraintBase):
+    def constrain_values(self, rod, time: float) -> None:
+        """ In FreeBC, this routine simply passes. """
+        pass
+
+    def constrain_rates(self, rod, time: float) -> None:
+        """ In FreeBC, this routine simply passes. """
+        pass
+
+
+class FreeRod(FreeBC):
+    # Please clear this part beyond version 0.3.0
+    warnings.warn(
+        "FreeRod is deprecated and renamed to FreeBC. The deprecated name will be removed in the future.",
+        DeprecationWarning,
+    )
+
+class FixedNodeBC(ConstraintBase):
     """
     This boundary condition class fixes the specified nodes. If does not
     fix the directors, meaning the rod can spin around the fixed node.
@@ -89,7 +105,7 @@ class FixedNodeBC(FreeRod):
         fixed_position : numpy.ndarray
             1D (dim, 1) array containing idx of fixed directors with 'int' type.
         """
-        FreeRod.__init__(self)
+        super().__init__()
 
         self.fixed_position_collection = fixed_position
         fixed_position_idx = self._kwargs.pop("constrained_position_idx", None)
@@ -145,7 +161,7 @@ class FixedNodeBC(FreeRod):
         velocity_collection[..., fixed_position_idx] = 0.0
 
 
-class FixedRodBC(FreeRod):
+class FixedRodBC(ConstraintBase):
     """
     This boundary condition class fixes the provided position and element locations.
     This is designed to be a more flexible extension of the OneEndFixedRod BC which
@@ -171,7 +187,7 @@ class FixedRodBC(FreeRod):
         fixed_directors : numpy.ndarray
             1D (dim, dim, 1) array containing idx of fixed directors with 'int' type.
         """
-        FreeRod.__init__(self)
+        super().__init__()
 
         self.fixed_position_collection = fixed_position
         self.fixed_director_collection = fixed_directors
@@ -255,7 +271,7 @@ class FixedRodBC(FreeRod):
         omega_collection[..., fixed_element_idx] = 0.0
 
 
-class OneEndFixedRod(FreeRod):
+class OneEndFixedRod(ConstraintBase):
     """
     This boundary condition class fixes one end of the rod. Currently,
     this boundary condition fixes position and directors
@@ -279,7 +295,7 @@ class OneEndFixedRod(FreeRod):
         fixed_directors : numpy.ndarray
             3D (dim, dim, 1) array containing data with 'float' type.
         """
-        FreeRod.__init__(self)
+        super().__init__()
         self.fixed_position_collection = fixed_position
         self.fixed_directors_collection = fixed_directors
 
@@ -366,7 +382,7 @@ class OneEndFixedRod(FreeRod):
         omega_collection[..., fixed_element_idx] = 0.0
 
 
-class HelicalBucklingBC(FreeRod):
+class HelicalBucklingBC(ConstraintBase):
     """
     This is the boundary condition class for Helical
     Buckling case in Gazzola et. al. RSoS (2018).
@@ -433,7 +449,7 @@ class HelicalBucklingBC(FreeRod):
         number_of_rotations : float
             Number of rotations applied to rod.
         """
-        FreeRod.__init__(self)
+        super.__init__()
         self.twisting_time = twisting_time
 
         angel_vel_scalar = (

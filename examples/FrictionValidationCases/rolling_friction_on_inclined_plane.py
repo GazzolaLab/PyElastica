@@ -64,7 +64,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     shearable_rod.shear_matrix = shear_matrix
 
     rolling_friction_on_inclined_plane_sim.append(shearable_rod)
-    rolling_friction_on_inclined_plane_sim.constrain(shearable_rod).using(FreeRod)
+    rolling_friction_on_inclined_plane_sim.constrain(shearable_rod).using(FreeBC)
 
     gravitational_acc = -9.80665
     rolling_friction_on_inclined_plane_sim.add_forcing_to(shearable_rod).using(

@@ -5,7 +5,7 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
-from elastica.boundary_conditions import FreeRod
+from elastica.boundary_conditions import ConstraintBase
 
 
 class Constraints:
@@ -62,7 +62,7 @@ class Constraints:
         # Sort from lowest id to highest id for potentially better memory access
         # _constraints contains list of tuples. First element of tuple is rod number and
         # following elements are the type of boundary condition such as
-        # [(0, FreeRod, OneEndFixedRod), (1, HelicalBucklingBC), ... ]
+        # [(0, ConstraintBase, OneEndFixedBC), (1, HelicalBucklingBC), ... ]
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort constraints.
         self._constraints.sort(key=lambda x: x[0])
@@ -135,8 +135,8 @@ class _Constraint:
 
         """
         assert issubclass(
-            bc_cls, FreeRod
-        ), "{} is not a valid boundary condition. Did you forget to derive from FreeRod?".format(
+            bc_cls, ConstraintBase
+        ), "{} is not a valid constraint. Constraint must be driven from ConstraintBase.".format(
             bc_cls
         )
         self._bc_cls = bc_cls
