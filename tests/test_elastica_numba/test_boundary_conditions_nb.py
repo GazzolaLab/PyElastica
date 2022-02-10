@@ -8,7 +8,7 @@ import numpy as np
 from test_rod_nb import MockTestRod
 from elastica.boundary_conditions import (
     FreeBC,
-    OneEndFixedRod,
+    OneEndFixedBC,
     HelicalBucklingBC,
 )
 from numpy.testing import assert_allclose
@@ -58,7 +58,7 @@ def test_one_end_fixed_rod():
     test_rod = MockTestRod()
     start_position_collection = np.random.rand(3)
     start_director_collection = np.random.rand(3, 3)
-    fixed_rod = OneEndFixedRod(start_position_collection, start_director_collection)
+    fixed_rod = OneEndFixedBC(start_position_collection, start_director_collection)
     test_position_collection = np.random.rand(3, 20)
     test_rod.position_collection = (
         test_position_collection.copy()

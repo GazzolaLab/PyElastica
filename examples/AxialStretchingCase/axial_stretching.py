@@ -77,7 +77,7 @@ stretchable_rod = CosseratRod.straight_rod(
 
 stretch_sim.append(stretchable_rod)
 stretch_sim.constrain(stretchable_rod).using(
-    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force_x = 1.0
