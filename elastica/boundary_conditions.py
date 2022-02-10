@@ -3,9 +3,9 @@ define displacement conditions on the rod"""
 __all__ = [
     "ConstraintBase",
     "FreeBC",
-    "FreeRod", # Deprecated
+    # "FreeRod", # Deprecated: remove v0.3.0
     "OneEndFixedBC",
-    "OneEndFixedRod", # Deprecated
+    # "OneEndFixedRod", # Deprecated: remove v0.3.0
     # "FixedNodeBC",
     # "FixedRodBC",
     "HelicalBucklingBC",
@@ -34,12 +34,12 @@ class ConstraintBase(ABC):
 
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initialize boundary condition"""
         pass
 
     @abstractmethod
-    def constrain_values(self, rod: Type[RodBase], time:float) -> None:
+    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         """
         Constrain values (position and/or directors) of a rod object.
 
@@ -53,7 +53,7 @@ class ConstraintBase(ABC):
         pass
 
     @abstractmethod
-    def constrain_rates(self, rod: Type[RodBase], time:float) -> None:
+    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
         """
         Constrain rates (velocity and/or omega) of a rod object.
 
@@ -70,11 +70,11 @@ class ConstraintBase(ABC):
 
 class FreeBC(ConstraintBase):
     def constrain_values(self, rod, time: float) -> None:
-        """ In FreeBC, this routine simply passes. """
+        """In FreeBC, this routine simply passes."""
         pass
 
     def constrain_rates(self, rod, time: float) -> None:
-        """ In FreeBC, this routine simply passes. """
+        """In FreeBC, this routine simply passes."""
         pass
 
 
@@ -84,6 +84,7 @@ class FreeRod(FreeBC):
         "FreeRod is deprecated and renamed to FreeBC. The deprecated name will be removed in the future.",
         DeprecationWarning,
     )
+
 
 # class FixedNodeBC(ConstraintBase):
 #     """
@@ -284,7 +285,11 @@ class OneEndFixedBC(ConstraintBase):
             3D (dim, dim, 1) array containing data with 'float' type.
     """
 
-    def __init__(self, fixed_position, fixed_directors):
+    def __init__(
+        self,
+        fixed_position,
+        fixed_directors,
+    ):
         """
 
         Parameters
@@ -295,27 +300,16 @@ class OneEndFixedBC(ConstraintBase):
             3D (dim, dim, 1) array containing data with 'float' type.
         """
         super().__init__()
-        self.fixed_position_collection = fixed_position
-        self.fixed_directors_collection = fixed_directors
-
-        fixed_position_idx = self._kwargs.pop(
-            "constrained_position_idx", None
-        )  # calculate position indices as a tuple
-        fixed_element_idx = self._kwargs.pop(
-            "constrained_director_idx", None
-        )  # calculate director indices as a tuple
-        self.fixed_position_idx = np.array(fixed_position_idx)
-        self.fixed_element_idx = np.array(fixed_element_idx)
+        self.fixed_position_collection = np.array(fixed_position)
+        self.fixed_directors_collection = np.array(fixed_directors)
 
     def constrain_values(self, rod, time):
         # rod.position_collection[..., 0] = self.fixed_position
         # rod.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
             rod.position_collection,
-            self.fixed_position_idx,
             self.fixed_position_collection,
             rod.director_collection,
-            self.fixed_element_idx,
             self.fixed_directors_collection,
         )
 
@@ -324,19 +318,15 @@ class OneEndFixedBC(ConstraintBase):
         # rod.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
             rod.velocity_collection,
-            self.fixed_position_idx,
             rod.omega_collection,
-            self.fixed_element_idx,
         )
 
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
         position_collection,
-        fixed_position_idx,
         fixed_position_collection,
         director_collection,
-        fixed_element_idx,
         fixed_directors_collection,
     ):
         """
@@ -356,14 +346,12 @@ class OneEndFixedBC(ConstraintBase):
         -------
 
         """
-        position_collection[..., fixed_position_idx] = fixed_position_collection
-        director_collection[..., fixed_element_idx] = fixed_directors_collection
+        position_collection[..., 0] = fixed_position_collection
+        director_collection[..., 0] = fixed_directors_collection
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(
-        velocity_collection, fixed_position_idx, omega_collection, fixed_element_idx
-    ):
+    def compute_constrain_rates(velocity_collection, omega_collection):
         """
         Compute contrain rates in numba njit decorator
         Parameters
@@ -377,8 +365,8 @@ class OneEndFixedBC(ConstraintBase):
         -------
 
         """
-        velocity_collection[..., fixed_position_idx] = 0.0
-        omega_collection[..., fixed_element_idx] = 0.0
+        velocity_collection[..., 0] = 0.0
+        omega_collection[..., 0] = 0.0
 
 
 class OneEndFixedRod(OneEndFixedBC):
@@ -455,7 +443,7 @@ class HelicalBucklingBC(ConstraintBase):
         number_of_rotations : float
             Number of rotations applied to rod.
         """
-        super.__init__()
+        super().__init__()
         self.twisting_time = twisting_time
 
         angel_vel_scalar = (

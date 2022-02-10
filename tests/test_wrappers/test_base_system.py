@@ -168,9 +168,9 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
 
         return sc, rod
 
-    from elastica.boundary_conditions import ConstraintBase
+    from elastica.boundary_conditions import FreeBC
 
-    @pytest.mark.parametrize("legal_constraint", [ConstraintBase])
+    @pytest.mark.parametrize("legal_constraint", [FreeBC])
     def test_constraint(self, load_collection, legal_constraint):
         simulator_class, rod = load_collection
         simulator_class.constrain(rod).using(legal_constraint)
