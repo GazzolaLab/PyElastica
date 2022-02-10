@@ -3,9 +3,9 @@ define displacement conditions on the rod"""
 __all__ = [
     "ConstraintBase",
     "FreeBC",
-    "FreeRod", # Deprecated: remove v0.3.0
+    "FreeRod",  # Deprecated: remove v0.3.0
     "OneEndFixedBC",
-    "OneEndFixedRod", # Deprecated: remove v0.3.0
+    "OneEndFixedRod",  # Deprecated: remove v0.3.0
     "FixedConstraint",
     "HelicalBucklingBC",
 ]
@@ -49,15 +49,18 @@ class ConstraintBase(ABC):
 
     @property
     def system(self) -> Type[RodBase]:
+        """get system (rod or rigid body) reference"""
         return self._system
 
     @property
     def position_indices(self) -> Optional[np.ndarray]:
+        """get position-indices passed to "using" """
         # TODO: This should be immutable somehow
         return self._position_indices
 
     @property
     def director_indices(self) -> Optional[np.ndarray]:
+        """get director-indices passed to "using" """
         # TODO: This should be immutable somehow
         return self._director_indices
 
@@ -140,7 +143,7 @@ class OneEndFixedBC(ConstraintBase):
         self.fixed_position_collection = np.array(fixed_position)
         self.fixed_directors_collection = np.array(fixed_directors)
 
-    def constrain_values(self, rod, time):
+    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         # rod.position_collection[..., 0] = self.fixed_position
         # rod.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
@@ -150,7 +153,7 @@ class OneEndFixedBC(ConstraintBase):
             self.fixed_directors_collection,
         )
 
-    def constrain_rates(self, rod, time):
+    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
         # rod.velocity_collection[..., 0] = 0.0
         # rod.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
@@ -217,14 +220,27 @@ class OneEndFixedRod(OneEndFixedBC):
 
 class FixedConstraint(ConstraintBase):
     """
-    This boundary condition class fixes the specified node or orientations. 
-    Index can be passed as "constrained_position_idx" and "constrained_director_index".
+    This boundary condition class fixes the specified node or orientations.
+    Index can be passed to fix either or both the position or the director.
     Constraining position is equivalent to setting 0 translational DOF.
     Constraining director is equivalent to setting 0 rotational DOF.
 
     Examples
     --------
-    TODO
+    How to fix two ends of the rod:
+
+    >>> simulator.constrain(rod).using(
+    ...    FixedConstraint,
+    ...    constrained_position_idx=(0,1,-2,-1),
+    ...    constrained_director_idx=(0,-1)
+    ... )
+
+    How to pin the middle of the rod (10th node), without constraining the rotational DOF.
+
+    >>> simulator.constrain(rod).using(
+    ...    FixedConstraint,
+    ...    constrained_position_idx=(10)
+    ... )
     """
 
     def __init__(self, *fixed_data):
@@ -240,7 +256,10 @@ class FixedConstraint(ConstraintBase):
         for data in fixed_data:
             if isinstance(data, np.ndarray) and data.shape == (3,):
                 pos.append(data)
-            elif isinstance(data, np.ndarray) and data.shape == (3,3,):
+            elif isinstance(data, np.ndarray) and data.shape == (
+                3,
+                3,
+            ):
                 dir.append(data)
             else:
                 # TODO: This part is prone to error.
@@ -248,7 +267,7 @@ class FixedConstraint(ConstraintBase):
         self.fixed_positions = np.array(pos)
         self.fixed_directors = np.array(dir)
 
-    def constrain_values(self, rod, time):
+    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         if self.position_indices.size:
             self.nb_constrain_translational_values(
                 rod.position_collection,
@@ -262,7 +281,7 @@ class FixedConstraint(ConstraintBase):
                 self.director_indices,
             )
 
-    def constrain_rates(self, rod, time):
+    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
         if self.position_indices.size:
             self.nb_constrain_translational_rates(
                 rod.velocity_collection,
@@ -396,13 +415,13 @@ class HelicalBucklingBC(ConstraintBase):
 
     def __init__(
         self,
-        position_start,
-        position_end,
-        director_start,
-        director_end,
-        twisting_time,
-        slack,
-        number_of_rotations,
+        position_start: np.ndarray,
+        position_end: np.ndarray,
+        director_start: np.ndarray,
+        director_end: np.ndarray,
+        twisting_time: float,
+        slack: float,
+        number_of_rotations: float,
     ):
         """
 
@@ -457,7 +476,7 @@ class HelicalBucklingBC(ConstraintBase):
             @ director_end
         )  # rotation_matrix wants vectors 3,1
 
-    def constrain_values(self, rod, time):
+    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         if time > self.twisting_time:
             rod.position_collection[..., 0] = self.final_start_position
             rod.position_collection[..., -1] = self.final_end_position
@@ -465,7 +484,7 @@ class HelicalBucklingBC(ConstraintBase):
             rod.director_collection[..., 0] = self.final_start_directors
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod, time):
+    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
         if time > self.twisting_time:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0

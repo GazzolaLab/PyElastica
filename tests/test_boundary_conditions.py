@@ -16,7 +16,7 @@ from elastica.utils import Tolerance
 import pytest
 from pytest import main
 
-# test base class
+
 def test_constraint_base():
     test_rod = MockTestRod()
     test_rod.position_collection = np.ones(3) * 3.0
@@ -121,7 +121,8 @@ def test_one_end_fixed_bc():
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
 
-@pytest.mark.parametrize("seed", [1,10,100])
+
+@pytest.mark.parametrize("seed", [1, 10, 100])
 @pytest.mark.parametrize("n_position_constraint", [0, 1, 3, 5])
 @pytest.mark.parametrize("n_director_constraint", [0, 2, 6, 9])
 def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
@@ -146,8 +147,12 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
     fixed_rod.constrain_values(test_rod, time=0)
-    test_position_collection[..., pos_indices] = start_position_collection.transpose((1,0))
-    test_director_collection[..., dir_indices] = start_director_collection.transpose((1,2,0))
+    test_position_collection[..., pos_indices] = start_position_collection.transpose(
+        (1, 0)
+    )
+    test_director_collection[..., dir_indices] = start_director_collection.transpose(
+        (1, 2, 0)
+    )
     assert_allclose(
         test_position_collection, test_rod.position_collection, atol=Tolerance.atol()
     )
@@ -172,6 +177,7 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     assert_allclose(
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
+
 
 def test_helical_buckling_bc():
 
