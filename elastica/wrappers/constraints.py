@@ -5,6 +5,7 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
+import numpy as np
 from elastica.boundary_conditions import ConstraintBase
 
 
@@ -160,10 +161,10 @@ class _Constraint:
 
         # If there is position, director in kwargs, deal with it first
         # Returns None if not found
-        pos_indices = self._kwargs.get(
+        pos_indices = self._kwargs.pop(
             "constrained_position_idx", None
         )  # calculate position indices as a tuple
-        director_indices = self._kwargs.get(
+        director_indices = self._kwargs.pop(
             "constrained_director_idx", None
         )  # calculate director indices as a tuple
 
@@ -180,7 +181,11 @@ class _Constraint:
             else []
         )
         try:
-            return self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
+            bc = self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
+            bc._system = rod
+            bc._node_indices = np.array(pos_indices)
+            bc._element_indices = np.array(director_indices)
+            return bc
         except (TypeError, IndexError):
             raise TypeError(
                 "Unable to construct boundary condition class. Note that:\n"

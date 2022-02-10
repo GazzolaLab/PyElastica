@@ -3,9 +3,9 @@ define displacement conditions on the rod"""
 __all__ = [
     "ConstraintBase",
     "FreeBC",
-    # "FreeRod", # Deprecated: remove v0.3.0
+    "FreeRod", # Deprecated: remove v0.3.0
     "OneEndFixedBC",
-    # "OneEndFixedRod", # Deprecated: remove v0.3.0
+    "OneEndFixedRod", # Deprecated: remove v0.3.0
     # "FixedNodeBC",
     # "FixedRodBC",
     "HelicalBucklingBC",
@@ -32,14 +32,36 @@ class ConstraintBase(ABC):
     ----
     Constraint class must inherit BaseConstraint class.
 
+    Methods
+    -------
+    get_system
+
+
     """
+
+    _system: Type[RodBase]
+    _node_indices: Optional[np.ndarray]
+    _element_indices: Optional[np.ndarray]
 
     def __init__(self, *args, **kwargs):
         """Initialize boundary condition"""
         pass
 
+    @property
+    def system(self) -> Type[RodBase]:
+        return self._system
+
+    @property
+    def node_indices(self) -> Optional[np.ndarray]:
+        return self._node_indices.copy()
+
+    @property
+    def element_indices(self) -> Optional[np.ndarray]:
+        return self._element_indices.copy()
+
     @abstractmethod
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+        # TODO: In the future, we can remove rod and use self.system
         """
         Constrain values (position and/or directors) of a rod object.
 
@@ -54,6 +76,7 @@ class ConstraintBase(ABC):
 
     @abstractmethod
     def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+        # TODO: In the future, we can remove rod and use self.system
         """
         Constrain rates (velocity and/or omega) of a rod object.
 
@@ -69,26 +92,130 @@ class ConstraintBase(ABC):
 
 
 class FreeBC(ConstraintBase):
-    def constrain_values(self, rod, time: float) -> None:
+    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
-    def constrain_rates(self, rod, time: float) -> None:
+    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
 
 class FreeRod(FreeBC):
     # Please clear this part beyond version 0.3.0
+    """Deprecated 0.2.1: Same implementation as FreeBC"""
     warnings.warn(
         "FreeRod is deprecated and renamed to FreeBC. The deprecated name will be removed in the future.",
         DeprecationWarning,
     )
 
 
+class OneEndFixedBC(ConstraintBase):
+    """
+    This boundary condition class fixes one end of the rod. Currently,
+    this boundary condition fixes position and directors
+    at the first node and first element of the rod.
+
+        Attributes
+        ----------
+        fixed_positions : numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        fixed_directors : numpy.ndarray
+            3D (dim, dim, 1) array containing data with 'float' type.
+    """
+
+    def __init__(self, fixed_position, fixed_directors):
+        """
+
+        Parameters
+        ----------
+        fixed_position : numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        fixed_directors : numpy.ndarray
+            3D (dim, dim, 1) array containing data with 'float' type.
+        """
+        super().__init__()
+        self.fixed_position_collection = np.array(fixed_position)
+        self.fixed_directors_collection = np.array(fixed_directors)
+
+    def constrain_values(self, rod, time):
+        # rod.position_collection[..., 0] = self.fixed_position
+        # rod.director_collection[..., 0] = self.fixed_directors
+        self.compute_constrain_values(
+            rod.position_collection,
+            self.fixed_position_collection,
+            rod.director_collection,
+            self.fixed_directors_collection,
+        )
+
+    def constrain_rates(self, rod, time):
+        # rod.velocity_collection[..., 0] = 0.0
+        # rod.omega_collection[..., 0] = 0.0
+        self.compute_constrain_rates(
+            rod.velocity_collection,
+            rod.omega_collection,
+        )
+
+    @staticmethod
+    @njit(cache=True)
+    def compute_constrain_values(
+        position_collection,
+        fixed_position_collection,
+        director_collection,
+        fixed_directors_collection,
+    ):
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        fixed_position : numpy.ndarray
+            2D (dim, 1) array containing data with 'float' type.
+        director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        fixed_directors : numpy.ndarray
+            3D (dim, dim, 1) array containing data with 'float' type.
+
+        Returns
+        -------
+
+        """
+        position_collection[..., 0] = fixed_position_collection
+        director_collection[..., 0] = fixed_directors_collection
+
+    @staticmethod
+    @njit(cache=True)
+    def compute_constrain_rates(velocity_collection, omega_collection):
+        """
+        Compute contrain rates in numba njit decorator
+        Parameters
+        ----------
+        velocity_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        omega_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+
+        Returns
+        -------
+
+        """
+        velocity_collection[..., 0] = 0.0
+        omega_collection[..., 0] = 0.0
+
+
+class OneEndFixedRod(OneEndFixedBC):
+    # Please clear this part beyond version 0.3.0
+    """Deprecated 0.2.1: Same implementation as OneEndFixedBC"""
+    warnings.warn(
+        "OneEndFixedRod is deprecated and renamed to OneEndFixedBC. The deprecated name will be removed in the future.",
+        DeprecationWarning,
+    )
+
+
 # class FixedNodeBC(ConstraintBase):
 #     """
-#     This boundary condition class fixes the specified nodes. If does not
+#     This boundary condition class fixes the specified nodes. It does not
 #     fix the directors, meaning the rod can spin around the fixed node.
 
 #         Attributes
@@ -159,7 +286,6 @@ class FreeRod(FreeBC):
 
 #         """
 #         velocity_collection[..., fixed_position_idx] = 0.0
-
 
 # class FixedRodBC(ConstraintBase):
 #     """
@@ -269,111 +395,6 @@ class FreeRod(FreeBC):
 #         """
 #         velocity_collection[..., fixed_position_idx] = 0.0
 #         omega_collection[..., fixed_element_idx] = 0.0
-
-
-class OneEndFixedBC(ConstraintBase):
-    """
-    This boundary condition class fixes one end of the rod. Currently,
-    this boundary condition fixes position and directors
-    at the first node and first element of the rod.
-
-        Attributes
-        ----------
-        fixed_positions : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
-    """
-
-    def __init__(
-        self,
-        fixed_position,
-        fixed_directors,
-    ):
-        """
-
-        Parameters
-        ----------
-        fixed_position : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
-        """
-        super().__init__()
-        self.fixed_position_collection = np.array(fixed_position)
-        self.fixed_directors_collection = np.array(fixed_directors)
-
-    def constrain_values(self, rod, time):
-        # rod.position_collection[..., 0] = self.fixed_position
-        # rod.director_collection[..., 0] = self.fixed_directors
-        self.compute_constrain_values(
-            rod.position_collection,
-            self.fixed_position_collection,
-            rod.director_collection,
-            self.fixed_directors_collection,
-        )
-
-    def constrain_rates(self, rod, time):
-        # rod.velocity_collection[..., 0] = 0.0
-        # rod.omega_collection[..., 0] = 0.0
-        self.compute_constrain_rates(
-            rod.velocity_collection,
-            rod.omega_collection,
-        )
-
-    @staticmethod
-    @njit(cache=True)
-    def compute_constrain_values(
-        position_collection,
-        fixed_position_collection,
-        director_collection,
-        fixed_directors_collection,
-    ):
-        """
-        Computes constrain values in numba njit decorator
-        Parameters
-        ----------
-        position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
-        fixed_position : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
-
-        Returns
-        -------
-
-        """
-        position_collection[..., 0] = fixed_position_collection
-        director_collection[..., 0] = fixed_directors_collection
-
-    @staticmethod
-    @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, omega_collection):
-        """
-        Compute contrain rates in numba njit decorator
-        Parameters
-        ----------
-        velocity_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
-        omega_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
-
-        Returns
-        -------
-
-        """
-        velocity_collection[..., 0] = 0.0
-        omega_collection[..., 0] = 0.0
-
-
-class OneEndFixedRod(OneEndFixedBC):
-    warnings.warn(
-        "OneEndFixedRod is deprecated and renamed to OneEndFixedBC. The deprecated name will be removed in the future.",
-        DeprecationWarning,
-    )
 
 
 class HelicalBucklingBC(ConstraintBase):
