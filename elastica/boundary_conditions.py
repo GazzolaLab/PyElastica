@@ -1,5 +1,4 @@
-__doc__ = """ Numba implementation module for boundary condition implementations that constrain or
-define displacement conditions on the rod"""
+__doc__ = """ Built-in boundary condition implementationss """
 __all__ = [
     "ConstraintBase",
     "FreeBC",
@@ -27,12 +26,13 @@ from elastica.rod import RodBase
 class ConstraintBase(ABC):
     """Base class for constraint and displacement boundary condition implementation.
 
-    Note
-    ----
+    Notes
+    -----
     Constraint class must inherit BaseConstraint class.
 
+
         Attributes
-        -------
+        ----------
         system : RodBase
         node_indices : None or numpy.ndarray
         element_indices : None or numpy.ndarray
@@ -108,6 +108,10 @@ class ConstraintBase(ABC):
 
 
 class FreeBC(ConstraintBase):
+    """
+    Boundary condition template.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -158,6 +162,20 @@ class OneEndFixedBC(ConstraintBase):
         self.fixed_directors_collection = np.array(fixed_directors)
 
     def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+        """constrain_values.
+
+        Parameters
+        ----------
+        rod : Type[RodBase]
+            rod
+        time : float
+            time
+
+        Returns
+        -------
+        None
+
+        """
         # rod.position_collection[..., 0] = self.fixed_position
         # rod.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
@@ -168,6 +186,20 @@ class OneEndFixedBC(ConstraintBase):
         )
 
     def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+        """constrain_rates.
+
+        Parameters
+        ----------
+        rod : Type[RodBase]
+            rod
+        time : float
+            time
+
+        Returns
+        -------
+        None
+
+        """
         # rod.velocity_collection[..., 0] = 0.0
         # rod.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
@@ -185,6 +217,7 @@ class OneEndFixedBC(ConstraintBase):
     ):
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         position_collection : numpy.ndarray
@@ -208,6 +241,7 @@ class OneEndFixedBC(ConstraintBase):
     def compute_constrain_rates(velocity_collection, omega_collection):
         """
         Compute contrain rates in numba njit decorator
+
         Parameters
         ----------
         velocity_collection : numpy.ndarray
@@ -314,6 +348,7 @@ class FixedConstraint(ConstraintBase):
     ) -> None:
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         director_collection : numpy.ndarray
@@ -336,6 +371,7 @@ class FixedConstraint(ConstraintBase):
     ) -> None:
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         position_collection : numpy.ndarray
@@ -358,6 +394,7 @@ class FixedConstraint(ConstraintBase):
     def nb_constrain_translational_rates(velocity_collection, indices) -> None:
         """
         Compute constrain rates in numba njit decorator
+
         Parameters
         ----------
         velocity_collection : numpy.ndarray
@@ -378,6 +415,7 @@ class FixedConstraint(ConstraintBase):
     def nb_constrain_rotational_rates(omega_collection, indices) -> None:
         """
         Compute constrain rates in numba njit decorator
+
         Parameters
         ----------
         omega_collection : numpy.ndarray
@@ -439,6 +477,8 @@ class HelicalBucklingBC(ConstraintBase):
         **kwargs
     ):
         """
+
+        Helical Buckling initializer
 
         Parameters
         ----------

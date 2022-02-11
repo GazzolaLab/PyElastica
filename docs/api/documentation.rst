@@ -26,12 +26,6 @@ Cosserat Rod
 Boundary Conditions
 ====================
 
-Endpoint Constraints
-~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: elastica.boundary_conditions
-   :members:
-   :exclude-members: __weakref__
-
 External Forces
 ~~~~~~~~~~~~~~~
 .. automodule:: elastica.external_forces
