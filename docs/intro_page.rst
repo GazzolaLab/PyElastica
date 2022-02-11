@@ -3,10 +3,6 @@
 
 More information about Elastica is available at the `project website`_
 
-Implementations
-----------------
-There are currently two implementations of Elastica. 
-
 PyElastica
 ~~~~~~~~~~
 .. image:: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master

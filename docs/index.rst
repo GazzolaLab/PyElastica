@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**********************
-Elastica Documentation
-**********************
+************************
+PyElastica Documentation
+************************
 
 .. include:: intro_page.rst
 
@@ -32,8 +32,13 @@ Elastica Documentation
    :caption: API Documentation:
    
    api/documentation
-   api/elastica++
+   api/constraints
 
+..   api/elastica++
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced Guide
 
 ---------
 
