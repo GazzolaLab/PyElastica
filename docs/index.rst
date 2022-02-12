@@ -31,8 +31,16 @@ PyElastica Documentation
    :maxdepth: 2
    :caption: API Documentation:
    
-   api/documentation
+   api/rods
+   api/rigidbody
    api/constraints
+   api/external_forces
+   api/connections
+   api/callback
+   api/simulator
+   api/time_steppers
+   api/utility
+   api/analytical
 
 ..   api/elastica++
 

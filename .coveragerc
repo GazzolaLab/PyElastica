@@ -13,4 +13,6 @@ omit =
     */.local/*
     # omit analytical systems
     elastica/systems/analytical.py
+    # omit experimental modules
+    elastica/experimental/*
 	setup.py
