@@ -73,7 +73,7 @@ fixed_joint_sim.append(rod2)
 
 # Apply boundary conditions to rod1.
 fixed_joint_sim.constrain(rod1).using(
-    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Connect rod 1 and rod 2

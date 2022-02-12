@@ -5,7 +5,8 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
-from elastica.boundary_conditions import FreeRod
+import numpy as np
+from elastica.boundary_conditions import ConstraintBase
 
 
 class Constraints:
@@ -62,23 +63,15 @@ class Constraints:
         # Sort from lowest id to highest id for potentially better memory access
         # _constraints contains list of tuples. First element of tuple is rod number and
         # following elements are the type of boundary condition such as
-        # [(0, FreeRod, OneEndFixedRod), (1, HelicalBucklingBC), ... ]
+        # [(0, ConstraintBase, OneEndFixedBC), (1, HelicalBucklingBC), ... ]
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort constraints.
         self._constraints.sort(key=lambda x: x[0])
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)
-        # TODO: you may need to change naming of _callBC
         self._constrain_values(time=0.0)
         self._constrain_rates(time=0.0)
-        # self._callBC(time=0.0)
-
-    # # TODO: same as above naming of _callBC function
-    # def _callBC(self, time, *args, **kwargs):
-    #     for sys_id, constraint in self._constraints:
-    #         constraint.constrain_values(self._systems[sys_id], time, *args, **kwargs)
-    #         constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
 
     def _constrain_values(self, time, *args, **kwargs):
         for sys_id, constraint in self._constraints:
@@ -135,8 +128,8 @@ class _Constraint:
 
         """
         assert issubclass(
-            bc_cls, FreeRod
-        ), "{} is not a valid boundary condition. Did you forget to derive from FreeRod?".format(
+            bc_cls, ConstraintBase
+        ), "{} is not a valid constraint. Constraint must be driven from ConstraintBase.".format(
             bc_cls
         )
         self._bc_cls = bc_cls
@@ -168,10 +161,10 @@ class _Constraint:
 
         # If there is position, director in kwargs, deal with it first
         # Returns None if not found
-        pos_indices = self._kwargs.pop(
+        pos_indices = self._kwargs.get(
             "constrained_position_idx", None
         )  # calculate position indices as a tuple
-        director_indices = self._kwargs.pop(
+        director_indices = self._kwargs.get(
             "constrained_director_idx", None
         )  # calculate director indices as a tuple
 
@@ -188,7 +181,10 @@ class _Constraint:
             else []
         )
         try:
-            return self._bc_cls(*positions, *directors, *self._args, **self._kwargs)
+            bc = self._bc_cls(
+                *positions, *directors, *self._args, _system=rod, **self._kwargs
+            )
+            return bc
         except (TypeError, IndexError):
             raise TypeError(
                 "Unable to construct boundary condition class. Note that:\n"

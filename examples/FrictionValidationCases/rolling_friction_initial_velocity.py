@@ -71,7 +71,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     shearable_rod.velocity_collection[0, :] += Vs
 
     rolling_friction_initial_velocity_sim.append(shearable_rod)
-    rolling_friction_initial_velocity_sim.constrain(shearable_rod).using(FreeRod)
+    rolling_friction_initial_velocity_sim.constrain(shearable_rod).using(FreeBC)
 
     # Add gravitational forces
     gravitational_acc = -9.80665

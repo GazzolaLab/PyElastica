@@ -61,14 +61,13 @@ pendulum_sim.append(pendulum_rod)
 
 
 # Bad name : whats a FreeRod anyway?
-class HingeBC(FreeRod):
+class HingeBC(ConstraintBase):
     """
     the end of the rod fixed x[0]
     """
 
     def __init__(self, fixed_position, fixed_directors):
-        FreeRod.__init__(self)
-        self.fixed_position = fixed_position
+        ConstraintBase.__init__(self, fixed_position, fixed_directors)
 
     def constrain_values(self, rod, time):
         rod.position_collection[..., 0] = self.fixed_position
