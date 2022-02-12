@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 import warnings
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 import numpy as np
 
@@ -21,6 +21,7 @@ from numba import njit
 
 from elastica._rotations import _get_rotation_matrix
 from elastica.rod import RodBase
+from elastica.rigidbody import RigidBodyBase
 
 
 class ConstraintBase(ABC):
@@ -33,13 +34,13 @@ class ConstraintBase(ABC):
 
         Attributes
         ----------
-        system : RodBase
+        system : RodBase or RigidBodyBase
         node_indices : None or numpy.ndarray
         element_indices : None or numpy.ndarray
 
     """
 
-    _system: Type[RodBase]
+    _system: Union[Type[RodBase], Type[RigidBodyBase]]
     _constrained_position_idx: np.ndarray
     _constrained_director_idx: np.ndarray
 
@@ -59,7 +60,7 @@ class ConstraintBase(ABC):
             )
 
     @property
-    def system(self) -> Type[RodBase]:
+    def system(self) -> Union[Type[RodBase], Type[RigidBodyBase]]:
         """get system (rod or rigid body) reference"""
         return self._system
 
@@ -76,30 +77,34 @@ class ConstraintBase(ABC):
         return self._constrained_director_idx
 
     @abstractmethod
-    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain values (position and/or directors) of a rod object.
 
         Parameters
         ----------
-        rod : object
-            Rod-like object.
+        rod : Union[Type[RodBase], Type[RigidBodyBase]]
+            Rod or rigid-body object.
         time : float
             The time of simulation.
         """
         pass
 
     @abstractmethod
-    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain rates (velocity and/or omega) of a rod object.
 
         Parameters
         ----------
-        rod : object
-            Rod-like object.
+        rod : Union[Type[RodBase], Type[RigidBodyBase]]
+            Rod or rigid-body object.
         time : float
             The time of simulation.
 
@@ -115,11 +120,15 @@ class FreeBC(ConstraintBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
-    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
@@ -156,21 +165,9 @@ class OneEndFixedBC(ConstraintBase):
         self.fixed_position_collection = np.array(fixed_position)
         self.fixed_directors_collection = np.array(fixed_directors)
 
-    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
-        """constrain_values.
-
-        Parameters
-        ----------
-        rod : Type[RodBase]
-            rod
-        time : float
-            time
-
-        Returns
-        -------
-        None
-
-        """
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         # rod.position_collection[..., 0] = self.fixed_position
         # rod.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
@@ -180,21 +177,9 @@ class OneEndFixedBC(ConstraintBase):
             self.fixed_directors_collection,
         )
 
-    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
-        """constrain_rates.
-
-        Parameters
-        ----------
-        rod : Type[RodBase]
-            rod
-        time : float
-            time
-
-        Returns
-        -------
-        None
-
-        """
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         # rod.velocity_collection[..., 0] = 0.0
         # rod.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
@@ -314,7 +299,9 @@ class FixedConstraint(ConstraintBase):
         self.fixed_positions = np.array(pos)
         self.fixed_directors = np.array(dir)
 
-    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 rod.position_collection,
@@ -328,7 +315,9 @@ class FixedConstraint(ConstraintBase):
                 self.constrained_director_idx,
             )
 
-    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 rod.velocity_collection,
@@ -530,7 +519,9 @@ class HelicalBucklingBC(ConstraintBase):
             @ director_end
         )  # rotation_matrix wants vectors 3,1
 
-    def constrain_values(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         if time > self.twisting_time:
             rod.position_collection[..., 0] = self.final_start_position
             rod.position_collection[..., -1] = self.final_end_position
@@ -538,7 +529,9 @@ class HelicalBucklingBC(ConstraintBase):
             rod.director_collection[..., 0] = self.final_start_directors
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod: Type[RodBase], time: float) -> None:
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
         if time > self.twisting_time:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0
