@@ -36,11 +36,10 @@ Built-in Constraints
 .. autoclass:: ConstraintBase
    :inherited-members:
    :undoc-members:
-   :exclude-members: __weakref__
+   :exclude-members: 
    :show-inheritance:
 
 .. autoclass:: FreeBC
-   :special-members: __init__
 
 .. autoclass:: OneEndFixedBC
    :special-members: __init__

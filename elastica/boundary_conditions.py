@@ -138,24 +138,19 @@ class OneEndFixedBC(ConstraintBase):
     This boundary condition class fixes one end of the rod. Currently,
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
-
-        Attributes
-        ----------
-        fixed_positions : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
     """
 
     def __init__(self, fixed_position, fixed_directors, **kwargs):
         """
 
+        Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
+
         Parameters
         ----------
-        fixed_position : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
+        constrained_position_idx : tuple
+            Tuple of position-indices that will be constrained
+        constrained_director_idx : tuple
+            Tuple of director-indices that will be constrained
         """
         super().__init__(**kwargs)
         self.fixed_position_collection = np.array(fixed_position)
@@ -294,10 +289,14 @@ class FixedConstraint(ConstraintBase):
     def __init__(self, *fixed_data, **kwargs):
         """
 
+        Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
+
         Parameters
         ----------
-        fixed_data : tuple
-            Tuple of position and directors
+        constrained_position_idx : tuple
+            Tuple of position-indices that will be constrained
+        constrained_director_idx : tuple
+            Tuple of director-indices that will be constrained
         """
         super().__init__(**kwargs)
         pos, dir = [], []
