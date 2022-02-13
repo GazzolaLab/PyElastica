@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 __doc__ = """ Test scripts for rotation kernels in Elastica Numba implementation"""
 # System imports
 import numpy as np
