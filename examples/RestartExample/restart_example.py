@@ -48,7 +48,7 @@ restart_example_simulator.append(shearable_rod)
 
 # Constrain one end of the rod.
 restart_example_simulator.constrain(shearable_rod).using(
-    OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Add end point forces to rod
