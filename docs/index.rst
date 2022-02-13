@@ -17,6 +17,7 @@ Elastica Documentation
 
    overview/welcome_page
    overview/installation
+   overview/tutorials
    overview/getting_started
 
 .. toctree::
