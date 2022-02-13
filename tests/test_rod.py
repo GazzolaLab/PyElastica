@@ -2,7 +2,8 @@ __doc__ = """ Rod class for testing module """
 
 import pytest
 import numpy as np
-from elastica.utils import MaxDimension
+
+# from elastica.utils import MaxDimension
 from numpy.testing import assert_allclose
 
 from elastica.rod.data_structures import _bootstrap_from_data
@@ -11,6 +12,7 @@ from elastica.rod.data_structures import (
     _DynamicState,
 )
 from elastica.utils import MaxDimension
+
 
 class MockTestRod:
     def __init__(self):
@@ -23,6 +25,7 @@ class MockTestRod:
         self.omega_collection = np.random.randn(MaxDimension.value(), self.n_elem)
         self.mass = np.abs(np.random.randn(self.n_elem))
         self.external_forces = np.zeros(self.n_elem)
+
 
 # Choosing 15 and 31 as nelems to reflect common expected
 # use case of blocksize = 2*(k), k = int

@@ -141,6 +141,7 @@ def test_inv_skew_symmetrize_correctness(blocksize):
     assert test_vector.shape == (3, blocksize)
     assert_allclose(test_vector, vector)
 
+
 ###############################################################################
 ##################### Implementation tests finis ##############################
 ###############################################################################
