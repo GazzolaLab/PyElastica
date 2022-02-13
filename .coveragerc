@@ -13,6 +13,8 @@ omit =
     */.local/*
     # omit analytical systems
     elastica/systems/analytical.py
+    # omit deprecation warning message
+    elastica/_elastica_numpy.py
     # omit experimental modules
     elastica/experimental/*
 	setup.py
