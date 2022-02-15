@@ -89,9 +89,9 @@ Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica:
   journal={IEEE Robotics and Automation Letters}, 
   title={Elastica: A compliant mechanics environment for soft robotic control}, 
   year={2021},
-  volume={},
-  number={},
-  pages={1-1},
+  volume={6},
+  number={2},
+  pages={3389-3396},
   doi={10.1109/LRA.2021.3063698}
 }
 ```
