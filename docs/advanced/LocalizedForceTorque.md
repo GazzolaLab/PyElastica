@@ -1,12 +1,20 @@
 # Localized Force and Torque
 
-> Originated from the inquiry in the issue #39 
+> Originated by the investigation in the [issue #39](https://github.com/GazzolaLab/PyElastica/issues/39)
 
 ## Discussion
 
+In elastica, __a force is applied on a node__ while __a torque is applied on an element__.
+For example, a localized force `EndpointForce` is applied only on a node. However, we found that adding additional torque on a neighboring elements, such that the torque represent a local moment induced by the point-force, could yield better convergence.
+We haven't found any evidence (yet) that this actually changes the steady-state configuration and kinematics, since it is two different implementation of the same point-load.
+We suspect the improvement by adding additional torque is due to explicitly giving the force-boundary condition that match the final internal-stress state.
+
 ## Comparison
 
-<F24><F25>
+Factoring the additional-torque on a neighboring element leads to slightly better error estimates for the Timoshenko beam example. The results are condensed here.
+With new implementation, we achieved the same error with less number of discretization, but it also requires additional torque computation.
+
+![image](https://github.com/GazzolaLab/PyElastica/blob/assets/docs/assets/plot/error_EndpointForcesWithTorques.png?raw=true)
 
 ## Modified Implementation
 
