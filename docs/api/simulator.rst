@@ -1,5 +1,6 @@
-Wrappers
-==========
+Simulator
+=========
+
 .. automodule:: elastica.wrappers.__init__
    :members:
    :exclude-members: __weakref__

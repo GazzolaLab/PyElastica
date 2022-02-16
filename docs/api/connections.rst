@@ -1,5 +1,5 @@
-Multiple Rod Connections
-=========================
+Rod Connections
+===============
 
 .. automodule:: elastica.joint
    :members:
