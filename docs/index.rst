@@ -22,14 +22,6 @@ PyElastica Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: User Guide
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Gallary
-
-.. toctree::
-   :maxdepth: 2
    :caption: API Documentation:
    
    api/rods
@@ -40,14 +32,21 @@ PyElastica Documentation
    api/callback
    api/simulator
    api/time_steppers
-   api/utility
-   api/analytical
+
+.. api/utility
+.. api/analytical
 
 ..   api/elastica++
 
 .. toctree::
    :maxdepth: 2
-   :caption: Advanced Guide
+   :caption: Gallary
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced Guide/Note
+
+   advanced/LocalizedForceTorque.md
 
 ---------
 
