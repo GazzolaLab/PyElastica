@@ -11,21 +11,24 @@ PyElastica Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Elastica Overview:
+   :caption: Elastica Overview
 
    overview/welcome_page
    overview/installation
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: User Guide
 
    guide/getting_started
+   guide/workflow
+   guide/useful_info
    guide/pybind
+   guide/visualization
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Documentation:
+   :caption: API Documentation
    
    api/rods
    api/rigidbody

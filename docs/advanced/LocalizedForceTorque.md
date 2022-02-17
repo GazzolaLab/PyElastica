@@ -44,11 +44,6 @@ class EndpointForcesWithTorques(NoForces):
         self.ramp_up_time = ramp_up_time
 
     def apply_forces(self, system, time=0.0):
-        # factor = min(1.0, time / self.ramp_up_time)
-        #
-        # system.external_forces[..., 0] += self.start_force * factor
-        # system.external_forces[..., -1] += self.end_force * factor
-
         factor = min(1.0, time / self.ramp_up_time)
         self.external_forces[..., -1] += self.end_force * factor
 
