@@ -9,16 +9,19 @@ PyElastica Documentation
 
 .. include:: intro_page.rst
 
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Elastica Overview:
 
    overview/welcome_page
    overview/installation
-   overview/tutorials
-   overview/getting_started
+
+.. toctree::
+   :maxdepth: 2
+   :caption: User Guide
+
+   guide/getting_started
+   guide/pybind
 
 .. toctree::
    :maxdepth: 2
@@ -44,7 +47,7 @@ PyElastica Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Advanced Guide/Note
+   :caption: Advanced Guide
 
    advanced/LocalizedForceTorque.md
 
