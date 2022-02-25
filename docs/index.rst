@@ -41,7 +41,6 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    :maxdepth: 1
    :caption: User Guide
 
-   guide/getting_started
    guide/workflow
    guide/useful_info
    guide/pybind
