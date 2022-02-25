@@ -26,7 +26,7 @@ PyElastica is the python implementation of Elastica. The easiest way to install 
 Or download the source code from the `GitHub repo`_ 
 
 Elastica++
-~~~~~~~~~~
+==========
 Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2022 Q2.
 
 .. _project website: https://cosseratrods.org
