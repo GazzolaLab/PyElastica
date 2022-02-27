@@ -42,7 +42,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    :caption: User Guide
 
    guide/workflow
-   guide/useful_info
+   guide/discretization
    guide/pybind
    guide/visualization
 
