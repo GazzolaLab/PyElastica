@@ -59,9 +59,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    api/callback
    api/simulator
    api/time_steppers
-
-.. api/utility
-.. api/analytical
+   api/utility
 
 ..   api/elastica++
 
