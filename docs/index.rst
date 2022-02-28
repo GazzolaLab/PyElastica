@@ -44,6 +44,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    guide/workflow
    guide/discretization
    guide/pybind
+   guide/example_cases
    guide/visualization
 
 .. toctree::
