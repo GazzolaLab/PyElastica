@@ -7,12 +7,6 @@ Transformations
    :members:
    :exclude-members: __weakref__
 
-Utilities
----------
-.. automodule:: elastica.utils
-   :members:
-   :exclude-members: __weakref__
-
 Math
 ----
 .. automodule:: elastica._calculus
@@ -24,5 +18,11 @@ Math
    :exclude-members: __weakref__
 
 .. automodule:: elastica._rotations
+   :members:
+   :exclude-members: __weakref__
+
+Miscellaneous
+-------------
+.. automodule:: elastica.utils
    :members:
    :exclude-members: __weakref__
