@@ -68,7 +68,7 @@ autodoc_default_flags = ['members',  'private-members', 'special-members',  'sho
 
 source_parsers = {
 }
-source_suffix = ['.rst']
+source_suffix = ['.rst', '.md']
 
 master_doc = 'index'
 # -- Options for HTML output -------------------------------------------------
