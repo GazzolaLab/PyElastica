@@ -10,9 +10,6 @@ Description
 
 Constraints are equivalent to displacement boundary condition.
 
-Built-in
---------
-
 .. rubric:: Available Constraint
 
 .. autosummary::
@@ -29,14 +26,14 @@ Built-in
 Compatibility
 ~~~~~~~~~~~~~
 
-=============================== === ===========
-Constraint / Boundary Condition Rod Rigid Body
-=============================== === ===========
-FreeBC                          ✅   ✅
-OneEndFixedBC                   ✅   ✅
-FixedConstraint                 ✅   ✅ 
-HelicalBucklingBC               ✅   ❌
-=============================== === ===========
+=============================== ==== =========== 
+Constraint / Boundary Condition Rod  Rigid Body  
+=============================== ==== =========== 
+FreeBC                           ✅   ✅         
+OneEndFixedBC                    ✅   ✅         
+FixedConstraint                  ✅   ✅         
+HelicalBucklingBC                ✅   ❌         
+=============================== ==== =========== 
 
 Examples
 --------

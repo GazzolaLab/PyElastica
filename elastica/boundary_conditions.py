@@ -147,6 +147,18 @@ class OneEndFixedBC(ConstraintBase):
     This boundary condition class fixes one end of the rod. Currently,
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
+
+    `Example case (timoshenko) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/TimoshenkoBeamCase/timoshenko.py>`_
+
+    Examples
+    --------
+    How to fix one ends of the rod:
+
+    >>> simulator.constrain(rod).using(
+    ...    OneEndFixedBC,
+    ...    constrained_position_idx=(0,),
+    ...    constrained_director_idx=(0,)
+    ... )
     """
 
     def __init__(self, fixed_position, fixed_directors, **kwargs):
@@ -426,6 +438,8 @@ class HelicalBucklingBC(ConstraintBase):
     Buckling case in Gazzola et. al. RSoS (2018).
     The applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
+
+    `Example case (helical buckling) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/HelicalBucklingCase/helicalbuckling.py>`_
 
         Attributes
         ----------

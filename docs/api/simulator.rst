@@ -1,10 +1,6 @@
 Simulator
 =========
 
-.. automodule:: elastica.wrappers.__init__
-   :members:
-   :exclude-members: __weakref__
-
 .. automodule:: elastica.wrappers.base_system
    :members:
    :exclude-members: __weakref__, __init__, __str__, insert
