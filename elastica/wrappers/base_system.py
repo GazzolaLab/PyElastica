@@ -41,12 +41,12 @@ class BaseSystemCollection(MutableSequence):
     """
 
     # Collection of functions. Each group is executed as a collection at the different steps.
-    # Each component (Forcing, Connection, etc.) registers the executable (callable) function 
+    # Each component (Forcing, Connection, etc.) registers the executable (callable) function
     # in the group that that needs to be executed.
-    _feature_group_synchronize: Iterable[Callable[[float],None]] = []
-    _feature_group_constrain_values: Iterable[Callable[[float],None]] = []
-    _feature_group_constrain_rates: Iterable[Callable[[float],None]] = []
-    _feature_group_callback: Iterable[Callable[[float,int,AnyStr],None]] = []
+    _feature_group_synchronize: Iterable[Callable[[float], None]] = []
+    _feature_group_constrain_values: Iterable[Callable[[float], None]] = []
+    _feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
+    _feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = []
     _feature_group_finalize: Iterable[Callable] = []
 
     def __init__(self):
@@ -152,22 +152,22 @@ class BaseSystemCollection(MutableSequence):
         # Toggle the finalize_flag
         self._finalize_flag = True
 
-    def synchronize(self, time:float):
+    def synchronize(self, time: float):
         # Collection call _featuer_group_synchronize
         for feature in self._feature_group_synchronize:
             feature(time)
 
-    def constrain_values(self, time:float):
+    def constrain_values(self, time: float):
         # Collection call _feature_group_constrain_values
         for feature in self._feature_group_constrain_values:
             feature(time)
 
-    def constrain_rates(self, time:float):
+    def constrain_rates(self, time: float):
         # Collection call _feature_group_constrain_rates
         for feature in self._feature_group_constrain_rates:
             feature(time)
 
-    def apply_callbacks(self, time:float, current_step: int):
+    def apply_callbacks(self, time: float, current_step: int):
         # Collection call _feature_group_callback
         for feature in self._feature_group_callback:
             feature(time, current_step)
