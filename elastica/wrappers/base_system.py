@@ -51,6 +51,9 @@ class BaseSystemCollection(MutableSequence):
         # from Controllers, Environments which are
         # tacked on to the SystemCollection in a sim.
         self._features = NotImplemented
+        # Flag Finalize: Finalizing twice will cause an error,
+        # but the error message is very misleading
+        self._finalize_flag = False
 
     def _check_type(self, sys_to_be_added):
         if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
@@ -131,6 +134,8 @@ class BaseSystemCollection(MutableSequence):
 
         """
 
+        assert self._finalize_flag is not True, "The finalize cannot be called twice."
+
         # FIXME: This is probably the most bizarre way to collect the functions. It is definitely
         # impressive and even surprising that it is working, but it is far from readable and maintainable.
         # The code is difficult to debug, because the behavior is un-interpretable except during run-time.
@@ -160,6 +165,8 @@ class BaseSystemCollection(MutableSequence):
 
         for finalize in finalize_methods:
             finalize(self)
+
+        self._finalize_flag = True
 
     def synchronize(self, time):
         # Calls all , connections, controls etc.
