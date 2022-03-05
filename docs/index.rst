@@ -72,6 +72,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    :caption: Advanced Guide
 
    advanced/LocalizedForceTorque.md
+   advanced/PackageDesign.md
 
 ---------
 
