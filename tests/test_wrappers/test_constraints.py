@@ -316,7 +316,7 @@ class TestConstraintsMixin:
     def test_constrain_finalize_correctness(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
 
-        scwc._finalize()
+        scwc._finalize_constraints()
 
         for (x, y) in scwc._constraints:
             assert type(x) is int
@@ -324,7 +324,7 @@ class TestConstraintsMixin:
 
     def test_constraint_properties(self, load_rod_with_constraints):
         scwc, _ = load_rod_with_constraints
-        scwc._finalize()
+        scwc._finalize_constraints()
 
         for i in [0, 1, -1]:
             x, y = scwc._constraints[i]
@@ -342,7 +342,7 @@ class TestConstraintsMixin:
     def test_constrain_finalize_sorted(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
 
-        scwc._finalize()
+        scwc._finalize_constraints()
 
         # this is allowed to fail (not critical)
         num = -np.inf
