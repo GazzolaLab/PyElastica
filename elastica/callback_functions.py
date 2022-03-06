@@ -40,9 +40,6 @@ class CallBackBaseClass:
         current_step : int
             Simulation step.
 
-        Returns
-        -------
-
         """
         pass
 
