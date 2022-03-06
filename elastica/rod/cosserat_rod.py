@@ -3,7 +3,6 @@ __all__ = ["CosseratRod"]
 import typing
 
 import numpy as np
-from numpy.typing import NDArray
 import functools
 import numba
 from elastica.rod import RodBase
@@ -216,9 +215,9 @@ class CosseratRod(RodBase):
     def straight_rod(
         cls,
         n_elements: int,
-        start: NDArray,
-        direction: NDArray,
-        normal: NDArray,
+        start: np.ndarray,
+        direction: np.ndarray,
+        normal: np.ndarray,
         base_length: float,
         base_radius: float,
         density: float,
