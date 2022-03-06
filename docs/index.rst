@@ -74,6 +74,12 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    advanced/LocalizedForceTorque.md
    advanced/PackageDesign.md
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Archive
+
+   archive/NCSA-NVIDIA-AI-Hackathon-2020
+
 ---------
 
 Indices and tables
