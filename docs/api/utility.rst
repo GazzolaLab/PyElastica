@@ -1,6 +1,8 @@
 Utility Functions
 ==================
 
+Here, we provide some useful functions that we often use along with elastica.
+
 Transformations
 -----------------
 .. automodule:: elastica.transformations
