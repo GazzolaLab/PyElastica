@@ -28,6 +28,8 @@ def _trapezoidal(array_collection):
 
     Returns
     -------
+    result: np.ndarray
+
     Notes
     -----
     Micro benchmark results, for a block size of 100, using timeit
@@ -73,6 +75,7 @@ def _trapezoidal_for_block_structure(array_collection, ghost_idx):
 
     Returns
     -------
+    result: np.ndarray
 
     Notes
     -----
@@ -111,12 +114,16 @@ def _trapezoidal_for_block_structure(array_collection, ghost_idx):
 def _two_point_difference(array_collection):
     """
     This function does differentiation.
+
     Parameters
     ----------
-    array_collection
+    array_collection: np.ndarray
 
     Returns
     -------
+    result: np.ndarray
+
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -151,14 +158,16 @@ def _two_point_difference_for_block_structure(array_collection, ghost_idx):
 
     Parameters
     ----------
-    array_collection
-    ghost_idx
+    array_collection: np.ndarray
+    ghost_idx: Iterable
 
     Returns
     -------
+    result: np.ndarray
 
-    Note
-    ----
+
+    Notes
+    -----
     Micro benchmark results showed that for a block size of 100, using timeit
     Python version: 7.1 µs per loop
     This version: 1.01 µs per loop
@@ -198,6 +207,8 @@ def _difference(vector):
 
     Returns
     -------
+    result: np.ndarray
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -224,6 +235,8 @@ def _average(vector):
 
     Returns
     -------
+    result: np.ndarray
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -253,6 +266,8 @@ def _clip_array(input_array, vmin, vmax):
 
     Returns
     -------
+    result: np.ndarray
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -281,6 +296,8 @@ def _isnan_check(array):
 
     Returns
     -------
+    result: np.ndarray
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit

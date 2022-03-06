@@ -28,10 +28,10 @@ def isqrt(num: int) -> int:
     -------
     sqrt_num : int, rounded down sqrt of num
 
-    Note
-    ----
-        - Doesn't handle edge-cases of negative numbers by design
-        - Doesn't type-check for integers by design, although it is hinted at
+    Notes
+    -----
+    - Doesn't handle edge-cases of negative numbers by design
+    - Doesn't type-check for integers by design, although it is hinted at
 
     Examples
     --------
