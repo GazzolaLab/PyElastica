@@ -29,10 +29,10 @@ Compatibility
 =============================== ==== =========== 
 Constraint / Boundary Condition Rod  Rigid Body  
 =============================== ==== =========== 
-FreeBC                           ✅   ✅         
-OneEndFixedBC                    ✅   ✅         
-FixedConstraint                  ✅   ✅         
-HelicalBucklingBC                ✅   ❌         
+FreeBC                           ✅   ✅
+OneEndFixedBC                    ✅   ✅
+FixedConstraint                  ✅   ✅
+HelicalBucklingBC                ✅   ❌
 =============================== ==== =========== 
 
 Examples
