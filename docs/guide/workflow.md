@@ -38,6 +38,11 @@ Available components are:
 | [Connections](../api/connections.rst)       |                                 |
 | [CallBacks](../api/callback.rst)            |                                 |
 
+:::{Note}
+We adopted a composition and mixin design paradigm in building elastica. The detail of the implementation is not important in using the package, but we left some references to read [here](../advanced/PackageDesign.md).
+:::
+
+
 <h2>2. Create Rods</h2>
 Each rod has a number of physical parameters that need to be defined. These values then need to be assigned to the rod to create the object, and the rod needs to be added to the simulator. 
 
@@ -140,7 +145,9 @@ SystemSimulator.connect(
 
 If you want to know what happens to the rod during the course of the simulation, you must collect data during the simulation. Here, we demonstrate how the callback function can be defined to export the data you need. There is a base class `CallBackBaseClass` that can help with this.
 
->> Note: PyElastica __does not automatically saves__ the simulation result. If you do not define a callback function, you will only have the final state of the system at the end of the simulation.
+:::{note}
+PyElastica __does not automatically saves__ the simulation result. If you do not define a callback function, you will only have the final state of the system at the end of the simulation.
+:::
 
 ```python
 from elastica.callback_functions import CallBackBaseClass
