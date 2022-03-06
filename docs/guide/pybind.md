@@ -11,6 +11,6 @@ We have created several Jupyter notebooks and Python scripts to help get users s
 [![](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb)
 
 :::{note}
-Additional examples are also available in the examples folder of PyElastica's [Github repo](https://github.com/GazzolaLab/PyElastica).
+Additional examples are also available in the examples folder of PyElastica's [Github repo](https://github.com/GazzolaLab/PyElastica/tree/master/examples).
 :::
 

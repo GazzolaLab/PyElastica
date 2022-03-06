@@ -43,8 +43,8 @@ If you are interested to contribute, please read `contribution-guide`_ first.
 
    guide/workflow
    guide/discretization
-   guide/pybind
    guide/example_cases
+   guide/pybind
    guide/visualization
 
 .. toctree::
@@ -57,8 +57,8 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    api/external_forces
    api/connections
    api/callback
-   api/simulator
    api/time_steppers
+   api/simulator
    api/utility
 
 ..   api/elastica++

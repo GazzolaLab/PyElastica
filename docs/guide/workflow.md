@@ -85,17 +85,13 @@ The number of element (`n_elements`) and `base_length` determines the spatial di
 
 <h2>4. Define Boundary Conditions, Forcings, and Connections</h2>
 
-Now that we have added all our rods to `SystemSimulator`, we need to apply the relevant boundary conditions. See the documentation and tutorials for in depth explanations of the different types of forcings available. 
+Now that we have added all our rods to `SystemSimulator`, we need to apply the relevant boundary conditions. See [this page](../api/constraints.rst) for in-depth explanations and documentation.
 
 As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundary condition (which we imported in step 1 and apply it to the rod. Here we will be fixing the $0^{\text{th}}$ node as well as the $0^{\text{th}}$ element. 
 
 ```python
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.boundary_conditions import OneEndFixedRod
-from elastica.external_forces import GravityForces
-```
+from elastica.boundary_conditions import OneEndFixedBC
 
-```python
 SystemSimulator.constrain(rod1).using(
     OneEndFixedBC,                  # Displacement BC being applied
     constrained_position_idx=(0,),  # Node number to apply BC
@@ -103,9 +99,11 @@ SystemSimulator.constrain(rod1).using(
 )
 ```
 
-We have now fixed one end of the rod while leaving the other end free. We can also apply forces to free end using the `EndpointForces`
+We have now fixed one end of the rod while leaving the other end free. We can also apply forces to free end using the `EndpointForces`. We can also add more complex forcings, such as friction, gravity, or torque throughout the rod. See [this page](../api/external_forces.rst) for in-depth explanations and documentation.
 
 ```python
+from elastica.external_forces import EndpointForces
+
 #Define 1x3 array of the applied forces
 origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([-15.0, 0.0, 0.0]) 
@@ -117,9 +115,11 @@ SystemSimulator.add_forcing_to(rod1).using(
 )
 ```
 
-We can also add more complex forcings, such as friction, gravity, or torque throughout the rod (see tutorials and documentation for details). One last condition we can define is the connections between rods. 
+One last condition we can define is the connections between rods. See [this page](../api/connections.rst) for in-depth explanations and documentation.
 
 ```python
+from elastica.connections import FixedJoint
+
 # Connect rod 1 and rod 2. '_connect_idx' specifies the node number that 
 # the connection should be applied to. You are specifying the index of a 
 # list so you can use -1 to access the last node. 
@@ -138,7 +138,9 @@ SystemSimulator.connect(
 
 <h2>5. Add Callback Functions (optional)</h2>
 
-If you want to know what happens to the rod during the course of the simulation, you must create a callback function to output the data you need as the simulation runs. There is a base class `CallBackBaseClass` that can help with this. If you do not define a callback function, then at the end of the simulation, you will only have the final state of the system available.  
+If you want to know what happens to the rod during the course of the simulation, you must collect data during the simulation. Here, we demonstrate how the callback function can be defined to export the data you need. There is a base class `CallBackBaseClass` that can help with this.
+
+>> Note: PyElastica __does not automatically saves__ the simulation result. If you do not define a callback function, you will only have the final state of the system at the end of the simulation.
 
 ```python
 from elastica.callback_functions import CallBackBaseClass
@@ -171,7 +173,7 @@ SystemSimulator.collect_diagnostics(rod2).using(
     MyCallBack, step_skip=1000, callback_params=callback_data_rod2)
 ```
 
-You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs.
+You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs. See [this page](../api/callback.rst) for more in-depth documentation.
 
 <h2>6. Finalize Simulator</h2>
 
@@ -181,19 +183,18 @@ Now that we have finished defining our rods, the different boundary conditions a
 SystemSimulator.finalize()
 ```
 
-This goes through and collects all the rods and applied conditions, preparing the system for the simulation. 
+This goes through and collects all the rods and applied conditions, preparing the system for the simulation.
 
 <h2>7. Set Timestepper</h2>
-Currently `PositionVerlet` is the best default.
+
+With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation. 
+
+>> We are still actively testing different integration and time-stepping techniques, `PositionVerlet` is the best default at this moment.
 
 ```python
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
-```
 
-With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation. 
-
-```python
 timestepper = PositionVerlet()
 final_time = 10   # seconds
 dt = 1e-5         # seconds
@@ -201,8 +202,8 @@ total_steps = int(final_time / dt)
 integrate(timestepper, SystemSimulator, final_time, total_steps)
 ```
 
-
+More documentation on timestepper and integrator is included [here](../api/time_steppers.rst)
 
 <h2>8. Post Process</h2>
-Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`. 
 
+Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`. 

@@ -2,6 +2,8 @@
 Example Cases
 *************
 
+Example cases are the demonstration of physical example with known analytical solution or well-studied phenomenon.
+Each cases follows the recommended workflow, shown [here](./workflow.md). Feel free to use them as an initial template to build your own case study.
 
 Axial Stretching
 ~~~~~~~~~~~~~~~~
