@@ -750,8 +750,7 @@ class ExternalContact(FreeJoint):
     changed at a later time
 
     Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this paper:
-    http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf
+    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`_.
 
     but, it isn't (the elastica-cpp kernels are implented)!
     This is maybe to speed-up the kernel, but it's
@@ -848,8 +847,7 @@ class SelfContact(FreeJoint):
     changed at a later time
 
     Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this paper:
-    http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf
+    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`_.
 
     but, it isn't (the elastica-cpp kernels are implented)!
     This is maybe to speed-up the kernel, but it's
