@@ -458,10 +458,10 @@ class HelicalBucklingBC(ConstraintBase):
             2D (dim, 1) array containing data with 'float' type.
             Shrink velocity of rod during twisting time.
         final_start_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
+            3D (dim, dim, 1) array containing data with 'float' type.
             Directors of first element of rod after twist completed.
         final_end_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
+            3D (dim, dim, 1) array containing data with 'float' type.
             Directors of last element of rod after twist completed.
 
 
