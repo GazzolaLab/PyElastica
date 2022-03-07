@@ -196,7 +196,7 @@ class TestForcingMixin:
         )
         scwf.add_forcing_to(1).using(MockForcing, 2, 42)  # index based forcing
 
-        scwf._finalize()
+        scwf._finalize_forcing()
 
         # Now check if the Anisotropic friction is the last forcing class
         assert isinstance(scwf._ext_forces_torques[-1][-1], AnisotropicFrictionalPlane)
@@ -204,7 +204,7 @@ class TestForcingMixin:
     def test_constrain_finalize_correctness(self, load_rod_with_forcings):
         scwf, forcing_cls = load_rod_with_forcings
 
-        scwf._finalize()
+        scwf._finalize_forcing()
 
         for (x, y) in scwf._ext_forces_torques:
             assert type(x) is int
@@ -214,7 +214,7 @@ class TestForcingMixin:
     def test_constrain_finalize_sorted(self, load_rod_with_forcings):
         scwf, forcing_cls = load_rod_with_forcings
 
-        scwf._finalize()
+        scwf._finalize_forcing()
 
         # this is allowed to fail (not critical)
         num = -np.inf
