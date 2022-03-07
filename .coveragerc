@@ -15,6 +15,6 @@ omit =
     elastica/systems/analytical.py
     # omit deprecation warning message
     elastica/_elastica_numpy.py
-    # omit experimental
+    # omit experimental modules
     elastica/experimental/*
 	setup.py

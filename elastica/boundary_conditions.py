@@ -1,5 +1,4 @@
-__doc__ = """ Numba implementation module for boundary condition implementations that constrain or
-define displacement conditions on the rod"""
+__doc__ = """ Built-in boundary condition implementationss """
 __all__ = [
     "ConstraintBase",
     "FreeBC",
@@ -26,11 +25,12 @@ from elastica.rigidbody import RigidBodyBase
 
 
 class ConstraintBase(ABC):
-    """Base class for constraint and boundary condition implementation.
+    """Base class for constraint and displacement boundary condition implementation.
 
-    Note
-    ----
+    Notes
+    -----
     Constraint class must inherit BaseConstraint class.
+
 
         Attributes
         ----------
@@ -113,6 +113,10 @@ class ConstraintBase(ABC):
 
 
 class FreeBC(ConstraintBase):
+    """
+    Boundary condition template.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -144,23 +148,30 @@ class OneEndFixedBC(ConstraintBase):
     this boundary condition fixes position and directors
     at the first node and first element of the rod.
 
-        Attributes
-        ----------
-        fixed_positions : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
+    `Example case (timoshenko) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/TimoshenkoBeamCase/timoshenko.py>`_
+
+    Examples
+    --------
+    How to fix one ends of the rod:
+
+    >>> simulator.constrain(rod).using(
+    ...    OneEndFixedBC,
+    ...    constrained_position_idx=(0,),
+    ...    constrained_director_idx=(0,)
+    ... )
     """
 
     def __init__(self, fixed_position, fixed_directors, **kwargs):
         """
 
+        Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
+
         Parameters
         ----------
-        fixed_position : numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-        fixed_directors : numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
+        constrained_position_idx : tuple
+            Tuple of position-indices that will be constrained
+        constrained_director_idx : tuple
+            Tuple of director-indices that will be constrained
         """
         super().__init__(**kwargs)
         self.fixed_position_collection = np.array(fixed_position)
@@ -198,6 +209,7 @@ class OneEndFixedBC(ConstraintBase):
     ):
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         position_collection : numpy.ndarray
@@ -221,6 +233,7 @@ class OneEndFixedBC(ConstraintBase):
     def compute_constrain_rates(velocity_collection, omega_collection):
         """
         Compute contrain rates in numba njit decorator
+
         Parameters
         ----------
         velocity_collection : numpy.ndarray
@@ -273,10 +286,14 @@ class FixedConstraint(ConstraintBase):
     def __init__(self, *fixed_data, **kwargs):
         """
 
+        Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
+
         Parameters
         ----------
-        fixed_data : tuple
-            Tuple of position and directors
+        constrained_position_idx : tuple
+            Tuple of position-indices that will be constrained
+        constrained_director_idx : tuple
+            Tuple of director-indices that will be constrained
         """
         super().__init__(**kwargs)
         pos, dir = [], []
@@ -331,6 +348,7 @@ class FixedConstraint(ConstraintBase):
     ) -> None:
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         director_collection : numpy.ndarray
@@ -353,6 +371,7 @@ class FixedConstraint(ConstraintBase):
     ) -> None:
         """
         Computes constrain values in numba njit decorator
+
         Parameters
         ----------
         position_collection : numpy.ndarray
@@ -375,6 +394,7 @@ class FixedConstraint(ConstraintBase):
     def nb_constrain_translational_rates(velocity_collection, indices) -> None:
         """
         Compute constrain rates in numba njit decorator
+
         Parameters
         ----------
         velocity_collection : numpy.ndarray
@@ -395,6 +415,7 @@ class FixedConstraint(ConstraintBase):
     def nb_constrain_rotational_rates(omega_collection, indices) -> None:
         """
         Compute constrain rates in numba njit decorator
+
         Parameters
         ----------
         omega_collection : numpy.ndarray
@@ -418,6 +439,8 @@ class HelicalBucklingBC(ConstraintBase):
     The applied boundary condition is twist and slack on to
     the first and last nodes and elements of the rod.
 
+    `Example case (helical buckling) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/HelicalBucklingCase/helicalbuckling.py>`_
+
         Attributes
         ----------
         twisting_time: float
@@ -435,10 +458,10 @@ class HelicalBucklingBC(ConstraintBase):
             2D (dim, 1) array containing data with 'float' type.
             Shrink velocity of rod during twisting time.
         final_start_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
+            3D (dim, dim, 1) array containing data with 'float' type.
             Directors of first element of rod after twist completed.
         final_end_directors: numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with 'float' type.
+            3D (dim, dim, 1) array containing data with 'float' type.
             Directors of last element of rod after twist completed.
 
 
@@ -456,6 +479,8 @@ class HelicalBucklingBC(ConstraintBase):
         **kwargs
     ):
         """
+
+        Helical Buckling initializer
 
         Parameters
         ----------

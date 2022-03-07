@@ -1,4 +1,4 @@
-__doc__ = """ Rigid body abstract base class """
+__doc__ = """"""
 
 import numpy as np
 from abc import ABC, abstractmethod
@@ -7,6 +7,15 @@ from elastica.utils import MaxDimension
 
 
 class RigidBodyBase(ABC):
+    """
+    Base class for rigid body classes.
+
+    Notes
+    -----
+    All rigid body class should inherit this base class.
+
+    """
+
     def __init__(self):
 
         self.position_collection = NotImplementedError
@@ -43,16 +52,6 @@ class RigidBodyBase(ABC):
     #     pass
 
     def update_accelerations(self, time):
-        """TODO Do we need to make the collection members abstract?
-
-        Parameters
-        ----------
-        time
-
-        Returns
-        -------
-
-        """
         np.copyto(
             self.acceleration_collection,
             (self.external_forces) / self.mass,
@@ -80,9 +79,15 @@ class RigidBodyBase(ABC):
         self.external_torques *= 0.0
 
     def compute_position_center_of_mass(self):
+        """
+        Return positional center of mass
+        """
         return self.position_collection[..., 0].copy()
 
     def compute_translational_energy(self):
+        """
+        Return translational energy
+        """
         return (
             0.5
             * self.mass
@@ -92,6 +97,9 @@ class RigidBodyBase(ABC):
         )
 
     def compute_rotational_energy(self):
+        """
+        Return rotational energy
+        """
         J_omega = np.einsum(
             "ijk,jk->ik", self.mass_second_moment_of_inertia, self.omega_collection
         )

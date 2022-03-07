@@ -3,10 +3,6 @@
 
 More information about Elastica is available at the `project website`_
 
-Implementations
-----------------
-There are currently two implementations of Elastica. 
-
 PyElastica
 ~~~~~~~~~~
 .. image:: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master
@@ -30,8 +26,8 @@ PyElastica is the python implementation of Elastica. The easiest way to install 
 Or download the source code from the `GitHub repo`_ 
 
 Elastica++
-~~~~~~~~~~
-Elastica++ is a C++ implementation of Elastica that is still under development
+==========
+Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2022 Q2.
 
 .. _project website: https://cosseratrods.org
 .. _GitHub repo: https://github.com/GazzolaLab/PyElastica

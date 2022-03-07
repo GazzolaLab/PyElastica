@@ -1,4 +1,5 @@
-__doc__ = """ Cylinder rigid body class """
+__doc__ = """"""
+__all__ = ["Cylinder"]
 
 import numpy as np
 
@@ -9,6 +10,18 @@ from elastica.rigidbody.rigid_body import RigidBodyBase
 
 class Cylinder(RigidBodyBase):
     def __init__(self, start, direction, normal, base_length, base_radius, density):
+        """
+        Rigid body cylinder initializer.
+
+        Parameters
+        ----------
+        start
+        direction
+        normal
+        base_length
+        base_radius
+        density
+        """
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
         self.n_elems = 1

@@ -1,0 +1,8 @@
+/* 
+ * To resize and re-factor the design parameters for logo
+ * https://stackoverflow.com/questions/59215996/how-to-add-a-logo-to-my-readthedocs-logo-rendering-at-0px-wide
+ * */
+.wy-side-nav-search .wy-dropdown > a img.logo, .wy-side-nav-search > a img.logo {
+        width: 175px;
+        height: 80px;
+    }

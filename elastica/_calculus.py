@@ -24,10 +24,14 @@ def _trapezoidal(array_collection):
 
     Parameters
     ----------
-    array_collection
+    array_collection : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        2D (dim, blocksize+1) array containing data with 'float' type.
+
     Notes
     -----
     Micro benchmark results, for a block size of 100, using timeit
@@ -68,11 +72,15 @@ def _trapezoidal_for_block_structure(array_collection, ghost_idx):
 
     Parameters
     ----------
-    array_collection
-    ghost_idx
+    array_collection : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    ghost_idx : numpy.ndarray
+        1D (n_ghost) array containing data with 'int' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        2D (dim, blocksize+1) array containing data with 'float' type.
 
     Notes
     -----
@@ -111,12 +119,18 @@ def _trapezoidal_for_block_structure(array_collection, ghost_idx):
 def _two_point_difference(array_collection):
     """
     This function does differentiation.
+
     Parameters
     ----------
-    array_collection
+    array_collection : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        2D (dim, blocksize-1) array containing data with 'float' type.
+
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -151,14 +165,19 @@ def _two_point_difference_for_block_structure(array_collection, ghost_idx):
 
     Parameters
     ----------
-    array_collection
-    ghost_idx
+    array_collection : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    ghost_idx : numpy.ndarray
+        1D (n_ghost) array containing data with 'int' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        2D (dim, blocksize-1) array containing data with 'float' type.
 
-    Note
-    ----
+
+    Notes
+    -----
     Micro benchmark results showed that for a block size of 100, using timeit
     Python version: 7.1 µs per loop
     This version: 1.01 µs per loop
@@ -191,13 +210,18 @@ def _two_point_difference_for_block_structure(array_collection, ghost_idx):
 @njit(cache=True)
 def _difference(vector):
     """
-    This function computes difference between elements of a batch vector
+    This function computes difference between elements of a batch vector.
+
     Parameters
     ----------
-    vector
+    vector: numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        2D (dim, blocksize-1) array containing data with 'float' type.
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -217,13 +241,18 @@ def _difference(vector):
 @njit(cache=True)
 def _average(vector):
     """
-    This function computes the average between elements of a vector
+    This function computes the average between elements of a vector.
+
     Parameters
     ----------
-    vector
+    vector : numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
 
     Returns
     -------
+    result: numpy.ndarray
+        1D (blocksize-1) array containing data with 'float' type.
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -245,14 +274,19 @@ def _clip_array(input_array, vmin, vmax):
     This function clips an array values
     between user defined minimum and maximum
     values.
+
     Parameters
     ----------
-    input_array
-    vmin
-    vmax
+    input_array: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+    vmin: float
+    vmax: float
 
     Returns
     -------
+    result: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
@@ -274,13 +308,17 @@ def _clip_array(input_array, vmin, vmax):
 def _isnan_check(array):
     """
     This function checks if there is any nan inside the array.
-    If there is nan, it returns True boolean
+    If there is nan, it returns True boolean.
+
     Parameters
     ----------
-    array
+    array : numpy.ndarray
+        Any size of array.
 
     Returns
     -------
+    result: boolean
+
     Notes
     -----
     Micro benchmark results showed that for a block size of 100, using timeit
