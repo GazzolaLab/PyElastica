@@ -7,7 +7,7 @@
 PyElastica Documentation
 ************************
 
-.. include:: intro_page.rst
+.. include:: intro_page.rst.inc
 
 
 Community

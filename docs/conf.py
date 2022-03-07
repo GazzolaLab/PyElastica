@@ -35,6 +35,7 @@ release = '0.2.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
     'sphinx_autodoc_typehints',
     #'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
@@ -65,6 +66,7 @@ exclude_patterns = [
     ]
 
 autodoc_default_flags = ['members',  'private-members', 'special-members',  'show-inheritance']
+autosectionlabel_prefix_document = True
 
 source_parsers = {
 }
