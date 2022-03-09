@@ -13,17 +13,16 @@ class FreeJoint:
     joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
+    Notes
+    -----
+    Every new joint class must be derived from the FreeJoint class.
+
         Attributes
         ----------
         k: float
             Stiffness coefficient of the joint.
         nu: float
             Damping coefficient of the joint.
-
-    Note
-    ----
-    Every new joint class must be derived from the FreeJoint class.
-
 
     """
 
@@ -751,8 +750,7 @@ class ExternalContact(FreeJoint):
     changed at a later time
 
     Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this paper:
-    http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf
+    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`_.
 
     but, it isn't (the elastica-cpp kernels are implented)!
     This is maybe to speed-up the kernel, but it's
@@ -845,17 +843,8 @@ class ExternalContact(FreeJoint):
 
 class SelfContact(FreeJoint):
     """
-    Assumes that the second entity is a rigid body for now, can be
-    changed at a later time
+    This class is modeling self contact of rod.
 
-    Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this paper:
-    http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf
-
-    but, it isn't (the elastica-cpp kernels are implented)!
-    This is maybe to speed-up the kernel, but it's
-    potentially dangerous as it does not deal with "end" conditions
-    correctly.
     """
 
     def __init__(self, k, nu):

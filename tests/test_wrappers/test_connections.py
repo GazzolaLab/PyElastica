@@ -324,7 +324,7 @@ class TestConnectionsMixin:
     def test_connect_finalize_correctness(self, load_rod_with_connects):
         scwc, connect_cls = load_rod_with_connects
 
-        scwc._finalize()
+        scwc._finalize_connections()
 
         for (fidx, sidx, fconnect, sconnect, connect) in scwc._connections:
             assert type(fidx) is int

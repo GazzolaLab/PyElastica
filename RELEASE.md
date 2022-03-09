@@ -1,3 +1,18 @@
+# Release Note (version 0.2.2)
+
+## Developer Note
+
+The major documentation update is finished in this version.
+Constraint and finalize module are refactored to enhance readability.
+
+## Notable Changes
+- #64: Core wrapper redesign. The finalizing code is refactored for easier integration.
+- #65: Documentation update.
+- #56: Constraint module has been refactored to include proper abstract base class. Additionally, new `FixedConstraint` is added for generalized fixed boundary condition.
+- More test cases are added to increase code-coverage.
+
+---
+
 # Release Note (version 0.2.1)
 
 ## Developer Note

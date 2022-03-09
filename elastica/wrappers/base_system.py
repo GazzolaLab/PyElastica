@@ -5,6 +5,8 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
+from typing import Iterable, Callable, AnyStr
+
 from collections.abc import MutableSequence
 from itertools import chain
 
@@ -25,8 +27,6 @@ class BaseSystemCollection(MutableSequence):
             Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
         _systems: list
             List of rod-like objects.
-        _features: list
-            List of classes acting on the rod-like object, such as external forces classes.
 
     """
 
@@ -40,6 +40,15 @@ class BaseSystemCollection(MutableSequence):
     https://stackoverflow.com/q/3945940
     """
 
+    # Collection of functions. Each group is executed as a collection at the different steps.
+    # Each component (Forcing, Connection, etc.) registers the executable (callable) function
+    # in the group that that needs to be executed.
+    _feature_group_synchronize: Iterable[Callable[[float], None]] = []
+    _feature_group_constrain_values: Iterable[Callable[[float], None]] = []
+    _feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
+    _feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = []
+    _feature_group_finalize: Iterable[Callable] = []
+
     def __init__(self):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
@@ -47,12 +56,11 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = (RodBase, RigidBodyBase)
         # List of systems to be integrated
         self._systems = []
-        # List of feature calls, such as those coming
-        # from Controllers, Environments which are
-        # tacked on to the SystemCollection in a sim.
-        self._features = NotImplemented
+        # Flag Finalize: Finalizing twice will cause an error,
+        # but the error message is very misleading
+        self._finalize_flag = False
 
-    def _check_type(self, sys_to_be_added):
+    def _check_type(self, sys_to_be_added: AnyStr):
         if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
             raise TypeError(
                 "{0}\n"
@@ -125,58 +133,41 @@ class BaseSystemCollection(MutableSequence):
         all rod-like objects to the simulator as well as all boundary conditions, callbacks, etc.,
         acting on these rod-like objects. After the finalize method called,
         the user cannot add new features to the simulator class.
-
-        Returns
-        -------
-
         """
 
-        # FIXME: This is probably the most bizarre way to collect the functions. It is definitely
-        # impressive and even surprising that it is working, but it is far from readable and maintainable.
-        # The code is difficult to debug, because the behavior is un-interpretable except during run-time.
-        # We need a lot more documentation on this part: clear explanation and reasoning.
-        def get_methods_from_feature_classes(method_name: str):
-            methods = [
-                [v for (k, v) in cls.__dict__.items() if k.endswith(method_name)]
-                for cls in self.__class__.__bases__
-            ]
-            return list(chain.from_iterable(methods))
-
-        self._features = get_methods_from_feature_classes("__call__")
-
-        self._features_that_constrain_values = get_methods_from_feature_classes(
-            "_constrain_values"
-        )
-        self._features_that_constrain_rates = get_methods_from_feature_classes(
-            "_constrain_rates"
-        )
-        self._callback_features = get_methods_from_feature_classes(
-            "_callback_execution"
-        )
-        finalize_methods = get_methods_from_feature_classes("_finalize")
+        # This generates more straight-forward error.
+        assert self._finalize_flag is not True, "The finalize cannot be called twice."
 
         # construct memory block
         self._memory_blocks = construct_memory_block_structures(self._systems)
 
-        for finalize in finalize_methods:
-            finalize(self)
+        # Recurrent call finalize functions for all components.
+        for finalize in self._feature_group_finalize:
+            finalize()
 
-    def synchronize(self, time):
-        # Calls all , connections, controls etc.
-        for feature in self._features:
-            feature(self, time)
+        # Clear the finalize feature group, just for the safety.
+        self._feature_group_finalize.clear()
+        self._feature_group_finalize = None
 
-    def constrain_values(self, time):
-        # Calls all constraints, connections, controls etc.
-        for feature in self._features_that_constrain_values:
-            feature(self, time)
+        # Toggle the finalize_flag
+        self._finalize_flag = True
 
-    def constrain_rates(self, time):
-        # Calls all constraints, connections, controls etc.
-        for feature in self._features_that_constrain_rates:
-            feature(self, time)
+    def synchronize(self, time: float):
+        # Collection call _featuer_group_synchronize
+        for feature in self._feature_group_synchronize:
+            feature(time)
 
-    def apply_callbacks(self, time, current_step: int):
-        # Calls call back functions at the end of time-step
-        for feature in self._callback_features:
-            feature(self, time, current_step)
+    def constrain_values(self, time: float):
+        # Collection call _feature_group_constrain_values
+        for feature in self._feature_group_constrain_values:
+            feature(time)
+
+    def constrain_rates(self, time: float):
+        # Collection call _feature_group_constrain_rates
+        for feature in self._feature_group_constrain_rates:
+            feature(time)
+
+    def apply_callbacks(self, time: float, current_step: int):
+        # Collection call _feature_group_callback
+        for feature in self._feature_group_callback:
+            feature(time, current_step)

@@ -163,7 +163,7 @@ class TestCallBacksMixin:
     def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
 
-        scwc._finalize()
+        scwc._finalize_callback()
 
         for (x, y) in scwc._callback_list:
             assert type(x) is int
@@ -173,7 +173,7 @@ class TestCallBacksMixin:
     def test_callback_finalize_sorted(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
 
-        scwc._finalize()
+        scwc._finalize_callback()
 
         # this is allowed to fail (not critical)
         num = -np.inf
