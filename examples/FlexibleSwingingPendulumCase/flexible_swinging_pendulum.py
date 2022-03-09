@@ -54,7 +54,7 @@ pendulum_rod = CosseratRod.straight_rod(
     density,
     nu,
     youngs_modulus,
-    poisson_ratio,
+    shear_modulus=youngs_modulus / (poisson_ratio + 1.0),
 )
 
 pendulum_sim.append(pendulum_rod)
@@ -66,8 +66,10 @@ class HingeBC(ConstraintBase):
     the end of the rod fixed x[0]
     """
 
-    def __init__(self, fixed_position, fixed_directors):
-        ConstraintBase.__init__(self, fixed_position, fixed_directors)
+    def __init__(self, fixed_position, fixed_directors, **kwargs):
+        super().__init__(**kwargs)
+        self.fixed_position = np.array(fixed_position)
+        self.fixed_directors = np.array(fixed_directors)
 
     def constrain_values(self, rod, time):
         rod.position_collection[..., 0] = self.fixed_position
