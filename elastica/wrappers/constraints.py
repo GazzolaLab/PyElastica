@@ -24,6 +24,9 @@ class Constraints:
     def __init__(self):
         self._constraints = []
         super(Constraints, self).__init__()
+        self._feature_group_constrain_values.append(self._constrain_values)
+        self._feature_group_constrain_rates.append(self._constrain_rates)
+        self._feature_group_finalize.append(self._finalize_constraints)
 
     def constrain(self, system):
         """
@@ -48,7 +51,7 @@ class Constraints:
 
         return _constraint
 
-    def _finalize(self):
+    def _finalize_constraints(self):
         # From stored _Constraint objects, instantiate the boundary conditions
         # inplace : https://stackoverflow.com/a/1208792
 

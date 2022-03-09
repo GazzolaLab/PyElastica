@@ -24,6 +24,8 @@ class Connections:
     def __init__(self):
         self._connections = []
         super(Connections, self).__init__()
+        self._feature_group_synchronize.append(self._call_connections)
+        self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
         self, first_rod, second_rod, first_connect_idx=None, second_connect_idx=None
@@ -64,7 +66,7 @@ class Connections:
 
         return _connector
 
-    def _finalize(self):
+    def _finalize_connections(self):
         # From stored _Connect objects, instantiate the joints and store it
 
         # dev : the first indices stores the
@@ -80,7 +82,7 @@ class Connections:
         # This is to optimize the call tree for better memory accesses
         # https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/
 
-    def __call__(self, *args, **kwargs):
+    def _call_connections(self, *args, **kwargs):
         for (
             first_sys_idx,
             second_sys_idx,
