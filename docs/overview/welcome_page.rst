@@ -6,10 +6,10 @@ About
 
 For more information on Elastica and Cosserat rods, see the project website https://cosseratrods.org
 
-Elastic is developed and maintained by the Gazzola Lab at the University of Illinois at Urbana-Champaign. For more information on the projects we work on, see https://mattia-lab.com. 
+Elastica is developed and maintained by the Gazzola Lab at the University of Illinois at Urbana-Champaign. For more information on the projects we work on, see https://mattia-lab.com. 
 
-Funding for the development of Elastica has been provided by: 
+Funding for the development of Elastica has been provided by:  
 
-.. image:: logos_updated.png
+.. image:: ../logos_updated.png
     :align: center
     :alt: alternate text

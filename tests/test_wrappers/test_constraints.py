@@ -18,12 +18,13 @@ class TestConstraint:
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_constraint.using(illegal_constraint)
-        assert "not a valid boundary condition" in str(excinfo.value)
+        assert "not a valid constraint" in str(excinfo.value)
 
-    from elastica.boundary_conditions import FreeRod, OneEndFixedRod, HelicalBucklingBC
+    from elastica.boundary_conditions import FreeBC, OneEndFixedBC, HelicalBucklingBC
+    from elastica.boundary_conditions import FreeBC as TestBC
 
     @pytest.mark.parametrize(
-        "legal_constraint", [FreeRod, OneEndFixedRod, HelicalBucklingBC]
+        "legal_constraint", [FreeBC, OneEndFixedBC, HelicalBucklingBC]
     )
     def test_using_with_legal_constraint(self, load_constraint, legal_constraint):
         constraint = load_constraint
@@ -53,7 +54,7 @@ class TestConstraint:
             self.k = kwargs.get("k")
 
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         constraint = load_constraint
         constraint.using(MockBC, 3.9, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -77,7 +78,7 @@ class TestConstraint:
             self.k = kwargs.get("k")
 
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         constraint = load_constraint
         constraint.using(
@@ -109,7 +110,7 @@ class TestConstraint:
             self.k = kwargs.get("k")
 
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         constraint = load_constraint
         constraint.using(
@@ -143,7 +144,7 @@ class TestConstraint:
             self.k = kwargs.get("k")
 
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         constraint = load_constraint
         constraint.using(
@@ -185,7 +186,7 @@ class TestConstraint:
             self.k = kwargs.get("k")
 
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         constraint = load_constraint
         constraint.using(
@@ -283,7 +284,7 @@ class TestConstraintsMixin:
         assert _mock_constraint in scwc._constraints
         assert _mock_constraint.__class__ == _Constraint
 
-    from elastica.boundary_conditions import FreeRod
+    from elastica.boundary_conditions import ConstraintBase
 
     @pytest.fixture
     def load_rod_with_constraints(self, load_system_with_constraints):
@@ -292,11 +293,18 @@ class TestConstraintsMixin:
         mock_rod = self.MockRod(2, 3, 4, 5)
         scwc.append(mock_rod)
 
-        def mock_init(self, *args, **kwargs):
-            pass
-
         # in place class
-        MockBC = type("MockBC", (self.FreeRod, object), {"__init__": mock_init})
+        class MockBC(self.ConstraintBase):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
+            def constrain_values(self, *args, **kwargs) -> None:
+                pass
+
+            def constrain_rates(self, *args, **kwargs) -> None:
+                pass
+
+        # MockBC = type("MockBC", (self.TestBC, object), {"__init__": mock_init})
 
         # Constrain any and all systems
         scwc.constrain(1).using(MockBC, 2, 42)  # index based constraint
@@ -308,17 +316,33 @@ class TestConstraintsMixin:
     def test_constrain_finalize_correctness(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
 
-        scwc._finalize()
+        scwc._finalize_constraints()
 
         for (x, y) in scwc._constraints:
             assert type(x) is int
             assert type(y) is bc_cls
 
+    def test_constraint_properties(self, load_rod_with_constraints):
+        scwc, _ = load_rod_with_constraints
+        scwc._finalize_constraints()
+
+        for i in [0, 1, -1]:
+            x, y = scwc._constraints[i]
+            mock_rod = scwc._systems[i]
+            # Test system
+            assert type(x) is int
+            assert type(y.system) is type(mock_rod)
+            assert y.system is mock_rod, f"{len(scwc._systems)}"
+            # Test node indices
+            assert y.constrained_position_idx.size == 0
+            # Test element indices. TODO: maybe add more generalized test
+            assert y.constrained_director_idx.size == 0
+
     @pytest.mark.xfail
     def test_constrain_finalize_sorted(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
 
-        scwc._finalize()
+        scwc._finalize_constraints()
 
         # this is allowed to fail (not critical)
         num = -np.inf

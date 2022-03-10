@@ -23,6 +23,8 @@ class Forcing:
     def __init__(self):
         self._ext_forces_torques = []
         super(Forcing, self).__init__()
+        self._feature_group_synchronize.append(self._call_ext_forces_torques)
+        self._feature_group_finalize.append(self._finalize_forcing)
 
     def add_forcing_to(self, system):
         """
@@ -47,7 +49,7 @@ class Forcing:
 
         return _ext_force_torque
 
-    def _finalize(self):
+    def _finalize_forcing(self):
         # From stored _ExtForceTorque objects, and instantiate a Force
         # inplace : https://stackoverflow.com/a/1208792
 
@@ -78,7 +80,7 @@ class Forcing:
         for index in friction_plane_index:
             self._ext_forces_torques.append(self._ext_forces_torques.pop(index))
 
-    def __call__(self, time, *args, **kwargs):
+    def _call_ext_forces_torques(self, time, *args, **kwargs):
         for sys_id, ext_force_torque in self._ext_forces_torques:
             ext_force_torque.apply_forces(self._systems[sys_id], time, *args, **kwargs)
             ext_force_torque.apply_torques(self._systems[sys_id], time, *args, **kwargs)
