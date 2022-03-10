@@ -40,16 +40,17 @@ class BaseSystemCollection(MutableSequence):
     https://stackoverflow.com/q/3945940
     """
 
-    # Collection of functions. Each group is executed as a collection at the different steps.
-    # Each component (Forcing, Connection, etc.) registers the executable (callable) function
-    # in the group that that needs to be executed.
-    _feature_group_synchronize: Iterable[Callable[[float], None]] = []
-    _feature_group_constrain_values: Iterable[Callable[[float], None]] = []
-    _feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
-    _feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = []
-    _feature_group_finalize: Iterable[Callable] = []
-
     def __init__(self):
+        # Collection of functions. Each group is executed as a collection at the different steps.
+        # Each component (Forcing, Connection, etc.) registers the executable (callable) function
+        # in the group that that needs to be executed. These should be initialized before mixin.
+        self._feature_group_synchronize: Iterable[Callable[[float], None]] = []
+        self._feature_group_constrain_values: Iterable[Callable[[float], None]] = []
+        self._feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
+        self._feature_group_callback: Iterable[
+            Callable[[float, int, AnyStr], None]
+        ] = []
+        self._feature_group_finalize: Iterable[Callable] = []
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
