@@ -78,7 +78,12 @@ master_doc = 'index'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_book_theme'
+html_theme_option = {
+    "repository_url": "https://github.com/SophT-Team/SophT/docs",
+    "use_repository_button": True,
+}
+html_title = "PyElastica"
 html_logo = "https://github.com/GazzolaLab/PyElastica/blob/assets/docs/assets/Logo.png?raw=true"
 #pygments_style = "sphinx"
 
