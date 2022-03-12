@@ -41,6 +41,12 @@ Examples
 .. note::
    PyElastica package provides basic built-in constraints, and we expect use to adapt their own boundary condition from our examples.
 
+Customizing boundary condition examples:
+
+- `Flexible Swinging Pendulum <https://github.com/GazzolaLab/PyElastica/tree/master/examples/FlexibleSwingingPendulumCase>`_
+- `Plectonemes <https://github.com/GazzolaLab/PyElastica/tree/master/examples/RodContactCase/RodSelfContact/PlectonemesCase>`_
+- `Solenoids <https://github.com/GazzolaLab/PyElastica/tree/master/examples/RodContactCase/RodSelfContact/SolenoidsCase>`_
+
 
 Built-in Constraints
 --------------------

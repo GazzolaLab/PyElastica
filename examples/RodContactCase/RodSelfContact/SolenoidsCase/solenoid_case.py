@@ -83,8 +83,9 @@ class SelonoidsBC(ConstraintBase):
         twisting_time,
         time_twis_start,
         number_of_rotations,
+        **kwargs
     ):
-        super.__init__()
+        super().__init__(**kwargs)
         self.twisting_time = twisting_time
         self.time_twis_start = time_twis_start
 

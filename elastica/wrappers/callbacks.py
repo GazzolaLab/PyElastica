@@ -23,6 +23,8 @@ class CallBacks:
     def __init__(self):
         self._callback_list = []
         super(CallBacks, self).__init__()
+        self._feature_group_callback.append(self._callback_execution)
+        self._feature_group_finalize.append(self._finalize_callback)
 
     def collect_diagnostics(self, system):
         """
@@ -47,7 +49,7 @@ class CallBacks:
 
         return _callbacks
 
-    def _finalize(self):
+    def _finalize_callback(self):
         # From stored _CallBack objects, instantiate the boundary conditions
         # inplace : https://stackoverflow.com/a/1208792
 

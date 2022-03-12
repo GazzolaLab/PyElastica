@@ -17,6 +17,8 @@ import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../'))
 
+from elastica.version import VERSION
+
 
 # -- Project information -----------------------------------------------------
 
@@ -25,7 +27,7 @@ copyright = '2022, Gazzola Lab'
 author = 'Gazzola Lab'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.1'
+release = VERSION
 
 
 # -- General configuration ---------------------------------------------------
