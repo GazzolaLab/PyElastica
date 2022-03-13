@@ -3,6 +3,7 @@ This script is for computing the link-writhe-twist of a rod using the method 1a 
 
 Following codes are adapted from section S2 of Charles et. al. PRL 2019 paper.
 """
+__all__ = ["KnotTheoryCompatibleProtocol", "KnotTheory", "compute_twist", "compute_link", "compute_writhe"]
 
 import sys
 
