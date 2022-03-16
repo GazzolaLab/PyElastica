@@ -1,9 +1,15 @@
 __docs__ = """
-This script is for computing the link-writhe-twist of a rod using the method 1a from Klenin & Langowski 2000 paper.
+This script is for computing the link-writhe-twist of a rod using the method from Klenin & Langowski 2000 paper.
 
 Following codes are adapted from section S2 of Charles et. al. PRL 2019 paper.
 """
-__all__ = ["KnotTheoryCompatibleProtocol", "KnotTheory", "compute_twist", "compute_link", "compute_writhe"]
+__all__ = [
+    "KnotTheoryCompatibleProtocol",
+    "KnotTheory",
+    "compute_twist",
+    "compute_link",
+    "compute_writhe",
+]
 
 import sys
 
@@ -24,6 +30,11 @@ from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
 
 
 class KnotTheoryCompatibleProtocol(Protocol):
+    """KnotTheoryCompatibleProtocol
+
+    Required properties to use KnotTheory mixin
+    """
+
     @property
     def position_collection(self) -> np.ndarray:
         ...
@@ -46,6 +57,7 @@ class KnotTheory:
     MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
 
     def compute_twist(self: MIXIN_PROTOCOL):
+        """compute_twist"""
         total_twist, local_twist = compute_twist(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
@@ -55,6 +67,14 @@ class KnotTheory:
     def compute_writhe(
         self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
     ):
+        """compute_writhe
+
+        Parameters
+        ----------
+        type_of_additional_segment : str
+            Determines the method to compute new segments (elements) added to the rod.
+            Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+        """
         return compute_writhe(
             self.position_collection[None, ...],
             self.rest_lengths.sum(),
@@ -64,6 +84,14 @@ class KnotTheory:
     def compute_link(
         self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
     ):
+        """compute_link
+
+        Parameters
+        ----------
+        type_of_additional_segment : str
+            Determines the method to compute new segments (elements) added to the rod.
+            Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+        """
         return compute_link(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
@@ -88,7 +116,7 @@ def compute_twist(center_line, normal_collection):
         Time history of rod elements normal direction.
 
     Warnings
-    -------
+    --------
     If center line is straight, although the normals of each element is pointing different direction computed twist
     will be zero.
 
