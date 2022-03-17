@@ -67,3 +67,8 @@ Examples can serve as a starting template for customized usages.
 
 * [Elastica RL control](https://github.com/GazzolaLab/Elastica-RL-control) - Case presented in [<strong>Elastica: A compliant mechanics environment for soft robotic control</strong>](https://doi.org/10.1109/LRA.2021.3063698)
 * [Gym Softrobot](https://github.com/skim0119/gym-softrobot) - Soft-robot control environment developed in OpenAI-gym format to study slender body control with reinforcement learning.
+
+## Experimental Cases
+* [ParallelConnectionExample](./ExperimentalCases/ParallelConnectionExample)
+  * __Purpose__: Demonstrate the usage of parallel connection.
+  * __Features__: connect two parallel rods
