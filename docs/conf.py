@@ -81,7 +81,7 @@ master_doc = 'index'
 # a list of builtin themes.
 
 html_theme = 'sphinx_book_theme'
-html_theme_option = {
+html_theme_options = {
     "repository_url": "https://github.com/GazzolaLab/PyElastica",
     "use_repository_button": True,
 }
