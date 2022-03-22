@@ -53,11 +53,28 @@ class KnotTheoryCompatibleProtocol(Protocol):
 
 
 class KnotTheory:
-    # This mixin should be used in RodBase-derived class that satisfies KnotCompatibleProtocol
+    """
+    This mixin should be used in RodBase-derived class that satisfies KnotCompatibleProtocol.
+    The theory behind this module is based on  the method from Klenin & Langowski 2000 paper.
+
+    KnotTheory can be mixed with any rod-class based on RodBase::
+
+        class MyRod(RodBase, KnotTheory):
+            def __init__(self):
+                super().__init__()
+        rod = MyRod(...)
+
+        total_twist = rod.compute_twist()
+        total_link = rod.compute_link()
+
+    """
+
     MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
 
     def compute_twist(self: MIXIN_PROTOCOL):
-        """compute_twist"""
+        """
+        See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
+        """
         total_twist, local_twist = compute_twist(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
@@ -67,7 +84,8 @@ class KnotTheory:
     def compute_writhe(
         self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
     ):
-        """compute_writhe
+        """
+        See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
         Parameters
         ----------
@@ -84,7 +102,8 @@ class KnotTheory:
     def compute_link(
         self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
     ):
-        """compute_link
+        """
+        See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
         Parameters
         ----------
@@ -106,6 +125,11 @@ def compute_twist(center_line, normal_collection):
     Compute the twist of a rod, using center_line and normal collection. Methods used in this function is
     adapted from method 2a Klenin & Langowski 2000 paper.
 
+    Warnings
+    --------
+    If center line is straight, although the normals of each element is pointing different direction computed twist
+    will be zero.
+
     Parameters
     ----------
     center_line : numpy.ndarray
@@ -115,13 +139,10 @@ def compute_twist(center_line, normal_collection):
         3D (time, 3, n_elems) array containing data with 'float' type.
         Time history of rod elements normal direction.
 
-    Warnings
-    --------
-    If center line is straight, although the normals of each element is pointing different direction computed twist
-    will be zero.
-
     Returns
     -------
+    total_twist : numpy.ndarray
+    local_twist : numpy.ndarray
 
     """
 
@@ -133,9 +154,6 @@ def compute_twist(center_line, normal_collection):
 @njit(cache=True)
 def _compute_twist(center_line, normal_collection):
     """
-    Compute the twist of a rod, using center_line and normal collection. Methods used in this function is
-    adapted from method 2a Klenin & Langowski 2000 paper.
-
     Parameters
     ----------
     center_line : numpy.ndarray
@@ -147,7 +165,8 @@ def _compute_twist(center_line, normal_collection):
 
     Returns
     -------
-
+    total_twist : numpy.ndarray
+    local_twist : numpy.ndarray
     """
 
     timesize, _, blocksize = center_line.shape
@@ -211,6 +230,7 @@ def _compute_twist(center_line, normal_collection):
 def compute_writhe(center_line, segment_length, type_of_additional_segment):
     """
     This function computes the total writhe history of a rod.
+    Equations used are from method 1a from Klenin & Langowski 2000 paper.
 
     Parameters
     ----------
@@ -225,7 +245,7 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
 
     Returns
     -------
-    total_writhe
+    total_writhe : numpy.ndarray
 
     """
 
@@ -244,9 +264,6 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
 @njit(cache=True)
 def _compute_writhe(center_line):
     """
-    This function computes the total writhe history of a rod.
-    Equations used are from method 1a from Klenin & Langowski 2000 paper.
-
     Parameters
     ----------
     center_line : numpy.ndarray
@@ -255,7 +272,7 @@ def _compute_writhe(center_line):
 
     Returns
     -------
-
+    total_writhe : numpy.ndarray
     """
 
     time, _, blocksize = center_line.shape
@@ -324,7 +341,8 @@ def compute_link(
     type_of_additional_segment: str,
 ):
     """
-    Compute the link of a rod.
+    This function computes the total link history of a rod.
+    Equations used are from method 1a from Klenin & Langowski 2000 paper.
 
     Parameters
     ----------
@@ -342,6 +360,11 @@ def compute_link(
     type_of_additional_segment : str
         Determines the method to compute new segments (elements) added to the rod.
         Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+
+    Returns
+    -------
+    total_link : numpy.ndarray
+
     """
 
     # Compute auxiliary line
@@ -388,6 +411,7 @@ def _compute_auxiliary_line(center_line, normal_collection, radius):
 
     Returns
     -------
+    auxillary_line : numpy.ndarray
 
     """
     time, _, blocksize = center_line.shape
@@ -426,8 +450,6 @@ def _compute_auxiliary_line(center_line, normal_collection, radius):
 @njit(cache=True)
 def _compute_link(center_line, auxiliary_line):
     """
-    This function computes the total link history of a rod.
-    Equations used are from method 1a from Klenin & Langowski 2000 paper.
 
     Parameters
     ----------
@@ -440,6 +462,7 @@ def _compute_link(center_line, auxiliary_line):
 
     Returns
     -------
+    total_link : numpy.ndarray
 
     """
     timesize, _, blocksize_center_line = center_line.shape
@@ -525,6 +548,7 @@ def _compute_auxiliary_line_added_segments(
 
     Returns
     -------
+    new_auxiliary_line : numpy.ndarray
 
     """
     timesize, _, blocksize = auxiliary_line.shape
@@ -563,6 +587,9 @@ def compute_additional_segment(center_line, segment_length, type_of_additional_s
 
     Returns
     -------
+    center_line : numpy.ndarray
+    beginning_direction : numpy.ndarray
+    end_direction : numpy.ndarray
 
     """
 
@@ -608,6 +635,9 @@ def _compute_additional_segment_using_next_tangent(center_line, segment_length):
 
     Returns
     -------
+    center_line : numpy.ndarray
+    beginning_direction : numpy.ndarray
+    end_direction : numpy.ndarray
 
     """
 
@@ -655,6 +685,9 @@ def _compute_additional_segment_using_end_to_end(center_line, segment_length):
 
     Returns
     -------
+    center_line : numpy.ndarray
+    beginning_direction : numpy.ndarray
+    end_direction : numpy.ndarray
 
     """
     timesize, _, blocksize = center_line.shape
@@ -702,6 +735,9 @@ def _compute_additional_segment_using_net_tangent(center_line, segment_length):
 
     Returns
     -------
+    center_line : numpy.ndarray
+    beginning_direction : numpy.ndarray
+    end_direction : numpy.ndarray
 
     """
     timesize, _, blocksize = center_line.shape
