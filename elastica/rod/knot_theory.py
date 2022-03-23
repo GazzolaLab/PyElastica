@@ -166,6 +166,15 @@ def compute_twist(center_line, normal_collection):
     local_twist : numpy.ndarray
 
     """
+    # fmt: off
+    # Format is turned off because I want the assertion message to display the line.
+    assert center_line.shape[2] == normal_collection.shape[2] + 1, \
+            "Please check the shape (axis-2) of center_line(n_node=n_elems+1) or normal_collection(n_elems)."
+    assert center_line.shape[0] == normal_collection.shape[0], \
+            "The number of timesteps (axis-0) must be equal"
+    assert center_line.shape[1] == normal_collection.shape[1] == 3, \
+            "The dimension (axis-1) must be 3"
+    # fmt: on
 
     total_twist, local_twist = _compute_twist(center_line, normal_collection)
 
@@ -269,14 +278,22 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
     total_writhe : numpy.ndarray
 
     """
+    # fmt: off
+    # Format is turned off because I want the assertion message to display the line.
+    assert type(segment_length) is float, \
+            "segment_length is not a float. (not numpy.float)"
+    assert center_line.shape[2] == normal_collection.shape[2] + 1, \
+            "Please check the shape (axis-2) of center_line(n_node=n_elems+1) or normal_collection(n_elems)."
+    assert center_line.shape[0] == normal_collection.shape[0], \
+            "The number of timesteps (axis-0) must be equal"
+    assert center_line.shape[1] == normal_collection.shape[1] == 3, \
+            "The dimension (axis-1) must be 3"
+    # fmt: on
 
     center_line_with_added_segments, _, _ = _compute_additional_segment(
         center_line, segment_length, type_of_additional_segment
     )
 
-    """
-    Total writhe of a rod is computed using the method 1a from Klenin & Langowski 2000
-    """
     total_writhe = _compute_writhe(center_line_with_added_segments)
 
     return total_writhe
@@ -387,6 +404,17 @@ def compute_link(
     total_link : numpy.ndarray
 
     """
+    # fmt: off
+    # Format is turned off because I want the assertion message to display the line.
+    assert type(segment_length) is float, \
+            "segment_length is not a float. (not numpy.float)"
+    assert center_line.shape[2] == normal_collection.shape[2] + 1 == radius.shape[2] + 1, \
+            "Please check the shape (axis-2) of center_line(n_node=n_elems+1) or normal_collection(n_elems)."
+    assert center_line.shape[0] == normal_collection.shape[0] == radius.shape[0], \
+            "The number of timesteps (axis-0) must be equal"
+    assert center_line.shape[1] == normal_collection.shape[1] == 3, \
+            "The dimension (axis-1) for center_line and normal_collection must be 3"
+    # fmt: on
 
     # Compute auxiliary line
     auxiliary_line = _compute_auxiliary_line(center_line, normal_collection, radius)
