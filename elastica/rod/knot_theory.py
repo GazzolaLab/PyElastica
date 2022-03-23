@@ -282,11 +282,7 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
     # Format is turned off because I want the assertion message to display the line.
     assert type(segment_length) is float, \
             "segment_length is not a float. (not numpy.float)"
-    assert center_line.shape[2] == normal_collection.shape[2] + 1, \
-            "Please check the shape (axis-2) of center_line(n_node=n_elems+1) or normal_collection(n_elems)."
-    assert center_line.shape[0] == normal_collection.shape[0], \
-            "The number of timesteps (axis-0) must be equal"
-    assert center_line.shape[1] == normal_collection.shape[1] == 3, \
+    assert center_line.shape[1] == 3, \
             "The dimension (axis-1) must be 3"
     # fmt: on
 
@@ -406,9 +402,9 @@ def compute_link(
     """
     # fmt: off
     # Format is turned off because I want the assertion message to display the line.
-    assert type(segment_length) is float, \
-            "segment_length is not a float. (not numpy.float)"
-    assert center_line.shape[2] == normal_collection.shape[2] + 1 == radius.shape[2] + 1, \
+    #assert type(segment_length) is float, \
+    #        "segment_length is not a float. (not numpy.float)"
+    assert center_line.shape[2] == normal_collection.shape[2] + 1 == radius.shape[1] + 1, \
             "Please check the shape (axis-2) of center_line(n_node=n_elems+1) or normal_collection(n_elems)."
     assert center_line.shape[0] == normal_collection.shape[0] == radius.shape[0], \
             "The number of timesteps (axis-0) must be equal"

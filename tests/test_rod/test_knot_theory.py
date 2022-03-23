@@ -16,6 +16,9 @@ from test_rods import MockTestRod
 from elastica.rod.rod_base import RodBase
 from elastica.rod.knot_theory import (
     KnotTheoryCompatibleProtocol,
+    compute_twist,
+    compute_writhe,
+    compute_link,
     _compute_additional_segment,
 )
 
@@ -65,6 +68,62 @@ def test_knot_theory_mixin_methods_with_no_radius(knot_theory):
         rod.compute_writhe()
     with pytest.raises(AttributeError) as e_info:
         rod.compute_link()
+
+
+def test_compute_twist_arithmetic():
+    # fmt: off
+    center_line = np.array(
+        [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0]],
+        dtype=np.float64).T[None, ...]
+    normal_collection = np.array(
+        [[1, 0, 0], [0, 1, 1], [1, 1, 0], [0,1,0]],
+        dtype=np.float64).T[None, ...]
+    # fmt: on
+    a, b = compute_twist(center_line, normal_collection)
+    assert np.isclose(a[0], 0.75)
+    assert_allclose(b[0], np.array([0.25, 0.125, 0.375]))
+
+
+@pytest.mark.parametrize(
+    "type_str, sol",
+    [
+        ("next_tangent", -0.477268070084),
+        ("end_to_end", -0.37304522216388),
+        ("net_tangent", -0.26423311709925),
+    ],
+)
+def test_compute_writhe_arithmetic(type_str, sol):
+    # fmt: off
+    center_line = np.array(
+        [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0]],
+        dtype=np.float64).T[None, ...]
+    segment_length = 10.0
+    # fmt: on
+    a = compute_writhe(center_line, segment_length, type_str)
+    assert np.isclose(a[0], sol)
+
+
+@pytest.mark.parametrize(
+    "type_str, sol",
+    [
+        ("next_tangent", -0.703465518706),
+        ("end_to_end", -0.4950786438825),
+        ("net_tangent", -0.321184858244),
+    ],
+)
+def test_compute_link_arithmetic(type_str, sol):
+    # fmt: off
+    center_line = np.array(
+        [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0]],
+        dtype=np.float64).T[None, ...]
+    normal_collection = np.array(
+        [[1, 0, 0], [0, 1, 1], [1, 1, 0], [0,1,0]], dtype=np.float64
+    ).T[None, ...]
+    radius = np.array([1, 2, 4, 2], dtype=np.float64)[None,...]
+    segment_length = 10.0
+    # fmt: on
+    a = compute_link(center_line, normal_collection, radius, segment_length, type_str)
+    assert np.isclose(a[0], sol)
 
 
 @pytest.mark.parametrize("type_str", ["randomstr1", "nextnext_tangent", " "])
