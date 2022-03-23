@@ -67,6 +67,27 @@ class KnotTheory:
         total_twist = rod.compute_twist()
         total_link = rod.compute_link()
 
+    There are few alternative way of handling edge-condition in computing Link and Writhe.
+    Here, we provide three methods: "next_tangent", "end_to_end", and "net_tangent".
+    The default *type_of_additional_segment* is set to "next_tangent."
+
+    ========================== =====================================
+    type_of_additional_segment Description
+    ========================== =====================================
+    next_tangent               | Adds a two new point at the begining and end of the center line.
+                               | Distance of these points are given in segment_length.
+                               | Direction of these points are computed using the rod tangents at
+                               | the begining and end.
+    end_to_end                 | Adds a two new point at the begining and end of the center line.
+                               | Distance of these points are given in segment_length.
+                               | Direction of these points are computed using the rod node end
+                               | positions.
+    net_tangent                | Adds a two new point at the begining and end of the center line.
+                               | Distance of these points are given in segment_length. Direction of
+                               | these points are point wise avarege of nodes at the first and
+                               | second half of the rod.
+    ========================== =====================================
+
     """
 
     MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
@@ -249,7 +270,7 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
 
     """
 
-    center_line_with_added_segments, _, _ = compute_additional_segment(
+    center_line_with_added_segments, _, _ = _compute_additional_segment(
         center_line, segment_length, type_of_additional_segment
     )
 
@@ -375,7 +396,7 @@ def compute_link(
         center_line_with_added_segments,
         beginning_direction,
         end_direction,
-    ) = compute_additional_segment(
+    ) = _compute_additional_segment(
         center_line, segment_length, type_of_additional_segment
     )
     auxiliary_line_with_added_segments = _compute_auxiliary_line_added_segments(
@@ -568,11 +589,25 @@ def _compute_auxiliary_line_added_segments(
     return new_auxiliary_line
 
 
-def compute_additional_segment(center_line, segment_length, type_of_additional_segment):
+@njit(cache=True)
+def _compute_additional_segment(
+    center_line, segment_length, type_of_additional_segment
+):
     """
     This function adds two points at the end of center line. Distance from the center line is given by segment_length.
     Direction from center line to the new point locations can be computed using 3 methods, which can be selected by
     type. For more details section S2 of Charles et. al. PRL 2019 paper.
+
+    next_tangent:
+        This function adds a two new point at the begining and end of the center line. Distance of these points are
+        given in segment_length. Direction of these points are computed using the rod tangents at the begining and end.
+    end_to_end:
+        This function adds a two new point at the begining and end of the center line. Distance of these points are
+        given in segment_length. Direction of these points are computed using the rod node end positions.
+    net_tangent:
+        This function adds a two new point at the begining and end of the center line. Distance of these points are
+        given in segment_length. Direction of these points are point wise avarege of nodes at the first and second half
+        of the rod.
 
     Parameters
     ----------
@@ -583,7 +618,7 @@ def compute_additional_segment(center_line, segment_length, type_of_additional_s
         Length of added segments.
     type_of_additional_segment : str
         Determines the method to compute new segments (elements) added to the rod.
-        Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise it returns the center line.
+        Valid inputs are "next_tangent", "end_to_end", "net_tangent". If None, returns the center line.
 
     Returns
     -------
@@ -592,54 +627,10 @@ def compute_additional_segment(center_line, segment_length, type_of_additional_s
     end_direction : numpy.ndarray
 
     """
-
-    if type_of_additional_segment == "next_tangent":
-        (
-            center_line,
-            beginning_direction,
-            end_direction,
-        ) = _compute_additional_segment_using_next_tangent(center_line, segment_length)
-    elif type_of_additional_segment == "end_to_end":
-        (
-            center_line,
-            beginning_direction,
-            end_direction,
-        ) = _compute_additional_segment_using_end_to_end(center_line, segment_length)
-    elif type_of_additional_segment == "net_tangent":
-        (
-            center_line,
-            beginning_direction,
-            end_direction,
-        ) = _compute_additional_segment_using_net_tangent(center_line, segment_length)
-    else:
-        print("Additional segments are not used")
+    if type_of_additional_segment is None:
         beginning_direction = np.zeros((center_line.shape[0], 3))
         end_direction = np.zeros((center_line.shape[0], 3))
-
-    return center_line, beginning_direction, end_direction
-
-
-@njit(cache=True)
-def _compute_additional_segment_using_next_tangent(center_line, segment_length):
-    """
-    This function adds a two new point at the begining and end of the center line. Distance of these points are
-    given in segment_length. Direction of these points are computed using the rod tangents at the begining and end.
-
-    Parameters
-    ----------
-    center_line : numpy.ndarray
-        3D (time, 3, n_nodes) array containing data with 'float' type.
-        Time history of rod node positions.
-    segment_length : float
-        Length of added segments.
-
-    Returns
-    -------
-    center_line : numpy.ndarray
-    beginning_direction : numpy.ndarray
-    end_direction : numpy.ndarray
-
-    """
+        return center_line, beginning_direction, end_direction
 
     timesize, _, blocksize = center_line.shape
     new_center_line = np.zeros(
@@ -648,121 +639,42 @@ def _compute_additional_segment_using_next_tangent(center_line, segment_length):
     beginning_direction = np.zeros((timesize, 3))
     end_direction = np.zeros((timesize, 3))
 
+    if type_of_additional_segment == "next_tangent":
+        for i in range(timesize):
+            # Direction of the additional point at the beginning of the rod
+            direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, 1]
+            direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
+
+            # Direction of the additional point at the end of the rod
+            direction_of_rod_end = center_line[i, :, -1] - center_line[i, :, -2]
+            direction_of_rod_end /= np.linalg.norm(direction_of_rod_end)
+    elif type_of_additional_segment == "end_to_end":
+        for i in range(timesize):
+            # Direction of the additional point at the beginning of the rod
+            direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, -1]
+            direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
+
+            # Direction of the additional point at the end of the rod
+            direction_of_rod_end = -direction_of_rod_begin
+    elif type_of_additional_segment == "net_tangent":
+        for i in range(timesize):
+            # Direction of the additional point at the beginning of the rod
+            n_nodes_begin = int(np.floor(blocksize / 2))
+            average_begin = (
+                np.sum(center_line[i, :, :n_nodes_begin], axis=1) / n_nodes_begin
+            )
+            n_nodes_end = int(np.ceil(blocksize / 2))
+            average_end = np.sum(center_line[i, :, n_nodes_end:], axis=1) / (
+                blocksize - n_nodes_end + 1
+            )
+            direction_of_rod_begin = average_begin - average_end
+            direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
+            direction_of_rod_end = -direction_of_rod_begin
+    else:
+        raise NotImplementedError("unavailable type_of_additional_segment is given")
+
+    # Compute new centerline and beginning/end direction
     for i in range(timesize):
-        # Direction of the additional point at the beginning of the rod
-        direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, 1]
-        direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
-
-        # Direction of the additional point at the end of the rod
-        direction_of_rod_end = center_line[i, :, -1] - center_line[i, :, -2]
-        direction_of_rod_end /= np.linalg.norm(direction_of_rod_end)
-
-        first_point = center_line[i, :, 0] + segment_length * direction_of_rod_begin
-        last_point = center_line[i, :, -1] + segment_length * direction_of_rod_end
-
-        new_center_line[i, :, 1:-1] = center_line[i, :, :]
-        new_center_line[i, :, 0] = first_point
-        new_center_line[i, :, -1] = last_point
-        beginning_direction[i, :] = direction_of_rod_begin
-        end_direction[i, :] = direction_of_rod_end
-
-    return new_center_line, beginning_direction, end_direction
-
-
-@njit(cache=True)
-def _compute_additional_segment_using_end_to_end(center_line, segment_length):
-    """
-    This function adds a two new point at the begining and end of the center line. Distance of these points are
-    given in segment_length. Direction of these points are computed using the rod node end positions.
-
-    Parameters
-    ----------
-    center_line : numpy.ndarray
-        3D (time, 3, n_nodes) array containing data with 'float' type.
-        Time history of rod node positions.
-    segment_length : float
-        Length of added segments.
-
-    Returns
-    -------
-    center_line : numpy.ndarray
-    beginning_direction : numpy.ndarray
-    end_direction : numpy.ndarray
-
-    """
-    timesize, _, blocksize = center_line.shape
-    new_center_line = np.zeros(
-        (timesize, 3, blocksize + 2)
-    )  # +2 is for added two new points
-    beginning_direction = np.zeros((timesize, 3))
-    end_direction = np.zeros((timesize, 3))
-
-    for i in range(timesize):
-        # Direction of the additional point at the beginning of the rod
-        direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, -1]
-        direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
-
-        # Direction of the additional point at the end of the rod
-        direction_of_rod_end = -direction_of_rod_begin
-
-        first_point = center_line[i, :, 0] + segment_length * direction_of_rod_begin
-        last_point = center_line[i, :, -1] + segment_length * direction_of_rod_end
-
-        new_center_line[i, :, 1:-1] = center_line[i, :, :]
-        new_center_line[i, :, 0] = first_point
-        new_center_line[i, :, -1] = last_point
-
-        beginning_direction[i, :] = direction_of_rod_begin
-        end_direction[i, :] = direction_of_rod_end
-
-    return new_center_line, beginning_direction, end_direction
-
-
-@njit(cache=True)
-def _compute_additional_segment_using_net_tangent(center_line, segment_length):
-    """
-    This function adds a two new point at the begining and end of the center line. Distance of these points are
-    given in segment_length. Direction of these points are point wise avarege of nodes at the first and second half
-    of the rod.
-
-    Parameters
-    ----------
-    center_line : numpy.ndarray
-        3D (time, 3, n_nodes) array containing data with 'float' type.
-        Time history of rod node positions.
-    segment_length : float
-        Length of added segments.
-
-    Returns
-    -------
-    center_line : numpy.ndarray
-    beginning_direction : numpy.ndarray
-    end_direction : numpy.ndarray
-
-    """
-    timesize, _, blocksize = center_line.shape
-    new_center_line = np.zeros(
-        (timesize, 3, blocksize + 2)
-    )  # +2 is for added two new points
-    beginning_direction = np.zeros((timesize, 3))
-    end_direction = np.zeros((timesize, 3))
-
-    for i in range(timesize):
-        # Direction of the additional point at the beginning of the rod
-        n_nodes_begin = int(np.floor(blocksize / 2))
-        average_begin = (
-            np.sum(center_line[i, :, :n_nodes_begin], axis=1) / n_nodes_begin
-        )
-        n_nodes_end = int(np.ceil(blocksize / 2))
-        average_end = np.sum(center_line[i, :, n_nodes_end:], axis=1) / (
-            blocksize - n_nodes_end + 1
-        )
-
-        direction_of_rod_begin = average_begin - average_end
-        direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
-
-        direction_of_rod_end = -direction_of_rod_begin
-
         first_point = center_line[i, :, 0] + segment_length * direction_of_rod_begin
         last_point = center_line[i, :, -1] + segment_length * direction_of_rod_end
 
