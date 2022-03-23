@@ -44,7 +44,7 @@ class KnotTheoryCompatibleProtocol(Protocol):
         ...
 
     @property
-    def radius_collection(self) -> np.ndarray:
+    def radius(self) -> np.ndarray:
         ...
 
     @property
@@ -132,6 +132,7 @@ class KnotTheory:
             Determines the method to compute new segments (elements) added to the rod.
             Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
         """
+        print(self.rest_lengths.sum())
         return compute_link(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
@@ -280,8 +281,6 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
     """
     # fmt: off
     # Format is turned off because I want the assertion message to display the line.
-    assert type(segment_length) is float, \
-            "segment_length is not a float. (not numpy.float)"
     assert center_line.shape[1] == 3, \
             "The dimension (axis-1) must be 3"
     # fmt: on

@@ -70,6 +70,55 @@ def test_knot_theory_mixin_methods_with_no_radius(knot_theory):
         rod.compute_link()
 
 
+@pytest.mark.parametrize(
+    "position_collection, director_collection, radius, segment_length, sol_total_twist, sol_total_writhe, sol_total_link",
+    # fmt: off
+    [
+        (
+            np.array([[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 1, 0]], # position_collection
+                dtype=np.float64).T,
+            np.array([[1, 0, 0], [0, 1, 1], [1, 1, 0], [0,1,0]],              # director_collection
+                dtype=np.float64).T[None,...],
+            np.array([1, 2, 4, 2], dtype=np.float64),                         # radius
+            np.array([10.0]),                                                 # segment_length
+            0.75,                                                             # solution total twist
+            -0.477268070084,                                                  # solution total writhe
+            -0.703465518706
+        ),
+    ],
+    # solution total link
+    # fmt: on
+)
+def test_knot_theory_mixin_methods_arithmetic(
+    knot_theory,
+    position_collection,
+    director_collection,
+    radius,
+    segment_length,
+    sol_total_twist,
+    sol_total_writhe,
+    sol_total_link,
+):
+    class TestRod(RodBase, knot_theory.KnotTheory):
+        def __init__(
+            self, position_collection, director_collection, radius, segment_length
+        ):
+            self.position_collection = position_collection
+            self.director_collection = director_collection
+            self.radius = radius
+            self.rest_lengths = segment_length
+
+    test_rod = TestRod(position_collection, director_collection, radius, segment_length)
+
+    twist = test_rod.compute_twist()
+    writhe = test_rod.compute_writhe()
+    link = test_rod.compute_link()
+
+    assert np.isclose(twist, sol_total_twist)
+    assert np.isclose(writhe, sol_total_writhe)
+    assert np.isclose(link, sol_total_link)
+
+
 def test_compute_twist_arithmetic():
     # fmt: off
     center_line = np.array(
