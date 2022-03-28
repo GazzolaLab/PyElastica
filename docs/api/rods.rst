@@ -51,10 +51,10 @@ Cosserat Rod
 Knot Theory (Mixin)
 ~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: elastica.rod.knot_theory.KnotTheory
+.. .. autoclass:: elastica.rod.knot_theory.KnotTheory
 
-.. autoclass:: elastica.rod.knot_theory.KnotTheoryCompatibleProtocol
+.. .. autoclass:: elastica.rod.knot_theory.KnotTheoryCompatibleProtocol
 
 .. automodule:: elastica.rod.knot_theory
-   :exclude-members: __weakref__, __init__, KnotTheory, KnotTheoryCompatibleProtocol
+   :exclude-members: __init__
    :members:

@@ -1,7 +1,13 @@
-__docs__ = """
-This script is for computing the link-writhe-twist of a rod using the method from Klenin & Langowski 2000 paper.
+__doc__ = """
+This script is for computing the link-writhe-twist (LWT) of a rod using the method from Klenin & Langowski 2000 paper.
+Algorithms are adapted from section S2 of Charles et. al. PRL 2019 paper.
 
-Following codes are adapted from section S2 of Charles et. al. PRL 2019 paper.
+Following example cases includes computing LWT quantities to study the bifurcation:
+
+- `Example case (PlectonemesCase) <https://github.com/GazzolaLab/PyElastica/blob/patch-topology/examples/RodContactCase/RodSelfContact/PlectonemesCase/plectoneme_case.py>`_
+- `Example case (SolenoidCase) <https://github.com/GazzolaLab/PyElastica/blob/patch-topology/examples/RodContactCase/RodSelfContact/SolenoidsCase/solenoid_case.py>`_
+
+The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 __all__ = [
     "KnotTheoryCompatibleProtocol",
@@ -144,13 +150,23 @@ class KnotTheory:
 
 def compute_twist(center_line, normal_collection):
     """
-    Compute the twist of a rod, using center_line and normal collection. Methods used in this function is
-    adapted from method 2a Klenin & Langowski 2000 paper.
+    Compute the twist of a rod, using center_line and normal collection.
 
-    Warnings
-    --------
-    If center line is straight, although the normals of each element is pointing different direction computed twist
-    will be zero.
+    Methods used in this function is adapted from method 2a Klenin & Langowski 2000 paper.
+
+    .. warning:: If center line is straight, although the normals of each element is pointing different direction computed twist will be zero.
+
+    Typical runtime of this function is longer than simulation steps. While we provide a function to compute
+    topological quantities at every timesteps, **we highly recommend** to compute LWT during the post-processing
+    stage.::
+
+        import elastica
+        ...
+        normal_collection = director_collection[:,0,...] # shape of director (time, 3, 3, n_elems)
+        elastica.compute_twist(
+            center_line,                                 # shape (time, 3, n_nodes)
+            normal_collection                            # shape (time, 3, n_elems)
+        )
 
     Parameters
     ----------
@@ -261,7 +277,20 @@ def _compute_twist(center_line, normal_collection):
 def compute_writhe(center_line, segment_length, type_of_additional_segment):
     """
     This function computes the total writhe history of a rod.
+
     Equations used are from method 1a from Klenin & Langowski 2000 paper.
+
+    Typical runtime of this function is longer than simulation steps. While we provide a function to compute
+    topological quantities at every timesteps, **we highly recommend** to compute LWT during the post-processing
+    stage.::
+
+        import elastica
+        ...
+        elastica.compute_writhe(
+            center_line,                               # shape (time, 3, n_nodes)
+            segment_length,
+            type_of_additional_segment="next_tangent"
+        )
 
     Parameters
     ----------
@@ -375,7 +404,23 @@ def compute_link(
 ):
     """
     This function computes the total link history of a rod.
+
     Equations used are from method 1a from Klenin & Langowski 2000 paper.
+
+    Typical runtime of this function is longer than simulation steps. While we provide a function to compute
+    topological quantities at every timesteps, **we highly recommend** to compute LWT during the post-processing
+    stage.::
+
+        import elastica
+        ...
+        normal_collection = director_collection[:,0,...] # shape of director (time, 3, 3, n_elems)
+        elastica.compute_link(
+            center_line,                                 # shape (time, 3, n_nodes)
+            normal_collection,                           # shape (time 3, n_elems)
+            radius,                                      # shape (time, n_elems)
+            segment_length,
+            type_of_additional_segment="next_tangent"
+        )
 
     Parameters
     ----------
