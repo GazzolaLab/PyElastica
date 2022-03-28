@@ -5,6 +5,7 @@ from elastica import *
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
     plot_velocity,
+    plot_link_writhe_twist,
 )
 
 
@@ -45,7 +46,9 @@ shear_modulus = E / (poisson_ratio + 1.0)
 
 direction = np.array([0.0, 1.0, 0])
 normal = np.array([0.0, 0.0, 1.0])
-start = np.zeros(3,)
+start = np.zeros(
+    3,
+)
 
 sherable_rod = CosseratRod.straight_rod(
     n_elem,
@@ -70,9 +73,7 @@ from elastica._rotations import _get_rotation_matrix
 
 
 class SelonoidsBC(ConstraintBase):
-    """
-
-    """
+    """ """
 
     def __init__(
         self,
@@ -160,9 +161,7 @@ plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(CallBackBaseClass):
-    """
-
-    """
+    """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
         CallBackBaseClass.__init__(self)
@@ -187,6 +186,7 @@ class RodCallBack(CallBackBaseClass):
                 + system.compute_shear_energy()
             )
             self.callback_params["total_energy"].append(total_energy)
+            self.callback_params["directors"].append(system.director_collection.copy())
 
             return
 
@@ -194,7 +194,9 @@ class RodCallBack(CallBackBaseClass):
 post_processing_dict = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 plectonemes_sim.collect_diagnostics(sherable_rod).using(
-    RodCallBack, step_skip=step_skip, callback_params=post_processing_dict,
+    RodCallBack,
+    step_skip=step_skip,
+    callback_params=post_processing_dict,
 )
 
 # finalize simulation
@@ -216,4 +218,69 @@ plot_video_with_surface(
     x_limits=[-0.5, 0.5],
     y_limits=[-0.1, 1.1],
     z_limits=[-0.5, 0.5],
+)
+
+# Compute topological quantities
+time = np.array(post_processing_dict["time"])
+position_history = np.array(post_processing_dict["position"])
+radius_history = np.array(post_processing_dict["radius"])
+director_history = np.array(post_processing_dict["directors"])
+
+# Compute twist density
+theta = 2.0 * number_of_rotations * np.pi
+angel_vel_scalar = theta / time_twist
+
+twist_time_interval_start_idx = np.where(time > time_start_twist)[0][0]
+twist_time_interval_end_idx = np.where(time < (time_relax + time_twist))[0][-1]
+
+twist_density = (
+    (time[twist_time_interval_start_idx:twist_time_interval_end_idx] - time_start_twist)
+    * angel_vel_scalar
+    * base_radius
+)
+
+# Compute link-writhe-twist
+normal_history = director_history[:, 0, :, :]
+segment_length = 10 * base_length
+
+type_of_additional_segment = "next_tangent"
+
+total_twist, local_twist = compute_twist(position_history, normal_history)
+
+total_link = compute_link(
+    position_history,
+    normal_history,
+    radius_history,
+    segment_length,
+    type_of_additional_segment,
+)
+
+total_writhe = compute_writhe(
+    position_history, segment_length, type_of_additional_segment
+)
+
+# Plot link-writhe-twist
+plot_link_writhe_twist(
+    twist_density,
+    total_twist[twist_time_interval_start_idx:twist_time_interval_end_idx],
+    total_writhe[twist_time_interval_start_idx:twist_time_interval_end_idx],
+    total_link[twist_time_interval_start_idx:twist_time_interval_end_idx],
+)
+
+# Save simulation data
+import os
+
+save_folder = os.path.join(os.getcwd(), "data")
+os.makedirs(save_folder, exist_ok=True)
+np.savez(
+    os.path.join(save_folder, "plectoneme_case_data.npz"),
+    time=time,
+    position_history=position_history,
+    radius_history=radius_history,
+    director_history=director_history,
+    base_length=np.array(base_length),
+    twist_density=twist_density,
+    total_twist=total_twist,
+    total_writhe=total_writhe,
+    total_link=total_link,
 )

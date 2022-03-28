@@ -4,8 +4,8 @@ Algorithms are adapted from section S2 of Charles et. al. PRL 2019 paper.
 
 Following example cases includes computing LWT quantities to study the bifurcation:
 
-- `Example case (PlectonemesCase) <https://github.com/GazzolaLab/PyElastica/blob/patch-topology/examples/RodContactCase/RodSelfContact/PlectonemesCase/plectoneme_case.py>`_
-- `Example case (SolenoidCase) <https://github.com/GazzolaLab/PyElastica/blob/patch-topology/examples/RodContactCase/RodSelfContact/SolenoidsCase/solenoid_case.py>`_
+- `Example case (PlectonemesCase) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/RodContactCase/RodSelfContact/PlectonemesCase/plectoneme_case.py>`_
+- `Example case (SolenoidCase) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/RodContactCase/RodSelfContact/SolenoidsCase/solenoid_case.py>`_
 
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """

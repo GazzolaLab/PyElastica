@@ -92,7 +92,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_scatters[rod_idx]._offsets3d = (
@@ -154,7 +154,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
@@ -218,7 +218,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[2])
@@ -283,7 +283,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
@@ -333,26 +333,38 @@ def plot_velocity(
     axs[0].set_ylabel("x velocity", fontsize=20)
 
     axs[1].plot(
-        time[:], avg_velocity_rod_one[:, 1], linewidth=3,
+        time[:],
+        avg_velocity_rod_one[:, 1],
+        linewidth=3,
     )
     axs[1].plot(
-        time[:], avg_velocity_rod_two[:, 1], linewidth=3,
+        time[:],
+        avg_velocity_rod_two[:, 1],
+        linewidth=3,
     )
     axs[1].set_ylabel("y velocity", fontsize=20)
 
     axs[2].plot(
-        time[:], avg_velocity_rod_one[:, 2], linewidth=3,
+        time[:],
+        avg_velocity_rod_one[:, 2],
+        linewidth=3,
     )
     axs[2].plot(
-        time[:], avg_velocity_rod_two[:, 2], linewidth=3,
+        time[:],
+        avg_velocity_rod_two[:, 2],
+        linewidth=3,
     )
     axs[2].set_ylabel("z velocity", fontsize=20)
 
     axs[3].semilogy(
-        time[:], total_energy_rod_one[:], linewidth=3,
+        time[:],
+        total_energy_rod_one[:],
+        linewidth=3,
     )
     axs[3].semilogy(
-        time[:], total_energy_rod_two[:], linewidth=3,
+        time[:],
+        total_energy_rod_two[:],
+        linewidth=3,
     )
     axs[3].semilogy(
         time[:],
@@ -373,3 +385,35 @@ def plot_velocity(
     if SAVE_FIGURE:
         # fig.savefig(filename)
         plt.savefig(filename)
+
+
+def plot_link_writhe_twist(twist_density, total_twist, total_writhe, total_link):
+
+    plt.rcParams.update({"font.size": 22})
+    fig = plt.figure(figsize=(10, 10), frameon=True, dpi=150)
+
+    axs = []
+    axs.append(plt.subplot2grid((1, 1), (0, 0)))
+    axs[0].plot(
+        twist_density,
+        total_twist,
+        label="twist",
+    )
+    axs[0].plot(
+        twist_density,
+        total_writhe,
+        label="writhe",
+    )
+    axs[0].plot(
+        twist_density,
+        total_link,
+        label="link",
+    )
+    axs[0].set_xlabel("twist density", fontsize=20)
+    axs[0].set_ylabel("link-twist-writhe", fontsize=20)
+    axs[0].set_xlim(0, 2.0)
+    plt.tight_layout()
+    fig.align_ylabels()
+    fig.legend(prop={"size": 20})
+    fig.savefig("link_twist_writhe.png")
+    plt.close(plt.gcf())
