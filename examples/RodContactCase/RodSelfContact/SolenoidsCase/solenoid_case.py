@@ -229,12 +229,7 @@ plot_video_with_surface(
     z_limits=[-0.5, 0.5],
 )
 
-# Save data for post-processing and computing topological quantities
-import os
-
-save_folder = os.path.join(os.getcwd(), "data")
-os.makedirs(save_folder, exist_ok=True)
-
+# Compute topological quantities
 time = np.array(post_processing_dict["time"])
 position_history = np.array(post_processing_dict["position"])
 radius_history = np.array(post_processing_dict["radius"])
@@ -282,6 +277,10 @@ plot_link_writhe_twist(
 )
 
 # Save simulation data
+import os
+
+save_folder = os.path.join(os.getcwd(), "data")
+os.makedirs(save_folder, exist_ok=True)
 np.savez(
     os.path.join(save_folder, "solenoid_case_data.npz"),
     time=time,
