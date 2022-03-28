@@ -90,5 +90,8 @@ html_logo = "https://github.com/GazzolaLab/PyElastica/blob/assets/docs/assets/Lo
 html_static_path = ['_static']
 html_css_files = ['css/*', 'css/logo.css']
 
+# -- Options for autodoc  ---------------------------------------------------
+autodoc_member_order = 'bysource'
+
 # -- Options for numpydoc ---------------------------------------------------
 numpydoc_show_class_members = False
