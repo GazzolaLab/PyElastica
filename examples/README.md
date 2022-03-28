@@ -51,8 +51,8 @@ Examples can serve as a starting template for customized usages.
       * __Purpose__: Demonstrates rod self contact with Plectoneme example.
       * __Features__: CosseratRod, SelonoidsBC, SelfContact
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
-      * __Purpose__: Demonstrates rod self contact with Solenoid example.
-      * __Features__: CosseratRod, SelonoidsBC, SelfContact
+      * __Purpose__: Demonstrates rod self contact with Solenoid example and how to use link-writhe-twist after simulation completed.
+      * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
 
 ## Functional Examples
 
