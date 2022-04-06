@@ -1,12 +1,12 @@
 Rods
-=====
+====
 
 .. automodule:: elastica.rod.rod_base
    :members:
    :exclude-members: __weakref__
 
 Cosserat Rod
-~~~~~~~~~~~~
+------------
 
 +------------+-------------------+----------------------------------------+-----------------------------+
 |            |   On Nodes (+1)   |        On Elements (n_elements)        |       On Voronoi (-1)       |
@@ -39,9 +39,22 @@ Cosserat Rod
 .. automodule:: elastica.rod.cosserat_rod
    :exclude-members: __weakref__, __init__, update_accelerations, zeroed_out_external_forces_and_torques, compute_internal_forces_and_torques
    :members:
+   :inherited-members:
 
 .. Constitutive Models
 .. ~~~~~~~~~~~~~~~~~~~
 .. .. automodule:: elastica.rod.constitutive_model
 ..    :members:
 ..    :exclude-members: __weakref__
+
+
+Knot Theory (Mixin)
+~~~~~~~~~~~~~~~~~~~
+
+.. .. autoclass:: elastica.rod.knot_theory.KnotTheory
+
+.. .. autoclass:: elastica.rod.knot_theory.KnotTheoryCompatibleProtocol
+
+.. automodule:: elastica.rod.knot_theory
+   :exclude-members: __init__
+   :members:

@@ -14,6 +14,7 @@ from elastica._linalg import (
 )
 from elastica._rotations import _inv_rotate
 from elastica.rod.factory_function import allocate
+from elastica.rod.knot_theory import KnotTheory
 from elastica._calculus import (
     quadrature_kernel_for_block_structure,
     difference_kernel_for_block_structure,
@@ -31,7 +32,7 @@ def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-class CosseratRod(RodBase):
+class CosseratRod(RodBase, KnotTheory):
     """
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
     of the essential base classes.

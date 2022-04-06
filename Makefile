@@ -12,6 +12,8 @@ flake8:
 	@flake8 --version
 	@flake8 elastica tests
 
+test:
+	@python -m pytest
 
 all:black flake8
 ci:black_check flake8
