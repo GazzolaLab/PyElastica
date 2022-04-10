@@ -86,7 +86,7 @@ html_theme_options = {
     "use_repository_button": True,
 }
 html_title = "PyElastica"
-html_logo = "https://github.com/GazzolaLab/PyElastica/blob/assets/docs/assets/Logo.png?raw=true"
+html_logo = "_static/assets/Logo.png"
 #pygments_style = "sphinx"
 
 # Add any paths that contain custom static files (such as style sheets) here,
