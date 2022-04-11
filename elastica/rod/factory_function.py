@@ -20,12 +20,15 @@ def allocate(
     density,
     nu,
     youngs_modulus: float,
-    poisson_ratio: Optional[float] = None,
     shear_modulus: Optional[float] = None,
     # alpha_c=0.964,
     *args,
     **kwargs
 ):
+    if "poisson_ratio" in kwargs:
+        raise NameError(
+            "Poisson's ratio is deprecated for Cosserat Rod for clarity. Please provide shear_modulus instead."
+        )
 
     # sanity checks here
     assert n_elements > 1
@@ -219,7 +222,8 @@ def allocate(
         )
 
     # Shear/Stretch matrix
-    shear_modulus = get_shear_modulus(youngs_modulus, poisson_ratio, shear_modulus)
+    if not shear_modulus:
+        shear_modulus = youngs_modulus / (2.0 * (1.0 + 0.5))
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from
     # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
@@ -400,79 +404,3 @@ def allocate(
         damping_forces,
         damping_torques,
     )
-
-
-def get_shear_modulus(
-    youngs_modulus: float,
-    poisson_ratio: Optional[float],
-    shear_modulus: Optional[float],
-):
-    """
-    From the kwargs get shear modulus, or compute it. This function contains logging messages.
-
-    Parameters
-    ----------
-    youngs_modulus : float
-    poisson_ratio: Optional[float]
-    shear_modulus: Optional[float]
-
-    Returns
-    -------
-    shear_modulus: float
-
-    """
-
-    log = logging.getLogger("rod constructor: get_shear_modulus")
-
-    # Shear/Stretch matrix
-    if shear_modulus and not poisson_ratio:
-        # User set shear modulus use that.
-        pass
-
-    if shear_modulus and poisson_ratio:
-        # User set shear modulus and also a poisson ratio. Do not use poisson ratio and raise warning.
-        message = (
-            "Both a Poisson ratio and a shear modulus are provided. "
-            "In such case, we prioritize the shear modulus."
-            "The Poisson ratio is only used to compute a shear modulus "
-            "so the provided Poisson ratio of ( "
-            + str(poisson_ratio)
-            + " ) is being ignored in favor of the provided shear modulus ( "
-            + str(shear_modulus)
-            + " ). \n"
-        )
-        warnings.warn(message, category=UserWarning)
-
-    if poisson_ratio and not shear_modulus:
-        # Use poisson ratio to compute shear modulus
-        shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-
-        message = (
-            "The given Poisson ratio of "
-            + str(poisson_ratio)
-            + " is used only to compute a shear modulus of "
-            + str(shear_modulus)
-            + ", "
-            "using the equation: shear_modulus = youngs_modulus / (poisson_ratio + 1.0). "
-            "Use of a Poisson ratio will be depreciated in a future release. "
-            "It is encouraged that you discontinue using a Poisson ratio and instead directly provide the shear_modulus. \n"
-        )
-        log.info(message)
-
-    if not poisson_ratio and not shear_modulus:
-        # If user does not set poisson ratio or shear modulus, then take poisson ratio as 0.5 and raise warning.
-        poisson_ratio = 0.5
-        shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-
-        message = (
-            "Shear modulus cannot be found in kwargs. "
-            "Poisson ratio "
-            + str(poisson_ratio)
-            + " is used to compute shear modulus "
-            + str(shear_modulus)
-            + ", "
-            "using the equation: shear_modulus = youngs_modulus / (poisson_ratio + 1.0)."
-        )
-        log.info(message)
-
-    return shear_modulus
