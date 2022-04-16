@@ -1,22 +1,35 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
+import sys
+
+sys.path.append("../../")
 from elastica import *
-from examples.MuscularSnake.post_processing import plot_video_with_surface, plot_snake_velocity
+from examples.MuscularSnake.post_processing import (
+    plot_video_with_surface,
+    plot_snake_velocity,
+)
 from examples.MuscularSnake.muscle_forces import MuscleForces
-from elastica.experimental.connection_contact_joint.parallel_connection import SurfaceJointSideBySide
-from examples.MuscularSnake.get_connection_vector import get_connection_vector_straight_straight_rod
+from elastica.experimental.connection_contact_joint.parallel_connection import (
+    SurfaceJointSideBySide,
+)
+from examples.MuscularSnake.get_connection_vector import (
+    get_connection_vector_straight_straight_rod,
+)
 
 # Set base simulator class
-class MuscularSnakeSimulator(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
+class MuscularSnakeSimulator(
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+):
     pass
+
 
 muscular_snake_simulator = MuscularSnakeSimulator()
 
 # Simulation parameters
-final_time = 0.01#16.0
-time_step = 5E-6
-total_steps = int(final_time/time_step)
+final_time = 16.0
+time_step = 5e-6
+total_steps = int(final_time / time_step)
 rendering_fps = 30
-step_skip = int(1.0/(rendering_fps*time_step))
+step_skip = int(1.0 / (rendering_fps * time_step))
 
 
 rod_list = []
@@ -26,8 +39,8 @@ density_body = 1000
 base_length_body = 1.0
 base_radius_body = 0.025
 E = 1e7
-nu = 4E-3
-shear_modulus = E/ 2*(0.5 + 1.0)
+nu = 4e-3
+shear_modulus = E / 2 * (0.5 + 1.0)
 poisson_ratio = 0.5
 
 direction = np.array([1.0, 0.0, 0.0])
@@ -53,9 +66,9 @@ body_elem_length = snake_body.rest_lengths[0]
 n_muscle_fibers = 8
 
 # Muscle force amplitudes
-muscle_force_amplitudes = np.array(
-    [22.96, 22.96, 20.95, 20.95, 9.51, 9.51, 13.7, 13.7]
-)[::-1]/2
+muscle_force_amplitudes = (
+    np.array([22.96, 22.96, 20.95, 20.95, 9.51, 9.51, 13.7, 13.7])[::-1] / 2
+)
 
 # Set connection index of first node of each muscle with body
 muscle_start_connection_index = [4, 4, 33, 33, 23, 23, 61, 61]
@@ -75,10 +88,10 @@ muscle density to approximately twice the biological value.
 density_muscle = 2000
 E_muscle = 1e4
 nu_muscle = nu
-shear_modulus_muscle = E_muscle/ 2*(0.5 + 1.0)
+shear_modulus_muscle = E_muscle / 2 * (0.5 + 1.0)
 
 # Muscle group 1 and 3, define two antagonistic muscle pairs
-n_elem_muscle_group_one_to_three = 13*3
+n_elem_muscle_group_one_to_three = 13 * 3
 base_length_muscle = 0.39
 """  
 In our simulation, we lump many biological tendons into one computational
@@ -87,9 +100,9 @@ below.
 """
 muscle_radius = np.zeros((n_elem_muscle_group_one_to_three))
 muscle_radius[:] = 0.003  # First set tendon radius for whole rod.
-muscle_radius[4*3:9*3] = 0.006  # Change the radius of muscle elements
+muscle_radius[4 * 3 : 9 * 3] = 0.006  # Change the radius of muscle elements
 
-for i in range(int(n_muscle_fibers/2)):
+for i in range(int(n_muscle_fibers / 2)):
 
     index = muscle_start_connection_index[i]
     # Chose which side of body we are attaching the muscles. Note that these muscles are antagonistic pairs.
@@ -98,9 +111,9 @@ for i in range(int(n_muscle_fibers/2)):
     start_muscle = np.array(
         [
             index * body_elem_length,
-            side_sign * (base_radius_body+0.003),
+            side_sign * (base_radius_body + 0.003),
             base_radius_body,
-            ]
+        ]
     )
 
     muscle_rod = CosseratRod.straight_rod(
@@ -116,7 +129,6 @@ for i in range(int(n_muscle_fibers/2)):
         shear_modulus=shear_modulus_muscle,
     )
 
-
     """
     The biological tendons have a high Young's modulus E.,but are very slender.
     As a result, they resist extension (stretch) but can bend easily.
@@ -128,15 +140,18 @@ for i in range(int(n_muscle_fibers/2)):
     what is important is that it is a high value to high stretch/shear stiffness.
     """
 
-    muscle_rod.shear_matrix[..., :4*3] *= 50000
-    muscle_rod.shear_matrix[..., 9*3:] *= 50000
+    muscle_rod.shear_matrix[..., : 4 * 3] *= 50000
+    muscle_rod.shear_matrix[..., 9 * 3 :] *= 50000
 
     muscle_rod_list.append(muscle_rod)
-    muscle_end_connection_index.append(
-        index + n_elem_muscle_group_one_to_three
-    )
+    muscle_end_connection_index.append(index + n_elem_muscle_group_one_to_three)
     muscle_glue_connection_index.append(
-        np.hstack((np.arange(0, 4*3, 1, dtype=np.int64), np.arange(9*3, n_elem_muscle_group_one_to_three, 1, dtype=np.int64)))
+        np.hstack(
+            (
+                np.arange(0, 4 * 3, 1, dtype=np.int64),
+                np.arange(9 * 3, n_elem_muscle_group_one_to_three, 1, dtype=np.int64),
+            )
+        )
     )
 
 
@@ -150,7 +165,7 @@ below.
 """
 muscle_radius = np.zeros((n_elem_muscle_group_two_to_four))
 muscle_radius[:] = 0.003  # First set tendon radius for whole rod.
-muscle_radius[4*3:9*3] = 0.006  # Change the radius of muscle elements
+muscle_radius[4 * 3 : 9 * 3] = 0.006  # Change the radius of muscle elements
 
 for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
 
@@ -161,9 +176,9 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
     start_muscle = np.array(
         [
             index * body_elem_length,
-            side_sign * (base_radius_body+0.003),
+            side_sign * (base_radius_body + 0.003),
             base_radius_body,
-            ]
+        ]
     )
 
     muscle_rod = CosseratRod.straight_rod(
@@ -190,16 +205,19 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
     what is important is that it is a high value to high stretch/shear stiffness.
     """
 
-    muscle_rod.shear_matrix[..., :4*3] *= 50000
-    muscle_rod.shear_matrix[..., 9*3:] *= 50000
+    muscle_rod.shear_matrix[..., : 4 * 3] *= 50000
+    muscle_rod.shear_matrix[..., 9 * 3 :] *= 50000
 
     muscle_rod_list.append(muscle_rod)
-    muscle_end_connection_index.append(
-        index + n_elem_muscle_group_two_to_four
-    )
+    muscle_end_connection_index.append(index + n_elem_muscle_group_two_to_four)
     muscle_glue_connection_index.append(
         # np.array([0,1, 2, 3, 9, 10 ], dtype=np.int)
-        np.hstack((np.arange(0, 4*3, 1, dtype=np.int64), np.arange(9*3, n_elem_muscle_group_two_to_four, 1, dtype=np.int64)))
+        np.hstack(
+            (
+                np.arange(0, 4 * 3, 1, dtype=np.int64),
+                np.arange(9 * 3, n_elem_muscle_group_two_to_four, 1, dtype=np.int64),
+            )
+        )
     )
 
 
@@ -223,10 +241,10 @@ for i in range(n_muscle_fibers):
         MuscleForces,
         amplitude=muscle_force_amplitudes[i],
         wave_number=2.0 * np.pi / 1.0,
-        arm_length=(base_radius_body+0.003),
+        arm_length=(base_radius_body + 0.003),
         time_delay=time_delay,
         side_of_body=side_of_body,
-        muscle_start_end_index=np.array([4*3, 9*3], np.int64),
+        muscle_start_end_index=np.array([4 * 3, 9 * 3], np.int64),
         step=step_skip,
         post_processing=post_processing_forces_dict_list[i],
     )
@@ -240,7 +258,12 @@ for idx, rod_two in enumerate(muscle_rod_list):
         rod_one_direction_vec_in_material_frame,
         rod_two_direction_vec_in_material_frame,
         offset_btw_rods,
-    ) = get_connection_vector_straight_straight_rod(rod_one, rod_two,muscle_start_connection_index[idx], muscle_end_connection_index[idx])
+    ) = get_connection_vector_straight_straight_rod(
+        rod_one,
+        rod_two,
+        muscle_start_connection_index[idx],
+        muscle_end_connection_index[idx],
+    )
     straight_straight_rod_connection_list.append(
         [
             rod_one,
@@ -253,13 +276,20 @@ for idx, rod_two in enumerate(muscle_rod_list):
     for k in range(rod_two.n_elems):
         rod_one_index = k + muscle_start_connection_index[idx]
         rod_two_index = k
-        k_conn = rod_one.radius[rod_one_index] * rod_two.radius[rod_two_index] / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index]) * body_elem_length  * E / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
+        k_conn = (
+            rod_one.radius[rod_one_index]
+            * rod_two.radius[rod_two_index]
+            / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
+            * body_elem_length
+            * E
+            / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
+        )
 
-        if k < 12 or k>= 27:
-            scale = 1*2
+        if k < 12 or k >= 27:
+            scale = 1 * 2
             scale_contact = 20
         else:
-            scale = 0.01*5
+            scale = 0.01 * 5
             scale_contact = 20
 
         muscular_snake_simulator.connect(
@@ -269,8 +299,8 @@ for idx, rod_two in enumerate(muscle_rod_list):
             second_connect_idx=rod_two_index,
         ).using(
             SurfaceJointSideBySide,
-            k=k_conn * scale ,
-            nu=1E-4,
+            k=k_conn * scale,
+            nu=1e-4,
             k_repulsive=k_conn * scale_contact,
             rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
                 ..., k
@@ -297,12 +327,12 @@ for idx, rod_two in enumerate(muscle_rod_list):
         period = 1.0
         mu = base_length_body / (period * period * np.abs(gravitational_acc) * froude)
         kinetic_mu_array = np.array(
-            [1.0*mu, 1.5 * mu, 2.0 * mu]
+            [1.0 * mu, 1.5 * mu, 2.0 * mu]
         )  # [forward, backward, sideways]
         static_mu_array = 2 * kinetic_mu_array
         muscular_snake_simulator.add_forcing_to(snake_body).using(
             AnisotropicFrictionalPlane,
-            k=1E1,
+            k=1e1,
             nu=20,
             plane_origin=origin_plane,
             plane_normal=normal_plane,
@@ -310,6 +340,7 @@ for idx, rod_two in enumerate(muscle_rod_list):
             static_mu_array=static_mu_array,
             kinetic_mu_array=kinetic_mu_array,
         )
+
 
 class MuscularSnakeCallBack(CallBackBaseClass):
     def __init__(self, step_skip: int, callback_params: dict):
@@ -319,20 +350,13 @@ class MuscularSnakeCallBack(CallBackBaseClass):
 
     def make_callback(self, system, time, current_step: int):
 
-
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
-            self.callback_params["com"].append(
-                system.compute_position_center_of_mass()
-            )
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["com"].append(system.compute_position_center_of_mass())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["velocity"].append(
-                system.velocity_collection.copy()
-            )
+            self.callback_params["velocity"].append(system.velocity_collection.copy())
             self.callback_params["avg_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
@@ -340,6 +364,7 @@ class MuscularSnakeCallBack(CallBackBaseClass):
             self.callback_params["center_of_mass"].append(
                 system.compute_position_center_of_mass()
             )
+
 
 post_processing_dict_list = []
 
@@ -370,4 +395,6 @@ plot_video_with_surface(
     vis2D=True,  # Turn on projected (2D) visualization
 )
 
-plot_snake_velocity(post_processing_dict_list[0], period=period, filename="muscular_snake_velocity.png")
+plot_snake_velocity(
+    post_processing_dict_list[0], period=period, filename="muscular_snake_velocity.png"
+)
