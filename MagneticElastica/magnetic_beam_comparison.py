@@ -5,6 +5,7 @@ import multiprocessing as mp
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 # FIXME without appending sys.path make it more generic
+sys.path.append("../")
 sys.path.append("../../")
 from elastica import *
 from MagneticElastica.magnetic_forces import MagneticTorquesForUniformMagneticField
