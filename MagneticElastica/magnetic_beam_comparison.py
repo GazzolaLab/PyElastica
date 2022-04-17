@@ -193,7 +193,7 @@ if __name__ == "__main__":
     #
     # MBAL2_EI, deflection, theta = run_magnetic_beam_sim(magnetization_density, magnetic_field_angle, magnetic_field[5])
 
-    magnetic_field_angle = np.array([30, 60, 90, 120, 150, 180-0.5])
+    magnetic_field_angle = np.deg2rad(np.array([30, 60, 90, 120, 150, 180-0.5]))
     # Run elastica simulations as a batch job
     simulation_list = []
     for i in range(magnetic_field_angle.shape[0]):
@@ -221,8 +221,7 @@ if __name__ == "__main__":
     # Run analytical solutions
     analytical_list = []
     for i in range(magnetic_field_angle.shape[0]):
-        for j in range(magnetic_field_analytical.shape[0]):
-            analytical_list.append((magnetization_density, magnetic_field_angle[i], magnetic_field_analytical[j]))
+        analytical_list.append((magnetization_density, magnetic_field_angle[i], magnetic_field_analytical))
 
     with mp.Pool(mp.cpu_count()) as pool:
         result_analytical = pool.starmap(compute_analytical_solution, analytical_list)
@@ -233,12 +232,11 @@ if __name__ == "__main__":
 
     counter = 0
     for i in range(magnetic_field_angle.shape[0]):
-        for j in range(magnetic_field_analytical.shape[0]):
-            analytical_result = result_analytical[counter]
-            MBAL2_EI_analytical[i,j] = analytical_result[0]
-            deflection_analytical[i,j] = analytical_result[1]
-            theta_analytical[i,j] = analytical_result[2]
-            counter += 1
+        analytical_result = result_analytical[counter]
+        MBAL2_EI_analytical[i,:] = analytical_result[0][:]
+        deflection_analytical[i,:] = analytical_result[1][:]
+        theta_analytical[i,:] = analytical_result[2][:]
+        counter += 1
 
 
 
