@@ -313,33 +313,33 @@ for idx, rod_two in enumerate(muscle_rod_list):
             step_skip=step_skip,
         )
 
-        # Friction forces
-        # Only apply to the snake body.
-        gravitational_acc = -9.81
-        muscular_snake_simulator.add_forcing_to(snake_body).using(
-            GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
-        )
+# Friction forces
+# Only apply to the snake body.
+gravitational_acc = -9.81
+muscular_snake_simulator.add_forcing_to(snake_body).using(
+    GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
+)
 
-        origin_plane = np.array([0.0, 0.0, 0.0])
-        normal_plane = normal
-        slip_velocity_tol = 1e-8
-        froude = 0.1
-        period = 1.0
-        mu = base_length_body / (period * period * np.abs(gravitational_acc) * froude)
-        kinetic_mu_array = np.array(
-            [1.0 * mu, 1.5 * mu, 2.0 * mu]
-        )  # [forward, backward, sideways]
-        static_mu_array = 2 * kinetic_mu_array
-        muscular_snake_simulator.add_forcing_to(snake_body).using(
-            AnisotropicFrictionalPlane,
-            k=1e1,
-            nu=20,
-            plane_origin=origin_plane,
-            plane_normal=normal_plane,
-            slip_velocity_tol=slip_velocity_tol,
-            static_mu_array=static_mu_array,
-            kinetic_mu_array=kinetic_mu_array,
-        )
+origin_plane = np.array([0.0, 0.0, 0.0])
+normal_plane = normal
+slip_velocity_tol = 1e-8
+froude = 0.1
+period = 1.0
+mu = base_length_body / (period * period * np.abs(gravitational_acc) * froude)
+kinetic_mu_array = np.array(
+    [1.0 * mu, 1.5 * mu, 2.0 * mu]
+)  # [forward, backward, sideways]
+static_mu_array = 2 * kinetic_mu_array
+muscular_snake_simulator.add_forcing_to(snake_body).using(
+    AnisotropicFrictionalPlane,
+    k=1e1,
+    nu=20,
+    plane_origin=origin_plane,
+    plane_normal=normal_plane,
+    slip_velocity_tol=slip_velocity_tol,
+    static_mu_array=static_mu_array,
+    kinetic_mu_array=kinetic_mu_array,
+)
 
 
 class MuscularSnakeCallBack(CallBackBaseClass):
