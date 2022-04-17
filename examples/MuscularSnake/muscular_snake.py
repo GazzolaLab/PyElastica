@@ -10,10 +10,9 @@ from examples.MuscularSnake.post_processing import (
 from examples.MuscularSnake.muscle_forces import MuscleForces
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     SurfaceJointSideBySide,
-)
-from examples.MuscularSnake.get_connection_vector import (
     get_connection_vector_straight_straight_rod,
 )
+
 
 # Set base simulator class
 class MuscularSnakeSimulator(
@@ -261,8 +260,8 @@ for idx, rod_two in enumerate(muscle_rod_list):
     ) = get_connection_vector_straight_straight_rod(
         rod_one,
         rod_two,
-        muscle_start_connection_index[idx],
-        muscle_end_connection_index[idx],
+        (muscle_start_connection_index[idx],muscle_end_connection_index[idx]),
+        (0, rod_two.n_elems)
     )
     straight_straight_rod_connection_list.append(
         [
@@ -333,7 +332,7 @@ static_mu_array = 2 * kinetic_mu_array
 muscular_snake_simulator.add_forcing_to(snake_body).using(
     AnisotropicFrictionalPlane,
     k=1e1,
-    nu=20,
+    nu=40,
     plane_origin=origin_plane,
     plane_normal=normal_plane,
     slip_velocity_tol=slip_velocity_tol,
