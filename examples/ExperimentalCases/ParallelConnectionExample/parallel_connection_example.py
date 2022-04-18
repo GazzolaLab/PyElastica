@@ -99,7 +99,7 @@ parallel_connection_sim.add_forcing_to(rod_one).using(ContractionForce, ramp=0.5
     rod_one_direction_vec_in_material_frame,
     rod_two_direction_vec_in_material_frame,
     offset_btw_rods,
-) = get_connection_vector_straight_straight_rod(rod_one, rod_two)
+) = get_connection_vector_straight_straight_rod(rod_one, rod_two, (0, n_elem), (0, n_elem))
 
 for i in range(n_elem):
     parallel_connection_sim.connect(
