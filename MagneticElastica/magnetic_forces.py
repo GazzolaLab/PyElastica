@@ -1,7 +1,7 @@
 import numpy as np
 import numba
 from numba import njit
-from elastica._linalg import _batch_matvec, _batch_cross
+from elastica._linalg import _batch_matvec, _batch_cross, _batch_matrix_transpose
 from elastica.external_forces import NoForces
 
 
@@ -121,11 +121,30 @@ class MagneticFieldForcing(NoForces):
     def __init__(self, external_magnetic_field):
         # should this be a class member or passed as an argument
         # to apply_force and apply_torques function?
+        # NOTE for different magnetic fields, this will be different
+        # class/dataclass with 2 methods .value() and .gradient().
         self.external_magnetic_field = external_magnetic_field
 
     def apply_forces(self, system, time: np.float64 = 0.0):
-        # add a magnetisation \cdot \grad_magnetic_field term here
-        pass
+        lab_frame_magnetization_collection = _batch_matvec(
+            _batch_matrix_transpose(system.director_collection),
+            system.magnetization_collection,
+        )
+        # Im guessing Arman knows a better way of doing the statement below
+        element_position_collection = 0.5 * (
+            system.position_collection[..., 1:] + system.position_collection[..., :-1]
+        )
+        # Arman knows a consistent way of doing this?
+        # this is essentially m \cdot gradient_magnetic_field done as:
+        # gradient_magnetic_field.T @ m
+        system.external_forces += _batch_matvec(
+            _batch_matrix_transpose(
+                self.external_magnetic_field.gradient(
+                    position=element_position_collection
+                )
+            ),
+            system.lab_frame_magnetization_collection,
+        )
 
     def apply_torques(self, system, time: np.float64 = 0.0):
 
@@ -141,5 +160,5 @@ class MagneticFieldForcing(NoForces):
         )
         # the above steps can be combined in one line...
         system.external_torques += _batch_cross(
-            system.magnetization_vector, local_frame_magnetic_field_value
+            system.magnetization_collection, local_frame_magnetic_field_value
         )
