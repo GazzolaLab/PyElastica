@@ -79,3 +79,9 @@ class MagneticTorquesForOscillatingMagneticField(NoForces):
             system.external_torques[...,self.start_idx:self.end_idx] += _batch_matvec(
                 system.director_collection[...,self.start_idx:self.end_idx], magnetic_torques
             )
+
+"""
+I think we should separate the magneticforcing class and thew magnetic field generator itself.
+The magneticforcing can be generic taking in a external_magnetic_field object, which has say attributes
+needed for computing forces and torques (magnetic field gradient and value).
+"""
