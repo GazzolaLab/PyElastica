@@ -117,10 +117,16 @@ class ConstantMagneticField:
         magnetic_field_amplitude: numpy.ndarray
             1D (dim,) array containing data with 'float' type.
             Amplitude of the constant magnetic field.
+        ramp_interval : float
+            ramping time for magnetic field.
+        start_time : float
+            Turning on time of magnetic field.
+        end_time : float
+            Turning off time of magnetic field.
 
     """
 
-    def __init__(self, magnetic_field_amplitude):
+    def __init__(self, magnetic_field_amplitude, ramp_interval, start_time, end_time):
         """
 
         Parameters
@@ -128,9 +134,18 @@ class ConstantMagneticField:
         magnetic_field_amplitude: numpy.ndarray
             1D (dim,) array containing data with 'float' type.
             Amplitude of the constant magnetic field.
+        ramp_interval : float
+            ramping time for magnetic field.
+        start_time : float
+            Turning on time of magnetic field.
+        end_time : float
+            Turning off time of magnetic field.
 
         """
         self.magnetic_field_amplitude = magnetic_field_amplitude
+        self.ramp_interval = ramp_interval
+        self.start_time = start_time
+        self.end_time = end_time
 
     def value(self, time: np.float64 = 0.0):
         """
@@ -152,7 +167,18 @@ class ConstantMagneticField:
         Assumes only time dependence.
 
         """
-        magnetic_field = self.magnetic_field_amplitude
+        factor = 0.0
+        time = round(time, 5)
+        magnetic_field = np.zeros((3))
+        if time > self.start_time:
+            factor = min(1.0, (time - self.start_time) / self.ramp_interval)
+
+        if time > self.end_time:
+            factor = max(0.0, -1 / self.ramp_interval * (time - self.end_time) + 1.0)
+
+        if factor > 0.0:
+            magnetic_field[:] = self.magnetic_field_amplitude * factor
+
         return magnetic_field
 
 
