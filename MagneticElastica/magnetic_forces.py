@@ -110,55 +110,18 @@ class MagneticTorquesForOscillatingMagneticField(NoForces):
             )
 
 
-"""
-I think we should separate the magneticforcing class and thew magnetic field generator itself.
-The magneticforcing can be generic taking in a external_magnetic_field object, which has say attributes
-needed for computing forces and torques (magnetic field gradient and value).
-"""
-
-
-class MagneticFieldForcing(NoForces):
+class ExternalMagneticFieldForces(NoForces):
     def __init__(self, external_magnetic_field):
-        # should this be a class member or passed as an argument
-        # to apply_force and apply_torques function?
         # NOTE for different magnetic fields, this will be different
-        # class/dataclass with 2 methods .value() and .gradient().
+        # class with method .value().
         self.external_magnetic_field = external_magnetic_field
 
-    def apply_forces(self, system, time: np.float64 = 0.0):
-        lab_frame_magnetization_collection = _batch_matvec(
-            _batch_matrix_transpose(system.director_collection),
-            system.magnetization_collection,
-        )
-        # Im guessing Arman knows a better way of doing the statement below
-        element_position_collection = 0.5 * (
-            system.position_collection[..., 1:] + system.position_collection[..., :-1]
-        )
-        # Arman knows a consistent way of doing this?
-        # this is essentially m \cdot gradient_magnetic_field done as:
-        # gradient_magnetic_field.T @ m
-        system.external_forces += _batch_matvec(
-            _batch_matrix_transpose(
-                self.external_magnetic_field.gradient(
-                    position=element_position_collection
-                )
-            ),
-            system.lab_frame_magnetization_collection,
-        )
-
     def apply_torques(self, system, time: np.float64 = 0.0):
-
-        # magnetization_vector will be a (3, n_elem) array and a member of
-        # the MagneticCosseratRod object.
-        # Im guessing Arman knows a better way of doing the statement below
-        element_position_collection = 0.5 * (
-            system.position_collection[..., 1:] + system.position_collection[..., :-1]
-        )
-        local_frame_magnetic_field_value = _batch_matvec(
-            system.director_collection,
-            self.external_magnetic_field.value(position=element_position_collection),
-        )
-        # the above steps can be combined in one line...
         system.external_torques += _batch_cross(
-            system.magnetization_collection, local_frame_magnetic_field_value
+            system.magnetization_collection,
+            # convert external_magnetic_field to local frame
+            _batch_matvec(
+                system.director_collection,
+                self.external_magnetic_field.value(time=time),
+            ),
         )
