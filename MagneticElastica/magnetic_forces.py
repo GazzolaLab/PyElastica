@@ -1,7 +1,5 @@
 import numpy as np
-import numba
-from numba import njit
-from elastica._linalg import _batch_matvec, _batch_cross, _batch_matrix_transpose
+from elastica._linalg import _batch_matvec, _batch_cross
 from elastica.external_forces import NoForces
 
 
@@ -110,8 +108,39 @@ class MagneticTorquesForOscillatingMagneticField(NoForces):
             )
 
 
+class ConstantMagneticField:
+    def __init__(self, magnetic_field_amplitude):
+        # TODO documentation needed!
+        self.magnetic_field_amplitude = magnetic_field_amplitude
+
+    # assuming only time dependence as discussed
+    def value(self, time: np.float64 = 0.0):
+        return self.magnetic_field_amplitude
+
+
+class SingleModeOscillatingMagneticField:
+    def __init__(
+        self,
+        magnetic_field_amplitude,
+        magnetic_field_angular_frequency,
+        magnetic_field_phase_difference,
+    ):
+        # TODO documentation needed!
+        self.magnetic_field_amplitude = magnetic_field_amplitude
+        self.magnetic_field_angular_frequency = magnetic_field_angular_frequency
+        self.magnetic_field_phase_difference = magnetic_field_phase_difference
+
+    # assuming only time dependence as discussed
+    def value(self, time: np.float64 = 0.0):
+        return self.magnetic_field_amplitude * np.sin(
+            self.magnetic_field_angular_frequency * time
+            + self.magnetic_field_phase_difference
+        )
+
+
 class ExternalMagneticFieldForces(NoForces):
     def __init__(self, external_magnetic_field):
+        # TODO documentation needed!
         # NOTE for different magnetic fields, this will be different
         # class with method .value().
         self.external_magnetic_field = external_magnetic_field
@@ -122,6 +151,10 @@ class ExternalMagneticFieldForces(NoForces):
             # convert external_magnetic_field to local frame
             _batch_matvec(
                 system.director_collection,
-                self.external_magnetic_field.value(time=time),
+                # Arman a better way of doing the step below?
+                np.tile(
+                    self.external_magnetic_field.value(time=time).reshape(3, 1),
+                    reps=(1, system.director_collection.shape[-1]),
+                ),
             ),
         )
