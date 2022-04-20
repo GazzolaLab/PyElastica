@@ -108,6 +108,34 @@ class MagneticTorquesForOscillatingMagneticField(NoForces):
             )
 
 
+def compute_ramp_factor(time, ramp_interval, start_time, end_time):
+    """
+    This function returns a linear ramping up factor based on time, ramp_interval,
+    start_time and end_time.
+
+    Parameters
+    ----------
+    time : float
+        The time of simulation.
+    ramp_interval : float
+        ramping time for magnetic field.
+    start_time : float
+        Turning on time of magnetic field.
+    end_time : float
+        Turning off time of magnetic field.
+
+    Returns
+    -------
+    factor : float
+        Ramp up factor.
+
+    """
+    factor = (time > start_time) * min(1.0, (time - start_time) / ramp_interval) + (
+        time > end_time
+    ) * max(0.0, -1 / ramp_interval * (time - end_time) + 1.0)
+    return factor
+
+
 class ConstantMagneticField:
     """
     This class represents a magnetic field constant in time.
@@ -170,14 +198,21 @@ class ConstantMagneticField:
         # to bypass division by timestep issues,
         # TODO Arman can word it better?
         time = round(time, 5)
-        # TODO Arman can we factor out the ramp code as a free function?
+        """
         factor = 0.0
         if time > self.start_time:
             factor = min(1.0, (time - self.start_time) / self.ramp_interval)
 
         if time > self.end_time:
             factor = max(0.0, -1 / self.ramp_interval * (time - self.end_time) + 1.0)
+        """
 
+        factor = compute_ramp_factor(
+            time=time,
+            ramp_interval=self.ramp_interval,
+            start_time=self.start_time,
+            end_time=self.end_time,
+        )
         return self.magnetic_field_amplitude * factor
 
 
@@ -266,14 +301,21 @@ class SingleModeOscillatingMagneticField:
         # to bypass division by timestep issues,
         # TODO Arman can word it better?
         time = round(time, 5)
-        # TODO Arman can we factor out the ramp code as a free function?
+        """
         factor = 0.0
         if time > self.start_time:
             factor = min(1.0, (time - self.start_time) / self.ramp_interval)
 
         if time > self.end_time:
             factor = max(0.0, -1 / self.ramp_interval * (time - self.end_time) + 1.0)
+        """
 
+        factor = compute_ramp_factor(
+            time=time,
+            ramp_interval=self.ramp_interval,
+            start_time=self.start_time,
+            end_time=self.end_time,
+        )
         return (
             factor
             * self.magnetic_field_amplitude
