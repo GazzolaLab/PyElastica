@@ -141,8 +141,6 @@ class SingleModeOscillatingMagneticField:
 class ExternalMagneticFieldForces(NoForces):
     def __init__(self, external_magnetic_field):
         # TODO documentation needed!
-        # NOTE for different magnetic fields, this will be different
-        # class with method .value().
         self.external_magnetic_field = external_magnetic_field
 
     def apply_torques(self, system, time: np.float64 = 0.0):
@@ -151,10 +149,7 @@ class ExternalMagneticFieldForces(NoForces):
             # convert external_magnetic_field to local frame
             _batch_matvec(
                 system.director_collection,
-                # Arman a better way of doing the step below?
-                np.tile(
-                    self.external_magnetic_field.value(time=time).reshape(3, 1),
-                    reps=(1, system.director_collection.shape[-1]),
-                ),
+                self.external_magnetic_field.value(time=time).reshape(3, 1)
+                * np.ones((system.n_elems,)),
             ),
         )
