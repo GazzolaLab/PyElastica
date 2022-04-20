@@ -167,19 +167,18 @@ class ConstantMagneticField:
         Assumes only time dependence.
 
         """
-        factor = 0.0
+        # to bypass division by timestep issues,
+        # TODO Arman can word it better?
         time = round(time, 5)
-        magnetic_field = np.zeros((3))
+        # TODO Arman can we factor out the ramp code as a free function?
+        factor = 0.0
         if time > self.start_time:
             factor = min(1.0, (time - self.start_time) / self.ramp_interval)
 
         if time > self.end_time:
             factor = max(0.0, -1 / self.ramp_interval * (time - self.end_time) + 1.0)
 
-        if factor > 0.0:
-            magnetic_field[:] = self.magnetic_field_amplitude * factor
-
-        return magnetic_field
+        return self.magnetic_field_amplitude * factor
 
 
 class SingleModeOscillatingMagneticField:
@@ -198,6 +197,12 @@ class SingleModeOscillatingMagneticField:
         magnetic_field_phase_difference: numpy.ndarray
             1D (dim,) array containing data with 'float' type.
             Phase difference of the oscillating magnetic field.
+        ramp_interval : float
+            ramping time for magnetic field.
+        start_time : float
+            Turning on time of magnetic field.
+        end_time : float
+            Turning off time of magnetic field.
 
     """
 
@@ -206,6 +211,9 @@ class SingleModeOscillatingMagneticField:
         magnetic_field_amplitude,
         magnetic_field_angular_frequency,
         magnetic_field_phase_difference,
+        ramp_interval,
+        start_time,
+        end_time,
     ):
         """
 
@@ -220,11 +228,20 @@ class SingleModeOscillatingMagneticField:
         magnetic_field_phase_difference: numpy.ndarray
             1D (dim,) array containing data with 'float' type.
             Phase difference of the oscillating magnetic field.
+        ramp_interval : float
+            ramping time for magnetic field.
+        start_time : float
+            Turning on time of magnetic field.
+        end_time : float
+            Turning off time of magnetic field.
 
         """
         self.magnetic_field_amplitude = magnetic_field_amplitude
         self.magnetic_field_angular_frequency = magnetic_field_angular_frequency
         self.magnetic_field_phase_difference = magnetic_field_phase_difference
+        self.ramp_interval = ramp_interval
+        self.start_time = start_time
+        self.end_time = end_time
 
     def value(self, time: np.float64 = 0.0):
         """
@@ -246,9 +263,24 @@ class SingleModeOscillatingMagneticField:
         Assumes only time dependence.
 
         """
-        return self.magnetic_field_amplitude * np.sin(
-            self.magnetic_field_angular_frequency * time
-            + self.magnetic_field_phase_difference
+        # to bypass division by timestep issues,
+        # TODO Arman can word it better?
+        time = round(time, 5)
+        # TODO Arman can we factor out the ramp code as a free function?
+        factor = 0.0
+        if time > self.start_time:
+            factor = min(1.0, (time - self.start_time) / self.ramp_interval)
+
+        if time > self.end_time:
+            factor = max(0.0, -1 / self.ramp_interval * (time - self.end_time) + 1.0)
+
+        return (
+            factor
+            * self.magnetic_field_amplitude
+            * np.sin(
+                self.magnetic_field_angular_frequency * time
+                + self.magnetic_field_phase_difference
+            )
         )
 
 
