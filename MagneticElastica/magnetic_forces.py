@@ -109,29 +109,117 @@ class MagneticTorquesForOscillatingMagneticField(NoForces):
 
 
 class ConstantMagneticField:
+    """
+    This class represents a magnetic field constant in time.
+
+        Attributes
+        ----------
+        magnetic_field_amplitude: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Amplitude of the constant magnetic field.
+
+    """
+
     def __init__(self, magnetic_field_amplitude):
-        # TODO documentation needed!
+        """
+
+        Parameters
+        ----------
+        magnetic_field_amplitude: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Amplitude of the constant magnetic field.
+
+        """
         self.magnetic_field_amplitude = magnetic_field_amplitude
 
-    # assuming only time dependence as discussed
     def value(self, time: np.float64 = 0.0):
-        return self.magnetic_field_amplitude
+        """
+        This function returns the value of the magnetic field vector based on the
+        magnetic_field_amplitude.
+
+        Parameters
+        ----------
+        time : float
+            The time of simulation.
+
+        Returns
+        -------
+        magnetic_field: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Value of the constant magnetic field.
+        Notes
+        -------
+        Assumes only time dependence.
+
+        """
+        magnetic_field = self.magnetic_field_amplitude
+        return magnetic_field
 
 
 class SingleModeOscillatingMagneticField:
+    """
+    This class represents a magnetic field oscillating sinusoidally in time
+    with one mode.
+
+        Attributes
+        ----------
+        magnetic_field_amplitude: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Amplitude of the oscillating magnetic field.
+        magnetic_field_angular_frequency: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Angular frequency of the oscillating magnetic field.
+        magnetic_field_phase_difference: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Phase difference of the oscillating magnetic field.
+
+    """
+
     def __init__(
         self,
         magnetic_field_amplitude,
         magnetic_field_angular_frequency,
         magnetic_field_phase_difference,
     ):
-        # TODO documentation needed!
+        """
+
+        Parameters
+        ----------
+        magnetic_field_amplitude: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Amplitude of the oscillating magnetic field.
+        magnetic_field_angular_frequency: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Angular frequency of the oscillating magnetic field.
+        magnetic_field_phase_difference: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Phase difference of the oscillating magnetic field.
+
+        """
         self.magnetic_field_amplitude = magnetic_field_amplitude
         self.magnetic_field_angular_frequency = magnetic_field_angular_frequency
         self.magnetic_field_phase_difference = magnetic_field_phase_difference
 
-    # assuming only time dependence as discussed
     def value(self, time: np.float64 = 0.0):
+        """
+        This function returns the value of the sinusoidally oscillating magnetic field
+        vector, based on amplitude, frequency and phase difference.
+
+        Parameters
+        ----------
+        time : float
+            The time of simulation.
+
+        Returns
+        -------
+        magnetic_field: numpy.ndarray
+            1D (dim,) array containing data with 'float' type.
+            Value of the oscillatory magnetic field.
+        Notes
+        -------
+        Assumes only time dependence.
+
+        """
         return self.magnetic_field_amplitude * np.sin(
             self.magnetic_field_angular_frequency * time
             + self.magnetic_field_phase_difference
@@ -139,8 +227,27 @@ class SingleModeOscillatingMagneticField:
 
 
 class ExternalMagneticFieldForces(NoForces):
+    """
+    This class applies magnetic forces on a magnetic Cosserat rod, based on an
+    external magnetic field.
+
+        Attributes
+        ----------
+        external_magnetic_field: object
+            External magnetic field object, that returns the value of the magnetic field vector
+            via a .value() method.
+
+    """
+
     def __init__(self, external_magnetic_field):
-        # TODO documentation needed!
+        """
+        Parameters
+        ----------
+        external_magnetic_field: object
+            External magnetic field object, that returns the value of the magnetic field vector
+            via a .value() method.
+
+        """
         self.external_magnetic_field = external_magnetic_field
 
     def apply_torques(self, system, time: np.float64 = 0.0):
