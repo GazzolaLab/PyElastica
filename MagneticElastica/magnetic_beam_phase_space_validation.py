@@ -14,74 +14,7 @@ from MagneticElastica.magnetic_forces import (
     ExternalMagneticFieldForces,
     ConstantMagneticField,
 )
-
-
-class MagneticBeamAnalytical:
-    """ """
-
-    def __init__(
-        self, F, EI, phi, L, ksi=np.linspace(0, 1, 100), theta_dot_initial_guess=0.0
-    ):
-        self.F = F
-        self.EI = EI
-        self.phi = phi
-
-        self.ksi = ksi
-        self.q = F * L ** 2 / (EI)
-        self.theta_dot_initial_guess = theta_dot_initial_guess
-
-    def compute_governing_equations(self, x, ksi, *args, **kwargs):
-
-        x1, x2 = x
-
-        x1_dot = x2
-
-        x2_dot = -self.q * np.sin(self.phi - x1)
-
-        return [x1_dot, x2_dot]
-
-    def solve_governing_equations(self, x2_0):
-        x0 = [0, x2_0]  # x2(0) not known it will be computed using shooting method.
-
-        sol = odeint(self.compute_governing_equations, x0, self.ksi)
-
-        return sol
-
-    def shooting_method(self, x2_0):
-        sol = self.solve_governing_equations(x2_0)
-
-        # return sol[-1,1]-0
-        return (sol[-1, 1] - 0) ** 2
-
-    def find_boundary_conditions(self):
-        """
-        This is for doing shooting method, guess the initial theta_dot at ksi=0 and integrate the beam equations, and
-        check the if bc at the free end theta_dot satisfied which is 0.
-        Returns
-        -------
-
-        """
-
-        # x2_0 = fsolve(self.shooting_method, x0=self.theta_dot_initial_guess, xtol=1E-4)
-        x2_0 = minimize(self.shooting_method, x0=self.theta_dot_initial_guess).x
-        return x2_0
-
-    def __call__(self, *args, **kwargs):
-
-        # Find new boundary conditions
-        x2_0 = self.find_boundary_conditions()
-
-        sol = self.solve_governing_equations(x2_0)
-
-        theta = sol[:, 0]
-
-        current_deflection = self._compute_deflection(theta)
-
-        return theta[-1], current_deflection, x2_0
-
-    def _compute_deflection(self, theta):
-
-        return np.trapz(np.sin(theta), x=self.ksi)
+from magnetic_beam_analytical_solution import MagneticBeamAnalytical
 
 
 class MagneticBeamSimulator(BaseSystemCollection, Constraints, Forcing):
