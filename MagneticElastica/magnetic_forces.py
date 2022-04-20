@@ -136,7 +136,41 @@ def compute_ramp_factor(time, ramp_interval, start_time, end_time):
     return factor
 
 
-class ConstantMagneticField:
+class BaseMagneticField:
+    """
+    This is the base class for external magnetic field objects.
+
+    Notes
+    -----
+    Every new magnetic field class must be derived
+    from BaseMagneticField class.
+
+    """
+
+    def __init__(self):
+        """
+        BaseMagneticField class does not need any input parameters.
+        """
+        pass
+
+    def value(self, time: np.float64 = 0.0):
+        """Returns the value of the magnetic field vector.
+
+        In BaseMagneticField class, this routine simply passes.
+
+        Parameters
+        ----------
+        time : float
+            The time of simulation.
+
+        Returns
+        -------
+
+        """
+        pass
+
+
+class ConstantMagneticField(BaseMagneticField):
     """
     This class represents a magnetic field constant in time.
 
@@ -216,7 +250,7 @@ class ConstantMagneticField:
         return self.magnetic_field_amplitude * factor
 
 
-class SingleModeOscillatingMagneticField:
+class SingleModeOscillatingMagneticField(BaseMagneticField):
     """
     This class represents a magnetic field oscillating sinusoidally in time
     with one mode.
