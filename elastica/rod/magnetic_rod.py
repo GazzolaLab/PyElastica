@@ -205,12 +205,25 @@ class MagneticRod(CosseratRod):
         self.damping_forces = damping_forces
         self.damping_torques = damping_torques
 
-        if kwargs.__contains__("magnetization_collection"):
-            self.magnetization_collection = kwargs.get("magnetization_collection")
+        if kwargs.__contains__("magnetization_density"):
+            magnetization_density = kwargs.get("magnetization_density")
         else:
             raise AttributeError(
-                "Did you forget to input magnetization_collection in kwargs ?"
+                "Did you forget to input magnetization_density in kwargs ?"
             )
+
+        if kwargs.__contains__("magnetization_direction"):
+            magnetization_direction = kwargs.get("magnetization_direction")
+        else:
+            raise AttributeError(
+                "Did you forget to input magnetization_direction in kwargs ?"
+            )
+        magnetization_direction_in_material_frame = _batch_matvec(
+            self.director_collection, magnetization_direction
+        )
+        self.magnetization_collection = (
+            magnetization_density * volume * magnetization_direction_in_material_frame
+        )
 
         # Compute shear stretch and strains.
         _compute_shear_stretch_strains(
