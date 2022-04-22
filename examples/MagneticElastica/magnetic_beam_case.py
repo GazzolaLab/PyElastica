@@ -6,10 +6,6 @@ from matplotlib.colors import to_rgb
 sys.path.append("../")
 sys.path.append("../../")
 from elastica import *
-from MagneticElastica.magnetic_forces import (
-    ExternalMagneticFieldForces,
-    ConstantMagneticField,
-)
 
 
 SAVE_FIGURE = False

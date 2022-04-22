@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from MagneticElastica.magnetic_forces import (
+from elastica.magnetic_forces import (
     compute_ramp_factor,
     BaseMagneticField,
     ConstantMagneticField,

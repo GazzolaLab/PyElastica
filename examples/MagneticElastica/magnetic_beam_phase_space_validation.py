@@ -9,11 +9,6 @@ from matplotlib.colors import to_rgb
 sys.path.append("../")
 sys.path.append("../../")
 from elastica import *
-from MagneticElastica.magnetic_forces import (
-    MagneticTorquesForUniformMagneticField,
-    ExternalMagneticFieldForces,
-    ConstantMagneticField,
-)
 from magnetic_beam_analytical_solution import MagneticBeamAnalytical
 
 

@@ -15,3 +15,4 @@ from elastica.timestepper import *
 from elastica.restart import *
 from elastica.reset_functions_for_block_structure import *
 from elastica.rod.magnetic_rod import *
+from elastica.magnetic_forces import *

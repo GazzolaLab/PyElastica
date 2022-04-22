@@ -4,11 +4,7 @@ import sys
 sys.path.append("../")
 sys.path.append("../../")
 from elastica import *
-from MagneticElastica.magnetic_forces import (
-    ExternalMagneticFieldForces,
-    SingleModeOscillatingMagneticField,
-)
-from MagneticElastica.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_tip_position_history,
 )
