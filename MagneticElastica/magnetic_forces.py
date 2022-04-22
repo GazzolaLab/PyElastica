@@ -25,9 +25,9 @@ def compute_ramp_factor(time, ramp_interval, start_time, end_time):
         Ramp up factor.
 
     """
-    factor = (time > start_time) * min(1.0, (time - start_time) / ramp_interval) + (
-        time > end_time
-    ) * max(0.0, -1 / ramp_interval * (time - end_time) + 1.0)
+    factor = (time > start_time) * (time < end_time) * min(
+        1.0, (time - start_time) / ramp_interval
+    ) + (time > end_time) * max(0.0, -1 / ramp_interval * (time - end_time) + 1.0)
     return factor
 
 
