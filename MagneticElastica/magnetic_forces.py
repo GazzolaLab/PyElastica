@@ -25,7 +25,7 @@ def compute_ramp_factor(time, ramp_interval, start_time, end_time):
         Ramp up factor.
 
     """
-    factor = (time > start_time) * (time < end_time) * min(
+    factor = (time > start_time) * (time <= end_time) * min(
         1.0, (time - start_time) / ramp_interval
     ) + (time > end_time) * max(0.0, -1 / ramp_interval * (time - end_time) + 1.0)
     return factor
@@ -126,7 +126,7 @@ class ConstantMagneticField(BaseMagneticField):
         """
         # to bypass division by timestep issues,
         # TODO Arman can word it better?
-        time = round(time, 5)
+        # time = round(time, 5)
         factor = compute_ramp_factor(
             time=time,
             ramp_interval=self.ramp_interval,
@@ -220,7 +220,7 @@ class SingleModeOscillatingMagneticField(BaseMagneticField):
         """
         # to bypass division by timestep issues,
         # TODO Arman can word it better?
-        time = round(time, 5)
+        # time = round(time, 5)
         factor = compute_ramp_factor(
             time=time,
             ramp_interval=self.ramp_interval,
@@ -267,7 +267,9 @@ class ExternalMagneticFieldForces(NoForces):
             # convert external_magnetic_field to local frame
             _batch_matvec(
                 system.director_collection,
-                self.external_magnetic_field.value(time=time).reshape(3, 1)
+                self.external_magnetic_field.value(time=time).reshape(
+                    3, 1
+                )  # broadcasting 3D vector
                 * np.ones((system.n_elems,)),
             ),
         )
