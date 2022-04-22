@@ -124,9 +124,6 @@ class ConstantMagneticField(BaseMagneticField):
         Assumes only time dependence.
 
         """
-        # to bypass division by timestep issues,
-        # TODO Arman can word it better?
-        # time = round(time, 5)
         factor = compute_ramp_factor(
             time=time,
             ramp_interval=self.ramp_interval,
@@ -218,9 +215,6 @@ class SingleModeOscillatingMagneticField(BaseMagneticField):
         Assumes only time dependence.
 
         """
-        # to bypass division by timestep issues,
-        # TODO Arman can word it better?
-        # time = round(time, 5)
         factor = compute_ramp_factor(
             time=time,
             ramp_interval=self.ramp_interval,
