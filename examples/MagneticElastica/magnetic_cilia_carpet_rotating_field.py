@@ -16,7 +16,7 @@ class MagneticBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBack
 
 magnetic_beam_sim = MagneticBeamSimulator()
 # setting up test params
-n_rods = 8
+n_rods = 10
 base_length = 1.5  # m
 spacing_between_rods = base_length  # following Gu2020
 n_elem = 50
@@ -35,7 +35,7 @@ E = 1.85e5  # Pa
 shear_modulus = 6.16e4  # Pa
 
 # Parameters are from Gu2020
-angular_frequency = np.deg2rad(10.0)  # angular frequency of the rotating magnetic field
+angular_frequency = np.deg2rad(5.0)  # angular frequency of the rotating magnetic field
 magnetic_field_strength = 80e-3  # 80mT
 # MBAL2_EI is a non-dimensional number from Wang 2019
 MBAL2_EI = (
@@ -117,7 +117,8 @@ class MagneticBeamCallBack(CallBackBaseClass):
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-final_time = 2 * 2 * np.pi / angular_frequency  # run simulation for one period
+num_cycles = 3
+final_time = num_cycles * 2 * np.pi / angular_frequency
 dl = base_length / n_elem
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
@@ -143,7 +144,7 @@ integrate(timestepper, magnetic_beam_sim, final_time, total_steps)
 plot_video_with_surface(
     rod_post_processing_list,
     fps=rendering_fps,
-    step=1,
+    step=4,
     x_limits=(-2, carpet_length + 2),
     y_limits=(-2, 2),
     z_limits=(-2, 2),
