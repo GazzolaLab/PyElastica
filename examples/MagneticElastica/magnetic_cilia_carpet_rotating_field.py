@@ -6,7 +6,6 @@ sys.path.append("../../")
 from elastica import *
 from post_processing import (
     plot_video_with_surface,
-    plot_tip_position_history,
 )
 
 
