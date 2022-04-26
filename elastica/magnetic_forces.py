@@ -1,3 +1,12 @@
+__doc__ = """ Module implementation for external magnetic fields and forces for magnetic Cosserat rods."""
+__all__ = [
+    "compute_ramp_factor",
+    "BaseMagneticField",
+    "ConstantMagneticField",
+    "SingleModeOscillatingMagneticField",
+    "ExternalMagneticFieldForces",
+]
+
 import numpy as np
 from elastica._linalg import _batch_matvec, _batch_cross
 from elastica.external_forces import NoForces
