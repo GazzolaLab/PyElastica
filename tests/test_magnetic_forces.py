@@ -170,3 +170,9 @@ def test_external_magnetic_field_forces(
     np.testing.assert_allclose(
         mock_rod.external_torques, correct_magnetic_field_torques, atol=Tolerance.atol()
     )
+
+
+if __name__ == "__main__":
+    from pytest import main
+
+    main([__file__])
