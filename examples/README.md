@@ -53,7 +53,13 @@ Examples can serve as a starting template for customized usages.
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
       * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
       * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
-
+* [MagneticRodCases](./MagneticRodCases)
+    * [ConstantMagneticField](./MagneticRodCases/ConstantMagneticField)
+      * __Purpose__ : Demonstrates rod deformations under the constant and uniform magnetic field.
+      * __Features__ : MagneticRod, ConstantMagneticField, ExternalMagneticFieldForces
+    * [RotatingMagneticField](./MagneticRodCases/RotatingMagneticField)
+      * __Purpose__ : Demonstrates rod deformations under the rotating and uniform magnetic field.
+      * __Features__: MagneticRod, SingleModeOscillatingMagneticField, ExternalMagneticFieldForces
 ## Functional Examples
 
 * [RestartExample](./RestartExample)
