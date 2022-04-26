@@ -77,6 +77,7 @@ class BaseRodForTesting(RodBase):
         # Things that are matrix mapped on voronoi
         self.bend_matrix = np.random.randn() * np.ones((3, 3, self.n_voronoi))
 
+
 class MagneticRodForTesting(MagneticRod):
     def __init__(self, n_elems):
         self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
@@ -168,7 +169,6 @@ class RigidBodyForTesting(RigidBodyBase):
         self.inv_mass_second_moment_of_inertia = np.random.randn(3, 3, 1)
 
 
-
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_construct_memory_block_structures_for_Cosserat_rod(n_rods):
     """
@@ -190,6 +190,7 @@ def test_construct_memory_block_structures_for_Cosserat_rod(n_rods):
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
 
+
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_construct_memory_block_structures_for_Magnetic_rod(n_rods):
     """
@@ -205,11 +206,14 @@ def test_construct_memory_block_structures_for_Magnetic_rod(n_rods):
 
     """
 
-    systems = [MagneticRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    systems = [
+        MagneticRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)
+    ]
 
     memory_block_list = construct_memory_block_structures(systems)
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockMagneticRod)
+
 
 @pytest.mark.parametrize("n_bodies", [1, 2, 5, 6])
 def test_construct_memory_block_structures_for_Rigid_Body(n_bodies):
@@ -232,6 +236,7 @@ def test_construct_memory_block_structures_for_Rigid_Body(n_bodies):
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockRigidBody)
 
+
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_construct_memory_block_structures_for_mixed_systems(n_rods):
     """
@@ -247,8 +252,12 @@ def test_construct_memory_block_structures_for_mixed_systems(n_rods):
 
     """
 
-    cosserat_rod_systems = [BaseRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    magnetic_rod_systems = [MagneticRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    cosserat_rod_systems = [
+        BaseRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)
+    ]
+    magnetic_rod_systems = [
+        MagneticRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)
+    ]
     rigid_body_systems = [RigidBodyForTesting() for _ in range(n_rods)]
     systems = cosserat_rod_systems + magnetic_rod_systems + rigid_body_systems
 
@@ -257,6 +266,7 @@ def test_construct_memory_block_structures_for_mixed_systems(n_rods):
     assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
     assert issubclass(memory_block_list[1].__class__, MemoryBlockRigidBody)
     assert issubclass(memory_block_list[2].__class__, MemoryBlockMagneticRod)
+
 
 @pytest.mark.xfail(raises=TypeError)
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
@@ -274,9 +284,9 @@ def test_construct_memory_block_structures_for_unknown_systems(n_rods):
     -------
 
     """
+
     class UnknownSystem:
         pass
-
 
     systems = [UnknownSystem() for _ in range(n_rods)]
 

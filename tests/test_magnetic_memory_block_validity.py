@@ -72,22 +72,24 @@ class MagneticMockRod:
         self.bend_matrix = np.random.randn() * np.ones((3, 3, self.n_voronoi))
 
         # self.density = fake_idx
-        magnetization_direction = np.random.randn(3,self.n_elems)
+        magnetization_direction = np.random.randn(3, self.n_elems)
         magnetization_direction_in_material_frame = _batch_matvec(
             self.director_collection, magnetization_direction
         )
         magnetization_density = np.random.randn(self.n_elems)
         self.magnetization_collection = (
-            magnetization_density * self.volume * magnetization_direction_in_material_frame
+            magnetization_density
+            * self.volume
+            * magnetization_direction_in_material_frame
         )
-
-
 
 
 """
 Most of the magnetic memory block derived from the Magnetic rod.
 Only test the vectors on elements part.
 """
+
+
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_magnetic_block_structure_vectors_on_elements_validity(n_rods):
     """
@@ -188,15 +190,18 @@ def test_magnetic_block_structure_vectors_on_elements_validity(n_rods):
 
         # magnetization_collection
         assert np.shares_memory(
-            block_structure.magnetization_collection, world_rods[i].magnetization_collection
+            block_structure.magnetization_collection,
+            world_rods[i].magnetization_collection,
         )
         assert np.shares_memory(
-            block_structure.vector_dofs_in_rod_elems, world_rods[i].magnetization_collection
+            block_structure.vector_dofs_in_rod_elems,
+            world_rods[i].magnetization_collection,
         )
         assert_allclose(
             block_structure.magnetization_collection[..., start_idx:end_idx],
             world_rods[i].magnetization_collection,
         )
+
 
 if __name__ == "__main__":
     from pytest import main
