@@ -3,8 +3,9 @@ import sys
 # FIXME without appending sys.path make it more generic
 sys.path.append("../")
 sys.path.append("../../")
+sys.path.append("../../../")
 from elastica import *
-from post_processing import (
+from MagneticRodCases.post_processing import (
     plot_video_with_surface,
 )
 

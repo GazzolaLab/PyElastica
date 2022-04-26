@@ -5,6 +5,7 @@ from matplotlib.colors import to_rgb
 # FIXME without appending sys.path make it more generic
 sys.path.append("../")
 sys.path.append("../../")
+sys.path.append("../../../")
 from elastica import *
 
 

@@ -4,11 +4,50 @@ from scipy.integrate import odeint
 
 
 class MagneticBeamAnalytical:
-    """ """
+    """
+    This class computes the beam deflection under a tip load. Boundary conditions are one end is clamped and
+    other end is free. Using the shooting method steady-state beam deflection is computed.
+
+        Attributes
+        ----------
+        F : float
+            Tip force acting on the beam.
+        EI : float
+            Bending stiffness.
+        phi : float
+            Force direction angle
+        L : float
+            Beam length
+        ksi : numpy.ndarray
+            1D (n_elem,) array containing data with 'float' type.
+            Non-dimensional position of beam elements. This is required for odeint.
+        theta_dot_initial_guess : float
+            Initial guess for theta dot at the clamped end of the beam.
+        q : float
+            Non-dimensional load parameter
+    """
 
     def __init__(
         self, F, EI, phi, L, ksi=np.linspace(0, 1, 100), theta_dot_initial_guess=0.0
     ):
+        """
+
+        Parameters
+        ----------
+        F : float
+            Tip force acting on the beam.
+        EI : float
+            Bending stiffness.
+        phi : float
+            Force direction angle
+        L : float
+            Beam length
+        ksi : numpy.ndarray
+            1D (n_elem,) array containing data with 'float' type.
+            Non-dimensional position of beam elements. This is required for odeint.
+        theta_dot_initial_guess : float
+            Initial guess for theta dot at the clamped end of the beam
+        """
         self.F = F
         self.EI = EI
         self.phi = phi

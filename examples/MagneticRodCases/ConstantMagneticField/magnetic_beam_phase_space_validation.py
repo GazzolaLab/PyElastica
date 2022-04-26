@@ -1,6 +1,4 @@
 import sys
-from scipy.optimize import fsolve, minimize_scalar, minimize
-from scipy.integrate import odeint
 import multiprocessing as mp
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
@@ -8,6 +6,7 @@ from matplotlib.colors import to_rgb
 # FIXME without appending sys.path make it more generic
 sys.path.append("../")
 sys.path.append("../../")
+sys.path.append("../../../")
 from elastica import *
 from magnetic_beam_analytical_solution import MagneticBeamAnalytical
 
@@ -52,17 +51,6 @@ def run_magnetic_beam_sim(magnetization_density, magnetic_field_angle, magnetic_
     magnetic_beam_sim.constrain(shearable_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
-
-    # Apply magnetic forces
-    # magnetic_field_vector =  magnetic_field * np.array([np.cos(magnetic_field_angle), np.sin(magnetic_field_angle), 0])
-    # magnetic_beam_sim.add_forcing_to(shearable_rod).using(
-    #     MagneticTorquesForUniformMagneticField,
-    #     ramp_interval = 500.0,
-    #     start_time = 0.0,
-    #     end_time = 100000,
-    #     magnetization_density=magnetization_density*np.ones((n_elem)),
-    #     magnetic_field_vector=magnetic_field_vector
-    # )
 
     # Set the constant magnetic field object
     magnetic_field_amplitude = magnetic_field * np.array(
@@ -147,14 +135,8 @@ def compute_analytical_solution(
 if __name__ == "__main__":
 
     magnetization_density = 144e3
-    # magnetic_field_angle = np.deg2rad(180-0.5)#np.pi/3
     magnetic_field = np.linspace(0, 42, 10) * 1e-3
     magnetic_field_analytical = np.linspace(0, 42, 400) * 1e-3
-
-    # MBAL2_EI_analytical, deflection_analytical, theta_analytical = compute_analytical_solution(magnetization_density,magnetic_field_angle , magnetic_field_analytical)
-    #
-    # MBAL2_EI, deflection, theta = run_magnetic_beam_sim(magnetization_density, magnetic_field_angle, magnetic_field[5])
-
     magnetic_field_angle = np.deg2rad(np.array([30, 60, 90, 120, 150, 180 - 0.5]))
     # Run elastica simulations as a batch job
     simulation_list = []
