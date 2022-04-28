@@ -21,6 +21,9 @@ Examples can serve as a starting template for customized usages.
 * [ContinuumSnakeCase](./ContinuumSnakeCase)
     * __Purpose__: Demonstrate simple case of modeling biological creature using PyElastica. The example use friction to create slithering snake, and optimize the speed using [CMA](https://github.com/CMA-ES/pycma).
     * __Features__: CosseratRod, MuscleTorques, AnisotropicFrictionalPlane, Gravity, CMA Optimization
+    * [MuscularSnake](./MuscularSnake)
+      * __Purpose__: Example of [Parallel connection module](../elastica/experimental/connection_contact_joint/parallel_connection.py) and customized [Force module](./MuscularSnake/muscle_forces.py) to implement muscular snake.
+      * __Features__: MuscleForces(custom implemented) 
 * [ButterflyCase](./ButterflyCase)
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
@@ -48,11 +51,11 @@ Examples can serve as a starting template for customized usages.
     * __Features__: CosseratRod, ExternalContact
   * [RodSelfContact](./RodContactCase/RodSelfContact)
     * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
-      * __Purpose__: Demonstrates rod self contact with Plectoneme example.
-      * __Features__: CosseratRod, SelonoidsBC, SelfContact
+      * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
+      * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
-      * __Purpose__: Demonstrates rod self contact with Solenoid example.
-      * __Features__: CosseratRod, SelonoidsBC, SelfContact
+      * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
+      * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
 
 ## Functional Examples
 
@@ -67,3 +70,8 @@ Examples can serve as a starting template for customized usages.
 
 * [Elastica RL control](https://github.com/GazzolaLab/Elastica-RL-control) - Case presented in [<strong>Elastica: A compliant mechanics environment for soft robotic control</strong>](https://doi.org/10.1109/LRA.2021.3063698)
 * [Gym Softrobot](https://github.com/skim0119/gym-softrobot) - Soft-robot control environment developed in OpenAI-gym format to study slender body control with reinforcement learning.
+
+## Experimental Cases
+* [ParallelConnectionExample](./ExperimentalCases/ParallelConnectionExample)
+  * __Purpose__: Demonstrate the usage of parallel connection.
+  * __Features__: connect two parallel rods

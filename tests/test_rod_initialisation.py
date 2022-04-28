@@ -152,7 +152,6 @@ class MockRodForTest:
             density,
             nu,
             youngs_modulus,
-            # poisson_ratio,
             alpha_c=0.964,
             *args,
             **kwargs
@@ -758,7 +757,7 @@ def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
 @pytest.mark.parametrize("shear_modulus", [5e3, 10e3, 50e3])
-def test_shear_matrix_for_varying_shear_modulus_warning_message_check_if_poisson_ratio_defined(
+def test_shear_matrix_for_varying_shear_modulus_error_message_check_if_poisson_ratio_defined(
     n_elems, shear_modulus
 ):
     """
@@ -781,7 +780,7 @@ def test_shear_matrix_for_varying_shear_modulus_warning_message_check_if_poisson
     poisson_ratio = 0.3
     base_area = np.pi * base_radius ** 2
 
-    with pytest.warns(UserWarning):
+    with pytest.raises(NameError):
         mockrod = MockRodForTest.straight_rod(
             n_elems,
             start,
@@ -794,140 +793,6 @@ def test_shear_matrix_for_varying_shear_modulus_warning_message_check_if_poisson
             youngs_modulus,
             shear_modulus=shear_modulus,
             poisson_ratio=poisson_ratio,
-        )
-
-    test_shear_matrix = mockrod.shear_matrix
-
-    correct_shear_matrix = np.zeros((3, 3))
-    np.fill_diagonal(
-        correct_shear_matrix[:],
-        [
-            0.964 * shear_modulus * base_area,
-            0.964 * shear_modulus * base_area,
-            youngs_modulus * base_area,
-        ],
-    )
-
-    for k in range(n_elems):
-        assert_allclose(
-            correct_shear_matrix,
-            test_shear_matrix[..., k],
-            atol=Tolerance.atol(),
-        )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-@pytest.mark.parametrize("poisson_ratio", [0.5, 0.3, 1.0])
-def test_shear_matrix_for_varying_poisson_ratio_warning_message_check_if_no_shear_modulus_defined(
-    n_elems, poisson_ratio
-):
-    """
-    This test, is checking if for user defined poisson ratio and validity of shear matrix.
-    We expect if shear modulus is not defined then a UserWarninig is raised and shear matrix will be computed.
-
-    Returns
-    -------
-
-    """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.1
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    base_area = np.pi * base_radius ** 2
-
-    with pytest.warns(UserWarning):
-        mockrod = MockRodForTest.straight_rod(
-            n_elems,
-            start,
-            direction,
-            normal,
-            base_length,
-            base_radius,
-            density,
-            nu,
-            youngs_modulus,
-            poisson_ratio=poisson_ratio,
-        )
-
-    test_shear_matrix = mockrod.shear_matrix
-
-    shear_modulus = youngs_modulus / (1 + poisson_ratio)
-    correct_shear_matrix = np.zeros((3, 3))
-    np.fill_diagonal(
-        correct_shear_matrix[:],
-        [
-            0.964 * shear_modulus * base_area,
-            0.964 * shear_modulus * base_area,
-            youngs_modulus * base_area,
-        ],
-    )
-
-    for k in range(n_elems):
-        assert_allclose(
-            correct_shear_matrix,
-            test_shear_matrix[..., k],
-            atol=Tolerance.atol(),
-        )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_shear_matrix_for_no_shear_modulus_or_poisson_ratio_defined_warning_message_check(
-    n_elems,
-):
-    """
-    This test, checks validity of shear matrix if there is no user defined shear modulus and poisson ratio.
-    Then Elastica uses poisson ratio of 0.5 and computes shear matrix. We expect a UserWarning to be raised.
-
-    Returns
-    -------
-
-    """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.1
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    poisson_ratio = 0.5
-    base_area = np.pi * base_radius ** 2
-
-    with pytest.warns(UserWarning):
-        mockrod = MockRodForTest.straight_rod(
-            n_elems,
-            start,
-            direction,
-            normal,
-            base_length,
-            base_radius,
-            density,
-            nu,
-            youngs_modulus,
-        )
-
-    test_shear_matrix = mockrod.shear_matrix
-
-    shear_modulus = youngs_modulus / (1 + poisson_ratio)
-    correct_shear_matrix = np.zeros((3, 3))
-    np.fill_diagonal(
-        correct_shear_matrix[:],
-        [
-            0.964 * shear_modulus * base_area,
-            0.964 * shear_modulus * base_area,
-            youngs_modulus * base_area,
-        ],
-    )
-
-    for k in range(n_elems):
-        assert_allclose(
-            correct_shear_matrix,
-            test_shear_matrix[..., k],
-            atol=Tolerance.atol(),
         )
 
 
