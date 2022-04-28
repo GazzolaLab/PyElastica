@@ -21,6 +21,9 @@ Examples can serve as a starting template for customized usages.
 * [ContinuumSnakeCase](./ContinuumSnakeCase)
     * __Purpose__: Demonstrate simple case of modeling biological creature using PyElastica. The example use friction to create slithering snake, and optimize the speed using [CMA](https://github.com/CMA-ES/pycma).
     * __Features__: CosseratRod, MuscleTorques, AnisotropicFrictionalPlane, Gravity, CMA Optimization
+    * [MuscularSnake](./MuscularSnake)
+      * __Purpose__: Example of [Parallel connection module](../elastica/experimental/connection_contact_joint/parallel_connection.py) and customized [Force module](./MuscularSnake/muscle_forces.py) to implement muscular snake.
+      * __Features__: MuscleForces(custom implemented) 
 * [ButterflyCase](./ButterflyCase)
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
