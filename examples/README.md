@@ -60,6 +60,9 @@ Examples can serve as a starting template for customized usages.
     * [RotatingMagneticField](./MagneticRodCases/RotatingMagneticField)
       * __Purpose__ : Demonstrates rod deformations under the rotating and uniform magnetic field.
       * __Features__: MagneticRod, SingleModeOscillatingMagneticField, ExternalMagneticFieldForces
+    * [MagneticMillipede](./MagneticRodCases/MagneticMilliPede)
+      * __Purpose__: Demonstrates a magnetic millipede robot motions under rotating magnetic field.
+      * __Features__: MagneticRod, SingleModeOscillatingMagneticField, ExternalMagneticFieldForces, SurfaceJointSideBySide, PerpendicularRodsConnection, IsotropicFrictionalPlaneForRodTips 
 ## Functional Examples
 
 * [RestartExample](./RestartExample)
