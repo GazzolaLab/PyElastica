@@ -145,7 +145,7 @@ def allocate(
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from
     # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
-    alpha_c = 0.964
+    alpha_c = 27.0 / 28.0
     shear_matrix = np.zeros(
         (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
     )
