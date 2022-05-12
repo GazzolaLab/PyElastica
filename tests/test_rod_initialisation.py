@@ -152,7 +152,7 @@ class MockRodForTest:
             density,
             nu,
             youngs_modulus,
-            alpha_c=0.964,
+            alpha_c=(27.0 / 28.0),
             *args,
             **kwargs
         )
@@ -741,8 +741,8 @@ def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            0.964 * shear_modulus * base_area,
-            0.964 * shear_modulus * base_area,
+            (27.0 / 28.0) * shear_modulus * base_area,
+            (27.0 / 28.0) * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -850,10 +850,10 @@ def test_inertia_shear_bend_matrices_for_varying_radius():
 
     correct_shear_matrix = np.array(
         [
-            [23296.11783, 23296.11783, 31415.92654],
-            [93184.47129, 93184.47129, 125663.7061],
-            [209665.06048, 209665.06048, 282743.33882],
-            [372737.88191, 372737.88191, 502654.82],
+            [23303.02243, 23303.02243, 31415.92654],
+            [93212.08972, 93212.08972, 125663.7061],
+            [209727.20187, 209727.20187, 282743.33882],
+            [372848.35889, 372848.35889, 502654.82],
         ]
     )
 
@@ -1547,7 +1547,9 @@ def test_straight_rod(n_elems):
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(shear_matrix, [0.964 * G * A0, 0.964 * G * A0, E * A0])
+    np.fill_diagonal(
+        shear_matrix, [(27.0 / 28.0) * G * A0, (27.0 / 28.0) * G * A0, E * A0]
+    )
     # Bend/Twist matrix
     bend_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(bend_matrix, [E * I0_1, E * I0_2, G * I0_3])
