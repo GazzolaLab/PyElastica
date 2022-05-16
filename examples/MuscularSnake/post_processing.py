@@ -12,16 +12,16 @@ from typing import Dict, Sequence
 
 
 def plot_video_with_surface(
-        rods_history: Sequence[Dict],
-        video_name="video.mp4",
-        fps=60,
-        step=1,
-        vis2D=True,
-        **kwargs,
+    rods_history: Sequence[Dict],
+    video_name="video.mp4",
+    fps=60,
+    step=1,
+    vis2D=True,
+    **kwargs,
 ):
     plt.rcParams.update({"font.size": 22})
 
-    folder_name = kwargs.get("folder_name","")
+    folder_name = kwargs.get("folder_name", "")
 
     # 2d case <always 2d case for now>
     import matplotlib.animation as animation
@@ -115,7 +115,7 @@ def plot_video_with_surface(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         # ax.set_aspect("equal")
-        video_name_3D = folder_name+"3D_" + video_name
+        video_name_3D = folder_name + "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -127,7 +127,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_scatters[rod_idx]._offsets3d = (
@@ -206,7 +206,7 @@ def plot_video_with_surface(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_xy_" + video_name
+        video_name_2D = folder_name + "2D_xy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -218,7 +218,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
@@ -297,7 +297,7 @@ def plot_video_with_surface(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_zy_" + video_name
+        video_name_2D = folder_name + "2D_zy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -309,7 +309,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[2])
@@ -390,7 +390,7 @@ def plot_video_with_surface(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_xz_" + video_name
+        video_name_2D = folder_name + "2D_xz_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -402,7 +402,7 @@ def plot_video_with_surface(
                         )
                         if not inst_position.shape[1] == inst_radius.shape[0]:
                             inst_position = 0.5 * (
-                                    inst_position[..., 1:] + inst_position[..., :-1]
+                                inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
                         rod_lines[rod_idx].set_xdata(inst_position[0])
@@ -437,10 +437,11 @@ def plot_video_with_surface(
         # See https://github.com/matplotlib/matplotlib/issues/8560/
         plt.close(plt.gcf())
 
+
 def plot_snake_velocity(
-        plot_params: dict,
-        period,
-        filename="slithering_snake_velocity.png",
+    plot_params: dict,
+    period,
+    filename="slithering_snake_velocity.png",
 ):
     time_per_period = np.array(plot_params["time"]) / period
     avg_velocity = np.array(plot_params["avg_velocity"])
@@ -469,6 +470,7 @@ def plot_snake_velocity(
     fig.legend(prop={"size": 20})
     fig.savefig(filename)
 
+
 def compute_projected_velocity(plot_params: dict, period):
 
     time_per_period = np.array(plot_params["time"]) / period
@@ -494,7 +496,7 @@ def compute_projected_velocity(plot_params: dict, period):
             center_of_mass[(i + 1) * period_step : (i + 2) * period_step]
             - center_of_mass[(i + 0) * period_step : (i + 1) * period_step],
             axis=0,
-            )
+        )
 
     # Average the rod directions over multiple periods and get the direction of the rod.
     direction_of_rod = np.mean(center_of_mass_averaged_over_one_period, axis=0)
@@ -526,4 +528,3 @@ def compute_projected_velocity(plot_params: dict, period):
         average_velocity_over_simulation[0],
         average_velocity_over_simulation[1],
     )
-

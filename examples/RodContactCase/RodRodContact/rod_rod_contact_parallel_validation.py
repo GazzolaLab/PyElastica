@@ -35,7 +35,9 @@ poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
 # Rod orientations
-start = np.zeros(3,)
+start = np.zeros(
+    3,
+)
 inclination = np.deg2rad(0)
 direction = np.array([0.0, np.cos(inclination), np.sin(inclination)])
 normal = np.array([0.0, -np.sin(inclination), np.cos(inclination)])
@@ -55,7 +57,7 @@ rod_one = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    shear_modulus = shear_modulus,
+    shear_modulus=shear_modulus,
 )
 
 rod_one.velocity_collection[:] += 0.05 * -normal.reshape(3, 1)
@@ -89,9 +91,7 @@ parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 
 # Add call backs
 class RodCallBack(CallBackBaseClass):
-    """
-
-    """
+    """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
         CallBackBaseClass.__init__(self)
@@ -125,7 +125,9 @@ post_processing_dict_rod1 = defaultdict(
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data
 parallel_rod_rod_contact_sim.collect_diagnostics(rod_one).using(
-    RodCallBack, step_skip=step_skip, callback_params=post_processing_dict_rod1,
+    RodCallBack,
+    step_skip=step_skip,
+    callback_params=post_processing_dict_rod1,
 )
 
 post_processing_dict_rod2 = defaultdict(
@@ -133,7 +135,9 @@ post_processing_dict_rod2 = defaultdict(
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data
 parallel_rod_rod_contact_sim.collect_diagnostics(rod_two).using(
-    RodCallBack, step_skip=step_skip, callback_params=post_processing_dict_rod2,
+    RodCallBack,
+    step_skip=step_skip,
+    callback_params=post_processing_dict_rod2,
 )
 
 parallel_rod_rod_contact_sim.finalize()
