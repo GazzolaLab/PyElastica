@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 # FIXME without appending sys.path make it more generic
-sys.path.append("../../../../")
+sys.path.append("../../../")
 from elastica import *
 from elastica.experimental.connection_contact_joint.parallel_connection import get_connection_vector_straight_straight_rod, SurfaceJointSideBySide
 from elastica._calculus import difference_kernel
@@ -33,7 +33,7 @@ base_length = 0.2
 base_radius = 0.007
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 1e-2
+nu = 4e-2
 E = 3e4
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
