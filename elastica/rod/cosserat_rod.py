@@ -1,5 +1,6 @@
 __doc__ = """ Rod classes and implementation details """
 __all__ = ["CosseratRod"]
+
 import typing
 
 import numpy as np
@@ -158,7 +159,6 @@ class CosseratRod(RodBase, KnotTheory):
         damping_forces,
         damping_torques,
     ):
-
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
@@ -379,6 +379,7 @@ class CosseratRod(RodBase, KnotTheory):
         _compute_internal_forces(
             self.position_collection,
             self.volume,
+            self.mass,
             self.lengths,
             self.tangents,
             self.radius,
@@ -727,37 +728,28 @@ def _compute_internal_bending_twist_stresses_from_model(
 def _compute_damping_forces(
     damping_forces,
     velocity_collection,
+    mass,
     dissipation_constant_for_forces,
-    lengths,
-    ghost_elems_idx,
 ):
     """
     Update <damping force> given <velocity and length>
     """
 
     # Internal damping foces.
-    elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
-
-    blocksize = elemental_velocities.shape[1]
-    elemental_damping_forces = np.zeros((3, blocksize))
+    blocksize = mass.shape[0]
 
     for i in range(3):
         for k in range(blocksize):
-            elemental_damping_forces[i, k] = (
-                dissipation_constant_for_forces[k]
-                * elemental_velocities[i, k]
-                * lengths[k]
+            damping_forces[i, k] = (
+                dissipation_constant_for_forces[k] * velocity_collection[i, k] * mass[k]
             )
-
-    damping_forces[:] = quadrature_kernel_for_block_structure(
-        elemental_damping_forces, ghost_elems_idx
-    )
 
 
 @numba.njit(cache=True)
 def _compute_internal_forces(
     position_collection,
     volume,
+    mass,
     lengths,
     tangents,
     radius,
@@ -817,9 +809,8 @@ def _compute_internal_forces(
     _compute_damping_forces(
         damping_forces,
         velocity_collection,
+        mass,
         dissipation_constant_for_forces,
-        lengths,
-        ghost_elems_idx,
     )
 
     internal_forces[:] = (

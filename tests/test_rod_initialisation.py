@@ -1092,7 +1092,7 @@ def test_varying_nu_for_forces(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = np.linspace(0.1, 1.0, n_elems)
+    nu = np.linspace(0.1, 1.0, n_elems + 1)
     youngs_modulus = 1e6
     poisson_ratio = 0.3
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
