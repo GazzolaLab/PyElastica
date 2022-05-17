@@ -57,7 +57,7 @@ base_length = 1.0
 base_radius = 0.025
 base_area = np.pi * base_radius ** 2
 density = 1000
-nu = 2.0
+nu = 1.0
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
