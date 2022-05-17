@@ -1067,7 +1067,7 @@ def test_constant_nu_for_forces(n_elems):
         youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_nu = nu
+    correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1109,7 +1109,7 @@ def test_varying_nu_for_forces(n_elems):
         youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_nu = nu
+    correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1588,7 +1588,11 @@ def test_straight_rod(n_elems):
         mockrod.rest_kappa, np.zeros((3, n_elems - 1)), atol=Tolerance.atol()
     )
     assert_allclose(mockrod.density, density, atol=Tolerance.atol())
-    assert_allclose(mockrod.dissipation_constant_for_forces, nu, atol=Tolerance.atol())
+    assert_allclose(
+        mockrod.dissipation_constant_for_forces,
+        nu * mockrod.mass,
+        atol=Tolerance.atol(),
+    )
     assert_allclose(mockrod.dissipation_constant_for_torques, nu, atol=Tolerance.atol())
     assert_allclose(
         rest_voronoi_lengths, mockrod.rest_voronoi_lengths, atol=Tolerance.atol()

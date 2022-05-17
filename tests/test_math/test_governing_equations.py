@@ -367,7 +367,6 @@ class TestingClass:
         _compute_internal_forces(
             test_rod.position_collection,
             test_rod.volume,
-            test_rod.mass,
             test_rod.lengths,
             test_rod.tangents,
             test_rod.radius,
@@ -411,12 +410,11 @@ class TestingClass:
         test_rod.velocity_collection[:] = 1.0
         test_rod.omega_collection[:] = 1.0
         J_omega_upon_e = test_rod.omega_collection.copy()
-        test_rod.mass[:] = 2.0
         # Compute damping forces and torques
         damping_forces = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1)
             * nu
-            * 2.0
+            * test_rod.mass
         )
         damping_torques = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1) * nu
@@ -433,7 +431,6 @@ class TestingClass:
         _compute_damping_forces(
             test_rod.damping_forces,
             test_rod.velocity_collection,
-            test_rod.mass,
             test_rod.dissipation_constant_for_forces,
         )
         _compute_damping_torques(
@@ -756,7 +753,6 @@ class TestingClass:
         _compute_internal_forces(
             test_rod.position_collection,
             test_rod.volume,
-            test_rod.mass,
             test_rod.lengths,
             test_rod.tangents,
             test_rod.radius,
@@ -1242,7 +1238,6 @@ class TestingClass:
         _compute_internal_forces(
             test_rod.position_collection,
             test_rod.volume,
-            test_rod.mass,
             test_rod.lengths,
             test_rod.tangents,
             test_rod.radius,

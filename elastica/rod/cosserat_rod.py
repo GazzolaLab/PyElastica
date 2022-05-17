@@ -379,7 +379,6 @@ class CosseratRod(RodBase, KnotTheory):
         _compute_internal_forces(
             self.position_collection,
             self.volume,
-            self.mass,
             self.lengths,
             self.tangents,
             self.radius,
@@ -728,20 +727,19 @@ def _compute_internal_bending_twist_stresses_from_model(
 def _compute_damping_forces(
     damping_forces,
     velocity_collection,
-    mass,
     dissipation_constant_for_forces,
 ):
     """
-    Update <damping force> given <velocity and mass>
+    Update <damping force> given <velocity>
     """
 
-    # Internal damping foces.
-    blocksize = mass.shape[0]
+    # Internal damping forces.
+    blocksize = velocity_collection.shape[1]
 
     for i in range(3):
         for k in range(blocksize):
             damping_forces[i, k] = (
-                dissipation_constant_for_forces[k] * velocity_collection[i, k] * mass[k]
+                dissipation_constant_for_forces[k] * velocity_collection[i, k]
             )
 
 
@@ -749,7 +747,6 @@ def _compute_damping_forces(
 def _compute_internal_forces(
     position_collection,
     volume,
-    mass,
     lengths,
     tangents,
     radius,
@@ -809,7 +806,6 @@ def _compute_internal_forces(
     _compute_damping_forces(
         damping_forces,
         velocity_collection,
-        mass,
         dissipation_constant_for_forces,
     )
 
