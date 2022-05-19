@@ -8,7 +8,7 @@ External Forces / Interactions
 Description
 -----------
 
-External force and environmental interaction are represented as force/torque bounaary condition at different location.
+External force and environmental interaction are represented as force/torque boundary condition at different location.
 
 .. rubric:: Available Forcing
 
