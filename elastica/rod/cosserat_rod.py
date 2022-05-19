@@ -514,11 +514,11 @@ class CosseratRod(RodBase, KnotTheory):
         """
 
         sigma_diff = self.sigma - self.rest_sigma
-        shear_internal_torques = _batch_matvec(self.shear_matrix, sigma_diff)
+        shear_internal_forces = _batch_matvec(self.shear_matrix, sigma_diff)
 
         return (
             0.5
-            * (_batch_dot(sigma_diff, shear_internal_torques) * self.rest_lengths).sum()
+            * (_batch_dot(sigma_diff, shear_internal_forces) * self.rest_lengths).sum()
         )
 
 
