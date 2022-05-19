@@ -260,8 +260,8 @@ for idx, rod_two in enumerate(muscle_rod_list):
     ) = get_connection_vector_straight_straight_rod(
         rod_one,
         rod_two,
-        (muscle_start_connection_index[idx],muscle_end_connection_index[idx]),
-        (0, rod_two.n_elems)
+        (muscle_start_connection_index[idx], muscle_end_connection_index[idx]),
+        (0, rod_two.n_elems),
     )
     straight_straight_rod_connection_list.append(
         [

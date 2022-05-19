@@ -37,7 +37,7 @@ class MuscleForces(NoForces):
         side_of_body,
         muscle_start_end_index,
         step,
-            post_processing,
+        post_processing,
     ):
         """
 
@@ -76,7 +76,7 @@ class MuscleForces(NoForces):
 
         self.post_processing = post_processing
         self.step = step
-        self.counter=0
+        self.counter = 0
 
     def apply_forces(self, system, time: np.float = 0.0):
         forces = self._apply_forces(
@@ -90,14 +90,15 @@ class MuscleForces(NoForces):
             system.external_forces,
         )
 
-        if self.counter % self.step ==0:
+        if self.counter % self.step == 0:
             self.post_processing["time"].append(time)
             self.post_processing["step"].append(self.counter)
             self.post_processing["external_forces"].append(forces.copy())
-            self.post_processing["element_position"].append(np.cumsum(system.lengths).copy())
+            self.post_processing["element_position"].append(
+                np.cumsum(system.lengths).copy()
+            )
 
         self.counter += 1
-
 
     @staticmethod
     @njit(cache=True)

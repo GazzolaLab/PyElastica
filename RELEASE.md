@@ -1,3 +1,15 @@
+# Release Note (version 0.2.3)
+
+
+## Developer Note
+The major updates are knot theory module added to the Cosserat rod as *mixin*, and muscular snake example is added. 
+
+## Notable Changes
+- #70: Knot theory module to compute topological quantities.
+- #71: Reorganize rod constructor warning messages and collect messages in log.  
+- #72: Muscular snake example is added.
+---
+
 # Release Note (version 0.2.2)
 
 ## Developer Note

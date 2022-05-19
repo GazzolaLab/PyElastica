@@ -1,6 +1,3 @@
-import os
-import numpy as np
-import numba
 from collections import defaultdict
 from elastica.wrappers import *
 from elastica.rod.cosserat_rod import *

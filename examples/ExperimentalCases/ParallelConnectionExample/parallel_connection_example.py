@@ -6,7 +6,10 @@ import sys
 # FIXME without appending sys.path make it more generic
 sys.path.append("../../../")
 from elastica import *
-from elastica.experimental.connection_contact_joint.parallel_connection import get_connection_vector_straight_straight_rod, SurfaceJointSideBySide
+from elastica.experimental.connection_contact_joint.parallel_connection import (
+    get_connection_vector_straight_straight_rod,
+    SurfaceJointSideBySide,
+)
 from elastica._calculus import difference_kernel
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
@@ -82,7 +85,11 @@ parallel_connection_sim.constrain(rod_two).using(
 
 # Apply a contraction force on rod one.
 class ContractionForce(NoForces):
-    def __init__(self, ramp, force_mag, ):
+    def __init__(
+        self,
+        ramp,
+        force_mag,
+    ):
         self.ramp = ramp
         self.force_mag = force_mag
 
@@ -90,25 +97,41 @@ class ContractionForce(NoForces):
         # Ramp the force
         factor = min(1.0, time / self.ramp)
 
-        system.external_forces[:] -= factor * difference_kernel(self.force_mag * system.tangents)
+        system.external_forces[:] -= factor * difference_kernel(
+            self.force_mag * system.tangents
+        )
 
-parallel_connection_sim.add_forcing_to(rod_one).using(ContractionForce, ramp=0.5, force_mag=1. )
+
+parallel_connection_sim.add_forcing_to(rod_one).using(
+    ContractionForce, ramp=0.5, force_mag=1.0
+)
 
 # Connect rod 1 and rod 2
 (
     rod_one_direction_vec_in_material_frame,
     rod_two_direction_vec_in_material_frame,
     offset_btw_rods,
-) = get_connection_vector_straight_straight_rod(rod_one, rod_two, (0, n_elem), (0, n_elem))
+) = get_connection_vector_straight_straight_rod(
+    rod_one, rod_two, (0, n_elem), (0, n_elem)
+)
 
 for i in range(n_elem):
     parallel_connection_sim.connect(
         first_rod=rod_one, second_rod=rod_two, first_connect_idx=i, second_connect_idx=i
     ).using(
-        SurfaceJointSideBySide, k=1E2, nu=1E-5, k_repulsive = 1E3, rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[:,i],
-        rod_two_direction_vec_in_material_frame = rod_two_direction_vec_in_material_frame[:,i],
-        offset_btw_rods = offset_btw_rods[i]
+        SurfaceJointSideBySide,
+        k=1e2,
+        nu=1e-5,
+        k_repulsive=1e3,
+        rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
+            :, i
+        ],
+        rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame[
+            :, i
+        ],
+        offset_btw_rods=offset_btw_rods[i],
     )  # k=kg/s2 nu=kg/s 1e-2
+
 
 class ParallelConnecitonCallback(CallBackBaseClass):
     """
