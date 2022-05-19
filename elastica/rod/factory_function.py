@@ -1,6 +1,9 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
 __all__ = ["allocate"]
+import typing
+from typing import Optional, Tuple
 import warnings
+import logging
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import MaxDimension, Tolerance
@@ -16,12 +19,23 @@ def allocate(
     base_radius,
     density,
     nu,
-    youngs_modulus,
-    # poisson_ratio,
-    # alpha_c=0.964,
+    youngs_modulus: float,
+    nu_for_torques: Optional[float] = None,
+    shear_modulus: Optional[float] = None,
+    position: Optional[np.ndarray] = None,
+    directors: Optional[np.ndarray] = None,
+    rest_sigma: Optional[np.ndarray] = None,
+    rest_kappa: Optional[np.ndarray] = None,
     *args,
-    **kwargs
+    **kwargs,
 ):
+    log = logging.getLogger()
+
+    if "poisson_ratio" in kwargs:
+        # Deprecation warning for poission_ratio
+        raise NameError(
+            "Poisson's ratio is deprecated for Cosserat Rod for clarity. Please provide shear_modulus instead."
+        )
 
     # sanity checks here
     assert n_elements > 1
@@ -29,35 +43,14 @@ def allocate(
     assert np.sqrt(np.dot(normal, normal)) > Tolerance.atol()
     assert np.sqrt(np.dot(direction, direction)) > Tolerance.atol()
 
-    # Set the position array
-    position = np.zeros((MaxDimension.value(), n_elements + 1))
-    # check if position is in kwargs, if it is use user defined position otherwise generate position
-    if kwargs.__contains__("position"):
-        position_temp = np.array(kwargs["position"])
-
-        # Check the shape of the input position
-        assert position_temp.shape == (MaxDimension.value(), n_elements + 1), (
-            "Given position  shape is not correct, it should be "
-            + str(position.shape)
-            + " but instead "
-            + str(position_temp.shape)
-        )
-        # Check if the start position of the rod and first entry of position array are the same
-        assert_allclose(
-            position_temp[..., 0],
-            start,
-            atol=Tolerance.atol(),
-            err_msg=str(
-                "First entry of position" + " (" + str(position_temp[..., 0]) + " ) "
-                " is different than start " + " (" + str(start) + " ) "
-            ),
-        )
-        position = position_temp.copy()
-
-    else:
+    # check if position is given.
+    if position is None:  # Generate straight and uniform rod
+        # Set the position array
+        position = np.zeros((MaxDimension.value(), n_elements + 1))
         end = start + direction * base_length
         for i in range(0, 3):
             position[i, ...] = np.linspace(start[i], end[i], n_elements + 1)
+    _position_validity_checker(position, start, n_elements)
 
     # Compute rest lengths and tangents
     position_diff = position[..., 1:] - position[..., :-1]
@@ -65,66 +58,9 @@ def allocate(
     tangents = position_diff / rest_lengths
     normal /= np.linalg.norm(normal)
 
-    # Set the directors matrix
-    directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
-    # check if directors is in kwargs, if it use user defined directors otherwise generate directors
-    if kwargs.__contains__("directors"):
-        directors_temp = np.array(kwargs["directors"])
-
-        # Check the shape of input directors
-        assert directors_temp.shape == (
-            MaxDimension.value(),
-            MaxDimension.value(),
-            n_elements,
-        ), (
-            " Given directors shape is not correct, it should be "
-            + str(directors.shape)
-            + " but instead "
-            + str(directors_temp.shape)
-        )
-
-        # Check if d1, d2, d3 are unit vectors
-        d1 = directors_temp[0, ...]
-        d2 = directors_temp[1, ...]
-        d3 = directors_temp[2, ...]
-        assert_allclose(
-            _batch_norm(d1),
-            np.ones((n_elements)),
-            atol=Tolerance.atol(),
-            err_msg=(" d1 vector of input director matrix is not unit vector "),
-        )
-        assert_allclose(
-            _batch_norm(d2),
-            np.ones((n_elements)),
-            atol=Tolerance.atol(),
-            err_msg=(" d2 vector of input director matrix is not unit vector "),
-        )
-        assert_allclose(
-            _batch_norm(d3),
-            np.ones((n_elements)),
-            atol=Tolerance.atol(),
-            err_msg=(" d3 vector of input director matrix is not unit vector "),
-        )
-
-        # Check if d3xd1 = d2
-        assert_allclose(
-            _batch_cross(d3, d1),
-            d2,
-            atol=Tolerance.atol(),
-            err_msg=(" d3 x d1 != d2 of input director matrix"),
-        )
-
-        # Check if computed tangents from position is the same with d3
-        assert_allclose(
-            tangents,
-            d3,
-            atol=Tolerance.atol(),
-            err_msg=" Tangent vector computed using node positions is different than d3 vector of input directors",
-        )
-
-        directors[:] = directors_temp[:]
-
-    else:
+    if directors is None:  # Generate straight uniform rod
+        # Set the directors matrix
+        directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
         # Construct directors using tangents and normal
         normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
         # Check if rod normal and rod tangent are perpendicular to each other otherwise
@@ -138,42 +74,27 @@ def allocate(
         directors[0, ...] = normal_collection
         directors[1, ...] = _batch_cross(tangents, normal_collection)
         directors[2, ...] = tangents
+    _directors_validity_checker(directors, tangents, n_elements)
 
     # Set radius array
     radius = np.zeros((n_elements))
     # Check if the user input radius is valid
     radius_temp = np.array(base_radius)
-    assert radius_temp.ndim < 2, (
-        "Input radius shape is not correct "
-        + str(radius_temp.shape)
-        + " It should be "
-        + str(radius.shape)
-        + " or  single floating number "
-    )
+    _assert_dim(radius_temp, 2, "radius")
     radius[:] = radius_temp
     # Check if the elements of radius are greater than tolerance
-    for k in range(n_elements):
-        assert radius[k] > Tolerance.atol(), (
-            " Radius has to be greater than 0" + " Check you radius input!"
-        )
+    assert np.all(radius > Tolerance.atol()), " Radius has to be greater than 0."
 
     # Set density array
     density_array = np.zeros((n_elements))
     # Check if the user input density is valid
     density_temp = np.array(density)
-    assert density_temp.ndim < 2, (
-        "Input density shape is not correct "
-        + str(density_temp.shape)
-        + " It should be "
-        + str(density_array.shape)
-        + " or  single floating number "
-    )
+    _assert_dim(density_temp, 2, "density")
     density_array[:] = density_temp
     # Check if the elements of density are greater than tolerance
-    for k in range(n_elements):
-        assert density_array[k] > Tolerance.atol(), (
-            " Density has to be greater than 0" + " Check you density input!"
-        )
+    assert np.all(
+        density_array > Tolerance.atol()
+    ), " Density has to be greater than 0."
 
     # Second moment of inertia
     A0 = np.pi * radius * radius
@@ -198,7 +119,7 @@ def allocate(
     # sanity check of mass second moment of inertia
     if (mass_second_moment_of_inertia < Tolerance.atol()).all():
         message = "Mass moment of inertia matrix smaller than tolerance, please check provided radius, density and length."
-        warnings.warn(message, category=UserWarning)
+        log.warning(message)
 
     # Inverse of second moment of inertia
     inv_mass_second_moment_of_inertia = np.zeros(
@@ -215,12 +136,16 @@ def allocate(
         )
 
     # Shear/Stretch matrix
-    shear_modulus = get_shear_modulus(youngs_modulus, kwargs)
+    if not shear_modulus:
+        log.info(
+            """Shear modulus is not explicitly given.\n
+            In such case, we compute shear_modulus assuming poisson's ratio of 0.5"""
+        )
+        shear_modulus = youngs_modulus / (2.0 * (1.0 + 0.5))
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from
     # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
-    alpha_c = kwargs.get("alpha_c", 0.964)
-
+    alpha_c = 0.964
     shear_matrix = np.zeros(
         (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
     )
@@ -247,9 +172,11 @@ def allocate(
                 shear_modulus * I0_3[i],
             ],
         )
-    for k in range(n_elements):
-        for i in range(0, MaxDimension.value()):
-            assert bend_matrix[i, i, k] > Tolerance.atol()
+    for i in range(0, MaxDimension.value()):
+        assert np.all(
+            bend_matrix[i, i, :] > Tolerance.atol()
+        ), " Bend matrix has to be greater than 0."
+
     # Compute bend matrix in Voronoi Domain
     bend_matrix = (
         bend_matrix[..., 1:] * rest_lengths[1:]
@@ -268,60 +195,32 @@ def allocate(
     dissipation_constant_for_forces = np.zeros((n_elements))
     # Check if the user input nu is valid
     nu_temp = np.array(nu)
-    assert nu_temp.ndim < 2, (
-        "Input dissipation constant(nu) for forces shape is not correct "
-        + str(nu_temp.shape)
-        + " It should be "
-        + str(dissipation_constant_for_forces.shape)
-        + " or  single floating number "
-    )
+    _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
     dissipation_constant_for_forces[:] = nu
     # Check if the elements of dissipation constant greater than tolerance
-    for k in range(n_elements):
-        assert dissipation_constant_for_forces[k] >= 0.0, (
-            " Dissipation constant has to be equal or greater than 0 "
-            + " Check your dissipation constant(nu) input!"
-        )
+    assert np.all(
+        dissipation_constant_for_forces >= 0.0
+    ), " Dissipation constant(nu) has to be equal or greater than 0."
 
-    dissipation_constant_for_torques = np.zeros((n_elements))
-    if kwargs.__contains__("nu_for_torques"):
-        temp_nu_for_torques = np.array(kwargs["nu_for_torques"])
-        assert temp_nu_for_torques.ndim < 2, (
-            "Input dissipation constant(nu) for torques shape is not correct "
-            + str(temp_nu_for_torques.shape)
-            + " It should be "
-            + str(dissipation_constant_for_torques.shape)
-            + " or  single floating number "
-        )
-        dissipation_constant_for_torques[:] = temp_nu_for_torques
-
+    # Custom nu for torques
+    if nu_for_torques is None:
+        dissipation_constant_for_torques = dissipation_constant_for_forces.copy()
     else:
-        dissipation_constant_for_torques[:] = dissipation_constant_for_forces
+        dissipation_constant_for_torques = np.asarray(nu_for_torques)
+    _assert_dim(
+        dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
+    )
 
     # Generate rest sigma and rest kappa, use user input if defined
     # set rest strains and curvature to be  zero at start
     # if found in kwargs modify (say for curved rod)
-    rest_sigma = np.zeros((MaxDimension.value(), n_elements))
-    if kwargs.__contains__("rest_sigma"):
-        temp_rest_sigma = np.array(kwargs["rest_sigma"])
-        assert temp_rest_sigma.shape == rest_sigma.shape, (
-            "Input rest sigma shape is not correct "
-            + str(temp_rest_sigma.shape)
-            + " It should be "
-            + str(rest_sigma.shape)
-        )
-        rest_sigma[:] = temp_rest_sigma
+    if rest_sigma is None:
+        rest_sigma = np.zeros((MaxDimension.value(), n_elements))
+    _assert_shape(rest_sigma, (MaxDimension.value(), n_elements), "rest_sigma")
 
-    rest_kappa = np.zeros((MaxDimension.value(), n_elements - 1))
-    if kwargs.__contains__("rest_kappa"):
-        temp_rest_kappa = np.array(kwargs["rest_kappa"])
-        assert temp_rest_kappa.shape == rest_kappa.shape, (
-            "Input rest kappa shape is not correct "
-            + str(temp_rest_kappa.shape)
-            + " It should be "
-            + str(rest_kappa.shape)
-        )
-        rest_kappa[:] = temp_rest_kappa
+    if rest_kappa is None:
+        rest_kappa = np.zeros((MaxDimension.value(), n_elements - 1))
+    _assert_shape(rest_kappa, (MaxDimension.value(), n_elements - 1), "rest_kappa")
 
     # Compute rest voronoi length
     rest_voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
@@ -398,78 +297,79 @@ def allocate(
     )
 
 
-def get_shear_modulus(youngs_modulus, kwargs):
-    """
-    From the kwargs get shear modulus, or compute it. This function contains warnining messages.
+def _assert_dim(vector, max_dim: int, name: str):
+    assert vector.ndim < max_dim, (
+        f"Input {name} dimension is not correct {vector.shape}"
+        + f" It should be maximum {max_dim}D vector or single floating number."
+    )
 
-    Parameters
-    ----------
-    youngs_modulus : float
 
-    kwargs
+def _assert_shape(array: np.ndarray, expected_shape: Tuple[int], name: str):
+    assert array.shape == expected_shape, (
+        f"Given {name} shape is not correct, it should be "
+        + str(expected_shape)
+        + " but instead "
+        + str(array.shape)
+    )
 
-    Returns
-    -------
 
-    """
-    # Shear/Stretch matrix
-    if kwargs.__contains__("shear_modulus"):
-        # User set shear modulus use that.
-        shear_modulus = kwargs.get("shear_modulus")
+def _position_validity_checker(position, start, n_elements):
+    """Checker on user-defined position validity"""
+    _assert_shape(position, (MaxDimension.value(), n_elements + 1), "position")
 
-    if kwargs.__contains__("shear_modulus") and kwargs.__contains__("poisson_ratio"):
-        # User set shear modulus and also a poisson ratio. Do not use poisson ratio and raise warning.
-        shear_modulus = kwargs.get("shear_modulus")
-        poisson_ratio = kwargs.get("poisson_ratio")
-        message = (
-            "Both a Poisson ratio and a shear modulus are provided. "
-            "The Poisson ratio is only used to compute a shear modulus "
-            "so the provided Poisson ratio of ( "
-            + str(poisson_ratio)
-            + " ) is being ignored in favor of the provided shear modulus ( "
-            + str(shear_modulus)
-            + " ). \n"
-        )
-        warnings.warn(message, category=UserWarning)
+    # Check if the start position of the rod and first entry of position array are the same
+    assert_allclose(
+        position[..., 0],
+        start,
+        atol=Tolerance.atol(),
+        err_msg=str(
+            "First entry of position" + " (" + str(position[..., 0]) + " ) "
+            " is different than start " + " (" + str(start) + " ) "
+        ),
+    )
 
-    if kwargs.__contains__("poisson_ratio") and (
-        not kwargs.__contains__("shear_modulus")
-    ):
-        # User set poisson ratio but not the shear modulus. Then use poisson ratio to compute shear modulus, and
-        # raise a warning.
-        poisson_ratio = kwargs.get("poisson_ratio")
-        shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-        message = (
-            "The given Poisson ratio of "
-            + str(poisson_ratio)
-            + " is used only to compute a shear modulus of "
-            + str(shear_modulus)
-            + ", "
-            "using the equation: shear_modulus = youngs_modulus / (poisson_ratio + 1.0). "
-            "Use of a Poisson ratio will be depreciated in a future release. "
-            "It is encouraged that you discontinue using a Poisson ratio and instead directly provide the shear_modulus. \n"
-        )
-        warnings.warn(message, category=UserWarning)
+def _directors_validity_checker(directors, tangents, n_elements):
+    """Checker on user-defined directors validity"""
+    _assert_shape(
+        directors, (MaxDimension.value(), MaxDimension.value(), n_elements), "directors"
+    )
 
-    if not (
-        kwargs.__contains__("poisson_ratio") or kwargs.__contains__("shear_modulus")
-    ):
-        # If user does not set poisson ratio or shear modulus, then take poisson ratio as 0.5 and raise warning.
-        poisson_ratio = 0.5
+    # Check if d1, d2, d3 are unit vectors
+    d1 = directors[0, ...]
+    d2 = directors[1, ...]
+    d3 = directors[2, ...]
+    assert_allclose(
+        _batch_norm(d1),
+        np.ones((n_elements)),
+        atol=Tolerance.atol(),
+        err_msg=(" d1 vector of input director matrix is not unit vector "),
+    )
+    assert_allclose(
+        _batch_norm(d2),
+        np.ones((n_elements)),
+        atol=Tolerance.atol(),
+        err_msg=(" d2 vector of input director matrix is not unit vector "),
+    )
+    assert_allclose(
+        _batch_norm(d3),
+        np.ones((n_elements)),
+        atol=Tolerance.atol(),
+        err_msg=(" d3 vector of input director matrix is not unit vector "),
+    )
 
-        shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    # Check if d3xd1 = d2
+    assert_allclose(
+        _batch_cross(d3, d1),
+        d2,
+        atol=Tolerance.atol(),
+        err_msg=(" d3 x d1 != d2 of input director matrix"),
+    )
 
-        message = (
-            "Shear modulus cannot be found in kwargs. "
-            "Poisson ratio "
-            + str(poisson_ratio)
-            + " is used to compute shear modulus "
-            + str(shear_modulus)
-            + ", "
-            "using the equation: shear_modulus = youngs_modulus / (poisson_ratio + 1.0)."
-        )
-
-        warnings.warn(message, category=UserWarning)
-
-    return shear_modulus
+    # Check if computed tangents from position is the same with d3
+    assert_allclose(
+        tangents,
+        d3,
+        atol=Tolerance.atol(),
+        err_msg=" Tangent vector computed using node positions is different than d3 vector of input directors",
+    )

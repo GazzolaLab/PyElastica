@@ -1,4 +1,4 @@
-# PyBind Tutorials
+# Binder Tutorials
 
 <!-- 
 <a href="https://mybinder.org/v2/gh/GazzolaLab/PyElastica/master?filepath=examples%2FBinder%2F0_PyElastica_Tutorials_Overview.ipynb">

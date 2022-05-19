@@ -1,9 +1,7 @@
-import os
-import numpy as np
-import numba
 from collections import defaultdict
 from elastica.wrappers import *
 from elastica.rod.cosserat_rod import *
+from elastica.rod.knot_theory import *
 from elastica.rigidbody import *
 from elastica.boundary_conditions import *
 from elastica.external_forces import *
