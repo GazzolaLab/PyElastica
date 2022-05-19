@@ -7,8 +7,6 @@ from shutil import rmtree
 
 from setuptools import Command, find_packages, setup
 
-from elastica.version import VERSION
-
 # Package meta-data.
 NAME = "pyelastica"
 DESCRIPTION = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
@@ -16,6 +14,7 @@ URL = "https://github.com/GazzolaLab/PyElastica"
 EMAIL = "armant2@illinois.edu"
 AUTHOR = "GazzolaLab"
 REQUIRES_PYTHON = ">=3.6.0"
+VERSION = "0.2.3"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["numpy>=1.19.2", "matplotlib>=3.3.2", "scipy>=1.5.2", "tqdm>=4.61.1", "numba>=0.51.0"]
