@@ -817,16 +817,16 @@ def _compute_internal_forces(
 
 @numba.njit(cache=True)
 def _compute_damping_torques(
-    damping_torques, J_omega_upon_e, dissipation_constant_for_torques
+    damping_torques, omega_collection, dissipation_constant_for_torques
 ):
     """
-    Update <damping torque> given <angular velocity and mass second moment of inertia>.
+    Update <damping torque> given <angular velocity>.
     """
-    blocksize = damping_torques.shape[1]
+    blocksize = omega_collection.shape[1]
     for i in range(3):
         for k in range(blocksize):
             damping_torques[i, k] = (
-                dissipation_constant_for_torques[k] * J_omega_upon_e[i, k]
+                dissipation_constant_for_torques[k] * omega_collection[i, k]
             )
 
 
@@ -910,7 +910,7 @@ def _compute_internal_torques(
     unsteady_dilatation = J_omega_upon_e * dilatation_rate / dilatation
 
     _compute_damping_torques(
-        damping_torques, J_omega_upon_e, dissipation_constant_for_torques
+        damping_torques, omega_collection, dissipation_constant_for_torques
     )
 
     blocksize = internal_torques.shape[1]

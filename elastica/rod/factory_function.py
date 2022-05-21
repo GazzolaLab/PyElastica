@@ -204,12 +204,15 @@ def allocate(
 
     # Custom nu for torques
     dissipation_constant_for_torques = np.zeros((n_elements))
+    elemental_mass = (mass[1:] + mass[:-1]) / 2.0
     if nu_for_torques is None:
         dissipation_constant_for_torques[:] = (dissipation_constant_for_forces / mass)[
             :n_elements
-        ]
+        ] * elemental_mass
     else:
-        dissipation_constant_for_torques[:] = np.asarray(nu_for_torques)
+        dissipation_constant_for_torques[:] = (
+            np.asarray(nu_for_torques) * elemental_mass
+        )
     _assert_dim(
         dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
     )
