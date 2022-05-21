@@ -1,6 +1,8 @@
 __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
 import sys
+import os
+import numpy as np
 
 sys.path.append("../../")
 from elastica import *
@@ -39,7 +41,7 @@ def run_snake(
     base_length = 0.35
     base_radius = base_length * 0.011
     density = 1000
-    nu = 1e-4
+    nu = 2e-3#1e-4
     E = 1e6
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
