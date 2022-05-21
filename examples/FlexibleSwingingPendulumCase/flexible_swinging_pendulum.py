@@ -8,7 +8,7 @@ sys.path.append("../../")  # isort:skip
 
 # from collections import defaultdict
 
-# import numpy as np
+import numpy as np
 from matplotlib import pyplot as plt
 
 from elastica import *

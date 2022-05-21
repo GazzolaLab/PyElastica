@@ -1,6 +1,7 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
 import sys
+import numpy as np
 
 sys.path.append("../../")
 

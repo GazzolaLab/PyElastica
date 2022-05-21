@@ -50,6 +50,7 @@ density = 5000
 nu = 0.0
 youngs_modulus = 1e4
 poisson_ratio = 0.5
+shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
 positions = np.empty((MaxDimension.value(), n_elem + 1))
 dl = total_length / n_elem
@@ -77,7 +78,7 @@ butterfly_rod = CosseratRod.straight_rod(
     density=density,
     nu=nu,
     youngs_modulus=youngs_modulus,
-    poisson_ratio=poisson_ratio,
+    shear_modulus=shear_modulus,
     position=positions,
 )
 
