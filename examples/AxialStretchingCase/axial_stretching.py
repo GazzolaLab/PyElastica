@@ -61,6 +61,7 @@ nu = 2.0
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
+shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
 stretchable_rod = CosseratRod.straight_rod(
     n_elem,
@@ -72,7 +73,7 @@ stretchable_rod = CosseratRod.straight_rod(
     density,
     nu,
     youngs_modulus,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 stretch_sim.append(stretchable_rod)
