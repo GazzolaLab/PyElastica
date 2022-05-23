@@ -93,7 +93,6 @@ jobs:
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-            echo "CODECOV_TOKEN=ca23d33f-c704-4cf8-b5ff-dacefe26c494" >> $GITHUB_ENV
           fi
         
       # Test Pyelastica using pytest
@@ -107,3 +106,5 @@ jobs:
           fi
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
