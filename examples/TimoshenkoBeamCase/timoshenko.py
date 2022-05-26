@@ -1,4 +1,4 @@
-__doc__ = """Timoshenko beam validation case, for detailed explanation refer to 
+__doc__ = """Timoshenko beam validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
@@ -10,18 +10,18 @@ from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 
-class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):
+class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
     pass
 
 
 timoshenko_sim = TimoshenkoBeamSimulator()
-final_time = 5000
+final_time = 5000.0
 
 # Options
 PLOT_FIGURE = True
 SAVE_FIGURE = False
 SAVE_RESULTS = False
-ADD_UNSHEARABLE_ROD = True
+ADD_UNSHEARABLE_ROD = False
 
 # setting up test params
 n_elem = 100
@@ -58,7 +58,7 @@ timoshenko_sim.constrain(shearable_rod).using(
 
 end_force = np.array([-15.0, 0.0, 0.0])
 timoshenko_sim.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
+    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=100.0 # final_time / 2.0
 )
 
 
@@ -85,8 +85,33 @@ if ADD_UNSHEARABLE_ROD:
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=100.0# final_time / 2.0
     )
+
+# Add call backs
+class VelocityCallBack(CallBackBaseClass):
+    """
+    Call back function for continuum snake
+    """
+
+    def __init__(self, step_skip: int, callback_params: dict):
+        CallBackBaseClass.__init__(self)
+        self.every = step_skip
+        self.callback_params = callback_params
+
+    def make_callback(self, system, time, current_step: int):
+
+        if current_step % self.every == 0:
+
+            self.callback_params["time"].append(time)
+            # Collect x
+            self.callback_params["velocity_norms"].append(np.linalg.norm(system.velocity_collection.copy()))
+            return
+
+recorded_history = defaultdict(list)
+timoshenko_sim.collect_diagnostics(shearable_rod).using(
+    VelocityCallBack, step_skip=500, callback_params=recorded_history
+)
 
 timoshenko_sim.finalize()
 timestepper = PositionVerlet()
@@ -108,3 +133,12 @@ if SAVE_RESULTS:
     file = open(filename, "wb")
     pickle.dump(shearable_rod, file)
     file.close()
+
+    tv = (np.asarray(recorded_history["time"]), np.asarray(recorded_history["velocity_norms"]))
+    def as_time_series(v):
+        return v.T
+    np.savetxt(
+        "velocity_norms.csv",
+        as_time_series(np.stack(tv)),
+        delimiter=",",
+    )
