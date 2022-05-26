@@ -1,5 +1,6 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
 import sys
+import numpy as np
 
 sys.path.append("../../")
 from elastica import *

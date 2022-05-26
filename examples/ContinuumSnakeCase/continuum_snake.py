@@ -1,6 +1,8 @@
 __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
 import sys
+import os
+import numpy as np
 
 sys.path.append("../../")
 from elastica import *
