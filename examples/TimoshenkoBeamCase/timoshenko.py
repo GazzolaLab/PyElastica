@@ -30,7 +30,7 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 5000
 nu = 0.1
 E = 1e6
@@ -58,7 +58,7 @@ timoshenko_sim.constrain(shearable_rod).using(
 
 end_force = np.array([-15.0, 0.0, 0.0])
 timoshenko_sim.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=100.0 # final_time / 2.0
+    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=100.0  # final_time / 2.0
 )
 
 
@@ -85,13 +85,16 @@ if ADD_UNSHEARABLE_ROD:
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=100.0# final_time / 2.0
+        EndpointForces,
+        0.0 * end_force,
+        end_force,
+        ramp_up_time=100.0,  # final_time / 2.0
     )
 
 # Add call backs
 class VelocityCallBack(CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Tracks the velocity norms of the rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
@@ -105,8 +108,11 @@ class VelocityCallBack(CallBackBaseClass):
 
             self.callback_params["time"].append(time)
             # Collect x
-            self.callback_params["velocity_norms"].append(np.linalg.norm(system.velocity_collection.copy()))
+            self.callback_params["velocity_norms"].append(
+                np.linalg.norm(system.velocity_collection.copy())
+            )
             return
+
 
 recorded_history = defaultdict(list)
 timoshenko_sim.collect_diagnostics(shearable_rod).using(
@@ -134,9 +140,14 @@ if SAVE_RESULTS:
     pickle.dump(shearable_rod, file)
     file.close()
 
-    tv = (np.asarray(recorded_history["time"]), np.asarray(recorded_history["velocity_norms"]))
+    tv = (
+        np.asarray(recorded_history["time"]),
+        np.asarray(recorded_history["velocity_norms"]),
+    )
+
     def as_time_series(v):
         return v.T
+
     np.savetxt(
         "velocity_norms.csv",
         as_time_series(np.stack(tv)),

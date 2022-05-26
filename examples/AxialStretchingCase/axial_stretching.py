@@ -90,7 +90,7 @@ stretch_sim.add_forcing_to(stretchable_rod).using(
 # Add call backs
 class AxialStretchingCallBack(CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Tracks the velocity norms of the rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
