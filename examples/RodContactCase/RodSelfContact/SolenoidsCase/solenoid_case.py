@@ -1,5 +1,5 @@
 import sys
-
+import numpy as np
 sys.path.append("../../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (
@@ -38,7 +38,7 @@ I = np.pi / 4 * base_radius ** 4
 volume = base_area * base_length
 mass = 1.0
 density = mass / volume
-nu = 2.0
+nu = 2.0 / density / base_area
 E = 1e6
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
