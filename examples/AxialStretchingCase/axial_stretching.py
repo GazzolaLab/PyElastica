@@ -41,7 +41,7 @@ class StretchingBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBa
 
 
 stretch_sim = StretchingBeamSimulator()
-final_time = 20.0
+final_time = 200.0
 
 # Options
 PLOT_FIGURE = True
@@ -55,12 +55,13 @@ direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 1.0
 base_radius = 0.025
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1000
 nu = 1.0
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
+shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
 stretchable_rod = CosseratRod.straight_rod(
     n_elem,
@@ -72,7 +73,7 @@ stretchable_rod = CosseratRod.straight_rod(
     density,
     nu,
     youngs_modulus,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 stretch_sim.append(stretchable_rod)
@@ -89,7 +90,7 @@ stretch_sim.add_forcing_to(stretchable_rod).using(
 # Add call backs
 class AxialStretchingCallBack(CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Tracks the velocity norms of the rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
@@ -105,6 +106,9 @@ class AxialStretchingCallBack(CallBackBaseClass):
             # Collect only x
             self.callback_params["position"].append(
                 system.position_collection[0, -1].copy()
+            )
+            self.callback_params["velocity_norms"].append(
+                np.linalg.norm(system.velocity_collection.copy())
             )
             return
 
@@ -150,3 +154,17 @@ if SAVE_RESULTS:
     file = open(filename, "wb")
     pickle.dump(stretchable_rod, file)
     file.close()
+
+    tv = (
+        np.asarray(recorded_history["time"]),
+        np.asarray(recorded_history["velocity_norms"]),
+    )
+
+    def as_time_series(v):
+        return v.T
+
+    np.savetxt(
+        "velocity_norms.csv",
+        as_time_series(np.stack(tv)),
+        delimiter=",",
+    )

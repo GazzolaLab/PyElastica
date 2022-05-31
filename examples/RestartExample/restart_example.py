@@ -3,6 +3,7 @@ This script is an example to how to use Pyelastica restart functionality.
 """
 
 import sys
+import numpy as np
 
 sys.path.append("../../")
 from elastica import *
