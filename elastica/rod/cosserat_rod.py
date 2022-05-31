@@ -22,7 +22,6 @@ from elastica._calculus import (
     _difference,
     _average,
 )
-from elastica.interaction import node_to_element_pos_or_vel
 
 position_difference_kernel = _difference
 position_average = _average
