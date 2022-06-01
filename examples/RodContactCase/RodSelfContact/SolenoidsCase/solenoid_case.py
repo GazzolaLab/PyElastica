@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+
 sys.path.append("../../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (

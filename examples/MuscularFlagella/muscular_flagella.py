@@ -2,6 +2,7 @@ __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper
 
 import sys
 import numpy as np
+
 sys.path.append("../../")
 
 from elastica import *
@@ -67,7 +68,7 @@ flagella_body = CosseratRod.straight_rod(
     density_body,
     nu_body,
     E,
-    shear_modulus = shear_modulus,
+    shear_modulus=shear_modulus,
 )
 
 # In order to match bending stiffness of the tail as given in below reference, recompute and
@@ -132,7 +133,7 @@ base_radius_muscle = 0.01  # mm
 base_length_muscle = 0.10756
 E_muscle = 0.3e5  # MPa
 shear_modulus_muscle = E_muscle / (poisson_ratio + 1.0)
-nu_muscle = 1e-6 / density_muscle / (np.pi*base_radius_muscle**2)
+nu_muscle = 1e-6 / density_muscle / (np.pi * base_radius_muscle ** 2)
 
 # Start position of the muscle is the 4th element position of body. Lets use the exact location, because this will
 # simplify the connection implementation.
