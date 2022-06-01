@@ -48,6 +48,7 @@ class BaseRodClass(MockTestRod):
         self.internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
         self.internal_torques = np.zeros((MaxDimension.value(), n_elem))
         self.lengths = np.ones(n_elem) * base_length / n_elem
+        self.mass = np.ones(n_elem + 1)
 
     def _compute_internal_forces(self):
         return np.zeros((MaxDimension.value(), self.n_elem + 1))
@@ -748,7 +749,11 @@ class TestAnisotropicFriction:
 # Slender Body Theory Unit Tests
 
 try:
-    from elastica.interaction import sum_over_elements, node_to_element_velocity
+    from elastica.interaction import (
+        sum_over_elements,
+        node_to_element_position,
+        node_to_element_velocity,
+    )
 
     # These functions are used in the case if Numba is available
     class TestAuxiliaryFunctionsForSlenderBodyTheory:
@@ -774,6 +779,28 @@ try:
             assert_allclose(correct_output, output, atol=Tolerance.atol())
 
         @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_node_to_element_position(self, n_elem):
+            """
+            This function tests node_to_element_position function. We are
+            converting node positions to element positions. Here also
+            we are using numba to speed up the process.
+
+            Parameters
+            ----------
+            n_elem
+
+            Returns
+            -------
+
+            """
+            random = np.random.rand()  # Adding some random numbers
+            input_position = random * np.ones((3, n_elem + 1))
+            correct_output = random * np.ones((3, n_elem))
+
+            output = node_to_element_position(input_position)
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
         def test_node_to_element_velocity(self, n_elem):
             """
             This function tests node_to_element_velocity function. We are
@@ -790,7 +817,7 @@ try:
             """
             random = np.random.rand()  # Adding some random numbers
             input_velocity = random * np.ones((3, n_elem + 1))
-            input_mass = 2.0 * random * np.ones((3, n_elem + 1))
+            input_mass = 2.0 * random * np.ones(n_elem + 1)
             correct_output = random * np.ones((3, n_elem))
 
             output = node_to_element_velocity(

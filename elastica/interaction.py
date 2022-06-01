@@ -8,14 +8,11 @@ __all__ = [
 
 
 import numpy as np
-from elastica.utils import MaxDimension
 from elastica.external_forces import NoForces
 
 
-import numba
 from numba import njit
 from elastica._linalg import (
-    _batch_matmul,
     _batch_matvec,
     _batch_cross,
     _batch_norm,
@@ -79,12 +76,14 @@ def node_to_element_mass_or_force(input):
     Parameters
     ----------
     input: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+        2D (dim, blocksize) array containing nodal mass/forces
+        with 'float' type.
 
     Returns
     -------
     output: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+        2D (dim, blocksize) array containing elemental mass/forces
+        with 'float' type.
     """
     """
     Developer Notes
@@ -714,6 +713,7 @@ def node_to_element_position(node_position_collection):
     return element_position_collection
 
 
+@njit(cache=True)
 def node_to_element_velocity(mass, node_velocity_collection):
     """
     This function computes the velocity of the elements
