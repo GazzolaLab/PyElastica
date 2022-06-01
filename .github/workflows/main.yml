@@ -22,6 +22,9 @@ jobs:
         os: [ubuntu-latest] # [ubuntu-latest, macos-latest] # Run macos tests if really required, since they charge 10 times more for macos
         python-version: [3.6, 3.7, 3.8]
 
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -106,5 +109,5 @@ jobs:
           fi
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          #        with:
+          #          token: ${{ secrets.CODECOV_TOKEN }}
