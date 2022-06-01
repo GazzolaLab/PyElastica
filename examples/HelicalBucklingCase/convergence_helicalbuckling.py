@@ -39,7 +39,7 @@ def simulate_helicalbucklin_beam_with(
     base_radius = 0.35
     base_area = np.pi * base_radius ** 2
     density = 1.0 / (base_area)
-    nu = 0.01
+    nu = 0.01 / density / base_area
     E = 1e6
     slack = 3
     number_of_rotations = 27
@@ -60,12 +60,11 @@ def simulate_helicalbucklin_beam_with(
         density,
         nu,
         E,
-        poisson_ratio,
     )
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
 
-    shearable_rod.shear_matrix = shear_matrix
-    shearable_rod.bend_matrix = bend_matrix
+    shearable_rod.shear_matrix[:] = shear_matrix
+    shearable_rod.bend_matrix[:] = bend_matrix
 
     helicalbuckling_sim.append(shearable_rod)
     helicalbuckling_sim.constrain(shearable_rod).using(

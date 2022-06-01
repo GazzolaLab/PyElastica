@@ -192,21 +192,27 @@ def allocate(
     mass[1:] += 0.5 * density * volume
 
     # Set dissipation constant or nu array
-    dissipation_constant_for_forces = np.zeros((n_elements))
+    dissipation_constant_for_forces = np.zeros((n_elements + 1))
     # Check if the user input nu is valid
     nu_temp = np.array(nu)
     _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
-    dissipation_constant_for_forces[:] = nu
+    dissipation_constant_for_forces[:] = nu * mass
     # Check if the elements of dissipation constant greater than tolerance
     assert np.all(
         dissipation_constant_for_forces >= 0.0
     ), " Dissipation constant(nu) has to be equal or greater than 0."
 
     # Custom nu for torques
+    dissipation_constant_for_torques = np.zeros((n_elements))
+    elemental_mass = (mass[1:] + mass[:-1]) / 2.0
     if nu_for_torques is None:
-        dissipation_constant_for_torques = dissipation_constant_for_forces.copy()
+        dissipation_constant_for_torques[:] = (dissipation_constant_for_forces / mass)[
+            :n_elements
+        ] * elemental_mass
     else:
-        dissipation_constant_for_torques = np.asarray(nu_for_torques)
+        dissipation_constant_for_torques[:] = (
+            np.asarray(nu_for_torques) * elemental_mass
+        )
     _assert_dim(
         dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
     )

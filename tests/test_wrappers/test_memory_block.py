@@ -24,6 +24,7 @@ class BaseRodForTesting(RodBase):
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
         self.damping_forces = np.random.randn(3, self.n_nodes)
+        self.dissipation_constant_for_forces = np.random.rand(self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -33,7 +34,6 @@ class BaseRodForTesting(RodBase):
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_elems)
         self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements

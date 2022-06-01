@@ -33,7 +33,7 @@ def run_flagella(
     base_length = 1.0
     base_radius = 0.025
     density = 1000
-    nu = 5.0
+    nu = 2.5
     E = 1e7
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
