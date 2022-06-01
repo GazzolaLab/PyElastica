@@ -9,6 +9,7 @@ from elastica.interaction import (
     find_slipping_elements,
     AnisotropicFrictionalPlane,
     node_to_element_mass_or_force,
+    nodes_to_elements,
     SlenderBodyTheory,
 )
 
@@ -373,6 +374,25 @@ class TestAuxiliaryFunctions:
         input[..., -1] *= 0.5
         correct_output = np.repeat(random_vector, n_elem, axis=1)
         output = node_to_element_mass_or_force(input)
+        assert_allclose(correct_output, output, atol=Tolerance.atol())
+        assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_deprecated_nodes_to_elements(self, n_elem):
+        random_vector = np.random.rand(3).reshape(3, 1)
+        input = np.repeat(random_vector, n_elem + 1, axis=1)
+        input[..., 0] *= 0.5
+        input[..., -1] *= 0.5
+        correct_output = np.repeat(random_vector, n_elem, axis=1)
+        correct_warning_message = (
+            "This function is now deprecated (issue #80). Please use "
+            "elastica.interaction.node_to_element_mass_or_force() "
+            "instead for node-to-element interpolation of mass/forces. "
+            "The function will be removed in the future (v0.3.1)."
+        )
+        with pytest.warns(DeprecationWarning) as record:
+            output = nodes_to_elements(input)
+        assert record[0].message.args[0] == correct_warning_message
         assert_allclose(correct_output, output, atol=Tolerance.atol())
         assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
 
@@ -753,6 +773,7 @@ try:
         sum_over_elements,
         node_to_element_position,
         node_to_element_velocity,
+        node_to_element_pos_or_vel,
     )
 
     # These functions are used in the case if Numba is available
@@ -824,6 +845,20 @@ try:
                 mass=input_mass, node_velocity_collection=input_velocity
             )
             assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_not_impl_error_for_node_to_element_pos_or_vel(self, n_elem):
+            random = np.random.rand()  # Adding some random numbers
+            input_velocity = random * np.ones((3, n_elem + 1))
+            error_message = (
+                "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
+                "elastica.interaction.node_to_element_position() for rod position \n"
+                "elastica.interaction.node_to_element_velocity() for rod velocity. \n"
+                "For detail, refer to issue #80."
+            )
+            with pytest.raises(NotImplementedError) as error_info:
+                node_to_element_pos_or_vel(input_velocity)
+            assert error_info.value.args[0] == error_message
 
 except ImportError:
     pass
