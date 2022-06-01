@@ -24,6 +24,7 @@ from elastica._linalg import (
     _batch_matrix_transpose,
     _batch_vec_oneD_vec_cross,
 )
+import warnings
 
 
 @njit(cache=True)
@@ -103,6 +104,16 @@ def node_to_element_mass_or_force(input):
     output[..., -1] += 0.5 * input[..., -1]
 
     return output
+
+
+def nodes_to_elements(input):
+    warnings.warn(
+        "This function is now deprecated, please use "
+        "elastica.interaction.node_to_element_mass_or_force() "
+        "instead for node-to-element interpolation of mass/forces.",
+        DeprecationWarning,
+    )
+    return node_to_element_mass_or_force(input)
 
 
 @njit(cache=True)
@@ -753,6 +764,14 @@ def node_to_element_velocity(mass, node_velocity_collection):
         element_velocity_collection[:, k] /= mass[k + 1] + mass[k]
 
     return element_velocity_collection
+
+
+def node_to_element_pos_or_vel(vector_in_node_frame):
+    raise NotImplementedError(
+        "This function is not implemented. For node-to-element interpolation please use: \n"
+        "elastica.interaction.node_to_element_position() for rod position \n"
+        "elastica.interaction.node_to_element_velocity() for rod velocity"
+    )
 
 
 @njit(cache=True)
