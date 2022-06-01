@@ -150,14 +150,6 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
                     self.__dict__[k][..., start_idx:end_idx]
                 )
 
-        # self.mass = self.scalar_dofs_in_rod_nodes[0]
-        # for system_idx, system in enumerate(systems):
-        #     start_idx = self.start_idx_in_rod_nodes[system_idx]
-        #     end_idx = self.end_idx_in_rod_nodes[system_idx]
-        #     self.mass[start_idx:end_idx] = system.mass.copy()
-        #     # create a view back to the rod after copying variable into the block structure
-        #     system.mass = np.ndarray.view(self.mass[start_idx:end_idx])
-
         # Things in nodes that are vectors
         #             0 ("position_collection", float64[:, :]),
         #             1 ("internal_forces", float64[:, :]),
@@ -223,8 +215,6 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
             "rest_lengths": 4,
             "dilatation": 5,
             "dilatation_rate": 6,
-            # "dissipation_constant_for_forces": 7,
-            # "dissipation_constant_for_torques": 8,
             "dissipation_constant_for_torques": 7,
         }
         self.scalar_dofs_in_rod_elems = np.zeros(
