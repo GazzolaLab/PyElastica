@@ -19,7 +19,7 @@ final_time = 5000.0
 
 # Options
 PLOT_FIGURE = True
-SAVE_FIGURE = False
+SAVE_FIGURE = True
 SAVE_RESULTS = False
 ADD_UNSHEARABLE_ROD = False
 
@@ -30,9 +30,9 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius**2
+base_area = np.pi * base_radius ** 2
 density = 5000
-nu = 0.1
+nu = 0.1 / density / base_area
 E = 1e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 99

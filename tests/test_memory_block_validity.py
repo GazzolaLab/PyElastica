@@ -22,6 +22,7 @@ class MockRod:
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
         self.damping_forces = np.random.randn(3, self.n_nodes)
+        self.dissipation_constant_for_forces = np.random.rand(self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -31,7 +32,6 @@ class MockRod:
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_elems)
         self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements
@@ -106,6 +106,20 @@ def test_block_structure_scalar_on_nodes_validity(n_rods):
             block_structure.mass[start_idx:end_idx],
             world_rods[i].mass,
             atol=Tolerance.atol(),
+        )
+
+        # dissipation constant for forces
+        assert np.shares_memory(
+            block_structure.dissipation_constant_for_forces,
+            world_rods[i].dissipation_constant_for_forces,
+        )
+        assert np.shares_memory(
+            block_structure.scalar_dofs_in_rod_nodes,
+            world_rods[i].dissipation_constant_for_forces,
+        )
+        assert_allclose(
+            block_structure.dissipation_constant_for_forces[start_idx:end_idx],
+            world_rods[i].dissipation_constant_for_forces,
         )
 
 
@@ -267,20 +281,6 @@ def test_block_structure_scalar_on_elements_validity(n_rods):
         assert_allclose(
             block_structure.dilatation_rate[start_idx:end_idx],
             world_rods[i].dilatation_rate,
-        )
-
-        # dissipation constant for forces
-        assert np.shares_memory(
-            block_structure.dissipation_constant_for_forces,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rod_elems,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert_allclose(
-            block_structure.dissipation_constant_for_forces[start_idx:end_idx],
-            world_rods[i].dissipation_constant_for_forces,
         )
 
         # dissipation constant for torques

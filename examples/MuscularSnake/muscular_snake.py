@@ -55,7 +55,7 @@ snake_body = CosseratRod.straight_rod(
     base_length_body,
     base_radius_body,
     density_body,
-    nu,
+    nu / density_body / (np.pi * base_radius_body ** 2),
     youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
@@ -101,6 +101,7 @@ below.
 muscle_radius = np.zeros((n_elem_muscle_group_one_to_three))
 muscle_radius[:] = 0.003  # First set tendon radius for whole rod.
 muscle_radius[4 * 3 : 9 * 3] = 0.006  # Change the radius of muscle elements
+nu_muscle /= density_muscle * np.pi * 0.003 ** 2
 
 for i in range(int(n_muscle_fibers / 2)):
 
