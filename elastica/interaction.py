@@ -8,14 +8,11 @@ __all__ = [
 
 
 import numpy as np
-from elastica.utils import MaxDimension
 from elastica.external_forces import NoForces
 
 
-import numba
 from numba import njit
 from elastica._linalg import (
-    _batch_matmul,
     _batch_matvec,
     _batch_cross,
     _batch_norm,
@@ -27,6 +24,7 @@ from elastica._linalg import (
     _batch_matrix_transpose,
     _batch_vec_oneD_vec_cross,
 )
+import warnings
 
 
 @njit(cache=True)
@@ -71,21 +69,22 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 
 
 @njit(cache=True)
-def nodes_to_elements(input):
+def node_to_element_mass_or_force(input):
     """
-    This function converts the rod-like object dofs on nodes to
-    dofs on elements. For example, node velocity is converted to
-    element velocity.
+    This function converts the mass/forces on rod nodes to
+    elements, where special treatment is necessary at the ends.
 
     Parameters
     ----------
     input: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+        2D (dim, blocksize) array containing nodal mass/forces
+        with 'float' type.
 
     Returns
     -------
     output: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+        2D (dim, blocksize) array containing elemental mass/forces
+        with 'float' type.
     """
     """
     Developer Notes
@@ -105,6 +104,19 @@ def nodes_to_elements(input):
     output[..., -1] += 0.5 * input[..., -1]
 
     return output
+
+
+def nodes_to_elements(input):
+    warnings.warn(
+        # Change the warning to error on v0.3.1
+        # Remove the function beyond v0.4.0
+        "This function is now deprecated (issue #80). Please use "
+        "elastica.interaction.node_to_element_mass_or_force() "
+        "instead for node-to-element interpolation of mass/forces. "
+        "The function will be removed in the future (v0.3.1).",
+        DeprecationWarning,
+    )
+    return node_to_element_mass_or_force(input)
 
 
 @njit(cache=True)
@@ -202,6 +214,7 @@ class InteractionPlane:
             self.k,
             self.nu,
             system.radius,
+            system.mass,
             system.position_collection,
             system.velocity_collection,
             system.internal_forces,
@@ -217,6 +230,7 @@ def apply_normal_force_numba(
     k,
     nu,
     radius,
+    mass,
     position_collection,
     velocity_collection,
     internal_forces,
@@ -238,7 +252,7 @@ def apply_normal_force_numba(
 
     # Compute plane response force
     nodal_total_forces = _batch_vector_sum(internal_forces, external_forces)
-    element_total_forces = nodes_to_elements(nodal_total_forces)
+    element_total_forces = node_to_element_mass_or_force(nodal_total_forces)
 
     force_component_along_normal_direction = _batch_product_i_ik_to_k(
         plane_normal, element_total_forces
@@ -259,7 +273,7 @@ def apply_normal_force_numba(
     plane_response_force = -forces_along_normal_direction
 
     # Elastic force response due to penetration
-    element_position = node_to_element_pos_or_vel(position_collection)
+    element_position = node_to_element_position(position_collection)
     distance_from_plane = _batch_product_i_ik_to_k(
         plane_normal, (element_position - plane_origin)
     )
@@ -267,7 +281,9 @@ def apply_normal_force_numba(
     elastic_force = -k * _batch_product_i_k_to_ik(plane_normal, plane_penetration)
 
     # Damping force response due to velocity towards the plane
-    element_velocity = node_to_element_pos_or_vel(velocity_collection)
+    element_velocity = node_to_element_velocity(
+        mass=mass, node_velocity_collection=velocity_collection
+    )
     normal_component_of_element_velocity = _batch_product_i_ik_to_k(
         plane_normal, element_velocity
     )
@@ -400,6 +416,7 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
             self.static_mu_backward,
             self.static_mu_sideways,
             system.radius,
+            system.mass,
             system.tangents,
             system.position_collection,
             system.director_collection,
@@ -427,6 +444,7 @@ def anisotropic_friction(
     static_mu_backward,
     static_mu_sideways,
     radius,
+    mass,
     tangents,
     position_collection,
     director_collection,
@@ -444,6 +462,7 @@ def anisotropic_friction(
         k,
         nu,
         radius,
+        mass,
         position_collection,
         velocity_collection,
         internal_forces,
@@ -466,7 +485,9 @@ def anisotropic_friction(
         1 / (tangent_perpendicular_to_normal_direction_mag + 1e-14),
         tangent_perpendicular_to_normal_direction,
     )
-    element_velocity = node_to_element_pos_or_vel(velocity_collection)
+    element_velocity = node_to_element_velocity(
+        mass=mass, node_velocity_collection=velocity_collection
+    )
     # first apply axial kinetic friction
     velocity_mag_along_axial_direction = _batch_dot(element_velocity, axial_direction)
     velocity_along_axial_direction = _batch_product_k_ik_to_ik(
@@ -550,7 +571,7 @@ def anisotropic_friction(
 
     # now axial static friction
     nodal_total_forces = _batch_vector_sum(internal_forces, external_forces)
-    element_total_forces = nodes_to_elements(nodal_total_forces)
+    element_total_forces = node_to_element_mass_or_force(nodal_total_forces)
     force_component_along_axial_direction = _batch_dot(
         element_total_forces, axial_direction
     )
@@ -661,21 +682,24 @@ def sum_over_elements(input):
 
 
 @njit(cache=True)
-def node_to_element_pos_or_vel(vector_in_node_frame):
+def node_to_element_position(node_position_collection):
     """
-    This function computes the velocity of the elements.
+    This function computes the position of the elements
+    from the nodal values.
     Here we define a separate function because benchmark results
     showed that using Numba, we get more than 3 times faster calculation.
 
     Parameters
     ----------
-    vector_in_node_frame: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+    node_position_collection: numpy.ndarray
+        2D (dim, blocksize) array containing nodal positions with
+        'float' type.
 
     Returns
     -------
-    vector_in_element_frame: numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
+    element_position_collection: numpy.ndarray
+        2D (dim, blocksize) array containing elemental positions with
+        'float' type.
     """
     """
     Developer Notes
@@ -687,25 +711,77 @@ def node_to_element_pos_or_vel(vector_in_node_frame):
     This version: 729 ns ± 14.3 ns per loop
 
     """
-    n_elem = vector_in_node_frame.shape[1] - 1
-    vector_in_element_frame = np.empty((3, n_elem))
+    n_elem = node_position_collection.shape[1] - 1
+    element_position_collection = np.empty((3, n_elem))
     for k in range(n_elem):
-        vector_in_element_frame[0, k] = 0.5 * (
-            vector_in_node_frame[0, k + 1] + vector_in_node_frame[0, k]
+        element_position_collection[0, k] = 0.5 * (
+            node_position_collection[0, k + 1] + node_position_collection[0, k]
         )
-        vector_in_element_frame[1, k] = 0.5 * (
-            vector_in_node_frame[1, k + 1] + vector_in_node_frame[1, k]
+        element_position_collection[1, k] = 0.5 * (
+            node_position_collection[1, k + 1] + node_position_collection[1, k]
         )
-        vector_in_element_frame[2, k] = 0.5 * (
-            vector_in_node_frame[2, k + 1] + vector_in_node_frame[2, k]
+        element_position_collection[2, k] = 0.5 * (
+            node_position_collection[2, k + 1] + node_position_collection[2, k]
         )
 
-    return vector_in_element_frame
+    return element_position_collection
+
+
+@njit(cache=True)
+def node_to_element_velocity(mass, node_velocity_collection):
+    """
+    This function computes the velocity of the elements
+    from the nodal values. Uses the velocity of center of mass
+    in order to conserve momentum during computation.
+
+    Parameters
+    ----------
+    mass: numpy.ndarray
+        2D (dim, blocksize) array containing nodal masses with
+        'float' type.
+    node_velocity_collection: numpy.ndarray
+        2D (dim, blocksize) array containing nodal velocities with
+        'float' type.
+
+    Returns
+    -------
+    element_velocity_collection: numpy.ndarray
+        2D (dim, blocksize) array containing elemental velocities with
+        'float' type.
+    """
+    n_elem = node_velocity_collection.shape[1] - 1
+    element_velocity_collection = np.empty((3, n_elem))
+    for k in range(n_elem):
+        element_velocity_collection[0, k] = (
+            mass[k + 1] * node_velocity_collection[0, k + 1]
+            + mass[k] * node_velocity_collection[0, k]
+        )
+        element_velocity_collection[1, k] = (
+            mass[k + 1] * node_velocity_collection[1, k + 1]
+            + mass[k] * node_velocity_collection[1, k]
+        )
+        element_velocity_collection[2, k] = (
+            mass[k + 1] * node_velocity_collection[2, k + 1]
+            + mass[k] * node_velocity_collection[2, k]
+        )
+        element_velocity_collection[:, k] /= mass[k + 1] + mass[k]
+
+    return element_velocity_collection
+
+
+def node_to_element_pos_or_vel(vector_in_node_frame):
+    # Remove the function beyond v0.4.0
+    raise NotImplementedError(
+        "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
+        "elastica.interaction.node_to_element_position() for rod position \n"
+        "elastica.interaction.node_to_element_velocity() for rod velocity. \n"
+        "For detail, refer to issue #80."
+    )
 
 
 @njit(cache=True)
 def slender_body_forces(
-    tangents, velocity_collection, dynamic_viscosity, lengths, radius
+    tangents, velocity_collection, dynamic_viscosity, lengths, radius, mass
 ):
     r"""
     This function computes hydrodynamic forces on a body using slender body theory.
@@ -732,6 +808,9 @@ def slender_body_forces(
     radius: numpy.ndarray
         1D (blocksize) array containing data with 'float' type.
         Rod-like object element radius.
+    mass: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type.
+        Rod-like object node mass.
 
     Returns
     -------
@@ -751,7 +830,9 @@ def slender_body_forces(
 
     f = np.empty((tangents.shape[0], tangents.shape[1]))
     total_length = sum_over_elements(lengths)
-    element_velocity = node_to_element_pos_or_vel(velocity_collection)
+    element_velocity = node_to_element_velocity(
+        mass=mass, node_velocity_collection=velocity_collection
+    )
 
     for k in range(tangents.shape[1]):
         # compute the entries of t`t. a[#][#] are the the
@@ -844,6 +925,7 @@ class SlenderBodyTheory(NoForces):
             self.dynamic_viscosity,
             system.lengths,
             system.radius,
+            system.mass,
         )
         elements_to_nodes_inplace(stokes_force, system.external_forces)
 

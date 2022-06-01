@@ -8,6 +8,7 @@ from elastica.interaction import (
     InteractionPlane,
     find_slipping_elements,
     AnisotropicFrictionalPlane,
+    node_to_element_mass_or_force,
     nodes_to_elements,
     SlenderBodyTheory,
 )
@@ -48,6 +49,7 @@ class BaseRodClass(MockTestRod):
         self.internal_forces = np.zeros((MaxDimension.value(), n_elem + 1))
         self.internal_torques = np.zeros((MaxDimension.value(), n_elem))
         self.lengths = np.ones(n_elem) * base_length / n_elem
+        self.mass = np.ones(n_elem + 1)
 
     def _compute_internal_forces(self):
         return np.zeros((MaxDimension.value(), self.n_elem + 1))
@@ -365,13 +367,32 @@ class TestAuxiliaryFunctions:
         assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_nodes_to_elements(self, n_elem):
+    def test_node_to_element_mass_or_force(self, n_elem):
         random_vector = np.random.rand(3).reshape(3, 1)
         input = np.repeat(random_vector, n_elem + 1, axis=1)
         input[..., 0] *= 0.5
         input[..., -1] *= 0.5
         correct_output = np.repeat(random_vector, n_elem, axis=1)
-        output = nodes_to_elements(input)
+        output = node_to_element_mass_or_force(input)
+        assert_allclose(correct_output, output, atol=Tolerance.atol())
+        assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_deprecated_nodes_to_elements(self, n_elem):
+        random_vector = np.random.rand(3).reshape(3, 1)
+        input = np.repeat(random_vector, n_elem + 1, axis=1)
+        input[..., 0] *= 0.5
+        input[..., -1] *= 0.5
+        correct_output = np.repeat(random_vector, n_elem, axis=1)
+        correct_warning_message = (
+            "This function is now deprecated (issue #80). Please use "
+            "elastica.interaction.node_to_element_mass_or_force() "
+            "instead for node-to-element interpolation of mass/forces. "
+            "The function will be removed in the future (v0.3.1)."
+        )
+        with pytest.warns(DeprecationWarning) as record:
+            output = nodes_to_elements(input)
+        assert record[0].message.args[0] == correct_warning_message
         assert_allclose(correct_output, output, atol=Tolerance.atol())
         assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
 
@@ -566,7 +587,7 @@ class TestAnisotropicFriction:
         )
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
-        forces_on_elements = nodes_to_elements(external_forces_collection)
+        forces_on_elements = node_to_element_mass_or_force(external_forces_collection)
         correct_torques = np.zeros((3, n_elem))
         correct_torques[2] += (
             -1.0
@@ -607,7 +628,7 @@ class TestAnisotropicFriction:
         correct_forces[0] = 2.0 / 3.0 * external_forces_collection[0]
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
-        forces_on_elements = nodes_to_elements(external_forces_collection)
+        forces_on_elements = node_to_element_mass_or_force(external_forces_collection)
         correct_torques = np.zeros((3, n_elem))
         correct_torques[2] += (
             -1.0
@@ -650,7 +671,7 @@ class TestAnisotropicFriction:
         ) * np.fabs(external_forces_collection[1])
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
-        forces_on_elements = nodes_to_elements(external_forces_collection)
+        forces_on_elements = node_to_element_mass_or_force(external_forces_collection)
         correct_torques = np.zeros((3, n_elem))
         correct_torques[2] += (
             -1.0
@@ -736,7 +757,7 @@ class TestAnisotropicFriction:
         )
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
-        forces_on_elements = nodes_to_elements(external_forces_collection)
+        forces_on_elements = node_to_element_mass_or_force(external_forces_collection)
         correct_torques = external_torques
         correct_torques[2] += -(
             np.sign(torque_mag) * np.fabs(forces_on_elements[1]) * rod.radius
@@ -748,7 +769,12 @@ class TestAnisotropicFriction:
 # Slender Body Theory Unit Tests
 
 try:
-    from elastica.interaction import sum_over_elements, node_to_element_pos_or_vel
+    from elastica.interaction import (
+        sum_over_elements,
+        node_to_element_position,
+        node_to_element_velocity,
+        node_to_element_pos_or_vel,
+    )
 
     # These functions are used in the case if Numba is available
     class TestAuxiliaryFunctionsForSlenderBodyTheory:
@@ -774,9 +800,31 @@ try:
             assert_allclose(correct_output, output, atol=Tolerance.atol())
 
         @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_node_to_elements(self, n_elem):
+        def test_node_to_element_position(self, n_elem):
             """
-            This function test node_to_element_velocity function. We are
+            This function tests node_to_element_position function. We are
+            converting node positions to element positions. Here also
+            we are using numba to speed up the process.
+
+            Parameters
+            ----------
+            n_elem
+
+            Returns
+            -------
+
+            """
+            random = np.random.rand()  # Adding some random numbers
+            input_position = random * np.ones((3, n_elem + 1))
+            correct_output = random * np.ones((3, n_elem))
+
+            output = node_to_element_position(input_position)
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_node_to_element_velocity(self, n_elem):
+            """
+            This function tests node_to_element_velocity function. We are
             converting node velocities to element velocities. Here also
             we are using numba to speed up the process.
 
@@ -789,11 +837,28 @@ try:
 
             """
             random = np.random.rand()  # Adding some random numbers
-            input_variable = random * np.ones((3, n_elem + 1))
+            input_velocity = random * np.ones((3, n_elem + 1))
+            input_mass = 2.0 * random * np.ones(n_elem + 1)
             correct_output = random * np.ones((3, n_elem))
 
-            output = node_to_element_pos_or_vel(input_variable)
+            output = node_to_element_velocity(
+                mass=input_mass, node_velocity_collection=input_velocity
+            )
             assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_not_impl_error_for_node_to_element_pos_or_vel(self, n_elem):
+            random = np.random.rand()  # Adding some random numbers
+            input_velocity = random * np.ones((3, n_elem + 1))
+            error_message = (
+                "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
+                "elastica.interaction.node_to_element_position() for rod position \n"
+                "elastica.interaction.node_to_element_velocity() for rod velocity. \n"
+                "For detail, refer to issue #80."
+            )
+            with pytest.raises(NotImplementedError) as error_info:
+                node_to_element_pos_or_vel(input_velocity)
+            assert error_info.value.args[0] == error_message
 
 except ImportError:
     pass
