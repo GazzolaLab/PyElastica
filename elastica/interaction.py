@@ -108,9 +108,12 @@ def node_to_element_mass_or_force(input):
 
 def nodes_to_elements(input):
     warnings.warn(
-        "This function is now deprecated, please use "
+        # Change the warning to error on v0.3.1
+        # Remove the function beyond v0.4.0
+        "This function is now deprecated (issue #80). Please use "
         "elastica.interaction.node_to_element_mass_or_force() "
-        "instead for node-to-element interpolation of mass/forces.",
+        "instead for node-to-element interpolation of mass/forces."
+        "The function will be removed in the future (v0.3.1).",
         DeprecationWarning,
     )
     return node_to_element_mass_or_force(input)
@@ -767,10 +770,12 @@ def node_to_element_velocity(mass, node_velocity_collection):
 
 
 def node_to_element_pos_or_vel(vector_in_node_frame):
+    # Remove the function beyond v0.4.0
     raise NotImplementedError(
-        "This function is not implemented. For node-to-element interpolation please use: \n"
+        "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
         "elastica.interaction.node_to_element_position() for rod position \n"
-        "elastica.interaction.node_to_element_velocity() for rod velocity"
+        "elastica.interaction.node_to_element_velocity() for rod velocity."
+        "For detail, look at issue #80."
     )
 
 
