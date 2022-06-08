@@ -69,6 +69,7 @@ def simulate_timoshenko_beam_with(
     if ADD_UNSHEARABLE_ROD:
         # Start into the plane
         unshearable_start = np.array([0.0, -1.0, 0.0])
+        shear_modulus = E / (-0.7 + 1.0)
         unshearable_rod = CosseratRod.straight_rod(
             n_elem,
             unshearable_start,
@@ -80,7 +81,7 @@ def simulate_timoshenko_beam_with(
             nu,
             E,
             # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
-            poisson_ratio=-0.7,
+            shear_modulus=shear_modulus,
         )
 
         timoshenko_sim.append(unshearable_rod)
