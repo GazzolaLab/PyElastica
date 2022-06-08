@@ -139,7 +139,7 @@ class EndpointForces(NoForces):
 
     """
 
-    def __init__(self, start_force, end_force, ramp_up_time=0.0):
+    def __init__(self, start_force, end_force, ramp_up_time):
         """
 
         Parameters
@@ -157,15 +157,10 @@ class EndpointForces(NoForces):
         super(EndpointForces, self).__init__()
         self.start_force = start_force
         self.end_force = end_force
-        assert ramp_up_time >= 0.0
+        assert ramp_up_time > 0.0
         self.ramp_up_time = ramp_up_time
 
     def apply_forces(self, system, time=0.0):
-        # factor = min(1.0, time / self.ramp_up_time)
-        #
-        # system.external_forces[..., 0] += self.start_force * factor
-        # system.external_forces[..., -1] += self.end_force * factor
-
         self.compute_end_point_forces(
             system.external_forces,
             self.start_force,
@@ -307,7 +302,7 @@ class MuscleTorques(NoForces):
         phase_shift,
         direction,
         rest_lengths,
-        ramp_up_time=0.0,
+        ramp_up_time,
         with_spline=False,
     ):
         """
@@ -340,7 +335,7 @@ class MuscleTorques(NoForces):
         self.wave_number = wave_number
         self.phase_shift = phase_shift
 
-        assert ramp_up_time >= 0.0
+        assert ramp_up_time > 0.0
         self.ramp_up_time = ramp_up_time
 
         # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
