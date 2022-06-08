@@ -416,6 +416,8 @@ class TestingClass:
             * test_rod.mass
         )
         elemental_mass = (test_rod.mass[1:] + test_rod.mass[:-1]) / 2.0
+        elemental_mass[0] += test_rod.mass[0] / 2.0
+        elemental_mass[-1] += test_rod.mass[-1] / 2.0
         damping_torques = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1)
             * nu
