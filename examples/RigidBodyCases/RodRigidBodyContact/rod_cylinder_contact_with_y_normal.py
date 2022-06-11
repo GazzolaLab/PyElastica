@@ -42,12 +42,12 @@ cylinder_height = 0.4
 cylinder_radius = 10.0 * base_radius
 
 # can be set to True, checks collision at tips of rod
-tip_collision = False
+TIP_COLLISION = False
 
 # Cylinder surface starts at 0.2
 tip_offset = 0.0
 
-if tip_collision:
+if TIP_COLLISION:
     # The random choice decides which tip of the rod intersects with cylinder
     tip_choice = np.random.choice([1, -1])
     tip_offset = 0.5 * tip_choice * base_length * np.cos(inclination)
@@ -248,7 +248,7 @@ if PLOT_FIGURE:
     positions = np.array(recorded_rod_history["position"])
     sim_time = np.array(recorded_rod_history["time"])
     colliding_element_idx = n_elem // 2
-    if tip_collision:
+    if TIP_COLLISION:
         colliding_element_idx = -1 if tip_choice == 1 else 0
     colliding_element_history = positions[:, :, colliding_element_idx]
     fig = plt.figure(3, figsize=(8, 5))
