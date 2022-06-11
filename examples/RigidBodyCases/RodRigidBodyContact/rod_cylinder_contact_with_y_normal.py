@@ -14,6 +14,9 @@ class SingleRodSingleCylinderInteractionSimulator(
     pass
 
 
+# Options
+PLOT_FIGURE = True
+
 single_rod_sim = SingleRodSingleCylinderInteractionSimulator()
 # setting up test params
 n_elem = 50
@@ -127,7 +130,7 @@ print("Total steps", total_steps)
 
 integrate(timestepper, single_rod_sim, final_time, total_steps)
 
-if True:
+if PLOT_FIGURE:
 
     def make_data_for_cylinder_along_y(cstart, cradius, cheight):
         center_x, center_z = cstart[0], cstart[1]
@@ -174,76 +177,71 @@ if True:
         dpi = 50
 
         # min_limits = np.roll(np.array([0.0, -0.5 * cylinder_height, 0.0]), _roll_key)
-        if True:
-            from mpl_toolkits.mplot3d import Axes3D
+        from mpl_toolkits.mplot3d import Axes3D
 
-            fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
-            ax = plt.axes(projection="3d")  # fig.add_subplot(111)
-            ax.grid(b=True, which="minor", color="k", linestyle="--")
-            ax.grid(b=True, which="major", color="k", linestyle="-")
-            # plt.axis("square")
-            i = 0
-            (rod_line,) = ax.plot(
-                positions[i, 0], positions[i, 1], positions[i, 2], lw=3.0
-            )
-            XC, YC, ZC = make_data_for_cylinder_along_y(
-                cylinder_origin[i, ...], cylinder_radius, cylinder_height
-            )
-            surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
+        fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
+        ax = plt.axes(projection="3d")  # fig.add_subplot(111)
+        ax.grid(b=True, which="minor", color="k", linestyle="--")
+        ax.grid(b=True, which="major", color="k", linestyle="-")
+        # plt.axis("square")
+        i = 0
+        (rod_line,) = ax.plot(positions[i, 0], positions[i, 1], positions[i, 2], lw=3.0)
+        XC, YC, ZC = make_data_for_cylinder_along_y(
+            cylinder_origin[i, ...], cylinder_radius, cylinder_height
+        )
+        surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
 
-            min_limits = np.array([0.0, 0.0, -0.5 * cylinder_height])
-            min_limits = -np.abs(min_limits)
-            max_limits = min_limits + cylinder_height
+        min_limits = np.array([0.0, 0.0, -0.5 * cylinder_height])
+        min_limits = -np.abs(min_limits)
+        max_limits = min_limits + cylinder_height
 
-            ax.set_xlim([min_limits[0], max_limits[0]])
-            ax.set_ylim([min_limits[1], max_limits[1]])
-            ax.set_zlim([min_limits[2], max_limits[2]])
-            with writer.saving(fig, video_name, dpi):
-                with plt.style.context("seaborn-white"):
-                    for i in range(0, positions.shape[0], int(step)):
-                        rod_line.set_xdata(positions[i, 0])
-                        rod_line.set_ydata(positions[i, 1])
-                        rod_line.set_3d_properties(positions[i, 2])
-                        XC, YC, ZC = make_data_for_cylinder_along_y(
-                            cylinder_origin[i, ...], cylinder_radius, cylinder_height
-                        )
-                        surf.remove()
-                        surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
-                        writer.grab_frame()
-        if True:
-            from matplotlib.patches import Circle
+        ax.set_xlim([min_limits[0], max_limits[0]])
+        ax.set_ylim([min_limits[1], max_limits[1]])
+        ax.set_zlim([min_limits[2], max_limits[2]])
+        with writer.saving(fig, video_name, dpi):
+            with plt.style.context("seaborn-white"):
+                for i in range(0, positions.shape[0], int(step)):
+                    rod_line.set_xdata(positions[i, 0])
+                    rod_line.set_ydata(positions[i, 1])
+                    rod_line.set_3d_properties(positions[i, 2])
+                    XC, YC, ZC = make_data_for_cylinder_along_y(
+                        cylinder_origin[i, ...], cylinder_radius, cylinder_height
+                    )
+                    surf.remove()
+                    surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
+                    writer.grab_frame()
 
-            fig = plt.figure(2, figsize=(10, 8), frameon=True, dpi=dpi)
-            ax = fig.add_subplot(111)
-            i = 0
-            cstart = cylinder_origin
-            (rod_line,) = ax.plot(positions[i, 0], positions[i, 1], lw=3.0)
-            (tip_line,) = ax.plot(com[i, 0], com[i, 1], "k--")
+        from matplotlib.patches import Circle
 
-            min_limits = np.array([0.0, 0.0, -0.5 * cylinder_height])
-            max_limits = min_limits + cylinder_height
+        fig = plt.figure(2, figsize=(10, 8), frameon=True, dpi=dpi)
+        ax = fig.add_subplot(111)
+        i = 0
+        cstart = cylinder_origin
+        (rod_line,) = ax.plot(positions[i, 0], positions[i, 1], lw=3.0)
+        (tip_line,) = ax.plot(com[i, 0], com[i, 1], "k--")
 
-            ax.set_xlim([min_limits[0], max_limits[0]])
-            ax.set_ylim([min_limits[2], max_limits[2]])
+        min_limits = np.array([0.0, 0.0, -0.5 * cylinder_height])
+        max_limits = min_limits + cylinder_height
 
-            circle_artist = Circle(
-                (cstart[i, 0], cstart[i, 2]), cylinder_radius, color="g"
-            )
-            ax.add_artist(circle_artist)
-            ax.set_aspect("equal")
-            video_name = "2D_" + video_name
-            with writer.saving(fig, video_name, dpi):
-                with plt.style.context("fivethirtyeight"):
-                    for i in range(0, positions.shape[0], int(step)):
-                        rod_line.set_xdata(positions[i, 0])
-                        rod_line.set_ydata(positions[i, 2])
-                        tip_line.set_xdata(com[:i, 0])
-                        tip_line.set_ydata(com[:i, 2])
-                        circle_artist.center = cstart[i, 0], cstart[i, 2]
-                        writer.grab_frame()
+        ax.set_xlim([min_limits[0], max_limits[0]])
+        ax.set_ylim([min_limits[2], max_limits[2]])
+
+        circle_artist = Circle((cstart[i, 0], cstart[i, 2]), cylinder_radius, color="g")
+        ax.add_artist(circle_artist)
+        ax.set_aspect("equal")
+        video_name = "2D_" + video_name
+        with writer.saving(fig, video_name, dpi):
+            with plt.style.context("fivethirtyeight"):
+                for i in range(0, positions.shape[0], int(step)):
+                    rod_line.set_xdata(positions[i, 0])
+                    rod_line.set_ydata(positions[i, 2])
+                    tip_line.set_xdata(com[:i, 0])
+                    tip_line.set_ydata(com[:i, 2])
+                    circle_artist.center = cstart[i, 0], cstart[i, 2]
+                    writer.grab_frame()
 
     plot_video(recorded_rod_history, recorded_cyl_history, "cylinder_rod_collision.mp4")
 
