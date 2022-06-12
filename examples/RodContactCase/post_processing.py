@@ -330,6 +330,13 @@ def plot_velocity(
 
     axs[0].plot(time[:], avg_velocity_rod_one[:, 0], linewidth=3, label="rod_one")
     axs[0].plot(time[:], avg_velocity_rod_two[:, 0], linewidth=3, label="rod_two")
+    axs[0].plot(
+        time[:],
+        avg_velocity_rod_one[:, 0] + avg_velocity_rod_two[:, 0],
+        "--",
+        linewidth=3,
+        label="total",
+    )
     axs[0].set_ylabel("x velocity", fontsize=20)
 
     axs[1].plot(
@@ -342,6 +349,12 @@ def plot_velocity(
         avg_velocity_rod_two[:, 1],
         linewidth=3,
     )
+    axs[1].plot(
+        time[:],
+        avg_velocity_rod_one[:, 1] + avg_velocity_rod_two[:, 1],
+        "--",
+        linewidth=3,
+    )
     axs[1].set_ylabel("y velocity", fontsize=20)
 
     axs[2].plot(
@@ -352,6 +365,12 @@ def plot_velocity(
     axs[2].plot(
         time[:],
         avg_velocity_rod_two[:, 2],
+        linewidth=3,
+    )
+    axs[2].plot(
+        time[:],
+        avg_velocity_rod_one[:, 2] + avg_velocity_rod_two[:, 2],
+        "--",
         linewidth=3,
     )
     axs[2].set_ylabel("z velocity", fontsize=20)
@@ -383,8 +402,8 @@ def plot_velocity(
     plt.close(plt.gcf())
 
     if SAVE_FIGURE:
-        # fig.savefig(filename)
-        plt.savefig(filename)
+        fig.savefig(filename)
+        # plt.savefig(filename)
 
 
 def plot_link_writhe_twist(twist_density, total_twist, total_writhe, total_link):
