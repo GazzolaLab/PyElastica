@@ -30,7 +30,7 @@ base_length = 0.5
 base_radius = 0.01
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 0.001
+nu = 0.0
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -58,7 +58,6 @@ rod_one = CosseratRod.straight_rod(
     density,
     nu,
     E,
-    poisson_ratio,
     shear_modulus=shear_modulus,
 )
 
