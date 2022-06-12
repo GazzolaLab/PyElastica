@@ -12,7 +12,6 @@ def plot_video_with_surface(
     video_name="video.mp4",
     fps=60,
     step=1,
-    vis2D=True,
     **kwargs,
 ):
     plt.rcParams.update({"font.size": 22})
