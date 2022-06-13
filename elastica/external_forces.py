@@ -473,9 +473,31 @@ def inplace_substraction(external_force_or_torque, force_or_torque):
             external_force_or_torque[i, k] -= force_or_torque[i, k]
 
 
-# Force class. This force class is used only for joint test cases
 class EndpointForcesSinusoidal(NoForces):
-    """Applies sinusoidal forces on endpoints"""
+    """
+    This class applies sinusoidally varying forces to the ends of a rod.
+    Forces are applied in a plane, which is defined by the tangent_direction and normal_direction.
+
+        Attributes
+        ----------
+        start_force_mag: float
+            Magnitude of the force that is applied to the start of the rod (node 0).
+        end_force_mag: float
+            Magnitude of the force that is applied to the end of the rod (node -1).
+        ramp_up_time: float
+            Applied forces are applied in the normal direction until time reaches ramp_up_time.
+        normal_direction: np.ndarray
+            An array (3,) contains type float.
+            This is the normal direction of the rod.
+        roll_direction: np.ndarray
+            An array (3,) contains type float.
+            This is the direction perpendicular to rod tangent, and rod normal.
+
+        Notes
+        -----
+        In order to see example how to use this class, see joint examples.
+
+    """
 
     def __init__(
         self,
@@ -485,6 +507,23 @@ class EndpointForcesSinusoidal(NoForces):
         tangent_direction=np.array([0, 0, 1]),
         normal_direction=np.array([0, 1, 0]),
     ):
+        """
+
+        Parameters
+        ----------
+        start_force_mag: float
+            Magnitude of the force that is applied to the start of the rod (node 0).
+        end_force_mag: float
+            Magnitude of the force that is applied to the end of the rod (node -1).
+        ramp_up_time: float
+            Applied muscle torques are ramped up until ramp up time.
+        tangent_direction: np.ndarray
+            An array (3,) contains type float.
+            This is the tangent direction of the rod, or normal of the plane that forces applied.
+        normal_direction: np.ndarray
+            An array (3,) contains type float.
+            This is the normal direction of the rod.
+        """
         super(EndpointForcesSinusoidal, self).__init__()
         # Start force
         self.start_force_mag = start_force_mag
@@ -492,7 +531,6 @@ class EndpointForcesSinusoidal(NoForces):
 
         # Applied force directions
         self.normal_direction = normal_direction
-        # self.roll_direction = np.cross(tangent_direction, normal_direction)
         self.roll_direction = np.cross(normal_direction, tangent_direction)
 
         assert ramp_up_time >= 0.0
