@@ -21,14 +21,10 @@ class DissipationBase(ABC):
         Attributes
         ----------
         system : RodBase or RigidBodyBase
-        node_indices : None or numpy.ndarray
-        element_indices : None or numpy.ndarray
 
     """
 
     _system: Union[Type[RodBase], Type[RigidBodyBase]]
-    _constrained_position_idx: np.ndarray
-    _constrained_director_idx: np.ndarray
 
     def __init__(self, *args, **kwargs):
         """Initialize damping module"""
