@@ -3,14 +3,9 @@ __all__ = [
     "DissipationBase",
 ]
 
-import warnings
-from typing import Optional, Type, Union
+from typing import Type, Union
 import numpy as np
 from abc import ABC, abstractmethod
-
-import numba
-from numba import njit
-
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 
