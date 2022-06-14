@@ -90,7 +90,7 @@ class ExponentialDamper(DissipationBase):
         """
         super().__init__(**kwargs)
         # Compute the damping coefficient for translational velocity
-        nodal_mass = self._system.mass.copy()
+        nodal_mass = self._system.mass
         self.translational_exponential_damping_coefficient = np.exp(
             -dissipation_constant * time_step / nodal_mass
         )
@@ -110,10 +110,7 @@ class ExponentialDamper(DissipationBase):
             rod.velocity_collection * self.translational_exponential_damping_coefficient
         )
 
-        rod.omega_collection[:] = (
-            rod.omega_collection
-            * self.rotational_exponential_damping_coefficient
-            * np.exp(
-                -rod.dilatation * np.diagonal(rod.inv_mass_second_moment_of_inertia).T
-            )
+        rod.omega_collection[:] = rod.omega_collection * np.power(
+            self.rotational_exponential_damping_coefficient,
+            rod.dilatation * np.diagonal(rod.inv_mass_second_moment_of_inertia).T,
         )
