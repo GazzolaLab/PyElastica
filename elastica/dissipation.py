@@ -1,6 +1,7 @@
 __doc__ = """ Built in dissipation module implementations """
 __all__ = [
     "DissipationBase",
+    "ExponentialDamper",
 ]
 
 from typing import Type, Union
@@ -28,6 +29,13 @@ class DissipationBase(ABC):
 
     def __init__(self, *args, **kwargs):
         """Initialize damping module"""
+        try:
+            self._system = kwargs["_system"]
+        except KeyError:
+            raise KeyError(
+                "Please use simulator.dampen(...).using(...) syntax to establish "
+                "dissipation/damping."
+            )
 
     @property
     def system(self) -> Union[Type[RodBase], Type[RigidBodyBase]]:
