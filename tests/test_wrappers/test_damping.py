@@ -170,7 +170,7 @@ class TestDampingMixin:
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
-            def constrain_rates(self, *args, **kwargs) -> None:
+            def dampen_rates(self, *args, **kwargs) -> None:
                 pass
 
         # Constrain any and all systems

@@ -17,12 +17,12 @@ def test_damper_base():
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
 
-        def constrain_rates(self, rod, time):
+        def dampen_rates(self, rod, time):
             rod.velocity_collection *= time
             rod.omega_collection *= time
 
     test_damper = TestDamper(_system=test_rod)
-    test_damper.constrain_rates(test_rod, 2)
+    test_damper.dampen_rates(test_rod, 2)
     assert_allclose(test_rod.velocity_collection, 10.0, atol=Tolerance.atol())
     assert_allclose(test_rod.omega_collection, 22.0, atol=Tolerance.atol())
 
@@ -36,11 +36,11 @@ def test_damper_base_properties_access():
             # Able to access properties in constraint class
             assert self._system == test_rod
 
-        def constrain_rates(self, rod, time):
+        def dampen_rates(self, rod, time):
             assert self._system == test_rod
 
     test_damper = TestDamper(_system=test_rod)
-    test_damper.constrain_rates(test_rod, 2)
+    test_damper.dampen_rates(test_rod, 2)
 
 
 def test_exponential_damper():
@@ -59,15 +59,24 @@ def test_exponential_damper():
         _system=test_rod, damping_constant=damping_constant, time_step=dt
     )
     # check common prefactors
-    # e ^ (-damp_coeff * dt / nodal_mass)
-    ref_translational_exponential_damping_coefficient = np.exp(-0.25 * 0.5 / 1.0)
-    # e ^ (-damp_coeff * dt / elemental_mass)
+    # e ^ (-damp_coeff * dt)
+    ref_translational_exponential_damping_coefficient = np.exp(-0.25 * 0.5)
+    # e ^ (-damp_coeff * dt * elemental_mass * inv_mass_second_moment_of_inertia)
     ref_rotational_exponential_damping_coefficient = np.exp(
-        -0.25 * 0.5 / 1.0
-    ) * np.ones((test_rod.n_elem,))
+        -0.25 * 0.5 * 1.0 * 3.0
+    ) * np.ones(
+        (
+            3,
+            test_rod.n_elem,
+        )
+    )
     # end corrections
-    ref_rotational_exponential_damping_coefficient[0] = np.exp(-0.25 * 0.5 / 1.5)
-    ref_rotational_exponential_damping_coefficient[-1] = np.exp(-0.25 * 0.5 / 1.5)
+    ref_rotational_exponential_damping_coefficient[:, 0] = np.exp(
+        -0.25 * 0.5 * 1.5 * 3.0
+    )
+    ref_rotational_exponential_damping_coefficient[:, -1] = np.exp(
+        -0.25 * 0.5 * 1.5 * 3.0
+    )
     assert_allclose(
         exponential_damper.translational_exponential_damping_coefficient,
         ref_translational_exponential_damping_coefficient,
@@ -87,15 +96,15 @@ def test_exponential_damper():
     test_rod.omega_collection = (
         pre_damping_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    exponential_damper.constrain_rates(test_rod, time=0)
+    exponential_damper.dampen_rates(test_rod, time=0)
     post_damping_velocity_collection = (
         pre_damping_velocity_collection
         * ref_translational_exponential_damping_coefficient
     )
-    # multiplying_factor = ref_rot_coeff ^ (dilation * inv_mass_second_moment_of_inertia)
+    # multiplying_factor = ref_rot_coeff ^ dilation
     post_damping_omega_collection = (
         pre_damping_omega_collection
-        * ref_rotational_exponential_damping_coefficient ** (2.0 * 3.0)
+        * ref_rotational_exponential_damping_coefficient ** 2.0
     )
     assert_allclose(
         post_damping_velocity_collection,
