@@ -36,7 +36,9 @@ from matplotlib import pyplot as plt
 from elastica import *
 
 
-class StretchingBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class StretchingBeamSimulator(
+    BaseSystemCollection, Constraints, Forcing, Damping, CallBacks
+):
     pass
 
 
@@ -57,7 +59,6 @@ base_length = 1.0
 base_radius = 0.025
 base_area = np.pi * base_radius ** 2
 density = 1000
-nu = 1.0
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
@@ -71,7 +72,7 @@ stretchable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated option
     youngs_modulus,
     shear_modulus=shear_modulus,
 )
@@ -85,6 +86,16 @@ end_force_x = 1.0
 end_force = np.array([end_force_x, 0.0, 0.0])
 stretch_sim.add_forcing_to(stretchable_rod).using(
     EndpointForces, 0.0 * end_force, end_force, ramp_up_time=1e-2
+)
+
+# add damping
+damping_constant = 1.0
+dl = base_length / n_elem
+dt = 0.01 * dl
+stretch_sim.dampen(stretchable_rod).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
 )
 
 # Add call backs
@@ -122,8 +133,6 @@ stretch_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
-dl = base_length / n_elem
-dt = 0.01 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, stretch_sim, final_time, total_steps)
