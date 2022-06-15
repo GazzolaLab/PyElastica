@@ -204,15 +204,23 @@ def allocate(
 
     # Custom nu for torques
     dissipation_constant_for_torques = np.zeros((n_elements))
-    elemental_mass = (mass[1:] + mass[:-1]) / 2.0
-    # Treat the end elements carefully, since end nodes only have one element we need to add all of their mass.
-    elemental_mass[0] += mass[0] / 2.0
-    elemental_mass[-1] += mass[-1] / 2.0
+
     if nu_for_torques is None:
-        dissipation_constant_for_torques[:] = (dissipation_constant_for_forces / mass)[
-            :n_elements
-        ] * elemental_mass
+        dissipation_constant_for_torques[:] = (
+            dissipation_constant_for_forces[1:] + dissipation_constant_for_forces[:-1]
+        ) / 2
+        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
+        # their dissipation.
+        dissipation_constant_for_torques[0] += (dissipation_constant_for_forces[0]) / 2
+        dissipation_constant_for_torques[-1] += (
+            dissipation_constant_for_forces[-1]
+        ) / 2
     else:
+        elemental_mass = (mass[1:] + mass[:-1]) / 2.0
+        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
+        # their mass.
+        elemental_mass[0] += mass[0] / 2.0
+        elemental_mass[-1] += mass[-1] / 2.0
         dissipation_constant_for_torques[:] = (
             np.asarray(nu_for_torques) * elemental_mass
         )
