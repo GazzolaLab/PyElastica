@@ -3,17 +3,17 @@ __doc__ = """ Test Dissipation module for in Elastica implementation"""
 # System imports
 import numpy as np
 from test_rod.test_rods import MockTestRod
-from elastica.dissipation import DissipationBase, ExponentialDamper
+from elastica.dissipation import DamperBase, ExponentialDamper
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 
 
-def test_dissipation_base():
+def test_damper_base():
     test_rod = MockTestRod()
     test_rod.velocity_collection = np.ones(3) * 5.0
     test_rod.omega_collection = np.ones(3) * 11.0
 
-    class TestDamper(DissipationBase):
+    class TestDamper(DamperBase):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
 
@@ -27,10 +27,10 @@ def test_dissipation_base():
     assert_allclose(test_rod.omega_collection, 22.0, atol=Tolerance.atol())
 
 
-def test_dissipation_base_properties_access():
+def test_damper_base_properties_access():
     test_rod = MockTestRod()
 
-    class TestDamper(DissipationBase):
+    class TestDamper(DamperBase):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             # Able to access properties in constraint class

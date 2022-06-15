@@ -1,6 +1,6 @@
 __doc__ = """ Built in dissipation module implementations """
 __all__ = [
-    "DissipationBase",
+    "DamperBase",
     "ExponentialDamper",
 ]
 
@@ -11,12 +11,12 @@ from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 
 
-class DissipationBase(ABC):
-    """Base class for dissipation module implementations.
+class DamperBase(ABC):
+    """Base class for damping module implementations.
 
     Notes
     -----
-    All dissipation class must inherit DissipationBase class.
+    All damper classes must inherit DamperBase class.
 
 
         Attributes
@@ -34,7 +34,7 @@ class DissipationBase(ABC):
         except KeyError:
             raise KeyError(
                 "Please use simulator.dampen(...).using(...) syntax to establish "
-                "dissipation/damping."
+                "damping."
             )
 
     @property
@@ -61,7 +61,7 @@ class DissipationBase(ABC):
         pass
 
 
-class ExponentialDamper(DissipationBase):
+class ExponentialDamper(DamperBase):
     """
     Exponential damper.
     TODO: include the equations and math.
