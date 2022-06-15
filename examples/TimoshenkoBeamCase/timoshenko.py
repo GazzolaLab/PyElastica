@@ -58,7 +58,7 @@ timoshenko_sim.constrain(shearable_rod).using(
 
 end_force = np.array([-15.0, 0.0, 0.0])
 timoshenko_sim.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time= final_time / 2.0
+    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
 )
 
 
@@ -85,10 +85,7 @@ if ADD_UNSHEARABLE_ROD:
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
-        EndpointForces,
-        0.0 * end_force,
-        end_force,
-        ramp_up_time=final_time / 2.0
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
     )
 
 # Add call backs
