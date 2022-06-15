@@ -53,10 +53,10 @@ def test_exponential_damper():
     test_rod.inv_mass_second_moment_of_inertia = (
         test_inv_mass_second_moment_of_inertia.copy()
     )
-    dissipation_constant = 0.25
+    damping_constant = 0.25
     dt = 0.5
     exponential_damper = ExponentialDamper(
-        _system=test_rod, dissipation_constant=dissipation_constant, time_step=dt
+        _system=test_rod, damping_constant=damping_constant, time_step=dt
     )
     # check common prefactors
     # e ^ (-damp_coeff * dt / nodal_mass)

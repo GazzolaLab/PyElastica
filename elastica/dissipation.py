@@ -76,14 +76,14 @@ class ExponentialDamper(DamperBase):
         Damping coefficient acting on rotational velocity.
     """
 
-    def __init__(self, dissipation_constant, time_step, **kwargs):
+    def __init__(self, damping_constant, time_step, **kwargs):
         """
         Exponential damper initializer
 
         Parameters
         ----------
-        dissipation_constant : float
-            Dissipation constant for the exponential dampers.
+        damping_constant : float
+            Damping constant for the exponential dampers.
         time_step : float
             Time-step of simulation
         """
@@ -91,7 +91,7 @@ class ExponentialDamper(DamperBase):
         # Compute the damping coefficient for translational velocity
         nodal_mass = self._system.mass
         self.translational_exponential_damping_coefficient = np.exp(
-            -dissipation_constant * time_step / nodal_mass
+            -damping_constant * time_step / nodal_mass
         )
 
         # Compute the damping coefficient for exponential velocity
@@ -99,7 +99,7 @@ class ExponentialDamper(DamperBase):
         element_mass[0] += 0.5 * nodal_mass[0]
         element_mass[-1] += 0.5 * nodal_mass[-1]
         self.rotational_exponential_damping_coefficient = np.exp(
-            -dissipation_constant * time_step / element_mass
+            -damping_constant * time_step / element_mass
         )
 
     def constrain_rates(
