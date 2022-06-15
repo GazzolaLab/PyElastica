@@ -25,7 +25,7 @@ class Damping:
     def __init__(self):
         self._dampers = []
         super(Damping, self).__init__()
-        self._feature_group_constrain_rates.append(self._constrain_rates)
+        self._feature_group_constrain_rates.append(self._dampen_rates)
         self._feature_group_finalize.append(self._finalize_dampers)
 
     def dampen(self, system):
@@ -67,9 +67,9 @@ class Damping:
         # to sort dampers.
         self._dampers.sort(key=lambda x: x[0])
 
-    def _constrain_rates(self, time, *args, **kwargs):
+    def _dampen_rates(self, time, *args, **kwargs):
         for sys_id, damper in self._dampers:
-            damper.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
+            damper.dampen_rates(self._systems[sys_id], time, *args, **kwargs)
 
 
 class _Damper:

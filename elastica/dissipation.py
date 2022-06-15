@@ -43,12 +43,12 @@ class DamperBase(ABC):
         return self._system
 
     @abstractmethod
-    def constrain_rates(
+    def dampen_rates(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
     ) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
-        Constrain rates (velocity and/or omega) of a rod object.
+        Dampen rates (velocity and/or omega) of a rod object.
 
         Parameters
         ----------
@@ -91,7 +91,7 @@ class ExponentialDamper(DamperBase):
         # Compute the damping coefficient for translational velocity
         nodal_mass = self._system.mass
         self.translational_exponential_damping_coefficient = np.exp(
-            -damping_constant * time_step / nodal_mass
+            -damping_constant * time_step
         )
 
         # Compute the damping coefficient for exponential velocity
@@ -99,10 +99,13 @@ class ExponentialDamper(DamperBase):
         element_mass[0] += 0.5 * nodal_mass[0]
         element_mass[-1] += 0.5 * nodal_mass[-1]
         self.rotational_exponential_damping_coefficient = np.exp(
-            -damping_constant * time_step / element_mass
+            -damping_constant
+            * time_step
+            * element_mass
+            * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def constrain_rates(
+    def dampen_rates(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
     ) -> None:
         rod.velocity_collection[:] = (
@@ -110,6 +113,5 @@ class ExponentialDamper(DamperBase):
         )
 
         rod.omega_collection[:] = rod.omega_collection * np.power(
-            self.rotational_exponential_damping_coefficient,
-            rod.dilatation * np.diagonal(rod.inv_mass_second_moment_of_inertia).T,
+            self.rotational_exponential_damping_coefficient, rod.dilatation
         )
