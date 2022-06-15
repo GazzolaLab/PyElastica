@@ -198,6 +198,48 @@ class MockRodForTest:
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
+def test_deprecated_rod_nu_option(n_elems):
+    start = np.array([0.0, 0.0, 0.0])
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 0.0, 1.0])
+    base_length = 1.0
+    base_radius = 0.25
+    density = 1000
+    nu = 0.1
+    youngs_modulus = 1e6
+    poisson_ratio = 0.3
+    correct_position = np.zeros((3, n_elems + 1))
+    correct_position[0] = np.random.randn(n_elems + 1)
+    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[..., 0] = start
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    correct_warning_message = (
+        "The option to set damping coefficient (nu) for the rod during rod "
+        "initialisation is now deprecated. Instead, for adding damping to rods, "
+        "please derive your simulation class from the add-on Damping mixin class."
+        "For reference see the class elastica.dissipation.ExponentialDamper(),"
+        "and for usage check examples/axial_stretching.py"
+        "The option to set damping coefficient (nu) during rod construction "
+        "will be removed in the future (v0.3.1)."
+    )
+    with pytest.warns(DeprecationWarning) as record:
+        _ = MockRodForTest.straight_rod(
+            n_elems,
+            start,
+            direction,
+            normal,
+            base_length,
+            base_radius,
+            density,
+            nu,
+            youngs_modulus,
+            shear_modulus=shear_modulus,
+            position=correct_position,
+        )
+    assert record[0].message.args[0] == correct_warning_message
+
+
+@pytest.mark.parametrize("n_elems", [5, 10, 50])
 def test_input_and_output_position_array(n_elems):
     """
     This test, tests the case if the input position array
