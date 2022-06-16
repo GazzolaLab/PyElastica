@@ -15,7 +15,7 @@ from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
 )
 
 
-class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
     pass
 
 
@@ -41,7 +41,6 @@ def run_snake(
     base_length = 0.35
     base_radius = base_length * 0.011
     density = 1000
-    nu = 2e-3
     E = 1e6
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
@@ -54,7 +53,7 @@ def run_snake(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -101,6 +100,14 @@ def run_snake(
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
+    )
+
+    # add damping
+    damping_constant = 2e-3
+    snake_sim.dampen(shearable_rod).using(
+        ExponentialDamper,
+        damping_constant=damping_constant,
+        time_step=time_step,
     )
 
     # Add call backs
