@@ -15,7 +15,7 @@ from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
 )
 
 
-class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
     pass
 
 
@@ -33,7 +33,6 @@ def run_flagella(
     base_length = 1.0
     base_radius = 0.025
     density = 1000
-    nu = 2.5
     E = 1e7
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
@@ -46,7 +45,7 @@ def run_flagella(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -78,6 +77,15 @@ def run_flagella(
     )
     flagella_sim.add_forcing_to(shearable_rod).using(
         SlenderBodyTheory, dynamic_viscosity=dynamic_viscosity
+    )
+
+    # add damping
+    damping_constant = 2.5
+    dt = 2.5e-5 * period
+    flagella_sim.dampen(shearable_rod).using(
+        ExponentialDamper,
+        damping_constant=damping_constant,
+        time_step=dt,
     )
 
     # Add call backs
