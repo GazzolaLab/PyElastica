@@ -9,7 +9,9 @@ sys.path.append("../../")
 from elastica import *
 
 
-class RestartExampleSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class RestartExampleSimulator(
+    BaseSystemCollection, Constraints, Forcing, Damping, CallBacks
+):
     pass
 
 
@@ -25,7 +27,6 @@ base_length = 3.0
 base_radius = 0.25
 base_area = np.pi * base_radius ** 2
 density = 5000
-nu = 10
 E = 1e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 99
@@ -40,7 +41,7 @@ shearable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -60,6 +61,16 @@ restart_example_simulator.add_forcing_to(shearable_rod).using(
     EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
 )
 
+# add damping
+damping_constant = 10.0
+dl = base_length / n_elem
+dt = 0.01 * dl
+restart_example_simulator.dampen(shearable_rod).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+
 # Finalize simulation
 restart_example_simulator.finalize()
 
@@ -75,8 +86,6 @@ else:
     restart_time = np.float64(0.0)
 
 timestepper = PositionVerlet()
-dl = base_length / n_elem
-dt = 0.01 * dl
 total_steps = int(final_time / dt)
 
 time = integrate(
