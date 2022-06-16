@@ -72,7 +72,7 @@ stretchable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated option
+    0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus,
     shear_modulus=shear_modulus,
 )
