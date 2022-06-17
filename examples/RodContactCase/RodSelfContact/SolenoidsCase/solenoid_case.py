@@ -10,7 +10,9 @@ from examples.RodContactCase.post_processing import (
 )
 
 
-class SolenoidCase(BaseSystemCollection, Constraints, Connections, Forcing, CallBacks):
+class SolenoidCase(
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
+):
     pass
 
 
@@ -61,13 +63,20 @@ sherable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
 
 
 solenoid_sim.append(sherable_rod)
+
+# Add damping
+solenoid_sim.dampen(sherable_rod).using(
+    ExponentialDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
 
 # boundary condition
 from elastica._rotations import _get_rotation_matrix

@@ -10,7 +10,9 @@ from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 
-class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class TimoshenkoBeamSimulator(
+    BaseSystemCollection, Constraints, Forcing, CallBacks, Damping
+):
     pass
 
 
@@ -46,19 +48,28 @@ shearable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
 
 timoshenko_sim.append(shearable_rod)
+# add damping
+dl = base_length / n_elem
+dt = 0.01 * dl
+timoshenko_sim.dampen(shearable_rod).using(
+    ExponentialDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
+
 timoshenko_sim.constrain(shearable_rod).using(
     OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force = np.array([-15.0, 0.0, 0.0])
 timoshenko_sim.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time= final_time / 2.0
+    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
 )
 
 
@@ -74,21 +85,25 @@ if ADD_UNSHEARABLE_ROD:
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
         shear_modulus=shear_modulus,
     )
 
     timoshenko_sim.append(unshearable_rod)
+
+    # add damping
+    timoshenko_sim.dampen(unshearable_rod).using(
+        ExponentialDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
     timoshenko_sim.constrain(unshearable_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
-        EndpointForces,
-        0.0 * end_force,
-        end_force,
-        ramp_up_time=final_time / 2.0
+        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
     )
 
 # Add call backs
@@ -123,8 +138,6 @@ timoshenko_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
-dl = base_length / n_elem
-dt = 0.01 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, timoshenko_sim, final_time, total_steps)

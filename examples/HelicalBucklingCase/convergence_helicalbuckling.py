@@ -15,7 +15,7 @@ from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
 from examples.convergence_functions import plot_convergence, calculate_error_norm
 
 
-class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
+class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing, Damping):
     pass
 
 
@@ -58,7 +58,7 @@ def simulate_helicalbucklin_beam_with(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
     )
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
@@ -67,6 +67,15 @@ def simulate_helicalbucklin_beam_with(
     shearable_rod.bend_matrix[:] = bend_matrix
 
     helicalbuckling_sim.append(shearable_rod)
+    # add damping
+    dl = base_length / n_elem
+    dt = 1e-3 * dl
+    helicalbuckling_sim.dampen(shearable_rod).using(
+        ExponentialDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
+
     helicalbuckling_sim.constrain(shearable_rod).using(
         HelicalBucklingBC,
         constrained_position_idx=(0, -1),
@@ -84,8 +93,6 @@ def simulate_helicalbucklin_beam_with(
     # timestepper = PEFRL()
 
     final_time = 10500
-    dl = base_length / n_elem
-    dt = 1e-3 * dl
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, helicalbuckling_sim, final_time, total_steps)

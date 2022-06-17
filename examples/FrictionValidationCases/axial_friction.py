@@ -11,7 +11,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 )
 
 
-class AxialFrictionSimulator(BaseSystemCollection, Constraints, Forcing):
+class AxialFrictionSimulator(BaseSystemCollection, Constraints, Damping, Forcing):
     pass
 
 
@@ -52,7 +52,7 @@ def simulate_axial_friction_with(force=0.0):
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -63,6 +63,13 @@ def simulate_axial_friction_with(force=0.0):
     axial_friction_sim.append(shearable_rod)
     axial_friction_sim.constrain(shearable_rod).using(FreeBC)
 
+    # Add damping
+    dt = 1e-5
+    axial_friction_sim.dampen(shearable_rod).using(
+        ExponentialDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
     # Add gravitational forces
     gravitational_acc = -9.80665
     axial_friction_sim.add_forcing_to(shearable_rod).using(
@@ -96,7 +103,6 @@ def simulate_axial_friction_with(force=0.0):
     timestepper = PositionVerlet()
 
     final_time = 0.25
-    dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, axial_friction_sim, final_time, total_steps)
