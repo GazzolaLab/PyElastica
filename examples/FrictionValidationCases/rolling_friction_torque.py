@@ -12,9 +12,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 )
 
 
-class RollingFrictionTorqueSimulator(
-    BaseSystemCollection, Constraints, Damping, Forcing
-):
+class RollingFrictionTorqueSimulator(BaseSystemCollection, Constraints, Forcing):
     pass
 
 
@@ -65,13 +63,6 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
 
     rolling_friction_torque_sim.append(shearable_rod)
     rolling_friction_torque_sim.constrain(shearable_rod).using(FreeBC)
-    # Add damping
-    dt = 1e-6
-    rolling_friction_torque_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
-        damping_constant=nu,
-        time_step=dt,
-    )
 
     # Add gravitational forces
     gravitational_acc = -9.80665
@@ -106,6 +97,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     timestepper = PositionVerlet()
 
     final_time = 1.0
+    dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, rolling_friction_torque_sim, final_time, total_steps)

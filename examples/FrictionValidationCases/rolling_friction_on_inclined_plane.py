@@ -13,7 +13,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 
 
 class RollingFrictionOnInclinedPlaneSimulator(
-    BaseSystemCollection, Constraints, Forcing, Damping
+    BaseSystemCollection, Constraints, Forcing
 ):
     pass
 
@@ -66,14 +66,6 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     rolling_friction_on_inclined_plane_sim.append(shearable_rod)
     rolling_friction_on_inclined_plane_sim.constrain(shearable_rod).using(FreeBC)
 
-    # Add damping
-    dt = 1e-6
-    rolling_friction_on_inclined_plane_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
-        damping_constant=nu,
-        time_step=dt,
-    )
-
     gravitational_acc = -9.80665
     rolling_friction_on_inclined_plane_sim.add_forcing_to(shearable_rod).using(
         GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
@@ -104,6 +96,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     timestepper = PositionVerlet()
 
     final_time = 0.5
+    dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(
