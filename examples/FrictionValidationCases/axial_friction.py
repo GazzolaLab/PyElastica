@@ -35,7 +35,6 @@ def simulate_axial_friction_with(force=0.0):
     base_area = np.pi * base_radius ** 2
     mass = 1.0
     density = mass / (base_length * base_area)
-    nu = 1e-6
     E = 1e5
     # For shear modulus of 2E/3
     poisson_ratio = 0.5
@@ -62,8 +61,6 @@ def simulate_axial_friction_with(force=0.0):
 
     axial_friction_sim.append(shearable_rod)
     axial_friction_sim.constrain(shearable_rod).using(FreeBC)
-
-    # Add damping
 
     # Add gravitational forces
     gravitational_acc = -9.80665
