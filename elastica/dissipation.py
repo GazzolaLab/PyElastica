@@ -3,12 +3,11 @@ __all__ = [
     "DamperBase",
     "ExponentialDamper",
 ]
-
-from typing import Type, Union
-import numpy as np
 from abc import ABC, abstractmethod
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase
+
+from elastica.typing import SystemType
+
+import numpy as np
 
 
 class DamperBase(ABC):
@@ -21,11 +20,11 @@ class DamperBase(ABC):
 
         Attributes
         ----------
-        system : RodBase or RigidBodyBase
+        system : SystemType (RodBase or RigidBodyBase)
 
     """
 
-    _system: Union[Type[RodBase], Type[RigidBodyBase]]
+    _system: SystemType
 
     def __init__(self, *args, **kwargs):
         """Initialize damping module"""
@@ -38,14 +37,12 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self) -> Union[Type[RodBase], Type[RigidBodyBase]]:
+    def system(self) -> SystemType:
         """get system (rod or rigid body) reference"""
         return self._system
 
     @abstractmethod
-    def dampen_rates(
-        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
-    ) -> None:
+    def dampen_rates(self, rod: SystemType, time: float) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -105,9 +102,7 @@ class ExponentialDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(
-        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
-    ) -> None:
+    def dampen_rates(self, rod: SystemType, time: float) -> None:
         rod.velocity_collection[:] = (
             rod.velocity_collection * self.translational_exponential_damping_coefficient
         )
