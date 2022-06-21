@@ -1,14 +1,15 @@
 __doc__ = """Tests for rod initialisation module"""
+from elastica.rod.factory_function import allocate
+from elastica.utils import MaxDimension, Tolerance
+
+import logging
+
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica.utils import MaxDimension, Tolerance
-
 import pytest
-import sys
 
-from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.rod.factory_function import allocate
+import sys
 
 
 class MockRodForTest:
@@ -198,7 +199,7 @@ class MockRodForTest:
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_deprecated_rod_nu_option(n_elems):
+def test_deprecated_rod_nu_option(n_elems, caplog):
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
@@ -222,21 +223,21 @@ def test_deprecated_rod_nu_option(n_elems):
         "The option to set damping coefficient (nu) during rod construction "
         "will be removed in the future (v0.3.1)."
     )
-    with pytest.warns(DeprecationWarning) as record:
-        _ = MockRodForTest.straight_rod(
-            n_elems,
-            start,
-            direction,
-            normal,
-            base_length,
-            base_radius,
-            density,
-            nu,
-            youngs_modulus,
-            shear_modulus=shear_modulus,
-            position=correct_position,
-        )
-    assert record[0].message.args[0] == correct_warning_message
+    caplog.set_level(logging.WARNING)
+    _ = MockRodForTest.straight_rod(
+        n_elems,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
+        position=correct_position,
+    )
+    assert correct_warning_message in caplog.text
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
