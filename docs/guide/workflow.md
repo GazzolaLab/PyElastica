@@ -14,7 +14,8 @@ from elastica.wrappers import (
     Connections,
     Constraints,
     Forcing,
-    CallBacks
+    CallBacks,
+    Damping
 )
 
 class SystemSimulator(
@@ -22,7 +23,8 @@ class SystemSimulator(
     Constraints, # Enabled to use boundary conditions 'OneEndFixedBC'
     Forcing,     # Enabled to use forcing 'GravityForces'
     Connections, # Enabled to use FixedJoint
-    CallBacks    # Enabled to use callback
+    CallBacks,   # Enabled to use callback
+    Damping,     # Enabled to use damping models on systems.
 ): 
     pass 
 ```
@@ -30,13 +32,14 @@ This simply combines all the wrappers previously imported together. If a wrapper
 
 Available components are:
 
-|       Component      |               Note              |
-|:--------------------:|:-------------------------------:|
-| BaseSystemCollection | **Required** for all simulator. |
-| [Constraints](../api/constraints.rst)       |                                 |
-| [Forcing](../api/external_forces.rst)       |                                 |
-| [Connections](../api/connections.rst)       |                                 |
-| [CallBacks](../api/callback.rst)            |                                 |
+|               Component               |               Note              |
+|:-------------------------------------:|:-------------------------------:|
+|         BaseSystemCollection          | **Required** for all simulator. |
+| [Constraints](../api/constraints.rst) |                                 |
+| [Forcing](../api/external_forces.rst) |                                 |
+| [Connections](../api/connections.rst) |                                 |
+|   [CallBacks](../api/callback.rst)    |                                 |
+|     [Damping](../api/damping.rst)     |                                 |
 
 :::{Note}
 We adopted a composition and mixin design paradigm in building elastica. The detail of the implementation is not important in using the package, but we left some references to read [here](../advanced/PackageDesign.md).
@@ -60,9 +63,9 @@ rod1 = CosseratRod.straight_rod(
     base_length=0.5,                              # original length of rod (m)
     base_radius=10e-2,                            # original radius of rod (m)
     density=1e3,                                  # density of rod (kg/m^3)
-    nu=1e-3,                                      # Energy dissipation of rod
+    nu=1e-3,                                      # Energy dissipation of rod, internal damping constant, deprecated in v0.3.0
     youngs_modulus=1e7,                           # Elastic Modulus (Pa)
-    poisson_ratio=0.5,                            # Poisson Ratio
+    shear_modulus=1e7/(2* (1+0.5)),               # Shear Modulus (Pa)
 )
 rod2 = CosseratRod.straight_rod(
     n_elements=50,                                # number of elements
@@ -72,9 +75,9 @@ rod2 = CosseratRod.straight_rod(
     base_length=0.5,                              # original length of rod (m)
     base_radius=10e-2,                            # original radius of rod (m)
     density=1e3,                                  # density of rod (kg/m^3)
-    nu=1e-3,                                      # Energy dissipation of rod
+    nu=0.0,                                       # Energy dissipation of rod,  internal damping constant, deprecated in v0.3.0
     youngs_modulus=1e7,                           # Elastic Modulus (Pa)
-    poisson_ratio=0.5,                            # Poisson Ratio
+    shear_modulus=1e7/(2* (1+0.5)),               # Shear Modulus (Pa)
 )
 
 # Add rod to SystemSimulator
@@ -88,9 +91,30 @@ This can be repeated to create multiple rods. Supported geometries are listed in
 The number of element (`n_elements`) and `base_length` determines the spatial discretization `dx`. More detail discussion is included [here](discretization.md).
 :::
 
-<h2>4. Define Boundary Conditions, Forcings, and Connections</h2>
+<h2>4. Define Damping, Boundary Conditions, Forcings, and Connections</h2>
 
-Now that we have added all our rods to `SystemSimulator`, we need to apply the relevant boundary conditions. See [this page](../api/constraints.rst) for in-depth explanations and documentation.
+Now that we have added all our rods to `SystemSimulator`, we need to apply the damping to the rods. See [this page](../api/damping.rst) for in-depth explanations and documentation.
+
+```python
+from elastica.dissipation import ExponentialDamper
+
+nu = 1e-3   # Damping constant of the rod
+dt = 1e-5   # Time-step of simulation in seconds
+
+SystemSimulator.dampin(rod1).using(
+    ExponentialDamper,
+    damping_constant = nu,
+    time_step = dt,
+)
+
+SystemSimulator.dampin(rod2).using(
+    ExponentialDamper,
+    damping_constant = nu,
+    time_step = dt,
+)
+```
+
+Next we apply relevant boundary conditions. See [this page](../api/constraints.rst) for in-depth explanations and documentation.
 
 As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundary condition (which we imported in step 1 and apply it to the rod. Here we will be fixing the $0^{\text{th}}$ node as well as the $0^{\text{th}}$ element. 
 
@@ -204,7 +228,6 @@ from elastica.timestepper import integrate
 
 timestepper = PositionVerlet()
 final_time = 10   # seconds
-dt = 1e-5         # seconds
 total_steps = int(final_time / dt) 
 integrate(timestepper, SystemSimulator, final_time, total_steps)
 ```
