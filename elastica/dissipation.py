@@ -78,6 +78,13 @@ class ExponentialDamper(DamperBase):
     ...     time_step = 1E-4,   # Simulation time-step
     ... )
 
+    Notes
+    -----
+    Advantage of using Exponential Damper is you can set `damping_constant` as high as possible and simulation never
+    blows up. You can start reducing `damping_constant` untill you feel dynamics are captured sufficiently. This gives
+    you a direction to tune `damping_constant` while keeping simulation stable and at the same time capturing the
+    dynamics.
+
     Attributes
     ----------
     translational_exponential_damping_coefficient: numpy.ndarray
