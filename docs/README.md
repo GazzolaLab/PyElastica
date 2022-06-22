@@ -11,8 +11,8 @@ In addition, we utilize the following extensions to enhance the documentation :c
 The `sphinx` is already initialized in `docs` directory. In order to build the documentation, you will need additional packages listed in `docs/requirements.txt`.
 
 ```bash
-pip install sphinx sphinx_rtd_theme myst-parser numpydoc
 cd docs
+pip install -r requirements.txt
 make clean
 make html
 ```
