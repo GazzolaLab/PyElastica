@@ -60,13 +60,15 @@ class DamperBase(ABC):
 
 class ExponentialDamper(DamperBase):
     """
-    Exponential damper class uses the following equations to damp the velocities.
+    Exponential damper class. This class corresponds to the analytical version of
+    a linear damper, and uses the following equations to damp translational and
+    rotational velocities:
 
     .. math::
 
-        \\mathbf{v} = \\mathbf{v} \\exp \\left( -  \\nu dt  \\right)
+        \\mathbf{v}^{n+1} = \\mathbf{v}^n \\exp \\left( -  \\nu~dt  \\right)
 
-        \\pmb{\\omega} = \\pmb{\\omega} \\exp \\left( - \\frac{{\\nu} m dt } { \\mathbf{J}} \\right)
+        \\pmb{\\omega}^{n+1} = \\pmb{\\omega}^n \\exp \\left( - \\frac{{\\nu}~m~dt } { \\mathbf{J}} \\right)
 
     Examples
     --------
@@ -80,10 +82,16 @@ class ExponentialDamper(DamperBase):
 
     Notes
     -----
-    Advantage of using Exponential Damper is you can set `damping_constant` as high as possible and simulation never
-    blows up. You can start reducing `damping_constant` untill you feel dynamics are captured sufficiently. This gives
-    you a direction to tune `damping_constant` while keeping simulation stable and at the same time capturing the
-    dynamics.
+    Since this class analytically treats the damping term, it is unconditionally stable
+    from a timestep perspective, i.e. the presence of damping does not impose any additional
+    restriction on the simulation timestep size. This implies that when using
+    Exponential Damper, one can set `damping_constant` as high as possible, without worrying
+    about the simulation becoming unstable. This now leads to a streamlined procedure
+    for tuning the `damping_constant`:
+
+    1. Set a high value for `damping_constant` to first acheive a stable simulation.
+    2. If you feel the simulation is overdamped, reduce `damping_constant` until you
+       feel the simulation is underdamped, and expected dynamics are recovered.
 
     Attributes
     ----------
