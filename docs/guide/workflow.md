@@ -91,7 +91,7 @@ This can be repeated to create multiple rods. Supported geometries are listed in
 The number of element (`n_elements`) and `base_length` determines the spatial discretization `dx`. More detail discussion is included [here](discretization.md).
 :::
 
-<h2>4. Define Boundary Conditions, Forcings, Damping and Connections</h2>
+<h2>3. Define Boundary Conditions, Forcings, Damping and Connections</h2>
 
 Now that we have added all our rods to `SystemSimulator`, we 
 need to apply relevant boundary conditions. 
@@ -169,7 +169,7 @@ SystemSimulator.connect(
         )
 ```
 
-<h2>5. Add Callback Functions (optional)</h2>
+<h2>4. Add Callback Functions (optional)</h2>
 
 If you want to know what happens to the rod during the course of the simulation, you must collect data during the simulation. Here, we demonstrate how the callback function can be defined to export the data you need. There is a base class `CallBackBaseClass` that can help with this.
 
@@ -210,7 +210,7 @@ SystemSimulator.collect_diagnostics(rod2).using(
 
 You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs. See [this page](../api/callback.rst) for more in-depth documentation.
 
-<h2>6. Finalize Simulator</h2>
+<h2>5. Finalize Simulator</h2>
 
 Now that we have finished defining our rods, the different boundary conditions and connections between them, and how often we want to save data, we have finished setting up the simulation. We now need to finalize the simulator by calling
 
@@ -220,7 +220,7 @@ SystemSimulator.finalize()
 
 This goes through and collects all the rods and applied conditions, preparing the system for the simulation.
 
-<h2>7. Set Timestepper</h2>
+<h2>6. Set Timestepper</h2>
 
 With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation. 
 
@@ -238,6 +238,6 @@ integrate(timestepper, SystemSimulator, final_time, total_steps)
 
 More documentation on timestepper and integrator is included [here](../api/time_steppers.rst)
 
-<h2>8. Post Process</h2>
+<h2>7. Post Process</h2>
 
 Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`. 
