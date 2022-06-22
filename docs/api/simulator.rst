@@ -21,3 +21,6 @@ Simulator
    :members:
    :exclude-members: __weakref__, __init__, __call__, _ExtForceTorque 
 
+.. automodule:: elastica.wrappers.damping
+   :members:
+   :exclude-members: __weakref__, __init__, __call__, _Damper
