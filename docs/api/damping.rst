@@ -8,7 +8,7 @@ Damping
 Description
 -----------
 
-Damping are used for numerical stability of simulations.
+Damping is used to numerically stabilize the simulations.
 
 .. rubric:: Available Damping
 
