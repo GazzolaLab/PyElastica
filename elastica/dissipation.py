@@ -60,8 +60,23 @@ class DamperBase(ABC):
 
 class ExponentialDamper(DamperBase):
     """
-    Exponential damper.
-    TODO: include the equations and math.
+    Exponential damper class uses the following equations to damp the velocities.
+
+    .. math::
+
+        \mathbf{v} = \mathbf{v} \\exp \\left( -  \\nu dt  \\right)
+
+        \pmb{\\omega} = \pmb{\\omega} \\exp \\left( - \\frac{{\\nu} m dt } { \mathbf{J}} \\right)
+
+    Examples
+    --------
+    How to set exponential damper for rod or rigid body:
+
+    >>> simulator.dampin(rod).using(
+    ...     ExponentialDamper,
+    ...     damping_constant=0.1,
+    ...     time_step = 1E-4,   # Simulation time-step
+    ... )
 
     Attributes
     ----------
