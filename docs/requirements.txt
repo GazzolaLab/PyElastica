@@ -8,4 +8,5 @@ sphinx-autodoc-typehints
 myst-parser
 numpydoc
 docutils
+sphinx_rtd_theme
 -r ../requirements.txt
