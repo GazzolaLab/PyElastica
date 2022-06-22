@@ -91,30 +91,11 @@ This can be repeated to create multiple rods. Supported geometries are listed in
 The number of element (`n_elements`) and `base_length` determines the spatial discretization `dx`. More detail discussion is included [here](discretization.md).
 :::
 
-<h2>4. Define Damping, Boundary Conditions, Forcings, and Connections</h2>
+<h2>4. Define Boundary Conditions, Forcings, Damping and Connections</h2>
 
-Now that we have added all our rods to `SystemSimulator`, we need to apply the damping to the rods. See [this page](../api/damping.rst) for in-depth explanations and documentation.
-
-```python
-from elastica.dissipation import ExponentialDamper
-
-nu = 1e-3   # Damping constant of the rod
-dt = 1e-5   # Time-step of simulation in seconds
-
-SystemSimulator.dampin(rod1).using(
-    ExponentialDamper,
-    damping_constant = nu,
-    time_step = dt,
-)
-
-SystemSimulator.dampin(rod2).using(
-    ExponentialDamper,
-    damping_constant = nu,
-    time_step = dt,
-)
-```
-
-Next we apply relevant boundary conditions. See [this page](../api/constraints.rst) for in-depth explanations and documentation.
+Now that we have added all our rods to `SystemSimulator`, we 
+need to apply relevant boundary conditions. 
+See [this page](../api/constraints.rst) for in-depth explanations and documentation.
 
 As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundary condition (which we imported in step 1 and apply it to the rod. Here we will be fixing the $0^{\text{th}}$ node as well as the $0^{\text{th}}$ element. 
 
@@ -141,6 +122,29 @@ SystemSimulator.add_forcing_to(rod1).using(
     origin_force,                   # Force vector applied at first node
     end_force,                      # Force vector applied at last node
     ramp_up_time=final_time / 2.0   # Ramp up time 
+)
+```
+
+Next, if required, in order to numerically stabilize the simulation, 
+we can apply damping to the rods. 
+See [this page](../api/damping.rst) for in-depth explanations and documentation.
+
+```python
+from elastica.dissipation import ExponentialDamper
+
+nu = 1e-3   # Damping constant of the rod
+dt = 1e-5   # Time-step of simulation in seconds
+
+SystemSimulator.dampin(rod1).using(
+    ExponentialDamper,
+    damping_constant = nu,
+    time_step = dt,
+)
+
+SystemSimulator.dampin(rod2).using(
+    ExponentialDamper,
+    damping_constant = nu,
+    time_step = dt,
 )
 ```
 
