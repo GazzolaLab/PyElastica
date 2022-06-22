@@ -64,9 +64,9 @@ class ExponentialDamper(DamperBase):
 
     .. math::
 
-        \mathbf{v} = \mathbf{v} \\exp \\left( -  \\nu dt  \\right)
+        \\mathbf{v} = \\mathbf{v} \\exp \\left( -  \\nu dt  \\right)
 
-        \pmb{\\omega} = \pmb{\\omega} \\exp \\left( - \\frac{{\\nu} m dt } { \mathbf{J}} \\right)
+        \\pmb{\\omega} = \\pmb{\\omega} \\exp \\left( - \\frac{{\\nu} m dt } { \\mathbf{J}} \\right)
 
     Examples
     --------
