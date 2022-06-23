@@ -11,8 +11,8 @@
 # precedence. When someone opens a pull request that only
 # modifies JS files, only @js-owner and not the global
 # owner(s) will be requested for a review.
-/assets/ @armantekinalp @skim0119
+/assets/ @armantekinalp
 /docs/ @skim0119 @armantekinalp @bhosale2
 /elastica/ @armantekinalp @skim0119 @bhosale2
-/examples/ @armantekinalp @skim0119 @bhosale2
-/tests/ @armantekinalp @skim0119 @bhosale2
+/examples/ @armantekinalp @bhosale2
+/tests/ @armantekinalp @bhosale2
