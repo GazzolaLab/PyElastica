@@ -53,12 +53,12 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    
    api/rods
    api/rigidbody
-   api/damping
    api/constraints
    api/external_forces
    api/connections
    api/callback
    api/time_steppers
+   api/damping
    api/simulator
    api/utility
 
