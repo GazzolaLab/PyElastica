@@ -41,10 +41,10 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self): # -> SystemType: (Return type is not parsed with sphinx book.)
+    def system(self):  # -> SystemType: (Return type is not parsed with sphinx book.)
         """
         get system (rod or rigid body) reference
-        
+
         Returns
         -------
         SystemType
