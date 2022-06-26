@@ -1,4 +1,8 @@
-__doc__ = """ Built in damper module implementations """
+__doc__ = """
+(added in version 0.3.0)
+
+Built in damper module implementations
+"""
 __all__ = [
     "DamperBase",
     "ExponentialDamper",
