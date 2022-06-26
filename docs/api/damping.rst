@@ -1,7 +1,5 @@
 Damping
-===========
-
-.. _damping:
+=======
 
 .. automodule::  elastica.dissipation
 
@@ -16,7 +14,7 @@ Damping is used to numerically stabilize the simulations.
    :nosignatures:
 
    DamperBase
-    ExponentialDamper
+   ExponentialDamper
 
 Compatibility
 ~~~~~~~~~~~~~

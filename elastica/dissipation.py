@@ -1,4 +1,4 @@
-__doc__ = """ Built in dissipation module implementations """
+__doc__ = """ Built in damper module implementations """
 __all__ = [
     "DamperBase",
     "ExponentialDamper",
@@ -18,9 +18,9 @@ class DamperBase(ABC):
     All damper classes must inherit DamperBase class.
 
 
-        Attributes
-        ----------
-        system : SystemType (RodBase or RigidBodyBase)
+    Attributes
+    ----------
+    system : SystemType (RodBase or RigidBodyBase)
 
     """
 
@@ -37,12 +37,19 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self) -> SystemType:
-        """get system (rod or rigid body) reference"""
+    def system(self): # -> SystemType: (Return type is not parsed with sphinx book.)
+        """
+        get system (rod or rigid body) reference
+        
+        Returns
+        -------
+        SystemType
+
+        """
         return self._system
 
     @abstractmethod
-    def dampen_rates(self, rod: SystemType, time: float) -> None:
+    def dampen_rates(self, rod: SystemType, time: float):
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -132,7 +139,7 @@ class ExponentialDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, rod: SystemType, time: float) -> None:
+    def dampen_rates(self, rod: SystemType, time: float):
         rod.velocity_collection[:] = (
             rod.velocity_collection * self.translational_exponential_damping_coefficient
         )

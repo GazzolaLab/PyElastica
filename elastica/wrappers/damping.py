@@ -1,6 +1,6 @@
 __doc__ = """
 Damping
------------
+-------
 
 Provides the damper interface to apply damping
 on the rods. (see `dissipation.py`).
