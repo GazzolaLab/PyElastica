@@ -19,7 +19,7 @@ from examples.MuscularFlagella.muscle_forces_flagella import MuscleForces
 
 
 class MuscularFlagellaSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
 ):
     pass
 
@@ -66,7 +66,7 @@ flagella_body = CosseratRod.straight_rod(
     base_length_body,
     radius,
     density_body,
-    nu_body,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -158,6 +158,13 @@ flagella_muscle = CosseratRod.straight_rod(
 )
 
 muscular_flagella_sim.append(flagella_muscle)
+
+# add damping
+muscular_flagella_sim.dampen(flagella_muscle).using(
+    ExponentialDamper,
+    damping_constant=nu_muscle,
+    time_step=time_step,
+)
 
 # Connect muscle and body
 body_connection_idx = (4, 5)

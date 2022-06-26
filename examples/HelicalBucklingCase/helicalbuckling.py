@@ -12,7 +12,7 @@ from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
 )
 
 
-class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
+class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Damping, Forcing):
     pass
 
 
@@ -54,7 +54,7 @@ shearable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -65,6 +65,15 @@ shearable_rod.bend_matrix = bend_matrix
 
 
 helicalbuckling_sim.append(shearable_rod)
+# add damping
+dl = base_length / n_elem
+dt = 1e-3 * dl
+helicalbuckling_sim.dampen(shearable_rod).using(
+    ExponentialDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
+
 helicalbuckling_sim.constrain(shearable_rod).using(
     HelicalBucklingBC,
     constrained_position_idx=(0, -1),
@@ -80,8 +89,6 @@ shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 
 # timestepper = PEFRL()
 
 final_time = 10500.0
-dl = base_length / n_elem
-dt = 1e-3 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, helicalbuckling_sim, final_time, total_steps)

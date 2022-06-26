@@ -1,8 +1,6 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
 __all__ = ["allocate"]
-import typing
 from typing import Optional, Tuple
-import warnings
 import logging
 import numpy as np
 from numpy.testing import assert_allclose
@@ -192,6 +190,17 @@ def allocate(
     mass[1:] += 0.5 * density * volume
 
     # Set dissipation constant or nu array
+    log.warning(
+        # Remove warning and add error if nu provided in v0.3.1
+        # Remove the option to set internal nu inside, beyond v0.4.0
+        "The option to set damping coefficient (nu) for the rod during rod "
+        "initialisation is now deprecated. Instead, for adding damping to rods, "
+        "please derive your simulation class from the add-on Damping mixin class."
+        "For reference see the class elastica.dissipation.ExponentialDamper(),"
+        "and for usage check examples/axial_stretching.py"
+        "The option to set damping coefficient (nu) during rod construction "
+        "will be removed in the future (v0.3.1)."
+    )
     dissipation_constant_for_forces = np.zeros((n_elements + 1))
     # Check if the user input nu is valid
     nu_temp = np.array(nu)

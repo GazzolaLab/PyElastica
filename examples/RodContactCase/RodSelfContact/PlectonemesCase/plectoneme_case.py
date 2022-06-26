@@ -11,7 +11,12 @@ from examples.RodContactCase.post_processing import (
 
 
 class PlectonemesCase(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection,
+    Constraints,
+    Connections,
+    Forcing,
+    CallBacks,
+    Damping,
 ):
     pass
 
@@ -59,7 +64,7 @@ sherable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -68,6 +73,13 @@ sherable_rod.velocity_collection[2, int(n_elem / 2)] -= 1e-4
 
 
 plectonemes_sim.append(sherable_rod)
+
+# Add damping
+plectonemes_sim.dampen(sherable_rod).using(
+    ExponentialDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
 
 # boundary condition
 from elastica._rotations import _get_rotation_matrix

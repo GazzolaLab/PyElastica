@@ -19,7 +19,7 @@ from examples.JointCases.joint_cases_postprocessing import (
 
 
 class SphericalJointSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -35,7 +35,6 @@ base_length = 0.2
 base_radius = 0.007
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 4e-3
 E = 3e7
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -52,7 +51,7 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -66,7 +65,7 @@ rod2 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -92,6 +91,20 @@ spherical_joint_sim.add_forcing_to(rod2).using(
     ramp_up_time=0.2,
     tangent_direction=direction,
     normal_direction=normal,
+)
+
+# add damping
+damping_constant = 4e-3
+dt = 1e-5
+spherical_joint_sim.dampen(rod1).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+spherical_joint_sim.dampen(rod2).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
 )
 
 

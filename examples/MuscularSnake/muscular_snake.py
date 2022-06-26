@@ -17,7 +17,7 @@ from elastica.experimental.connection_contact_joint.parallel_connection import (
 
 # Set base simulator class
 class MuscularSnakeSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
 ):
     pass
 
@@ -42,6 +42,7 @@ E = 1e7
 nu = 4e-3
 shear_modulus = E / 2 * (0.5 + 1.0)
 poisson_ratio = 0.5
+nu_body = nu / density_body / (np.pi * base_radius_body ** 2)
 
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 0.0, 1.0])
@@ -55,7 +56,7 @@ snake_body = CosseratRod.straight_rod(
     base_length_body,
     base_radius_body,
     density_body,
-    nu / density_body / (np.pi * base_radius_body ** 2),
+    0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
@@ -227,6 +228,21 @@ rod_list.append(snake_body)
 rod_list = rod_list + muscle_rod_list
 for _, my_rod in enumerate(rod_list):
     muscular_snake_simulator.append(my_rod)
+
+# Add dissipation to backbone
+muscular_snake_simulator.dampen(snake_body).using(
+    ExponentialDamper,
+    damping_constant=nu_body,
+    time_step=time_step,
+)
+
+# Add dissipation to muscles
+for rod in rod_list:
+    muscular_snake_simulator.dampen(rod).using(
+        ExponentialDamper,
+        damping_constant=nu_muscle,
+        time_step=time_step,
+    )
 
 # Muscle actuation
 post_processing_forces_dict_list = []

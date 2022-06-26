@@ -14,7 +14,7 @@ from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
 from examples.convergence_functions import calculate_error_norm, plot_convergence
 
 
-class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):
+class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing, Damping):
     pass
 
 
@@ -52,12 +52,20 @@ def simulate_timoshenko_beam_with(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
 
     timoshenko_sim.append(shearable_rod)
+    # add damping
+    dl = base_length / n_elem
+    dt = 0.01 * dl
+    timoshenko_sim.dampen(shearable_rod).using(
+        ExponentialDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
     timoshenko_sim.constrain(shearable_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
@@ -78,13 +86,19 @@ def simulate_timoshenko_beam_with(
             base_length,
             base_radius,
             density,
-            nu,
+            0.0,  # internal damping constant, deprecated in v0.3.0
             E,
             # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
             shear_modulus=shear_modulus,
         )
 
         timoshenko_sim.append(unshearable_rod)
+        # add damping
+        timoshenko_sim.dampen(unshearable_rod).using(
+            ExponentialDamper,
+            damping_constant=nu,
+            time_step=dt,
+        )
         timoshenko_sim.constrain(unshearable_rod).using(
             OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
         )

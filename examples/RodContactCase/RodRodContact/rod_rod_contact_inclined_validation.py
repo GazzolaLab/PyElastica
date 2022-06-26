@@ -10,7 +10,7 @@ from examples.RodContactCase.post_processing import (
 
 
 class InclinedRodRodContact(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -30,7 +30,6 @@ base_length = 0.5
 base_radius = 0.01
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 0.002
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -56,9 +55,8 @@ rod_one = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
-    poisson_ratio,
     shear_modulus=shear_modulus,
 )
 
@@ -82,9 +80,8 @@ rod_two = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
-    poisson_ratio,
     shear_modulus=shear_modulus,
 )
 
@@ -93,6 +90,19 @@ inclined_rod_rod_contact_sim.append(rod_two)
 # Contact between two rods
 inclined_rod_rod_contact_sim.connect(rod_one, rod_two).using(
     ExternalContact, k=1e3, nu=0.0
+)
+
+# add damping
+damping_constant = 2e-3
+inclined_rod_rod_contact_sim.dampen(rod_one).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+inclined_rod_rod_contact_sim.dampen(rod_two).using(
+    ExponentialDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
 )
 
 # Add call backs
