@@ -80,8 +80,11 @@ def run_flagella(
     )
 
     # add damping
-    damping_constant = 2.5
-    dt = 2.5e-5 * period
+    # old damping model (deprecated in v0.3.0) values
+    # damping_constant = 2.5
+    # dt = 2.5e-5 * period
+    damping_constant = 0.625
+    dt = 1e-4 * period
     flagella_sim.dampen(shearable_rod).using(
         ExponentialDamper,
         damping_constant=damping_constant,
@@ -130,7 +133,6 @@ def run_flagella(
     # timestepper = PEFRL()
 
     final_time = (10.0 + 0.01) * period
-    dt = 2.5e-5 * period
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, flagella_sim, final_time, total_steps)
