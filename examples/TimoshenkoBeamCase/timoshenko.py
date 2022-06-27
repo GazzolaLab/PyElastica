@@ -34,7 +34,7 @@ base_length = 3.0
 base_radius = 0.25
 base_area = np.pi * base_radius ** 2
 density = 5000
-nu = 0.1 / density / base_area
+nu = 0.1 / 7 / density / base_area
 E = 1e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 99
@@ -56,7 +56,7 @@ shearable_rod = CosseratRod.straight_rod(
 timoshenko_sim.append(shearable_rod)
 # add damping
 dl = base_length / n_elem
-dt = 0.01 * dl
+dt = 0.07 * dl
 timoshenko_sim.dampen(shearable_rod).using(
     ExponentialDamper,
     damping_constant=nu,
