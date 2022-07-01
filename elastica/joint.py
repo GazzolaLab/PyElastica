@@ -423,22 +423,20 @@ def _calculate_contact_forces_rod_rigid_body(
         # As a quick fix, use this instead
         mask = (gamma > 0.0) * 1.0
 
-        contact_force = contact_k * gamma
+        # Compute contact spring force
+        contact_force = contact_k * gamma * distance_vector
         interpenetration_velocity = (
             0.5 * (velocity_rod[..., i] + velocity_rod[..., i + 1])
             - velocity_cylinder[..., 0]
         )
-        contact_damping_force = contact_nu * _dot_product(
-            interpenetration_velocity, distance_vector
+        # Compute contact damping
+        normal_interpenetration_velocity = (
+            _dot_product(interpenetration_velocity, distance_vector) * distance_vector
         )
+        contact_damping_force = contact_nu * normal_interpenetration_velocity
 
         # magnitude* direction
-        net_contact_force = (
-            0.5
-            * mask
-            * (normal_force + (contact_damping_force + contact_force))
-            * distance_vector
-        )
+        net_contact_force = 0.5 * mask * (contact_damping_force + contact_force)
 
         # Torques acting on the cylinder
         moment_arm = x_cylinder_contact_point - x_cylinder_center

@@ -15,7 +15,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     rod_cylinder_parallel_contact_simulator = RodCylinderParallelContact()
 
     # time step etc
-    final_time = 5.0
+    final_time = 10.0
     time_step = 1e-4
     total_steps = int(final_time / time_step) + 1
     rendering_fps = 30  # 20 * 1e1
@@ -28,7 +28,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     poisson_ratio = 0.5
     shear_modulus = E / (2 * (1 + poisson_ratio))
     n_elem = 50
-    nu = 0.0
+    nu = 0.5
     start = np.zeros((3,))
     direction = np.array([np.sin(inclination_angle), 0.0, np.cos(inclination_angle)])
     normal = np.array([0.0, 1.0, 0.0])
@@ -68,7 +68,9 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
     # Add contact between rigid body and rod
     rod_cylinder_parallel_contact_simulator.connect(rod, rigid_body).using(
-        ExternalContact, k=1e3, nu=0.1
+        ExternalContact,
+        k=5e4,
+        nu=0.1,
     )
 
     # Add callbacks
