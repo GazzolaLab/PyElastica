@@ -9,7 +9,9 @@ __all__ = [
 ]
 from abc import ABC, abstractmethod
 
-from elastica.typing import SystemType
+from elastica.typing import RodType, SystemType
+
+from numba import njit
 
 import numpy as np
 
@@ -85,7 +87,7 @@ class ExponentialDamper(DamperBase):
     --------
     How to set exponential damper for rod or rigid body:
 
-    >>> simulator.dampin(rod).using(
+    >>> simulator.dampen(rod).using(
     ...     ExponentialDamper,
     ...     damping_constant=0.1,
     ...     time_step = 1E-4,   # Simulation time-step
@@ -151,3 +153,106 @@ class ExponentialDamper(DamperBase):
         rod.omega_collection[:] = rod.omega_collection * np.power(
             self.rotational_exponential_damping_coefficient, rod.dilatation
         )
+
+
+class FilterDamper(DamperBase):
+    """
+    TODO modify stuff below
+    Filter damper class. This class corresponds to the analytical version of
+    a linear damper, and uses the following equations to damp translational and
+    rotational velocities:
+
+    .. math::
+
+        \\mathbf{v}^{n+1} = \\mathbf{v}^n \\exp \\left( -  \\nu~dt  \\right)
+
+        \\pmb{\\omega}^{n+1} = \\pmb{\\omega}^n \\exp \\left( - \\frac{{\\nu}~m~dt } { \\mathbf{J}} \\right)
+
+    Examples
+    --------
+    How to set filter damper for rod:
+
+    >>> simulator.dampen(rod).using(
+    ...     FilterDamper,
+    ...     filter_order = 2,   # order of the filter
+    ... )
+
+    Notes
+    -----
+    TODO modify stuff below
+
+    Attributes
+    ----------
+    filter_order : int
+        Order of the filter.
+    velocity_filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod translational velocity.
+    omega_filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod rotational velocity.
+    """
+
+    def __init__(self, filter_order: float, **kwargs):
+        """
+        Filter damper initializer
+
+        Parameters
+        ----------
+        filter_order : int
+            Order of the filter.
+        """
+        super().__init__(**kwargs)
+        if not (filter_order > 0 and isinstance(filter_order, int)):
+            raise ValueError(
+                "Invalid filter order! Filter order must be a positive integer."
+            )
+        self.filter_order = filter_order
+        self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
+        self.omega_filter_term = np.zeros_like(self._system.omega_collection)
+
+    def dampen_rates(self, rod: RodType, time: float) -> None:
+        nb_filter_rate(
+            rate_collection=rod.velocity_collection,
+            filter_term=self.velocity_filter_term,
+            filter_order=self.filter_order,
+        )
+        nb_filter_rate(
+            rate_collection=rod.omega_collection,
+            filter_term=self.omega_filter_term,
+            filter_order=self.filter_order,
+        )
+
+
+@njit(cache=True)
+def nb_filter_rate(
+    rate_collection: np.ndarray, filter_term: np.ndarray, filter_order: int
+) -> None:
+    """
+    Filters the rod rates (velocities) in numba njit decorator
+
+    Parameters
+    ----------
+    rate_collection : numpy.ndarray
+        2D array containing data with 'float' type.
+        Array containing rod rates (velocities).
+    filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod rates (velocities).
+    filter_order : int
+        Order of the filter.
+
+    Returns
+    -------
+
+    """
+
+    filter_term[...] = rate_collection
+    for i in range(filter_order):
+        filter_term[..., 1:-1] = (
+            -filter_term[..., 2:] - filter_term[..., :-2] + 2.0 * filter_term[..., 1:-1]
+        ) / 4.0
+        # dont touch boundary values
+        filter_term[..., 0] = 0.0
+        filter_term[..., -1] = 0.0
+    rate_collection[...] = rate_collection - filter_term
