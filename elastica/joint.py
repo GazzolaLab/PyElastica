@@ -378,7 +378,7 @@ def _calculate_contact_forces_rod_rigid_body(
     contact_k,
     contact_nu,
     velocity_damping_coefficient,
-    kinetic_friction_coefficient,
+    friction_coefficient,
 ):
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
@@ -446,25 +446,20 @@ def _calculate_contact_forces_rod_rigid_body(
         slip_interpenetration_velocity_mag = np.linalg.norm(
             slip_interpenetration_velocity
         )
-        if slip_interpenetration_velocity_mag >= 1e-12:
-            slip_interpenetration_velocity_unitized = (
-                slip_interpenetration_velocity / slip_interpenetration_velocity_mag
-            )
-        else:
-            slip_interpenetration_velocity_unitized = np.zeros(
-                3,
-            )
+        slip_interpenetration_velocity_unitized = slip_interpenetration_velocity / (
+            slip_interpenetration_velocity_mag + 1e-14
+        )
         # Compute friction force in the slip direction.
         damping_force_in_slip_direction = (
             velocity_damping_coefficient * slip_interpenetration_velocity_mag
         )
-        # Compute kinetic friction
-        kinetic_friction_force = kinetic_friction_coefficient * np.linalg.norm(
+        # Compute Coulombic friction
+        coulombic_friction_force = friction_coefficient * np.linalg.norm(
             net_contact_force
         )
         # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
         friction_force = (
-            -min(damping_force_in_slip_direction, kinetic_friction_force)
+            -min(damping_force_in_slip_direction, coulombic_friction_force)
             * slip_interpenetration_velocity_unitized
         )
         # Update contact force
@@ -808,8 +803,12 @@ class ExternalContact(FreeJoint):
     is always cylinder.
     In addition to the contact forces, user can define apply friction forces between rod and cylinder that
     are in contact. For details on friction model refer to this `paper <https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf>`_.
-
     TODO: Currently friction force is between rod-cylinder, in future implement friction forces between rod-rod.
+
+    Notes
+    -----
+    The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
+    (static friction), while friction_coefficient corresponds to the Coulombic friction coefficient.
 
     Examples
     --------
@@ -843,9 +842,7 @@ class ExternalContact(FreeJoint):
 
     """
 
-    def __init__(
-        self, k, nu, velocity_damping_coefficient=0, kinetic_friction_coefficient=0
-    ):
+    def __init__(self, k, nu, velocity_damping_coefficient=0, friction_coefficient=0):
         """
 
         Parameters
@@ -853,16 +850,16 @@ class ExternalContact(FreeJoint):
         k : float
             Contact spring constant.
         nu : float
-            Contact damping constant or coulomb coefficient of friction.
+            Contact damping constant.
         velocity_damping_coefficient : float
             Velocity damping coefficient between rigid-body and rod contact is used to apply friction force in the
             slip direction.
-        kinetic_friction_coefficient : float
-            Kinetic friction coefficient for rigid-body and rod contact.
+        friction_coefficient : float
+            For Coulombic friction coefficient for rigid-body and rod contact.
         """
         super().__init__(k, nu)
         self.velocity_damping_coefficient = velocity_damping_coefficient
-        self.kinetic_friction_coefficient = kinetic_friction_coefficient
+        self.friction_coefficient = friction_coefficient
 
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         # del index_one, index_two
@@ -912,7 +909,7 @@ class ExternalContact(FreeJoint):
                 self.k,
                 self.nu,
                 self.velocity_damping_coefficient,
-                self.kinetic_friction_coefficient,
+                self.friction_coefficient,
             )
 
         else:
