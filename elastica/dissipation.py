@@ -6,6 +6,7 @@ Built in damper module implementations
 __all__ = [
     "DamperBase",
     "ExponentialDamper",
+    "FilterDamper",
 ]
 from abc import ABC, abstractmethod
 
@@ -157,16 +158,9 @@ class ExponentialDamper(DamperBase):
 
 class FilterDamper(DamperBase):
     """
-    TODO modify stuff below
-    Filter damper class. This class corresponds to the analytical version of
-    a linear damper, and uses the following equations to damp translational and
-    rotational velocities:
-
-    .. math::
-
-        \\mathbf{v}^{n+1} = \\mathbf{v}^n \\exp \\left( -  \\nu~dt  \\right)
-
-        \\pmb{\\omega}^{n+1} = \\pmb{\\omega}^n \\exp \\left( - \\frac{{\\nu}~m~dt } { \\mathbf{J}} \\right)
+    Filter damper class. This class corresponds qualitatively to a low-pass filter
+    applied on the translational and rotational velocities, filtering out the high
+    frequency (noise) modes, while having no effect on the low frequency smooth modes.
 
     Examples
     --------
@@ -174,12 +168,22 @@ class FilterDamper(DamperBase):
 
     >>> simulator.dampen(rod).using(
     ...     FilterDamper,
-    ...     filter_order = 2,   # order of the filter
+    ...     filter_order=3,   # order of the filter
     ... )
 
     Notes
     -----
-    TODO modify stuff below
+    The extent of filtering can be controlled by the `filter_order`. Small
+    integer values (1, 2, etc.) result in aggressive filtering, and can lead to
+    the "physics" being filtered out. While high values (9, 10, etc.) imply
+    minimal filtering, and thus negligible effect on the velocities.
+    Values in the range of 3-7 are usually recommended.
+
+    For details regarding the numerics behind the filtering, refer to:
+
+    Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+    models modified using discrete filters: a simplified “regularized variational
+    multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
 
     Attributes
     ----------
@@ -245,6 +249,12 @@ def nb_filter_rate(
     Returns
     -------
 
+    Notes
+    -----
+    For details regarding the numerics behind the filtering, refer to:
+    Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+    models modified using discrete filters: a simplified “regularized variational
+    multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
     """
 
     filter_term[...] = rate_collection
