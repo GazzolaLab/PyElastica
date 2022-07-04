@@ -150,7 +150,7 @@ def test_filter_damper_init(filter_order):
 
 
 @pytest.mark.parametrize("filter_order", [2, 3, 4])
-def test_filter_damper_dampen_rates(filter_order):
+def test_filter_damper_for_constant_field(filter_order):
     test_rod = MockTestRod()
     filter_damper = FilterDamper(
         _system=test_rod,
@@ -162,6 +162,42 @@ def test_filter_damper_dampen_rates(filter_order):
     # filter should keep a spatially invariant field unaffected
     post_damping_velocity_collection = 2.0 * np.ones_like(test_rod.velocity_collection)
     post_damping_omega_collection = 3.0 * np.ones_like(test_rod.omega_collection)
+    assert_allclose(
+        post_damping_velocity_collection,
+        test_rod.velocity_collection,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        post_damping_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+
+def test_filter_damper_for_flip_flop_field():
+    filter_order = 1
+    test_rod = MockTestRod()
+    filter_damper = FilterDamper(
+        _system=test_rod,
+        filter_order=filter_order,
+    )
+    test_rod.velocity_collection[...] = 0.0
+    test_rod.velocity_collection[..., 1::2] = 2.0
+    test_rod.omega_collection[...] = 0.0
+    test_rod.omega_collection[..., 1::2] = 3.0
+    pre_damping_velocity_collection = test_rod.velocity_collection.copy()
+    pre_damping_omega_collection = test_rod.omega_collection.copy()
+    filter_damper.dampen_rates(rod=test_rod, time=0)
+    post_damping_velocity_collection = np.zeros_like(test_rod.velocity_collection)
+    post_damping_omega_collection = np.zeros_like(test_rod.omega_collection)
+    # filter should remove the flip-flop mode th give the average constant mode
+    post_damping_velocity_collection[..., 1:-1] = 2.0 / 2
+    post_damping_omega_collection[..., 1:-1] = 3.0 / 2
+    # end values remain untouched
+    post_damping_velocity_collection[
+        ..., 0 :: test_rod.n_elem
+    ] = pre_damping_velocity_collection[..., 0 :: test_rod.n_elem]
+    post_damping_omega_collection[
+        ..., 0 :: test_rod.n_elem - 1
+    ] = pre_damping_omega_collection[..., 0 :: test_rod.n_elem - 1]
     assert_allclose(
         post_damping_velocity_collection,
         test_rod.velocity_collection,
