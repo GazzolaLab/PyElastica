@@ -1,11 +1,15 @@
 __doc__ = """ Test Dissipation module for in Elastica implementation"""
 
 # System imports
-import numpy as np
-from test_rod.test_rods import MockTestRod
-from elastica.dissipation import DamperBase, ExponentialDamper
-from numpy.testing import assert_allclose
+from elastica.dissipation import DamperBase, ExponentialDamper, FilterDamper
 from elastica.utils import Tolerance
+
+import numpy as np
+from numpy.testing import assert_allclose
+
+import pytest
+
+from test_rod.test_rods import MockTestRod
 
 
 def test_damper_base():
@@ -106,6 +110,58 @@ def test_exponential_damper():
         pre_damping_omega_collection
         * ref_rotational_exponential_damping_coefficient ** 2.0
     )
+    assert_allclose(
+        post_damping_velocity_collection,
+        test_rod.velocity_collection,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        post_damping_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+
+@pytest.mark.parametrize("filter_order", [-1, 0, 3.2])
+def test_filter_damper_init_invalid_filter_order(filter_order):
+    test_rod = MockTestRod()
+    with pytest.raises(ValueError) as exc_info:
+        _ = FilterDamper(
+            _system=test_rod,
+            filter_order=filter_order,
+        )
+    assert (
+        exc_info.value.args[0]
+        == "Invalid filter order! Filter order must be a positive integer."
+    )
+
+
+@pytest.mark.parametrize("filter_order", [2, 3, 4])
+def test_filter_damper_init(filter_order):
+
+    test_rod = MockTestRod()
+    filter_damper = FilterDamper(
+        _system=test_rod,
+        filter_order=filter_order,
+    )
+    assert filter_damper.filter_order == filter_order
+    assert_allclose(
+        filter_damper.velocity_filter_term, np.zeros((3, test_rod.n_elem + 1))
+    )
+    assert_allclose(filter_damper.omega_filter_term, np.zeros((3, test_rod.n_elem)))
+
+
+@pytest.mark.parametrize("filter_order", [2, 3, 4])
+def test_filter_damper_dampen_rates(filter_order):
+    test_rod = MockTestRod()
+    filter_damper = FilterDamper(
+        _system=test_rod,
+        filter_order=filter_order,
+    )
+    test_rod.velocity_collection[...] = 2.0
+    test_rod.omega_collection[...] = 3.0
+    filter_damper.dampen_rates(rod=test_rod, time=0)
+    # filter should keep a spatially invariant field unaffected
+    post_damping_velocity_collection = 2.0 * np.ones_like(test_rod.velocity_collection)
+    post_damping_omega_collection = 3.0 * np.ones_like(test_rod.omega_collection)
     assert_allclose(
         post_damping_velocity_collection,
         test_rod.velocity_collection,
