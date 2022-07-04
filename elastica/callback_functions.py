@@ -141,7 +141,7 @@ class ExportCallBack(CallBackBaseClass):
         assert (
             method in ExportCallBack.AVAILABLE_METHOD
         ), f"The exporting method ({method}) is not supported. Please use one of {ExportCallBack.AVAILABLE_METHOD}."
-        assert os.path.exists(path), "The export path does not exist."
+        assert os.path.exists(os.path.dirname(path)), "The export path does not exist."
 
         # Argument Parameters
         self.step_skip = step_skip
