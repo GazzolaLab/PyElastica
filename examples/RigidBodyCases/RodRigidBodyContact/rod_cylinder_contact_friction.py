@@ -6,7 +6,9 @@ from elastica import *
 from post_processing import plot_velocity, plot_video_with_surface
 
 
-def rod_cylinder_contact_friction_case(pulling_force=0.0, POST_PROCESSING=False):
+def rod_cylinder_contact_friction_case(
+    force_coefficient=0.1, normal_force_mag=10, POST_PROCESSING=False
+):
     class RodCylinderParallelContact(
         BaseSystemCollection, Constraints, Connections, CallBacks, Forcing
     ):
@@ -15,7 +17,7 @@ def rod_cylinder_contact_friction_case(pulling_force=0.0, POST_PROCESSING=False)
     rod_cylinder_parallel_contact_simulator = RodCylinderParallelContact()
 
     # time step etc
-    final_time = 10.0
+    final_time = 20.0
     time_step = 1e-4
     total_steps = int(final_time / time_step) + 1
     rendering_fps = 30  # 20 * 1e1
@@ -47,18 +49,18 @@ def rod_cylinder_contact_friction_case(pulling_force=0.0, POST_PROCESSING=False)
     )
 
     rod_cylinder_parallel_contact_simulator.append(rod)
-    # rod.velocity_collection[0, :] -= 0.2
 
+    # Push the rod towards the cylinder to make sure contact is there
+    normal_force_direction = np.array([-1.0, 0.0, 0.0])
+    rod_cylinder_parallel_contact_simulator.add_forcing_to(rod).using(
+        UniformForces, force=normal_force_mag, direction=normal_force_direction
+    )
     # Apply uniform forces on the rod
     rod_cylinder_parallel_contact_simulator.add_forcing_to(rod).using(
-        UniformForces, force=1.0 * pulling_force, direction=direction
-    )
-    # Push the rod towards the cylinder to make sure contact is there
-    rod_cylinder_parallel_contact_simulator.add_forcing_to(rod).using(
-        UniformForces, force=0.1, direction=np.array([-1.0, 0.0, 0.0])
+        UniformForces, force=normal_force_mag * force_coefficient, direction=direction
     )
 
-    cylinder_height = 3 * base_length
+    cylinder_height = 8 * base_length
     cylinder_radius = base_radius
 
     cylinder_start = start + np.array([-1.0, 0.0, 0.0]) * 2 * base_radius
@@ -83,10 +85,10 @@ def rod_cylinder_contact_friction_case(pulling_force=0.0, POST_PROCESSING=False)
     # Add contact between rigid body and rod
     rod_cylinder_parallel_contact_simulator.connect(rod, rigid_body).using(
         ExternalContact,
-        k=1e4,
-        nu=10,
-        velocity_damping_coefficient=10,
-        kinetic_friction_coefficient=10,
+        k=1e5,
+        nu=100,
+        velocity_damping_coefficient=1e5,
+        friction_coefficient=0.5,
     )
 
     # Add callbacks
@@ -259,21 +261,3 @@ def rod_cylinder_contact_friction_case(pulling_force=0.0, POST_PROCESSING=False)
     )
 
     return total_final_energy
-
-
-if __name__ == "__main__":
-    import multiprocessing as mp
-    from examples.RigidBodyCases.RodRigidBodyContact.post_processing import (
-        plot_force_vs_energy,
-    )
-
-    # total_energy = rod_cylinder_contact_friction_case(pulling_force=0.5, POST_PROCESSING=True)
-
-    force = list([(float(x)) / 100.0 for x in range(0, 90, 5)])
-
-    with mp.Pool(mp.cpu_count()) as pool:
-        result_total_energy = pool.map(rod_cylinder_contact_friction_case, force)
-
-    plot_force_vs_energy(
-        force, result_total_energy, filename="rod_energy_vs_force.png", SAVE_FIGURE=True
-    )

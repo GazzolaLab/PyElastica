@@ -728,8 +728,9 @@ def plot_video_with_surface(
 
 
 def plot_force_vs_energy(
-    force,
+    normalized_force,
     total_final_energy,
+    friction_coefficient,
     filename="energy_vs_force.png",
     SAVE_FIGURE=False,
 ):
@@ -739,12 +740,13 @@ def plot_force_vs_energy(
     axs.append(plt.subplot2grid((1, 1), (0, 0)))
 
     axs[0].plot(
-        force,
+        normalized_force,
         total_final_energy,
         linewidth=3,
     )
+    plt.axvline(x=friction_coefficient, linewidth=3, color="r", label="threshold")
     axs[0].set_ylabel("total energy", fontsize=20)
-    axs[0].set_xlabel("force ", fontsize=20)
+    axs[0].set_xlabel("normalized force", fontsize=20)
 
     plt.tight_layout()
     # fig.align_ylabels()
