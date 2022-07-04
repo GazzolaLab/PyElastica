@@ -155,7 +155,6 @@ class ExportCallBack(CallBackBaseClass):
 
         self.buffer = defaultdict(list)
         self.buffer_size = 0
-        self.steps_since_last_save: int = 0
 
         # Module
         if method == ExportCallBack.AVAILABLE_METHOD[0]:
@@ -185,7 +184,6 @@ class ExportCallBack(CallBackBaseClass):
         current_step : int
             simulation step
         """
-        self.steps_since_last_save += 1
 
         if current_step % self.step_skip == 0:
             position = system.position_collection.copy()
@@ -204,11 +202,11 @@ class ExportCallBack(CallBackBaseClass):
                 + sys.getsizeof(director)
             )
 
-            if (
-                self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
-                or self.steps_since_last_save >= self.save_every
-            ):
-                self._dump()
+        if (
+            self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
+            or (current_step + 1) % self.save_every == 0
+        ):
+            self._dump()
 
     def _dump(self, **kwargs):
         file_path = f"{self.save_path}_{self.file_count}.dat"
@@ -226,6 +224,5 @@ class ExportCallBack(CallBackBaseClass):
             self._pickle.dump(data, file)
 
         self.file_count += 1
-        self.steps_since_last_save = 0
         self.buffer_size = 0
         self.buffer.clear()
