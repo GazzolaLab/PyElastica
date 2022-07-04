@@ -184,7 +184,6 @@ class ExportCallBack(CallBackBaseClass):
         current_step : int
             simulation step
         """
-
         if current_step % self.step_skip == 0:
             position = system.position_collection.copy()
             velocity = system.velocity_collection.copy()
