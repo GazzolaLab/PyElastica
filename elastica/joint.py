@@ -377,6 +377,8 @@ def _calculate_contact_forces_rod_rigid_body(
     velocity_cylinder,
     contact_k,
     contact_nu,
+    velocity_damping_coefficient,
+    kinetic_friction_coefficient,
 ):
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
@@ -425,18 +427,48 @@ def _calculate_contact_forces_rod_rigid_body(
 
         # Compute contact spring force
         contact_force = contact_k * gamma * distance_vector
-        interpenetration_velocity = (
-            0.5 * (velocity_rod[..., i] + velocity_rod[..., i + 1])
-            - velocity_cylinder[..., 0]
+        interpenetration_velocity = velocity_cylinder[..., 0] - 0.5 * (
+            velocity_rod[..., i] + velocity_rod[..., i + 1]
         )
         # Compute contact damping
         normal_interpenetration_velocity = (
             _dot_product(interpenetration_velocity, distance_vector) * distance_vector
         )
-        contact_damping_force = contact_nu * normal_interpenetration_velocity
+        contact_damping_force = -contact_nu * normal_interpenetration_velocity
 
         # magnitude* direction
         net_contact_force = 0.5 * mask * (contact_damping_force + contact_force)
+
+        # Compute friction
+        slip_interpenetration_velocity = (
+            interpenetration_velocity - normal_interpenetration_velocity
+        )
+        slip_interpenetration_velocity_mag = np.linalg.norm(
+            slip_interpenetration_velocity
+        )
+        if slip_interpenetration_velocity_mag >= 1e-12:
+            slip_interpenetration_velocity_unitized = (
+                slip_interpenetration_velocity / slip_interpenetration_velocity_mag
+            )
+        else:
+            slip_interpenetration_velocity_unitized = np.zeros(
+                3,
+            )
+        # Compute friction force in the slip direction.
+        damping_force_in_slip_direction = (
+            velocity_damping_coefficient * slip_interpenetration_velocity_mag
+        )
+        # Compute kinetic friction
+        kinetic_friction_force = kinetic_friction_coefficient * np.linalg.norm(
+            net_contact_force
+        )
+        # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
+        friction_force = (
+            -min(damping_force_in_slip_direction, kinetic_friction_force)
+            * slip_interpenetration_velocity_unitized
+        )
+        # Update contact force
+        net_contact_force += friction_force
 
         # Torques acting on the cylinder
         moment_arm = x_cylinder_contact_point - x_cylinder_center
@@ -771,20 +803,66 @@ def _prune_using_aabbs_rod_rod(
 
 class ExternalContact(FreeJoint):
     """
-    Assumes that the second entity is a rigid body for now, can be
-    changed at a later time
+    This class is for applying contact forces between rod-cylinder and rod-rod.
+    If you are want to apply contact forces between rod and cylinder, first system is always rod and second system
+    is always cylinder.
+    In addition to the contact forces, user can define apply friction forces between rod and cylinder that
+    are in contact. For details on friction model refer to this `paper <https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf>`_.
 
+    TODO: Currently friction force is between rod-cylinder, in future implement friction forces between rod-rod.
+
+    Examples
+    --------
+    How to define contact between rod and cylinder.
+
+    >>> simulator.connect(rod, cylidner).using(
+    ...    ExternalContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ...    velocity_damping_coefficient=10,
+    ...    kinetic_friction_coefficient=10,
+    ... )
+
+    How to define contact between rod and rod.
+
+    >>> simulator.connect(rod, rod).using(
+    ...    ExternalContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ... )
+
+
+    Developer Note
+    --------------
     Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`_.
-
-    but, it isn't (the elastica-cpp kernels are implented)!
+    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`,
+    but the elastica-cpp kernels are implemented.
     This is maybe to speed-up the kernel, but it's
     potentially dangerous as it does not deal with "end" conditions
     correctly.
+
     """
 
-    def __init__(self, k, nu):
+    def __init__(
+        self, k, nu, velocity_damping_coefficient=0, kinetic_friction_coefficient=0
+    ):
+        """
+
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant or coulomb coefficient of friction.
+        velocity_damping_coefficient : float
+            Velocity damping coefficient between rigid-body and rod contact is used to apply friction force in the
+            slip direction.
+        kinetic_friction_coefficient : float
+            Kinetic friction coefficient for rigid-body and rod contact.
+        """
         super().__init__(k, nu)
+        self.velocity_damping_coefficient = velocity_damping_coefficient
+        self.kinetic_friction_coefficient = kinetic_friction_coefficient
 
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         # del index_one, index_two
@@ -833,6 +911,8 @@ class ExternalContact(FreeJoint):
                 cylinder_two.velocity_collection,
                 self.k,
                 self.nu,
+                self.velocity_damping_coefficient,
+                self.kinetic_friction_coefficient,
             )
 
         else:
