@@ -200,11 +200,12 @@ class ExportCallBack(CallBackBaseClass):
                 + sys.getsizeof(velocity)
                 + sys.getsizeof(director)
             )
-            if (
-                self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
-                or (current_step + 1) % self.save_every == 0
-            ):
-                self._dump()
+
+        if (
+            self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
+            or (current_step + 1) % self.save_every == 0
+        ):
+            self._dump()
 
     def _dump(self, **kwargs):
         file_path = f"{self.save_path}_{self.file_count}.dat"
