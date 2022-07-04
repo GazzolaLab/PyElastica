@@ -114,14 +114,16 @@ class ExportCallBack(CallBackBaseClass):
         path: str,
         method: str,
         initial_file_count: int = 0,
-        save_every: int = 1e8,
+        file_save_interval: int = 1e8,
     ):
         """
 
         Parameters
         ----------
         step_skip : int
-            Collect data at each step_skip steps.
+            Interval to collect simulation data into buffer.
+            The data will be collected at every `dt * step_skip`
+            interval.
         path : str
             Path to save the file. If directories are prepended,
             they must exist. The filename depends on the method.
@@ -131,8 +133,9 @@ class ExportCallBack(CallBackBaseClass):
             allowed.
         initial_file_count : int
             Initial file count index that will be appended
-        save_every : int
-            Save the file every save_every steps. (default=1e8)
+        file_save_interval : int
+            Interval, in steps, to export/save collected buffer
+            as file. (default=1e8)
         """
         # Assertions
         MIN_STEP_SKIP = 100
@@ -141,14 +144,15 @@ class ExportCallBack(CallBackBaseClass):
         assert (
             method in ExportCallBack.AVAILABLE_METHOD
         ), f"The exporting method ({method}) is not supported. Please use one of {ExportCallBack.AVAILABLE_METHOD}."
-        assert os.path.exists(path), "The export path does not exist."
+        # TODO: Assertion is temporarily disabled. Should be fixed with #127
+        # assert os.path.exists(path), "The export path does not exist."
 
         # Argument Parameters
         self.step_skip = step_skip
         self.save_path = path
         self.method = method
         self.file_count = initial_file_count
-        self.save_every = save_every
+        self.file_save_interval = file_save_interval
 
         # Data collector
         from collections import defaultdict
@@ -203,11 +207,15 @@ class ExportCallBack(CallBackBaseClass):
 
         if (
             self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
-            or (current_step + 1) % self.save_every == 0
+            or (current_step + 1) % self.file_save_interval == 0
         ):
             self._dump()
 
     def _dump(self, **kwargs):
+        """
+        Dump dictionary buffer (self.buffer) to a file and clear
+        the buffer.
+        """
         file_path = f"{self.save_path}_{self.file_count}.dat"
         data = {k: np.array(v) for k, v in self.buffer.items()}
         if self.method == ExportCallBack.AVAILABLE_METHOD[0]:
@@ -225,3 +233,10 @@ class ExportCallBack(CallBackBaseClass):
         self.file_count += 1
         self.buffer_size = 0
         self.buffer.clear()
+
+    def __del__(self):
+        """
+        Save residual buffer on exit
+        """
+        if self.buffer_size:
+            self._dump()

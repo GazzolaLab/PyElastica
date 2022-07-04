@@ -150,7 +150,7 @@ class TestExportCallBackClass:
             "directors": [],
         }
 
-        callback = ExportCallBack(step_skip, ".", "tempfile", save_every=10)
+        callback = ExportCallBack(step_skip, ".", "tempfile", file_save_interval=10)
         for i in range(10):
             callback.make_callback(mock_rod, time[i], current_step[i])
 
