@@ -725,3 +725,33 @@ def plot_video_with_surface(
         # plt.close(fig) alone does not suffice
         # See https://github.com/matplotlib/matplotlib/issues/8560/
         plt.close(plt.gcf())
+
+
+def plot_force_vs_energy(
+    force,
+    total_final_energy,
+    filename="energy_vs_force.png",
+    SAVE_FIGURE=False,
+):
+
+    fig = plt.figure(figsize=(12, 10), frameon=True, dpi=150)
+    axs = []
+    axs.append(plt.subplot2grid((1, 1), (0, 0)))
+
+    axs[0].plot(
+        force,
+        total_final_energy,
+        linewidth=3,
+    )
+    axs[0].set_ylabel("total energy", fontsize=20)
+    axs[0].set_xlabel("force ", fontsize=20)
+
+    plt.tight_layout()
+    # fig.align_ylabels()
+    fig.legend(prop={"size": 20})
+    # fig.savefig(filename)
+    # plt.show()
+    plt.close(plt.gcf())
+
+    if SAVE_FIGURE:
+        fig.savefig(filename)
