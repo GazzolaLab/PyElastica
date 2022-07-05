@@ -181,7 +181,7 @@ class FilterDamper(DamperBase):
 
     For details regarding the numerics behind the filtering, refer to:
 
-    Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+    .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
     models modified using discrete filters: a simplified “regularized variational
     multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
     .. [2] Lorieul, G. (2018). Development and validation of a 2D Vortex Particle-Mesh
