@@ -6,7 +6,7 @@ Built in damper module implementations
 __all__ = [
     "DamperBase",
     "ExponentialDamper",
-    "FilterDamper",
+    "LaplaceDissipationFilter",
 ]
 from abc import ABC, abstractmethod
 
@@ -156,24 +156,27 @@ class ExponentialDamper(DamperBase):
         )
 
 
-class FilterDamper(DamperBase):
+class LaplaceDissipationFilter(DamperBase):
     """
-    Filter damper class. This class corresponds qualitatively to a low-pass filter
-    applied on the translational and rotational velocities, filtering out the high
-    frequency (noise) modes, while having no effect on the low frequency smooth modes.
+    Laplace Dissipation Filter class. This class corresponds qualitatively to a
+    low-pass filter generated via the 1D Laplacian operator. It is applied to the
+    translational and rotational velocities, where it filters out the high
+    frequency (noise) modes, while having negligible effect on the low frequency
+    smooth modes.
 
     Examples
     --------
-    How to set filter damper for rod:
+    How to set Laplace dissipation filter for rod:
 
     >>> simulator.dampen(rod).using(
-    ...     FilterDamper,
+    ...     LaplaceDissipationFilter,
     ...     filter_order=3,   # order of the filter
     ... )
 
     Notes
     -----
-    The extent of filtering can be controlled by the `filter_order`. Small
+    The extent of filtering can be controlled by the `filter_order`, which refers
+    to the number of times the Laplacian operator is applied. Small
     integer values (1, 2, etc.) result in aggressive filtering, and can lead to
     the "physics" being filtered out. While high values (9, 10, etc.) imply
     minimal filtering, and thus negligible effect on the velocities.
@@ -182,16 +185,18 @@ class FilterDamper(DamperBase):
     For details regarding the numerics behind the filtering, refer to:
 
     .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
-    models modified using discrete filters: a simplified “regularized variational
-    multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
+       models modified using discrete filters: a simplified “regularized variational
+       multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
     .. [2] Lorieul, G. (2018). Development and validation of a 2D Vortex Particle-Mesh
-     method for incompressible multiphase flows 
-     (Doctoral dissertation, Université Catholique de Louvain).
+       method for incompressible multiphase flows (Doctoral dissertation,
+       Université Catholique de Louvain).
 
     Attributes
     ----------
     filter_order : int
-        Order of the filter.
+        Filter order, which corresponds to the number of times the Laplacian
+        operator is applied. Increasing `filter_order` implies higher-order/weaker
+        filtering.
     velocity_filter_term: numpy.ndarray
         2D array containing data with 'float' type.
         Filter term that modifies rod translational velocity.
@@ -207,7 +212,9 @@ class FilterDamper(DamperBase):
         Parameters
         ----------
         filter_order : int
-            Order of the filter.
+            Filter order, which corresponds to the number of times the Laplacian
+            operator is applied. Increasing `filter_order` implies higher-order/weaker
+            filtering.
         """
         super().__init__(**kwargs)
         if not (filter_order > 0 and isinstance(filter_order, int)):
@@ -247,17 +254,20 @@ def nb_filter_rate(
         2D array containing data with 'float' type.
         Filter term that modifies rod rates (velocities).
     filter_order : int
-        Order of the filter.
-
-    Returns
-    -------
+        Filter order, which corresponds to the number of times the Laplacian
+        operator is applied. Increasing `filter_order` implies higher order/weaker
+        filtering.
 
     Notes
     -----
     For details regarding the numerics behind the filtering, refer to:
-    Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
-    models modified using discrete filters: a simplified “regularized variational
-    multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
+
+    .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+       models modified using discrete filters: a simplified “regularized variational
+       multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
+    .. [2] Lorieul, G. (2018). Development and validation of a 2D Vortex Particle-Mesh
+       method for incompressible multiphase flows (Doctoral dissertation,
+       Université Catholique de Louvain).
     """
 
     filter_term[...] = rate_collection
