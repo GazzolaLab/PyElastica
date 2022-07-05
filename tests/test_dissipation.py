@@ -1,7 +1,7 @@
 __doc__ = """ Test Dissipation module for in Elastica implementation"""
 
 # System imports
-from elastica.dissipation import DamperBase, ExponentialDamper, FilterDamper
+from elastica.dissipation import DamperBase, ExponentialDamper, LaplaceDissipationFilter
 from elastica.utils import Tolerance
 
 import numpy as np
@@ -121,10 +121,10 @@ def test_exponential_damper():
 
 
 @pytest.mark.parametrize("filter_order", [-1, 0, 3.2])
-def test_filter_damper_init_invalid_filter_order(filter_order):
+def test_laplace_dissipation_filter_init_invalid_filter_order(filter_order):
     test_rod = MockTestRod()
     with pytest.raises(ValueError) as exc_info:
-        _ = FilterDamper(
+        _ = LaplaceDissipationFilter(
             _system=test_rod,
             filter_order=filter_order,
         )
@@ -135,10 +135,10 @@ def test_filter_damper_init_invalid_filter_order(filter_order):
 
 
 @pytest.mark.parametrize("filter_order", [2, 3, 4])
-def test_filter_damper_init(filter_order):
+def test_laplace_dissipation_filter_init(filter_order):
 
     test_rod = MockTestRod()
-    filter_damper = FilterDamper(
+    filter_damper = LaplaceDissipationFilter(
         _system=test_rod,
         filter_order=filter_order,
     )
@@ -150,9 +150,9 @@ def test_filter_damper_init(filter_order):
 
 
 @pytest.mark.parametrize("filter_order", [2, 3, 4])
-def test_filter_damper_for_constant_field(filter_order):
+def test_laplace_dissipation_filter_for_constant_field(filter_order):
     test_rod = MockTestRod()
-    filter_damper = FilterDamper(
+    filter_damper = LaplaceDissipationFilter(
         _system=test_rod,
         filter_order=filter_order,
     )
@@ -172,10 +172,10 @@ def test_filter_damper_for_constant_field(filter_order):
     )
 
 
-def test_filter_damper_for_flip_flop_field():
+def test_laplace_dissipation_filter_for_flip_flop_field():
     filter_order = 1
     test_rod = MockTestRod()
-    filter_damper = FilterDamper(
+    filter_damper = LaplaceDissipationFilter(
         _system=test_rod,
         filter_order=filter_order,
     )
