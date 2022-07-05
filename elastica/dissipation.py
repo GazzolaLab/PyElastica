@@ -197,7 +197,7 @@ class FilterDamper(DamperBase):
         Filter term that modifies rod rotational velocity.
     """
 
-    def __init__(self, filter_order: float, **kwargs):
+    def __init__(self, filter_order: int, **kwargs):
         """
         Filter damper initializer
 
