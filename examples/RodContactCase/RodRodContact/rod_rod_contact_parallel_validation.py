@@ -18,7 +18,9 @@ class ParallelRodRodContact(
 parallel_rod_rod_contact_sim = ParallelRodRodContact()
 
 # Simulation parameters
-dt = 5e-5
+# old damping model (deprecated in v0.3.0) values
+# dt = 5e-5
+dt = 5e-4
 final_time = 10
 total_steps = int(final_time / dt)
 time_step = np.float64(final_time / total_steps)
@@ -90,7 +92,9 @@ parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 )
 
 # add damping
-damping_constant = 2e-3
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 2e-3
+damping_constant = 2e-4
 parallel_rod_rod_contact_sim.dampen(rod_one).using(
     ExponentialDamper,
     damping_constant=damping_constant,

@@ -94,8 +94,11 @@ spherical_joint_sim.add_forcing_to(rod2).using(
 )
 
 # add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 4e-3
+# dt = 1e-5
 damping_constant = 4e-3
-dt = 1e-5
+dt = 5e-5
 spherical_joint_sim.dampen(rod1).using(
     ExponentialDamper,
     damping_constant=damping_constant,
@@ -146,7 +149,6 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, spherical_joint_sim, final_time, total_steps)

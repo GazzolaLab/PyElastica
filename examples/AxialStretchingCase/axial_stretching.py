@@ -89,9 +89,12 @@ stretch_sim.add_forcing_to(stretchable_rod).using(
 )
 
 # add damping
-damping_constant = 1.0
 dl = base_length / n_elem
-dt = 0.01 * dl
+# old damping model (deprecated in v0.3.0) values
+# dt = 0.01 * dl
+# damping_constant = 1.0
+dt = 0.1 * dl
+damping_constant = 0.1
 stretch_sim.dampen(stretchable_rod).using(
     ExponentialDamper,
     damping_constant=damping_constant,
