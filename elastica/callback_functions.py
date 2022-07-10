@@ -5,6 +5,9 @@ import warnings
 import os
 import sys
 import numpy as np
+import logging
+
+from collections import defaultdict
 
 
 class CallBackBaseClass:
@@ -111,23 +114,25 @@ class ExportCallBack(CallBackBaseClass):
     def __init__(
         self,
         step_skip: int,
-        path: str,
+        filename: str,
+        directory: str,
         method: str,
         initial_file_count: int = 0,
         file_save_interval: int = 1e8,
     ):
         """
-
         Parameters
         ----------
         step_skip : int
             Interval to collect simulation data into buffer.
             The data will be collected at every `dt * step_skip`
             interval.
-        path : str
-            Path to save the file. If directories are prepended,
-            they must exist. The filename depends on the method.
-            The path is not expected to include extension.
+        filename : str
+            Name of the file without extension. The extension will be
+            determined depend on the method. 
+        directory : str
+            Path to save the file. If directory doesn't exist, it will
+            be created. Any existing files will be overwritten.
         method : str
             Method name. Only the name in AVAILABLE_METHOD is
             allowed.
@@ -135,7 +140,7 @@ class ExportCallBack(CallBackBaseClass):
             Initial file count index that will be appended
         file_save_interval : int
             Interval, in steps, to export/save collected buffer
-            as file. (default=1e8)
+            as file. (default = 1e8)
         """
         # Assertions
         MIN_STEP_SKIP = 100
@@ -144,19 +149,20 @@ class ExportCallBack(CallBackBaseClass):
         assert (
             method in ExportCallBack.AVAILABLE_METHOD
         ), f"The exporting method ({method}) is not supported. Please use one of {ExportCallBack.AVAILABLE_METHOD}."
-        # TODO: Assertion is temporarily disabled. Should be fixed with #127
-        # assert os.path.exists(path), "The export path does not exist."
+
+        # Create directory
+        if os.path.exists(directory):
+            logging.warning(f"Save file already exists in {directory}. Files will be overwritten")
+        os.makedirs(directory, exist_ok=True)
 
         # Argument Parameters
         self.step_skip = step_skip
-        self.save_path = path
+        self.save_path = os.path.join(directory, filename) + "_{:02d}.{}"
         self.method = method
         self.file_count = initial_file_count
         self.file_save_interval = file_save_interval
 
         # Data collector
-        from collections import defaultdict
-
         self.buffer = defaultdict(list)
         self.buffer_size = 0
 
@@ -165,16 +171,19 @@ class ExportCallBack(CallBackBaseClass):
             import pickle
 
             self._pickle = pickle
+            self._ext = "pkl"
         elif method == ExportCallBack.AVAILABLE_METHOD[1]:
             from numpy import savez
 
             self._savez = savez
+            self._ext = "npz"
         elif method == ExportCallBack.AVAILABLE_METHOD[2]:
             import tempfile
             import pickle
 
             self._tempfile = tempfile.NamedTemporaryFile(delete=False)
             self._pickle = pickle
+            self._ext = "pkl"
 
     def make_callback(self, system, time, current_step: int):
         """
@@ -216,7 +225,7 @@ class ExportCallBack(CallBackBaseClass):
         Dump dictionary buffer (self.buffer) to a file and clear
         the buffer.
         """
-        file_path = f"{self.save_path}_{self.file_count}.dat"
+        file_path = self.save_path.format(self.file_count, self._ext)
         data = {k: np.array(v) for k, v in self.buffer.items()}
         if self.method == ExportCallBack.AVAILABLE_METHOD[0]:
             # pickle
