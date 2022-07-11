@@ -117,7 +117,7 @@ class TestExportCallBackClass:
                 f"Could not create callback module with available method {method}"
             )
 
-    @pytest.mark.parametrize("step_skip", [1, 5, 10, 99])
+    @pytest.mark.parametrize("step_skip", [2, 5, 20, 50, 99])
     def test_export_call_back_small_stepsize_warning(self, caplog, step_skip):
         mock_rod = MockRodWithElements(5)
         with tempfile.TemporaryDirectory() as temp_dir_path:
@@ -160,6 +160,34 @@ class TestExportCallBackClass:
 
             saved_path_name = callback.get_last_saved_path()
             assert os.path.exists(saved_path_name), "File is not saved."
+
+    @pytest.mark.parametrize("step_skip", [2, 5, 10, 15])
+    def test_export_call_back_step_skip_param(self, step_skip):
+        mock_rod = MockRodWithElements(5)
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            callback = ExportCallBack(step_skip, "rod", temp_dir_path, "npz")
+            callback.make_callback(mock_rod, 1, step_skip - 1)
+            # Check empty
+            callback.clear()
+            saved_path_name = callback.get_last_saved_path()
+            assert saved_path_name is None, "No file should be saved."
+
+            # Check saved
+            callback.make_callback(mock_rod, 1, step_skip)
+            callback.clear()
+            saved_path_name = callback.get_last_saved_path()
+            assert saved_path_name is not None, "File should be saved."
+            assert os.path.exists(saved_path_name), "File should be saved"
+
+            # Check saved file number
+            callback.make_callback(mock_rod, 1, step_skip * 2)
+            callback.clear()
+            callback.make_callback(mock_rod, 1, step_skip * 5)
+            callback.clear()
+            saved_path_name = callback.get_last_saved_path()
+            assert (
+                str(2) in saved_path_name
+            ), f"Total 3 file should be saved: {saved_path_name}"
 
     @pytest.mark.parametrize("file_save_interval", [5, 10])
     def test_export_call_back_file_save_interval_param_ext(self, file_save_interval):
