@@ -129,7 +129,7 @@ class ExportCallBack(CallBackBaseClass):
             interval.
         filename : str
             Name of the file without extension. The extension will be
-            determined depend on the method. 
+            determined depend on the method.
         directory : str
             Path to save the file. If directory doesn't exist, it will
             be created. Any existing files will be overwritten.
@@ -152,7 +152,9 @@ class ExportCallBack(CallBackBaseClass):
 
         # Create directory
         if os.path.exists(directory):
-            logging.warning(f"Save file already exists in {directory}. Files will be overwritten")
+            logging.warning(
+                f"Save file already exists in {directory}. Files will be overwritten"
+            )
         os.makedirs(directory, exist_ok=True)
 
         # Argument Parameters
@@ -215,7 +217,7 @@ class ExportCallBack(CallBackBaseClass):
             )
 
         if (
-            self.buffer_size > ExportCallBack.FILE_SIZE_CUTOFF
+            self.buffer_size > self.FILE_SIZE_CUTOFF
             or (current_step + 1) % self.file_save_interval == 0
         ):
             self._dump()
@@ -243,9 +245,25 @@ class ExportCallBack(CallBackBaseClass):
         self.buffer_size = 0
         self.buffer.clear()
 
-    def __del__(self):
+    def get_last_saved_path(self) -> str:
         """
-        Save residual buffer on exit
+        Return last saved file path. If no file has been saved,
+        return None
+        """
+        if self.file_count == 0:
+            return None
+        else:
+            return self.save_path.format(self.file_count - 1, self._ext)
+
+    def close(self):
+        """
+        Save residual buffer
         """
         if self.buffer_size:
             self._dump()
+
+    def clear(self):
+        """
+        Alias to `close`
+        """
+        self.close()
