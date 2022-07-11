@@ -2,6 +2,7 @@ __doc__ = """ Call back functions for rod test module """
 import os, sys
 
 # System imports
+import logging
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 from elastica.callback_functions import CallBackBaseClass, MyCallBack, ExportCallBack
@@ -115,6 +116,27 @@ class TestExportCallBackClass:
             pytest.fail(
                 f"Could not create callback module with available method {method}"
             )
+
+    @pytest.mark.parametrize("step_skip", [1, 5, 10, 99])
+    def test_export_call_back_small_stepsize_warning(self, caplog, step_skip):
+        mock_rod = MockRodWithElements(5)
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            ExportCallBack(step_skip, "rod", temp_dir_path, "npz")
+        record_tuple = caplog.record_tuples[0]
+        assert record_tuple[0] == "root"
+        assert record_tuple[1] == logging.WARNING
+        assert str(100) in record_tuple[2]
+        assert f"recommend ({step_skip=}) at least" in record_tuple[2]
+
+    def test_export_call_back_file_recreate_warning(self, caplog):
+        mock_rod = MockRodWithElements(5)
+        with tempfile.TemporaryDirectory() as temp_dir_path:
+            ExportCallBack(1000, "rod", temp_dir_path, "npz")
+            ExportCallBack(1000, "rod", temp_dir_path, "npz")
+        record_tuple = caplog.record_tuples[0]
+        assert record_tuple[0] == "root"
+        assert record_tuple[1] == logging.WARNING
+        assert "already exists" in record_tuple[2]
 
     def test_export_call_back_interval_by_filesize(self):
         mock_rod = MockRodWithElements(5)

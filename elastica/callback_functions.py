@@ -1,7 +1,6 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
 __all__ = ["CallBackBaseClass", "MyCallBack", "ExportCallBack"]
 
-import warnings
 import os
 import sys
 import numpy as np
@@ -145,7 +144,7 @@ class ExportCallBack(CallBackBaseClass):
         # Assertions
         MIN_STEP_SKIP = 100
         if step_skip <= MIN_STEP_SKIP:
-            warnings.warn(f"We recommend step_skip at least {MIN_STEP_SKIP}")
+            logging.warning(f"We recommend ({step_skip=}) at least {MIN_STEP_SKIP}")
         assert (
             method in ExportCallBack.AVAILABLE_METHOD
         ), f"The exporting method ({method}) is not supported. Please use one of {ExportCallBack.AVAILABLE_METHOD}."
