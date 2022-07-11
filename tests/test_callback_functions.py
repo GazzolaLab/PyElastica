@@ -126,7 +126,7 @@ class TestExportCallBackClass:
         assert record_tuple[0] == "root"
         assert record_tuple[1] == logging.WARNING
         assert str(100) in record_tuple[2]
-        assert f"recommend ({step_skip=}) at least" in record_tuple[2]
+        assert f"recommend (step_skip={step_skip}) at least" in record_tuple[2]
 
     def test_export_call_back_file_recreate_warning(self, caplog):
         mock_rod = MockRodWithElements(5)
