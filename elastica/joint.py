@@ -5,6 +5,7 @@ import numba
 from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_product_k_ik_to_ik
 from math import sqrt
+from scipy.spatial.transform import Rotation
 
 
 class FreeJoint:
@@ -209,9 +210,11 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
+        nut: float
+            Rotational damping coefficient of the joint.
     """
 
-    def __init__(self, k, nu, kt):
+    def __init__(self, k, nu, kt, nut=0.):
         """
 
         Parameters
@@ -222,51 +225,46 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
+        nut: float = 0.
+            Rotational damping coefficient of the joint.
         """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
+        self.nut = nut
 
     # Apply force is same as free joint
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         return super().apply_forces(rod_one, index_one, rod_two, index_two)
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
-        # current direction of the first element of link two
-        # also NOTE: - rod two is fixed at first element
-        link_direction = (
-            rod_two.position_collection[..., index_two + 1]
-            - rod_two.position_collection[..., index_two]
-        )
+    def apply_torques(self, system_one, index_one, system_two, index_two):
+        # collect directors of systems one and two
+        # note that systems can be either rods or rigid bodies
+        system_one_director = system_one.director_collection[..., index_one]
+        system_two_director = system_two.director_collection[..., index_two]
 
-        # To constrain the orientation of link two, the second node of link two should align with
-        # the direction of link one. Thus, we compute the desired position of the second node of link two
-        # as check1, and the current position of the second node of link two as check2. Check1 and check2
-        # should overlap.
+        # relative rotation matrix from system 1 to system 2: C_12 = C_1W @ C_W2 where W denotes the inertial frame
+        error_rot = system_one_director @ system_two_director.T
 
-        tgt_destination = (
-            rod_one.position_collection[..., index_one]
-            + rod_two.rest_lengths[index_two] * rod_one.tangents[..., index_one]
-        )  # dl of rod 2 can be different than rod 1 so use rest length of rod 2
+        # compute rotation vector from system one to system two based on relative rotation matrix
+        rot_vec = Rotation.from_matrix(error_rot).as_rotvec(degrees=False)
 
-        curr_destination = rod_two.position_collection[
-            ..., index_two + 1
-        ]  # second element of rod2
+        # rotate rotation vector into inertial frame
+        rot_vec = system_one_director.T @ rot_vec
 
-        # Compute the restoring torque
-        forcedirection = -self.kt * (
-            curr_destination - tgt_destination
-        )  # force direction is between rod2 2nd element and rod1
-        torque = np.cross(link_direction, forcedirection)
+        # we compute the constraining torque using a rotational spring - damper system in the inertial frame
+        torque = self.kt * rot_vec
 
-        # The opposite torque will be applied on link one
-        rod_one.external_torques[..., index_one] -= (
-            rod_one.director_collection[..., index_one] @ torque
-        )
-        rod_two.external_torques[..., index_two] += (
-            rod_two.director_collection[..., index_two] @ torque
-        )
+        # add damping torque
+        if self.nut > 0.:
+            # error in rotation velocity between system 1 and system 2
+            error_omega = system_two.omega_collection[..., index_two] - system_one.omega_collection[..., index_one]
+            torque += self.nut * error_omega
+
+        # The opposite torques will be applied to system one and two after rotating the torques into the local frame
+        system_one.external_torques[..., index_one] += system_one_director @ torque
+        system_two.external_torques[..., index_two] -= system_two_director @ torque
 
 
 @numba.njit(cache=True)
