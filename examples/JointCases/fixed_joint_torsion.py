@@ -2,6 +2,7 @@ __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 import sys
 
 # FIXME without appending sys.path make it more generic
@@ -84,9 +85,7 @@ fixed_joint_sim.connect(
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
-    UniformTorques,
-    torque=5e-3,
-    direction=np.array([0., 0., 1.])
+    UniformTorques, torque=5e-3, direction=np.array([0.0, 0.0, 1.0])
 )
 
 # add damping
@@ -127,7 +126,6 @@ integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 
 
 def plot_orientation_vs_time(title, time, directors):
-    from scipy.spatial.transform import Rotation as R
     quat = []
     for t in range(len(time)):
         quat_t = R.from_matrix(directors[t].T).as_quat()
@@ -146,7 +144,13 @@ def plot_orientation_vs_time(title, time, directors):
     plt.show()
 
 
-plot_orientation_vs_time("Orientation of last node of rod 1", pp_list_rod1["time"],
-                         np.array(pp_list_rod1["director"])[..., -1])
-plot_orientation_vs_time("Orientation of last node of rod 2", pp_list_rod2["time"],
-                         np.array(pp_list_rod2["director"])[..., -1])
+plot_orientation_vs_time(
+    "Orientation of last node of rod 1",
+    pp_list_rod1["time"],
+    np.array(pp_list_rod1["director"])[..., -1],
+)
+plot_orientation_vs_time(
+    "Orientation of last node of rod 2",
+    pp_list_rod2["time"],
+    np.array(pp_list_rod2["director"])[..., -1],
+)

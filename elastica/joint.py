@@ -214,7 +214,7 @@ class FixedJoint(FreeJoint):
             Rotational damping coefficient of the joint.
     """
 
-    def __init__(self, k, nu, kt, nut=0.):
+    def __init__(self, k, nu, kt, nut=0.0):
         """
 
         Parameters
@@ -257,9 +257,12 @@ class FixedJoint(FreeJoint):
         torque = self.kt * rot_vec
 
         # add damping torque
-        if self.nut > 0.:
+        if self.nut > 0.0:
             # error in rotation velocity between system 1 and system 2
-            error_omega = system_two.omega_collection[..., index_two] - system_one.omega_collection[..., index_one]
+            error_omega = (
+                system_two.omega_collection[..., index_two]
+                - system_one.omega_collection[..., index_one]
+            )
             torque += self.nut * error_omega
 
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
