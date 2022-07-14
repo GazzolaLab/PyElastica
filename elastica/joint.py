@@ -263,7 +263,7 @@ class FixedJoint(FreeJoint):
                 system_two.omega_collection[..., index_two]
                 - system_one.omega_collection[..., index_one]
             )
-            torque += self.nut * error_omega
+            torque -= self.nut * error_omega
 
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
         system_one.external_torques[..., index_one] += system_one_director @ torque

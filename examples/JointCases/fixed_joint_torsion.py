@@ -81,7 +81,7 @@ fixed_joint_sim.constrain(rod1).using(
 # Connect rod 1 and rod 2
 fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
-).using(FixedJoint, k=1e5, nu=0, kt=1e3)
+).using(FixedJoint, k=1e5, nu=1., kt=1e3, nut=1e-3)
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
@@ -117,7 +117,7 @@ fixed_joint_sim.collect_diagnostics(rod2).using(
 fixed_joint_sim.finalize()
 timestepper = PositionVerlet()
 
-final_time = 10
+final_time = 1
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)

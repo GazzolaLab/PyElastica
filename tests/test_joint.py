@@ -288,7 +288,7 @@ def test_fixedjoint():
     kt = 1e6
     # Positional and rotational damping between systems
     nu = 1
-    nut = 1
+    nut = 1e-2
 
     # Rod indexes
     rod1_index = -1
@@ -343,7 +343,7 @@ def test_fixedjoint():
     )
 
     # we compute the constraining torque using a rotational spring - damper system in the inertial frame
-    torque = kt * rot_vec + nut * error_omega
+    torque = kt * rot_vec - nut * error_omega
 
     # The opposite torques will be applied to system one and two after rotating the torques into the local frame
     torque_rod1 = rod1_director @ torque
