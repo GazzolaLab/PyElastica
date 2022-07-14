@@ -248,7 +248,7 @@ class FixedJoint(FreeJoint):
         error_rot = system_one_director @ system_two_director.T
 
         # compute rotation vector from system one to system two based on relative rotation matrix
-        rot_vec = Rotation.from_matrix(error_rot).as_rotvec(degrees=False)
+        rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
 
         # rotate rotation vector into inertial frame
         rot_vec = system_one_director.T @ rot_vec
