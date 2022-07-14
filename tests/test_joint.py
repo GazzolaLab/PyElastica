@@ -8,6 +8,7 @@ from elastica.utils import Tolerance
 from elastica.rod.cosserat_rod import CosseratRod
 import importlib
 import elastica
+from scipy.spatial.transform import Rotation
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
@@ -282,11 +283,12 @@ def test_fixedjoint():
     rod1.velocity_collection = np.tile(v1, (1, n + 1))
     rod2.velocity_collection = np.tile(v2, (1, n + 1))
 
-    # Stiffness between points
+    # Positional and rotational stiffness between systems
     k = 1e8
     kt = 1e6
-    # Damping between two points
+    # Positional and rotational damping between systems
     nu = 1
+    nut = 1
 
     # Rod indexes
     rod1_index = -1
@@ -321,34 +323,37 @@ def test_fixedjoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
-    linkdirection = (
-        rod2.position_collection[..., rod2_index + 1]
-        - rod2.position_collection[..., rod2_index]
+    # collect directors of systems one and two
+    # note that systems can be either rods or rigid bodies
+    rod1_director = rod1.director_collection[..., rod1_index]
+    rod2_director = rod2.director_collection[..., rod2_index]
+
+    # relative rotation matrix from system 1 to system 2: C_12 = C_1W @ C_W2 where W denotes the inertial frame
+    error_rot = rod1_director @ rod2_director.T
+
+    # compute rotation vector from system one to system two based on relative rotation matrix
+    rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
+
+    # rotate rotation vector into inertial frame
+    rot_vec = rod1_director.T @ rot_vec
+
+    # error in rotation velocity between system 1 and system 2
+    error_omega = (
+        rod2.omega_collection[..., rod2_index] - rod1.omega_collection[..., rod2_index]
     )
 
-    positiondiff = (
-        rod1.position_collection[..., rod1_index]
-        - rod1.position_collection[..., rod1_index - 1]
-    )
-    tangent = positiondiff / np.sqrt(np.dot(positiondiff, positiondiff))
+    # we compute the constraining torque using a rotational spring - damper system in the inertial frame
+    torque = kt * rot_vec + nut * error_omega
 
-    # rod 2 has to be alligned with rod 1
-    check1 = (
-        rod1.position_collection[..., rod1_index]
-        + rod2.rest_lengths[rod2_index] * tangent
-    )
-    check2 = rod2.position_collection[..., rod2_index + 1]
-    forcedirection = -kt * (check2 - check1)
-    torque = np.cross(linkdirection, forcedirection)
-
-    torque_rod1 = -rod1.director_collection[..., rod1_index] @ torque
-    torque_rod2 = rod2.director_collection[..., rod2_index] @ torque
+    # The opposite torques will be applied to system one and two after rotating the torques into the local frame
+    torque_rod1 = rod1_director @ torque
+    torque_rod2 = rod2_director @ torque
 
     assert_allclose(
         rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
+        rod2.external_torques[..., rod2_index], -torque_rod2, atol=Tolerance.atol()
     )
 
 
