@@ -2,7 +2,6 @@ __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 import sys
 
 # FIXME without appending sys.path make it more generic
@@ -14,6 +13,7 @@ from examples.JointCases.external_force_class_for_joint_test import (
 from examples.JointCases.joint_cases_callback import JointCasesCallback
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
+    plot_orientation,
     plot_video,
     plot_video_xy,
     plot_video_xz,
@@ -81,7 +81,7 @@ fixed_joint_sim.constrain(rod1).using(
 # Connect rod 1 and rod 2
 fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
-).using(FixedJoint, k=1e5, nu=1., kt=1e3, nut=1e-3)
+).using(FixedJoint, k=1e5, nu=1.0, kt=1e3, nut=1e-3)
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
@@ -117,7 +117,7 @@ fixed_joint_sim.collect_diagnostics(rod2).using(
 fixed_joint_sim.finalize()
 timestepper = PositionVerlet()
 
-final_time = 1
+final_time = 10
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
@@ -125,32 +125,47 @@ print("Total steps", total_steps)
 integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 
 
-def plot_orientation_vs_time(title, time, directors):
-    quat = []
-    for t in range(len(time)):
-        quat_t = R.from_matrix(directors[t].T).as_quat()
-        quat.append(quat_t)
-    quat = np.array(quat)
-
-    plt.figure(num=title)
-    plt.plot(time, quat[:, 0], label="x")
-    plt.plot(time, quat[:, 1], label="y")
-    plt.plot(time, quat[:, 2], label="z")
-    plt.plot(time, quat[:, 3], label="w")
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("Time [s]")
-    plt.ylabel("Quaternion")
-    plt.show()
-
-
-plot_orientation_vs_time(
+plot_orientation(
     "Orientation of last node of rod 1",
     pp_list_rod1["time"],
     np.array(pp_list_rod1["director"])[..., -1],
 )
-plot_orientation_vs_time(
+plot_orientation(
     "Orientation of last node of rod 2",
     pp_list_rod2["time"],
     np.array(pp_list_rod2["director"])[..., -1],
 )
+
+PLOT_FIGURE = True
+SAVE_FIGURE = True
+PLOT_VIDEO = True
+
+# plotting results
+if PLOT_FIGURE:
+    filename = "fixed_joint_torsion_test.png"
+    plot_position(pp_list_rod1, pp_list_rod2, filename, SAVE_FIGURE)
+
+if PLOT_VIDEO:
+    filename = "fixed_joint_torsion_test"
+    fps = 100  # Hz
+    plot_video(
+        pp_list_rod1,
+        pp_list_rod2,
+        video_name=filename + ".mp4",
+        margin=0.2,
+        fps=fps,
+    )
+    plot_video_xy(
+        pp_list_rod1,
+        pp_list_rod2,
+        video_name=filename + "_xy.mp4",
+        margin=0.2,
+        fps=fps,
+    )
+    plot_video_xz(
+        pp_list_rod1,
+        pp_list_rod2,
+        video_name=filename + "_xz.mp4",
+        margin=0.2,
+        fps=fps,
+    )
