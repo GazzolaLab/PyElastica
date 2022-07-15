@@ -128,10 +128,12 @@ class ExportCallBack(CallBackBaseClass):
             interval.
         filename : str
             Name of the file without extension. The extension will be
-            determined depend on the method.
+            determined depend on the method. File will be saved with the
+            name <filename>_<number>.<extension>.
         directory : str
-            Path to save the file. If directory doesn't exist, it will
-            be created. Any existing files will be overwritten.
+            Directory to save the file. If directory doesn't exist, it will
+            be created. During the save, any existing files in this directory
+            could be overwritten.
         method : str
             Method name. Only the name in AVAILABLE_METHOD is
             allowed.
@@ -154,7 +156,7 @@ class ExportCallBack(CallBackBaseClass):
         # Create directory
         if os.path.exists(directory):
             logging.warning(
-                f"Save file already exists in {directory}. Files will be overwritten"
+                f"The directory ({directory}) already exists. Previously saved data could be overwritten."
             )
         os.makedirs(directory, exist_ok=True)
 
