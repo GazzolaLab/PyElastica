@@ -276,7 +276,7 @@ class FixedJoint(FreeJoint):
         rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
 
         # rotate rotation vector into inertial frame
-        rot_vec = system_two_director.T @ rot_vec
+        rot_vec_inertial_frame = system_two_director.T @ rot_vec
 
         # error in rotation velocity between system 1 and system 2
         error_omega = (
@@ -285,7 +285,7 @@ class FixedJoint(FreeJoint):
         )
 
         # we compute the constraining torque using a rotational spring - damper system in the inertial frame
-        torque = self.kt * rot_vec - self.nut * error_omega
+        torque = self.kt * rot_vec_inertial_frame - self.nut * error_omega
 
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
         system_one.external_torques[..., index_one] -= system_one_director @ torque
