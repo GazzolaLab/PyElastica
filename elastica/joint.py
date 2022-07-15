@@ -230,9 +230,9 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float = 0.
             Rotational damping coefficient of the joint.
-        use_static_rotation: bool = True
+        use_static_rotation: bool
             If True, the initial rotation offset between the two systems is recorded
-            and enforced throughout the entire simulation.
+            and enforced throughout the entire simulation. (default=True)
         """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
@@ -261,9 +261,15 @@ class FixedJoint(FreeJoint):
             # this if clause should be active during the first timestep for the case use_static_rotation==True
             self.static_rotation = system_one_director @ system_two_director.T
 
-        # relative rotation matrix from system 1 to system 2: C_12 = C_1I @ C_I2 where I denotes the inertial frame
+        # rel_rot: C_12 = C_1I @ C_I2
+        # C_12 is relative rotation matrix from system 1 to system 2
+        # C_1I is the rotation from system 1 to the inertial frame (i.e. the world frame)
+        # C_I2 is the rotation from the inertial frame to system 2 frame (inverse of system_two_director)
         rel_rot = system_one_director @ system_two_director.T
-        # C_22* = C_21 @ C_12* where C_12* is the desired rotation between systems one and two
+        # error_rot: C_22* = C_21 @ C_12*
+        # C_22* is rotation matrix from current orientation of system 2 to desired orientation of system 2
+        # C_21 is the inverse of C_12, which describes the relative (current) rotation from system 1 to system 2
+        # C_12* is the desired rotation between systems one and two, which is saved in the static_rotation attribute
         error_rot = rel_rot.T @ self.static_rotation
 
         # compute rotation vectors based on C_22*
@@ -274,8 +280,8 @@ class FixedJoint(FreeJoint):
 
         # error in rotation velocity between system 1 and system 2
         error_omega = (
-                system_one.omega_collection[..., index_one]
-                - system_two.omega_collection[..., index_two]
+            system_one.omega_collection[..., index_one]
+            - system_two.omega_collection[..., index_two]
         )
 
         # we compute the constraining torque using a rotational spring - damper system in the inertial frame
