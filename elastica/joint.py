@@ -279,8 +279,8 @@ class FixedJoint(FreeJoint):
         if self.nut > 0.0:
             # error in rotation velocity between system 1 and system 2
             error_omega = (
-                system_two.omega_collection[..., index_two]
-                - system_one.omega_collection[..., index_one]
+                system_one.omega_collection[..., index_one]
+                - system_two.omega_collection[..., index_two]
             )
             torque -= self.nut * error_omega
 

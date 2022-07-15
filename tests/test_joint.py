@@ -283,12 +283,18 @@ def test_fixedjoint():
     rod1.velocity_collection = np.tile(v1, (1, n + 1))
     rod2.velocity_collection = np.tile(v2, (1, n + 1))
 
+    # Rod angular velocity
+    omega1 = 1 / 180 * np.pi * np.array([0, 0, 1]).reshape(3, 1)
+    omega2 = -omega1
+    rod1.omega_collection = np.tile(omega1, (1, n + 1))
+    rod2.omega_collection = np.tile(omega2, (1, n + 1))
+
     # Positional and rotational stiffness between systems
     k = 1e8
     kt = 1e6
     # Positional and rotational damping between systems
     nu = 1
-    nut = 1e-2
+    nut = 1e1
 
     # Rod indexes
     rod1_index = -1
@@ -311,7 +317,7 @@ def test_fixedjoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    fxjt = FixedJoint(k, nu, kt)
+    fxjt = FixedJoint(k, nu, kt, nut, use_static_rotation=False)
 
     fxjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
     fxjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
@@ -339,7 +345,7 @@ def test_fixedjoint():
 
     # error in rotation velocity between system 1 and system 2
     error_omega = (
-        rod2.omega_collection[..., rod2_index] - rod1.omega_collection[..., rod2_index]
+        rod2.omega_collection[..., rod2_index] - rod1.omega_collection[..., rod1_index]
     )
 
     # we compute the constraining torque using a rotational spring - damper system in the inertial frame
