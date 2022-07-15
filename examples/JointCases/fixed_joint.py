@@ -9,7 +9,6 @@ from elastica import *
 from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )
-from examples.JointCases.joint_cases_callback import JointCasesCallback
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
@@ -109,10 +108,10 @@ pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
 fixed_joint_sim.collect_diagnostics(rod1).using(
-    JointCasesCallback, step_skip=1000, callback_params=pp_list_rod1
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 fixed_joint_sim.collect_diagnostics(rod2).using(
-    JointCasesCallback, step_skip=1000, callback_params=pp_list_rod2
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
 
 fixed_joint_sim.finalize()
