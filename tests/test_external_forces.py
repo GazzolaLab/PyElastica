@@ -15,11 +15,9 @@ from elastica.external_forces import (
     MuscleTorques,
     inplace_addition,
     inplace_substraction,
-)
-from elastica.utils import Tolerance
-from examples.JointCases.external_force_class_for_joint_test import (
     EndpointForcesSinusoidal,
 )
+from elastica.utils import Tolerance
 
 
 def mock_rod_init(self):

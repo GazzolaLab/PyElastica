@@ -355,32 +355,40 @@ def _find_min_dist(x1, e1, x2, e2):
                 s = potential_s
                 t = 1.0
 
-    return x2 + s * e2 - x1 - t * e1
+    # Return distance, contact point of system 2, contact point of system 1
+    return x2 + s * e2 - x1 - t * e1, x2 + s * e2, x1 - t * e1
 
 
 @numba.njit(cache=True)
 def _calculate_contact_forces_rod_rigid_body(
     x_collection_rod,
     edge_collection_rod,
-    x_cylinder,
+    x_cylinder_center,
+    x_cylinder_tip,
     edge_cylinder,
     radii_sum,
     length_sum,
     internal_forces_rod,
     external_forces_rod,
     external_forces_cylinder,
+    external_torques_cylinder,
+    cylinder_director_collection,
     velocity_rod,
     velocity_cylinder,
     contact_k,
     contact_nu,
+    velocity_damping_coefficient,
+    friction_coefficient,
 ):
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
+    cylinder_total_contact_forces = np.zeros((3))
+    cylinder_total_contact_torques = np.zeros((3))
     for i in range(n_points):
         # Element-wise bounding box
         x_selected = x_collection_rod[..., i]
         # x_cylinder is already a (,) array from outised
-        del_x = x_selected - x_cylinder
+        del_x = x_selected - x_cylinder_tip
         norm_del_x = _norm(del_x)
 
         # If outside then don't process
@@ -389,8 +397,8 @@ def _calculate_contact_forces_rod_rigid_body(
 
         # find the shortest line segment between the two centerline
         # segments : differs from normal cylinder-cylinder intersection
-        distance_vector = _find_min_dist(
-            x_selected, edge_collection_rod[..., i], x_cylinder, edge_cylinder
+        distance_vector, x_cylinder_contact_point, _ = _find_min_dist(
+            x_selected, edge_collection_rod[..., i], x_cylinder_tip, edge_cylinder
         )
         distance_vector_length = _norm(distance_vector)
         distance_vector /= distance_vector_length
@@ -417,33 +425,77 @@ def _calculate_contact_forces_rod_rigid_body(
         # As a quick fix, use this instead
         mask = (gamma > 0.0) * 1.0
 
-        contact_force = contact_k * gamma
-        interpenetration_velocity = (
-            0.5 * (velocity_rod[..., i] + velocity_rod[..., i + 1])
-            - velocity_cylinder[..., 0]
+        # Compute contact spring force
+        contact_force = contact_k * gamma * distance_vector
+        interpenetration_velocity = velocity_cylinder[..., 0] - 0.5 * (
+            velocity_rod[..., i] + velocity_rod[..., i + 1]
         )
-        contact_damping_force = contact_nu * _dot_product(
-            interpenetration_velocity, distance_vector
+        # Compute contact damping
+        normal_interpenetration_velocity = (
+            _dot_product(interpenetration_velocity, distance_vector) * distance_vector
         )
+        contact_damping_force = -contact_nu * normal_interpenetration_velocity
 
         # magnitude* direction
-        net_contact_force = (
-            normal_force + 0.5 * mask * (contact_damping_force + contact_force)
-        ) * distance_vector
+        net_contact_force = 0.5 * mask * (contact_damping_force + contact_force)
+
+        # Compute friction
+        slip_interpenetration_velocity = (
+            interpenetration_velocity - normal_interpenetration_velocity
+        )
+        slip_interpenetration_velocity_mag = np.linalg.norm(
+            slip_interpenetration_velocity
+        )
+        slip_interpenetration_velocity_unitized = slip_interpenetration_velocity / (
+            slip_interpenetration_velocity_mag + 1e-14
+        )
+        # Compute friction force in the slip direction.
+        damping_force_in_slip_direction = (
+            velocity_damping_coefficient * slip_interpenetration_velocity_mag
+        )
+        # Compute Coulombic friction
+        coulombic_friction_force = friction_coefficient * np.linalg.norm(
+            net_contact_force
+        )
+        # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
+        friction_force = (
+            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            * slip_interpenetration_velocity_unitized
+        )
+        # Update contact force
+        net_contact_force += friction_force
+
+        # Torques acting on the cylinder
+        moment_arm = x_cylinder_contact_point - x_cylinder_center
 
         # Add it to the rods at the end of the day
         if i == 0:
-            external_forces_rod[..., i] -= 0.5 * net_contact_force
-            external_forces_rod[..., i + 1] -= net_contact_force
-            external_forces_cylinder[..., 0] += 1.5 * net_contact_force
+            external_forces_rod[..., i] -= 2 / 3 * net_contact_force
+            external_forces_rod[..., i + 1] -= 4 / 3 * net_contact_force
+            cylinder_total_contact_forces += 2.0 * net_contact_force
+            cylinder_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
         elif i == n_points:
-            external_forces_rod[..., i] -= net_contact_force
-            external_forces_rod[..., i + 1] -= 0.5 * net_contact_force
-            external_forces_cylinder[..., 0] += 1.5 * net_contact_force
+            external_forces_rod[..., i] -= 4 / 3 * net_contact_force
+            external_forces_rod[..., i + 1] -= 2 / 3 * net_contact_force
+            cylinder_total_contact_forces += 2.0 * net_contact_force
+            cylinder_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
         else:
             external_forces_rod[..., i] -= net_contact_force
             external_forces_rod[..., i + 1] -= net_contact_force
-            external_forces_cylinder[..., 0] += 2.0 * net_contact_force
+            cylinder_total_contact_forces += 2.0 * net_contact_force
+            cylinder_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
+
+    # Update the cylinder external forces and torques
+    external_forces_cylinder[..., 0] += cylinder_total_contact_forces
+    external_torques_cylinder[..., 0] += (
+        cylinder_director_collection @ cylinder_total_contact_torques
+    )
 
 
 @numba.njit(cache=True)
@@ -488,7 +540,7 @@ def _calculate_contact_forces_rod_rod(
 
             # find the shortest line segment between the two centerline
             # segments : differs from normal cylinder-cylinder intersection
-            distance_vector = _find_min_dist(
+            distance_vector, _, _ = _find_min_dist(
                 x_selected_rod_one,
                 edge_collection_rod_one[..., i],
                 x_selected_rod_two,
@@ -596,7 +648,7 @@ def _calculate_contact_forces_self_rod(
 
             # find the shortest line segment between the two centerline
             # segments : differs from normal cylinder-cylinder intersection
-            distance_vector = _find_min_dist(
+            distance_vector, _, _ = _find_min_dist(
                 x_selected_rod_index_i,
                 edge_collection_rod_one[..., i],
                 x_selected_rod_index_j,
@@ -746,20 +798,68 @@ def _prune_using_aabbs_rod_rod(
 
 class ExternalContact(FreeJoint):
     """
-    Assumes that the second entity is a rigid body for now, can be
-    changed at a later time
+    This class is for applying contact forces between rod-cylinder and rod-rod.
+    If you are want to apply contact forces between rod and cylinder, first system is always rod and second system
+    is always cylinder.
+    In addition to the contact forces, user can define apply friction forces between rod and cylinder that
+    are in contact. For details on friction model refer to this `paper <https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf>`_.
+    TODO: Currently friction force is between rod-cylinder, in future implement friction forces between rod-rod.
 
+    Notes
+    -----
+    The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
+    (static friction), while friction_coefficient corresponds to the Coulombic friction coefficient.
+
+    Examples
+    --------
+    How to define contact between rod and cylinder.
+
+    >>> simulator.connect(rod, cylidner).using(
+    ...    ExternalContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ...    velocity_damping_coefficient=10,
+    ...    kinetic_friction_coefficient=10,
+    ... )
+
+    How to define contact between rod and rod.
+
+    >>> simulator.connect(rod, rod).using(
+    ...    ExternalContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ... )
+
+
+    Developer Note
+    --------------
     Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`_.
-
-    but, it isn't (the elastica-cpp kernels are implented)!
+    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`,
+    but the elastica-cpp kernels are implemented.
     This is maybe to speed-up the kernel, but it's
     potentially dangerous as it does not deal with "end" conditions
     correctly.
+
     """
 
-    def __init__(self, k, nu):
+    def __init__(self, k, nu, velocity_damping_coefficient=0, friction_coefficient=0):
+        """
+
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant.
+        velocity_damping_coefficient : float
+            Velocity damping coefficient between rigid-body and rod contact is used to apply friction force in the
+            slip direction.
+        friction_coefficient : float
+            For Coulombic friction coefficient for rigid-body and rod contact.
+        """
         super().__init__(k, nu)
+        self.velocity_damping_coefficient = velocity_damping_coefficient
+        self.friction_coefficient = friction_coefficient
 
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         # del index_one, index_two
@@ -787,9 +887,14 @@ class ExternalContact(FreeJoint):
                 - 0.5 * cylinder_two.length * cylinder_two.director_collection[2, :, 0]
             )
 
+            rod_element_position = 0.5 * (
+                rod_one.position_collection[..., 1:]
+                + rod_one.position_collection[..., :-1]
+            )
             _calculate_contact_forces_rod_rigid_body(
-                rod_one.position_collection[..., :-1],
+                rod_element_position,
                 rod_one.lengths * rod_one.tangents,
+                cylinder_two.position_collection[..., 0],
                 x_cyl,
                 cylinder_two.length * cylinder_two.director_collection[2, :, 0],
                 rod_one.radius + cylinder_two.radius,
@@ -797,10 +902,14 @@ class ExternalContact(FreeJoint):
                 rod_one.internal_forces,
                 rod_one.external_forces,
                 cylinder_two.external_forces,
+                cylinder_two.external_torques,
+                cylinder_two.director_collection[:, :, 0],
                 rod_one.velocity_collection,
                 cylinder_two.velocity_collection,
                 self.k,
                 self.nu,
+                self.velocity_damping_coefficient,
+                self.friction_coefficient,
             )
 
         else:

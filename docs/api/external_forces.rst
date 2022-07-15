@@ -22,6 +22,7 @@ External force and environmental interaction are represented as force/torque bou
    UniformForces
    UniformTorques
    MuscleTorques
+   EndpointForcesSinusoidal
 
 .. rubric:: Available Interaction
 
@@ -40,11 +41,12 @@ Compatibility
 Forcing                     Rod     Rigid Body
 ========================== ======= ============
 NoForces                    ✅      ✅
-EndpointForces              ✅      ✅
+EndpointForces              ✅      ❌
 GravityForces               ✅      ✅
 UniformForces               ✅      ✅
 UniformTorques              ✅      ✅
 MuscleTorques               ✅      ❌
+EndpointForcesSinusoidal    ✅      ❌
 ========================== ======= ============
 
 ========================== ======= ============
@@ -76,6 +78,9 @@ Built-in External Forces
    :special-members: __init__
 
 .. autoclass:: MuscleTorques
+   :special-members: __init__
+
+.. autoclass:: EndpointForcesSinusoidal
    :special-members: __init__
 
 Built-in Environment Interactions
