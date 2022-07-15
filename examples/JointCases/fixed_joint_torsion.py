@@ -117,7 +117,7 @@ fixed_joint_sim.collect_diagnostics(rod2).using(
 fixed_joint_sim.finalize()
 timestepper = PositionVerlet()
 
-final_time = 1
+final_time = 10
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
