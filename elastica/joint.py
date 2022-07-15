@@ -212,9 +212,12 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float
             Rotational damping coefficient of the joint.
+        static_rotation: np.array
+            Static 3x3 rotation matrix from system one to system two.
+            Instead of aligning the directors of both systems directly, a desired rotational offset C_12* is enforced.
     """
 
-    def __init__(self, k, nu, kt, nut=0.0):
+    def __init__(self, k, nu, kt, nut=0.0, use_static_rotation=True):
         """
 
         Parameters
@@ -227,12 +230,22 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float = 0.
             Rotational damping coefficient of the joint.
+        use_static_rotation: bool = True
+            If True, the initial rotation offset between the two systems is recorded
+            and enforced throughout the entire simulation.
         """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
         self.nut = nut
+
+        # if a static rotation offset between the two systems should not be enforced,
+        # we set the relative rotation to the identity matrix. Otherwise
+        if use_static_rotation:
+            self.static_rotation = None
+        else:
+            self.static_rotation = np.eye(3)
 
     # Apply force is same as free joint
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
@@ -244,14 +257,20 @@ class FixedJoint(FreeJoint):
         system_one_director = system_one.director_collection[..., index_one]
         system_two_director = system_two.director_collection[..., index_two]
 
-        # relative rotation matrix from system 1 to system 2: C_12 = C_1W @ C_W2 where W denotes the inertial frame
-        error_rot = system_one_director @ system_two_director.T
+        if self.static_rotation is None:
+            # this if clause should be active during the first timestep for the case use_static_rotation==True
+            self.static_rotation = system_one_director @ system_two_director.T
 
-        # compute rotation vector from system one to system two based on relative rotation matrix
+        # relative rotation matrix from system 1 to system 2: C_12 = C_1I @ C_I2 where I denotes the inertial frame
+        rel_rot = system_one_director @ system_two_director.T
+        # C_22* = C_21 @ C_12* where C_12* is the desired rotation between systems one and two
+        error_rot = rel_rot.T @ self.static_rotation
+
+        # compute rotation vectors based on C_22*
         rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
 
         # rotate rotation vector into inertial frame
-        rot_vec = system_one_director.T @ rot_vec
+        rot_vec = system_two_director.T @ rot_vec
 
         # we compute the constraining torque using a rotational spring - damper system in the inertial frame
         torque = self.kt * rot_vec
@@ -266,8 +285,8 @@ class FixedJoint(FreeJoint):
             torque -= self.nut * error_omega
 
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
-        system_one.external_torques[..., index_one] += system_one_director @ torque
-        system_two.external_torques[..., index_two] -= system_two_director @ torque
+        system_one.external_torques[..., index_one] -= system_one_director @ torque
+        system_two.external_torques[..., index_two] += system_two_director @ torque
 
 
 @numba.njit(cache=True)
