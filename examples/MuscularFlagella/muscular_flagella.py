@@ -40,6 +40,7 @@ density_body = 0.965e-3  # g/mm3
 base_length_body = 1.927  # mm
 E = 3.86e6  # MPa
 poisson_ratio = 0.5
+shear_modulus = E / (poisson_ratio + 1.0)
 
 base_radius_head = 0.02  # mm
 base_radius_tail = 0.007  # mm
@@ -67,7 +68,7 @@ flagella_body = CosseratRod.straight_rod(
     density_body,
     nu_body,
     E,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 # In order to match bending stiffness of the tail as given in below reference, recompute and
@@ -152,7 +153,7 @@ flagella_muscle = CosseratRod.straight_rod(
     density_muscle,
     nu_muscle,
     E_muscle,
-    poisson_ratio,
+    shear_modulus=shear_modulus,
 )
 
 muscular_flagella_sim.append(flagella_muscle)
