@@ -315,10 +315,10 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
         ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
         ...    rest_rotation_matrix=get_relative_rotation_two_systems(rod1, -1, rod2, 0)
         ... )
-        
+
     See Also
     ---------
-    FixedJoint 
+    FixedJoint
 
     Parameters
     ----------
