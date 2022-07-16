@@ -295,7 +295,7 @@ class FixedJoint(FreeJoint):
 
 def get_relative_rotation_two_systems(system_one, index_one, system_two, index_two):
     """
-    Compute the relative rotation matrix C_12 between system one and system two at the specified nodes.
+    Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
     Parameters
     ----------
