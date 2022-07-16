@@ -270,7 +270,7 @@ class FixedJoint(FreeJoint):
         # C_22* is rotation matrix from current orientation of system 2 to desired orientation of system 2
         # C_21 is the inverse of C_12, which describes the relative (current) rotation from system 1 to system 2
         # C_12* is the desired rotation between systems one and two, which is saved in the static_rotation attribute
-        error_rot = rel_rot.T @ self.static_rotation
+        dev_rot = rel_rot.T @ self.rest_rotation_matrix
 
         # compute rotation vectors based on C_22*
         rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
