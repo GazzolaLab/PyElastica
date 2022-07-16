@@ -13,7 +13,6 @@
 
 import os
 import sys
-import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../'))
 
@@ -41,7 +40,6 @@ extensions = [
     'sphinx_autodoc_typehints',
     #'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_rtd_theme',
     'sphinx.ext.mathjax',
     'numpydoc',
     'myst_parser',
