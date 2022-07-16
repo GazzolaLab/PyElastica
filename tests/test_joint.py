@@ -294,7 +294,7 @@ def test_fixedjoint():
     kt = 1e6
     # Positional and rotational damping between systems
     nu = 1
-    nut = 1e1
+    nut = 1e2
 
     # Rod indexes
     rod1_index = -1
@@ -317,7 +317,7 @@ def test_fixedjoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    fxjt = FixedJoint(k, nu, kt, nut, use_static_rotation=False)
+    fxjt = FixedJoint(k, nu, kt, nut, rest_rotation_matrix=np.eye(3))
 
     fxjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
     fxjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
@@ -338,28 +338,30 @@ def test_fixedjoint():
     error_rot = rod1_director @ rod2_director.T
 
     # compute rotation vector from system one to system two based on relative rotation matrix
-    rot_vec = Rotation.from_matrix(error_rot).as_rotvec()
+    rot_vec = Rotation.from_matrix(error_rot.T).as_rotvec()
 
     # rotate rotation vector into inertial frame
-    rot_vec = rod1_director.T @ rot_vec
+    rot_vec = rod2_director.T @ rot_vec
 
-    # error in rotation velocity between system 1 and system 2
-    error_omega = (
-        rod2.omega_collection[..., rod2_index] - rod1.omega_collection[..., rod1_index]
+    # deviation in rotation velocity between system 1 and system 2
+    # first convert to inertial frame, then take differences
+    dev_omega = (
+            rod2_director.T @ rod2.omega_collection[..., rod2_index]
+            - rod1_director.T @ rod1.omega_collection[..., rod1_index]
     )
 
     # we compute the constraining torque using a rotational spring - damper system in the inertial frame
-    torque = kt * rot_vec - nut * error_omega
+    torque = kt * rot_vec - nut * dev_omega
 
     # The opposite torques will be applied to system one and two after rotating the torques into the local frame
     torque_rod1 = rod1_director @ torque
     torque_rod2 = rod2_director @ torque
 
     assert_allclose(
-        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol()
+        rod1.external_torques[..., rod1_index], -torque_rod1, atol=Tolerance.atol()
     )
     assert_allclose(
-        rod2.external_torques[..., rod2_index], -torque_rod2, atol=Tolerance.atol()
+        rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
 
 
