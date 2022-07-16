@@ -299,6 +299,16 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
+    Examples
+    ----------
+    
+        >>> init_rot = get_relative_rotation_two_systems(...)
+        >>> ...
+        
+    See Also
+    ---------
+    FixedJoint 
+
     Parameters
     ----------
     rod_one : object
