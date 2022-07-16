@@ -6,10 +6,13 @@ Built in damper module implementations
 __all__ = [
     "DamperBase",
     "ExponentialDamper",
+    "LaplaceDissipationFilter",
 ]
 from abc import ABC, abstractmethod
 
-from elastica.typing import SystemType
+from elastica.typing import RodType, SystemType
+
+from numba import njit
 
 import numpy as np
 
@@ -85,7 +88,7 @@ class ExponentialDamper(DamperBase):
     --------
     How to set exponential damper for rod or rigid body:
 
-    >>> simulator.dampin(rod).using(
+    >>> simulator.dampen(rod).using(
     ...     ExponentialDamper,
     ...     damping_constant=0.1,
     ...     time_step = 1E-4,   # Simulation time-step
@@ -151,3 +154,128 @@ class ExponentialDamper(DamperBase):
         rod.omega_collection[:] = rod.omega_collection * np.power(
             self.rotational_exponential_damping_coefficient, rod.dilatation
         )
+
+
+class LaplaceDissipationFilter(DamperBase):
+    """
+    Laplace Dissipation Filter class. This class corresponds qualitatively to a
+    low-pass filter generated via the 1D Laplacian operator. It is applied to the
+    translational and rotational velocities, where it filters out the high
+    frequency (noise) modes, while having negligible effect on the low frequency
+    smooth modes.
+
+    Examples
+    --------
+    How to set Laplace dissipation filter for rod:
+
+    >>> simulator.dampen(rod).using(
+    ...     LaplaceDissipationFilter,
+    ...     filter_order=3,   # order of the filter
+    ... )
+
+    Notes
+    -----
+    The extent of filtering can be controlled by the `filter_order`, which refers
+    to the number of times the Laplacian operator is applied. Small
+    integer values (1, 2, etc.) result in aggressive filtering, and can lead to
+    the "physics" being filtered out. While high values (9, 10, etc.) imply
+    minimal filtering, and thus negligible effect on the velocities.
+    Values in the range of 3-7 are usually recommended.
+
+    For details regarding the numerics behind the filtering, refer to [1]_, [2]_.
+
+    .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+       models modified using discrete filters: a simplified “regularized variational
+       multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
+    .. [2] Lorieul, G. (2018). Development and validation of a 2D Vortex Particle-Mesh
+       method for incompressible multiphase flows (Doctoral dissertation,
+       Université Catholique de Louvain).
+
+    Attributes
+    ----------
+    filter_order : int
+        Filter order, which corresponds to the number of times the Laplacian
+        operator is applied. Increasing `filter_order` implies higher-order/weaker
+        filtering.
+    velocity_filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod translational velocity.
+    omega_filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod rotational velocity.
+    """
+
+    def __init__(self, filter_order: int, **kwargs):
+        """
+        Filter damper initializer
+
+        Parameters
+        ----------
+        filter_order : int
+            Filter order, which corresponds to the number of times the Laplacian
+            operator is applied. Increasing `filter_order` implies higher-order/weaker
+            filtering.
+        """
+        super().__init__(**kwargs)
+        if not (filter_order > 0 and isinstance(filter_order, int)):
+            raise ValueError(
+                "Invalid filter order! Filter order must be a positive integer."
+            )
+        self.filter_order = filter_order
+        self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
+        self.omega_filter_term = np.zeros_like(self._system.omega_collection)
+
+    def dampen_rates(self, rod: RodType, time: float) -> None:
+        nb_filter_rate(
+            rate_collection=rod.velocity_collection,
+            filter_term=self.velocity_filter_term,
+            filter_order=self.filter_order,
+        )
+        nb_filter_rate(
+            rate_collection=rod.omega_collection,
+            filter_term=self.omega_filter_term,
+            filter_order=self.filter_order,
+        )
+
+
+@njit(cache=True)
+def nb_filter_rate(
+    rate_collection: np.ndarray, filter_term: np.ndarray, filter_order: int
+) -> None:
+    """
+    Filters the rod rates (velocities) in numba njit decorator
+
+    Parameters
+    ----------
+    rate_collection : numpy.ndarray
+        2D array containing data with 'float' type.
+        Array containing rod rates (velocities).
+    filter_term: numpy.ndarray
+        2D array containing data with 'float' type.
+        Filter term that modifies rod rates (velocities).
+    filter_order : int
+        Filter order, which corresponds to the number of times the Laplacian
+        operator is applied. Increasing `filter_order` implies higher order/weaker
+        filtering.
+
+    Notes
+    -----
+    For details regarding the numerics behind the filtering, refer to:
+
+    .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
+       models modified using discrete filters: a simplified “regularized variational
+       multiscale model” and an “enhanced field model”. Physics of fluids, 19(5), 055110.
+    .. [2] Lorieul, G. (2018). Development and validation of a 2D Vortex Particle-Mesh
+       method for incompressible multiphase flows (Doctoral dissertation,
+       Université Catholique de Louvain).
+    """
+
+    filter_term[...] = rate_collection
+    for i in range(filter_order):
+        filter_term[..., 1:-1] = (
+            -filter_term[..., 2:] - filter_term[..., :-2] + 2.0 * filter_term[..., 1:-1]
+        ) / 4.0
+        # dont touch boundary values
+        filter_term[..., 0] = 0.0
+        filter_term[..., -1] = 0.0
+    rate_collection[...] = rate_collection - filter_term

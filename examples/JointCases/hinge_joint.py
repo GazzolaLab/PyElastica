@@ -6,9 +6,6 @@ import sys
 # FIXME without appending sys.path make it more generic
 sys.path.append("../../")
 from elastica import *
-from examples.JointCases.external_force_class_for_joint_test import (
-    EndpointForcesSinusoidal,
-)
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
@@ -93,8 +90,11 @@ hinge_joint_sim.add_forcing_to(rod2).using(
 )
 
 # add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 4e-3
+# dt = 1e-5
 damping_constant = 4e-3
-dt = 1e-5
+dt = 5e-5
 hinge_joint_sim.dampen(rod1).using(
     ExponentialDamper,
     damping_constant=damping_constant,
@@ -122,7 +122,6 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, hinge_joint_sim, final_time, total_steps)
