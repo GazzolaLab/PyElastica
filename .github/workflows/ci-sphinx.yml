@@ -41,5 +41,5 @@ jobs:
           pre-build-command: |
             pwd
             python --version
-            pip install requirements.txt
-            pip install docs/requirements.txt
+            pip install -r requirements.txt
+            pip install -r docs/requirements.txt
