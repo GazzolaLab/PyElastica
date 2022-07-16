@@ -182,7 +182,7 @@ class LaplaceDissipationFilter(DamperBase):
     minimal filtering, and thus negligible effect on the velocities.
     Values in the range of 3-7 are usually recommended.
 
-    For details regarding the numerics behind the filtering, refer to:
+    For details regarding the numerics behind the filtering, refer to [1]_, [2]_.
 
     .. [1] Jeanmart, H., & Winckelmans, G. (2007). Investigation of eddy-viscosity
        models modified using discrete filters: a simplified “regularized variational

@@ -36,7 +36,7 @@ jobs:
           # The folder containing your sphinx docs.
           docs-folder: docs/
           # The command used to build your documentation.
-          build-command: make html SPHINXOPTS="-W --keep-going" #  -n"
+          build-command: make html SPHINXOPTS+="-W --keep-going" #  -n"
           # Run before the build command, you can use this to install system level dependencies, for example with "apt-get update -y && apt-get install -y perl"
           pre-build-command: |
             pwd
