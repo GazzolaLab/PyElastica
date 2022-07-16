@@ -1,4 +1,4 @@
-# PyElastica 
+<div align='center'> <h1> PyElastica </h1> </div>
 
 [![Build_status][badge-travis]][link-travis] [![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![Binder][badge-binder]][link-binder] [![Gitter][badge-gitter]][link-gitter]
 
@@ -37,7 +37,7 @@ PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University
 
 ## List of publications and submissions
 
-- [ Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
+- [Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
 - [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (IEEE ICRA 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
 - [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (ACC 2021)
 - [Elastica: A compliant mechanics environment for soft robotic control](https://ieeexplore.ieee.org/document/9369003) (UIUC, 2021) (IEEE RA-L 2021)
@@ -79,21 +79,6 @@ Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex 
   publisher={Nature Publishing Group},
   doi = {10.1038/s41467-019-12759-5},
   url = {https://doi.org/10.1038/s41467-019-12759-5},
-}
-```
-
-For control of soft robots:  
-Naughton, Sun, Tekinalp, Parthasarathy, Chowdhary and Gazzola, <strong>Elastica: A compliant mechanics environment for soft robotic control</strong>, IEEE Robotics and Automation Letters, 2021. doi: [10.1109/LRA.2021.3063698](https://doi.org/10.1109/LRA.2021.3063698)
-```
-@article{Naughton2021,
-  author={Naughton, N and Sun, J and Tekinalp, A and Parthasarathy, T and Chowdhary, G and Gazzola, M},
-  journal={IEEE Robotics and Automation Letters}, 
-  title={Elastica: A compliant mechanics environment for soft robotic control}, 
-  year={2021},
-  volume={6},
-  number={2},
-  pages={3389-3396},
-  doi={10.1109/LRA.2021.3063698}
 }
 ```
 
