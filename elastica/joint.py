@@ -218,7 +218,7 @@ class FixedJoint(FreeJoint):
             is enforced.
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=np.eye(3)):
+    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
         """
 
         Parameters
@@ -236,7 +236,7 @@ class FixedJoint(FreeJoint):
             If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
             If not provided, `rest_rotation_matrix` is initialized to the identity matrix,
             which means that a restoring torque will be applied to align the directors of both systems directly.
-            (default=np.eye(3))
+            (default=None)
         """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
@@ -247,6 +247,8 @@ class FixedJoint(FreeJoint):
         # TODO: compute the rest rotation matrix directly during initialization
         #  as soon as systems (e.g. `rod_one` and `rod_two`) and indices (e.g. `index_one` and `index_two`)
         #  are available in the __init__
+        if rest_rotation_matrix is None:
+            rest_rotation_matrix = np.eye(3)
         assert rest_rotation_matrix.shape == (3, 3), "Rest rotation matrix must be 3x3"
         self.rest_rotation_matrix = rest_rotation_matrix
 
