@@ -317,7 +317,7 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
     """
     return (
         system_one.director_collection[..., index_one]
-        @ system_two.director_collection[..., index_two]
+        @ system_two.director_collection[..., index_two].T
     )
 
 
