@@ -802,7 +802,7 @@ class ExternalContact(FreeJoint):
     If you are want to apply contact forces between rod and cylinder, first system is always rod and second system
     is always cylinder.
     In addition to the contact forces, user can define apply friction forces between rod and cylinder that
-    are in contact. For details on friction model refer to this `paper <https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf>`_.
+    are in contact. For details on friction model refer to this [1]_.
     TODO: Currently friction force is between rod-cylinder, in future implement friction forces between rod-rod.
 
     Notes
@@ -830,17 +830,16 @@ class ExternalContact(FreeJoint):
     ...    nu=10,
     ... )
 
-
-    Developer Note
-    --------------
-    Most of the cylinder-cylinder contact SHOULD be implemented
-    as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`,
-    but the elastica-cpp kernels are implemented.
-    This is maybe to speed-up the kernel, but it's
-    potentially dangerous as it does not deal with "end" conditions
-    correctly.
-
+    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
     """
+
+    # Dev note:
+    # Most of the cylinder-cylinder contact SHOULD be implemented
+    # as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`,
+    # but the elastica-cpp kernels are implemented.
+    # This is maybe to speed-up the kernel, but it's
+    # potentially dangerous as it does not deal with "end" conditions
+    # correctly.
 
     def __init__(self, k, nu, velocity_damping_coefficient=0, friction_coefficient=0):
         """
