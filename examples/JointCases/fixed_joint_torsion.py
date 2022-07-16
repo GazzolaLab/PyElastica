@@ -124,12 +124,12 @@ integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 plot_orientation(
     "Orientation of last node of rod 1",
     pp_list_rod1["time"],
-    np.array(pp_list_rod1["director"])[..., -1],
+    np.array(pp_list_rod1["directors"])[..., -1],
 )
 plot_orientation(
     "Orientation of last node of rod 2",
     pp_list_rod2["time"],
-    np.array(pp_list_rod2["director"])[..., -1],
+    np.array(pp_list_rod2["directors"])[..., -1],
 )
 
 PLOT_FIGURE = True
