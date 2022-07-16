@@ -260,10 +260,6 @@ class FixedJoint(FreeJoint):
         system_one_director = system_one.director_collection[..., index_one]
         system_two_director = system_two.director_collection[..., index_two]
 
-        if self.rest_rotation_matrix is None:
-            # this if clause should be active during the first timestep for the case use_static_rotation==True
-            self.rest_rotation_matrix = system_one_director @ system_two_director.T
-
         # rel_rot: C_12 = C_1I @ C_I2
         # C_12 is relative rotation matrix from system 1 to system 2
         # C_1I is the rotation from system 1 to the inertial frame (i.e. the world frame)
