@@ -9,7 +9,7 @@ from numpy.testing import assert_allclose
 
 import pytest
 
-from test_rod.test_rods import MockTestRod
+from tests.test_rod.test_rods import MockTestRod
 
 
 def test_damper_base():
