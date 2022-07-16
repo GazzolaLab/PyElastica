@@ -213,8 +213,8 @@ class FixedJoint(FreeJoint):
         nut: float
             Rotational damping coefficient of the joint.
         static_rotation: np.array
-            Static 3x3 rotation matrix from system one to system two.
-            Instead of aligning the directors of both systems directly, a desired rotational offset C_12* is enforced.
+            Rest 3x3 rotation matrix from system one to system two at the connected elements.
+            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12 is enforced.
     """
 
     def __init__(self, k, nu, kt, nut=0.0, use_static_rotation=True):
