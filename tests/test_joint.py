@@ -346,8 +346,8 @@ def test_fixedjoint():
     # deviation in rotation velocity between system 1 and system 2
     # first convert to inertial frame, then take differences
     dev_omega = (
-            rod2_director.T @ rod2.omega_collection[..., rod2_index]
-            - rod1_director.T @ rod1.omega_collection[..., rod1_index]
+        rod2_director.T @ rod2.omega_collection[..., rod2_index]
+        - rod1_director.T @ rod1.omega_collection[..., rod1_index]
     )
 
     # we compute the constraining torque using a rotational spring - damper system in the inertial frame
