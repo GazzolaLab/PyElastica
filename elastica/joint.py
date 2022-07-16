@@ -301,9 +301,20 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
 
     Examples
     ----------
-    
-        >>> init_rot = get_relative_rotation_two_systems(...)
-        >>> ...
+    How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
+
+        >>> rel_rot_mat = get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+
+    How to initialize a FixedJoint with a rest rotation between the two systems,
+    which is enforced throughout the simulation:
+
+        >>> simulator.connect(
+        ...    first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
+        ... ).using(
+        ...    FixedJoint,
+        ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
+        ...    rest_rotation_matrix=get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+        ... )
         
     See Also
     ---------
