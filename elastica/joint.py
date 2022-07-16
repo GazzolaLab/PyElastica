@@ -212,12 +212,12 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float
             Rotational damping coefficient of the joint.
-        static_rotation: np.array
+        rest_rotation_matrix: np.array
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12 is enforced.
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, use_static_rotation=True):
+    def __init__(self, k, nu, kt, nut=0.0, enforce_rest_joint_state=True):
         """
 
         Parameters
@@ -230,8 +230,8 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float = 0.
             Rotational damping coefficient of the joint.
-        use_static_rotation: bool
-            If True, the initial rotation offset between the two systems is recorded
+        enforce_rest_joint_state: bool
+            If True, the initial rotation angle between the two systems is recorded
             and enforced throughout the entire simulation. (default=True)
         """
         super().__init__(k, nu)
@@ -242,10 +242,10 @@ class FixedJoint(FreeJoint):
 
         # if a static rotation offset between the two systems should not be enforced,
         # we set the relative rotation to the identity matrix. Otherwise
-        if use_static_rotation:
-            self.static_rotation = None
+        if enforce_rest_joint_state:
+            self.rest_rotation_matrix = None
         else:
-            self.static_rotation = np.eye(3)
+            self.rest_rotation_matrix = np.eye(3)
 
     # Apply force is same as free joint
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
@@ -257,9 +257,9 @@ class FixedJoint(FreeJoint):
         system_one_director = system_one.director_collection[..., index_one]
         system_two_director = system_two.director_collection[..., index_two]
 
-        if self.static_rotation is None:
+        if self.rest_rotation_matrix is None:
             # this if clause should be active during the first timestep for the case use_static_rotation==True
-            self.static_rotation = system_one_director @ system_two_director.T
+            self.rest_rotation_matrix = system_one_director @ system_two_director.T
 
         # rel_rot: C_12 = C_1I @ C_I2
         # C_12 is relative rotation matrix from system 1 to system 2
