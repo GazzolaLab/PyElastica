@@ -280,10 +280,10 @@ class FixedJoint(FreeJoint):
         rot_vec_inertial_frame = system_two_director.T @ rot_vec
 
         # deviation in rotation velocity between system 1 and system 2
-        # first convert to lab frame, then take differences
+        # first convert to inertial frame, then take differences
         dev_omega = (
-            system_one_director.T @ system_one.omega_collection[..., index_one]
-            - system_two_director.T @ system_two.omega_collection[..., index_two]
+            system_two_director.T @ system_two.omega_collection[..., index_two]
+            - system_one_director.T @ system_one.omega_collection[..., index_one]
         )
 
         # we compute the constraining torque using a rotational spring - damper system in the inertial frame
