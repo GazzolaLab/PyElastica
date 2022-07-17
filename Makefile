@@ -38,10 +38,13 @@ format-codestyle: black flake8
 
 .PHONY: test
 test:
-	poetry run pytest
+	poetry run pytest --cov=elastica
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8
+
+.PHONY: formatting
+formatting: format-codestyle
 
 .PHONY: update-dev-deps
 update-dev-deps:
@@ -71,6 +74,6 @@ build-remove:
 .PHONY: cleanup
 cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove
 
-all: format-codestyle cleanup
+all: format-codestyle cleanup test
 
 ci: check-codestyle
