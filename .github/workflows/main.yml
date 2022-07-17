@@ -91,10 +91,14 @@ jobs:
         run: |
           poetry config virtualenvs.in-project true
           poetry install
-      # Set environment variables for coverage test. Coverage test is done using python 3.8
       - name: Run style checks
         run: |
           make check-codestyle
+      # Set environment variables for coverage test.
+      # For the coverage test we disable numba jit compilation, since it prevents generating coverage data.
+      - name: Set environment variables for coverage test
+        run: |
+          echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
       - name: Test PyElastica using pytest
         if: startsWith(runner.os, 'macOS')
         run: |

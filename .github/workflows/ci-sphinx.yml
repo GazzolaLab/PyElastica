@@ -23,10 +23,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3.1.0
+      - name: Setup Poetry
+        # You may pin to the exact commit or the version.
+        # uses: Gr1N/setup-poetry@09236184f6c1ab47c0dc9c1001c7fe200cf2afb0
+        uses: Gr1N/setup-poetry@v7
         with:
-          python-version: "3.x"
+          poetry-preview: false
 
       - name: Sphinx Build
         # You may pin to the exact commit or the version.
@@ -36,10 +38,8 @@ jobs:
           # The folder containing your sphinx docs.
           docs-folder: docs/
           # The command used to build your documentation.
-          build-command: make html SPHINXOPTS+="-W --keep-going" #  -n"
+          build-command: make html # SPHINXOPTS="-W --keep-going" #  -n"
           # Run before the build command, you can use this to install system level dependencies, for example with "apt-get update -y && apt-get install -y perl"
           pre-build-command: |
-            pwd
-            python --version
-            pip install -r requirements.txt
-            pip install -r docs/requirements.txt
+            poetry config virtualenvs.in-project true
+            poetry install -E docs
