@@ -213,6 +213,7 @@ class FixedJoint(FreeJoint):
         nut: float
             Rotational damping coefficient of the joint.
         rest_rotation_matrix: np.array
+            2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
             is enforced.
