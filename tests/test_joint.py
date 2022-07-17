@@ -6,8 +6,9 @@ from elastica.joint import FreeJoint, HingeJoint, FixedJoint
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica.rod.cosserat_rod import CosseratRod
-import importlib
 import elastica
+import importlib
+import pytest
 from scipy.spatial.transform import Rotation
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
@@ -224,9 +225,19 @@ def test_hingejoint():
     )
 
 
-def test_fixedjoint():
+rest_euler_angles = [
+    np.array([0.0, 0.0, 0.0]),
+    np.array([np.pi / 2, 0.0, 0.0]),
+    np.array([0.0, np.pi / 2, 0.0]),
+    np.array([0.0, 0.0, np.pi / 2]),
+    2 * np.pi * np.random.random_sample(size=3),
+]
+
+
+@pytest.mark.parametrize("rest_euler_angle", rest_euler_angles)
+def test_fixedjoint(rest_euler_angle):
     # Define the rod for testing
-    # Some rod properties. We need them for constructer, they are not used.
+    # Some rod properties. We need them for constructor, they are not used.
     normal1 = np.array([0.0, 1.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal2 = np.array([0.0, 0.0, 1.0])
@@ -317,7 +328,10 @@ def test_fixedjoint():
     dampingforce = nu * normal_relative_vel * distance / end_distance
     contactforce = elasticforce - dampingforce
 
-    fxjt = FixedJoint(k, nu, kt, nut, rest_rotation_matrix=np.eye(3))
+    rest_rotation_matrix = Rotation.from_euler(
+        "xyz", rest_euler_angle, degrees=False
+    ).as_matrix()
+    fxjt = FixedJoint(k, nu, kt, nut, rest_rotation_matrix=rest_rotation_matrix)
 
     fxjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
     fxjt.apply_torques(rod1, rod1_index, rod2, rod2_index)
@@ -334,14 +348,23 @@ def test_fixedjoint():
     rod1_director = rod1.director_collection[..., rod1_index]
     rod2_director = rod2.director_collection[..., rod2_index]
 
-    # relative rotation matrix from system 1 to system 2: C_12 = C_1W @ C_W2 where W denotes the inertial frame
-    error_rot = rod1_director @ rod2_director.T
+    # rel_rot: C_12 = C_1I @ C_I2
+    # C_12 is relative rotation matrix from system 1 to system 2
+    # C_1I is the rotation from system 1 to the inertial frame (i.e. the world frame)
+    # C_I2 is the rotation from the inertial frame to system 2 frame (inverse of system_two_director)
+    rel_rot = rod1_director @ rod2_director.T
+    # error_rot: C_22* = C_21 @ C_12*
+    # C_22* is rotation matrix from current orientation of system 2 to desired orientation of system 2
+    # C_21 is the inverse of C_12, which describes the relative (current) rotation from system 1 to system 2
+    # C_12* is the desired rotation between systems one and two, which is saved in the static_rotation attribute
+    dev_rot = rel_rot.T @ rest_rotation_matrix
 
-    # compute rotation vector from system one to system two based on relative rotation matrix
-    rot_vec = Rotation.from_matrix(error_rot.T).as_rotvec()
+    # compute rotation vectors based on C_22*
+    # scipy implementation
+    rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
 
     # rotate rotation vector into inertial frame
-    rot_vec = rod2_director.T @ rot_vec
+    rot_vec_inertial_frame = rod2_director.T @ rot_vec
 
     # deviation in rotation velocity between system 1 and system 2
     # first convert to inertial frame, then take differences
@@ -351,14 +374,14 @@ def test_fixedjoint():
     )
 
     # we compute the constraining torque using a rotational spring - damper system in the inertial frame
-    torque = kt * rot_vec - nut * dev_omega
+    torque = kt * rot_vec_inertial_frame - nut * dev_omega
 
     # The opposite torques will be applied to system one and two after rotating the torques into the local frame
-    torque_rod1 = rod1_director @ torque
+    torque_rod1 = -rod1_director @ torque
     torque_rod2 = rod2_director @ torque
 
     assert_allclose(
-        rod1.external_torques[..., rod1_index], -torque_rod1, atol=Tolerance.atol()
+        rod1.external_torques[..., rod1_index], torque_rod1, atol=Tolerance.atol()
     )
     assert_allclose(
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
