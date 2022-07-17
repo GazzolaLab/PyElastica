@@ -95,24 +95,3 @@ exclude = '''
 # https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
 # Directories that are not visited by pytest collector:
 norecursedirs =["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
-doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL", "ELLIPSIS"]
-
-# Extra options:
-addopts = [
-  "--strict-markers",
-  "--tb=short",
-#  "--doctest-modules", TODO: Try to include pytest.doctest
-#  "--doctest-continue-on-failure",
-]
-
-[tool.coverage.run]
-source = ["tests"]
-
-[coverage.paths]
-source = "elastica"
-
-[coverage.run]
-branch = true
-
-[coverage.report]
-show_missing = true
