@@ -103,7 +103,7 @@ class MockRodForTest:
         youngs_modulus,
         # poisson_ratio,
         *args,
-        **kwargs
+        **kwargs,
     ):
 
         (
@@ -155,7 +155,7 @@ class MockRodForTest:
             youngs_modulus,
             alpha_c=(27.0 / 28.0),
             *args,
-            **kwargs
+            **kwargs,
         )
 
         return cls(

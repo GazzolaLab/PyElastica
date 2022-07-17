@@ -228,7 +228,7 @@ class CosseratRod(RodBase, KnotTheory):
         nu: float,
         youngs_modulus: float,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Cosserat rod constructor for straight-rod geometry.
@@ -320,7 +320,7 @@ class CosseratRod(RodBase, KnotTheory):
             nu,
             youngs_modulus,
             *args,
-            **kwargs
+            **kwargs,
         )
 
         return cls(
