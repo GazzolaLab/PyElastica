@@ -38,7 +38,7 @@ format-codestyle: black flake8
 
 .PHONY: test
 test:
-	poetry run pytest -c pyproject.toml --cov-report=html --cov=elastica tests/
+	poetry run pytest
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8
