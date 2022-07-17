@@ -68,6 +68,7 @@ docs = [
   "sphinx-autodoc-typehints",
   "myst-parser",
   "numpydoc",
+  "docutils",
 ]
 
 [tool.black]
