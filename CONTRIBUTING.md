@@ -61,7 +61,7 @@ make install
 
 If you are planning to contribute on documentation, extra dependencies can be installed 
 using `poetry install -E docs`. The detail instruction is included 
-[here](https://github.com/GazzolaLab/PyElastica/blob/main/docs/README.md).
+[here](https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md).
 
 4. Now your working environment is set!
 
