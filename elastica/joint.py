@@ -4,8 +4,8 @@ import numpy as np
 import numba
 from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_product_k_ik_to_ik
+from elastica._rotations import _inv_rotate
 from math import sqrt
-from scipy.spatial.transform import Rotation
 
 
 class FreeJoint:
@@ -275,7 +275,12 @@ class FixedJoint(FreeJoint):
         dev_rot = rel_rot.T @ self.rest_rotation_matrix
 
         # compute rotation vectors based on C_22*
-        rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+        # scipy implementation
+        # rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+        #
+        # implementation using custom _inv_rotate compiled with numba
+        # rotation vector between identity matrix and C_22*
+        rot_vec = _inv_rotate(np.dstack([np.eye(3), dev_rot.T])).squeeze()
 
         # rotate rotation vector into inertial frame
         rot_vec_inertial_frame = system_two_director.T @ rot_vec
