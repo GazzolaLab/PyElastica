@@ -328,12 +328,12 @@ class ConfigurableFixedConstraint(ConstraintBase):
         )
         assert (
             type(self.translational_constraint_selector) == np.ndarray
-            and self.translational_constraint_selector.dtype == np.bool
+            and self.translational_constraint_selector.dtype == bool
             and self.translational_constraint_selector.shape == (3,)
         ), "Translational constraint selector must be a 1D boolean array of length 3."
         assert (
             type(self.rotational_constraint_selector) == np.ndarray
-            and self.rotational_constraint_selector.dtype == np.bool
+            and self.rotational_constraint_selector.dtype == bool
             and self.rotational_constraint_selector.shape == (3,)
         ), "Rotational constraint selector must be a 1D boolean array of length 3."
 
