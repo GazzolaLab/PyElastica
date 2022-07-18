@@ -5,6 +5,7 @@ __all__ = [
     "FreeRod",  # Deprecated: remove v0.3.0
     "OneEndFixedBC",
     "OneEndFixedRod",  # Deprecated: remove v0.3.0
+    "ConfigurableFixedConstraint",
     "FixedConstraint",
     "HelicalBucklingBC",
 ]
