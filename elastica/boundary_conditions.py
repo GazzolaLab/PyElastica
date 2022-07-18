@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 import numba
 from numba import njit
 
-from elastica._rotations import _get_rotation_matrix
+from elastica._rotations import _get_rotation_matrix, _inv_rotate
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 
@@ -320,22 +320,30 @@ class ConfigurableFixedConstraint(ConstraintBase):
         self.fixed_positions = np.array(pos)
         self.fixed_directors = np.array(dir)
 
-        self.translational_constraint_selector = kwargs.get(
+        translational_constraint_selector = kwargs.get(
             "translational_constraint_selector", np.array([True, True, True])
         )
-        self.rotational_constraint_selector = kwargs.get(
+        rotational_constraint_selector = kwargs.get(
             "rotational_constraint_selector", np.array([True, True, True])
         )
+        # properly validate the user-provided constraint selectors
         assert (
-            type(self.translational_constraint_selector) == np.ndarray
-            and self.translational_constraint_selector.dtype == bool
-            and self.translational_constraint_selector.shape == (3,)
+            type(translational_constraint_selector) == np.ndarray
+            and translational_constraint_selector.dtype == bool
+            and translational_constraint_selector.shape == (3,)
         ), "Translational constraint selector must be a 1D boolean array of length 3."
         assert (
-            type(self.rotational_constraint_selector) == np.ndarray
-            and self.rotational_constraint_selector.dtype == bool
-            and self.rotational_constraint_selector.shape == (3,)
+            type(rotational_constraint_selector) == np.ndarray
+            and rotational_constraint_selector.dtype == bool
+            and rotational_constraint_selector.shape == (3,)
         ), "Rotational constraint selector must be a 1D boolean array of length 3."
+        # cast booleans to int
+        self.translational_constraint_selector = (
+            translational_constraint_selector.astype(np.int)
+        )
+        self.rotational_constraint_selector = rotational_constraint_selector.astype(
+            np.int
+        )
 
     def constrain_values(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
@@ -373,32 +381,6 @@ class ConfigurableFixedConstraint(ConstraintBase):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constraint_rotational_values(
-        director_collection, fixed_director_collection, indices, constraint_selector
-    ) -> None:
-        """
-        Computes constrain values in numba njit decorator
-
-        Parameters
-        ----------
-        director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        fixed_director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        indices : numpy.ndarray
-            1D array containing the index of constraining nodes
-        constraint_selector: numpy.ndarray
-            1D array of type bool and size (3,) indicating which rotational Degrees of Freedom (DoF) to constrain.
-            If entry is True, the concerning DoF will be constrained, otherwise it will be free for translation.
-            Selector shall be specified in the inertial frame
-        """
-        block_size = indices.size
-        for i in range(block_size):
-            k = indices[i]
-            director_collection[..., k] = fixed_director_collection[i, ...]
-
-    @staticmethod
-    @njit(cache=True)
     def nb_constrain_translational_values(
         position_collection, fixed_position_collection, indices, constraint_selector
     ) -> None:
@@ -414,20 +396,70 @@ class ConfigurableFixedConstraint(ConstraintBase):
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
-            1D array of type bool and size (3,) indicating which translational Degrees of Freedom (DoF) to constrain.
-            If entry is True, the concerning DoF will be constrained, otherwise it will be free for translation.
+            1D array of type int and size (3,) indicating which translational Degrees of Freedom (DoF) to constrain.
+            Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
+            If entry is 1, the concerning DoF will be constrained, otherwise it will be free for translation.
             Selector shall be specified in the inertial frame
         """
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            position_collection[constraint_selector, k] = fixed_position_collection[i, constraint_selector]
+            # add the old position values using the inverse constraint selector (e.g. DoF)
+            new_position_values = (1 - constraint_selector) * position_collection[
+                ..., k
+            ]
+            # add the fixed position values using the constraint selector (e.g. constraint dimensions)
+            new_position_values += (
+                constraint_selector * fixed_position_collection[i, ...]
+            )
+            position_collection[..., k] = new_position_values
+
+    @staticmethod
+    # @njit(cache=True)
+    def nb_constraint_rotational_values(
+            director_collection, fixed_director_collection, indices, constraint_selector
+    ) -> None:
+        """
+        Computes constrain values in numba njit decorator
+
+        Parameters
+        ----------
+        director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        fixed_director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        constraint_selector: numpy.ndarray
+            1D array of type int and size (3,) indicating which rotational Degrees of Freedom (DoF) to constrain.
+            Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
+            If an entry is 1, the rotation around the respective axis will be constrained,
+            otherwise the system can freely rotate around the axis.
+            Selector shall be specified in the inertial frame
+        """
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+
+            # C_{fixed to actual} = C_{fixed to inertial} @ C_{inertial to actual}
+            dev_rot = fixed_director_collection[i, ...] @ director_collection[..., k].T
+
+            from scipy.spatial.transform import Rotation
+            euler_angle = Rotation.from_matrix(dev_rot).as_euler('xyz')
+
+            allowed_euler_angle = (1-constraint_selector)*euler_angle
+            # C_{fixed to allowed)
+            allowed_rot = Rotation.from_euler('xyz', allowed_euler_angle).as_matrix()
+
+            # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
+            allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
+
+            # old implementation without DoF
+            # director_collection[..., k] = fixed_director_collection[i, ...]
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_translational_rates(
-        velocity_collection, indices, constraint_selector
-    ) -> None:
+    def nb_constrain_translational_rates(velocity_collection, indices, constraint_selector) -> None:
         """
         Compute constrain rates in numba njit decorator
 
@@ -438,21 +470,20 @@ class ConfigurableFixedConstraint(ConstraintBase):
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
-            1D array of type bool and size (3,) indicating which translational Degrees of Freedom (DoF) to constrain.
-            If entry is True, the concerning DoF will be constrained, otherwise it will be free for translation.
+            1D array of type int and size (3,) indicating which translational Degrees of Freedom (DoF) to constrain.
+            Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
+            If entry is 1, the concerning DoF will be constrained, otherwise it will be free for translation.
             Selector shall be specified in the inertial frame
         """
 
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            velocity_collection[constraint_selector, k] = 0.0
+            velocity_collection[..., k] = (1 - constraint_selector) * velocity_collection[..., k]
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_rotational_rates(
-        omega_collection, indices, constraint_selector
-    ) -> None:
+    def nb_constrain_rotational_rates(omega_collection, indices, constraint_selector) -> None:
         """
         Compute constrain rates in numba njit decorator
 
@@ -463,15 +494,17 @@ class ConfigurableFixedConstraint(ConstraintBase):
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
-            1D array of type bool and size (3,) indicating which rotational Degrees of Freedom (DoF) to constrain.
-            If entry is True, the concerning DoF will be constrained, otherwise it will be free for translation.
+            1D array of type int and size (3,) indicating which rotational Degrees of Freedom (DoF) to constrain.
+            Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
+            If an entry is 1, the rotation around the respective axis will be constrained,
+            otherwise the system can freely rotate around the axis.
             Selector shall be specified in the inertial frame
         """
 
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            omega_collection[constraint_selector, k] = 0.0
+            omega_collection[..., k] = (1 - constraint_selector) * omega_collection[..., k]
 
 
 class FixedConstraint(ConfigurableFixedConstraint):
