@@ -442,17 +442,22 @@ class ConfigurableFixedConstraint(ConstraintBase):
         for i in range(block_size):
             k = indices[i]
 
+            # Rotation matrix from fixed director (e.g. saved at the first time-step) to current director
             # C_{fixed to actual} = C_{fixed to inertial} @ C_{inertial to actual}
             dev_rot = fixed_director_collection[i, ...] @ director_collection[..., k].T
 
             from scipy.spatial.transform import Rotation
 
+            # XYZ Euler angles for C_{fixed to actual}
             euler_angle = Rotation.from_matrix(dev_rot).as_euler("xyz")
 
+            # We re-set the Euler angles for constrained rotation axes to zero
             allowed_euler_angle = (1 - constraint_selector) * euler_angle
-            # C_{fixed to allowed)
+            # Transform allowed euler angles back to rotation matrix C_{fixed to allowed)
             allowed_rot = Rotation.from_euler("xyz", allowed_euler_angle).as_matrix()
 
+            # Transform allowed rotation matrix to C_{inertial to allowed}
+            # This describes rotation from inertial frame to desired frame (e.g. containing allowed rotations)
             # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
             allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
 
