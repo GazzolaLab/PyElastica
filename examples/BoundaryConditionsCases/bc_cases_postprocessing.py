@@ -9,9 +9,9 @@ from elastica._linalg import _batch_matvec
 
 
 def plot_position(
-        plot_params_rod1: dict,
-        filename="tip_position.png",
-        SAVE_FIGURE=False,
+    plot_params_rod1: dict,
+    filename="tip_position.png",
+    SAVE_FIGURE=False,
 ):
     position_of_rod1 = np.array(plot_params_rod1["position"])
 
@@ -52,9 +52,9 @@ def plot_orientation(title, time, directors):
 
 
 def plot_video(
-        plot_params_rod1: dict,
-        video_name="video.mp4",
-        fps=100,
+    plot_params_rod1: dict,
+    video_name="video.mp4",
+    fps=100,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
@@ -90,9 +90,9 @@ def plot_video(
 
 
 def plot_video_xy(
-        plot_params_rod1: dict,
-        video_name="video_xy.mp4",
-        fps=100,
+    plot_params_rod1: dict,
+    video_name="video_xy.mp4",
+    fps=100,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
@@ -120,9 +120,9 @@ def plot_video_xy(
 
 
 def plot_video_xz(
-        plot_params_rod1: dict,
-        video_name="video_xz.mp4",
-        fps=100,
+    plot_params_rod1: dict,
+    video_name="video_xz.mp4",
+    fps=100,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 

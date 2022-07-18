@@ -418,7 +418,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     @staticmethod
     # @njit(cache=True)
     def nb_constraint_rotational_values(
-            director_collection, fixed_director_collection, indices, constraint_selector
+        director_collection, fixed_director_collection, indices, constraint_selector
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -446,11 +446,12 @@ class ConfigurableFixedConstraint(ConstraintBase):
             dev_rot = fixed_director_collection[i, ...] @ director_collection[..., k].T
 
             from scipy.spatial.transform import Rotation
-            euler_angle = Rotation.from_matrix(dev_rot).as_euler('xyz')
 
-            allowed_euler_angle = (1-constraint_selector)*euler_angle
+            euler_angle = Rotation.from_matrix(dev_rot).as_euler("xyz")
+
+            allowed_euler_angle = (1 - constraint_selector) * euler_angle
             # C_{fixed to allowed)
-            allowed_rot = Rotation.from_euler('xyz', allowed_euler_angle).as_matrix()
+            allowed_rot = Rotation.from_euler("xyz", allowed_euler_angle).as_matrix()
 
             # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
             allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
@@ -460,7 +461,9 @@ class ConfigurableFixedConstraint(ConstraintBase):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_translational_rates(velocity_collection, indices, constraint_selector) -> None:
+    def nb_constrain_translational_rates(
+        velocity_collection, indices, constraint_selector
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
 
@@ -480,11 +483,15 @@ class ConfigurableFixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            velocity_collection[..., k] = (1 - constraint_selector) * velocity_collection[..., k]
+            velocity_collection[..., k] = (
+                1 - constraint_selector
+            ) * velocity_collection[..., k]
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_rotational_rates(omega_collection, indices, constraint_selector) -> None:
+    def nb_constrain_rotational_rates(
+        omega_collection, indices, constraint_selector
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
 
@@ -505,7 +512,9 @@ class ConfigurableFixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            omega_collection[..., k] = (1 - constraint_selector) * omega_collection[..., k]
+            omega_collection[..., k] = (1 - constraint_selector) * omega_collection[
+                ..., k
+            ]
 
 
 class FixedConstraint(ConfigurableFixedConstraint):
