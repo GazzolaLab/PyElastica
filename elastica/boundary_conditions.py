@@ -271,7 +271,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     How to fix all translational and rotational DoF except allowing twisting around z-axis in inertial frame:
 
     >>> simulator.constrain(rod).using(
-    ...    FixedConstraint,
+    ...    ConfigurableFixedConstraint,
     ...    constrained_position_idx=(0,),
     ...    constrained_director_idx=(0,),
     ...    translational_constraint_selector=np.array([True, True, True]),
@@ -281,7 +281,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     How to allow the end of the rod to move in the x-y plane and allow all rotational DoF:
 
     >>> simulator.constrain(rod).using(
-    ...    FixedConstraint,
+    ...    ConfigurableFixedConstraint,
     ...    constrained_position_idx=(-1,),
     ...    translational_constraint_selector=np.array([True, True, False]),
     ... )
