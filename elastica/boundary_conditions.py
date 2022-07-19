@@ -461,6 +461,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
             # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
             allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
 
+            # write C_{allowed to inertial} to director_collection
             director_collection[..., k] = allowed_directors.T
 
             # old implementation without DoF
@@ -565,7 +566,7 @@ class FixedConstraint(ConfigurableFixedConstraint):
             *args,
             translational_constraint_selector=np.array([True, True, True]),
             rotational_constraint_selector=np.array([True, True, True]),
-            **kwargs
+            **kwargs,
         )
 
 
