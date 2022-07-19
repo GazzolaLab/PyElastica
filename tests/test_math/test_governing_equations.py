@@ -1306,11 +1306,15 @@ class TestingClass:
 
         # linearly increase positional offset along the x-axis
         test_rod.position_collection[0, ...] += np.linspace(
-            start=0.0, stop=bending_positional_offset * base_length, num=test_rod.position_collection.shape[1]
+            start=0.0,
+            stop=bending_positional_offset * base_length,
+            num=test_rod.position_collection.shape[1],
         )
 
         # linearly increase roll angle from proximal to distal end of rod
-        roll_angles = np.linspace(start=0.0, stop=bending_angle, num=test_rod.director_collection.shape[2])
+        roll_angles = np.linspace(
+            start=0.0, stop=bending_angle, num=test_rod.director_collection.shape[2]
+        )
         for link_idx in range(test_rod.director_collection.shape[2]):
             # Compute rotation matrix
             rot_mat = Rotation.from_euler(
@@ -1322,15 +1326,20 @@ class TestingClass:
             ).T
 
         points = np.repeat(np.expand_dims(point, axis=1), n_elem, axis=1)
-        print("points", points.shape, "position collection shape", test_rod.position_collection.shape)
+        print(
+            "points",
+            points.shape,
+            "position collection shape",
+            test_rod.position_collection.shape,
+        )
         target_positions = np.zeros((3, n_elem))
         batched_positions = test_rod.compute_positions_of_points(points)
         unbatched_positions = np.zeros((3, n_elem))
         for node_idx in range(n_elem):
             point_for_node = points[:, node_idx]
-            target_positions[:, node_idx] = test_rod.position_collection[:, node_idx] + np.dot(
-                test_rod.director_collection[:, :, node_idx].T, point_for_node
-            )
+            target_positions[:, node_idx] = test_rod.position_collection[
+                :, node_idx
+            ] + np.dot(test_rod.director_collection[:, :, node_idx].T, point_for_node)
             unbatched_positions[:, node_idx] = test_rod.compute_position_of_point(
                 point_for_node, node_idx
             )
