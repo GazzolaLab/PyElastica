@@ -312,16 +312,10 @@ class FixedConstraint(ConstraintBase):
         if len(pos) > 0:
             # transpose from (blocksize, dim) to (dim, blocksize)
             self.fixed_positions = np.array(pos).transpose((1, 0))
-        else:
-            # initialize empty fixed positions
-            self.fixed_positions = np.zeros((3, 0))
 
         if len(dir) > 0:
             # transpose from (blocksize, dim, dim) to (dim, dim, blocksize)
             self.fixed_directors = np.array(dir).transpose((1, 2, 0))
-        else:
-            # initialize empty fixed directors
-            self.fixed_directors = np.zeros((3, 3, 0))
 
     def constrain_values(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
