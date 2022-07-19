@@ -144,7 +144,7 @@ if PLOT_VIDEO:
         fps=60,
         step=1,
         *args,
-        **kwargs
+        **kwargs,
     ):  # (time step, x/y/z, node)
         import matplotlib.animation as manimation
 

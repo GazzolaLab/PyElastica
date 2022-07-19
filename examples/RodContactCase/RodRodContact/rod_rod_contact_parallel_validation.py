@@ -1,3 +1,4 @@
+import numpy as np
 import sys
 import numpy as np
 
@@ -18,7 +19,9 @@ class ParallelRodRodContact(
 parallel_rod_rod_contact_sim = ParallelRodRodContact()
 
 # Simulation parameters
-dt = 5e-5
+# old damping model (deprecated in v0.3.0) values
+# dt = 5e-5
+dt = 5e-4
 final_time = 10
 total_steps = int(final_time / dt)
 time_step = np.float64(final_time / total_steps)
@@ -30,6 +33,7 @@ base_length = 0.5
 base_radius = 0.01
 base_area = np.pi * base_radius ** 2
 density = 1750
+nu = 0.0
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -90,7 +94,9 @@ parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 )
 
 # add damping
-damping_constant = 2e-3
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 2e-3
+damping_constant = 2e-4
 parallel_rod_rod_contact_sim.dampen(rod_one).using(
     ExponentialDamper,
     damping_constant=damping_constant,

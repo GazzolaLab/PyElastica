@@ -38,7 +38,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     base_area = np.pi * base_radius ** 2
     mass = 1.0
     density = mass / (base_length * base_area)
-    nu = 1e-6
+    nu = 1e-6 / 2
     E = 1e9
     # For shear modulus of 2E/3
     poisson_ratio = 0.5
@@ -74,7 +74,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     rolling_friction_initial_velocity_sim.constrain(shearable_rod).using(FreeBC)
 
     # Add damping
-    dt = 1e-6
+    dt = 1e-6 * 2
     rolling_friction_initial_velocity_sim.dampen(shearable_rod).using(
         ExponentialDamper,
         damping_constant=nu,

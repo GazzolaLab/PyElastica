@@ -38,7 +38,7 @@ def simulate_timoshenko_beam_with(
     base_length = 3.0
     base_radius = 0.25
     density = 5000
-    nu = 0.1 / density / (np.pi * base_radius ** 2)
+    nu = 0.1 / 7 / density / (np.pi * base_radius ** 2)
     E = 1e6
     # For shear modulus of 1e4, nu is 99!
     poisson_ratio = 99
@@ -60,7 +60,7 @@ def simulate_timoshenko_beam_with(
     timoshenko_sim.append(shearable_rod)
     # add damping
     dl = base_length / n_elem
-    dt = 0.01 * dl
+    dt = 0.07 * dl
     timoshenko_sim.dampen(shearable_rod).using(
         ExponentialDamper,
         damping_constant=nu,

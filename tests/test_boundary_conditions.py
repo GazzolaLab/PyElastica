@@ -3,7 +3,7 @@ import sys
 
 # System imports
 import numpy as np
-from test_rod.test_rods import MockTestRod
+from tests.test_rod.test_rods import MockTestRod
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,

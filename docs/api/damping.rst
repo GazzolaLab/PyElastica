@@ -15,6 +15,7 @@ Damping is used to numerically stabilize the simulations.
 
    DamperBase
    ExponentialDamper
+   LaplaceDissipationFilter
 
 Compatibility
 ~~~~~~~~~~~~~
@@ -23,7 +24,8 @@ Compatibility
 Damping/Numerical Dissipation   Rod  Rigid Body
 =============================== ==== =========== 
 ExponentialDamper               ✅       ✅
-=============================== ==== =========== 
+LaplaceDissipationFilter        ✅       ❌
+=============================== ==== ===========
 
 
 Built-in Constraints
@@ -36,4 +38,7 @@ Built-in Constraints
    :show-inheritance:
 
 .. autoclass:: ExponentialDamper
+   :special-members: __init__
+
+.. autoclass:: LaplaceDissipationFilter
    :special-members: __init__

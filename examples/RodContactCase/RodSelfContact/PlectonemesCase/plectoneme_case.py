@@ -1,3 +1,4 @@
+import numpy as np
 import sys
 import numpy as np
 
@@ -97,7 +98,7 @@ class SelonoidsBC(ConstraintBase):
         twisting_time,
         time_twis_start,
         number_of_rotations,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.twisting_time = twisting_time

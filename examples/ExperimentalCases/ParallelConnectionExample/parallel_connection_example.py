@@ -133,8 +133,11 @@ for i in range(n_elem):
 
 
 # add damping
-damping_constant = 4e-2
-dt = 1e-5
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 4e-2
+# dt = 1e-5
+damping_constant = 4e-3
+dt = 1e-3
 parallel_connection_sim.dampen(rod_one).using(
     ExponentialDamper,
     damping_constant=damping_constant,
@@ -171,17 +174,17 @@ pp_list_rod2 = defaultdict(list)
 
 
 parallel_connection_sim.collect_diagnostics(rod_one).using(
-    ParallelConnecitonCallback, step_skip=1000, callback_params=pp_list_rod1
+    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod1
 )
 parallel_connection_sim.collect_diagnostics(rod_two).using(
-    ParallelConnecitonCallback, step_skip=1000, callback_params=pp_list_rod2
+    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod2
 )
 
 
 parallel_connection_sim.finalize()
 timestepper = PositionVerlet()
 
-final_time = 5.0
+final_time = 20.0
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)

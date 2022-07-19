@@ -8,7 +8,7 @@ exclude_lines =
     def __repr__
     from
     import
-    
+show_missing = true
 
 [run]
 branch = True
@@ -20,6 +20,7 @@ omit =
     elastica/systems/analytical.py
     # omit deprecation warning message
     elastica/_elastica_numpy.py
+    elastica/_elastica_numba.py
     # omit experimental modules
     elastica/experimental/*
 	setup.py

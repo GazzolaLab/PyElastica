@@ -613,7 +613,7 @@ class HelicalBucklingBC(ConstraintBase):
         twisting_time: float,
         slack: float,
         number_of_rotations: float,
-        **kwargs
+        **kwargs,
     ):
         """
 

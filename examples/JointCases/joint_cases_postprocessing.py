@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 from mpl_toolkits import mplot3d
+from scipy.spatial.transform import Rotation
 
 
 def plot_position(
@@ -33,6 +34,25 @@ def plot_position(
 
     if SAVE_FIGURE:
         fig.savefig(filename)
+
+
+def plot_orientation(title, time, directors):
+    quat = []
+    for t in range(len(time)):
+        quat_t = Rotation.from_matrix(directors[t].T).as_quat()
+        quat.append(quat_t)
+    quat = np.array(quat)
+
+    plt.figure(num=title)
+    plt.plot(time, quat[:, 0], label="x")
+    plt.plot(time, quat[:, 1], label="y")
+    plt.plot(time, quat[:, 2], label="z")
+    plt.plot(time, quat[:, 3], label="w")
+    plt.title(title)
+    plt.legend()
+    plt.xlabel("Time [s]")
+    plt.ylabel("Quaternion")
+    plt.show()
 
 
 def plot_video(
@@ -94,7 +114,7 @@ def plot_video_xy(
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
 
-    print("plot video")
+    print("plot video xy")
     FFMpegWriter = manimation.writers["ffmpeg"]
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
     writer = FFMpegWriter(fps=fps, metadata=metadata)
@@ -132,7 +152,7 @@ def plot_video_xz(
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
 
-    print("plot video")
+    print("plot video xz")
     FFMpegWriter = manimation.writers["ffmpeg"]
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
     writer = FFMpegWriter(fps=fps, metadata=metadata)

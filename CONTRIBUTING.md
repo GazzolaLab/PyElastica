@@ -33,15 +33,37 @@ The following is a set of guidelines for contributing to PyElastica. These are m
 
 ## Before I get started
 
-### Installation and packages
+### Setup development environment
+
+Below are steps of how to setup development environment. We mainly use `poetry` to manage 
+the project, although most of the important commands will be provided in `Makefile`.
+
+1. Clone!
 
 First **create the fork repository and clone** to your local machine.
-We provide [requirements.txt](requirements.txt) to include all the dependencies.
+
+2. Virtual python workspace: `conda`, `pyenv`, or `venv`.
+
+We recommend using python version above 3.8.0.
+
 ```bash
-$ pip install -r requirements.txt
+conda create --name pyelastica-dev
+conda activate pyelastica-dev
+conda install python==3.8
 ```
 
-> **Note:** Make sure that **PyElastica** is not installed using pip.
+3. Setup [`poetry`](https://python-poetry.org) and `dependencies`!
+
+```bash
+make poetry-download
+make install
+```
+
+If you are planning to contribute on documentation, extra dependencies can be installed 
+using `poetry install -E docs`. The detail instruction is included 
+[here](https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md).
+
+4. Now your working environment is set!
 
 ### Project workflow
 
@@ -116,7 +138,7 @@ Please follow these steps to have your contribution considered by the maintainer
 	In order to run pytest, run the following line from the top directory:
 
 	`
-	python3 -m pytest
+	make test
 	`
 
 3. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
@@ -139,17 +161,9 @@ Ask any question about **how to use PyElastica and detail implementation** in th
 
 We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/project/black/) for python style.
 
-You can install flake8 using pip:
-
-`pip install flake8==3.8.3`
-
-You can install black using pip:
-
-`pip install black`
-
 In order to format the code:
 
-`make all`
+`make formatting`
 
 > **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected. 
 

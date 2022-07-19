@@ -126,7 +126,7 @@ for i in range(int(n_muscle_fibers / 2)):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        nu_muscle,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
@@ -191,7 +191,7 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        nu_muscle,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
