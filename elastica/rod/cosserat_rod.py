@@ -520,6 +520,62 @@ class CosseratRod(RodBase, KnotTheory):
             * (_batch_dot(sigma_diff, shear_internal_forces) * self.rest_lengths).sum()
         )
 
+    def compute_position_of_point(self, point, index):
+        """
+        Computes the position in the inertial frame of a point specified in the local frame of
+        the specified node of the rod.
+
+        Parameters
+        ----------
+        point : np.array
+            1D (3,) numpy array containing 'float' data.
+            The point describes a position in the local frame relative to the inertial position of node
+            with index `index` and orientation of element with `index`.
+        index: int
+            Index of the node in the rod.
+
+        Returns
+        -------
+        position : np.array
+            1D (3,) numpy array containing 'float' data.
+            Position of the point in the inertial frame.
+        """
+        assert point.shape == (3,), "Point must be in the shape (3,)"
+        position = self.position_collection[..., index] + np.dot(
+            self.director_collection[..., index].T, point
+        )
+        return position
+
+    def compute_positions_of_points(self, points):
+        """
+        Computes the positions in the inertial frame of a batch of `n_elements` points specified in the local frame of
+        each node of the rod.
+
+        Parameters
+        ----------
+        points : np.array
+            2D (3, n_elements) numpy array containing 'float' data.
+            Each point (3,) describes a position relative  to orientation of the respective element and the origin
+            of the respective node.
+
+        Returns
+        -------
+        positions : np.array
+            2D (3, n_elements) numpy array containing 'float' data.
+            Positions of the points in the inertial frame.
+        """
+        assert points.shape[0] == 3, "Points must be in the shape (3, n_elements)"
+        assert (
+            points.shape[1] == self.director_collection.shape[2]
+        ), "Points must be in the shape (3, n_elements)"
+
+        # we take the positions of the first `n_elements` nodes.
+        # The last node is ignored, as we don't know its orientation.
+        positions = self.position_collection[..., :-1] + _batch_matvec(
+            self.director_collection.transpose(1, 0, 2), points
+        )
+        return positions
+
 
 # Below is the numba-implementation of Cosserat Rod equations. They don't need to be visible by users.
 

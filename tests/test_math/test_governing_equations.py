@@ -22,6 +22,7 @@ from elastica.rod.cosserat_rod import (
     _get_z_vector,
 )
 import pytest
+from scipy.spatial.transform import Rotation
 
 
 class BaseClass:
@@ -1263,6 +1264,81 @@ class TestingClass:
         test_shear_energy = test_rod.compute_shear_energy()
 
         assert_allclose(test_shear_energy, correct_shear_energy, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [10])
+    @pytest.mark.parametrize("bending_positional_offset", [-0.5, 0.0, 0.5])
+    @pytest.mark.parametrize("bending_angle", [-np.pi / 4, 0.0, np.pi / 4])
+    @pytest.mark.parametrize(
+        "point",
+        [
+            np.zeros((3,)),
+            np.array([1.0, 0.0, 0.0]),
+            np.array([0.0, 1.0, 0.0]),
+            np.array([0.0, 0.0, 1.0]),
+            np.random.rand(3),
+        ],
+    )
+    def test_compute_positions_of_points(
+        self,
+        n_elem: int,
+        bending_positional_offset: float,
+        bending_angle: float,
+        point: np.array,
+    ):
+        """
+        This test case is initializes a straight rod.  We modify node positions
+        and compress the rod numerically.
+        By doing that we impose a deformation in the rod, which allows us to verify
+
+        Parameters
+        ----------
+        n_elem: int
+        bending_positional_offset: float
+        bending_angle: float
+        point: np.array
+
+        Returns
+        -------
+
+        """
+        initial, test_rod = constructor(n_elem)
+        base_length = initial.base_length
+
+        # linearly increase positional offset along the x-axis
+        test_rod.position_collection[0, ...] += np.linspace(
+            start=0.0, stop=bending_positional_offset * base_length, num=test_rod.position_collection.shape[1]
+        )
+
+        # linearly increase roll angle from proximal to distal end of rod
+        roll_angles = np.linspace(start=0.0, stop=bending_angle, num=test_rod.director_collection.shape[2])
+        for link_idx in range(test_rod.director_collection.shape[2]):
+            # Compute rotation matrix
+            rot_mat = Rotation.from_euler(
+                "X", roll_angles[link_idx], degrees=False
+            ).as_matrix()
+            # Apply rotation to director
+            test_rod.director_collection[..., link_idx] = (
+                rot_mat @ test_rod.director_collection[..., link_idx].T
+            ).T
+
+        points = np.repeat(np.expand_dims(point, axis=1), n_elem, axis=1)
+        print("points", points.shape, "position collection shape", test_rod.position_collection.shape)
+        target_positions = np.zeros((3, n_elem))
+        batched_positions = test_rod.compute_positions_of_points(points)
+        unbatched_positions = np.zeros((3, n_elem))
+        for node_idx in range(n_elem):
+            point_for_node = points[:, node_idx]
+            target_positions[:, node_idx] = test_rod.position_collection[:, node_idx] + np.dot(
+                test_rod.director_collection[:, :, node_idx].T, point_for_node
+            )
+            unbatched_positions[:, node_idx] = test_rod.compute_position_of_point(
+                point_for_node, node_idx
+            )
+
+        # check output of test_rod.compute_positions_of_points()
+        assert_allclose(batched_positions, target_positions)
+        # check output of test_rod.compute_position_of_point()
+        assert_allclose(unbatched_positions, target_positions)
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_zerod_out_external_forces_and_torques(self, n_elem):
