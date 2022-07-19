@@ -97,15 +97,10 @@ jobs:
       - name: Run style checks
         run: |
           make check-codestyle
-      # Set environment variables for coverage test.
-      # For the coverage test we disable numba jit compilation, since it prevents generating coverage data.
-      - name: Set environment variables for coverage test
-        run: |
-          echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
       - name: Test PyElastica using pytest
         if: startsWith(runner.os, 'macOS')
         run: |
-          poetry run pytest -c pyproject.toml --cov=elastica --cov-report=xml
+          make test_ci
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
