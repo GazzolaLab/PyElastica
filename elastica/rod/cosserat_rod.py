@@ -532,13 +532,19 @@ class CosseratRod(RodBase, KnotTheory):
             The point describes a position in the local frame relative to the inertial position of node
             with index `index` and orientation of element with `index`.
         index: int
-            Index of the node in the rod.
+            Index of the node / element in the rod.
 
         Returns
         -------
         position : np.array
             1D (3,) numpy array containing 'float' data.
             Position of the point in the inertial frame.
+
+        Examples
+        --------
+        Compute position in inertial frame for a point (0, 0, 1) relative to the last node of the rod.
+
+        >>> rod.compute_position_of_point(np.array([0, 0, 1]), -1)
         """
         assert point.shape == (3,), "Point must be in the shape (3,)"
         position = self.position_collection[..., index] + np.dot(
@@ -563,6 +569,12 @@ class CosseratRod(RodBase, KnotTheory):
         positions : np.array
             2D (3, n_elements) numpy array containing 'float' data.
             Positions of the points in the inertial frame.
+
+        Examples
+        --------
+        Compute positions in inertial frame for a point (0, 0, 1) relative to the first `n_elements` nodes of the rod.
+
+        >>> rod.compute_positions_of_points(np.repeat(np.array([[0], [0], [1]]), rod.n_elems, axis=1))
         """
         assert points.shape[0] == 3, "Points must be in the shape (3, n_elements)"
         assert (
@@ -575,6 +587,94 @@ class CosseratRod(RodBase, KnotTheory):
             self.director_collection.transpose(1, 0, 2), points
         )
         return positions
+
+    def compute_velocity_of_point(self, point, index):
+        """
+        Computes the velocity in the inertial frame of point specified in the local frame of a node / element.
+
+        Parameters
+        ----------
+        point : np.array
+            1D (3,) numpy array containing 'float' data.
+            The point describes a position in the local frame relative to the inertial position of node
+            with index `index` and orientation of element with `index`.
+
+        index: int
+            Index of the node / element in the rod.
+
+        Returns
+        -------
+        velocity : np.array
+            1D (3,) numpy array containing 'float' data.
+            Velocity of the point in the inertial frame.
+
+        Examples
+        --------
+        Compute velocity in inertial frame for a point (0, 0, 1) relative to the last node of the rod.
+
+        >>> rod.compute_velocity_of_point(np.array([0, 0, 1]), -1)
+        """
+        assert point.shape == (3,), "Point must be in the shape (3,)"
+
+        # position of point in inertial frame
+        position = self.compute_position_of_point(point, index)
+
+        # rotate angular velocity to inertial frame
+        omega_inertial_frame = np.dot(
+            self.director_collection[..., index].T, self.omega_collection[..., index]
+        )
+
+        # apply the euler differentiation rule
+        velocity = self.velocity_collection[..., index] + np.cross(
+            omega_inertial_frame, position
+        )
+
+        return velocity
+
+    def compute_velocities_of_points(self, points):
+        """
+        Computes the velocities in the inertial frame of a batch of `n_elements` points specified in the local frame of
+        each node of the rod.
+
+        Parameters
+        ----------
+        points : np.array
+            2D (3, n_elements) numpy array containing 'float' data.
+            Each point (3,) describes a position relative  to orientation of the respective element and the origin
+            of the respective node.
+
+        Returns
+        -------
+        velocities : np.array
+            2D (3, n_elements) numpy array containing 'float' data.
+            Velocities of the points in the inertial frame.
+
+        Examples
+        --------
+        Compute velocities in inertial frame for a point (0, 0, 1) relative to the first `n_elements` nodes of the rod.
+
+        >>> rod.compute_velocities_of_points(np.repeat(np.array([[0], [0], [1]]), rod.n_elems, axis=1))
+        """
+        assert points.shape[0] == 3, "Points must be in the shape (3, n_elements)"
+        assert (
+            points.shape[1] == self.omega_collection.shape[1]
+        ), "Points must be in the shape (3, n_elements)"
+
+        # positions of points in inertial frame
+        positions = self.compute_positions_of_points(points)
+
+        # rotate angular velocities to inertial frame
+        omega_collection_inertial = _batch_matvec(
+            self.director_collection.transpose(1, 0, 2), self.omega_collection
+        )
+
+        # apply the euler differentiation rule
+        # only consider the first `n_elements` velocities, as we don't know the orientation of the last element
+        velocities = self.velocity_collection[:, :-1] + _batch_cross(
+            omega_collection_inertial, positions
+        )
+
+        return velocities
 
 
 # Below is the numba-implementation of Cosserat Rod equations. They don't need to be visible by users.

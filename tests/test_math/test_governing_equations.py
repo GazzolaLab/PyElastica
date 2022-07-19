@@ -1278,7 +1278,7 @@ class TestingClass:
             np.random.rand(3),
         ],
     )
-    def test_compute_positions_of_points(
+    def test_compute_position_and_velocity_methods(
         self,
         n_elem: int,
         bending_positional_offset: float,
@@ -1325,13 +1325,8 @@ class TestingClass:
                 rot_mat @ test_rod.director_collection[..., link_idx].T
             ).T
 
+        # test point methods
         points = np.repeat(np.expand_dims(point, axis=1), n_elem, axis=1)
-        print(
-            "points",
-            points.shape,
-            "position collection shape",
-            test_rod.position_collection.shape,
-        )
         target_positions = np.zeros((3, n_elem))
         batched_positions = test_rod.compute_positions_of_points(points)
         unbatched_positions = np.zeros((3, n_elem))
@@ -1348,6 +1343,49 @@ class TestingClass:
         assert_allclose(batched_positions, target_positions)
         # check output of test_rod.compute_position_of_point()
         assert_allclose(unbatched_positions, target_positions)
+
+        # add linear velocity (up to 0.1 m/s at the distal end of rod)
+        test_rod.velocity_collection[0, ...] += np.linspace(
+            start=0.0,
+            stop=0.1 * np.sign(bending_positional_offset),
+            num=test_rod.velocity_collection.shape[1],
+        )
+
+        # add angular roll velocity (up to 0.1 rad/s at the distal end of rod)
+        test_rod.omega_collection[0, ...] += np.linspace(
+            start=0.0,
+            stop=0.1 * np.sign(bending_angle),
+            num=test_rod.omega_collection.shape[1],
+        )
+
+        # test velocity methods
+        target_velocities = np.zeros((3, n_elem))
+        batched_velocities = test_rod.compute_velocities_of_points(points)
+        unbatched_velocities = np.zeros((3, n_elem))
+        for node_idx in range(n_elem):
+            point_for_node = points[:, node_idx]
+
+            # position of point in inertial frame
+            position = test_rod.compute_position_of_point(point, node_idx)
+            # rotate angular velocity to inertial frame
+            omega_inertial_frame = np.dot(
+                test_rod.director_collection[..., node_idx].T,
+                test_rod.omega_collection[..., node_idx],
+            )
+            # apply the euler differentiation rule
+            velocity = test_rod.velocity_collection[..., node_idx] + np.cross(
+                omega_inertial_frame, position
+            )
+            target_velocities[:, node_idx] = velocity
+
+            unbatched_velocities[:, node_idx] = test_rod.compute_velocity_of_point(
+                point_for_node, node_idx
+            )
+
+        # check output of test_rod.compute_velocities_of_points()
+        assert_allclose(batched_velocities, target_velocities)
+        # check output of test_rod.compute_velocity_of_point()
+        assert_allclose(unbatched_velocities, target_velocities)
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
     def test_zerod_out_external_forces_and_torques(self, n_elem):
