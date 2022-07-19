@@ -1,110 +1,112 @@
 # This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push request
-# events for the master branch, and pull request events for all branches.
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ '**' ]
+# Controls when the action will run.
+on: [push, pull_request]
+# Older settings:
+# Triggers the workflow on push request events for the master branch,
+# and pull request events for all branches.
+#on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ '**' ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ${{ matrix.os }} #ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
         os: [ubuntu-latest, macos-latest] #, windows-latest] # Run macos tests if really required, since they charge 10 times more for macos
-        python-version: [3.6, 3.7, 3.8]
-
+        include:
+          - os: ubuntu-latest
+            path: ~/.cache/pip
+          - os: macos-latest
+            path: ~/Library/Caches/pip
+#          - os: windows-latest
+#            path: ~\AppData\Local\pip\Cache
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
       # Ref: https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.python-version }}
-
       # You can test your matrix by printing the current Python version
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      
-      # Cache the pip requirmenets for other tests. If requirements cached use them to speed up the build.
-      # Ref: https://github.com/actions/cache/blob/main/examples.md#python---pip 
-      - name: Cache pip Linux
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'Linux')
+      # Install Poetry and dependencies
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Set up cache
+        uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Cache pip MacOS
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'macOS')
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            
-      - name: Cache pip Windows
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'Windows')
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          echo update pip
-          python -m pip install --upgrade pip
-          echo update requirments
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          echo update test requirements
-          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
-    
+          poetry config virtualenvs.in-project true
+          poetry install
       # Runs a single command using the runners shell
       - name: Welcome message
         run: echo Hello, world! Welcome PyElastica Build, lets start testing!
-      
-      # Formatting test with black and flake8
-      - name: Black and Flake8 formatting tests
+      # Run style checks (black and flake8)
+      - name: Run style checks
         run: |
-          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-            black --version
-            black --check elastica tests
-            flake8 --version
-            flake8 elastica tests 
-          fi
-          
-      # Set environment variables for coverage test. Coverage test is done using python 3.6
+          make check-codestyle
+      # Test PyElastica using pytest
+      - name: Run tests
+        run: |
+          make test
+  report-coverage:  # Report coverage from python 3.8 and mac-os. May change later
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+        os: [macos-latest]
+        include:
+          - os: macos-latest
+            path: ~/Library/Caches/pip
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Set up cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install
+      - name: Run style checks
+        run: |
+          make check-codestyle
+      # Set environment variables for coverage test.
       # For the coverage test we disable numba jit compilation, since it prevents generating coverage data.
       - name: Set environment variables for coverage test
         run: |
-          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-            echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-          fi
-        
-      # Test Pyelastica using pytest
+          echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
       - name: Test PyElastica using pytest
+        if: startsWith(runner.os, 'macOS')
         run: |
-          if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-            python3 -m pytest --cov=elastica --cov-report=xml
-            codecov
-          else
-            python3 -m pytest
-          fi
-      - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v3
+          poetry run pytest -c pyproject.toml --cov=elastica --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
