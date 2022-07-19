@@ -106,38 +106,15 @@ hinge_joint_sim.dampen(rod2).using(
     time_step=dt,
 )
 
-# Callback functions
-# Add call backs
-class TestJoints(CallBackBaseClass):
-    """
-    Call back function for testing joints
-    """
-
-    def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
-        self.every = step_skip
-        self.callback_params = callback_params
-
-    def make_callback(self, system, time, current_step: int):
-        if current_step % self.every == 0:
-            self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
-            return
-
-
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-
 hinge_joint_sim.collect_diagnostics(rod1).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod1
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 hinge_joint_sim.collect_diagnostics(rod2).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod2
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
-
 
 hinge_joint_sim.finalize()
 timestepper = PositionVerlet()

@@ -4,6 +4,7 @@ import numpy as np
 import numba
 from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_product_k_ik_to_ik
+from elastica._rotations import _inv_rotate
 from math import sqrt
 
 
@@ -209,9 +210,16 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
+        nut: float
+            Rotational damping coefficient of the joint.
+        rest_rotation_matrix: np.array
+            2D (3,3) array containing data with 'float' type.
+            Rest 3x3 rotation matrix from system one to system two at the connected elements.
+            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
+            is enforced.
     """
 
-    def __init__(self, k, nu, kt):
+    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
         """
 
         Parameters
@@ -222,51 +230,122 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
+        nut: float = 0.
+            Rotational damping coefficient of the joint.
+        rest_rotation_matrix: np.array
+            2D (3,3) array containing data with 'float' type.
+            Rest 3x3 rotation matrix from system one to system two at the connected elements.
+            If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
+            If not provided, `rest_rotation_matrix` is initialized to the identity matrix,
+            which means that a restoring torque will be applied to align the directors of both systems directly.
+            (default=None)
         """
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
+        self.nut = nut
+
+        # TODO: compute the rest rotation matrix directly during initialization
+        #  as soon as systems (e.g. `rod_one` and `rod_two`) and indices (e.g. `index_one` and `index_two`)
+        #  are available in the __init__
+        if rest_rotation_matrix is None:
+            rest_rotation_matrix = np.eye(3)
+        assert rest_rotation_matrix.shape == (3, 3), "Rest rotation matrix must be 3x3"
+        self.rest_rotation_matrix = rest_rotation_matrix
 
     # Apply force is same as free joint
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         return super().apply_forces(rod_one, index_one, rod_two, index_two)
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
-        # current direction of the first element of link two
-        # also NOTE: - rod two is fixed at first element
-        link_direction = (
-            rod_two.position_collection[..., index_two + 1]
-            - rod_two.position_collection[..., index_two]
+    def apply_torques(self, system_one, index_one, system_two, index_two):
+        # collect directors of systems one and two
+        # note that systems can be either rods or rigid bodies
+        system_one_director = system_one.director_collection[..., index_one]
+        system_two_director = system_two.director_collection[..., index_two]
+
+        # rel_rot: C_12 = C_1I @ C_I2
+        # C_12 is relative rotation matrix from system 1 to system 2
+        # C_1I is the rotation from system 1 to the inertial frame (i.e. the world frame)
+        # C_I2 is the rotation from the inertial frame to system 2 frame (inverse of system_two_director)
+        rel_rot = system_one_director @ system_two_director.T
+        # error_rot: C_22* = C_21 @ C_12*
+        # C_22* is rotation matrix from current orientation of system 2 to desired orientation of system 2
+        # C_21 is the inverse of C_12, which describes the relative (current) rotation from system 1 to system 2
+        # C_12* is the desired rotation between systems one and two, which is saved in the static_rotation attribute
+        dev_rot = rel_rot.T @ self.rest_rotation_matrix
+
+        # compute rotation vectors based on C_22*
+        # scipy implementation
+        # rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+        #
+        # implementation using custom _inv_rotate compiled with numba
+        # rotation vector between identity matrix and C_22*
+        rot_vec = _inv_rotate(np.dstack([np.eye(3), dev_rot.T])).squeeze()
+
+        # rotate rotation vector into inertial frame
+        rot_vec_inertial_frame = system_two_director.T @ rot_vec
+
+        # deviation in rotation velocity between system 1 and system 2
+        # first convert to inertial frame, then take differences
+        dev_omega = (
+            system_two_director.T @ system_two.omega_collection[..., index_two]
+            - system_one_director.T @ system_one.omega_collection[..., index_one]
         )
 
-        # To constrain the orientation of link two, the second node of link two should align with
-        # the direction of link one. Thus, we compute the desired position of the second node of link two
-        # as check1, and the current position of the second node of link two as check2. Check1 and check2
-        # should overlap.
+        # we compute the constraining torque using a rotational spring - damper system in the inertial frame
+        torque = self.kt * rot_vec_inertial_frame - self.nut * dev_omega
 
-        tgt_destination = (
-            rod_one.position_collection[..., index_one]
-            + rod_two.rest_lengths[index_two] * rod_one.tangents[..., index_one]
-        )  # dl of rod 2 can be different than rod 1 so use rest length of rod 2
+        # The opposite torques will be applied to system one and two after rotating the torques into the local frame
+        system_one.external_torques[..., index_one] -= system_one_director @ torque
+        system_two.external_torques[..., index_two] += system_two_director @ torque
 
-        curr_destination = rod_two.position_collection[
-            ..., index_two + 1
-        ]  # second element of rod2
 
-        # Compute the restoring torque
-        forcedirection = -self.kt * (
-            curr_destination - tgt_destination
-        )  # force direction is between rod2 2nd element and rod1
-        torque = np.cross(link_direction, forcedirection)
+def get_relative_rotation_two_systems(system_one, index_one, system_two, index_two):
+    """
+    Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
-        # The opposite torque will be applied on link one
-        rod_one.external_torques[..., index_one] -= (
-            rod_one.director_collection[..., index_one] @ torque
-        )
-        rod_two.external_torques[..., index_two] += (
-            rod_two.director_collection[..., index_two] @ torque
-        )
+    Examples
+    ----------
+    How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
+
+        >>> rel_rot_mat = get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+
+    How to initialize a FixedJoint with a rest rotation between the two systems,
+    which is enforced throughout the simulation:
+
+        >>> simulator.connect(
+        ...    first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
+        ... ).using(
+        ...    FixedJoint,
+        ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
+        ...    rest_rotation_matrix=get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+        ... )
+
+    See Also
+    ---------
+    FixedJoint
+
+    Parameters
+    ----------
+    rod_one : object
+        Rod-like object
+    index_one : int
+        Index of first rod for joint.
+    rod_two : object
+        Rod-like object
+    index_two : int
+        Index of second rod for joint.
+
+    Returns
+    -------
+    relative_rotation_matrix : np.array
+        Relative rotation matrix C_12 between the two systems for their current state.
+    """
+    return (
+        system_one.director_collection[..., index_one]
+        @ system_two.director_collection[..., index_two].T
+    )
 
 
 @numba.njit(cache=True)
