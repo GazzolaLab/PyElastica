@@ -461,6 +461,8 @@ class ConfigurableFixedConstraint(ConstraintBase):
             # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
             allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
 
+            director_collection[..., k] = allowed_directors.T
+
             # old implementation without DoF
             # director_collection[..., k] = fixed_director_collection[i, ...]
 
