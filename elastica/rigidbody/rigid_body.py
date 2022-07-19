@@ -104,3 +104,70 @@ class RigidBodyBase(ABC):
             "ijk,jk->ik", self.mass_second_moment_of_inertia, self.omega_collection
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega).sum()
+
+    def compute_position_of_point(self, point):
+        """
+        Computes the position in the inertial frame of a point specified in the local frame of the rigid body.
+
+        Parameters
+        ----------
+        point : np.array
+            1D (3,) numpy array containing 'float' data.
+            The point describes a position in the local frame of the rigid body.
+
+        Returns
+        -------
+        position : np.array
+            1D (3,) numpy array containing 'float' data.
+            Position of the point in the inertial frame.
+
+        Examples
+        --------
+        Compute position in inertial frame for a point (0, 0, 1) relative to center of mass of the rigid body.
+
+        >>> rigid_body.compute_position_of_point(np.array([0, 0, 1]))
+        """
+        assert point.shape == (3,), "Point must be in the shape (3,)"
+        position = self.position_collection[..., 0] + np.dot(
+            self.director_collection[..., 0].T, point
+        )
+        return position
+
+    def compute_velocity_of_point(self, point):
+        """
+        Computes the velocity in the inertial frame of point specified in the local frame of the rigid body.
+
+        Parameters
+        ----------
+        point : np.array
+            1D (3,) numpy array containing 'float' data.
+            The point describes a position in the local frame of the rigid body.
+
+        Returns
+        -------
+        velocity : np.array
+            1D (3,) numpy array containing 'float' data.
+            Velocity of the point in the inertial frame.
+
+        Examples
+        --------
+        Compute velocity in inertial frame for a point (0, 0, 1) relative to the center of mass of the rigid body.
+
+        >>> rigid_body.compute_velocity_of_point(np.array([0, 0, 1]))
+        """
+        assert point.shape == (3,), "Point must be in the shape (3,)"
+
+        # position of point in inertial frame
+        position = self.compute_position_of_point(point)
+
+        # rotate angular velocity to inertial frame
+        omega_inertial_frame = np.dot(
+            self.director_collection[..., 0].T, self.omega_collection[..., 0]
+        )
+
+        # apply the euler differentiation rule
+        velocity = self.velocity_collection[..., 0] + np.cross(
+            omega_inertial_frame, position
+        )
+
+        return velocity
