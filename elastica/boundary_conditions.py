@@ -20,6 +20,7 @@ from abc import ABC, abstractmethod
 import numba
 from numba import njit
 
+from elastica._linalg import _batch_matvec
 from elastica._rotations import _get_rotation_matrix, _inv_rotate
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
@@ -340,11 +341,9 @@ class ConfigurableFixedConstraint(ConstraintBase):
         ), "Rotational constraint selector must be a 1D boolean array of length 3."
         # cast booleans to int
         self.translational_constraint_selector = (
-            translational_constraint_selector.astype(np.int)
+            translational_constraint_selector.astype(int)
         )
-        self.rotational_constraint_selector = rotational_constraint_selector.astype(
-            np.int
-        )
+        self.rotational_constraint_selector = rotational_constraint_selector.astype(int)
 
     def constrain_values(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
@@ -375,6 +374,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
             )
         if self.constrained_director_idx.size:
             self.nb_constrain_rotational_rates(
+                rod.director_collection,
                 rod.omega_collection,
                 self.constrained_director_idx,
                 self.rotational_constraint_selector,
@@ -498,13 +498,15 @@ class ConfigurableFixedConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_rotational_rates(
-        omega_collection, indices, constraint_selector
+        director_collection, omega_collection, indices, constraint_selector
     ) -> None:
         """
         Compute constrain rates in numba njit decorator
 
         Parameters
         ----------
+        director_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
         omega_collection : numpy.ndarray
             2D (dim, blocksize) array containing data with `float` type.
         indices : numpy.ndarray
@@ -516,13 +518,18 @@ class ConfigurableFixedConstraint(ConstraintBase):
             otherwise the system can freely rotate around the axis.
             Selector shall be specified in the inertial frame
         """
+        directors = director_collection[..., indices]
 
-        block_size = indices.size
-        for i in range(block_size):
-            k = indices[i]
-            omega_collection[..., k] = (1 - constraint_selector) * omega_collection[
-                ..., k
-            ]
+        # rotate angular velocities to inertial frame
+        omegas_inertial = _batch_matvec(
+            directors.transpose(1, 0, 2), omega_collection[..., indices]
+        )
+
+        # apply constraint selector to angular velocities in inertial frame
+        omegas_allowed = (1 - np.expand_dims(constraint_selector, 1)) * omegas_inertial
+
+        # rotate angular velocities vector back to local frame and apply to omega_collection
+        omega_collection[..., indices] = _batch_matvec(directors, omegas_allowed)
 
 
 class FixedConstraint(ConfigurableFixedConstraint):
