@@ -105,7 +105,7 @@ class RigidBodyBase(ABC):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega).sum()
 
-    def compute_position_of_point(self, point):
+    def compute_position_of_point(self, point, index: int = 0):
         """
         Computes the position in the inertial frame of a point specified in the local frame of the rigid body.
 
@@ -114,6 +114,9 @@ class RigidBodyBase(ABC):
         point : np.array
             1D (3,) numpy array containing 'float' data.
             The point describes a position in the local frame of the rigid body.
+
+        index: int
+            Index of the node in the system. (default = 0)
 
         Returns
         -------
@@ -128,12 +131,12 @@ class RigidBodyBase(ABC):
         >>> rigid_body.compute_position_of_point(np.array([0, 0, 1]))
         """
         assert point.shape == (3,), "Point must be in the shape (3,)"
-        position = self.position_collection[..., 0] + np.dot(
-            self.director_collection[..., 0].T, point
+        position = self.position_collection[..., index] + np.dot(
+            self.director_collection[..., index].T, point
         )
         return position
 
-    def compute_velocity_of_point(self, point):
+    def compute_velocity_of_point(self, point, index: int = 0):
         """
         Computes the velocity in the inertial frame of point specified in the local frame of the rigid body.
 
@@ -142,6 +145,9 @@ class RigidBodyBase(ABC):
         point : np.array
             1D (3,) numpy array containing 'float' data.
             The point describes a position in the local frame of the rigid body.
+
+        index: int
+            Index of the node in the system. (default = 0)
 
         Returns
         -------
@@ -158,11 +164,11 @@ class RigidBodyBase(ABC):
         assert point.shape == (3,), "Point must be in the shape (3,)"
 
         # point rotated into the inertial frame
-        point_inertial_frame = np.dot(self.director_collection[..., 0].T, point)
+        point_inertial_frame = np.dot(self.director_collection[..., index].T, point)
 
         # rotate angular velocity to inertial frame
         omega_inertial_frame = np.dot(
-            self.director_collection[..., 0].T, self.omega_collection[..., 0]
+            self.director_collection[..., index].T, self.omega_collection[..., index]
         )
 
         # apply the euler differentiation rule
