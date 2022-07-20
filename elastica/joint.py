@@ -893,7 +893,7 @@ class ExternalContact(FreeJoint):
     --------
     How to define contact between rod and cylinder.
 
-    >>> simulator.connect(rod, cylidner).using(
+    >>> simulator.connect(rod, cylinder).using(
     ...    ExternalContact,
     ...    k=1e4,
     ...    nu=10,
