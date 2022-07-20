@@ -37,9 +37,9 @@ class FreeJoint:
     How to connect two Cosserat rods together using a spherical joint with a gap of 0.01 m in between.
 
     >>> simulator.connect(rod_one, rod_two).using(
-    ...    FixedJoint,
+    ...    FreeJoint,
     ...    k=1e4,
-    ...    nu=10,
+    ...    nu=1,
     ...    point_system_one=np.array([0.0, 0.0, 0.005]),
     ...    point_system_two=np.array([0.0, 0.0, -0.005]),
     ... )
@@ -47,9 +47,9 @@ class FreeJoint:
     How to connect the distal end of a CosseratRod with the base of a cylinder using a spherical joint.
 
     >>> simulator.connect(rod, cylinder).using(
-    ...    FixedJoint,
+    ...    FreeJoint,
     ...    k=1e4,
-    ...    nu=10,
+    ...    nu=1,
     ...    point_system_two=np.array([0.0, 0.0, -cylinder.length / 2.]),
     ... )
 
