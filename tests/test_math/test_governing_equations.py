@@ -1365,8 +1365,10 @@ class TestingClass:
         for node_idx in range(n_elem):
             point_for_node = points[:, node_idx]
 
-            # position of point in inertial frame
-            position = test_rod.compute_position_of_point(point, node_idx)
+            # rotate point into the inertial frame
+            point_inertial_frame = np.dot(
+                test_rod.director_collection[..., node_idx].T, point
+            )
             # rotate angular velocity to inertial frame
             omega_inertial_frame = np.dot(
                 test_rod.director_collection[..., node_idx].T,
@@ -1374,7 +1376,7 @@ class TestingClass:
             )
             # apply the euler differentiation rule
             velocity = test_rod.velocity_collection[..., node_idx] + np.cross(
-                omega_inertial_frame, position
+                omega_inertial_frame, point_inertial_frame
             )
             target_velocities[:, node_idx] = velocity
 

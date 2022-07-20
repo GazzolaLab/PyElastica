@@ -157,8 +157,8 @@ class RigidBodyBase(ABC):
         """
         assert point.shape == (3,), "Point must be in the shape (3,)"
 
-        # position of point in inertial frame
-        position = self.compute_position_of_point(point)
+        # point rotated into the inertial frame
+        point_inertial_frame = np.dot(self.director_collection[..., 0].T, point)
 
         # rotate angular velocity to inertial frame
         omega_inertial_frame = np.dot(
@@ -167,7 +167,7 @@ class RigidBodyBase(ABC):
 
         # apply the euler differentiation rule
         velocity = self.velocity_collection[..., 0] + np.cross(
-            omega_inertial_frame, position
+            omega_inertial_frame, point_inertial_frame
         )
 
         return velocity

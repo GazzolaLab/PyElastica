@@ -233,6 +233,8 @@ def test_compute_point_position_and_velocity(start, euler_angles, point):
 
     position = computed_position
 
+    # rotate point into the inertial frame
+    point_inertial_frame = np.dot(test_cylinder.director_collection[..., 0].T, point)
     # rotate angular velocity to inertial frame
     omega_inertial_frame = np.dot(
         test_cylinder.director_collection[..., 0].T,
@@ -240,7 +242,7 @@ def test_compute_point_position_and_velocity(start, euler_angles, point):
     )
     # apply the euler differentiation rule
     target_velocity = test_cylinder.velocity_collection[..., 0] + np.cross(
-        omega_inertial_frame, position
+        omega_inertial_frame, point_inertial_frame
     )
 
     computed_velocity = test_cylinder.compute_velocity_of_point(point)

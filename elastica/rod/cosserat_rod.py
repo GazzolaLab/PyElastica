@@ -616,8 +616,8 @@ class CosseratRod(RodBase, KnotTheory):
         """
         assert point.shape == (3,), "Point must be in the shape (3,)"
 
-        # position of point in inertial frame
-        position = self.compute_position_of_point(point, index)
+        # point rotated into the inertial frame
+        point_inertial_frame = np.dot(self.director_collection[..., index].T, point)
 
         # rotate angular velocity to inertial frame
         omega_inertial_frame = np.dot(
@@ -626,7 +626,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         # apply the euler differentiation rule
         velocity = self.velocity_collection[..., index] + np.cross(
-            omega_inertial_frame, position
+            omega_inertial_frame, point_inertial_frame
         )
 
         return velocity
@@ -660,8 +660,10 @@ class CosseratRod(RodBase, KnotTheory):
             points.shape[1] == self.omega_collection.shape[1]
         ), "Points must be in the shape (3, n_elements)"
 
-        # positions of points in inertial frame
-        positions = self.compute_positions_of_points(points)
+        # points rotated into the inertial frame
+        points_inertial_frame = _batch_matvec(
+            self.director_collection.transpose(1, 0, 2), points
+        )
 
         # rotate angular velocities to inertial frame
         omega_collection_inertial = _batch_matvec(
@@ -671,7 +673,7 @@ class CosseratRod(RodBase, KnotTheory):
         # apply the euler differentiation rule
         # only consider the first `n_elements` velocities, as we don't know the orientation of the last element
         velocities = self.velocity_collection[:, :-1] + _batch_cross(
-            omega_collection_inertial, positions
+            omega_collection_inertial, points_inertial_frame
         )
 
         return velocities
