@@ -255,8 +255,8 @@ class FixedJoint(FreeJoint):
         self.rest_rotation_matrix = rest_rotation_matrix
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_forces(rod_one, index_one, rod_two, index_two)
+    def apply_forces(self, system_one, index_one, system_two, index_two):
+        return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(self, system_one, index_one, system_two, index_two):
         # collect directors of systems one and two
