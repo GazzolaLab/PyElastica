@@ -176,15 +176,18 @@ class FreeJoint:
 
             # the contact force needs to be applied at a distance from the Center of Mass (CoM) of the rigid body
             # or the selected node of the Cosserat rod.
-            # Accordingly, we need to compute the torque to be applied to CoM / node.
-            vector_center_to_point = (
-                system.position_collection[..., index] - system_position
+            # This generates a torque, which we also need to apply to both systems.
+            # We first compute the vector r from the node / CoM to the joint connection point.
+            distance_system_point = (
+                system_position - system.position_collection[..., index]
             )
-            external_torque = np.cross(vector_center_to_point, external_force)
+            # The torque is the cross product of the distance vector and the contact force: tau = r x F
+            external_torque = np.cross(distance_system_point, external_force)
 
             # Apply external forces and torques to both systems.
             system.external_forces[..., index] += external_force
-            system.external_torques[..., index] += external_torque
+            # the torque still needs to be rotated into the local coordinate system of the system
+            system.external_torques[..., index] += system.director_collection[..., index] @ external_torque
 
         return
 
