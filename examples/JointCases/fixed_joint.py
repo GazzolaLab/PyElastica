@@ -35,8 +35,15 @@ E = 3e7
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
+# setting up time params
+final_time = 10
+dt = 1e-5
+fps = 100  # fps of the video
+step_skip = int(1 / (dt * fps))
+
 start_rod_1 = np.zeros((3,))
 start_rod_2 = start_rod_1 + direction * base_length
+start_cylinder = start_rod_2 + direction * base_length
 
 # Create rod 1
 rod1 = CosseratRod.straight_rod(
@@ -66,6 +73,15 @@ rod2 = CosseratRod.straight_rod(
     shear_modulus=shear_modulus,
 )
 fixed_joint_sim.append(rod2)
+cylinder = Cylinder(
+    start=start_cylinder,
+    direction=direction,
+    normal=normal,
+    base_length=base_length,
+    base_radius=base_radius,
+    density=density,
+)
+fixed_joint_sim.append(cylinder)
 
 # Apply boundary conditions to rod1.
 fixed_joint_sim.constrain(rod1).using(
@@ -75,7 +91,24 @@ fixed_joint_sim.constrain(rod1).using(
 # Connect rod 1 and rod 2
 fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
-).using(FixedJoint, k=1e5, nu=0, kt=5e3)
+).using(
+    FixedJoint,
+    k=1e5,
+    nu=1.0,
+    kt=1e3,
+    nut=1e-3,
+)
+# Connect rod 2 and cylinder
+fixed_joint_sim.connect(
+    first_rod=rod2, second_rod=cylinder, first_connect_idx=-1, second_connect_idx=0
+).using(
+    FixedJoint,
+    k=1e5,
+    nu=0.0,
+    kt=1e3,
+    nut=0e-3,
+    point_system_two=np.array([0.0, 0.0, -cylinder.length / 2]),
+)
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
@@ -92,7 +125,6 @@ fixed_joint_sim.add_forcing_to(rod2).using(
 # damping_constant = 0.4
 # dt = 1e-5
 damping_constant = 0.4
-dt = 1e-4
 fixed_joint_sim.dampen(rod1).using(
     ExponentialDamper,
     damping_constant=damping_constant,
@@ -106,35 +138,38 @@ fixed_joint_sim.dampen(rod2).using(
 
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
+pp_list_cylinder = defaultdict(list)
 
 fixed_joint_sim.collect_diagnostics(rod1).using(
-    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
+    MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1
 )
 fixed_joint_sim.collect_diagnostics(rod2).using(
-    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
+    MyCallBack, step_skip=step_skip, callback_params=pp_list_rod2
+)
+fixed_joint_sim.collect_diagnostics(cylinder).using(
+    MyCallBack, step_skip=step_skip, callback_params=pp_list_cylinder
 )
 
 fixed_joint_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
-final_time = 10
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
-SAVE_FIGURE = False
+SAVE_FIGURE = True
 PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
     filename = "fixed_joint_example_last_node_pos_xy.png"
     plot_position(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
+        plot_params_rod1=pp_list_rod1,
+        plot_params_rod2=pp_list_rod2,
+        plot_params_cylinder=pp_list_cylinder,
         filename=filename,
         SAVE_FIGURE=SAVE_FIGURE,
     )
@@ -142,23 +177,26 @@ if PLOT_FIGURE:
 if PLOT_VIDEO:
     filename = "fixed_joint_example"
     plot_video(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
+        plot_params_rod1=pp_list_rod1,
+        plot_params_rod2=pp_list_rod2,
+        plot_params_cylinder=pp_list_cylinder,
+        cylinder=cylinder,
         video_name=filename + ".mp4",
-        fps=100,
+        fps=fps,
     )
     plot_video_xy(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
+        plot_params_rod1=pp_list_rod1,
+        plot_params_rod2=pp_list_rod2,
+        plot_params_cylinder=pp_list_cylinder,
+        cylinder=cylinder,
         video_name=filename + "_xy.mp4",
-        fps=100,
+        fps=fps,
     )
     plot_video_xz(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
+        plot_params_rod1=pp_list_rod1,
+        plot_params_rod2=pp_list_rod2,
+        plot_params_cylinder=pp_list_cylinder,
+        cylinder=cylinder,
         video_name=filename + "_xz.mp4",
-        fps=100,
+        fps=fps,
     )
