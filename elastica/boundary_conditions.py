@@ -410,7 +410,9 @@ class FixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            velocity_collection[..., k] = 0.0
+            velocity_collection[0, k] = 0.0
+            velocity_collection[1, k] = 0.0
+            velocity_collection[2, k] = 0.0
 
     @staticmethod
     @njit(cache=True)
@@ -429,7 +431,9 @@ class FixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            omega_collection[..., k] = 0.0
+            omega_collection[0, k] = 0.0
+            omega_collection[1, k] = 0.0
+            omega_collection[2, k] = 0.0
 
 
 class HelicalBucklingBC(ConstraintBase):
