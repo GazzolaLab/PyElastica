@@ -207,12 +207,9 @@ def test_hingejoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
-    linkdirection = (
-        rod2.position_collection[..., rod2_index + 1]
-        - rod2.position_collection[..., rod2_index]
-    )
-    forcedirection = np.dot(linkdirection, normal1) * normal1
-    torque = -kt * np.cross(linkdirection, forcedirection)
+    link_direction = rod2.director_collection[0, :, rod2_index]
+    force_direction = np.dot(link_direction, normal1) * normal1
+    torque = -kt * np.cross(link_direction, force_direction)
 
     torque_rod1 = -rod1.director_collection[..., rod1_index] @ torque
     torque_rod2 = rod2.director_collection[..., rod2_index] @ torque

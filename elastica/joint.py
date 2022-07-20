@@ -167,16 +167,12 @@ class HingeJoint(FreeJoint):
         self.kt = kt
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_forces(rod_one, index_one, rod_two, index_two)
+    def apply_forces(self, system_one, index_one, system_two, index_two):
+        return super().apply_forces(system_one, index_one, system_two, index_two)
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
-        # current direction of the first element of link two
-        # also NOTE: - rod two is hinged at first element
-        link_direction = (
-            rod_two.position_collection[..., index_two + 1]
-            - rod_two.position_collection[..., index_two]
-        )
+    def apply_torques(self, system_one, index_one, system_two, index_two):
+        # current direction of the `index_two` element of link two
+        link_direction = system_two.director_collection[0, :, index_two]
 
         # projection of the link direction onto the plane normal
         force_direction = (
@@ -187,11 +183,11 @@ class HingeJoint(FreeJoint):
         torque = self.kt * np.cross(link_direction, force_direction)
 
         # The opposite torque will be applied on link one
-        rod_one.external_torques[..., index_one] -= (
-            rod_one.director_collection[..., index_one] @ torque
+        system_one.external_torques[..., index_one] -= (
+            system_one.director_collection[..., index_one] @ torque
         )
-        rod_two.external_torques[..., index_two] += (
-            rod_two.director_collection[..., index_two] @ torque
+        system_two.external_torques[..., index_two] += (
+            system_two.director_collection[..., index_two] @ torque
         )
 
 
