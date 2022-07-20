@@ -94,7 +94,7 @@ def plot_video(
         else None
     )
     director_of_cylinder = (
-        np.array(plot_params_cylinder["director"])
+        np.array(plot_params_cylinder["directors"])
         if plot_params_cylinder is not None
         else None
     )
@@ -188,7 +188,7 @@ def plot_video_xy(
         else None
     )
     director_of_cylinder = (
-        np.array(plot_params_cylinder["director"])
+        np.array(plot_params_cylinder["directors"])
         if plot_params_cylinder is not None
         else None
     )
@@ -271,7 +271,7 @@ def plot_video_xz(
         else None
     )
     director_of_cylinder = (
-        np.array(plot_params_cylinder["director"])
+        np.array(plot_params_cylinder["directors"])
         if plot_params_cylinder is not None
         else None
     )
