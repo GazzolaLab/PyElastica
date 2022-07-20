@@ -187,7 +187,9 @@ class FreeJoint:
             # Apply external forces and torques to both systems.
             system.external_forces[..., index] += external_force
             # the torque still needs to be rotated into the local coordinate system of the system
-            system.external_torques[..., index] += system.director_collection[..., index] @ external_torque
+            system.external_torques[..., index] += (
+                system.director_collection[..., index] @ external_torque
+            )
 
         return
 
@@ -340,7 +342,16 @@ class FixedJoint(FreeJoint):
         ... )
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, point_system_one=None, point_system_two=None, rest_rotation_matrix=None):
+    def __init__(
+        self,
+        k,
+        nu,
+        kt,
+        nut=0.0,
+        point_system_one=None,
+        point_system_two=None,
+        rest_rotation_matrix=None,
+    ):
         """
 
         Parameters
@@ -369,7 +380,12 @@ class FixedJoint(FreeJoint):
             which means that a restoring torque will be applied to align the directors of both systems directly.
             (default=None)
         """
-        super().__init__(k=k, nu=nu, point_system_one=point_system_one, point_system_two=point_system_two)
+        super().__init__(
+            k=k,
+            nu=nu,
+            point_system_one=point_system_one,
+            point_system_two=point_system_two,
+        )
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
