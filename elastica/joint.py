@@ -18,19 +18,46 @@ class FreeJoint:
     -----
     Every new joint class must be derived from the FreeJoint class.
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
+    point_system_one : numpy.ndarray
+            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+    point_system_two : numpy.ndarray
+        Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
+
+
+    Examples
+    --------
+    How to connect two Cosserat rods together using a spherical joint with a gap of 0.01 m in between.
+
+    >>> simulator.connect(rod_one, rod_two).using(
+    ...    FixedJoint,
+    ...    k=1e4,
+    ...    nu=10,
+    ...    point_system_one=np.array([0.0, 0.0, 0.005]),
+    ...    point_system_two=np.array([0.0, 0.0, -0.005]),
+    ... )
+
+    How to connect the distal end of a CosseratRod with the base of a cylinder using a spherical joint.
+
+    >>> simulator.connect(rod, cylinder).using(
+    ...    FixedJoint,
+    ...    k=1e4,
+    ...    nu=10,
+    ...    point_system_two=np.array([0.0, 0.0, -cylinder.length / 2.]),
+    ... )
 
     """
 
     # pass the k and nu for the forces
-    # also the necessary rods for the joint
-    # indices should be 0 or -1, we will provide wrappers for users later
-    def __init__(self, k, nu):
+    # also the necessary systems for the joint
+    def __init__(self, k, nu, point_system_one=None, point_system_two=None):
         """
 
         Parameters
@@ -39,81 +66,146 @@ class FreeJoint:
            Stiffness coefficient of the joint.
         nu: float
            Damping coefficient of the joint.
-
+        point_system_one : numpy.ndarray
+            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+            (default = np.array([0.0, 0.0, 0.0]))
+        point_system_two : numpy.ndarray
+            Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+            (default = np.array([0.0, 0.0, 0.0]))
         """
         self.k = k
         self.nu = nu
+        self.point_system_one = (
+            point_system_one
+            if point_system_one is not None
+            else np.array([0.0, 0.0, 0.0])
+        )
+        self.point_system_two = (
+            point_system_two
+            if point_system_two is not None
+            else np.array([0.0, 0.0, 0.0])
+        )
 
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(self, system_one, index_one, system_two, index_two):
         """
-        Apply joint force to the connected rod objects.
+        Apply joint force to the connected systems.
 
         Parameters
         ----------
-        rod_one : object
-            Rod-like object
+        system_one : Union[Type[CosseratRod], Type[RigidBodyBase]]
+             System two of the joint connection.
+             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
-            Index of first rod for joint.
-        rod_two : object
-            Rod-like object
+            Index of first system for joint.
+        system_two : Union[Type[CosseratRod], Type[RigidBodyBase]]
+            System two of the joint connection.
+            Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
-            Index of second rod for joint.
+            Index of second system for joint.
 
         Returns
         -------
 
         """
-        end_distance_vector = (
-            rod_two.position_collection[..., index_two]
-            - rod_one.position_collection[..., index_one]
+        # Compute the position in the inertial frame of the specified point.
+        # The point is defined in the local coordinate system of system one and used to attach to the joint.
+        position_system_one = system_one.compute_position_of_point(
+            point=self.point_system_one, index=index_one
         )
+        # Compute the position in the inertial frame of the specified point.
+        # The point is defined in the local coordinate system of system two and used to attach to the joint.
+        position_system_two = system_two.compute_position_of_point(
+            point=self.point_system_two, index=index_two
+        )
+
+        # Analogue to the positions, compute the velocities of the points in the inertial frames
+        velocity_system_one = system_one.compute_velocity_of_point(
+            point=self.point_system_one, index=index_one
+        )
+        velocity_system_two = system_two.compute_velocity_of_point(
+            point=self.point_system_two, index=index_two
+        )
+
+        # Compute the translational deviation of the point belonging to system one
+        # from the point belonging to system two
+        end_distance_vector = position_system_two - position_system_one
+
         # Calculate norm of end_distance_vector
         # this implementation timed: 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
         end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
 
         # Below if check is not efficient find something else
-        # We are checking if end of rod1 and start of rod2 are at the same point in space
+        # We are checking if the point of `system_one` and point of `system_two` are at the same point in space
         # If they are at the same point in space, it is a zero vector.
         if end_distance <= Tolerance.atol():
             normalized_end_distance_vector = np.array([0.0, 0.0, 0.0])
         else:
             normalized_end_distance_vector = end_distance_vector / end_distance
 
+        # Compute elastic force using a spring formulation as a linear function of the (undesired) distance between
+        # the two systems.
         elastic_force = self.k * end_distance_vector
 
-        relative_velocity = (
-            rod_two.velocity_collection[..., index_two]
-            - rod_one.velocity_collection[..., index_one]
-        )
+        # Compute the velocity deviation of the point belonging to system one from the point belonging to system two
+        relative_velocity = velocity_system_two - velocity_system_one
+        # only penalize (e.g. apply opposite damping force) velocity aligned with the `normalized_end_distance_vector`
         normal_relative_velocity = (
             np.dot(relative_velocity, normalized_end_distance_vector)
             * normalized_end_distance_vector
         )
         damping_force = -self.nu * normal_relative_velocity
 
+        # compute contact force as addition of elastic force and damping force
         contact_force = elastic_force + damping_force
 
-        rod_one.external_forces[..., index_one] += contact_force
-        rod_two.external_forces[..., index_two] -= contact_force
+        # loop over the two systems
+        for i, (system, index, point, system_position) in enumerate(
+            zip(
+                [system_one, system_two],
+                [index_one, index_two],
+                [self.point_system_one, self.point_system_two],
+                [position_system_one, position_system_two],
+            )
+        ):
+            # The external force has opposite signs for the two systems:
+            # For system one: external_force = contact_force
+            # For system two: external_force = -contact_force
+            external_force = (1 - 2 * i) * contact_force
+
+            # the contact force needs to be applied at a distance from the Center of Mass (CoM) of the rigid body
+            # or the selected node of the Cosserat rod.
+            # Accordingly, we need to compute the torque to be applied to CoM / node.
+            vector_center_to_point = (
+                system.position_collection[..., index] - system_position
+            )
+            external_torque = np.cross(vector_center_to_point, external_force)
+
+            # Apply external forces and torques to both systems.
+            system.external_forces[..., index] += external_force
+            system.external_torques[..., index] += external_torque
 
         return
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, system_one, index_one, system_two, index_two):
         """
-        Apply restoring joint torques to the connected rod objects.
+        Apply restoring joint torques to the connected systems.
 
         In FreeJoint class, this routine simply passes.
 
         Parameters
         ----------
-        rod_one : object
-            Rod-like object
+        system_one : Union[Type[CosseratRod], Type[RigidBodyBase]]
+             System two of the joint connection.
+             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
-            Index of first rod for joint.
-        rod_two : object
-            Rod-like object
+            Index of first system for joint.
+        system_two : Union[Type[CosseratRod], Type[RigidBodyBase]]
+            System two of the joint connection.
+            Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
-            Index of second rod for joint.
+            Index of second system for joint.
 
         Returns
         -------
