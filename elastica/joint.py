@@ -300,14 +300,44 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float
             Rotational damping coefficient of the joint.
+        point_system_one : numpy.ndarray
+            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+        point_system_two : numpy.ndarray
+            Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
         rest_rotation_matrix: np.array
             2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
             is enforced.
+
+        Examples
+        --------
+        How to connect two Cosserat rods together using a fixed joint while aligning the tangents (e.g. local z-axis).
+
+        >>> simulator.connect(rod_one, rod_two).using(
+        ...    FixedJoint,
+        ...    k=1e4,
+        ...    nu=1,
+        ... )
+
+        How to connect a cosserat rod with the base of a cylinder using a fixed joint, where the cylinder is rotated
+        by 45 degrees around the y-axis.
+
+        >>> from scipy.spatial.transform import Rotation
+        ... simulator.connect(rod, cylinder).using(
+        ...    FixedJoint,
+        ...    k=1e5,
+        ...    nu=1e0,
+        ...    kt=1e3,
+        ...    nut=1e-3,
+        ...    point_system_two=np.array([0, 0, -cylinder.length / 2]),
+        ...    rest_rotation_matrix=Rotation.from_euler('y', np.pi / 4, degrees=False).as_matrix(),
+        ... )
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
+    def __init__(self, k, nu, kt, nut=0.0, point_system_one=None, point_system_two=None, rest_rotation_matrix=None):
         """
 
         Parameters
@@ -320,6 +350,14 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float = 0.
             Rotational damping coefficient of the joint.
+        point_system_one : numpy.ndarray
+            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+            (default = np.array([0.0, 0.0, 0.0]))
+        point_system_two : numpy.ndarray
+            Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+            or the center of mass (for rigid bodies) to the joint.
+            (default = np.array([0.0, 0.0, 0.0]))
         rest_rotation_matrix: np.array
             2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
@@ -328,7 +366,7 @@ class FixedJoint(FreeJoint):
             which means that a restoring torque will be applied to align the directors of both systems directly.
             (default=None)
         """
-        super().__init__(k, nu)
+        super().__init__(k=k, nu=nu, point_system_one=point_system_one, point_system_two=point_system_two)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
         self.kt = kt
