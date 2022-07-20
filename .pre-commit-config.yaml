@@ -28,8 +28,3 @@ repos:
         entry: make flake8
         types: [python]
         language: system
-#
-#  - repo: https://github.com/pycqa/flake8
-#    rev: 4.0.0
-#    hooks:
-#      - id: flake8
