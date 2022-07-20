@@ -308,8 +308,14 @@ class FixedConstraint(ConstraintBase):
             else:
                 # TODO: This part is prone to error.
                 break
-        self.fixed_positions = np.array(pos)
-        self.fixed_directors = np.array(dir)
+
+        if len(pos) > 0:
+            # transpose from (blocksize, dim) to (dim, blocksize)
+            self.fixed_positions = np.array(pos).transpose((1, 0))
+
+        if len(dir) > 0:
+            # transpose from (blocksize, dim, dim) to (dim, dim, blocksize)
+            self.fixed_directors = np.array(dir).transpose((1, 2, 0))
 
     def constrain_values(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
@@ -362,7 +368,7 @@ class FixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            director_collection[..., k] = fixed_director_collection[i, ...]
+            director_collection[..., k] = fixed_director_collection[..., i]
 
     @staticmethod
     @njit(cache=True)
@@ -385,9 +391,7 @@ class FixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            position_collection[0, k] = fixed_position_collection[i, 0]
-            position_collection[1, k] = fixed_position_collection[i, 1]
-            position_collection[2, k] = fixed_position_collection[i, 2]
+            position_collection[..., k] = fixed_position_collection[..., i]
 
     @staticmethod
     @njit(cache=True)
