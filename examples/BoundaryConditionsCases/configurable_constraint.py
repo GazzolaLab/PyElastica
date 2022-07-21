@@ -16,13 +16,13 @@ from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
 )
 
 
-class ConfigurableFixedConstraintSimulator(
+class ConfigurableConstraintSimulator(
     BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
 
-fixed_joint_sim = ConfigurableFixedConstraintSimulator()
+fixed_joint_sim = ConfigurableConstraintSimulator()
 
 # setting up test params
 n_elem = 10
