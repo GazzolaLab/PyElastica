@@ -64,7 +64,7 @@ fixed_joint_sim.append(rod1)
 
 # Apply boundary conditions to rod1.
 fixed_joint_sim.constrain(rod1).using(
-    ConfigurableFixedConstraint,
+    ConfigurableConstraint,
     constrained_position_idx=(0,),
     constrained_director_idx=(0,),
     translational_constraint_selector=np.array([True, True, True]),

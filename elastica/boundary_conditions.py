@@ -5,7 +5,7 @@ __all__ = [
     "FreeRod",  # Deprecated: remove v0.3.0
     "OneEndFixedBC",
     "OneEndFixedRod",  # Deprecated: remove v0.3.0
-    "ConfigurableFixedConstraint",
+    "ConfigurableConstraint",
     "FixedConstraint",
     "HelicalBucklingBC",
 ]
@@ -260,7 +260,7 @@ class OneEndFixedRod(OneEndFixedBC):
     )
 
 
-class ConfigurableFixedConstraint(ConstraintBase):
+class ConfigurableConstraint(ConstraintBase):
     """
     This boundary condition class allows the specified node/link to have a configurable constraint.
     Index can be passed to fix either or both the position or the director.
@@ -272,7 +272,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     How to fix all translational and rotational dof except allowing twisting around the z-axis in an inertial frame:
 
     >>> simulator.constrain(rod).using(
-    ...    ConfigurableFixedConstraint,
+    ...    ConfigurableConstraint,
     ...    constrained_position_idx=(0,),
     ...    constrained_director_idx=(0,),
     ...    translational_constraint_selector=np.array([True, True, True]),
@@ -282,7 +282,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     How to allow the end of the rod to move in the XY plane and allow all rotational dof:
 
     >>> simulator.constrain(rod).using(
-    ...    ConfigurableFixedConstraint,
+    ...    ConfigurableConstraint,
     ...    constrained_position_idx=(-1,),
     ...    translational_constraint_selector=np.array([True, True, False]),
     ... )
@@ -539,7 +539,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
         omega_collection[..., indices] = _batch_matvec(directors, omegas_allowed)
 
 
-class FixedConstraint(ConfigurableFixedConstraint):
+class FixedConstraint(ConfigurableConstraint):
     """
     This boundary condition class fixes the specified node or orientations.
     Index can be passed to fix either or both the position or the director.
