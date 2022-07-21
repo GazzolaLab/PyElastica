@@ -319,8 +319,14 @@ class ConfigurableFixedConstraint(ConstraintBase):
             else:
                 # TODO: This part is prone to error.
                 break
-        self.fixed_positions = np.array(pos)
-        self.fixed_directors = np.array(dir)
+
+        if len(pos) > 0:
+            # transpose from (blocksize, dim) to (dim, blocksize)
+            self.fixed_positions = np.array(pos).transpose((1, 0))
+
+        if len(dir) > 0:
+            # transpose from (blocksize, dim, dim) to (dim, dim, blocksize)
+            self.fixed_directors = np.array(dir).transpose((1, 2, 0))
 
         translational_constraint_selector = kwargs.get(
             "translational_constraint_selector", np.array([True, True, True])
@@ -353,7 +359,6 @@ class ConfigurableFixedConstraint(ConstraintBase):
                 rod.position_collection,
                 self.fixed_positions,
                 self.constrained_position_idx,
-                self.translational_constraint_selector,
             )
         if self.constrained_director_idx.size:
             self.nb_constraint_rotational_values(
@@ -411,7 +416,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
             ]
             # add the fixed position values using the constraint selector (e.g. constraint dimensions)
             new_position_values += (
-                constraint_selector * fixed_position_collection[i, ...]
+                constraint_selector * fixed_position_collection[..., i]
             )
             position_collection[..., k] = new_position_values
 
@@ -459,7 +464,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
             # Transform allowed rotation matrix to C_{inertial to allowed}
             # This describes rotation from inertial frame to desired frame (e.g. containing allowed rotations)
             # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
-            allowed_directors = fixed_director_collection[i, ...].T @ allowed_rot
+            allowed_directors = fixed_director_collection[..., i].T @ allowed_rot
 
             # write C_{allowed to inertial} to director_collection
             director_collection[..., k] = allowed_directors.T
