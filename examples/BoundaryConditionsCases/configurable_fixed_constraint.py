@@ -111,7 +111,7 @@ PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
-    filename = "configurable_fixed_constraint_example.png"
+    filename = "configurable_fixed_constraint_example_last_node_pos_xy.png"
     plot_position(pp_list_rod1, filename, SAVE_FIGURE)
 
 if PLOT_VIDEO:
