@@ -533,13 +533,13 @@ class ConfigurableConstraint(ConstraintBase):
         )
 
         # apply constraint selector to angular velocities in inertial frame
-        omega_collection_allowed = (
+        omega_collection_not_constrained = (
             1 - np.expand_dims(constraint_selector, 1)
         ) * omega_collection_lab_frame
 
         # rotate angular velocities vector back to local frame and apply to omega_collection
         omega_collection[..., indices] = _batch_matvec(
-            directors, omega_collection_allowed
+            directors, omega_collection_not_constrained
         )
 
 
