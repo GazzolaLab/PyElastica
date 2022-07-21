@@ -359,6 +359,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
                 rod.position_collection,
                 self.fixed_positions,
                 self.constrained_position_idx,
+                self.translational_constraint_selector,
             )
         if self.constrained_director_idx.size:
             self.nb_constraint_rotational_values(
@@ -449,7 +450,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
 
             # Rotation matrix from fixed director (e.g. saved at the first time-step) to current director
             # C_{fixed to actual} = C_{fixed to inertial} @ C_{inertial to actual}
-            dev_rot = fixed_director_collection[i, ...] @ director_collection[..., k].T
+            dev_rot = fixed_director_collection[..., i] @ director_collection[..., k].T
 
             from scipy.spatial.transform import Rotation
 
