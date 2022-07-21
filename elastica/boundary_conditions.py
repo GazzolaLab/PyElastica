@@ -361,14 +361,6 @@ class ConfigurableConstraint(ConstraintBase):
                 self.constrained_position_idx,
                 self.translational_constraint_selector,
             )
-        if self.constrained_director_idx.size:
-            pass
-            # self.nb_constraint_rotational_values(
-            #     rod.director_collection,
-            #     self.fixed_directors,
-            #     self.constrained_director_idx,
-            #     self.rotational_constraint_selector,
-            # )
 
     def constrain_rates(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
@@ -421,58 +413,6 @@ class ConfigurableConstraint(ConstraintBase):
             ] + constraint_selector * fixed_position_collection[
                 ..., i
             ]
-
-    @staticmethod
-    # @njit(cache=True)
-    def nb_constraint_rotational_values(
-        director_collection, fixed_director_collection, indices, constraint_selector
-    ) -> None:
-        """
-        Computes constrain values in numba njit decorator
-
-        Parameters
-        ----------
-        director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        fixed_director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        indices : numpy.ndarray
-            1D array containing the index of constraining nodes
-        constraint_selector: numpy.ndarray
-            1D array of type int and size (3,) indicating which rotational Degrees of Freedom (DoF) to constrain.
-            Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
-            If an entry is 1, the rotation around the respective axis will be constrained,
-            otherwise the system can freely rotate around the axis.
-            Selector shall be specified in the inertial frame
-        """
-        block_size = indices.size
-        for i in range(block_size):
-            k = indices[i]
-
-            # Rotation matrix from fixed director (e.g. saved at the first time-step) to current director
-            # C_{fixed to actual} = C_{fixed to inertial} @ C_{inertial to actual}
-            dev_rot = fixed_director_collection[..., i] @ director_collection[..., k].T
-
-            from scipy.spatial.transform import Rotation
-
-            # XYZ Euler angles for C_{fixed to actual}
-            euler_angle = Rotation.from_matrix(dev_rot).as_euler("xyz")
-
-            # We re-set the Euler angles for constrained rotation axes to zero
-            allowed_euler_angle = (1 - constraint_selector) * euler_angle
-            # Transform allowed euler angles back to rotation matrix C_{fixed to allowed)
-            allowed_rot = Rotation.from_euler("xyz", allowed_euler_angle).as_matrix()
-
-            # Transform allowed rotation matrix to C_{inertial to allowed}
-            # This describes rotation from inertial frame to desired frame (e.g. containing allowed rotations)
-            # C_{inertial to allowed} = C_{inertial to fixed} @ C_{fixed to allowed}
-            allowed_directors = fixed_director_collection[..., i].T @ allowed_rot
-
-            # write C_{allowed to inertial} to director_collection
-            director_collection[..., k] = allowed_directors.T
-
-            # old implementation without DoF
-            # director_collection[..., k] = fixed_director_collection[i, ...]
 
     @staticmethod
     @njit(cache=True)
