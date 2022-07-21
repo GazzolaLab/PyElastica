@@ -362,12 +362,13 @@ class ConfigurableConstraint(ConstraintBase):
                 self.translational_constraint_selector,
             )
         if self.constrained_director_idx.size:
-            self.nb_constraint_rotational_values(
-                rod.director_collection,
-                self.fixed_directors,
-                self.constrained_director_idx,
-                self.rotational_constraint_selector,
-            )
+            pass
+            # self.nb_constraint_rotational_values(
+            #     rod.director_collection,
+            #     self.fixed_directors,
+            #     self.constrained_director_idx,
+            #     self.rotational_constraint_selector,
+            # )
 
     def constrain_rates(
         self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
