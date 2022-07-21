@@ -15,7 +15,6 @@ poetry-remove:
 install:
 	poetry lock -n && poetry export --without-hashes > requirements.txt
 	poetry install -n
-	make pre-commit-install
 
 .PHONY: pre-commit-install
 pre-commit-install:

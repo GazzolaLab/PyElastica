@@ -35,7 +35,7 @@ The following is a set of guidelines for contributing to PyElastica. These are m
 
 ### Setup development environment
 
-Below are steps of how to setup development environment. We mainly use `poetry` to manage 
+Below are steps of how to setup development environment. We mainly use `poetry` to manage
 the project, although most of the important commands will be provided in `Makefile`.
 
 1. Clone!
@@ -57,10 +57,11 @@ conda install python==3.8
 ```bash
 make poetry-download
 make install
+make pre-commit-install
 ```
 
-If you are planning to contribute on documentation, extra dependencies can be installed 
-using `poetry install -E docs`. The detail instruction is included 
+If you are planning to contribute on documentation, extra dependencies can be installed
+using `poetry install -E docs`. The detail instruction is included
 [here](https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md).
 
 4. Now your working environment is set!
@@ -107,7 +108,7 @@ This section guides you through submitting an enhancement suggestion, including 
 	* If relevant, what **version and OS** was used.
 * Include a description of the **current behavior** and **explain expected behavior**.
 * Explain **why this enhancement would be useful**.
-	
+
 ### Your first code contribution
 
 If you are unsure regarding how to start contributing to PyElastica, you can look through `good first issue` and `help wanted` labels.
@@ -119,7 +120,7 @@ Also, you might find `TODO` or `FIXME` marks in various places in the code with 
 Once you find the issue that you are interested in, please leave a comment that you would like to resolve the issue.
 If you leave some questions in the comment, we will provide more detailed descriptions.
 
-You are also welcomed to help us pushing this project further. 
+You are also welcomed to help us pushing this project further.
 Please don't hesitate improving [documentation](https://github.com/GazzolaLab/PyElastica/tree/master/docs) or code-coverage.
 
 ### Side projects
@@ -133,7 +134,7 @@ If you are interested in hearing more, please contact one of our the maintainer.
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow the [styleguides](#styleguides)
-2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass. 
+2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
 
 	In order to run pytest, run the following line from the top directory:
 
@@ -165,7 +166,7 @@ In order to format the code:
 
 `make formatting`
 
-> **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected. 
+> **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected.
 
 ### Documentation styleguide
 
