@@ -262,14 +262,14 @@ class OneEndFixedRod(OneEndFixedBC):
 
 class ConfigurableFixedConstraint(ConstraintBase):
     """
-    This boundary condition class fixes the specified node / link with configurable constraint.
+    This boundary condition class allows the specified node/link to have a configurable constraint.
     Index can be passed to fix either or both the position or the director.
     Constraining position is equivalent to setting 0 translational DOF.
     Constraining director is equivalent to setting 0 rotational DOF.
 
     Examples
     --------
-    How to fix all translational and rotational DoF except allowing twisting around z-axis in inertial frame:
+    How to fix all translational and rotational dof except allowing twisting around the z-axis in an inertial frame:
 
     >>> simulator.constrain(rod).using(
     ...    ConfigurableFixedConstraint,
@@ -279,7 +279,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
     ...    rotational_constraint_selector=np.array([True, True, False]),
     ... )
 
-    How to allow the end of the rod to move in the x-y plane and allow all rotational DoF:
+    How to allow the end of the rod to move in the XY plane and allow all rotational dof:
 
     >>> simulator.constrain(rod).using(
     ...    ConfigurableFixedConstraint,
@@ -300,11 +300,11 @@ class ConfigurableFixedConstraint(ConstraintBase):
         constrained_director_idx : tuple
             Tuple of director-indices that will be constrained
         translational_constraint_selector: np.array = np.array([True, True, True])
-            np.array of type bool indicating which translational Degree of Freedom (DoF) to constrain.
-            If entry is True, the DOF will be constrained.
+            np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
+            If entry is True, the corresponding dof will be constrained.
         rotational_constraint_selector: np.array = np.array([True, True, True])
-            np.array of type bool indicating which translational Degree of Freedom (DoF) to constrain.
-            If entry is True, the DOF will be constrained.
+            np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
+            If entry is True, the corresponding dof will be constrained.
         """
         super().__init__(**kwargs)
         pos, dir = [], []
@@ -491,6 +491,7 @@ class ConfigurableFixedConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
+            # set the dofs to 0 where the constraint_selector mask is active
             velocity_collection[..., k] = (
                 1 - constraint_selector
             ) * velocity_collection[..., k]
@@ -545,7 +546,7 @@ class FixedConstraint(ConfigurableFixedConstraint):
 
     >>> simulator.constrain(rod).using(
     ...    FixedConstraint,
-    ...    constrained_position_idx=(0,1,-2,-1),
+    ...    constrained_position_idx=(0,-1),
     ...    constrained_director_idx=(0,-1)
     ... )
 
