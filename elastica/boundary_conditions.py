@@ -411,15 +411,15 @@ class ConfigurableConstraint(ConstraintBase):
         block_size = indices.size
         for i in range(block_size):
             k = indices[i]
-            # add the old position values using the inverse constraint selector (e.g. DoF)
-            new_position_values = (1 - constraint_selector) * position_collection[
+            # First term: add the old position values using the inverse constraint selector (e.g. DoF)
+            # Second term: add the fixed position values using the constraint selector (e.g. constraint dimensions)
+            position_collection[..., k] = (
+                1 - constraint_selector
+            ) * position_collection[
                 ..., k
+            ] + constraint_selector * fixed_position_collection[
+                ..., i
             ]
-            # add the fixed position values using the constraint selector (e.g. constraint dimensions)
-            new_position_values += (
-                constraint_selector * fixed_position_collection[..., i]
-            )
-            position_collection[..., k] = new_position_values
 
     @staticmethod
     # @njit(cache=True)
@@ -533,10 +533,14 @@ class ConfigurableConstraint(ConstraintBase):
         )
 
         # apply constraint selector to angular velocities in inertial frame
-        omega_collection_allowed = (1 - np.expand_dims(constraint_selector, 1)) * omega_collection_lab_frame
+        omega_collection_allowed = (
+            1 - np.expand_dims(constraint_selector, 1)
+        ) * omega_collection_lab_frame
 
         # rotate angular velocities vector back to local frame and apply to omega_collection
-        omega_collection[..., indices] = _batch_matvec(directors, omega_collection_allowed)
+        omega_collection[..., indices] = _batch_matvec(
+            directors, omega_collection_allowed
+        )
 
 
 class FixedConstraint(ConfigurableConstraint):
