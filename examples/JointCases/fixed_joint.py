@@ -37,7 +37,7 @@ shear_modulus = E / (poisson_ratio + 1.0)
 
 # setting up time params
 final_time = 10
-dt = 1e-5
+dt = 5e-5
 fps = 100  # fps of the video
 step_skip = int(1 / (dt * fps))
 
@@ -94,9 +94,9 @@ fixed_joint_sim.connect(
 ).using(
     FixedJoint,
     k=1e5,
-    nu=1.0,
-    kt=1e3,
-    nut=1e-3,
+    nu=0e0,
+    kt=1e1,
+    nut=0e0,
 )
 # Connect rod 2 and cylinder
 fixed_joint_sim.connect(
@@ -104,9 +104,9 @@ fixed_joint_sim.connect(
 ).using(
     FixedJoint,
     k=1e5,
-    nu=0.0,
-    kt=1e3,
-    nut=0e-3,
+    nu=0e0,
+    kt=1e1,
+    nut=0e0,
     point_system_two=np.array([0.0, 0.0, -cylinder.length / 2]),
 )
 
