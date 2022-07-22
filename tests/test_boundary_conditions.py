@@ -16,6 +16,7 @@ from elastica.utils import Tolerance
 from numpy.testing import assert_allclose
 import pytest
 from pytest import main
+from scipy.spatial.transform import Rotation
 from tests.test_rod.test_rods import MockTestRod
 
 test_built_in_boundary_condition_impls = [
@@ -341,6 +342,30 @@ def test_configurable_constraint(
     if rotational_constraint_selector[0]:
         test_omega_collection[0, dir_indices] = 0.0
     if rotational_constraint_selector[1]:
+        test_omega_collection[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        test_omega_collection[2, dir_indices] = 0.0
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+    # test `nb_constrain_rotational_rates` for directors equal to 90 degrees rotation around z-axis
+    rot_mat_90deg_yaw = Rotation.from_euler("z", np.pi / 2).as_matrix()
+    test_director_collection = rot_mat_90deg_yaw.reshape((3, 3, 1)).repeat(
+        test_rod.n_elem, axis=2
+    )
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, test_rod.n_elem))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    configurable_constraint.constrain_rates(test_rod, time=0)
+    # because of the 90 degree rotation around z-axis, the x and y selectors are switched
+    if rotational_constraint_selector[1]:
+        test_omega_collection[0, dir_indices] = 0.0
+    if rotational_constraint_selector[0]:
         test_omega_collection[1, dir_indices] = 0.0
     if rotational_constraint_selector[2]:
         test_omega_collection[2, dir_indices] = 0.0
