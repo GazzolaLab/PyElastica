@@ -37,7 +37,7 @@ poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
 # setting up timestepper and video
-final_time = 2
+final_time = 10
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
