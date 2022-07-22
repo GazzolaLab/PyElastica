@@ -73,7 +73,10 @@ configurable_constraint_sim.constrain(rod1).using(
 
 # add forces to endpoint
 configurable_constraint_sim.add_forcing_to(rod1).using(
-    EndpointForces, start_force=np.zeros((3, )), end_force=1e-0*np.ones((3, )), ramp_up_time=0.5
+    EndpointForces,
+    start_force=np.zeros((3,)),
+    end_force=1e-0 * np.ones((3,)),
+    ramp_up_time=0.5,
 )
 # add uniform torsion torque
 configurable_constraint_sim.add_forcing_to(rod1).using(
