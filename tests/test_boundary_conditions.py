@@ -305,7 +305,9 @@ def test_configurable_constraint(
     # test `nb_constrain_rotational_rates` for directors not equal to identity matrix
     # rotate angular velocities to inertial frame
     omega_collection_lab_frame = _batch_matvec(
-        test_director_collection[..., ].transpose(1, 0, 2),
+        test_director_collection[
+            ...,
+        ].transpose(1, 0, 2),
         test_omega_collection,
     )
     # apply constraint selector to angular velocities in inertial frame
@@ -325,7 +327,9 @@ def test_configurable_constraint(
     )
 
     # test `nb_constrain_rotational_rates` for directors equal to identity matrix
-    test_director_collection = np.eye(3).reshape(3, 3, 1).repeat(test_rod.n_elem, axis=2)
+    test_director_collection = (
+        np.eye(3).reshape(3, 3, 1).repeat(test_rod.n_elem, axis=2)
+    )
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
