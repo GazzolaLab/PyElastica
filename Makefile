@@ -1,7 +1,6 @@
 #* Variables
 PYTHON := python
 PYTHONPATH := `pwd`
-
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -16,6 +15,10 @@ poetry-remove:
 install:
 	poetry lock -n && poetry export --without-hashes > requirements.txt
 	poetry install -n
+
+.PHONY: pre-commit-install
+pre-commit-install:
+	poetry run pre-commit install
 
 #* Formatters
 .PHONY: black
@@ -38,7 +41,11 @@ format-codestyle: black flake8
 
 .PHONY: test
 test:
-	poetry run pytest --cov=elastica
+	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica
+
+.PHONY: test_ci
+test_ci:
+	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica --cov-report=xml
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8
