@@ -1,5 +1,5 @@
 #* Variables
-PYTHON := python
+PYTHON := python3
 PYTHONPATH := `pwd`
 #* Poetry
 .PHONY: poetry-download
