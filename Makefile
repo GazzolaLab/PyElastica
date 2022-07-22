@@ -45,10 +45,14 @@ format-codestyle: black flake8
 
 .PHONY: test
 test:
+	poetry run pytest
+
+.PHONY: test_coverage
+test_coverage:
 	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica
 
-.PHONY: test_ci
-test_ci:
+.PHONY: test_coverage_xml
+test_coverage_xml:
 	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica --cov-report=xml
 
 .PHONY: check-codestyle
