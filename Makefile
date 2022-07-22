@@ -1,5 +1,5 @@
 #* Variables
-PYTHON := python
+PYTHON := python3
 PYTHONPATH := `pwd`
 #* Poetry
 .PHONY: poetry-download
@@ -13,8 +13,12 @@ poetry-remove:
 #* Installation
 .PHONY: install
 install:
-	poetry lock -n && poetry export --without-hashes > requirements.txt
-	poetry install -n
+	poetry install
+
+.PHONY: install_with_new_dependency
+install_with_new_dependency:
+	poetry lock
+	poetry install
 
 .PHONY: pre-commit-install
 pre-commit-install:

@@ -134,15 +134,22 @@ If you are interested in hearing more, please contact one of our the maintainer.
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow the [styleguides](#styleguides)
-2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
+2. If you add a new dependency, add it to the `pyproject.toml` and then run the following line from the top directory:
 
-	In order to run pytest, run the following line from the top directory:
+    `
+   make install_with_new_dependency
+   `
 
-	`
-	make test
-	`
+	This will update `poetry.lock` to ensure version control. Don't forget to commit `.lock` and `.toml` files for Poetry in this case!
+3. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
 
-3. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
+    In order to run pytest, run the following line from the top directory:
+
+    `
+    make test
+    `
+
+4. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
 
 The reviewer(s) may ask you to complete additional tests or changes before your pull request can be accepted.
 
