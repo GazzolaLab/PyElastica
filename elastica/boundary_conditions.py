@@ -464,16 +464,16 @@ class ConfigurableConstraint(ConstraintBase):
             Entries are integers in {0, 1} (e.g. a binary values of either 0 or 1).
             If an entry is 1, the rotation around the respective axis will be constrained,
             otherwise the system can freely rotate around the axis.
-            Selector shall be specified in the inertial frame
+            The selector shall be specified in the lab frame
         """
         directors = director_collection[..., indices]
 
-        # rotate angular velocities to inertial frame
+        # rotate angular velocities to lab frame
         omega_collection_lab_frame = _batch_matvec(
             directors.transpose(1, 0, 2), omega_collection[..., indices]
         )
 
-        # apply constraint selector to angular velocities in inertial frame
+        # apply constraint selector to angular velocities in lab frame
         omega_collection_not_constrained = (
             1 - np.expand_dims(constraint_selector, 1)
         ) * omega_collection_lab_frame
