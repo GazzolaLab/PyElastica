@@ -302,20 +302,44 @@ def test_configurable_constraint(
         test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()
     )
 
-    # test `nb_constrain_rotational_rates`
+    # test `nb_constrain_rotational_rates` for directors not equal to identity matrix
     # rotate angular velocities to inertial frame
     omega_collection_lab_frame = _batch_matvec(
-        test_director_collection[..., dir_indices].transpose(1, 0, 2),
-        test_omega_collection[..., dir_indices],
+        test_director_collection[..., ].transpose(1, 0, 2),
+        test_omega_collection,
     )
     # apply constraint selector to angular velocities in inertial frame
-    omega_collection_not_constrained = (
-        1 - np.expand_dims(rotational_constraint_selector, 1)
-    ) * omega_collection_lab_frame
+    omega_collection_not_constrained = omega_collection_lab_frame.copy()
+    if rotational_constraint_selector[0]:
+        omega_collection_not_constrained[0, dir_indices] = 0.0
+    if rotational_constraint_selector[1]:
+        omega_collection_not_constrained[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        omega_collection_not_constrained[2, dir_indices] = 0.0
     # rotate angular velocities vector back to local frame and apply to omega_collection
     test_omega_collection[..., dir_indices] = _batch_matvec(
-        test_director_collection[..., dir_indices], omega_collection_not_constrained
+        test_director_collection, omega_collection_not_constrained
+    )[..., dir_indices]
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
+
+    # test `nb_constrain_rotational_rates` for directors equal to identity matrix
+    test_director_collection = np.eye(3).reshape(3, 3, 1).repeat(test_rod.n_elem, axis=2)
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, test_rod.n_elem))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    configurable_constraint.constrain_rates(test_rod, time=0)
+    if rotational_constraint_selector[0]:
+        test_omega_collection[0, dir_indices] = 0.0
+    if rotational_constraint_selector[1]:
+        test_omega_collection[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        test_omega_collection[2, dir_indices] = 0.0
     assert_allclose(
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
