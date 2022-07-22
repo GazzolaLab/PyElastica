@@ -175,13 +175,13 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
 
     start_position_collection = rng.random((n_position_constraint, 3))
     start_director_collection = rng.random((n_director_constraint, 3, 3))
-    fixed_rod = FixedConstraint(
+    fixed_constrained = FixedConstraint(
         *start_position_collection, *start_director_collection, _system=test_rod
     )
     pos_indices = rng.choice(N, size=n_position_constraint, replace=False)
     dir_indices = rng.choice(N, size=n_director_constraint, replace=False)
-    fixed_rod._constrained_position_idx = pos_indices.copy()
-    fixed_rod._constrained_director_idx = dir_indices.copy()
+    fixed_constrained._constrained_position_idx = pos_indices.copy()
+    fixed_constrained._constrained_director_idx = dir_indices.copy()
 
     test_position_collection = rng.random((3, N))
     test_rod.position_collection = (
@@ -191,7 +191,7 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_values(test_rod, time=0)
+    fixed_constrained.constrain_values(test_rod, time=0)
     test_position_collection[..., pos_indices] = start_position_collection.transpose(
         (1, 0)
     )
@@ -206,7 +206,7 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_rates(test_rod, time=0)
+    fixed_constrained.constrain_rates(test_rod, time=0)
     test_velocity_collection[..., pos_indices] = 0.0
     test_omega_collection[..., dir_indices] = 0.0
     assert_allclose(
@@ -246,7 +246,7 @@ def test_configurable_constraint(
     start_director_collection = rng.random((num_rotational_constraint, 3, 3))
     translational_constraint_selector = constraint_selector
     rotational_constraint_selector = constraint_selector
-    fixed_rod = ConfigurableConstraint(
+    configurable_constraint = ConfigurableConstraint(
         *start_position_collection,
         *start_director_collection,
         translational_constraint_selector=translational_constraint_selector,
@@ -259,14 +259,14 @@ def test_configurable_constraint(
     dir_indices = rng.choice(
         test_rod.n_elem, size=num_rotational_constraint, replace=False
     )
-    fixed_rod._constrained_position_idx = pos_indices.copy()
-    fixed_rod._constrained_director_idx = dir_indices.copy()
+    configurable_constraint._constrained_position_idx = pos_indices.copy()
+    configurable_constraint._constrained_director_idx = dir_indices.copy()
 
     test_position_collection = rng.random((3, test_rod.n_elem))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_values(test_rod, time=0)
+    configurable_constraint.constrain_values(test_rod, time=0)
     test_position_collection[..., pos_indices] = start_position_collection.transpose(
         (1, 0)
     )
@@ -289,7 +289,7 @@ def test_configurable_constraint(
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_rates(test_rod, time=0)
+    configurable_constraint.constrain_rates(test_rod, time=0)
 
     # test `nb_constrain_translational_rates`
     if translational_constraint_selector[0]:
