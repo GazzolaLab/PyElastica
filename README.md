@@ -11,7 +11,7 @@ Visit [cosseratrods.org][link-project-website] for more information and learn ab
 ## Installation 
 [![PyPI version][badge-pypi]][link-pypi]
 
-PyElastica is compatible with Python 3.7 - 3.8. The easiest way to install PyElastica is with PIP. 
+PyElastica is compatible with Python 3.7 - 3.10. The easiest way to install PyElastica is with PIP. 
 
 ~~~bash
 $ pip install pyelastica 
