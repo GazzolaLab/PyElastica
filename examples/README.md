@@ -4,7 +4,7 @@ This directory contains number of examples of elastica.
 Each [example cases](#example-cases) are stored in separate subdirectories, containing case descriptions, run file, and all other data/script necessary to run.
 More [advanced cases](#advanced-cases) are stored in separate repository with its description.
 
-# Installing Requirements
+## Installing Requirements
 In order to run examples, you will need to install additional dependencies.
 
 ```bash
