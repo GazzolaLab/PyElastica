@@ -470,7 +470,7 @@ class ConfigurableConstraint(ConstraintBase):
 
         # rotate angular velocities to lab frame
         omega_collection_lab_frame = _batch_matvec(
-            directors.transpose(1, 0, 2), omega_collection[..., indices]
+            _batch_matrix_transpose(directors), omega_collection[..., indices]
         )
 
         # apply constraint selector to angular velocities in lab frame
