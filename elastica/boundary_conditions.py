@@ -20,8 +20,8 @@ from abc import ABC, abstractmethod
 import numba
 from numba import njit
 
-from elastica._linalg import _batch_matvec
-from elastica._rotations import _get_rotation_matrix,
+from elastica._linalg import _batch_matvec, _batch_matrix_transpose
+from elastica._rotations import _get_rotation_matrix
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 
