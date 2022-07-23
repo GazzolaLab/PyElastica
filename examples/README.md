@@ -66,6 +66,9 @@ Examples can serve as a starting template for customized usages.
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
       * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
       * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
+* [BoundaryConditionsCases](./BoundaryConditionsCases)
+    * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
+    * __Features__: GeneralConstraint, CosseratRod
 
 ## Functional Examples
 
