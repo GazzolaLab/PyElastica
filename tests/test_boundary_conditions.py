@@ -8,7 +8,7 @@ from elastica.boundary_conditions import (
     FreeBC,
     OneEndFixedBC,
     FixedConstraint,
-    ConfigurableConstraint,
+    GeneralConstraint,
     HelicalBucklingBC,
 )
 from elastica._linalg import _batch_matvec
@@ -23,7 +23,7 @@ test_built_in_boundary_condition_impls = [
     FreeBC,
     OneEndFixedBC,
     FixedConstraint,
-    ConfigurableConstraint,
+    GeneralConstraint,
     HelicalBucklingBC,
 ]
 
@@ -234,7 +234,7 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
         np.array([True, True, True]),
     ],
 )
-def test_configurable_constraint(
+def test_general_constraint(
     seed,
     num_translational_constraint,
     num_rotational_constraint,
@@ -247,7 +247,7 @@ def test_configurable_constraint(
     start_director_collection = rng.random((num_rotational_constraint, 3, 3))
     translational_constraint_selector = constraint_selector
     rotational_constraint_selector = constraint_selector
-    configurable_constraint = ConfigurableConstraint(
+    general_constraint = GeneralConstraint(
         *start_position_collection,
         *start_director_collection,
         translational_constraint_selector=translational_constraint_selector,
@@ -260,14 +260,14 @@ def test_configurable_constraint(
     dir_indices = rng.choice(
         test_rod.n_elem, size=num_rotational_constraint, replace=False
     )
-    configurable_constraint._constrained_position_idx = pos_indices.copy()
-    configurable_constraint._constrained_director_idx = dir_indices.copy()
+    general_constraint._constrained_position_idx = pos_indices.copy()
+    general_constraint._constrained_director_idx = dir_indices.copy()
 
     test_position_collection = rng.random((3, test_rod.n_elem))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    configurable_constraint.constrain_values(test_rod, time=0)
+    general_constraint.constrain_values(test_rod, time=0)
     test_position_collection[..., pos_indices] = start_position_collection.transpose(
         (1, 0)
     )
@@ -290,7 +290,7 @@ def test_configurable_constraint(
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    configurable_constraint.constrain_rates(test_rod, time=0)
+    general_constraint.constrain_rates(test_rod, time=0)
 
     # test `nb_constrain_translational_rates`
     if translational_constraint_selector[0]:
@@ -338,7 +338,7 @@ def test_configurable_constraint(
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    configurable_constraint.constrain_rates(test_rod, time=0)
+    general_constraint.constrain_rates(test_rod, time=0)
     if rotational_constraint_selector[0]:
         test_omega_collection[0, dir_indices] = 0.0
     if rotational_constraint_selector[1]:
@@ -361,7 +361,7 @@ def test_configurable_constraint(
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    configurable_constraint.constrain_rates(test_rod, time=0)
+    general_constraint.constrain_rates(test_rod, time=0)
     # because of the 90 degree rotation around z-axis, the x and y selectors are switched
     if rotational_constraint_selector[1]:
         test_omega_collection[0, dir_indices] = 0.0

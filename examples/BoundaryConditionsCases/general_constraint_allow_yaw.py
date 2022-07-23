@@ -16,13 +16,13 @@ from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
 )
 
 
-class ConfigurableConstraintSimulator(
+class GeneralConstraintSimulator(
     BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
 
-configurable_constraint_sim = ConfigurableConstraintSimulator()
+general_constraint_sim = GeneralConstraintSimulator()
 
 # setting up test params
 n_elem = 10
@@ -60,11 +60,11 @@ rod1 = CosseratRod.straight_rod(
     E,
     shear_modulus=shear_modulus,
 )
-configurable_constraint_sim.append(rod1)
+general_constraint_sim.append(rod1)
 
 # Apply boundary conditions to rod1: only allow yaw
-configurable_constraint_sim.constrain(rod1).using(
-    ConfigurableConstraint,
+general_constraint_sim.constrain(rod1).using(
+    GeneralConstraint,
     constrained_position_idx=(0,),
     constrained_director_idx=(0,),
     translational_constraint_selector=np.array([True, True, True]),
@@ -72,20 +72,20 @@ configurable_constraint_sim.constrain(rod1).using(
 )
 
 # add forces to endpoint
-configurable_constraint_sim.add_forcing_to(rod1).using(
+general_constraint_sim.add_forcing_to(rod1).using(
     EndpointForces,
     start_force=np.zeros((3,)),
     end_force=1e-0 * np.ones((3,)),
     ramp_up_time=0.5,
 )
 # add uniform torsion torque
-configurable_constraint_sim.add_forcing_to(rod1).using(
+general_constraint_sim.add_forcing_to(rod1).using(
     UniformTorques, torque=1e-3, direction=np.array([0, 0, 1])
 )
 
 # add damping
 damping_constant = 0.4
-configurable_constraint_sim.dampen(rod1).using(
+general_constraint_sim.dampen(rod1).using(
     ExponentialDamper,
     damping_constant=damping_constant,
     time_step=dt,
@@ -95,15 +95,15 @@ configurable_constraint_sim.dampen(rod1).using(
 pp_list_rod1 = defaultdict(list)
 
 
-configurable_constraint_sim.collect_diagnostics(rod1).using(
+general_constraint_sim.collect_diagnostics(rod1).using(
     MyCallBack, step_skip=diagnostic_step_skip, callback_params=pp_list_rod1
 )
 
-configurable_constraint_sim.finalize()
+general_constraint_sim.finalize()
 timestepper = PositionVerlet()
 
 print("Total steps", total_steps)
-integrate(timestepper, configurable_constraint_sim, final_time, total_steps)
+integrate(timestepper, general_constraint_sim, final_time, total_steps)
 
 
 plot_orientation(

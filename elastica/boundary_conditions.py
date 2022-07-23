@@ -5,7 +5,7 @@ __all__ = [
     "FreeRod",  # Deprecated: remove v0.3.0
     "OneEndFixedBC",
     "OneEndFixedRod",  # Deprecated: remove v0.3.0
-    "ConfigurableConstraint",
+    "GeneralConstraint",
     "FixedConstraint",
     "HelicalBucklingBC",
 ]
@@ -260,7 +260,7 @@ class OneEndFixedRod(OneEndFixedBC):
     )
 
 
-class ConfigurableConstraint(ConstraintBase):
+class GeneralConstraint(ConstraintBase):
     """
     This boundary condition class allows the specified node/link to have a configurable constraint.
     Index can be passed to fix either or both the position or the director.
@@ -272,7 +272,7 @@ class ConfigurableConstraint(ConstraintBase):
     How to fix all translational and rotational dof except allowing twisting around the z-axis in an inertial frame:
 
     >>> simulator.constrain(rod).using(
-    ...    ConfigurableConstraint,
+    ...    GeneralConstraint,
     ...    constrained_position_idx=(0,),
     ...    constrained_director_idx=(0,),
     ...    translational_constraint_selector=np.array([True, True, True]),
@@ -282,7 +282,7 @@ class ConfigurableConstraint(ConstraintBase):
     How to allow the end of the rod to move in the XY plane and allow all rotational dof:
 
     >>> simulator.constrain(rod).using(
-    ...    ConfigurableConstraint,
+    ...    GeneralConstraint,
     ...    constrained_position_idx=(-1,),
     ...    translational_constraint_selector=np.array([True, True, False]),
     ... )
@@ -484,7 +484,7 @@ class ConfigurableConstraint(ConstraintBase):
         )
 
 
-class FixedConstraint(ConfigurableConstraint):
+class FixedConstraint(GeneralConstraint):
     """
     This boundary condition class fixes the specified node or orientations.
     Index can be passed to fix either or both the position or the director.
