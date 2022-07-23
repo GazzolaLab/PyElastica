@@ -528,6 +528,118 @@ class FixedConstraint(GeneralConstraint):
             **kwargs,
         )
 
+    def constrain_values(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
+        if self.constrained_position_idx.size:
+            self.nb_constrain_translational_values(
+                rod.position_collection,
+                self.fixed_positions,
+                self.constrained_position_idx,
+            )
+        if self.constrained_director_idx.size:
+            self.nb_constraint_rotational_values(
+                rod.director_collection,
+                self.fixed_directors,
+                self.constrained_director_idx,
+            )
+
+    def constrain_rates(
+        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+    ) -> None:
+        if self.constrained_position_idx.size:
+            self.nb_constrain_translational_rates(
+                rod.velocity_collection,
+                self.constrained_position_idx,
+            )
+        if self.constrained_director_idx.size:
+            self.nb_constrain_rotational_rates(
+                rod.omega_collection,
+                self.constrained_director_idx,
+            )
+
+    @staticmethod
+    @njit(cache=True)
+    def nb_constraint_rotational_values(
+        director_collection, fixed_director_collection, indices
+    ) -> None:
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        fixed_director_collection : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            director_collection[..., k] = fixed_director_collection[..., i]
+
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_translational_values(
+        position_collection, fixed_position_collection, indices
+    ) -> None:
+        """
+        Computes constrain values in numba njit decorator
+        Parameters
+        ----------
+        position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        fixed_position_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            position_collection[..., k] = fixed_position_collection[..., i]
+
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_translational_rates(velocity_collection, indices) -> None:
+        """
+        Compute constrain rates in numba njit decorator
+        Parameters
+        ----------
+        velocity_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
+
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            velocity_collection[0, k] = 0.0
+            velocity_collection[1, k] = 0.0
+            velocity_collection[2, k] = 0.0
+
+    @staticmethod
+    @njit(cache=True)
+    def nb_constrain_rotational_rates(omega_collection, indices) -> None:
+        """
+        Compute constrain rates in numba njit decorator
+        Parameters
+        ----------
+        omega_collection : numpy.ndarray
+            2D (dim, blocksize) array containing data with `float` type.
+        indices : numpy.ndarray
+            1D array containing the index of constraining nodes
+        """
+
+        block_size = indices.size
+        for i in range(block_size):
+            k = indices[i]
+            omega_collection[0, k] = 0.0
+            omega_collection[1, k] = 0.0
+            omega_collection[2, k] = 0.0
+
 
 class HelicalBucklingBC(ConstraintBase):
     """
