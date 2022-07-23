@@ -21,7 +21,7 @@ import numba
 from numba import njit
 
 from elastica._linalg import _batch_matvec
-from elastica._rotations import _get_rotation_matrix, _inv_rotate
+from elastica._rotations import _get_rotation_matrix,
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 
