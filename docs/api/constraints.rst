@@ -62,6 +62,9 @@ Built-in Constraints
 .. autoclass:: OneEndFixedBC
    :special-members: __init__
 
+.. autoclass:: GeneralConstraint
+   :special-members: __init__
+
 .. autoclass:: FixedConstraint
    :special-members: __init__
 
