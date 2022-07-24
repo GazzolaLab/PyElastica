@@ -18,6 +18,7 @@ Constraints are equivalent to displacement boundary condition.
    ConstraintBase
    FreeBC
    OneEndFixedBC
+   GeneralConstraint
    FixedConstraint
    HelicalBucklingBC
    FreeRod
@@ -31,6 +32,7 @@ Constraint / Boundary Condition Rod  Rigid Body
 =============================== ==== =========== 
 FreeBC                           ✅   ✅
 OneEndFixedBC                    ✅   ✅
+GeneralConstraint                ✅   ✅
 FixedConstraint                  ✅   ✅
 HelicalBucklingBC                ✅   ❌
 =============================== ==== =========== 
