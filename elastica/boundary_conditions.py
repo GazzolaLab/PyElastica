@@ -301,7 +301,7 @@ class GeneralConstraint(ConstraintBase):
             Tuple of director-indices that will be constrained
         translational_constraint_selector: np.array = np.array([True, True, True])
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
-            If entry is True, the corresponding dof will be constrained.
+            If entry is True, the corresponding dof will be constrained. If None, we constraint all dofs.
         rotational_constraint_selector: np.array = np.array([True, True, True])
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained.
@@ -352,7 +352,7 @@ class GeneralConstraint(ConstraintBase):
         self.rotational_constraint_selector = rotational_constraint_selector.astype(int)
 
     def constrain_values(
-        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
+        self, rod: elastica.typing.SystemType, time: float
     ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
@@ -507,6 +507,10 @@ class FixedConstraint(GeneralConstraint):
     ...    FixedConstraint,
     ...    constrained_position_idx=(10)
     ... )
+
+    See Also
+    ---------
+    GeneralConstraint: Generalized constraint with configurable DOF.
     """
 
     def __init__(self, *args, **kwargs):
