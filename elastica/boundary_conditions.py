@@ -289,7 +289,13 @@ class GeneralConstraint(ConstraintBase):
     ... )
     """
 
-    def __init__(self, *fixed_data, **kwargs):
+    def __init__(
+        self,
+        *fixed_data,
+        translational_constraint_selector: Optional[np.ndarray] = None,
+        rotational_constraint_selector: Optional[np.array] = None,
+        **kwargs,
+    ):
         """
 
         Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
@@ -300,10 +306,10 @@ class GeneralConstraint(ConstraintBase):
             Tuple of position-indices that will be constrained
         constrained_director_idx : tuple
             Tuple of director-indices that will be constrained
-        translational_constraint_selector: np.array = np.array([True, True, True])
+        translational_constraint_selector: Optional[np.ndarray]
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained. If None, we constrain all dofs.
-        rotational_constraint_selector: np.array = np.array([True, True, True])
+        rotational_constraint_selector: Optional[np.ndarray]
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained.
         """
@@ -329,12 +335,10 @@ class GeneralConstraint(ConstraintBase):
             # transpose from (blocksize, dim, dim) to (dim, dim, blocksize)
             self.fixed_directors = np.array(dir).transpose((1, 2, 0))
 
-        translational_constraint_selector = kwargs.get(
-            "translational_constraint_selector", np.array([True, True, True])
-        )
-        rotational_constraint_selector = kwargs.get(
-            "rotational_constraint_selector", np.array([True, True, True])
-        )
+        if translational_constraint_selector is None:
+            translational_constraint_selector = np.array([True, True, True])
+        if rotational_constraint_selector is None:
+            rotational_constraint_selector = np.array([True, True, True])
         # properly validate the user-provided constraint selectors
         assert (
             type(translational_constraint_selector) == np.ndarray
