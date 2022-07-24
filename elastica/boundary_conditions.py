@@ -24,6 +24,7 @@ from elastica._linalg import _batch_matvec, _batch_matrix_transpose
 from elastica._rotations import _get_rotation_matrix
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
+from elastica.typing import SystemType
 
 
 class ConstraintBase(ABC):
@@ -301,7 +302,7 @@ class GeneralConstraint(ConstraintBase):
             Tuple of director-indices that will be constrained
         translational_constraint_selector: np.array = np.array([True, True, True])
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
-            If entry is True, the corresponding dof will be constrained. If None, we constraint all dofs.
+            If entry is True, the corresponding dof will be constrained. If None, we constrain all dofs.
         rotational_constraint_selector: np.array = np.array([True, True, True])
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained.
@@ -351,30 +352,26 @@ class GeneralConstraint(ConstraintBase):
         )
         self.rotational_constraint_selector = rotational_constraint_selector.astype(int)
 
-    def constrain_values(
-        self, rod: elastica.typing.SystemType, time: float
-    ) -> None:
+    def constrain_values(self, system: SystemType, time: float) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
-                rod.position_collection,
+                system.position_collection,
                 self.fixed_positions,
                 self.constrained_position_idx,
                 self.translational_constraint_selector,
             )
 
-    def constrain_rates(
-        self, rod: Union[Type[RodBase], Type[RigidBodyBase]], time: float
-    ) -> None:
+    def constrain_rates(self, system: SystemType, time: float) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
-                rod.velocity_collection,
+                system.velocity_collection,
                 self.constrained_position_idx,
                 self.translational_constraint_selector,
             )
         if self.constrained_director_idx.size:
             self.nb_constrain_rotational_rates(
-                rod.director_collection,
-                rod.omega_collection,
+                system.director_collection,
+                system.omega_collection,
                 self.constrained_director_idx,
                 self.rotational_constraint_selector,
             )
