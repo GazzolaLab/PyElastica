@@ -4,6 +4,13 @@ This directory contains number of examples of elastica.
 Each [example cases](#example-cases) are stored in separate subdirectories, containing case descriptions, run file, and all other data/script necessary to run.
 More [advanced cases](#advanced-cases) are stored in separate repository with its description.
 
+## Installing Requirements
+In order to run examples, you will need to install additional dependencies.
+
+```bash
+poetry install -E examples
+```
+
 ## Case Examples
 
 Some examples provide additional files or links to published paper for a complete description.
@@ -59,6 +66,9 @@ Examples can serve as a starting template for customized usages.
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
       * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
       * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
+* [BoundaryConditionsCases](./BoundaryConditionsCases)
+    * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
+    * __Features__: GeneralConstraint, CosseratRod
 
 ## Functional Examples
 

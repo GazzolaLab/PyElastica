@@ -100,7 +100,7 @@ jobs:
       - name: Test PyElastica using pytest
         if: startsWith(runner.os, 'macOS')
         run: |
-          make test_ci
+          make test_coverage_xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
