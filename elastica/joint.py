@@ -36,7 +36,7 @@ class FreeJoint:
     --------
     How to connect two Cosserat rods together using a spherical joint with a gap of 0.01 m in between.
 
-    >>> simulator.connect(rod_one, rod_two).using(
+    >>> simulator.connect(rod_one, rod_two, first_connect_idx=-1, second_connect_idx=0).using(
     ...    FreeJoint,
     ...    k=1e4,
     ...    nu=1,
@@ -46,7 +46,7 @@ class FreeJoint:
 
     How to connect the distal end of a CosseratRod with the base of a cylinder using a spherical joint.
 
-    >>> simulator.connect(rod, cylinder).using(
+    >>> simulator.connect(rod, cylinder, first_connect_idx=-1, second_connect_idx=0).using(
     ...    FreeJoint,
     ...    k=1e4,
     ...    nu=1,
@@ -94,12 +94,12 @@ class FreeJoint:
 
         Parameters
         ----------
-        system_one : Union[Type[CosseratRod], Type[RigidBodyBase]]
+        system_one : SystemType
              System two of the joint connection.
              Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
             Index of first system for joint.
-        system_two : Union[Type[CosseratRod], Type[RigidBodyBase]]
+        system_two : SystemType
             System two of the joint connection.
             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
@@ -201,12 +201,12 @@ class FreeJoint:
 
         Parameters
         ----------
-        system_one : Union[Type[CosseratRod], Type[RigidBodyBase]]
+        system_one : SystemType
              System two of the joint connection.
              Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
             Index of first system for joint.
-        system_two : Union[Type[CosseratRod], Type[RigidBodyBase]]
+        system_two : SystemType
             System two of the joint connection.
             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
