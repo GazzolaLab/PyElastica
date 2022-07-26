@@ -1,12 +1,13 @@
 __doc__ = """Tests for cylinder module"""
 import numpy as np
 from numpy.testing import assert_allclose
+
+from elastica.utils import MaxDimension, Tolerance
+
 import pytest
-from scipy.spatial.transform import Rotation
 import sys
 
 from elastica.rigidbody import Cylinder
-from elastica.utils import MaxDimension, Tolerance
 
 
 # tests Initialisation of cylinder

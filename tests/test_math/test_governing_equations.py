@@ -22,7 +22,6 @@ from elastica.rod.cosserat_rod import (
     _get_z_vector,
 )
 import pytest
-from scipy.spatial.transform import Rotation
 
 
 class BaseClass:
