@@ -1,11 +1,12 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
-import numpy as np
-import numba
-from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
+from elastica.typing import SystemType
+from elastica.utils import Tolerance, MaxDimension
 from math import sqrt
+import numba
+import numpy as np
 
 
 class FreeJoint:
@@ -111,21 +112,21 @@ class FreeJoint:
         """
         # Compute the position in the inertial frame of the specified point.
         # The point is defined in the local coordinate system of system one and used to attach to the joint.
-        position_system_one = system_one.compute_position_of_point(
-            point=self.point_system_one, index=index_one
+        position_system_one = compute_position_of_point(
+            system=system_one, point=self.point_system_one, index=index_one
         )
         # Compute the position in the inertial frame of the specified point.
         # The point is defined in the local coordinate system of system two and used to attach to the joint.
-        position_system_two = system_two.compute_position_of_point(
-            point=self.point_system_two, index=index_two
+        position_system_two = compute_position_of_point(
+            system=system_two, point=self.point_system_two, index=index_two
         )
 
         # Analogue to the positions, compute the velocities of the points in the inertial frames
-        velocity_system_one = system_one.compute_velocity_of_point(
-            point=self.point_system_one, index=index_one
+        velocity_system_one = compute_velocity_of_point(
+            system=system_one, point=self.point_system_one, index=index_one
         )
-        velocity_system_two = system_two.compute_velocity_of_point(
-            point=self.point_system_two, index=index_two
+        velocity_system_two = compute_velocity_of_point(
+            system=system_two, point=self.point_system_two, index=index_two
         )
 
         # Compute the translational deviation of the point belonging to system one
@@ -444,6 +445,88 @@ class FixedJoint(FreeJoint):
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
         system_one.external_torques[..., index_one] -= system_one_director @ torque
         system_two.external_torques[..., index_two] += system_two_director @ torque
+
+
+def compute_position_of_point(system: SystemType, point: np.ndarray, index: int):
+    """
+    Computes the position in the inertial frame of a point specified in the local frame of
+    the specified node of the rod.
+
+    Parameters
+    ----------
+    system: SystemType
+        System to which the point belongs.
+    point : np.array
+        1D (3,) numpy array containing 'float' data.
+        The point describes a position in the local frame relative to the inertial position of node
+        with index `index` and orientation of element with `index`.
+    index: int
+        Index of the node / element in the system.
+
+    Returns
+    -------
+    position : np.array
+        1D (3,) numpy array containing 'float' data.
+        Position of the point in the inertial frame.
+
+    Examples
+    --------
+    Compute position in inertial frame for a point (0, 0, 1) relative to the last node of the rod.
+
+    >>> system.compute_position_of_point(np.array([0, 0, 1]), -1)
+    """
+    assert point.shape == (3,), "Point must be in the shape (3,)"
+    position = (
+        system.position_collection[..., index]
+        + system.director_collection[..., index].T @ point
+    )
+    return position
+
+
+def compute_velocity_of_point(system: SystemType, point: np.ndarray, index: int):
+    """
+    Computes the velocity in the inertial frame of point specified in the local frame of a node / element.
+
+    Parameters
+    ----------
+    system: SystemType
+        System to which the point belongs.
+    point : np.array
+        1D (3,) numpy array containing 'float' data.
+        The point describes a position in the local frame relative to the inertial position of node
+        with index `index` and orientation of element with `index`.
+
+    index: int
+        Index of the node / element in the system.
+
+    Returns
+    -------
+    velocity : np.array
+        1D (3,) numpy array containing 'float' data.
+        Velocity of the point in the inertial frame.
+
+    Examples
+    --------
+    Compute velocity in inertial frame for a point (0, 0, 1) relative to the last node of the rod.
+
+    >>> system.compute_velocity_of_point(np.array([0, 0, 1]), -1)
+    """
+    assert point.shape == (3,), "Point must be in the shape (3,)"
+
+    # point rotated into the inertial frame
+    point_inertial_frame = system.director_collection[..., index].T @ point
+
+    # rotate angular velocity to inertial frame
+    omega_inertial_frame = np.dot(
+        system.director_collection[..., index].T, system.omega_collection[..., index]
+    )
+
+    # apply the euler differentiation rule
+    velocity = system.velocity_collection[..., index] + np.cross(
+        omega_inertial_frame, point_inertial_frame
+    )
+
+    return velocity
 
 
 def get_relative_rotation_two_systems(system_one, index_one, system_two, index_two):
