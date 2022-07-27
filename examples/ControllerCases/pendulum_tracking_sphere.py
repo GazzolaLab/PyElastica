@@ -82,7 +82,7 @@ class PendulumTrackingController(ControllerBase):
         # current rotation angle of the sphere around the z-axis
         sphere_theta = np.arctan2(sphere_position[1], sphere_position[0])
 
-        pendulum_tip_local_frame = np.array([0, 0.0, systems["pendulum"].length / 2])
+        pendulum_tip_local_frame = np.array([0.0, 0.0, systems["pendulum"].length.item() / 2])
         # compute tip position of pendulum in inertial frame
         pendulum_tip = (
             systems["pendulum"].director_collection[..., 0].T @ pendulum_tip_local_frame
@@ -99,7 +99,11 @@ class PendulumTrackingController(ControllerBase):
         )
 
         # compute torque with PID controller
-        torsional_torque = self.P * error_theta + self.I * self.integrator - self.D * angular_velocity[2]
+        torsional_torque = (
+            self.P * error_theta
+            + self.I * self.integrator
+            - self.D * angular_velocity[2]
+        )
 
         # compute torque in inertial frame
         torque_lab_frame = torsional_torque * np.array([0.0, 0.0, 1.0])
@@ -166,8 +170,8 @@ control_simulator.control(systems={"pendulum": pendulum, "sphere": sphere}).usin
     PendulumTrackingController,
     dt=dt,
     P=1e-3,
-    I=5e-4,
-    D=5e-5,
+    I=2e-5,
+    D=2e-5,
 )
 
 pp_list_pendulum = defaultdict(list)
