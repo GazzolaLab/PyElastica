@@ -5,14 +5,14 @@ from typing import Dict
 
 class ControllerBase:
     """
-       This is the base class for controllers acting on one or multiple systems.
+    This is the base class for controllers acting on one or multiple systems.
 
-       Notes
-       -----
-       Every new controller class must be derived
-       from the ControllerBase class.
+    Notes
+    -----
+    Every new controller class must be derived
+    from the ControllerBase class.
 
-       """
+    """
 
     def __init__(self):
         """

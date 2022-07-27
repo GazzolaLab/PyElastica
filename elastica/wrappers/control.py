@@ -66,7 +66,9 @@ class Control:
 
     def _call_controller(self, time, *args, **kwargs):
         for keys, sys_indices, controller in self._controllers:
-            systems = {key: self._systems[sys_idx] for key, sys_idx in zip(keys, sys_indices)}
+            systems = {
+                key: self._systems[sys_idx] for key, sys_idx in zip(keys, sys_indices)
+            }
             controller.apply_forces(systems=systems, time=time, *args, **kwargs)
             controller.apply_torques(systems=systems, time=time, *args, **kwargs)
 
