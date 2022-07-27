@@ -82,7 +82,9 @@ class PendulumTrackingController(ControllerBase):
         # current rotation angle of the sphere around the z-axis
         sphere_theta = np.arctan2(sphere_position[1], sphere_position[0])
 
-        pendulum_tip_local_frame = np.array([0.0, 0.0, systems["pendulum"].length.item() / 2])
+        pendulum_tip_local_frame = np.array(
+            [0.0, 0.0, systems["pendulum"].length.item() / 2]
+        )
         # compute tip position of pendulum in inertial frame
         pendulum_tip = (
             systems["pendulum"].director_collection[..., 0].T @ pendulum_tip_local_frame
