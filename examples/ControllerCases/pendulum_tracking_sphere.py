@@ -52,51 +52,65 @@ class SphereCircularConstraint(ConstraintBase):
 class PendulumTrackingController(ControllerBase):
     """
     PID Controller to track the sphere as closely as possible with the end of the pendulum
-
-    Parameters
-    ----------
-    P : float
-        Proportional gain [Nm / rad]
-    I : float
-        Integral gain [Nm / rad / s].
-    D : float
-        Derivative gain. [Nm s / rad]
     """
 
-    def __init__(self, P: float = 0.0, I: float = 0.0, D: float = 0.0):
+    def __init__(self, dt: float, P: float = 0.0, I: float = 0.0, D: float = 0.0):
+        """
+        Parameters
+        ----------
+        dt: float
+            Time step of the simulation.
+        P : float
+            Proportional gain [Nm / rad]
+        I : float
+            Integral gain [Nm / rad / s].
+        D : float
+            Derivative gain. [Nm s / rad]
+        """
         super().__init__()
+        self.dt = dt
+
         self.P = P  # proportional gain
         self.I = I  # integral gain
         self.D = D  # derivative gain
+
+        self.integrator = 0.0
 
     def apply_torques(self, systems: Dict[str, SystemType], time: np.float64 = 0.0):
         # collect positions of the sphere and the pendulum
         sphere_position = systems["sphere"].position_collection[:, 0]
         # current rotation angle of the sphere around the z-axis
         sphere_theta = np.arctan2(sphere_position[1], sphere_position[0])
-        print("sphere_theta:", sphere_theta)
 
-        pendulum_zyx_euler = Rotation.from_matrix(
-            systems["pendulum"].director_collection[..., 0].T
-        ).as_euler("zyx")
-        # current rotation angle of the pendulum around the z-axis
-        pendulum_theta = pendulum_zyx_euler[2]
-        print("pendulum_theta:", pendulum_theta)
+        pendulum_tip_local_frame = np.array([0, 0.0, systems["pendulum"].length / 2])
+        # compute tip position of pendulum in inertial frame
+        pendulum_tip = (
+            systems["pendulum"].director_collection[..., 0].T @ pendulum_tip_local_frame
+        )
+        pendulum_theta = np.arctan2(pendulum_tip[1], pendulum_tip[0])
 
         # error angle between the desired theta (e.g. rotation of sphere) and the current theta of the pendulum
         error_theta = sphere_theta - pendulum_theta
 
-        # compute torque with PID controller
-        torque = self.P * error_theta
-
-        print("torque:", torque)
-
-        # apply force in local y-dir to cause rotation of end of pendulum around z-axis
-        systems["pendulum"].external_forces[1, 0] = torque / (
-            systems["pendulum"].length / 2
+        # get angular velocity around z-axis of inertial frame
+        angular_velocity = (
+            systems["pendulum"].director_collection[..., 0].T
+            @ systems["pendulum"].omega_collection[..., 0]
         )
 
-        print("force", systems["pendulum"].external_forces[:, 0])
+        # compute torque with PID controller
+        torsional_torque = self.P * error_theta + self.I * self.integrator - self.D * angular_velocity[2]
+
+        # compute torque in inertial frame
+        torque_lab_frame = torsional_torque * np.array([0.0, 0.0, 1.0])
+
+        # rotate torque to body frame
+        systems["pendulum"].external_torques[:, 0] = (
+            systems["pendulum"].director_collection[..., 0] @ torque_lab_frame
+        )
+
+        # update the integrator
+        self.integrator += error_theta * self.dt
 
 
 control_simulator = ControlSimulator()
@@ -110,7 +124,7 @@ density = 1000
 poisson_ratio = 0.5
 
 # setting up timestepper and video
-final_time = 1
+final_time = 10
 dt = 5e-5
 total_steps = int(final_time / dt)
 fps = 100  # frames per second of the video
@@ -118,7 +132,7 @@ diagnostic_step_skip = int(1 / (fps * dt))
 
 # Create pendulum with cylinder
 pendulum = Cylinder(
-    start=np.zeros((3,)),
+    start=np.array([-base_length / 2, 0.0, 0.0]),
     direction=direction,
     normal=normal,
     base_length=base_length,
@@ -129,28 +143,31 @@ control_simulator.append(pendulum)
 
 # Create sphere system
 sphere = Sphere(
-    center=base_length * direction, base_radius=base_radius, density=density
+    center=base_length / 2 * direction, base_radius=base_radius, density=density
 )
 control_simulator.append(sphere)
 
 # Apply boundary conditions to pendulum at base: only allow yaw (e.g. rotation around z-axis)
-# control_simulator.constrain(pendulum).using(
-#     GeneralConstraint,
-#     constrained_position_idx=(0,),
-#     constrained_director_idx=(0,),
-#     translational_constraint_selector=np.array([True, True, True]),
-#     rotational_constraint_selector=np.array([True, True, False]),
-# )
+control_simulator.constrain(pendulum).using(
+    GeneralConstraint,
+    constrained_position_idx=(0,),
+    constrained_director_idx=(0,),
+    translational_constraint_selector=np.array([True, True, True]),
+    rotational_constraint_selector=np.array([True, True, False]),
+)
 
 # Move sphere along a circle in the XY plane (e.g. rotate around z-axis)
 control_simulator.constrain(sphere).using(
-    SphereCircularConstraint, circle_radius=base_length, frequency=0.1
+    SphereCircularConstraint, circle_radius=base_length / 2, frequency=0.1
 )
 
 # add controller to pendulum
 control_simulator.control(systems={"pendulum": pendulum, "sphere": sphere}).using(
     PendulumTrackingController,
-    P=1e0,
+    dt=dt,
+    P=1e-3,
+    I=5e-4,
+    D=5e-5,
 )
 
 pp_list_pendulum = defaultdict(list)
