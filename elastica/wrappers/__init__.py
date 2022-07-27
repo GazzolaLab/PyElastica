@@ -11,6 +11,7 @@ __all__ = [
     "Forcing",
     "CallBacks",
     "Damping",
+    "Control",
 ]
 from .base_system import BaseSystemCollection
 from .connections import Connections
@@ -18,3 +19,4 @@ from .constraints import Constraints
 from .forcing import Forcing
 from .callbacks import CallBacks
 from .damping import Damping
+from .control import Control

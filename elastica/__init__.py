@@ -13,3 +13,4 @@ from elastica.timestepper import *
 from elastica.restart import *
 from elastica.reset_functions_for_block_structure import *
 from elastica.typing import *
+from elastica.controllers import *
