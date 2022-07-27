@@ -7,6 +7,7 @@ import sys
 # FIXME without appending sys.path make it more generic
 sys.path.append("../../")
 from elastica import *
+from elastica.utils import Tolerance
 from examples.ControllerCases.pendulum_tracking_sphere_postprocessing import (
     plot_video,
     plot_video_xy,
@@ -81,6 +82,10 @@ class PendulumTrackingController(ControllerBase):
         sphere_position = systems["sphere"].position_collection[:, 0]
         # current rotation angle of the sphere around the z-axis
         sphere_theta = np.arctan2(sphere_position[1], sphere_position[0])
+        # construct rotation matrix for sphere
+        sphere_rot_mat = Rotation.from_euler(
+            "z", sphere_theta, degrees=False
+        ).as_matrix()
 
         pendulum_tip_local_frame = np.array(
             [0.0, 0.0, systems["pendulum"].length.item() / 2]
@@ -90,9 +95,18 @@ class PendulumTrackingController(ControllerBase):
             systems["pendulum"].director_collection[..., 0].T @ pendulum_tip_local_frame
         )
         pendulum_theta = np.arctan2(pendulum_tip[1], pendulum_tip[0])
+        # construct rotation matrix for pendulum
+        pendulum_rot_mat = Rotation.from_euler(
+            "z", pendulum_theta, degrees=False
+        ).as_matrix()
 
-        # error angle between the desired theta (e.g. rotation of sphere) and the current theta of the pendulum
-        error_theta = sphere_theta - pendulum_theta
+        # rotation matrix from current rotation of pendulum to rotation of sphere
+        dev_rot_mat = pendulum_rot_mat.T @ sphere_rot_mat
+        # rotation vector
+        dev_rot_vec = Rotation.from_matrix(dev_rot_mat).as_rotvec()
+
+        # error in the rotation angle
+        error_theta = dev_rot_vec[2]
 
         # get angular velocity around z-axis of inertial frame
         angular_velocity = (
