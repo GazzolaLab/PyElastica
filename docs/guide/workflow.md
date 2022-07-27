@@ -40,6 +40,7 @@ Available components are:
 | [Connections](../api/connections.rst) |                                 |
 |   [CallBacks](../api/callback.rst)    |                                 |
 |     [Damping](../api/damping.rst)     |                                 |
+|   [Control](../api/controllers.rst)   |                                 |
 
 :::{Note}
 We adopted a composition and mixin design paradigm in building elastica. The detail of the implementation is not important in using the package, but we left some references to read [here](../advanced/PackageDesign.md).
