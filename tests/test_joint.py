@@ -12,6 +12,7 @@ from elastica.joint import (
     FixedJoint,
 )
 from numpy.testing import assert_allclose
+from elastica._rotations import _inv_rotate
 from elastica.rigidbody import Cylinder
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.utils import Tolerance
@@ -367,7 +368,7 @@ def test_fixedjoint(rest_euler_angle):
 
     # compute rotation vectors based on C_22*
     # scipy implementation
-    rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+    rot_vec = _inv_rotate(np.dstack([np.eye(3), dev_rot.T])).squeeze()
 
     # rotate rotation vector into inertial frame
     rot_vec_inertial_frame = rod2_director.T @ rot_vec
