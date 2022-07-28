@@ -8,7 +8,7 @@ More [advanced cases](#advanced-cases) are stored in separate repository with it
 In order to run examples, you will need to install additional dependencies.
 
 ```bash
-poetry install -E examples
+make install_examples_dependencies
 ```
 
 ## Case Examples
@@ -30,7 +30,7 @@ Examples can serve as a starting template for customized usages.
     * __Features__: CosseratRod, MuscleTorques, AnisotropicFrictionalPlane, Gravity, CMA Optimization
     * [MuscularSnake](./MuscularSnake)
       * __Purpose__: Example of [Parallel connection module](../elastica/experimental/connection_contact_joint/parallel_connection.py) and customized [Force module](./MuscularSnake/muscle_forces.py) to implement muscular snake.
-      * __Features__: MuscleForces(custom implemented) 
+      * __Features__: MuscleForces(custom implemented)
 * [ButterflyCase](./ButterflyCase)
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
@@ -51,13 +51,13 @@ Examples can serve as a starting template for customized usages.
     * __Features__: HelicalBucklingBC
 * [ContinuumFlagellaCase](./ContinuumFlagellaCase)
     * __Purpose__: Demonstrate flagella modeling using PyElastica.
-    * __Features__: SlenderBodyTheory, MuscleTorques, 
+    * __Features__: SlenderBodyTheory, MuscleTorques,
     * [MuscularFlagella](./MuscularFlagella)
         * __Purpose__: Example of customizing [Joint module](./MuscularFlagella/connection_flagella.py) and [Force module](./MuscularFlagella/muscle_forces_flagella.py) to implement muscular flagella.
         * __Features__: MuscleForces(custom implemented)
 * [RodContactCase](./RodContactCase)
   * [RodRodContact](./RodContactCase/RodRodContact)
-    * __Purpose__: Demonstrates contact between two rods, for different initial conditions. 
+    * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
     * __Features__: CosseratRod, ExternalContact
   * [RodSelfContact](./RodContactCase/RodSelfContact)
     * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)

@@ -52,8 +52,6 @@ myst-parser = {version = "^0.17.2", optional = true, extras = ["docs"]}
 numpydoc = {version = "^1.3.1", optional = true, extras = ["docs"]}
 docutils = {version = "^0.17.1", optional = true, extras = ["docs"]}
 cma = {version = "^3.2.2", optional = true, extras = ["examples"]}
-ffmpeg = {version = "^1.4", optional = true, extras = ["examples"]}
-moviepy = {version = "^1.0.3", optional = true, extras = ["examples"]}
 matplotlib = {version = "^3.3.2", optional = true, extras = ["examples"]}
 
 [tool.poetry.dev-dependencies]
@@ -79,8 +77,6 @@ docs = [
 ]
 examples = [
   "cma",
-  "ffmpeg",
-  "moviepy",
   "matplotlib",
 ]
 
