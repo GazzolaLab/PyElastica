@@ -41,7 +41,6 @@ python = ">=3.7,<3.11"
 numba = "^0.55.0"
 numpy = "^1.19.2"
 scipy = "^1.5.2"
-matplotlib = "^3.3.2"
 tqdm = "^4.61.1"
 # A list of all of the optional dependencies, some of which are included in the
 # below `extras`. They can be opted into by apps.
@@ -55,6 +54,7 @@ docutils = {version = "^0.17.1", optional = true, extras = ["docs"]}
 cma = {version = "^3.2.2", optional = true, extras = ["examples"]}
 ffmpeg = {version = "^1.4", optional = true, extras = ["examples"]}
 moviepy = {version = "^1.0.3", optional = true, extras = ["examples"]}
+matplotlib = {version = "^3.3.2", optional = true, extras = ["examples"]}
 
 [tool.poetry.dev-dependencies]
 black = "21.12b0"
@@ -81,6 +81,7 @@ examples = [
   "cma",
   "ffmpeg",
   "moviepy",
+  "matplotlib",
 ]
 
 [tool.black]
