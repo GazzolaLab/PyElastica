@@ -26,13 +26,12 @@ Documentation of PyElastica is available [here][link-docs-website].
 We ask that any publications which use Elastica cite as following:
 
 ```
-@misc{PyElastica,
-  author = {Arman Tekinalp, Seung Hyun Kim, Tejaswin Parthasarathy, Yashraj Bhosale},
-  title = {PyElastica: A computational framework for Cosserat rod assemblies},
-  year = {2022},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/GazzolaLab/PyElastica}},
+@misc{tekinalp2022pyelastica,
+  title={PyElastica: A computational framework for Cosserat rod assemblies},
+  author={Tekinalp, Arman and Kim, Seung Hyun and Parthasarathy, Tejaswin and Bhosale, Yashraj},
+  journal={https://github.com/GazzolaLab/PyElastica},
+  year={2022},
+  publisher={GitHub}
 }
 ```
 
