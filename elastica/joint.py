@@ -14,15 +14,18 @@ class FreeJoint:
     This free joint class is the base class for all joints. Free or spherical
     joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
+
     Notes
     -----
     Every new joint class must be derived from the FreeJoint class.
+
         Attributes
         ----------
         k: float
             Stiffness coefficient of the joint.
         nu: float
             Damping coefficient of the joint.
+
     """
 
     # pass the k and nu for the forces
@@ -30,12 +33,14 @@ class FreeJoint:
     # indices should be 0 or -1, we will provide wrappers for users later
     def __init__(self, k, nu):
         """
+
         Parameters
         ----------
         k: float
            Stiffness coefficient of the joint.
         nu: float
            Damping coefficient of the joint.
+
         """
         self.k = k
         self.nu = nu
@@ -43,6 +48,7 @@ class FreeJoint:
     def apply_forces(self, rod_one, index_one, rod_two, index_two):
         """
         Apply joint force to the connected rod objects.
+
         Parameters
         ----------
         rod_one : object
@@ -53,8 +59,10 @@ class FreeJoint:
             Rod-like object
         index_two : int
             Index of second rod for joint.
+
         Returns
         -------
+
         """
         end_distance_vector = (
             rod_two.position_collection[..., index_two]
@@ -94,7 +102,9 @@ class FreeJoint:
     def apply_torques(self, rod_one, index_one, rod_two, index_two):
         """
         Apply restoring joint torques to the connected rod objects.
+
         In FreeJoint class, this routine simply passes.
+
         Parameters
         ----------
         rod_one : object
@@ -105,8 +115,10 @@ class FreeJoint:
             Rod-like object
         index_two : int
             Index of second rod for joint.
+
         Returns
         -------
+
         """
         pass
 
@@ -186,6 +198,7 @@ class FixedJoint(FreeJoint):
     between two nodes and elements by applying restoring forces and torques.
     For implementation details, refer to Zhang et al. Nature
     Communications (2019).
+
         Attributes
         ----------
         k: float
@@ -205,6 +218,7 @@ class FixedJoint(FreeJoint):
 
     def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
         """
+
         Parameters
         ----------
         k: float
