@@ -163,9 +163,9 @@ def plot_video(
             ax.set_xlim(-0.25, 0.25)
             ax.set_ylim(-0.25, 0.25)
             ax.set_zlim(0, 0.61)
-            ax.set_xlabel("x")
-            ax.set_ylabel("y")
-            ax.set_zlabel("z")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
+            ax.set_zlabel("z [m]")
             writer.grab_frame()
 
 
@@ -247,8 +247,8 @@ def plot_video_xy(
 
             plt.xlim([-0.25, 0.25])
             plt.ylim([-0.25, 0.25])
-            plt.xlabel("x")
-            plt.ylabel("y")
+            plt.xlabel("x [m]")
+            plt.ylabel("y [m]")
             writer.grab_frame()
 
 
@@ -330,6 +330,6 @@ def plot_video_xz(
 
             plt.xlim([-0.25, 0.25])
             plt.ylim([0, 0.61])
-            plt.xlabel("x")
-            plt.ylabel("z")
+            plt.xlabel("x [m]")
+            plt.ylabel("z [m]")
             writer.grab_frame()

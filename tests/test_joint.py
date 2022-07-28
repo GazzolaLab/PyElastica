@@ -2,12 +2,14 @@ __doc__ = """ Joint between rods test module """
 
 # System imports
 import elastica
+from elastica.experimental.connection_contact_joint.rod_rigidbody_connection import (
+    compute_position_of_point,
+    compute_velocity_of_point,
+)
 from elastica.joint import (
     FreeJoint,
     HingeJoint,
     FixedJoint,
-    compute_position_of_point,
-    compute_velocity_of_point,
 )
 from numpy.testing import assert_allclose
 from elastica.rigidbody import Cylinder
