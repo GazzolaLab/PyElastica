@@ -1,10 +1,6 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
-import sys
 import numpy as np
-
-sys.path.append("../../")
-
 from elastica import *
 from examples.MuscularFlagella.post_processing import (
     plot_video_2D,

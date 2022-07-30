@@ -1,8 +1,4 @@
 import numpy as np
-import sys
-import numpy as np
-
-sys.path.append("../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,

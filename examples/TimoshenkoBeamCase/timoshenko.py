@@ -2,10 +2,6 @@ __doc__ = """Timoshenko beam validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
