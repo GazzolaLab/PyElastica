@@ -1,8 +1,5 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
-import sys
 import numpy as np
-
-sys.path.append("../../")
 from elastica import *
 from examples.MuscularSnake.post_processing import (
     plot_video_with_surface,
@@ -94,7 +91,7 @@ shear_modulus_muscle = E_muscle / 2 * (0.5 + 1.0)
 # Muscle group 1 and 3, define two antagonistic muscle pairs
 n_elem_muscle_group_one_to_three = 13 * 3
 base_length_muscle = 0.39
-"""  
+"""
 In our simulation, we lump many biological tendons into one computational
 tendon. As a result, our computational tendon is bigger in size, set as elements other than 4-8
 below.

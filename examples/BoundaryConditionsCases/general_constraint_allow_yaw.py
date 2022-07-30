@@ -1,11 +1,6 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
-import matplotlib.pyplot as plt
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
     plot_position,
@@ -37,7 +32,7 @@ poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
 # setting up timestepper and video
-final_time = 10
+final_time = 1
 dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)

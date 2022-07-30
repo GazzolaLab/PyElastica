@@ -1,10 +1,6 @@
 __doc__ = """Parallel connection example"""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../../")
 from elastica import *
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     get_connection_vector_straight_straight_rod,
