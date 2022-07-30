@@ -5,7 +5,7 @@ Built in damper module implementations
 """
 __all__ = [
     "DamperBase",
-    "ExponentialDamper",
+    "AnalyticalLinearDamper",
     "LaplaceDissipationFilter",
 ]
 from abc import ABC, abstractmethod
@@ -72,9 +72,9 @@ class DamperBase(ABC):
         pass
 
 
-class ExponentialDamper(DamperBase):
+class AnalyticalLinearDamper(DamperBase):
     """
-    Exponential damper class. This class corresponds to the analytical version of
+    Analytical linear damper class. This class corresponds to the analytical version of
     a linear damper, and uses the following equations to damp translational and
     rotational velocities:
 
@@ -86,10 +86,10 @@ class ExponentialDamper(DamperBase):
 
     Examples
     --------
-    How to set exponential damper for rod or rigid body:
+    How to set analytical linear damper for rod or rigid body:
 
     >>> simulator.dampen(rod).using(
-    ...     ExponentialDamper,
+    ...     AnalyticalLinearDamper,
     ...     damping_constant=0.1,
     ...     time_step = 1E-4,   # Simulation time-step
     ... )
@@ -99,7 +99,7 @@ class ExponentialDamper(DamperBase):
     Since this class analytically treats the damping term, it is unconditionally stable
     from a timestep perspective, i.e. the presence of damping does not impose any additional
     restriction on the simulation timestep size. This implies that when using
-    Exponential Damper, one can set `damping_constant` as high as possible, without worrying
+    AnalyticalLinearDamper, one can set `damping_constant` as high as possible, without worrying
     about the simulation becoming unstable. This now leads to a streamlined procedure
     for tuning the `damping_constant`:
 
@@ -109,37 +109,35 @@ class ExponentialDamper(DamperBase):
 
     Attributes
     ----------
-    translational_exponential_damping_coefficient: numpy.ndarray
+    translational_damping_coefficient: numpy.ndarray
         1D array containing data with 'float' type.
         Damping coefficient acting on translational velocity.
-    rotational_exponential_damping_coefficient : numpy.ndarray
+    rotational_damping_coefficient : numpy.ndarray
         1D array containing data with 'float' type.
         Damping coefficient acting on rotational velocity.
     """
 
     def __init__(self, damping_constant, time_step, **kwargs):
         """
-        Exponential damper initializer
+        Analytical linear damper initializer
 
         Parameters
         ----------
         damping_constant : float
-            Damping constant for the exponential dampers.
+            Damping constant for the analytical linear damper.
         time_step : float
             Time-step of simulation
         """
         super().__init__(**kwargs)
         # Compute the damping coefficient for translational velocity
         nodal_mass = self._system.mass
-        self.translational_exponential_damping_coefficient = np.exp(
-            -damping_constant * time_step
-        )
+        self.translational_damping_coefficient = np.exp(-damping_constant * time_step)
 
         # Compute the damping coefficient for exponential velocity
         element_mass = 0.5 * (nodal_mass[1:] + nodal_mass[:-1])
         element_mass[0] += 0.5 * nodal_mass[0]
         element_mass[-1] += 0.5 * nodal_mass[-1]
-        self.rotational_exponential_damping_coefficient = np.exp(
+        self.rotational_damping_coefficient = np.exp(
             -damping_constant
             * time_step
             * element_mass
@@ -148,11 +146,11 @@ class ExponentialDamper(DamperBase):
 
     def dampen_rates(self, rod: SystemType, time: float):
         rod.velocity_collection[:] = (
-            rod.velocity_collection * self.translational_exponential_damping_coefficient
+            rod.velocity_collection * self.translational_damping_coefficient
         )
 
         rod.omega_collection[:] = rod.omega_collection * np.power(
-            self.rotational_exponential_damping_coefficient, rod.dilatation
+            self.rotational_damping_coefficient, rod.dilatation
         )
 
 
