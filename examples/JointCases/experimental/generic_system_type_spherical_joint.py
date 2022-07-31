@@ -7,8 +7,8 @@ import sys
 # FIXME without appending sys.path make it more generic
 sys.path.append("../../")
 from elastica import *
-from elastica.experimental.connection_contact_joint.rod_rigidbody_connection import (
-    RodRigidBodyFreeJoint,
+from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
+    GenericSystemTypeFreeJoint,
 )
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
@@ -97,13 +97,13 @@ spherical_joint_sim.constrain(rod1).using(
 spherical_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    RodRigidBodyFreeJoint, k=1e5, nu=0
+    GenericSystemTypeFreeJoint, k=1e5, nu=0
 )  # k=kg/s2 nu=kg/s 1e-2
 # Connect rod 2 and cylinder
 spherical_joint_sim.connect(
     first_rod=rod2, second_rod=cylinder, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    RodRigidBodyFreeJoint,
+    GenericSystemTypeFreeJoint,
     k=1e5,
     nu=0,
     point_system_two=np.array([0.0, 0.0, -cylinder.length / 2]),

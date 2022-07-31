@@ -1,27 +1,17 @@
-__doc__ = """ Joint between rods and rigid bodies test module """
+__doc__ = """ Joints for generic system types test module """
 
 # System imports
-import elastica
-from elastica.experimental.connection_contact_joint.rod_rigidbody_connection import (
-    RodRigidBodyFreeJoint,
-    RodRigidBodyFixedJoint,
+from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
+    GenericSystemTypeFreeJoint,
     compute_position_of_point,
     compute_velocity_of_point,
 )
-from elastica.joint import (
-    FreeJoint,
-    HingeJoint,
-    FixedJoint,
-)
 from numpy.testing import assert_allclose
-from elastica._rotations import _inv_rotate
 from elastica.rigidbody import Cylinder, Sphere, RigidBodyBase
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.utils import Tolerance
-import importlib
 import numpy as np
 import pytest
-from scipy.spatial.transform import Rotation
 from typing import *
 
 # seed random number generator
@@ -94,14 +84,14 @@ def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
         np.random.rand(3),
     ],
 )
-def test_freejoint(
+def test_generic_free_joint(
     system_one_class: Union[Type[CosseratRod], Type[RigidBodyBase]],
     system_two_class: Union[Type[CosseratRod], Type[RigidBodyBase]],
     point_system_one: np.ndarray,
     point_system_two: np.ndarray,
 ):
 
-    # Origin of the rod
+    # Origin of the systems
     origin1 = np.array([0.0, 0.0, 0.0])
     origin2 = np.array([1.0, 0.0, 0.0])
 
@@ -114,11 +104,11 @@ def test_freejoint(
     # Damping between two points
     nu = 1
 
-    # Rod indexes
+    # System indices
     system_one_index = -1
     system_two_index = 0
 
-    # Rod velocity
+    # System velocity
     v1 = np.array([-1, 0, 0]).reshape(3, 1)
     v2 = v1 * -1
     system_one.velocity_collection = np.tile(
@@ -128,7 +118,7 @@ def test_freejoint(
         v2, (1, system_two.velocity_collection.shape[1] + 1)
     )
 
-    # Rod angular velocity
+    # System angular velocity
     omega1 = np.array([0.0, 1.0, 0.0]).reshape(3, 1)
     omega2 = -omega1
     system_one.omega_collection = np.tile(
@@ -217,7 +207,7 @@ def test_freejoint(
     external_force_system_one = external_force
     external_force_system_two = -1 * external_force
 
-    frjt = RodRigidBodyFreeJoint(
+    frjt = GenericSystemTypeFreeJoint(
         k=k,
         nu=nu,
         point_system_one=point_system_one,

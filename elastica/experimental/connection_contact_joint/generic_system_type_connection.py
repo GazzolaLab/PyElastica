@@ -1,19 +1,18 @@
 __doc__ = (
     """ Module containing joint classes to connect rods and rigid bodies together. """
 )
-__all__ = ["RodRigidBodyFreeJoint", "RodRigidBodyFixedJoint"]
-from elastica._rotations import _inv_rotate
+__all__ = ["GenericSystemTypeFreeJoint", "GenericSystemTypeFixedJoint"]
 from elastica.joint import FreeJoint, FixedJoint
 from elastica.typing import SystemType
 from elastica.utils import Tolerance, MaxDimension
 import numpy as np
 
 
-class RodRigidBodyFreeJoint(FreeJoint):
+class GenericSystemTypeFreeJoint(FreeJoint):
     """
     This free joint class is the base class for all joints. Free or spherical
     joints constrains the relative movement between two nodes (chosen by the user)
-    by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
+    by applying restoring forces.
 
     Notes
     -----
@@ -220,12 +219,10 @@ class RodRigidBodyFreeJoint(FreeJoint):
         pass
 
 
-class RodRigidBodyFixedJoint(RodRigidBodyFreeJoint, FixedJoint):
+class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
     """
     The fixed joint class restricts the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
-    For implementation details, refer to Zhang et al. Nature
-    Communications (2019).
 
         Attributes
         ----------
@@ -312,7 +309,7 @@ class RodRigidBodyFixedJoint(RodRigidBodyFreeJoint, FixedJoint):
             which means that a restoring torque will be applied to align the directors of both systems directly.
             (default=None)
         """
-        RodRigidBodyFreeJoint.__init__(
+        GenericSystemTypeFreeJoint.__init__(
             self,
             k=k,
             nu=nu,
@@ -325,7 +322,7 @@ class RodRigidBodyFixedJoint(RodRigidBodyFreeJoint, FixedJoint):
 
     # Apply force is same as free joint
     def apply_forces(self, system_one, index_one, system_two, index_two):
-        return RodRigidBodyFreeJoint.apply_forces(
+        return GenericSystemTypeFreeJoint.apply_forces(
             self, system_one, index_one, system_two, index_two
         )
 

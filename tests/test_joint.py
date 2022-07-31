@@ -2,7 +2,7 @@ __doc__ = """ Joint between rods test module """
 
 # System imports
 import elastica
-from elastica.experimental.connection_contact_joint.rod_rigidbody_connection import (
+from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
     compute_position_of_point,
     compute_velocity_of_point,
 )
