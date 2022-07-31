@@ -168,7 +168,7 @@ PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
-    filename = "fixed_joint_example_last_node_pos_xy.png"
+    filename = "generic_system_type_fixed_joint_example_last_node_pos_xy.png"
     plot_position(
         plot_params_rod1=pp_list_rod1,
         plot_params_rod2=pp_list_rod2,
@@ -178,7 +178,7 @@ if PLOT_FIGURE:
     )
 
 if PLOT_VIDEO:
-    filename = "fixed_joint_example"
+    filename = "generic_system_type_fixed_joint_example"
     plot_video(
         plot_params_rod1=pp_list_rod1,
         plot_params_rod2=pp_list_rod2,
