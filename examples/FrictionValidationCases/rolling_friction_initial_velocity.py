@@ -72,7 +72,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     # Add damping
     dt = 1e-6 * 2
     rolling_friction_initial_velocity_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )

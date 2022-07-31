@@ -65,7 +65,7 @@ helicalbuckling_sim.append(shearable_rod)
 dl = base_length / n_elem
 dt = 1e-3 * dl
 helicalbuckling_sim.dampen(shearable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )

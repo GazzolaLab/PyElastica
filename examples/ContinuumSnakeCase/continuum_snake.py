@@ -102,7 +102,7 @@ def run_snake(
     damping_constant = 2e-3
     time_step = 1e-4
     snake_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=time_step,
     )
