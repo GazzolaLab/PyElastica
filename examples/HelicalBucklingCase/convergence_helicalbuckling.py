@@ -2,10 +2,6 @@ __doc__ = """Helical buckling convergence study, for detailed explanation refer 
   section 3.4.1 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,

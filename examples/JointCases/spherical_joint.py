@@ -1,11 +1,7 @@
-__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.
 methods section."""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,

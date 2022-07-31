@@ -23,13 +23,6 @@
 
     isort:skip_file
 """
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../../")  # isort:skip
-
-# from collections import defaultdict
-
 import numpy as np
 from matplotlib import pyplot as plt
 
