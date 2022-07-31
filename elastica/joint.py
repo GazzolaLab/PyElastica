@@ -172,8 +172,8 @@ class HingeJoint(FreeJoint):
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(self, system_one, index_one, system_two, index_two):
-        # current direction of the `index_two` element of link two
-        link_direction = system_two.director_collection[0, :, index_two]
+        # current tangent direction of the `index_two` element of system two
+        link_direction = system_two.director_collection[2, :, index_two]
 
         # projection of the link direction onto the plane normal
         force_direction = (
