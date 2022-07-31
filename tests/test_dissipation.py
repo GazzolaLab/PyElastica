@@ -1,7 +1,11 @@
 __doc__ = """ Test Dissipation module for in Elastica implementation"""
 
 # System imports
-from elastica.dissipation import DamperBase, ExponentialDamper, LaplaceDissipationFilter
+from elastica.dissipation import (
+    DamperBase,
+    AnalyticalLinearDamper,
+    LaplaceDissipationFilter,
+)
 from elastica.utils import Tolerance
 
 import numpy as np
@@ -47,7 +51,7 @@ def test_damper_base_properties_access():
     test_damper.dampen_rates(test_rod, 2)
 
 
-def test_exponential_damper():
+def test_analytical_linear_damper():
 
     test_rod = MockTestRod()
     test_rod.mass[:] = 1.0
@@ -59,36 +63,30 @@ def test_exponential_damper():
     )
     damping_constant = 0.25
     dt = 0.5
-    exponential_damper = ExponentialDamper(
+    exponential_damper = AnalyticalLinearDamper(
         _system=test_rod, damping_constant=damping_constant, time_step=dt
     )
     # check common prefactors
     # e ^ (-damp_coeff * dt)
-    ref_translational_exponential_damping_coefficient = np.exp(-0.25 * 0.5)
+    ref_translational_damping_coefficient = np.exp(-0.25 * 0.5)
     # e ^ (-damp_coeff * dt * elemental_mass * inv_mass_second_moment_of_inertia)
-    ref_rotational_exponential_damping_coefficient = np.exp(
-        -0.25 * 0.5 * 1.0 * 3.0
-    ) * np.ones(
+    ref_rotational_damping_coefficient = np.exp(-0.25 * 0.5 * 1.0 * 3.0) * np.ones(
         (
             3,
             test_rod.n_elem,
         )
     )
     # end corrections
-    ref_rotational_exponential_damping_coefficient[:, 0] = np.exp(
-        -0.25 * 0.5 * 1.5 * 3.0
-    )
-    ref_rotational_exponential_damping_coefficient[:, -1] = np.exp(
-        -0.25 * 0.5 * 1.5 * 3.0
-    )
+    ref_rotational_damping_coefficient[:, 0] = np.exp(-0.25 * 0.5 * 1.5 * 3.0)
+    ref_rotational_damping_coefficient[:, -1] = np.exp(-0.25 * 0.5 * 1.5 * 3.0)
     assert_allclose(
-        exponential_damper.translational_exponential_damping_coefficient,
-        ref_translational_exponential_damping_coefficient,
+        exponential_damper.translational_damping_coefficient,
+        ref_translational_damping_coefficient,
         atol=Tolerance.atol(),
     )
     assert_allclose(
-        exponential_damper.rotational_exponential_damping_coefficient,
-        ref_rotational_exponential_damping_coefficient,
+        exponential_damper.rotational_damping_coefficient,
+        ref_rotational_damping_coefficient,
         atol=Tolerance.atol(),
     )
 
@@ -102,13 +100,11 @@ def test_exponential_damper():
     )  # We need copy of the list not a reference to this array
     exponential_damper.dampen_rates(test_rod, time=0)
     post_damping_velocity_collection = (
-        pre_damping_velocity_collection
-        * ref_translational_exponential_damping_coefficient
+        pre_damping_velocity_collection * ref_translational_damping_coefficient
     )
     # multiplying_factor = ref_rot_coeff ^ dilation
     post_damping_omega_collection = (
-        pre_damping_omega_collection
-        * ref_rotational_exponential_damping_coefficient ** 2.0
+        pre_damping_omega_collection * ref_rotational_damping_coefficient ** 2.0
     )
     assert_allclose(
         post_damping_velocity_collection,

@@ -70,7 +70,7 @@ solenoid_sim.append(sherable_rod)
 
 # Add damping
 solenoid_sim.dampen(sherable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )

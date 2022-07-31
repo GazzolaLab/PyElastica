@@ -19,7 +19,7 @@ class TestDamper:
             load_damper.using(illegal_damper)
         assert "not a valid damper" in str(excinfo.value)
 
-    from elastica.dissipation import ExponentialDamper as TestDamper
+    from elastica.dissipation import AnalyticalLinearDamper as TestDamper
 
     @pytest.mark.parametrize("legal_damper", [TestDamper])
     def test_using_with_legal_damper(self, load_damper, legal_damper):

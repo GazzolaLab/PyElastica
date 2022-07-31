@@ -82,7 +82,7 @@ def run_flagella(
     damping_constant = 0.625
     dt = 1e-4 * period
     flagella_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
     )

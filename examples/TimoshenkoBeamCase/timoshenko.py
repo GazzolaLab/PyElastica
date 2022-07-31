@@ -54,7 +54,7 @@ timoshenko_sim.append(shearable_rod)
 dl = base_length / n_elem
 dt = 0.07 * dl
 timoshenko_sim.dampen(shearable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )
@@ -91,7 +91,7 @@ if ADD_UNSHEARABLE_ROD:
 
     # add damping
     timoshenko_sim.dampen(unshearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )

@@ -90,12 +90,12 @@ fixed_joint_sim.add_forcing_to(rod2).using(
 damping_constant = 0.4
 dt = 1e-4
 fixed_joint_sim.dampen(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 fixed_joint_sim.dampen(rod2).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

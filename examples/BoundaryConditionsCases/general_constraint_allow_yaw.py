@@ -81,7 +81,7 @@ general_constraint_sim.add_forcing_to(rod1).using(
 # add damping
 damping_constant = 0.4
 general_constraint_sim.dampen(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

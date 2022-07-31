@@ -58,7 +58,7 @@ def simulate_timoshenko_beam_with(
     dl = base_length / n_elem
     dt = 0.07 * dl
     timoshenko_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )
@@ -91,7 +91,7 @@ def simulate_timoshenko_beam_with(
         timoshenko_sim.append(unshearable_rod)
         # add damping
         timoshenko_sim.dampen(unshearable_rod).using(
-            ExponentialDamper,
+            AnalyticalLinearDamper,
             damping_constant=nu,
             time_step=dt,
         )

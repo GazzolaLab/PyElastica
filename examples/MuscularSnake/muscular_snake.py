@@ -228,7 +228,7 @@ for _, my_rod in enumerate(rod_list):
 
 # Add dissipation to backbone
 muscular_snake_simulator.dampen(snake_body).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu_body,
     time_step=time_step,
 )
@@ -236,7 +236,7 @@ muscular_snake_simulator.dampen(snake_body).using(
 # Add dissipation to muscles
 for rod in rod_list:
     muscular_snake_simulator.dampen(rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu_muscle,
         time_step=time_step,
     )
