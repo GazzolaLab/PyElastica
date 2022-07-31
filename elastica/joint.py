@@ -173,15 +173,15 @@ class HingeJoint(FreeJoint):
 
     def apply_torques(self, system_one, index_one, system_two, index_two):
         # current tangent direction of the `index_two` element of system two
-        link_direction = system_two.director_collection[2, :, index_two]
+        system_two_tangent = system_two.director_collection[2, :, index_two]
 
-        # projection of the link direction onto the plane normal
+        # projection of the tangent of system two onto the plane normal
         force_direction = (
-            -np.dot(link_direction, self.normal_direction) * self.normal_direction
+            -np.dot(system_two_tangent, self.normal_direction) * self.normal_direction
         )
 
         # compute the restoring torque
-        torque = self.kt * np.cross(link_direction, force_direction)
+        torque = self.kt * np.cross(system_two_tangent, force_direction)
 
         # The opposite torque will be applied on link one
         system_one.external_torques[..., index_one] -= (
