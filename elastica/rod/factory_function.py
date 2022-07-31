@@ -195,9 +195,9 @@ def allocate(
         # Remove the option to set internal nu inside, beyond v0.4.0
         "The option to set damping coefficient (nu) for the rod during rod "
         "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class."
-        "For reference see the class elastica.dissipation.ExponentialDamper(),"
-        "and for usage check examples/axial_stretching.py"
+        "please derive your simulation class from the add-on Damping mixin class. "
+        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
+        "and for usage check examples/axial_stretching.py "
         "The option to set damping coefficient (nu) during rod construction "
         "will be removed in the future (v0.3.1)."
     )

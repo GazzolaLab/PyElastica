@@ -1,10 +1,6 @@
 __doc__ = """Hinge joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
@@ -96,12 +92,12 @@ hinge_joint_sim.add_forcing_to(rod2).using(
 damping_constant = 4e-3
 dt = 5e-5
 hinge_joint_sim.dampen(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 hinge_joint_sim.dampen(rod2).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

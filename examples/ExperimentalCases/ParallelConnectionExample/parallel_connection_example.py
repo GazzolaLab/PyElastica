@@ -1,10 +1,6 @@
 __doc__ = """Parallel connection example"""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../../")
 from elastica import *
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     get_connection_vector_straight_straight_rod,
@@ -139,12 +135,12 @@ for i in range(n_elem):
 damping_constant = 4e-3
 dt = 1e-3
 parallel_connection_sim.dampen(rod_one).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 parallel_connection_sim.dampen(rod_two).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

@@ -1,11 +1,6 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
-import matplotlib.pyplot as plt
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from elastica.joint import get_relative_rotation_two_systems
 from examples.JointCases.joint_cases_postprocessing import (
@@ -97,12 +92,12 @@ fixed_joint_sim.add_forcing_to(rod2).using(
 damping_constant = 0.4
 dt = 1e-5
 fixed_joint_sim.dampen(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 fixed_joint_sim.dampen(rod2).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

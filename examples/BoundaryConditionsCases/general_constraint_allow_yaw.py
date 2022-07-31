@@ -1,11 +1,6 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
-import matplotlib.pyplot as plt
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
     plot_position,
@@ -86,7 +81,7 @@ general_constraint_sim.add_forcing_to(rod1).using(
 # add damping
 damping_constant = 0.4
 general_constraint_sim.dampen(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

@@ -2,10 +2,7 @@
 This script is an example to how to use Pyelastica restart functionality.
 """
 
-import sys
 import numpy as np
-
-sys.path.append("../../")
 from elastica import *
 
 
@@ -66,7 +63,7 @@ damping_constant = 10.0
 dl = base_length / n_elem
 dt = 0.01 * dl
 restart_example_simulator.dampen(shearable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

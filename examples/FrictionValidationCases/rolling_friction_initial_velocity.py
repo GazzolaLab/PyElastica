@@ -1,11 +1,7 @@
-__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018  
+__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
 section 4.1.4 and Appendix G """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
@@ -76,7 +72,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     # Add damping
     dt = 1e-6 * 2
     rolling_friction_initial_velocity_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )

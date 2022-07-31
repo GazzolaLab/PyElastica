@@ -1,4 +1,3 @@
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 

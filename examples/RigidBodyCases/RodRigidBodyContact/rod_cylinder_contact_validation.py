@@ -1,9 +1,4 @@
 import numpy as np
-
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../../../")
 from elastica import *
 from post_processing import plot_video, plot_cylinder_rod_position
 

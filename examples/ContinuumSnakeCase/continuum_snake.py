@@ -1,10 +1,7 @@
 __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
-import sys
 import os
 import numpy as np
-
-sys.path.append("../../")
 from elastica import *
 
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
@@ -105,7 +102,7 @@ def run_snake(
     damping_constant = 2e-3
     time_step = 1e-4
     snake_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=time_step,
     )

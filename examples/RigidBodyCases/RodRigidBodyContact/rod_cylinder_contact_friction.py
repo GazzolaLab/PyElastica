@@ -1,7 +1,4 @@
 import numpy as np
-import sys
-
-sys.path.append("../../../")
 from elastica import *
 from post_processing import plot_velocity, plot_video_with_surface
 

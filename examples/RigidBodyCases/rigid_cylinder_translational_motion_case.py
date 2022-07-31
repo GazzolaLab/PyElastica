@@ -1,8 +1,4 @@
-import sys
 import numpy as np
-
-sys.path.append("../../")
-
 from elastica import *
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
