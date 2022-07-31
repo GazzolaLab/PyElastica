@@ -97,12 +97,12 @@ inclined_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 # damping_constant = 2e-3
 damping_constant = 4e-4
 inclined_rod_rod_contact_sim.dampen(rod_one).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 inclined_rod_rod_contact_sim.dampen(rod_two).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )

@@ -157,7 +157,7 @@ muscular_flagella_sim.append(flagella_muscle)
 
 # add damping
 muscular_flagella_sim.dampen(flagella_muscle).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu_muscle,
     time_step=time_step,
 )

@@ -94,12 +94,12 @@ parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 # damping_constant = 2e-3
 damping_constant = 2e-4
 parallel_rod_rod_contact_sim.dampen(rod_one).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 parallel_rod_rod_contact_sim.dampen(rod_two).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
