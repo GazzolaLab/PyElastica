@@ -360,7 +360,6 @@ def compute_position_of_point(system: SystemType, point: np.ndarray, index: int)
 
     >>> system.compute_position_of_point(np.array([0, 0, 1]), -1)
     """
-    assert point.shape == (3,), "Point must be in the shape (3,)"
     position = (
         system.position_collection[..., index]
         + system.director_collection[..., index].T @ point
@@ -396,8 +395,6 @@ def compute_velocity_of_point(system: SystemType, point: np.ndarray, index: int)
 
     >>> system.compute_velocity_of_point(np.array([0, 0, 1]), -1)
     """
-    assert point.shape == (3,), "Point must be in the shape (3,)"
-
     # point rotated into the inertial frame
     point_inertial_frame = system.director_collection[..., index].T @ point
 
