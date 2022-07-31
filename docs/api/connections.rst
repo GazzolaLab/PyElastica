@@ -26,10 +26,8 @@ Compatibility
 Connection / Contact / Joints   Rod  Rigid Body
 =============================== ==== =========== 
 FreeJoint                       ✅   ❌
-GenericSystemTypeFreeJoint      ✅   ✅
 ExternalContact                 ✅   ❌
 FixedJoint                      ✅   ❌
-GenericSystemTypeFixedJoint     ✅   ✅
 HingeJoint                      ✅   ❌
 SelfContact                     ✅   ❌
 =============================== ==== =========== 
