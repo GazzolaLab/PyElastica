@@ -72,7 +72,7 @@ hinge_joint_sim.constrain(rod1).using(
 hinge_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    HingeJoint, k=1e5, nu=0, kt=5e3, normal_direction=roll_direction
+    HingeJoint, k=1e5, nu=0, kt=1e1, normal_direction=roll_direction
 )  # 1e-2
 
 # Add forces to rod2
