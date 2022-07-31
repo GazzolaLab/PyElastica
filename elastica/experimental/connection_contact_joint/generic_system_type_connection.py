@@ -130,32 +130,17 @@ class GenericSystemTypeFreeJoint(FreeJoint):
 
         # Compute the translational deviation of the point belonging to system one
         # from the point belonging to system two
-        end_distance_vector = position_system_two - position_system_one
-
-        # Calculate norm of end_distance_vector
-        # this implementation timed: 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-        end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
-
-        # Below if check is not efficient find something else
-        # We are checking if the point of `system_one` and point of `system_two` are at the same point in space
-        # If they are at the same point in space, it is a zero vector.
-        if end_distance <= Tolerance.atol():
-            normalized_end_distance_vector = np.array([0.0, 0.0, 0.0])
-        else:
-            normalized_end_distance_vector = end_distance_vector / end_distance
+        distance_vector = position_system_two - position_system_one
 
         # Compute elastic force using a spring formulation as a linear function of the (undesired) distance between
         # the two systems.
-        elastic_force = self.k * end_distance_vector
+        elastic_force = self.k * distance_vector
 
         # Compute the velocity deviation of the point belonging to system one from the point belonging to system two
         relative_velocity = velocity_system_two - velocity_system_one
-        # only penalize (e.g. apply opposite damping force) velocity aligned with the `normalized_end_distance_vector`
-        normal_relative_velocity = (
-            np.dot(relative_velocity, normalized_end_distance_vector)
-            * normalized_end_distance_vector
-        )
-        damping_force = -self.nu * normal_relative_velocity
+
+        # Compute damping force considering the specified damping coefficient `nu`
+        damping_force = self.nu * relative_velocity
 
         # compute contact force as addition of elastic force and damping force
         contact_force = elastic_force + damping_force
@@ -170,7 +155,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             )
         ):
             # The external force has opposite signs for the two systems:
-            # For system one: external_force = contact_force
+            # For system one: external_force = +contact_force
             # For system two: external_force = -contact_force
             external_force = (1 - 2 * i) * contact_force
 

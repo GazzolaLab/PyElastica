@@ -196,13 +196,13 @@ def test_generic_free_joint(
             atol=Tolerance.atol(),
         )
 
+    # Compute the relative velocity
     relative_vel = velocity_system_two - velocity_system_one
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
 
     # Compute the free joint forces
     elastic_force = k * distance
-    damping_force = nu * normal_relative_vel * distance / end_distance
-    external_force = elastic_force - damping_force
+    damping_force = nu * relative_vel
+    external_force = elastic_force + damping_force
 
     external_force_system_one = external_force
     external_force_system_two = -1 * external_force
