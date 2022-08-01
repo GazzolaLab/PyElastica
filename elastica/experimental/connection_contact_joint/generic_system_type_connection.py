@@ -272,13 +272,13 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
 
     def __init__(
         self,
-        k,
-        nu,
-        kt,
-        nut=0.0,
-        point_system_one=None,
-        point_system_two=None,
-        rest_rotation_matrix=None,
+        k: float,
+        nu: float,
+        kt: float,
+        nut: float = 0.0,
+        point_system_one: np.ndarray = None,
+        point_system_two: np.ndarray = None,
+        rest_rotation_matrix: np.ndarray = None,
     ):
         """
 
@@ -320,12 +320,24 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
         )
 
     # Apply force is same as free joint
-    def apply_forces(self, system_one, index_one, system_two, index_two):
+    def apply_forces(
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
+    ):
         return GenericSystemTypeFreeJoint.apply_forces(
             self, system_one, index_one, system_two, index_two
         )
 
-    def apply_torques(self, system_one, index_one, system_two, index_two):
+    def apply_torques(
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
+    ):
         return FixedJoint.apply_torques(
             self, system_one, index_one, system_two, index_two
         )
