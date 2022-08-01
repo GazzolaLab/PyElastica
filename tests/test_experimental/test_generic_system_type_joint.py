@@ -15,7 +15,7 @@ import pytest
 from typing import *
 
 # seed random number generator
-np.random.seed(0)
+rng = np.random.default_rng(0)
 
 
 def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
@@ -71,8 +71,8 @@ def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
     [
         np.zeros((3,)),
         np.array([0.0, 0.0, 1.0]),
-        np.random.rand(3),
-        np.random.rand(3),
+        rng.random(3),
+        rng.random(3),
     ],
 )
 @pytest.mark.parametrize(
@@ -80,8 +80,8 @@ def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
     [
         np.zeros((3,)),
         np.array([0.0, 0.0, -1.0]),
-        np.random.rand(3),
-        np.random.rand(3),
+        rng.random(3),
+        rng.random(3),
     ],
 )
 def test_generic_free_joint(

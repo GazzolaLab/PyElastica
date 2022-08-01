@@ -25,7 +25,7 @@ from scipy.spatial.transform import Rotation
 
 
 # seed random number generator
-np.random.seed(0)
+rng = np.random.default_rng(0)
 
 
 def test_freejoint():
@@ -241,7 +241,7 @@ rest_euler_angles = [
     np.array([np.pi / 2, 0.0, 0.0]),
     np.array([0.0, np.pi / 2, 0.0]),
     np.array([0.0, 0.0, np.pi / 2]),
-    2 * np.pi * np.random.random_sample(size=3),
+    2 * np.pi * rng.random(size=3),
 ]
 
 
