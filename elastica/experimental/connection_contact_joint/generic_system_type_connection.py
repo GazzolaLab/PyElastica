@@ -102,7 +102,13 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             else np.array([0.0, 0.0, 0.0])
         )
 
-    def apply_forces(self, system_one: SystemType, index_one: int, system_two: SystemType, index_two: int):
+    def apply_forces(
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
+    ):
         """
         Apply joint force to the connected systems.
 
@@ -185,7 +191,13 @@ class GenericSystemTypeFreeJoint(FreeJoint):
                 system.director_collection[..., index] @ external_torque
             )
 
-    def apply_torques(self, system_one: SystemType, index_one: int, system_two: SystemType, index_two: int):
+    def apply_torques(
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
+    ):
         """
         Apply restoring joint torques to the connected systems.
 
