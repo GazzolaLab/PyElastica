@@ -7,26 +7,32 @@ from elastica.typing import SystemType
 from elastica.utils import Tolerance, MaxDimension
 import numpy as np
 
+# Experimental implementation for `joint` modules: #122 #149
+#   - Enable the joint between `rod` and `rigid-body`
+#   - Allow joint to form offset from the node/COM
+#   - Generalized version for joint system
+# Blocked by:
+#   - #113
+# TODO: 
+#    - [x] Tests
+#    - [ ] Physical validation / theory / literature for reference
+#    - [ ] Optimization / Numba
+#    - [ ] Benchmark
+#    - [x] Examples
 
 class GenericSystemTypeFreeJoint(FreeJoint):
     """
-    This free joint class is the base class for all joints. Free or spherical
-    joints constrains the relative movement between two nodes (chosen by the user)
-    by applying restoring forces.
-
-    Notes
-    -----
-    Every new joint class must be derived from the FreeJoint class.
+    Constrains the relative movement between two nodes by applying restoring forces.
 
     Attributes
     ----------
-    k: float
+    k : float
         Stiffness coefficient of the joint.
-    nu: float
+    nu : float
         Damping coefficient of the joint.
     point_system_one : numpy.ndarray
-            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
-            or the center of mass (for rigid bodies) to the joint.
+        Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
     point_system_two : numpy.ndarray
         Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
         or the center of mass (for rigid bodies) to the joint.
@@ -66,11 +72,11 @@ class GenericSystemTypeFreeJoint(FreeJoint):
            Stiffness coefficient of the joint.
         nu: float
            Damping coefficient of the joint.
-        point_system_one : numpy.ndarray
+        point_system_one : Optional[numpy.ndarray]
             Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
-        point_system_two : numpy.ndarray
+        point_system_two : Optional[numpy.ndarray]
             Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
@@ -96,17 +102,12 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         ----------
         system_one : SystemType
              System two of the joint connection.
-             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
             Index of first system for joint.
         system_two : SystemType
             System two of the joint connection.
-            Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
             Index of second system for joint.
-
-        Returns
-        -------
 
         """
         # Compute the position in the inertial frame of the specified point.
@@ -176,8 +177,6 @@ class GenericSystemTypeFreeJoint(FreeJoint):
                 system.director_collection[..., index] @ external_torque
             )
 
-        return
-
     def apply_torques(self, system_one, index_one, system_two, index_two):
         """
         Apply restoring joint torques to the connected systems.
@@ -188,17 +187,12 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         ----------
         system_one : SystemType
              System two of the joint connection.
-             Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_one : int
             Index of first system for joint.
         system_two : SystemType
             System two of the joint connection.
-            Object of a child class of  either `CosseratRod` or `RigidBodyBase`.
         index_two : int
             Index of second system for joint.
-
-        Returns
-        -------
 
         """
         pass
@@ -211,13 +205,13 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
 
         Attributes
         ----------
-        k: float
+        k : float
             Stiffness coefficient of the joint.
-        nu: float
+        nu : float
             Damping coefficient of the joint.
-        kt: float
+        kt : float
             Rotational stiffness coefficient of the joint.
-        nut: float
+        nut : float
             Rotational damping coefficient of the joint.
         point_system_one : numpy.ndarray
             Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
@@ -225,7 +219,7 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
         point_system_two : numpy.ndarray
             Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
             or the center of mass (for rigid bodies) to the joint.
-        rest_rotation_matrix: np.array
+        rest_rotation_matrix : np.ndarray
             2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
@@ -270,23 +264,23 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
 
         Parameters
         ----------
-        k: float
+        k : float
             Stiffness coefficient of the joint.
-        nu: float
+        nu : float
             Damping coefficient of the joint.
-        kt: float
+        kt : float
             Rotational stiffness coefficient of the joint.
-        nut: float = 0.
-            Rotational damping coefficient of the joint.
-        point_system_one : numpy.ndarray
+        nut : float
+            Rotational damping coefficient of the joint. (default=0.0)
+        point_system_one : Optional[numpy.ndarray]
             Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
-        point_system_two : numpy.ndarray
+        point_system_two : Optional[numpy.ndarray]
             Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
-        rest_rotation_matrix: np.array
+        rest_rotation_matrix : Optional[np.ndarray]
             2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
@@ -326,16 +320,16 @@ def compute_position_of_point(system: SystemType, point: np.ndarray, index: int)
     ----------
     system: SystemType
         System to which the point belongs.
-    point : np.array
+    point : np.ndarray
         1D (3,) numpy array containing 'float' data.
         The point describes a position in the local frame relative to the inertial position of node
         with index `index` and orientation of element with `index`.
-    index: int
+    index : int
         Index of the node / element in the system.
 
     Returns
     -------
-    position : np.array
+    position : np.ndarray
         1D (3,) numpy array containing 'float' data.
         Position of the point in the inertial frame.
 
@@ -360,17 +354,16 @@ def compute_velocity_of_point(system: SystemType, point: np.ndarray, index: int)
     ----------
     system: SystemType
         System to which the point belongs.
-    point : np.array
+    point : np.ndarray
         1D (3,) numpy array containing 'float' data.
         The point describes a position in the local frame relative to the inertial position of node
         with index `index` and orientation of element with `index`.
-
-    index: int
+    index : int
         Index of the node / element in the system.
 
     Returns
     -------
-    velocity : np.array
+    velocity : np.ndarray
         1D (3,) numpy array containing 'float' data.
         Velocity of the point in the inertial frame.
 
