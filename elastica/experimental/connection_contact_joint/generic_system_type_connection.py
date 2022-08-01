@@ -13,12 +13,13 @@ import numpy as np
 #   - Generalized version for joint system
 # Blocked by:
 #   - #113
-# TODO: 
+# TODO:
 #    - [x] Tests
 #    - [ ] Physical validation / theory / literature for reference
 #    - [ ] Optimization / Numba
 #    - [ ] Benchmark
 #    - [x] Examples
+
 
 class GenericSystemTypeFreeJoint(FreeJoint):
     """
@@ -63,7 +64,14 @@ class GenericSystemTypeFreeJoint(FreeJoint):
 
     # pass the k and nu for the forces
     # also the necessary systems for the joint
-    def __init__(self, k, nu, point_system_one=None, point_system_two=None):
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        point_system_one: np.ndarray = None,
+        point_system_two: np.ndarray = None,
+        **kwargs,
+    ):
         """
 
         Parameters
@@ -81,8 +89,8 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
         """
-        self.k = k
-        self.nu = nu
+        super().__init__(k=k, nu=nu, **kwargs)
+
         self.point_system_one = (
             point_system_one
             if point_system_one is not None
@@ -94,7 +102,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             else np.array([0.0, 0.0, 0.0])
         )
 
-    def apply_forces(self, system_one, index_one, system_two, index_two):
+    def apply_forces(self, system_one: SystemType, index_one: int, system_two: SystemType, index_two: int):
         """
         Apply joint force to the connected systems.
 
@@ -177,7 +185,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
                 system.director_collection[..., index] @ external_torque
             )
 
-    def apply_torques(self, system_one, index_one, system_two, index_two):
+    def apply_torques(self, system_one: SystemType, index_one: int, system_two: SystemType, index_two: int):
         """
         Apply restoring joint torques to the connected systems.
 
