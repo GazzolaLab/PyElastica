@@ -68,17 +68,17 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         self,
         k: float,
         nu: float,
-        point_system_one: np.ndarray = None,
-        point_system_two: np.ndarray = None,
+        point_system_one: Optional[np.ndarray]
+        point_system_two: Optional[np.ndarray]
         **kwargs,
     ):
         """
 
         Parameters
         ----------
-        k: float
+        k : float
            Stiffness coefficient of the joint.
-        nu: float
+        nu : float
            Damping coefficient of the joint.
         point_system_one : Optional[numpy.ndarray]
             Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
