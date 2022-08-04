@@ -6,6 +6,7 @@ from elastica.joint import FreeJoint, FixedJoint
 from elastica.typing import SystemType
 from elastica.utils import Tolerance, MaxDimension
 import numpy as np
+from typing import Optional
 
 # Experimental implementation for `joint` modules: #122 #149
 #   - Enable the joint between `rod` and `rigid-body`
@@ -68,8 +69,8 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         self,
         k: float,
         nu: float,
-        point_system_one: Optional[np.ndarray]
-        point_system_two: Optional[np.ndarray]
+        point_system_one: Optional[np.ndarray] = None,
+        point_system_two: Optional[np.ndarray] = None,
         **kwargs,
     ):
         """
@@ -276,9 +277,9 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
         nu: float,
         kt: float,
         nut: float = 0.0,
-        point_system_one: np.ndarray = None,
-        point_system_two: np.ndarray = None,
-        rest_rotation_matrix: np.ndarray = None,
+        point_system_one: Optional[np.ndarray] = None,
+        point_system_two: Optional[np.ndarray] = None,
+        rest_rotation_matrix: Optional[np.ndarray] = None,
     ):
         """
 
