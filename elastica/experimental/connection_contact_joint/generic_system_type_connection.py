@@ -78,9 +78,9 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         Parameters
         ----------
         k : float
-           Stiffness coefficient of the joint.
+            Stiffness coefficient of the joint.
         nu : float
-           Damping coefficient of the joint.
+            Damping coefficient of the joint.
         point_system_one : Optional[numpy.ndarray]
             Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
             or the center of mass (for rigid bodies) to the joint.
@@ -116,7 +116,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         Parameters
         ----------
         system_one : SystemType
-             System two of the joint connection.
+            System two of the joint connection.
         index_one : int
             Index of first system for joint.
         system_two : SystemType
