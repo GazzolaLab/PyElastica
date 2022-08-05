@@ -219,7 +219,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         pass
 
 
-class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
+class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint):
     """
     The fixed joint class restricts the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
@@ -280,6 +280,7 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
         point_system_one: Optional[np.ndarray] = None,
         point_system_two: Optional[np.ndarray] = None,
         rest_rotation_matrix: Optional[np.ndarray] = None,
+        **kwargs,
     ):
         """
 
@@ -309,39 +310,28 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint, FixedJoint):
             which means that a restoring torque will be applied to align the directors of both systems directly.
             (default=None)
         """
-        GenericSystemTypeFreeJoint.__init__(
-            self,
+        super().__init__(
             k=k,
             nu=nu,
             point_system_one=point_system_one,
             point_system_two=point_system_two,
-        )
-        FixedJoint.__init__(
-            self, k=k, nu=nu, kt=kt, nut=nut, rest_rotation_matrix=rest_rotation_matrix
+            **kwargs,
         )
 
-    # Apply force is same as free joint
-    def apply_forces(
-        self,
-        system_one: SystemType,
-        index_one: int,
-        system_two: SystemType,
-        index_two: int,
-    ):
-        return GenericSystemTypeFreeJoint.apply_forces(
-            self, system_one, index_one, system_two, index_two
-        )
+        # set rotational spring and damping coefficients
+        self.kt = kt
+        self.nut = nut
 
-    def apply_torques(
-        self,
-        system_one: SystemType,
-        index_one: int,
-        system_two: SystemType,
-        index_two: int,
-    ):
-        return FixedJoint.apply_torques(
-            self, system_one, index_one, system_two, index_two
-        )
+        # TODO: compute the rest rotation matrix directly during initialization
+        #  as soon as systems (e.g. `system_one` and `system_two`) and indices (e.g. `index_one` and `index_two`)
+        #  are available in the __init__
+        if rest_rotation_matrix is None:
+            rest_rotation_matrix = np.eye(3)
+        assert rest_rotation_matrix.shape == (3, 3), "Rest rotation matrix must be 3x3"
+        self.rest_rotation_matrix = rest_rotation_matrix
+
+    # Use the `apply_torques` method of the `FixedJoint` class to apply restoring torques to the connected systems.
+    apply_torques = FixedJoint.apply_torques
 
 
 def compute_position_of_point(system: SystemType, point: np.ndarray, index: int):
