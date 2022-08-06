@@ -44,8 +44,11 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Demonstrate usage of rigid body on simulation.
     * __Features__: Cylinder, Sphere
     * [RodRigidBodyContact](./RigidBodyCases/RodRigidBodyContact)
-      * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
+      * __Purpose__: Demonstrate contact between cylinder and rod, for different initial conditions.
       * __Features__: Cylinder, CosseratRods, ExternalContact
+    * [RigidBodyRigidBodyContact](./RigidBodyCases/RigidBodyRigidBodyContact)
+      * __Purpose__: Demonstrate contact between cylinder and cylinder, for different initial conditions.
+      * __Features__: Cylinder, ExternalContactCylinderCylinder
 * [HelicalBucklingCase](./HelicalBucklingCase)
     * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
     * __Features__: HelicalBucklingBC
