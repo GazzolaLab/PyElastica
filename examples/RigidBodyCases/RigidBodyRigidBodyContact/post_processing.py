@@ -24,8 +24,8 @@ def plot_velocity(
     axs.append(plt.subplot2grid((4, 1), (2, 0)))
     axs.append(plt.subplot2grid((4, 1), (3, 0)))
 
-    axs[0].plot(time[:], avg_velocity_rod_one[:, 0], linewidth=3, label="rod_one")
-    axs[0].plot(time[:], avg_velocity_rod_two[:, 0], linewidth=3, label="rod_two")
+    axs[0].plot(time[:], avg_velocity_rod_one[:, 0], linewidth=3, label="cylinder_one")
+    axs[0].plot(time[:], avg_velocity_rod_two[:, 0], linewidth=3, label="cylinder_two")
     axs[0].plot(
         time[:],
         avg_velocity_rod_one[:, 0] + avg_velocity_rod_two[:, 0],
