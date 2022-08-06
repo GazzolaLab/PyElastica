@@ -1,5 +1,12 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
+__all__ = [
+    "FreeJoint",
+    "HingeJoint",
+    "FixedJoint",
+    "ExternalContact",
+    "SelfContact",
+    "ExternalContactCylinderCylinder",
+]
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType
@@ -780,6 +787,86 @@ def _calculate_contact_forces_self_rod(
 
 
 @numba.njit(cache=True)
+def _calculate_contact_forces_cylinder_cylinder(
+    x_cylinder_one,
+    edge_cylinder_one,
+    x_cylinder_two,
+    edge_cylinder_two,
+    radii_sum,
+    length_sum,
+    external_forces_cylinder_one,
+    external_torques_cylinder_one,
+    cylinder_one_director_collection,
+    external_forces_cylinder_two,
+    external_torques_cylinder_two,
+    cylinder_two_director_collection,
+    velocity_cylinder_one,
+    velocity_cylinder_two,
+    contact_k,
+    contact_nu,
+    x_cylinder_one_center,
+    x_cylinder_two_center,
+):
+
+    del_x = x_cylinder_one - x_cylinder_two
+    norm_del_x = _norm(del_x)
+
+    # If outside then don't process
+    if norm_del_x >= (radii_sum + length_sum):
+        return
+
+    # find the shortest line segment between the two centerline
+    # segments : differs from normal cylinder-cylinder intersection
+    # rod to cylinder
+    distance_vector, x_cylinder_contact_point, _ = _find_min_dist(
+        x_cylinder_one, edge_cylinder_one, x_cylinder_two, edge_cylinder_two
+    )
+    # x_cylinder_contact_point = x_selected + distance_vector
+    distance_vector_length = _norm(distance_vector)
+    distance_vector /= distance_vector_length
+
+    gamma = radii_sum - distance_vector_length
+
+    # If distance is large, don't worry about it
+    if gamma < -1e-5:
+        return
+
+    # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
+    # As a quick fix, use this instead
+    mask = (gamma > 0.0) * 1.0
+
+    contact_force = contact_k * gamma
+    interpenetration_velocity = (
+        velocity_cylinder_one[..., 0] - velocity_cylinder_two[..., 0]
+    )
+    contact_damping_force = contact_nu * _dot_product(
+        interpenetration_velocity, distance_vector
+    )
+
+    # magnitude* direction
+    net_contact_force = (
+        0.5 * mask * ((contact_damping_force + contact_force)) * distance_vector
+    )
+
+    # Update the cylinder external forces and torques
+    external_forces_cylinder_one[..., 0] -= net_contact_force
+    moment_arm_cylinder_one = x_cylinder_contact_point - x_cylinder_one_center
+    external_torques_cylinder_one[
+        ..., 0
+    ] -= cylinder_one_director_collection @ np.cross(
+        moment_arm_cylinder_one, net_contact_force
+    )
+
+    external_forces_cylinder_two[..., 0] += net_contact_force
+    moment_arm_cylinder_two = x_cylinder_contact_point - x_cylinder_two_center
+    external_torques_cylinder_two[
+        ..., 0
+    ] += cylinder_two_director_collection @ np.cross(
+        moment_arm_cylinder_two, net_contact_force
+    )
+
+
+@numba.njit(cache=True)
 def _aabbs_not_intersecting(aabb_one, aabb_two):
     """Returns true if not intersecting else false"""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
@@ -870,6 +957,57 @@ def _prune_using_aabbs_rod_rod(
         )
 
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
+
+
+@numba.njit(cache=True)
+def _prune_using_aabbs_cylinder_cylinder(
+    cylinder_one_position,
+    cylinder_one_director,
+    cylinder_one_radius,
+    cylinder_one_length,
+    cylinder_two_position,
+    cylinder_two_director,
+    cylinder_two_radius,
+    cylinder_two_length,
+):
+    # Is actually Q^T * d but numba complains about performance so we do
+    # d^T @ Q
+    aabb_cylinder_one = np.empty((3, 2))
+    cylinder_one_dimensions_in_local_FOR = np.array(
+        [cylinder_one_radius, cylinder_one_radius, 0.5 * cylinder_one_length]
+    )
+    cylinder_one_dimensions_in_world_FOR = np.zeros_like(
+        cylinder_one_dimensions_in_local_FOR
+    )
+    for i in range(3):
+        for j in range(3):
+            cylinder_one_dimensions_in_world_FOR[i] += (
+                cylinder_one_director[j, i, 0] * cylinder_one_dimensions_in_local_FOR[j]
+            )
+
+    max_possible_dimension = np.abs(cylinder_one_dimensions_in_world_FOR)
+    aabb_cylinder_one[..., 0] = cylinder_one_position[..., 0] - max_possible_dimension
+    aabb_cylinder_one[..., 1] = cylinder_one_position[..., 0] + max_possible_dimension
+
+    # Is actually Q^T * d but numba complains about performance so we do
+    # d^T @ Q
+    aabb_cylinder_two = np.empty((3, 2))
+    cylinder_two_dimensions_in_local_FOR = np.array(
+        [cylinder_two_radius, cylinder_two_radius, 0.5 * cylinder_two_length]
+    )
+    cylinder_two_dimensions_in_world_FOR = np.zeros_like(
+        cylinder_two_dimensions_in_local_FOR
+    )
+    for i in range(3):
+        for j in range(3):
+            cylinder_two_dimensions_in_world_FOR[i] += (
+                cylinder_two_director[j, i, 0] * cylinder_two_dimensions_in_local_FOR[j]
+            )
+
+    max_possible_dimension = np.abs(cylinder_two_dimensions_in_world_FOR)
+    aabb_cylinder_two[..., 0] = cylinder_two_position[..., 0] - max_possible_dimension
+    aabb_cylinder_two[..., 1] = cylinder_two_position[..., 0] + max_possible_dimension
+    return _aabbs_not_intersecting(aabb_cylinder_two, aabb_cylinder_one)
 
 
 class ExternalContact(FreeJoint):
@@ -1048,4 +1186,80 @@ class SelfContact(FreeJoint):
             rod_one.external_forces,
             self.k,
             self.nu,
+        )
+
+
+class ExternalContactCylinderCylinder(FreeJoint):
+    """
+    This class is for applying contact forces between cylinder-cylinder.
+
+
+    Examples
+    --------
+    How to define contact between rod and cylinder.
+
+    >>> simulator.connect(cylinder_one, cylidner_two).using(
+    ...    ExternalContactCylinderCylinder,
+    ...    k=1e4,
+    ...    nu=10,
+    ... )
+
+    """
+
+    def __init__(self, k, nu):
+        """
+
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant.
+        """
+        super().__init__(k, nu)
+
+    def apply_forces(self, cylinder_one, index_one, cylinder_two, index_two):
+
+        # First, check for a global AABB bounding box, and see whether that
+        # intersects
+        if _prune_using_aabbs_cylinder_cylinder(
+            cylinder_one.position_collection,
+            cylinder_one.director_collection,
+            cylinder_one.radius[0],
+            cylinder_one.length[0],
+            cylinder_two.position_collection,
+            cylinder_two.director_collection,
+            cylinder_two.radius[0],
+            cylinder_two.length[0],
+        ):
+            return
+
+        x_cyl_one = (
+            cylinder_one.position_collection[..., 0]
+            - 0.5 * cylinder_one.length[0] * cylinder_one.director_collection[2, :, 0]
+        )
+
+        x_cyl_two = (
+            cylinder_two.position_collection[..., 0]
+            - 0.5 * cylinder_two.length[0] * cylinder_two.director_collection[2, :, 0]
+        )
+        _calculate_contact_forces_cylinder_cylinder(
+            x_cyl_one,
+            cylinder_one.length * cylinder_one.director_collection[2, :, 0],
+            x_cyl_two,
+            cylinder_two.length * cylinder_two.director_collection[2, :, 0],
+            cylinder_one.radius + cylinder_two.radius,
+            cylinder_one.length + cylinder_two.length,
+            cylinder_one.external_forces,
+            cylinder_one.external_torques,
+            cylinder_one.director_collection[:, :, 0],
+            cylinder_two.external_forces,
+            cylinder_two.external_torques,
+            cylinder_two.director_collection[:, :, 0],
+            cylinder_one.velocity_collection,
+            cylinder_two.velocity_collection,
+            self.k,
+            self.nu,
+            cylinder_one.position_collection[:, 0],
+            cylinder_two.position_collection[:, 0],
         )
