@@ -1,11 +1,12 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
-import numpy as np
-import numba
-from elastica.utils import Tolerance, MaxDimension
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
+from elastica.typing import SystemType
+from elastica.utils import Tolerance, MaxDimension
 from math import sqrt
+import numba
+import numpy as np
 
 
 class FreeJoint:
@@ -167,31 +168,27 @@ class HingeJoint(FreeJoint):
         self.kt = kt
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_forces(rod_one, index_one, rod_two, index_two)
+    def apply_forces(self, system_one, index_one, system_two, index_two):
+        return super().apply_forces(system_one, index_one, system_two, index_two)
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
-        # current direction of the first element of link two
-        # also NOTE: - rod two is hinged at first element
-        link_direction = (
-            rod_two.position_collection[..., index_two + 1]
-            - rod_two.position_collection[..., index_two]
-        )
+    def apply_torques(self, system_one, index_one, system_two, index_two):
+        # current tangent direction of the `index_two` element of system two
+        system_two_tangent = system_two.director_collection[2, :, index_two]
 
-        # projection of the link direction onto the plane normal
+        # projection of the tangent of system two onto the plane normal
         force_direction = (
-            -np.dot(link_direction, self.normal_direction) * self.normal_direction
+            -np.dot(system_two_tangent, self.normal_direction) * self.normal_direction
         )
 
         # compute the restoring torque
-        torque = self.kt * np.cross(link_direction, force_direction)
+        torque = self.kt * np.cross(system_two_tangent, force_direction)
 
         # The opposite torque will be applied on link one
-        rod_one.external_torques[..., index_one] -= (
-            rod_one.director_collection[..., index_one] @ torque
+        system_one.external_torques[..., index_one] -= (
+            system_one.director_collection[..., index_one] @ torque
         )
-        rod_two.external_torques[..., index_two] += (
-            rod_two.director_collection[..., index_two] @ torque
+        system_two.external_torques[..., index_two] += (
+            system_two.director_collection[..., index_two] @ torque
         )
 
 
@@ -893,7 +890,7 @@ class ExternalContact(FreeJoint):
     --------
     How to define contact between rod and cylinder.
 
-    >>> simulator.connect(rod, cylidner).using(
+    >>> simulator.connect(rod, cylinder).using(
     ...    ExternalContact,
     ...    k=1e4,
     ...    nu=10,
