@@ -1,4 +1,4 @@
-__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.
 methods section."""
 
 import numpy as np
