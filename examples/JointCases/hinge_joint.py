@@ -72,7 +72,7 @@ hinge_joint_sim.constrain(rod1).using(
 hinge_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    HingeJoint, k=1e5, nu=0, kt=1e1, normal_direction=roll_direction
+    HingeJoint, k=1e5, nu=0, kt=5e3, normal_direction=roll_direction
 )  # 1e-2
 
 # Add forces to rod2
@@ -128,35 +128,15 @@ PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
-    filename = "hinge_joint_example_last_node_pos_xy.png"
-    plot_position(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
-        filename=filename,
-        SAVE_FIGURE=SAVE_FIGURE,
-    )
+    filename = "hinge_joint_test.png"
+    plot_position(pp_list_rod1, pp_list_rod2, filename, SAVE_FIGURE)
 
 if PLOT_VIDEO:
-    filename = "hinge_joint_example"
-    plot_video(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
-        video_name=filename + ".mp4",
-        fps=100,
-    )
+    filename = "hinge_joint_test.mp4"
+    plot_video(pp_list_rod1, pp_list_rod2, video_name=filename, margin=0.2, fps=100)
     plot_video_xy(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
-        video_name=filename + "_xy.mp4",
-        fps=100,
+        pp_list_rod1, pp_list_rod2, video_name=filename + "_xy.mp4", margin=0.2, fps=100
     )
     plot_video_xz(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
-        video_name=filename + "_xz.mp4",
-        fps=100,
+        pp_list_rod1, pp_list_rod2, video_name=filename + "_xz.mp4", margin=0.2, fps=100
     )
