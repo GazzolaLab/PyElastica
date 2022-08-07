@@ -2,8 +2,6 @@ __doc__ = """ Module containing joint classes to connect multiple rods together.
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
-from elastica.typing import SystemType
-from elastica.utils import Tolerance, MaxDimension
 from math import sqrt
 import numba
 import numpy as np
@@ -68,32 +66,15 @@ class FreeJoint:
             rod_two.position_collection[..., index_two]
             - rod_one.position_collection[..., index_one]
         )
-        # Calculate norm of end_distance_vector
-        # this implementation timed: 2.48 µs ± 126 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-        end_distance = np.sqrt(np.dot(end_distance_vector, end_distance_vector))
-
-        # Below if check is not efficient find something else
-        # We are checking if end of rod1 and start of rod2 are at the same point in space
-        # If they are at the same point in space, it is a zero vector.
-        if end_distance <= Tolerance.atol():
-            normalized_end_distance_vector = np.array([0.0, 0.0, 0.0])
-        else:
-            normalized_end_distance_vector = end_distance_vector / end_distance
-
         elastic_force = self.k * end_distance_vector
 
         relative_velocity = (
             rod_two.velocity_collection[..., index_two]
             - rod_one.velocity_collection[..., index_one]
         )
-        normal_relative_velocity = (
-            np.dot(relative_velocity, normalized_end_distance_vector)
-            * normalized_end_distance_vector
-        )
-        damping_force = -self.nu * normal_relative_velocity
+        damping_force = self.nu * relative_velocity
 
         contact_force = elastic_force + damping_force
-
         rod_one.external_forces[..., index_one] += contact_force
         rod_two.external_forces[..., index_two] -= contact_force
 

@@ -1,11 +1,6 @@
 __doc__ = """ Joint between rods test module """
 
 # System imports
-import elastica
-from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
-    compute_position_of_point,
-    compute_velocity_of_point,
-)
 from elastica.joint import (
     FreeJoint,
     HingeJoint,
@@ -13,10 +8,8 @@ from elastica.joint import (
 )
 from numpy.testing import assert_allclose
 from elastica._rotations import _inv_rotate
-from elastica.rigidbody import Cylinder
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.utils import Tolerance
-import importlib
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
@@ -99,17 +92,13 @@ def test_freejoint():
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance <= Tolerance.atol():
-        end_distance = 1.0
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     frjt = FreeJoint(k, nu)
     frjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
@@ -197,17 +186,13 @@ def test_hingejoint():
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance == 0:
-        end_distance = 1
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     hgjt = HingeJoint(k, nu, kt, normal1)
 
@@ -327,17 +312,13 @@ def test_fixedjoint(rest_euler_angle):
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance == 0:
-        end_distance = 1
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     rest_rotation_matrix = Rotation.from_euler(
         "xyz", rest_euler_angle, degrees=False
@@ -397,9 +378,3 @@ def test_fixedjoint(rest_euler_angle):
     assert_allclose(
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])

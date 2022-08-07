@@ -5,7 +5,7 @@ from elastica import *
 from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
     GenericSystemTypeFixedJoint,
 )
-from examples.JointCases.joint_cases_postprocessing import (
+from joint_cases_postprocessing import (
     plot_position,
     plot_video,
     plot_video_xy,

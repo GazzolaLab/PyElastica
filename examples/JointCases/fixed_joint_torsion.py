@@ -119,7 +119,6 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, fixed_joint_sim, final_time, total_steps)

@@ -71,7 +71,7 @@ fixed_joint_sim.constrain(rod1).using(
 # Connect rod 1 and rod 2
 fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
-).using(FixedJoint, k=1e5, nu=0, kt=5e3)
+).using(FixedJoint, k=1e5, nu=0.0, kt=1e1, nut=0.0)
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
