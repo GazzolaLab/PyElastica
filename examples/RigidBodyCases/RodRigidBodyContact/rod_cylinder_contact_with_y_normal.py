@@ -4,7 +4,7 @@ from post_processing import plot_video, plot_cylinder_rod_position
 
 
 class SingleRodSingleCylinderInteractionSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
 ):
     pass
 
@@ -24,7 +24,6 @@ base_length = 0.5
 base_radius = 0.01
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 0.001
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (1 + poisson_ratio)
@@ -65,7 +64,7 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -116,11 +115,19 @@ single_rod_sim.collect_diagnostics(cylinder).using(
     PositionCollector, step_skip=200, callback_params=recorded_cyl_history
 )
 
+# add damping
+damping_constant = 1e-3
+dt = 1e-4
+single_rod_sim.dampen(rod1).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+
 single_rod_sim.finalize()
 timestepper = PositionVerlet()
 final_time = 2.0
 dl = base_length / n_elem
-dt = 1e-4
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 
