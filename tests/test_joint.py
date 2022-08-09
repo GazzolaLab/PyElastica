@@ -1,17 +1,31 @@
 __doc__ = """ Joint between rods test module """
 
 # System imports
-import numpy as np
-from elastica.joint import FreeJoint, HingeJoint, FixedJoint
-from numpy.testing import assert_allclose
-from elastica.utils import Tolerance
-from elastica.rod.cosserat_rod import CosseratRod
 import elastica
+from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
+    compute_position_of_point,
+    compute_velocity_of_point,
+)
+from elastica.joint import (
+    FreeJoint,
+    HingeJoint,
+    FixedJoint,
+)
+from numpy.testing import assert_allclose
+from elastica._rotations import _inv_rotate
+from elastica.rigidbody import Cylinder
+from elastica.rod.cosserat_rod import CosseratRod
+from elastica.utils import Tolerance
 import importlib
+import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
+
+
+# seed random number generator
+rng = np.random.default_rng(0)
 
 
 def test_freejoint():
@@ -207,12 +221,9 @@ def test_hingejoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
-    linkdirection = (
-        rod2.position_collection[..., rod2_index + 1]
-        - rod2.position_collection[..., rod2_index]
-    )
-    forcedirection = np.dot(linkdirection, normal1) * normal1
-    torque = -kt * np.cross(linkdirection, forcedirection)
+    system_two_tangent = rod2.director_collection[2, :, rod2_index]
+    force_direction = np.dot(system_two_tangent, normal1) * normal1
+    torque = -kt * np.cross(system_two_tangent, force_direction)
 
     torque_rod1 = -rod1.director_collection[..., rod1_index] @ torque
     torque_rod2 = rod2.director_collection[..., rod2_index] @ torque
@@ -230,7 +241,7 @@ rest_euler_angles = [
     np.array([np.pi / 2, 0.0, 0.0]),
     np.array([0.0, np.pi / 2, 0.0]),
     np.array([0.0, 0.0, np.pi / 2]),
-    2 * np.pi * np.random.random_sample(size=3),
+    2 * np.pi * rng.random(size=3),
 ]
 
 
@@ -361,7 +372,7 @@ def test_fixedjoint(rest_euler_angle):
 
     # compute rotation vectors based on C_22*
     # scipy implementation
-    rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+    rot_vec = _inv_rotate(np.dstack([np.eye(3), dev_rot.T])).squeeze()
 
     # rotate rotation vector into inertial frame
     rot_vec_inertial_frame = rod2_director.T @ rot_vec
