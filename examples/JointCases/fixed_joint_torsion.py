@@ -119,7 +119,6 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, fixed_joint_sim, final_time, total_steps)
@@ -142,36 +141,30 @@ PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
-    filename = "fixed_joint_torsion_example_last_node_pos_xy.png"
-    plot_position(
-        pp_list_rod1,
-        pp_list_rod2,
-        plot_params_cylinder=None,
-        filename=filename,
-        SAVE_FIGURE=SAVE_FIGURE,
-    )
+    filename = "fixed_joint_torsion_test.png"
+    plot_position(pp_list_rod1, pp_list_rod2, filename, SAVE_FIGURE)
 
 if PLOT_VIDEO:
-    filename = "fixed_joint_torsion_example"
+    filename = "fixed_joint_torsion_test"
     fps = 100  # Hz
     plot_video(
         pp_list_rod1,
         pp_list_rod2,
-        plot_params_cylinder=None,
         video_name=filename + ".mp4",
+        margin=0.2,
         fps=fps,
     )
     plot_video_xy(
         pp_list_rod1,
         pp_list_rod2,
-        plot_params_cylinder=None,
         video_name=filename + "_xy.mp4",
+        margin=0.2,
         fps=fps,
     )
     plot_video_xz(
         pp_list_rod1,
         pp_list_rod2,
-        plot_params_cylinder=None,
         video_name=filename + "_xz.mp4",
+        margin=0.2,
         fps=fps,
     )

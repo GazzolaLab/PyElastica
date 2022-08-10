@@ -1,12 +1,11 @@
-__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
-methods section."""
+__doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
 from elastica import *
 from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
-    GenericSystemTypeFreeJoint,
+    GenericSystemTypeFixedJoint,
 )
-from examples.JointCases.joint_cases_postprocessing import (
+from joint_cases_postprocessing import (
     plot_position,
     plot_video,
     plot_video_xy,
@@ -14,13 +13,13 @@ from examples.JointCases.joint_cases_postprocessing import (
 )
 
 
-class SphericalJointSimulator(
+class FixedJointSimulator(
     BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
 
-spherical_joint_sim = SphericalJointSimulator()
+fixed_joint_sim = FixedJointSimulator()
 
 # setting up test params
 n_elem = 10
@@ -58,7 +57,7 @@ rod1 = CosseratRod.straight_rod(
     E,
     shear_modulus=shear_modulus,
 )
-spherical_joint_sim.append(rod1)
+fixed_joint_sim.append(rod1)
 # Create rod 2
 rod2 = CosseratRod.straight_rod(
     n_elem,
@@ -72,8 +71,7 @@ rod2 = CosseratRod.straight_rod(
     E,
     shear_modulus=shear_modulus,
 )
-spherical_joint_sim.append(rod2)
-# Create cylinder
+fixed_joint_sim.append(rod2)
 cylinder = Cylinder(
     start=start_cylinder,
     direction=direction,
@@ -82,31 +80,37 @@ cylinder = Cylinder(
     base_radius=base_radius,
     density=density,
 )
-spherical_joint_sim.append(cylinder)
+fixed_joint_sim.append(cylinder)
 
 # Apply boundary conditions to rod1.
-spherical_joint_sim.constrain(rod1).using(
+fixed_joint_sim.constrain(rod1).using(
     OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Connect rod 1 and rod 2
-spherical_joint_sim.connect(
+fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    GenericSystemTypeFreeJoint, k=1e5, nu=0
-)  # k=kg/s2 nu=kg/s 1e-2
+    GenericSystemTypeFixedJoint,
+    k=1e5,
+    nu=0e0,
+    kt=1e1,
+    nut=0e0,
+)
 # Connect rod 2 and cylinder
-spherical_joint_sim.connect(
+fixed_joint_sim.connect(
     first_rod=rod2, second_rod=cylinder, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    GenericSystemTypeFreeJoint,
+    GenericSystemTypeFixedJoint,
     k=1e5,
-    nu=0,
+    nu=0e0,
+    kt=1e1,
+    nut=0e0,
     point_system_two=np.array([0.0, 0.0, -cylinder.length / 2]),
 )
 
 # Add forces to rod2
-spherical_joint_sim.add_forcing_to(rod2).using(
+fixed_joint_sim.add_forcing_to(rod2).using(
     EndpointForcesSinusoidal,
     start_force_mag=0,
     end_force_mag=5e-3,
@@ -117,15 +121,15 @@ spherical_joint_sim.add_forcing_to(rod2).using(
 
 # add damping
 # old damping model (deprecated in v0.3.0) values
-# damping_constant = 4e-3
+# damping_constant = 0.4
 # dt = 1e-5
-damping_constant = 4e-3
-spherical_joint_sim.dampen(rod1).using(
+damping_constant = 0.4
+fixed_joint_sim.dampen(rod1).using(
     AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
-spherical_joint_sim.dampen(rod2).using(
+fixed_joint_sim.dampen(rod2).using(
     AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
@@ -135,24 +139,24 @@ pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 pp_list_cylinder = defaultdict(list)
 
-spherical_joint_sim.collect_diagnostics(rod1).using(
+fixed_joint_sim.collect_diagnostics(rod1).using(
     MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1
 )
-spherical_joint_sim.collect_diagnostics(rod2).using(
+fixed_joint_sim.collect_diagnostics(rod2).using(
     MyCallBack, step_skip=step_skip, callback_params=pp_list_rod2
 )
-spherical_joint_sim.collect_diagnostics(cylinder).using(
+fixed_joint_sim.collect_diagnostics(cylinder).using(
     MyCallBack, step_skip=step_skip, callback_params=pp_list_cylinder
 )
 
-spherical_joint_sim.finalize()
+fixed_joint_sim.finalize()
 timestepper = PositionVerlet()
 # timestepper = PEFRL()
 
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, spherical_joint_sim, final_time, total_steps)
+integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = True
@@ -160,7 +164,7 @@ PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:
-    filename = "generic_system_type_spherical_joint_example_last_node_pos_xy.png"
+    filename = "generic_system_type_fixed_joint_example_last_node_pos_xy.png"
     plot_position(
         plot_params_rod1=pp_list_rod1,
         plot_params_rod2=pp_list_rod2,
@@ -170,7 +174,7 @@ if PLOT_FIGURE:
     )
 
 if PLOT_VIDEO:
-    filename = "generic_system_type_spherical_joint_example"
+    filename = "generic_system_type_fixed_joint_example"
     plot_video(
         plot_params_rod1=pp_list_rod1,
         plot_params_rod2=pp_list_rod2,

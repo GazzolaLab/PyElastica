@@ -4,24 +4,16 @@ from matplotlib.colors import to_rgb
 from mpl_toolkits import mplot3d
 from scipy.spatial.transform import Rotation
 
-from elastica.rigidbody import Cylinder
-from elastica._linalg import _batch_matvec
-
 
 def plot_position(
     plot_params_rod1: dict,
     plot_params_rod2: dict,
-    plot_params_cylinder: dict = None,
-    filename="joint_cases_last_node_pos_xy.png",
+    filename="spherical_joint_test.png",
     SAVE_FIGURE=False,
 ):
+
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
-    position_of_cylinder = (
-        np.array(plot_params_cylinder["position"])
-        if plot_params_cylinder is not None
-        else None
-    )
 
     fig = plt.figure(figsize=(10, 10), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
@@ -35,17 +27,8 @@ def plot_position(
         c=to_rgb("xkcd:bluish"),
         label="rod2",
     )
-    if position_of_cylinder is not None:
-        ax.plot(
-            position_of_cylinder[:, 0, -1],
-            position_of_cylinder[:, 1, -1],
-            c=to_rgb("xkcd:greenish"),
-            label="cylinder",
-        )
 
     fig.legend(prop={"size": 20})
-    plt.xlabel("x")
-    plt.ylabel("y")
 
     plt.show()
 
@@ -54,9 +37,6 @@ def plot_position(
 
 
 def plot_orientation(title, time, directors):
-    """
-    Plot the orientation of one node
-    """
     quat = []
     for t in range(len(time)):
         quat_t = Rotation.from_matrix(directors[t].T).as_quat()
@@ -78,26 +58,15 @@ def plot_orientation(title, time, directors):
 def plot_video(
     plot_params_rod1: dict,
     plot_params_rod2: dict,
-    plot_params_cylinder: dict = None,
-    video_name="joint_cases_video.mp4",
-    fps=100,
-    cylinder: Cylinder = None,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
     time = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
-    position_of_cylinder = (
-        np.array(plot_params_cylinder["position"])
-        if plot_params_cylinder is not None
-        else None
-    )
-    director_of_cylinder = (
-        np.array(plot_params_cylinder["directors"])
-        if plot_params_cylinder is not None
-        else None
-    )
 
     print("plot video")
     FFMpegWriter = manimation.writers["ffmpeg"]
@@ -125,73 +94,25 @@ def plot_video(
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
-            if position_of_cylinder is not None:
-                ax.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 1],
-                    position_of_cylinder[time, 2],
-                    "o",
-                    c=to_rgb("xkcd:greenish"),
-                    label="Cylinder CoM",
-                )
-                if cylinder is not None:
-                    cylinder_axis_points = np.zeros((3, 10))
-                    cylinder_axis_points[2, :] = np.linspace(
-                        start=-cylinder.length.squeeze() / 2,
-                        stop=cylinder.length.squeeze() / 2,
-                        num=cylinder_axis_points.shape[1],
-                    )
-                    cylinder_director = director_of_cylinder[time, ...]
-                    cylinder_director_batched = np.repeat(
-                        cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
-                    )
-                    # rotate points into inertial frame
-                    cylinder_axis_points = _batch_matvec(
-                        cylinder_director_batched.transpose((1, 0, 2)),
-                        cylinder_axis_points,
-                    )
-                    # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
-                    ax.plot(
-                        cylinder_axis_points[0, :],
-                        cylinder_axis_points[1, :],
-                        cylinder_axis_points[2, :],
-                        c=to_rgb("xkcd:greenish"),
-                        label="Cylinder axis",
-                    )
 
             ax.set_xlim(-0.25, 0.25)
             ax.set_ylim(-0.25, 0.25)
-            ax.set_zlim(0, 0.61)
-            ax.set_xlabel("x [m]")
-            ax.set_ylabel("y [m]")
-            ax.set_zlabel("z [m]")
+            ax.set_zlim(0, 0.4)
             writer.grab_frame()
 
 
 def plot_video_xy(
     plot_params_rod1: dict,
     plot_params_rod2: dict,
-    plot_params_cylinder: dict = None,
-    video_name="joint_cases_video_xy.mp4",
-    fps=100,
-    cylinder: Cylinder = None,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
     time = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
-    position_of_cylinder = (
-        np.array(plot_params_cylinder["position"])
-        if plot_params_cylinder is not None
-        else None
-    )
-    director_of_cylinder = (
-        np.array(plot_params_cylinder["directors"])
-        if plot_params_cylinder is not None
-        else None
-    )
 
     print("plot video xy")
     FFMpegWriter = manimation.writers["ffmpeg"]
@@ -212,69 +133,24 @@ def plot_video_xy(
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
-            if position_of_cylinder is not None:
-                plt.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 1],
-                    "o",
-                    c=to_rgb("xkcd:greenish"),
-                    label="cylinder",
-                )
-                if cylinder is not None:
-                    cylinder_axis_points = np.zeros((3, 10))
-                    cylinder_axis_points[2, :] = np.linspace(
-                        start=-cylinder.length.squeeze() / 2,
-                        stop=cylinder.length.squeeze() / 2,
-                        num=cylinder_axis_points.shape[1],
-                    )
-                    cylinder_director = director_of_cylinder[time, ...]
-                    cylinder_director_batched = np.repeat(
-                        cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
-                    )
-                    # rotate points into inertial frame
-                    cylinder_axis_points = _batch_matvec(
-                        cylinder_director_batched.transpose((1, 0, 2)),
-                        cylinder_axis_points,
-                    )
-                    # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
-                    plt.plot(
-                        cylinder_axis_points[0, :],
-                        cylinder_axis_points[1, :],
-                        c=to_rgb("xkcd:greenish"),
-                        label="Cylinder axis",
-                    )
 
             plt.xlim([-0.25, 0.25])
             plt.ylim([-0.25, 0.25])
-            plt.xlabel("x [m]")
-            plt.ylabel("y [m]")
             writer.grab_frame()
 
 
 def plot_video_xz(
     plot_params_rod1: dict,
     plot_params_rod2: dict,
-    plot_params_cylinder: dict = None,
-    video_name="joint_cases_video_xz.mp4",
-    fps=100,
-    cylinder: Cylinder = None,
+    video_name="video.mp4",
+    margin=0.2,
+    fps=15,
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
     time = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
-    position_of_cylinder = (
-        np.array(plot_params_cylinder["position"])
-        if plot_params_cylinder is not None
-        else None
-    )
-    director_of_cylinder = (
-        np.array(plot_params_cylinder["directors"])
-        if plot_params_cylinder is not None
-        else None
-    )
 
     print("plot video xz")
     FFMpegWriter = manimation.writers["ffmpeg"]
@@ -295,41 +171,7 @@ def plot_video_xz(
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
-            if position_of_cylinder is not None:
-                plt.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 2],
-                    "o",
-                    c=to_rgb("xkcd:greenish"),
-                    label="cylinder",
-                )
-                if cylinder is not None:
-                    cylinder_axis_points = np.zeros((3, 10))
-                    cylinder_axis_points[2, :] = np.linspace(
-                        start=-cylinder.length.squeeze() / 2,
-                        stop=cylinder.length.squeeze() / 2,
-                        num=cylinder_axis_points.shape[1],
-                    )
-                    cylinder_director = director_of_cylinder[time, ...]
-                    cylinder_director_batched = np.repeat(
-                        cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
-                    )
-                    # rotate points into inertial frame
-                    cylinder_axis_points = _batch_matvec(
-                        cylinder_director_batched.transpose((1, 0, 2)),
-                        cylinder_axis_points,
-                    )
-                    # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
-                    plt.plot(
-                        cylinder_axis_points[0, :],
-                        cylinder_axis_points[2, :],
-                        c=to_rgb("xkcd:greenish"),
-                        label="Cylinder axis",
-                    )
 
             plt.xlim([-0.25, 0.25])
-            plt.ylim([0, 0.61])
-            plt.xlabel("x [m]")
-            plt.ylabel("z [m]")
+            plt.ylim([0, 0.41])
             writer.grab_frame()
