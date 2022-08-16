@@ -510,7 +510,7 @@ class FixedConstraint(GeneralConstraint):
     ... )
 
     See Also
-    ---------
+    --------
     GeneralConstraint: Generalized constraint with configurable DOF.
     """
 
