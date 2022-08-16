@@ -10,7 +10,7 @@ from elastica.callback_functions import CallBackBaseClass
 
 class CallBacks:
     """
-    CallBacks class is a wrapper for calling callback functions, set by the user. If the user
+    CallBacks class is a module for calling callback functions, set by the user. If the user
     wants to collect data from the simulation, the simulator class has to be derived
     from the CallBacks class.
 
@@ -80,7 +80,7 @@ class CallBacks:
 
 class _CallBack:
     """
-    CallBack wrapper private class
+    CallBack module private class
 
         Attributes
         ----------
@@ -107,7 +107,7 @@ class _CallBack:
 
     def using(self, callback_cls, *args, **kwargs):
         """
-        This method is a wrapper to set which callback class is used to collect data
+        This method is a module to set which callback class is used to collect data
         from user defined rod-like object.
 
         Parameters
