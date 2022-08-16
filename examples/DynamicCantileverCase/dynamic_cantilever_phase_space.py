@@ -14,15 +14,15 @@ if __name__ == "__main__":
     with mp.Pool(mp.cpu_count()) as pool:
         results = pool.map(simulate_dynamic_cantilever_with, densities)
 
-    thry_frequency = []
+    theory_frequency = []
     sim_frequency = []
-    thry_amplitude = []
+    theory_amplitude = []
     sim_amplitude = []
 
     for result in results:
-        thry_frequency.append(result["theoretical_frequency"])
+        theory_frequency.append(result["theoretical_frequency"])
         sim_frequency.append(result["simulated_frequency"])
-        thry_amplitude.append(result["theoretical_amplitude"])
+        theory_amplitude.append(result["theoretical_amplitude"])
         sim_amplitude.append(result["simulated_amplitude"])
 
     fig = plt.figure(figsize=(20, 8), frameon=True, dpi=150)
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ax_freq.grid(visible=True, which="both", color="k", linestyle="-")
     ax_freq.plot(
         densities,
-        thry_frequency,
+        theory_frequency,
         color="k",
         marker="o",
         ms=8,
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     ax_amp.grid(visible=True, which="both", color="k", linestyle="-")
     ax_amp.plot(
         densities,
-        thry_amplitude,
+        theory_amplitude,
         color="k",
         marker="o",
         ms=8,

@@ -19,7 +19,7 @@ PLOT_VIDEO = True
 n_elem = 200
 final_time = 100
 rendering_fps = 30
-mode = 2
+mode = 0
 
 sim_result = simulate_dynamic_cantilever_with(
     density=500,
@@ -41,7 +41,7 @@ fig = plt.figure(figsize=(20, 8), frameon=True, dpi=150)
 ax = fig.add_subplot(121)
 ax.plot(
     recorded_history["time"],
-    recorded_history["z_position"],
+    recorded_history["deflection"],
     lw=2.0,
     label="Cosserat rod model",
 )
@@ -51,7 +51,7 @@ ax.grid(visible=True, which="both", color="k", linestyle="--")
 
 times = np.array(recorded_history["time"])
 
-positions = vibration.get_positions(1, times)
+positions = vibration.get_time_dependent_positions(1, times)
 ax.plot(times, positions, lw=2.0, label="Euler-Bernoulli beam theory")
 ax.legend()
 

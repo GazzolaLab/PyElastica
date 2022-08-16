@@ -26,7 +26,7 @@ def simulate_dynamic_cantilever_with(
     base_area = np.pi * base_radius ** 2
     youngs_modulus = 1e5
 
-    moi = np.pi / 4 * base_radius ** 4
+    I = np.pi / 4 * base_radius ** 4
 
     dl = base_length / n_elem
     dt = dl * 0.05
@@ -55,17 +55,17 @@ def simulate_dynamic_cantilever_with(
     vibration = DynamicCantileverVibration(
         base_length,
         base_area,
-        moi,
+        I,
         youngs_modulus,
         density,
         mode=mode,
-        end_velocity_z=end_velocity,
+        end_velocity=end_velocity,
     )
 
-    input_velocity = vibration.get_initial_velocity_profile(
+    initial_velocity = vibration.get_initial_velocity_profile(
         cantilever.position_collection[0, :]
     )
-    cantilever.velocity_collection[2, :] = input_velocity
+    cantilever.velocity_collection[2, :] = initial_velocity
 
     # Add call backs
     class CantileverCallBack(CallBackBaseClass):
@@ -82,7 +82,7 @@ def simulate_dynamic_cantilever_with(
                 self.callback_params["position"].append(
                     system.position_collection.copy()
                 )
-                self.callback_params["z_position"].append(
+                self.callback_params["deflection"].append(
                     system.position_collection[2, -1].copy()
                 )
                 return
@@ -106,19 +106,19 @@ def simulate_dynamic_cantilever_with(
     )
 
     # FFT
-    amps = np.abs(fft(recorded_history["z_position"]))
-    f_length = len(amps)
-    amps = amps * 2 / f_length
-    omegas = fftfreq(f_length, dt * step_skips) * 2 * np.pi  # [rad/s]
+    amplitudes = np.abs(fft(recorded_history["deflection"]))
+    fft_length = len(amplitudes)
+    amplitudes = amplitudes * 2 / fft_length
+    omegas = fftfreq(fft_length, dt * step_skips) * 2 * np.pi  # [rad/s]
 
     try:
-        peaks, _ = find_peaks(amps)
-        peak = peaks[np.argmax(amps[peaks])]
+        peaks, _ = find_peaks(amplitudes)
+        peak = peaks[np.argmax(amplitudes[peaks])]
 
         simulated_frequency = omegas[peak]
         theoretical_frequency = vibration.get_omega()
 
-        simulated_amplitude = max(recorded_history["z_position"])
+        simulated_amplitude = max(recorded_history["deflection"])
         theoretical_amplitude = vibration.get_amplitude()
 
         print(
@@ -132,7 +132,7 @@ def simulate_dynamic_cantilever_with(
             "rod": cantilever,
             "recorded_history": recorded_history,
             "fft_frequencies": omegas,
-            "fft_amplitudes": amps,
+            "fft_amplitudes": amplitudes,
             "vibration": vibration,
             "peak": peak,
             "simulated_frequency": simulated_frequency,
