@@ -35,20 +35,6 @@ class DynamicCantileverVibration:
             -1j * self.omega * nonparametrized_mode_at_end
         )
 
-    def get_initial_position_profile(self, x_coords):
-        positions = []
-
-        for x in x_coords:
-            positions.append(
-                np.real(
-                    self.mode_param
-                    * self._compute_nonparametrized_mode(
-                        self.base_length * x, self.base_length, self.beta
-                    )
-                )
-            )
-        return np.array(positions)
-
     def get_initial_velocity_profile(self, positions):
         initial_velocities = []
 
