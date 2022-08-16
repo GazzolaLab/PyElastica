@@ -25,6 +25,7 @@ if __name__ == "__main__":
         theory_amplitude.append(result["theoretical_amplitude"])
         sim_amplitude.append(result["simulated_amplitude"])
 
+    # Plot frequencies and amplitudes vs densities
     fig = plt.figure(figsize=(20, 8), frameon=True, dpi=150)
 
     ax_freq = fig.add_subplot(121)

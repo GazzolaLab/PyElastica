@@ -20,6 +20,18 @@ class DynamicCantileverVibration:
         assert mode < 5
         self.mode = mode
 
+        # First four roots to
+        # cosh(beta * base_length) * cos(beta * base_length) + 1 = 0
+        #
+        # Beta values are used to determine natural frequencies of cantilever beams
+        # based on dynamic beam equations
+        # omega = beta^2 * sqrt(E * I / mu)
+        #
+        # For details, refer to
+        # https://en.wikipedia.org/wiki/Euler%E2%80%93Bernoulli_beam_theory#Dynamic_beam_equation
+        # or
+        # Han et al (1998), Dynamics of Transversely Vibrating Beams
+        # Using Four Engineering Theories
         betas = np.array([0.596864, 1.49418, 2.50025, 3.49999]) * np.pi / base_length
         self.beta = betas[mode]
         self.omega = (self.beta ** 2) * np.sqrt(
