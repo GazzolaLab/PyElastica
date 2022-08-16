@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+from dynamic_cantilever_post_processing import plot_phase_space_with
 from dynamic_cantilever import simulate_dynamic_cantilever_with
 
 if __name__ == "__main__":
@@ -26,60 +26,12 @@ if __name__ == "__main__":
         sim_amplitude.append(result["simulated_amplitude"])
 
     # Plot frequencies and amplitudes vs densities
-    fig = plt.figure(figsize=(20, 8), frameon=True, dpi=150)
-
-    ax_freq = fig.add_subplot(121)
-    ax_freq.grid(visible=True, which="both", color="k", linestyle="-")
-    ax_freq.plot(
+    plot_phase_space_with(
         densities,
         theory_frequency,
-        color="k",
-        marker="o",
-        ms=8,
-        lw=2,
-        label="theoretical_frequency",
-    )
-    ax_freq.plot(
-        densities,
         sim_frequency,
-        color="r",
-        marker="o",
-        ms=8,
-        lw=2,
-        label="simulated_frequency",
-    )
-    ax_freq.set_ylim([0, 0.6])
-    ax_freq.set_xlabel(r"Density [$kg/m^3$]")
-    ax_freq.set_ylabel(r"Frequency [$rad/s$]")
-    ax_freq.legend()
-
-    ax_amp = fig.add_subplot(122)
-    ax_amp.grid(visible=True, which="both", color="k", linestyle="-")
-    ax_amp.plot(
-        densities,
         theory_amplitude,
-        color="k",
-        marker="o",
-        ms=8,
-        lw=2,
-        label="theoretical_amplitude",
-    )
-    ax_amp.plot(
-        densities,
         sim_amplitude,
-        color="r",
-        marker="o",
-        ms=8,
-        lw=2,
-        label="simulated_amplitude",
+        PLOT_FIGURE=PLOT_FIGURE,
+        SAVE_FIGURE=SAVE_FIGURE,
     )
-    ax_amp.set_ylim([0, 0.05])
-    ax_amp.set_xlabel(r"Density [$kg/m^3$]")
-    ax_amp.set_ylabel(r"Amplitude [$m$]")
-    ax_amp.legend()
-
-    if PLOT_FIGURE:
-        plt.show()
-
-    if SAVE_FIGURE:
-        fig.savefig("Dynamic_cantilever_phase_plot.png")
