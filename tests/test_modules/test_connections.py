@@ -1,9 +1,9 @@
-__doc__ = """ Test wrappers for connections """
+__doc__ = """ Test modules for connections """
 import numpy as np
 import pytest
 
-from elastica.wrappers import Connections
-from elastica.wrappers.connections import _Connect
+from elastica.modules import Connections
+from elastica.modules.connections import _Connect
 
 
 class TestConnect:
@@ -176,7 +176,7 @@ class TestConnect:
 
 
 class TestConnectionsMixin:
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     class SystemCollectionWithConnectionsMixedin(BaseSystemCollection, Connections):
         pass

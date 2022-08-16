@@ -1,9 +1,9 @@
-__doc__ = """ Test wrappers for forcings """
+__doc__ = """ Test modules for forcings """
 import numpy as np
 import pytest
 
-from elastica.wrappers import Forcing
-from elastica.wrappers.forcing import _ExtForceTorque
+from elastica.modules import Forcing
+from elastica.modules.forcing import _ExtForceTorque
 
 
 class TestExtForceTorque:
@@ -67,7 +67,7 @@ class TestExtForceTorque:
 
 
 class TestForcingMixin:
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     class SystemCollectionWithForcingMixedin(BaseSystemCollection, Forcing):
         pass

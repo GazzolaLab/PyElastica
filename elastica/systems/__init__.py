@@ -30,7 +30,7 @@ def is_system_a_collection(system):
     evolve as the interface evolves. Then we can add those
     requirements on the interface here.
     """
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     __sys_get_item = getattr(system, "__getitem__", None)
     return issubclass(system.__class__, BaseSystemCollection) or callable(

@@ -1,10 +1,10 @@
-__doc__ = """ Test wrappers for callback """
+__doc__ = """ Test modules for callback """
 import numpy as np
 from numpy.testing import assert_allclose
 import pytest
 
-from elastica.wrappers import CallBacks
-from elastica.wrappers.callbacks import _CallBack
+from elastica.modules import CallBacks
+from elastica.modules.callbacks import _CallBack
 
 
 class TestCallBacks:
@@ -61,7 +61,7 @@ class TestCallBacks:
 
 
 class TestCallBacksMixin:
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     class SystemCollectionWithCallBacksMixedin(BaseSystemCollection, CallBacks):
         pass

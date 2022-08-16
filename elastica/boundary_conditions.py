@@ -2,9 +2,7 @@ __doc__ = """ Built-in boundary condition implementationss """
 __all__ = [
     "ConstraintBase",
     "FreeBC",
-    "FreeRod",  # Deprecated: remove v0.3.0
     "OneEndFixedBC",
-    "OneEndFixedRod",  # Deprecated: remove v0.3.0
     "GeneralConstraint",
     "FixedConstraint",
     "HelicalBucklingBC",

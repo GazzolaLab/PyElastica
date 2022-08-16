@@ -1,5 +1,5 @@
 __doc__ = """
-This function is a wrapper to construct memory blocks for different types of systems, such as
+This function is a module to construct memory blocks for different types of systems, such as
 Cosserat Rods, Rigid Body etc.
 """
 

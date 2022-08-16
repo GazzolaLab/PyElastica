@@ -1,10 +1,10 @@
-__doc__ = """ Test wrappers for constraints """
+__doc__ = """ Test modules for constraints """
 import numpy as np
 from numpy.testing import assert_allclose
 import pytest
 
-from elastica.wrappers import Constraints
-from elastica.wrappers.constraints import _Constraint
+from elastica.modules import Constraints
+from elastica.modules.constraints import _Constraint
 
 
 class TestConstraint:
@@ -207,7 +207,7 @@ class TestConstraint:
 
 
 class TestConstraintsMixin:
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     class SystemCollectionWithConstraintsMixedin(BaseSystemCollection, Constraints):
         pass
