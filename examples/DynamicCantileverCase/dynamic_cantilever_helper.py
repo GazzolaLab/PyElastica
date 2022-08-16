@@ -33,22 +33,6 @@ class DynamicCantileverVibration:
         )
         self.param = end_velocity_z / (-1j * self.omega * np_mode_l)
 
-        # if mode > 1:
-        #     step = 1.0 / (mode - 1)
-        #     test_x = np.arange(0.0, 1.0 + step, step=step)[1:] * base_length
-        #     param_mat = np.zeros([mode, mode], dtype="complex128")
-        #     target_mat = np.zeros([mode, 1], dtype="complex128")
-        #
-        #     for i, x in np.ndenumerate(test_x):
-        #         param_mat[i, :] = self._compute_nonparametrized_mode(x, base_length, self.betas)
-        #         target_mat[i] = 0.0
-        #
-        #     param_mat[-1, :] = -1j * self.omegas * np_modes_l
-        #     target_mat[-1] = end_velocity_z
-        #
-        #     soln_mat = la.solve(param_mat, target_mat)
-        #     self.params = soln_mat.ravel()
-
     def get_initial_position_profile(self, x_coords):
         positions = []
 

@@ -128,9 +128,6 @@ def simulate_dynamic_cantilever_with(
             f"Simulated amplitude: {simulated_amplitude} m"
         )
 
-        # error_frequency = abs(simulated_frequency - resonant_frequency) / resonant_frequency
-        # error_amplitude = abs(simulated_amplitude - resonant_amplitude) / resonant_amplitude
-
         return {
             "rod": cantilever,
             "recorded_history": recorded_history,
