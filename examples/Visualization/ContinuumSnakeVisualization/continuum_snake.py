@@ -1,6 +1,6 @@
 import numpy as np
 from collections import defaultdict
-from elastica.wrappers import BaseSystemCollection, Constraints, Forcing, CallBacks
+from elastica.modules import BaseSystemCollection, Constraints, Forcing, CallBacks
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.external_forces import GravityForces, MuscleTorques
 from elastica.interaction import AnisotropicFrictionalPlane
