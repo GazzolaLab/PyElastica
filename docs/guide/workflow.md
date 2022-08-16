@@ -9,7 +9,7 @@ When using PyElastica, users will setup a simulation in which they define a syst
 <h2>1. Setup Simulation</h2>
 
 ```python
-from elastica.wrappers import (
+from elastica.modules import (
     BaseSystemCollection,
     Connections,
     Constraints,
@@ -28,7 +28,7 @@ class SystemSimulator(
 ):
     pass
 ```
-This simply combines all the wrappers previously imported together. If a wrapper is not needed for the simulation, it does not need to be added here.
+This simply combines all the modules previously imported together. If a modules are not needed for the simulation, it does not need to be added here.
 
 Available components are:
 
