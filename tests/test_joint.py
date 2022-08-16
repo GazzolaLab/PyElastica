@@ -1,17 +1,24 @@
 __doc__ = """ Joint between rods test module """
 
 # System imports
-import numpy as np
-from elastica.joint import FreeJoint, HingeJoint, FixedJoint
+from elastica.joint import (
+    FreeJoint,
+    HingeJoint,
+    FixedJoint,
+)
 from numpy.testing import assert_allclose
-from elastica.utils import Tolerance
+from elastica._rotations import _inv_rotate
 from elastica.rod.cosserat_rod import CosseratRod
-import elastica
-import importlib
+from elastica.utils import Tolerance
+import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
+
+
+# seed random number generator
+rng = np.random.default_rng(0)
 
 
 def test_freejoint():
@@ -85,17 +92,13 @@ def test_freejoint():
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance <= Tolerance.atol():
-        end_distance = 1.0
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     frjt = FreeJoint(k, nu)
     frjt.apply_forces(rod1, rod1_index, rod2, rod2_index)
@@ -183,17 +186,13 @@ def test_hingejoint():
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance == 0:
-        end_distance = 1
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     hgjt = HingeJoint(k, nu, kt, normal1)
 
@@ -207,12 +206,9 @@ def test_hingejoint():
         rod2.external_forces[..., rod2_index], -1 * contactforce, atol=Tolerance.atol()
     )
 
-    linkdirection = (
-        rod2.position_collection[..., rod2_index + 1]
-        - rod2.position_collection[..., rod2_index]
-    )
-    forcedirection = np.dot(linkdirection, normal1) * normal1
-    torque = -kt * np.cross(linkdirection, forcedirection)
+    system_two_tangent = rod2.director_collection[2, :, rod2_index]
+    force_direction = np.dot(system_two_tangent, normal1) * normal1
+    torque = -kt * np.cross(system_two_tangent, force_direction)
 
     torque_rod1 = -rod1.director_collection[..., rod1_index] @ torque
     torque_rod2 = rod2.director_collection[..., rod2_index] @ torque
@@ -230,7 +226,7 @@ rest_euler_angles = [
     np.array([np.pi / 2, 0.0, 0.0]),
     np.array([0.0, np.pi / 2, 0.0]),
     np.array([0.0, 0.0, np.pi / 2]),
-    2 * np.pi * np.random.random_sample(size=3),
+    2 * np.pi * rng.random(size=3),
 ]
 
 
@@ -316,17 +312,13 @@ def test_fixedjoint(rest_euler_angle):
         rod2.position_collection[..., rod2_index]
         - rod1.position_collection[..., rod1_index]
     )
-    end_distance = np.linalg.norm(distance)
-    if end_distance == 0:
-        end_distance = 1
     elasticforce = k * distance
     relative_vel = (
         rod2.velocity_collection[..., rod2_index]
         - rod1.velocity_collection[..., rod1_index]
     )
-    normal_relative_vel = np.dot(relative_vel, distance) / end_distance
-    dampingforce = nu * normal_relative_vel * distance / end_distance
-    contactforce = elasticforce - dampingforce
+    dampingforce = nu * relative_vel
+    contactforce = elasticforce + dampingforce
 
     rest_rotation_matrix = Rotation.from_euler(
         "xyz", rest_euler_angle, degrees=False
@@ -361,7 +353,7 @@ def test_fixedjoint(rest_euler_angle):
 
     # compute rotation vectors based on C_22*
     # scipy implementation
-    rot_vec = Rotation.from_matrix(dev_rot).as_rotvec()
+    rot_vec = _inv_rotate(np.dstack([np.eye(3), dev_rot.T])).squeeze()
 
     # rotate rotation vector into inertial frame
     rot_vec_inertial_frame = rod2_director.T @ rot_vec
@@ -386,9 +378,3 @@ def test_fixedjoint(rest_euler_angle):
     assert_allclose(
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])

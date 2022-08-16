@@ -132,9 +132,9 @@ class EndpointForces(NoForces):
         Attributes
         ----------
         start_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Force applied to first node of the rod-like object.
+            1D (dim) array containing data with 'float' type. Force applied to first node of the rod-like object.
         end_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Force applied to last node of the rod-like object.
+            1D (dim) array containing data with 'float' type. Force applied to last node of the rod-like object.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
 
@@ -146,10 +146,10 @@ class EndpointForces(NoForces):
         Parameters
         ----------
         start_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
+            1D (dim) array containing data with 'float' type.
             Force applied to first node of the rod-like object.
         end_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
+            1D (dim) array containing data with 'float' type.
             Force applied to last node of the rod-like object.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
@@ -183,9 +183,9 @@ class EndpointForces(NoForces):
         external_forces: numpy.ndarray
             2D (dim, blocksize) array containing data with 'float' type. External force vector.
         start_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
+            1D (dim) array containing data with 'float' type.
         end_force: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
+            1D (dim) array containing data with 'float' type.
             Force applied to last node of the rod-like object.
         time: float
         ramp_up_time: float

@@ -78,7 +78,7 @@ def integrate(
     n_steps: int = 1000,
     restart_time: float = 0.0,
     progress_bar: bool = True,
-    **kwargs
+    **kwargs,
 ):
     """
 

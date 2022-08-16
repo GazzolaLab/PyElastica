@@ -2,10 +2,6 @@ __doc__ = """Continuum flagella example, for detailed explanation refer to Gazzo
 section 5.2.1 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 import os
 from elastica import *
 from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
@@ -86,7 +82,7 @@ def run_flagella(
     damping_constant = 0.625
     dt = 1e-4 * period
     flagella_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
     )

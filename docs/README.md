@@ -8,11 +8,13 @@ In addition, we utilize the following extensions to enhance the documentation :c
 
 ## Build documentation
 
-The `sphinx` is already initialized in `docs` directory. In order to build the documentation, you will need additional packages listed in `docs/requirements.txt`.
+The `sphinx` is already initialized in `docs` directory. 
+In order to build the documentation, you will need additional 
+packages listed in extra dependencies.
 
 ```bash
+poetry install -E docs
 cd docs
-pip install -r requirements.txt
 make clean
 make html
 ```

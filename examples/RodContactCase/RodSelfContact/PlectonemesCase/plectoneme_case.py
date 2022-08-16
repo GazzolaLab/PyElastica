@@ -1,8 +1,4 @@
 import numpy as np
-import sys
-import numpy as np
-
-sys.path.append("../../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
@@ -77,7 +73,7 @@ plectonemes_sim.append(sherable_rod)
 
 # Add damping
 plectonemes_sim.dampen(sherable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )
@@ -98,7 +94,7 @@ class SelonoidsBC(ConstraintBase):
         twisting_time,
         time_twis_start,
         number_of_rotations,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.twisting_time = twisting_time

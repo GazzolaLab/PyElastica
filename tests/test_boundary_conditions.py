@@ -3,23 +3,27 @@ import sys
 
 # System imports
 import numpy as np
-from tests.test_rod.test_rods import MockTestRod
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
     OneEndFixedBC,
     FixedConstraint,
+    GeneralConstraint,
     HelicalBucklingBC,
 )
-from numpy.testing import assert_allclose
+from elastica._linalg import _batch_matvec
 from elastica.utils import Tolerance
+from numpy.testing import assert_allclose
 import pytest
 from pytest import main
+from scipy.spatial.transform import Rotation
+from tests.test_rod.test_rods import MockTestRod
 
 test_built_in_boundary_condition_impls = [
     FreeBC,
     OneEndFixedBC,
     FixedConstraint,
+    GeneralConstraint,
     HelicalBucklingBC,
 ]
 
@@ -167,18 +171,18 @@ def test_one_end_fixed_bc():
 @pytest.mark.parametrize("n_director_constraint", [0, 2, 6, 9])
 def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     rng = np.random.default_rng(seed)
-    N = 20
-
     test_rod = MockTestRod()
+    N = test_rod.n_elem
+
     start_position_collection = rng.random((n_position_constraint, 3))
     start_director_collection = rng.random((n_director_constraint, 3, 3))
-    fixed_rod = FixedConstraint(
+    fixed_constrained = FixedConstraint(
         *start_position_collection, *start_director_collection, _system=test_rod
     )
     pos_indices = rng.choice(N, size=n_position_constraint, replace=False)
     dir_indices = rng.choice(N, size=n_director_constraint, replace=False)
-    fixed_rod._constrained_position_idx = pos_indices.copy()
-    fixed_rod._constrained_director_idx = dir_indices.copy()
+    fixed_constrained._constrained_position_idx = pos_indices.copy()
+    fixed_constrained._constrained_director_idx = dir_indices.copy()
 
     test_position_collection = rng.random((3, N))
     test_rod.position_collection = (
@@ -188,7 +192,7 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_values(test_rod, time=0)
+    fixed_constrained.constrain_values(test_rod, time=0)
     test_position_collection[..., pos_indices] = start_position_collection.transpose(
         (1, 0)
     )
@@ -210,12 +214,168 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
-    fixed_rod.constrain_rates(test_rod, time=0)
+    fixed_constrained.constrain_rates(test_rod, time=0)
     test_velocity_collection[..., pos_indices] = 0.0
     test_omega_collection[..., dir_indices] = 0.0
     assert_allclose(
         test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()
     )
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+
+@pytest.mark.parametrize("seed", [1, 10, 100])
+@pytest.mark.parametrize("num_translational_constraint", [0, 1, 2])
+@pytest.mark.parametrize("num_rotational_constraint", [0, 1, 2])
+@pytest.mark.parametrize(
+    "constraint_selector",
+    [
+        np.array([False, False, False]),
+        np.array([True, False, False]),
+        np.array([False, True, False]),
+        np.array([False, False, True]),
+        np.array([True, True, False]),
+        np.array([True, False, True]),
+        np.array([False, True, True]),
+        np.array([True, True, True]),
+    ],
+)
+def test_general_constraint(
+    seed,
+    num_translational_constraint,
+    num_rotational_constraint,
+    constraint_selector,
+):
+    rng = np.random.default_rng(seed)
+    test_rod = MockTestRod()
+
+    start_position_collection = rng.random((num_translational_constraint, 3))
+    start_director_collection = rng.random((num_rotational_constraint, 3, 3))
+    translational_constraint_selector = constraint_selector
+    rotational_constraint_selector = constraint_selector
+    general_constraint = GeneralConstraint(
+        *start_position_collection,
+        *start_director_collection,
+        translational_constraint_selector=translational_constraint_selector,
+        rotational_constraint_selector=rotational_constraint_selector,
+        _system=test_rod,
+    )
+    pos_indices = rng.choice(
+        test_rod.n_elem, size=num_translational_constraint, replace=False
+    )
+    dir_indices = rng.choice(
+        test_rod.n_elem, size=num_rotational_constraint, replace=False
+    )
+    general_constraint._constrained_position_idx = pos_indices.copy()
+    general_constraint._constrained_director_idx = dir_indices.copy()
+
+    test_position_collection = rng.random((3, test_rod.n_elem))
+    test_rod.position_collection = (
+        test_position_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    general_constraint.constrain_values(test_rod, time=0)
+    test_position_collection[..., pos_indices] = start_position_collection.transpose(
+        (1, 0)
+    )
+
+    assert_allclose(
+        test_position_collection[translational_constraint_selector, :],
+        test_rod.position_collection[translational_constraint_selector, :],
+        atol=Tolerance.atol(),
+    )
+
+    test_velocity_collection = rng.random((3, test_rod.n_elem))
+    test_rod.velocity_collection = (
+        test_velocity_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_director_collection = rng.random((3, 3, test_rod.n_elem))
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, test_rod.n_elem))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    general_constraint.constrain_rates(test_rod, time=0)
+
+    # test `nb_constrain_translational_rates`
+    if translational_constraint_selector[0]:
+        test_velocity_collection[0, pos_indices] = 0.0
+    if translational_constraint_selector[1]:
+        test_velocity_collection[1, pos_indices] = 0.0
+    if translational_constraint_selector[2]:
+        test_velocity_collection[2, pos_indices] = 0.0
+    assert_allclose(
+        test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()
+    )
+
+    # test `nb_constrain_rotational_rates` for directors not equal to identity matrix
+    # rotate angular velocities to inertial frame
+    omega_collection_lab_frame = _batch_matvec(
+        test_director_collection[
+            ...,
+        ].transpose(1, 0, 2),
+        test_omega_collection,
+    )
+    # apply constraint selector to angular velocities in inertial frame
+    omega_collection_not_constrained = omega_collection_lab_frame.copy()
+    if rotational_constraint_selector[0]:
+        omega_collection_not_constrained[0, dir_indices] = 0.0
+    if rotational_constraint_selector[1]:
+        omega_collection_not_constrained[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        omega_collection_not_constrained[2, dir_indices] = 0.0
+    # rotate angular velocities vector back to local frame and apply to omega_collection
+    test_omega_collection[..., dir_indices] = _batch_matvec(
+        test_director_collection, omega_collection_not_constrained
+    )[..., dir_indices]
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+    # test `nb_constrain_rotational_rates` for directors equal to identity matrix
+    test_director_collection = (
+        np.eye(3).reshape(3, 3, 1).repeat(test_rod.n_elem, axis=2)
+    )
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, test_rod.n_elem))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    general_constraint.constrain_rates(test_rod, time=0)
+    if rotational_constraint_selector[0]:
+        test_omega_collection[0, dir_indices] = 0.0
+    if rotational_constraint_selector[1]:
+        test_omega_collection[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        test_omega_collection[2, dir_indices] = 0.0
+    assert_allclose(
+        test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
+    )
+
+    # test `nb_constrain_rotational_rates` for directors equal to 90 degrees rotation around z-axis
+    rot_mat_90deg_yaw = Rotation.from_euler("z", np.pi / 2).as_matrix()
+    test_director_collection = rot_mat_90deg_yaw.reshape((3, 3, 1)).repeat(
+        test_rod.n_elem, axis=2
+    )
+    test_rod.director_collection = (
+        test_director_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    test_omega_collection = rng.random((3, test_rod.n_elem))
+    test_rod.omega_collection = (
+        test_omega_collection.copy()
+    )  # We need copy of the list not a reference to this array
+    general_constraint.constrain_rates(test_rod, time=0)
+    # because of the 90 degree rotation around z-axis, the x and y selectors are switched
+    if rotational_constraint_selector[1]:
+        test_omega_collection[0, dir_indices] = 0.0
+    if rotational_constraint_selector[0]:
+        test_omega_collection[1, dir_indices] = 0.0
+    if rotational_constraint_selector[2]:
+        test_omega_collection[2, dir_indices] = 0.0
     assert_allclose(
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )

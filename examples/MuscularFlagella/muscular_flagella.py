@@ -1,10 +1,6 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
-import sys
 import numpy as np
-
-sys.path.append("../../")
-
 from elastica import *
 from examples.MuscularFlagella.post_processing import (
     plot_video_2D,
@@ -161,7 +157,7 @@ muscular_flagella_sim.append(flagella_muscle)
 
 # add damping
 muscular_flagella_sim.dampen(flagella_muscle).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu_muscle,
     time_step=time_step,
 )

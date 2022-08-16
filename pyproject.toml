@@ -1,0 +1,107 @@
+# Poetry pyproject.toml: https://python-poetry.org/docs/pyproject/
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "pyelastica"
+version = "0.3.0"
+description = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
+readme = "README.md"
+authors = ["GazzolaLab <armant2@illinois.edu>"]
+license = "MIT"
+repository = "https://github.com/GazzolaLab/PyElastica"
+homepage = "https://www.cosseratrods.org/"
+documentation = "https://docs.cosseratrods.org/en/latest/"
+keywords = []
+
+# Pypi classifiers: https://pypi.org/classifiers/
+classifiers = [
+# Trove classifiers
+# Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+"License :: OSI Approved :: MIT License",
+"Development Status :: 3 - Alpha",
+"Programming Language :: Python",
+"Programming Language :: Python :: 3.7",
+"Programming Language :: Python :: 3.8",
+"Programming Language :: Python :: 3.9",
+"Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: Implementation :: CPython",
+"Intended Audience :: Science/Research",
+"Intended Audience :: Education",
+]
+
+# ...
+packages = [
+    { include = "elastica" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.11"
+numba = "^0.55.0"
+numpy = "^1.19.2"
+scipy = "^1.5.2"
+tqdm = "^4.61.1"
+# A list of all of the optional dependencies, some of which are included in the
+# below `extras`. They can be opted into by apps.
+Sphinx = {version = "^4.4.0", optional = true, extras = ["docs"]}
+sphinx-book-theme = {version = "^0.3.2", optional = true, extras = ["docs"]}
+readthedocs-sphinx-search = {version = "^0.1.1", optional = true, extras = ["docs"]}
+sphinx-autodoc-typehints = {version = "^1.17.1", optional = true, extras = ["docs"]}
+myst-parser = {version = "^0.17.2", optional = true, extras = ["docs"]}
+numpydoc = {version = "^1.3.1", optional = true, extras = ["docs"]}
+docutils = {version = "^0.17.1", optional = true, extras = ["docs"]}
+cma = {version = "^3.2.2", optional = true, extras = ["examples"]}
+matplotlib = {version = "^3.3.2", optional = true, extras = ["examples"]}
+
+[tool.poetry.dev-dependencies]
+black = "21.12b0"
+pytest = "^7.1.1"
+coverage = "^6.3.3"
+pre-commit = "^2.19.0"
+pytest-html = "^3.1.1"
+pytest-cov = "^3.0.0"
+flake8 = "3.8.3"
+codecov = "^2.1"
+click = "8.0.0"
+
+[tool.poetry.extras]
+docs = [
+  "sphinx",
+  "sphinx-book-theme",
+  "readthedocs-sphinx-search",
+  "sphinx-autodoc-typehints",
+  "myst-parser",
+  "numpydoc",
+  "docutils",
+]
+examples = [
+  "cma",
+  "matplotlib",
+]
+
+[tool.black]
+# https://github.com/psf/black
+target-version = ["py38"]
+line-length = 88
+color = true
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | env
+    | venv
+)/
+'''
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
+# Directories that are not visited by pytest collector:
+norecursedirs =["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]

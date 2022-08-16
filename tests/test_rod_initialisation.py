@@ -103,7 +103,7 @@ class MockRodForTest:
         youngs_modulus,
         # poisson_ratio,
         *args,
-        **kwargs
+        **kwargs,
     ):
 
         (
@@ -155,7 +155,7 @@ class MockRodForTest:
             youngs_modulus,
             alpha_c=(27.0 / 28.0),
             *args,
-            **kwargs
+            **kwargs,
         )
 
         return cls(
@@ -217,9 +217,9 @@ def test_deprecated_rod_nu_option(n_elems, caplog):
     correct_warning_message = (
         "The option to set damping coefficient (nu) for the rod during rod "
         "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class."
-        "For reference see the class elastica.dissipation.ExponentialDamper(),"
-        "and for usage check examples/axial_stretching.py"
+        "please derive your simulation class from the add-on Damping mixin class. "
+        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
+        "and for usage check examples/axial_stretching.py "
         "The option to set damping coefficient (nu) during rod construction "
         "will be removed in the future (v0.3.1)."
     )

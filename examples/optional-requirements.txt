@@ -1,3 +1,0 @@
-cma
-moviepy
-ffmpeg

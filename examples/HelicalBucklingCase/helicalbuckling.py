@@ -1,11 +1,7 @@
-__doc__ = """Helical buckling validation case, for detailed explanation refer to 
+__doc__ = """Helical buckling validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.1 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     plot_helicalbuckling,
@@ -69,7 +65,7 @@ helicalbuckling_sim.append(shearable_rod)
 dl = base_length / n_elem
 dt = 1e-3 * dl
 helicalbuckling_sim.dampen(shearable_rod).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )

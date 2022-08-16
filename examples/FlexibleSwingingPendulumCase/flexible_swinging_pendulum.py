@@ -1,13 +1,6 @@
 """ Flexible swinging pendulum test-case
     isort:skip_file
 """
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../../")  # isort:skip
-
-# from collections import defaultdict
-
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -144,7 +137,7 @@ if PLOT_VIDEO:
         fps=60,
         step=1,
         *args,
-        **kwargs
+        **kwargs,
     ):  # (time step, x/y/z, node)
         import matplotlib.animation as manimation
 

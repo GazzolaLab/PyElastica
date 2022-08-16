@@ -1,10 +1,3 @@
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../")
-sys.path.append("../../")
-
-# from collections import defaultdict
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb

@@ -3,7 +3,7 @@
 When using PyElastica, users will setup a simulation in which they define a system of rods, define initial and boundary conditions on the rods, run the simulation, and then post-process the results. Here, we outline a typical template of using PyElastica.
 
 :::{important}
-**A note on notation:** Like other FEA packages such as Abaqus, PyElastica does not enforce units. This means that you are required to make sure that all units for your input variables are consistent. When in doubt, SI units are always safe, however, if you have a very small length scale ($\sim$ nm), then you may need to rescale your units to avoid needing prohibitively small time steps and/or roundoff errors. 
+**A note on notation:** Like other FEA packages such as Abaqus, PyElastica does not enforce units. This means that you are required to make sure that all units for your input variables are consistent. When in doubt, SI units are always safe, however, if you have a very small length scale ($\sim$ nm), then you may need to rescale your units to avoid needing prohibitively small time steps and/or roundoff errors.
 :::
 
 <h2>1. Setup Simulation</h2>
@@ -25,8 +25,8 @@ class SystemSimulator(
     Connections, # Enabled to use FixedJoint
     CallBacks,   # Enabled to use callback
     Damping,     # Enabled to use damping models on systems.
-): 
-    pass 
+):
+    pass
 ```
 This simply combines all the wrappers previously imported together. If a wrapper is not needed for the simulation, it does not need to be added here.
 
@@ -47,7 +47,7 @@ We adopted a composition and mixin design paradigm in building elastica. The det
 
 
 <h2>2. Create Rods</h2>
-Each rod has a number of physical parameters that need to be defined. These values then need to be assigned to the rod to create the object, and the rod needs to be added to the simulator. 
+Each rod has a number of physical parameters that need to be defined. These values then need to be assigned to the rod to create the object, and the rod needs to be added to the simulator.
 
 ```python
 from elastica.rod.cosserat_rod import CosseratRod
@@ -93,11 +93,11 @@ The number of element (`n_elements`) and `base_length` determines the spatial di
 
 <h2>3. Define Boundary Conditions, Forcings, Damping and Connections</h2>
 
-Now that we have added all our rods to `SystemSimulator`, we 
-need to apply relevant boundary conditions. 
+Now that we have added all our rods to `SystemSimulator`, we
+need to apply relevant boundary conditions.
 See [this page](../api/constraints.rst) for in-depth explanations and documentation.
 
-As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundary condition (which we imported in step 1 and apply it to the rod. Here we will be fixing the $0^{\text{th}}$ node as well as the $0^{\text{th}}$ element. 
+As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundary condition (which we imported in step 1 and apply it to the rod. Here we will be fixing the $0^{\text{th}}$ node as well as the $0^{\text{th}}$ element.
 
 ```python
 from elastica.boundary_conditions import OneEndFixedBC
@@ -116,33 +116,33 @@ from elastica.external_forces import EndpointForces
 
 #Define 1x3 array of the applied forces
 origin_force = np.array([0.0, 0.0, 0.0])
-end_force = np.array([-15.0, 0.0, 0.0]) 
+end_force = np.array([-15.0, 0.0, 0.0])
 SystemSimulator.add_forcing_to(rod1).using(
     EndpointForces,                 # Traction BC being applied
     origin_force,                   # Force vector applied at first node
     end_force,                      # Force vector applied at last node
-    ramp_up_time=final_time / 2.0   # Ramp up time 
+    ramp_up_time=final_time / 2.0   # Ramp up time
 )
 ```
 
-Next, if required, in order to numerically stabilize the simulation, 
-we can apply damping to the rods. 
+Next, if required, in order to numerically stabilize the simulation,
+we can apply damping to the rods.
 See [this page](../api/damping.rst) for in-depth explanations and documentation.
 
 ```python
-from elastica.dissipation import ExponentialDamper
+from elastica.dissipation import AnalyticalLinearDamper
 
 nu = 1e-3   # Damping constant of the rod
 dt = 1e-5   # Time-step of simulation in seconds
 
 SystemSimulator.dampin(rod1).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant = nu,
     time_step = dt,
 )
 
 SystemSimulator.dampin(rod2).using(
-    ExponentialDamper,
+    AnalyticalLinearDamper,
     damping_constant = nu,
     time_step = dt,
 )
@@ -153,14 +153,14 @@ One last condition we can define is the connections between rods. See [this page
 ```python
 from elastica.connections import FixedJoint
 
-# Connect rod 1 and rod 2. '_connect_idx' specifies the node number that 
-# the connection should be applied to. You are specifying the index of a 
-# list so you can use -1 to access the last node. 
+# Connect rod 1 and rod 2. '_connect_idx' specifies the node number that
+# the connection should be applied to. You are specifying the index of a
+# list so you can use -1 to access the last node.
 SystemSimulator.connect(
-    first_rod  = rod1, 
-    second_rod = rod2, 
-    first_connect_idx  = -1, # Connect to the last node of the first rod. 
-    second_connect_idx =  0  # Connect to first node of the second rod. 
+    first_rod  = rod1,
+    second_rod = rod2,
+    first_connect_idx  = -1, # Connect to the last node of the first rod.
+    second_connect_idx =  0  # Connect to first node of the second rod.
     ).using(
         FixedJoint,  # Type of connection between rods
         k  = 1e5,    # Spring constant of force holding rods together (F = k*x)
@@ -180,15 +180,15 @@ PyElastica __does not automatically saves__ the simulation result. If you do not
 ```python
 from elastica.callback_functions import CallBackBaseClass
 
-# MyCallBack class is derived from the base call back class.   
+# MyCallBack class is derived from the base call back class.
 class MyCallBack(CallBackBaseClass):
     def __init__(self, step_skip: int, callback_params):
         CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
-    
+
     # This function is called every time step
-    def make_callback(self, system, time, current_step: int):         
+    def make_callback(self, system, time, current_step: int):
         if current_step % self.every == 0:
             # Save time, step number, position, orientation and velocity
             self.callback_params["time"].append(time)
@@ -222,7 +222,7 @@ This goes through and collects all the rods and applied conditions, preparing th
 
 <h2>6. Set Timestepper</h2>
 
-With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation. 
+With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation.
 
 >> We are still actively testing different integration and time-stepping techniques, `PositionVerlet` is the best default at this moment.
 
@@ -232,7 +232,7 @@ from elastica.timestepper import integrate
 
 timestepper = PositionVerlet()
 final_time = 10   # seconds
-total_steps = int(final_time / dt) 
+total_steps = int(final_time / dt)
 integrate(timestepper, SystemSimulator, final_time, total_steps)
 ```
 
@@ -240,4 +240,4 @@ More documentation on timestepper and integrator is included [here](../api/time_
 
 <h2>7. Post Process</h2>
 
-Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`. 
+Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`.

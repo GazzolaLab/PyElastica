@@ -1,11 +1,7 @@
-__doc__ = """Timoshenko beam convergence study, for detailed explanation refer to 
+__doc__ = """Timoshenko beam convergence study, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
@@ -62,7 +58,7 @@ def simulate_timoshenko_beam_with(
     dl = base_length / n_elem
     dt = 0.07 * dl
     timoshenko_sim.dampen(shearable_rod).using(
-        ExponentialDamper,
+        AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )
@@ -95,7 +91,7 @@ def simulate_timoshenko_beam_with(
         timoshenko_sim.append(unshearable_rod)
         # add damping
         timoshenko_sim.dampen(unshearable_rod).using(
-            ExponentialDamper,
+            AnalyticalLinearDamper,
             damping_constant=nu,
             time_step=dt,
         )
