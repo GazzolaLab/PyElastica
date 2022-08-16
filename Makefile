@@ -1,7 +1,7 @@
 #* Variables
 PYTHON := python3
 PYTHONPATH := `pwd`
-AUTOFLAKE_ARGS := -r --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports
+AUTOFLAKE_ARGS := -r --remove-all-unused-imports --ignore-init-module-imports
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -53,13 +53,8 @@ autoflake-check:
 	poetry run autoflake $(AUTOFLAKE_ARGS) elastica tests examples
 	poetry run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
-.PHONY: autoflake
-autoflake:
-	poetry run autoflake --version
-	poetry run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
-
 .PHONY: format-codestyle
-format-codestyle: black flake8 autoflake
+format-codestyle: black flake8
 
 .PHONY: test
 test:
