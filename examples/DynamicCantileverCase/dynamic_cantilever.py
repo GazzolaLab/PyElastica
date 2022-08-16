@@ -26,7 +26,7 @@ def simulate_dynamic_cantilever_with(
     base_area = np.pi * base_radius ** 2
     youngs_modulus = 1e5
 
-    I = np.pi / 4 * base_radius ** 4
+    moment_of_inertia = np.pi / 4 * base_radius ** 4
 
     dl = base_length / n_elem
     dt = dl * 0.05
@@ -55,7 +55,7 @@ def simulate_dynamic_cantilever_with(
     vibration = DynamicCantileverVibration(
         base_length,
         base_area,
-        I,
+        moment_of_inertia,
         youngs_modulus,
         density,
         mode=mode,
