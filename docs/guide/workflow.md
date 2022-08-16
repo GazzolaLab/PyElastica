@@ -28,7 +28,7 @@ class SystemSimulator(
 ):
     pass
 ```
-This simply combines all the modules previously imported together. If a modules are not needed for the simulation, it does not need to be added here.
+This simply combines all the modules previously imported together. If a module is not needed for the simulation, it does not need to be added here.
 
 Available components are:
 
