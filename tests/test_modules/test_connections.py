@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from elastica.modules import Connections
-from elastica.modules .connections import _Connect
+from elastica.modules.connections import _Connect
 
 
 class TestConnect:
