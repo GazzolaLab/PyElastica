@@ -1,3 +1,5 @@
+__doc__ = """Visualization of simulated dynamic cantilever beam"""
+
 from elastica import *
 from dynamic_cantilever import simulate_dynamic_cantilever_with
 from dynamic_cantilever_post_processing import (
