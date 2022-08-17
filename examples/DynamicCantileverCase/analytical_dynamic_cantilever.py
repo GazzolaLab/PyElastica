@@ -2,6 +2,56 @@ import numpy as np
 
 
 class AnalyticalDynamicCantilever:
+    """
+    This class computes the analytical solution to a cantilever's dynamic response
+    to an initial velocity profile based on the Euler-Bernoulli beam theory.
+
+    Given the generic dynamic beam equation and boundary conditions imposed on a cantilever,
+    nontrivial solutions exist only when
+
+        cosh(beta * base_length) * cos(beta * base_length) + 1 = 0
+
+    where beta can be used to determine the natural frequencies of the cantilever beam:
+
+        omega = beta^2 * sqrt(E * I / mu)
+
+    The first four roots to beta are given as
+
+        betas = [0.596864*pi, 1.49418*pi, 2.50025*pi, 3.49999*pi] / base_length
+
+    The class solves for the analytical solution at a single natural frequency by computing
+    the non-parametrized mode shapes as well as a mode parameter. The parameter is determined
+    by the initial condition of the rod, namely, the end_velocity input. The free vibration
+    equation can then be applied to determine beam deflection at a given time at any position
+    of the rod:
+
+        w(x, t) = Re[mode_shape * exp(-1j * omega * t)]
+
+    For details, refer to
+    https://en.wikipedia.org/wiki/Euler%E2%80%93Bernoulli_beam_theory#Dynamic_beam_equation
+    or
+    Han et al (1998), Dynamics of Transversely Vibrating Beams
+    Using Four Engineering Theories
+
+        Attributes
+        ----------
+        base_length: float
+            Total length of the rod
+        base_area: float
+            Cross-sectional area of the rod
+        moment_of_inertia: float
+            Second moment of area of the rod's cross-section
+        young's_modulus: float
+            Young's modulus of the rod
+        density: float
+            Density of the rod
+        mode: int
+            Index of the first 'mode' th natural frequency.
+            Up to the first four modes are supported.
+        end_velocity: float
+            Initial oscillatory velocity at the end of the rod
+    """
+
     def __init__(
         self,
         base_length,
@@ -20,18 +70,6 @@ class AnalyticalDynamicCantilever:
         assert mode < 5
         self.mode = mode
 
-        # First four roots to
-        # cosh(beta * base_length) * cos(beta * base_length) + 1 = 0
-        #
-        # Beta values are used to determine natural frequencies of cantilever beams
-        # based on dynamic beam equations
-        # omega = beta^2 * sqrt(E * I / mu)
-        #
-        # For details, refer to
-        # https://en.wikipedia.org/wiki/Euler%E2%80%93Bernoulli_beam_theory#Dynamic_beam_equation
-        # or
-        # Han et al (1998), Dynamics of Transversely Vibrating Beams
-        # Using Four Engineering Theories
         betas = np.array([0.596864, 1.49418, 2.50025, 3.49999]) * np.pi / base_length
         self.beta = betas[mode]
         self.omega = (self.beta ** 2) * np.sqrt(

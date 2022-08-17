@@ -6,12 +6,37 @@ from analytical_dynamic_cantilever import AnalyticalDynamicCantilever
 
 
 def simulate_dynamic_cantilever_with(
-    density=2000,
+    density=2000.0,
     n_elem=100,
-    final_time=300,
+    final_time=300.0,
     mode=0,
-    rendering_fps=30,  # For visualization
+    rendering_fps=30.0,  # For visualization
 ):
+    """
+    This function completes a dynamic cantilever simulation with the given parameters.
+
+    Parameters
+    ----------
+    density: float
+        Density of the rod
+    n_elem: int
+        The number of elements of the rod
+    final_time: float
+        Total simulation time. The timestep is determined by final_time / n_steps.
+    mode: int
+        Index of the first 'mode' th natural frequency.
+        Up to the first four modes are supported.
+    rendering_fps: float
+        Frames per second for video plotting.
+        The call back step-skip is also determined by rendering_fps.
+
+    Returns
+    -------
+    dict of {str : int}
+        A collection of parameters for post-processing.
+
+    """
+
     class DynamicCantileverSimulator(BaseSystemCollection, Constraints, CallBacks):
         pass
 
