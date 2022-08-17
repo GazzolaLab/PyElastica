@@ -141,5 +141,5 @@ def simulate_dynamic_cantilever_with(
             "theoretical_amplitude": theoretical_amplitude,
         }
 
-    except IndexError:
+    except RuntimeError:
         print("No peaks detected: change input parameters.")
