@@ -65,9 +65,11 @@ class AnalyticalDynamicCantilever:
         self.base_length = base_length
         self.end_velocity = end_velocity
 
-        assert isinstance(mode, int)
-        assert mode >= 0
-        assert mode < 5
+        if not (isinstance(mode, int) and mode >= 0 and mode < 5):
+            raise ValueError(
+                "Unsupported mode value, please provide a integer value from 0-4"
+            )
+
         self.mode = mode
 
         betas = np.array([0.596864, 1.49418, 2.50025, 3.49999]) * np.pi / base_length
