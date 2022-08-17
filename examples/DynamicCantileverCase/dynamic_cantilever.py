@@ -33,7 +33,7 @@ def simulate_dynamic_cantilever_with(
     step_skips = int(1.0 / (rendering_fps * dt))
 
     # Add Cosserat rod
-    cantilever = CosseratRod.straight_rod(
+    cantilever_rod = CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -46,8 +46,8 @@ def simulate_dynamic_cantilever_with(
     )
 
     # Add constraints
-    cantilever_sim.append(cantilever)
-    cantilever_sim.constrain(cantilever).using(
+    cantilever_sim.append(cantilever_rod)
+    cantilever_sim.constrain(cantilever_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
@@ -63,9 +63,9 @@ def simulate_dynamic_cantilever_with(
     )
 
     initial_velocity = vibration.get_initial_velocity_profile(
-        cantilever.position_collection[0, :]
+        cantilever_rod.position_collection[0, :]
     )
-    cantilever.velocity_collection[2, :] = initial_velocity
+    cantilever_rod.velocity_collection[2, :] = initial_velocity
 
     # Add call backs
     class CantileverCallBack(CallBackBaseClass):
@@ -88,7 +88,7 @@ def simulate_dynamic_cantilever_with(
                 return
 
     recorded_history = defaultdict(list)
-    cantilever_sim.collect_diagnostics(cantilever).using(
+    cantilever_sim.collect_diagnostics(cantilever_rod).using(
         CantileverCallBack, step_skip=step_skips, callback_params=recorded_history
     )
     cantilever_sim.finalize()
@@ -129,7 +129,7 @@ def simulate_dynamic_cantilever_with(
         )
 
         return {
-            "rod": cantilever,
+            "rod": cantilever_rod,
             "recorded_history": recorded_history,
             "fft_frequencies": omegas,
             "fft_amplitudes": amplitudes,
