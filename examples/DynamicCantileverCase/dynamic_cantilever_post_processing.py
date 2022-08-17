@@ -74,7 +74,7 @@ def plot_phase_space_with(
 
 def plot_end_position_with(
     recorded_history,
-    vibration,
+    analytical_cantilever_soln,
     omegas,
     amplitudes,
     peak,
@@ -94,7 +94,7 @@ def plot_end_position_with(
     ax.grid(visible=True, which="both", color="k", linestyle="--")
 
     time = np.array(recorded_history["time"])
-    positions = vibration.get_time_dependent_positions(1, time)
+    positions = analytical_cantilever_soln.get_time_dependent_positions(1, time)
 
     ax.plot(time, positions, lw=2.0, label="Euler-Bernoulli beam theory")
     ax.legend()
@@ -102,7 +102,7 @@ def plot_end_position_with(
     # FFT plot
     fft_ax = fig.add_subplot(122)
     fft_ax.plot(omegas, amplitudes, lw=2, color="k")
-    fft_ax.set_xlim([0, vibration.get_omega() * 2])
+    fft_ax.set_xlim([0, analytical_cantilever_soln.get_omega() * 2])
 
     fft_ax.set_xlabel("Frequency [rad/s]", fontsize=16)
     fft_ax.set_ylabel("Amplitude [m]", fontsize=16)

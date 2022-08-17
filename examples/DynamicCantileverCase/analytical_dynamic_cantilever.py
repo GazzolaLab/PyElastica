@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class DynamicCantileverVibration:
+class AnalyticalDynamicCantilever:
     def __init__(
         self,
         base_length,

@@ -2,7 +2,7 @@ import numpy as np
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
 from elastica import *
-from dynamic_cantilever_helper import DynamicCantileverVibration
+from analytical_dynamic_cantilever import AnalyticalDynamicCantilever
 
 
 def simulate_dynamic_cantilever_with(
@@ -52,7 +52,7 @@ def simulate_dynamic_cantilever_with(
     )
 
     end_velocity = 0.005
-    vibration = DynamicCantileverVibration(
+    analytical_cantilever_soln = AnalyticalDynamicCantilever(
         base_length,
         base_area,
         moment_of_inertia,
@@ -62,7 +62,7 @@ def simulate_dynamic_cantilever_with(
         end_velocity=end_velocity,
     )
 
-    initial_velocity = vibration.get_initial_velocity_profile(
+    initial_velocity = analytical_cantilever_soln.get_initial_velocity_profile(
         cantilever_rod.position_collection[0, :]
     )
     cantilever_rod.velocity_collection[2, :] = initial_velocity
@@ -116,10 +116,10 @@ def simulate_dynamic_cantilever_with(
         peak = peaks[np.argmax(amplitudes[peaks])]
 
         simulated_frequency = omegas[peak]
-        theoretical_frequency = vibration.get_omega()
+        theoretical_frequency = analytical_cantilever_soln.get_omega()
 
         simulated_amplitude = max(recorded_history["deflection"])
-        theoretical_amplitude = vibration.get_amplitude()
+        theoretical_amplitude = analytical_cantilever_soln.get_amplitude()
 
         print(
             f"Theoretical frequency: {theoretical_frequency} rad/s \n"
@@ -133,7 +133,7 @@ def simulate_dynamic_cantilever_with(
             "recorded_history": recorded_history,
             "fft_frequencies": omegas,
             "fft_amplitudes": amplitudes,
-            "vibration": vibration,
+            "analytical_cantilever_soln": analytical_cantilever_soln,
             "peak": peak,
             "simulated_frequency": simulated_frequency,
             "theoretical_frequency": theoretical_frequency,

@@ -37,7 +37,7 @@ cantilever = sim_result["rod"]
 recorded_history = sim_result["recorded_history"]
 omegas = sim_result["fft_frequencies"]
 amplitudes = sim_result["fft_amplitudes"]
-vibration = sim_result["vibration"]
+analytical_cantilever_soln = sim_result["analytical_cantilever_soln"]
 peak = sim_result["peak"]
 
 # Plotting end-point position over time
@@ -45,7 +45,7 @@ peak = sim_result["peak"]
 if PLOT_FIGURE or SAVE_FIGURE:
     plot_end_position_with(
         recorded_history,
-        vibration,
+        analytical_cantilever_soln,
         omegas,
         amplitudes,
         peak,

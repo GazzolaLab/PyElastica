@@ -1,4 +1,4 @@
-__doc__ = """ Validating phase space of dynamic cantilever beam vibration with  respect to varying densities.
+__doc__ = """ Validating phase space of dynamic cantilever beam analytical_cantilever_soln with  respect to varying densities.
 The theoretical dynamic response is obtained via Euler-Bernoulli beam theory."""
 
 from dynamic_cantilever_post_processing import plot_phase_space_with
