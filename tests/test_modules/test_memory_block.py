@@ -1,10 +1,10 @@
-__doc__ = """" Test wrapper to construct memory block """
+__doc__ = """" Test modules to construct memory block """
 
 import pytest
 import numpy as np
 
 from elastica.rod import RodBase
-from elastica.wrappers.memory_block import construct_memory_block_structures
+from elastica.modules.memory_block import construct_memory_block_structures
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
 
 

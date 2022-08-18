@@ -1,9 +1,9 @@
-__doc__ = """ Test wrappers for damping """
+__doc__ = """ Test modules for damping """
 import numpy as np
 import pytest
 
-from elastica.wrappers import Damping
-from elastica.wrappers.damping import _Damper
+from elastica.modules import Damping
+from elastica.modules.damping import _Damper
 
 
 class TestDamper:
@@ -83,7 +83,7 @@ class TestDamper:
 
 
 class TestDampingMixin:
-    from elastica.wrappers import BaseSystemCollection
+    from elastica.modules import BaseSystemCollection
 
     class SystemCollectionWithDampingMixedin(BaseSystemCollection, Damping):
         pass

@@ -14,7 +14,7 @@ from elastica.dissipation import DamperBase
 
 class Damping:
     """
-    The Damping class is a wrapper for applying damping
+    The Damping class is a module for applying damping
     on rod-like objects, the simulator class must be derived from
     Damping class.
 
@@ -76,7 +76,7 @@ class Damping:
 
 class _Damper:
     """
-    Damper wrapper private class
+    Damper module private class
 
     Attributes
     ----------
@@ -103,7 +103,7 @@ class _Damper:
 
     def using(self, damper_cls, *args, **kwargs):
         """
-        This method is a wrapper to set which damper class is used to
+        This method is a module to set which damper class is used to
         enforce damping from user defined rod-like objects.
 
         Parameters

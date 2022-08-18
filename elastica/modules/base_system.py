@@ -12,7 +12,7 @@ from itertools import chain
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
-from elastica.wrappers.memory_block import construct_memory_block_structures
+from elastica.modules.memory_block import construct_memory_block_structures
 
 
 class BaseSystemCollection(MutableSequence):

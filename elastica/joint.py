@@ -180,6 +180,10 @@ class FixedJoint(FreeJoint):
     For implementation details, refer to Zhang et al. Nature
     Communications (2019).
 
+        Notes
+        -----
+        Issue #131 : Add constraint in twisting, add rest_rotation_matrix (v0.3.0)
+
         Attributes
         ----------
         k: float

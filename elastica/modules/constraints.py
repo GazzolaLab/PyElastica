@@ -11,7 +11,7 @@ from elastica.boundary_conditions import ConstraintBase
 
 class Constraints:
     """
-    The Constraints class is a wrapper for enforcing displacement boundary conditions.
+    The Constraints class is a module for enforcing displacement boundary conditions.
     To enforce boundary conditions on rod-like objects, the simulator class
     must be derived from Constraints class.
 
@@ -87,7 +87,7 @@ class Constraints:
 
 class _Constraint:
     """
-    Constraint wrapper private class
+    Constraint module private class
 
     Attributes
     ----------
@@ -114,7 +114,7 @@ class _Constraint:
 
     def using(self, bc_cls, *args, **kwargs):
         """
-        This method is a wrapper to set which boundary condition class is used to
+        This method is a module to set which boundary condition class is used to
         enforce boundary condition from user defined rod-like objects.
 
         Parameters

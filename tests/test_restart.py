@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica.wrappers import (
+from elastica.modules import (
     BaseSystemCollection,
     Constraints,
     Forcing,
