@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyelastica"
-version = "0.3.0"
+version = "0.3.1"
 description = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
 readme = "README.md"
 authors = ["GazzolaLab <armant2@illinois.edu>"]
