@@ -49,8 +49,8 @@ flake8:
 .PHONY: autoflake8-check
 autoflake8-check:
 	poetry run autoflake8 --version
-	poetry run autoflake8 -r elastica tests examples
-	poetry run autoflake8 --check -r elastica tests examples
+	poetry run autoflake8 -r --exclude '__init__.py' elastica tests examples
+	poetry run autoflake8 --check -r --exclude '__init__.py' elastica tests examples
 
 .PHONY: format-codestyle
 format-codestyle: black flake8
