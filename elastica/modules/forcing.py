@@ -10,7 +10,7 @@ from elastica.interaction import AnisotropicFrictionalPlane
 
 class Forcing:
     """
-    The Forcing class is a wrapper for applying boundary conditions that
+    The Forcing class is a module for applying boundary conditions that
     consist of applied external forces. To apply forcing on rod-like objects,
     the simulator class must be derived from the Forcing class.
 
@@ -89,7 +89,7 @@ class Forcing:
 
 class _ExtForceTorque:
     """
-    Forcing wrapper private class
+    Forcing module private class
 
     Attributes
     ----------
@@ -115,7 +115,7 @@ class _ExtForceTorque:
 
     def using(self, forcing_cls, *args, **kwargs):
         """
-        This method is a wrapper to set which forcing class is used to apply forcing
+        This method is a module to set which forcing class is used to apply forcing
         to user defined rod-like objects.
 
         Parameters

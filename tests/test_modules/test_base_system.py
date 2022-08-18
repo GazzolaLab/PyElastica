@@ -1,9 +1,9 @@
-__doc__ = """ Test wrappers for base systems """
+__doc__ = """ Test modules for base systems """
 
 import pytest
 import numpy as np
 
-from elastica.wrappers import (
+from elastica.modules import (
     BaseSystemCollection,
     Constraints,
     Forcing,

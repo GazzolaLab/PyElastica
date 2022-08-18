@@ -11,7 +11,7 @@ from elastica.joint import FreeJoint
 
 class Connections:
     """
-    The Connections class is a wrapper for connecting rod-like objects using joints selected
+    The Connections class is a module for connecting rod-like objects using joints selected
     by the user. To connect two rod-like objects, the simulator class must be derived from
     the Connections class.
 
@@ -106,7 +106,7 @@ class Connections:
 
 class _Connect:
     """
-    Connect wrapper private class
+    Connect module private class
 
     Attributes
     ----------
@@ -231,7 +231,7 @@ class _Connect:
 
     def using(self, connect_cls, *args, **kwargs):
         """
-        This method is a wrapper to set which joint class is used to connect
+        This method is a module to set which joint class is used to connect
         user defined rod-like objects.
 
         Parameters
