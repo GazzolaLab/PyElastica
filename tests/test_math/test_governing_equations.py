@@ -413,14 +413,15 @@ class TestingClass:
         damping_forces = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1)
             * nu
-            * (1.0 / n_elem)
+            * test_rod.mass
         )
-        damping_forces[..., 0] *= 0.5
-        damping_forces[..., -1] *= 0.5
+        elemental_mass = (test_rod.mass[1:] + test_rod.mass[:-1]) / 2.0
+        elemental_mass[0] += test_rod.mass[0] / 2.0
+        elemental_mass[-1] += test_rod.mass[-1] / 2.0
         damping_torques = (
             np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1)
             * nu
-            * (1.0 / n_elem)
+            * elemental_mass
         )
         # Compute geometry from state
         _compute_geometry_from_state(
@@ -435,14 +436,11 @@ class TestingClass:
             test_rod.damping_forces,
             test_rod.velocity_collection,
             test_rod.dissipation_constant_for_forces,
-            test_rod.lengths,
-            test_rod.ghost_elems_idx,
         )
         _compute_damping_torques(
             test_rod.damping_torques,
             test_rod.omega_collection,
             test_rod.dissipation_constant_for_torques,
-            test_rod.lengths,
         )
 
         test_damping_forces = test_rod.damping_forces

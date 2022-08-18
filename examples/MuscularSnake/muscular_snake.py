@@ -1,8 +1,5 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
-import sys
 import numpy as np
-
-sys.path.append("../../")
 from elastica import *
 from examples.MuscularSnake.post_processing import (
     plot_video_with_surface,
@@ -17,7 +14,7 @@ from elastica.experimental.connection_contact_joint.parallel_connection import (
 
 # Set base simulator class
 class MuscularSnakeSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
 ):
     pass
 
@@ -42,6 +39,7 @@ E = 1e7
 nu = 4e-3
 shear_modulus = E / 2 * (0.5 + 1.0)
 poisson_ratio = 0.5
+nu_body = nu / density_body / (np.pi * base_radius_body ** 2)
 
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 0.0, 1.0])
@@ -55,7 +53,7 @@ snake_body = CosseratRod.straight_rod(
     base_length_body,
     base_radius_body,
     density_body,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
@@ -93,7 +91,7 @@ shear_modulus_muscle = E_muscle / 2 * (0.5 + 1.0)
 # Muscle group 1 and 3, define two antagonistic muscle pairs
 n_elem_muscle_group_one_to_three = 13 * 3
 base_length_muscle = 0.39
-"""  
+"""
 In our simulation, we lump many biological tendons into one computational
 tendon. As a result, our computational tendon is bigger in size, set as elements other than 4-8
 below.
@@ -101,6 +99,7 @@ below.
 muscle_radius = np.zeros((n_elem_muscle_group_one_to_three))
 muscle_radius[:] = 0.003  # First set tendon radius for whole rod.
 muscle_radius[4 * 3 : 9 * 3] = 0.006  # Change the radius of muscle elements
+nu_muscle /= density_muscle * np.pi * 0.003 ** 2
 
 for i in range(int(n_muscle_fibers / 2)):
 
@@ -124,7 +123,7 @@ for i in range(int(n_muscle_fibers / 2)):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        nu_muscle,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
@@ -189,7 +188,7 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        nu_muscle,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
@@ -226,6 +225,21 @@ rod_list.append(snake_body)
 rod_list = rod_list + muscle_rod_list
 for _, my_rod in enumerate(rod_list):
     muscular_snake_simulator.append(my_rod)
+
+# Add dissipation to backbone
+muscular_snake_simulator.dampen(snake_body).using(
+    AnalyticalLinearDamper,
+    damping_constant=nu_body,
+    time_step=time_step,
+)
+
+# Add dissipation to muscles
+for rod in rod_list:
+    muscular_snake_simulator.dampen(rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=nu_muscle,
+        time_step=time_step,
+    )
 
 # Muscle actuation
 post_processing_forces_dict_list = []

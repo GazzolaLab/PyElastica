@@ -1,8 +1,6 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
 __all__ = ["allocate"]
-import typing
 from typing import Optional, Tuple
-import warnings
 import logging
 import numpy as np
 from numpy.testing import assert_allclose
@@ -145,7 +143,7 @@ def allocate(
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from
     # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
-    alpha_c = 0.964
+    alpha_c = 27.0 / 28.0
     shear_matrix = np.zeros(
         (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
     )
@@ -192,21 +190,49 @@ def allocate(
     mass[1:] += 0.5 * density * volume
 
     # Set dissipation constant or nu array
-    dissipation_constant_for_forces = np.zeros((n_elements))
+    log.warning(
+        # Remove warning and add error if nu provided in v0.3.1
+        # Remove the option to set internal nu inside, beyond v0.4.0
+        "The option to set damping coefficient (nu) for the rod during rod "
+        "initialisation is now deprecated. Instead, for adding damping to rods, "
+        "please derive your simulation class from the add-on Damping mixin class. "
+        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
+        "and for usage check examples/axial_stretching.py "
+        "The option to set damping coefficient (nu) during rod construction "
+        "will be removed in the future (v0.3.1)."
+    )
+    dissipation_constant_for_forces = np.zeros((n_elements + 1))
     # Check if the user input nu is valid
     nu_temp = np.array(nu)
     _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
-    dissipation_constant_for_forces[:] = nu
+    dissipation_constant_for_forces[:] = nu * mass
     # Check if the elements of dissipation constant greater than tolerance
     assert np.all(
         dissipation_constant_for_forces >= 0.0
     ), " Dissipation constant(nu) has to be equal or greater than 0."
 
     # Custom nu for torques
+    dissipation_constant_for_torques = np.zeros((n_elements))
+
     if nu_for_torques is None:
-        dissipation_constant_for_torques = dissipation_constant_for_forces.copy()
+        dissipation_constant_for_torques[:] = (
+            dissipation_constant_for_forces[1:] + dissipation_constant_for_forces[:-1]
+        ) / 2
+        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
+        # their dissipation.
+        dissipation_constant_for_torques[0] += (dissipation_constant_for_forces[0]) / 2
+        dissipation_constant_for_torques[-1] += (
+            dissipation_constant_for_forces[-1]
+        ) / 2
     else:
-        dissipation_constant_for_torques = np.asarray(nu_for_torques)
+        elemental_mass = (mass[1:] + mass[:-1]) / 2.0
+        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
+        # their mass.
+        elemental_mass[0] += mass[0] / 2.0
+        elemental_mass[-1] += mass[-1] / 2.0
+        dissipation_constant_for_torques[:] = (
+            np.asarray(nu_for_torques) * elemental_mass
+        )
     _assert_dim(
         dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
     )

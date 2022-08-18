@@ -1,7 +1,4 @@
 import numpy as np
-import sys
-
-sys.path.append("../../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
@@ -11,7 +8,12 @@ from examples.RodContactCase.post_processing import (
 
 
 class PlectonemesCase(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection,
+    Constraints,
+    Connections,
+    Forcing,
+    CallBacks,
+    Damping,
 ):
     pass
 
@@ -40,7 +42,7 @@ base_area = np.pi * base_radius ** 2
 volume = base_area * base_length
 mass = 1.0
 density = mass / volume
-nu = 2.0
+nu = 2.0 / density / base_area
 E = 1e6
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -59,7 +61,7 @@ sherable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -68,6 +70,13 @@ sherable_rod.velocity_collection[2, int(n_elem / 2)] -= 1e-4
 
 
 plectonemes_sim.append(sherable_rod)
+
+# Add damping
+plectonemes_sim.dampen(sherable_rod).using(
+    AnalyticalLinearDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
 
 # boundary condition
 from elastica._rotations import _get_rotation_matrix
@@ -85,7 +94,7 @@ class SelonoidsBC(ConstraintBase):
         twisting_time,
         time_twis_start,
         number_of_rotations,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.twisting_time = twisting_time

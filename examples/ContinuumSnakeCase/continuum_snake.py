@@ -1,10 +1,7 @@
 __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
-import sys
 import os
 import numpy as np
-
-sys.path.append("../../")
 from elastica import *
 
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
@@ -15,7 +12,7 @@ from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
 )
 
 
-class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
     pass
 
 
@@ -28,10 +25,6 @@ def run_snake(
     # Simulation parameters
     period = 2
     final_time = (11.0 + 0.01) * period
-    time_step = 8e-6
-    total_steps = int(final_time / time_step)
-    rendering_fps = 60
-    step_skip = int(1.0 / (rendering_fps * time_step))
 
     # setting up test params
     n_elem = 50
@@ -41,7 +34,6 @@ def run_snake(
     base_length = 0.35
     base_radius = base_length * 0.011
     density = 1000
-    nu = 1e-4
     E = 1e6
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
@@ -54,7 +46,7 @@ def run_snake(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -102,6 +94,22 @@ def run_snake(
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
     )
+
+    # add damping
+    # old damping model (deprecated in v0.3.0) values
+    # damping_constant = 2e-3
+    # time_step = 8e-6
+    damping_constant = 2e-3
+    time_step = 1e-4
+    snake_sim.dampen(shearable_rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=damping_constant,
+        time_step=time_step,
+    )
+
+    total_steps = int(final_time / time_step)
+    rendering_fps = 60
+    step_skip = int(1.0 / (rendering_fps * time_step))
 
     # Add call backs
     class ContinuumSnakeCallBack(CallBackBaseClass):

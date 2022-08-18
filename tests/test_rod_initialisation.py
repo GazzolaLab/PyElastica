@@ -1,14 +1,15 @@
 __doc__ = """Tests for rod initialisation module"""
+from elastica.rod.factory_function import allocate
+from elastica.utils import MaxDimension, Tolerance
+
+import logging
+
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica.utils import MaxDimension, Tolerance
-
 import pytest
-import sys
 
-from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.rod.factory_function import allocate
+import sys
 
 
 class MockRodForTest:
@@ -102,7 +103,7 @@ class MockRodForTest:
         youngs_modulus,
         # poisson_ratio,
         *args,
-        **kwargs
+        **kwargs,
     ):
 
         (
@@ -152,9 +153,9 @@ class MockRodForTest:
             density,
             nu,
             youngs_modulus,
-            alpha_c=0.964,
+            alpha_c=(27.0 / 28.0),
             *args,
-            **kwargs
+            **kwargs,
         )
 
         return cls(
@@ -195,6 +196,48 @@ class MockRodForTest:
             damping_forces,
             damping_torques,
         )
+
+
+@pytest.mark.parametrize("n_elems", [5, 10, 50])
+def test_deprecated_rod_nu_option(n_elems, caplog):
+    start = np.array([0.0, 0.0, 0.0])
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 0.0, 1.0])
+    base_length = 1.0
+    base_radius = 0.25
+    density = 1000
+    nu = 0.1
+    youngs_modulus = 1e6
+    poisson_ratio = 0.3
+    correct_position = np.zeros((3, n_elems + 1))
+    correct_position[0] = np.random.randn(n_elems + 1)
+    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[..., 0] = start
+    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    correct_warning_message = (
+        "The option to set damping coefficient (nu) for the rod during rod "
+        "initialisation is now deprecated. Instead, for adding damping to rods, "
+        "please derive your simulation class from the add-on Damping mixin class. "
+        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
+        "and for usage check examples/axial_stretching.py "
+        "The option to set damping coefficient (nu) during rod construction "
+        "will be removed in the future (v0.3.1)."
+    )
+    caplog.set_level(logging.WARNING)
+    _ = MockRodForTest.straight_rod(
+        n_elems,
+        start,
+        direction,
+        normal,
+        base_length,
+        base_radius,
+        density,
+        nu,
+        youngs_modulus,
+        shear_modulus=shear_modulus,
+        position=correct_position,
+    )
+    assert correct_warning_message in caplog.text
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -741,8 +784,8 @@ def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
     np.fill_diagonal(
         correct_shear_matrix[:],
         [
-            0.964 * shear_modulus * base_area,
-            0.964 * shear_modulus * base_area,
+            (27.0 / 28.0) * shear_modulus * base_area,
+            (27.0 / 28.0) * shear_modulus * base_area,
             youngs_modulus * base_area,
         ],
     )
@@ -850,10 +893,10 @@ def test_inertia_shear_bend_matrices_for_varying_radius():
 
     correct_shear_matrix = np.array(
         [
-            [23296.11783, 23296.11783, 31415.92654],
-            [93184.47129, 93184.47129, 125663.7061],
-            [209665.06048, 209665.06048, 282743.33882],
-            [372737.88191, 372737.88191, 502654.82],
+            [23303.02243, 23303.02243, 31415.92654],
+            [93212.08972, 93212.08972, 125663.7061],
+            [209727.20187, 209727.20187, 282743.33882],
+            [372848.35889, 372848.35889, 502654.82],
         ]
     )
 
@@ -1067,7 +1110,7 @@ def test_constant_nu_for_forces(n_elems):
         youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_nu = nu
+    correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1092,7 +1135,7 @@ def test_varying_nu_for_forces(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = np.linspace(0.1, 1.0, n_elems)
+    nu = np.linspace(0.1, 1.0, n_elems + 1)
     youngs_modulus = 1e6
     poisson_ratio = 0.3
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
@@ -1109,7 +1152,7 @@ def test_varying_nu_for_forces(n_elems):
         youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_nu = nu
+    correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1191,7 +1234,10 @@ def test_constant_nu_for_torques(n_elems):
         shear_modulus=shear_modulus,
         nu_for_torques=nu_for_torques,
     )
-    correct_nu = nu_for_torques
+    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
+    elemental_mass[0] += 0.5 * mockrod.mass[0]
+    elemental_mass[-1] += 0.5 * mockrod.mass[-1]
+    correct_nu = nu_for_torques * elemental_mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1236,7 +1282,10 @@ def test_varying_nu_for_torques(n_elems):
         shear_modulus=shear_modulus,
         nu_for_torques=nu_for_torques,
     )
-    correct_nu = nu_for_torques
+    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
+    elemental_mass[0] += mockrod.mass[0] / 2.0
+    elemental_mass[-1] += mockrod.mass[-1] / 2.0
+    correct_nu = nu_for_torques * elemental_mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1319,7 +1368,10 @@ def test_constant_nu_for_torques_if_not_input(n_elems):
         youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_nu = nu
+    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
+    elemental_mass[0] += 0.5 * mockrod.mass[0]
+    elemental_mass[-1] += 0.5 * mockrod.mass[-1]
+    correct_nu = nu * elemental_mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1547,7 +1599,9 @@ def test_straight_rod(n_elems):
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(shear_matrix, [0.964 * G * A0, 0.964 * G * A0, E * A0])
+    np.fill_diagonal(
+        shear_matrix, [(27.0 / 28.0) * G * A0, (27.0 / 28.0) * G * A0, E * A0]
+    )
     # Bend/Twist matrix
     bend_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(bend_matrix, [E * I0_1, E * I0_2, G * I0_3])
@@ -1586,8 +1640,19 @@ def test_straight_rod(n_elems):
         mockrod.rest_kappa, np.zeros((3, n_elems - 1)), atol=Tolerance.atol()
     )
     assert_allclose(mockrod.density, density, atol=Tolerance.atol())
-    assert_allclose(mockrod.dissipation_constant_for_forces, nu, atol=Tolerance.atol())
-    assert_allclose(mockrod.dissipation_constant_for_torques, nu, atol=Tolerance.atol())
+    assert_allclose(
+        mockrod.dissipation_constant_for_forces,
+        nu * mockrod.mass,
+        atol=Tolerance.atol(),
+    )
+    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
+    elemental_mass[0] += mockrod.mass[0] / 2.0
+    elemental_mass[-1] += mockrod.mass[-1] / 2.0
+    assert_allclose(
+        mockrod.dissipation_constant_for_torques,
+        nu * elemental_mass,
+        atol=Tolerance.atol(),
+    )
     assert_allclose(
         rest_voronoi_lengths, mockrod.rest_voronoi_lengths, atol=Tolerance.atol()
     )

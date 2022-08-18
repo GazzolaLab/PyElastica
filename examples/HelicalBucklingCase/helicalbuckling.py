@@ -1,18 +1,14 @@
-__doc__ = """Helical buckling validation case, for detailed explanation refer to 
+__doc__ = """Helical buckling validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.1 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     plot_helicalbuckling,
 )
 
 
-class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing):
+class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Damping, Forcing):
     pass
 
 
@@ -32,7 +28,7 @@ base_length = 100.0
 base_radius = 0.35
 base_area = np.pi * base_radius ** 2
 density = 1.0 / (base_area)
-nu = 0.01
+nu = 0.01 / density / base_area
 E = 1e6
 slack = 3
 number_of_rotations = 27
@@ -54,7 +50,7 @@ shearable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -65,6 +61,15 @@ shearable_rod.bend_matrix = bend_matrix
 
 
 helicalbuckling_sim.append(shearable_rod)
+# add damping
+dl = base_length / n_elem
+dt = 1e-3 * dl
+helicalbuckling_sim.dampen(shearable_rod).using(
+    AnalyticalLinearDamper,
+    damping_constant=nu,
+    time_step=dt,
+)
+
 helicalbuckling_sim.constrain(shearable_rod).using(
     HelicalBucklingBC,
     constrained_position_idx=(0, -1),
@@ -80,8 +85,6 @@ shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 
 # timestepper = PEFRL()
 
 final_time = 10500.0
-dl = base_length / n_elem
-dt = 1e-3 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, helicalbuckling_sim, final_time, total_steps)

@@ -1,11 +1,7 @@
-__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018  
+__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
 section 4.1.4 and Appendix G """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_friction_validation,
@@ -13,7 +9,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 
 
 class RollingFrictionInitialVelocitySimulator(
-    BaseSystemCollection, Constraints, Forcing
+    BaseSystemCollection, Constraints, Forcing, Damping
 ):
     pass
 
@@ -38,7 +34,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     base_area = np.pi * base_radius ** 2
     mass = 1.0
     density = mass / (base_length * base_area)
-    nu = 1e-6
+    nu = 1e-6 / 2
     E = 1e9
     # For shear modulus of 2E/3
     poisson_ratio = 0.5
@@ -55,7 +51,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -72,6 +68,14 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
 
     rolling_friction_initial_velocity_sim.append(shearable_rod)
     rolling_friction_initial_velocity_sim.constrain(shearable_rod).using(FreeBC)
+
+    # Add damping
+    dt = 1e-6 * 2
+    rolling_friction_initial_velocity_sim.dampen(shearable_rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
 
     # Add gravitational forces
     gravitational_acc = -9.80665
@@ -101,7 +105,6 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     timestepper = PositionVerlet()
 
     final_time = 2.0
-    dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(

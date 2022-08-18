@@ -1,10 +1,3 @@
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../")
-sys.path.append("../../")
-
-# from collections import defaultdict
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
@@ -47,7 +40,6 @@ total_length = 3.0
 base_radius = 0.25
 base_area = np.pi * base_radius ** 2
 density = 5000
-nu = 0.0
 youngs_modulus = 1e4
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
@@ -76,7 +68,7 @@ butterfly_rod = CosseratRod.straight_rod(
     base_length=total_length,
     base_radius=base_radius,
     density=density,
-    nu=nu,
+    nu=0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus=youngs_modulus,
     shear_modulus=shear_modulus,
     position=positions,

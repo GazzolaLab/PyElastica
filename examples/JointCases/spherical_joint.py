@@ -1,11 +1,7 @@
-__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  
+__doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zhang et. al. Nature Comm.
 methods section."""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
@@ -16,7 +12,7 @@ from examples.JointCases.joint_cases_postprocessing import (
 
 
 class SphericalJointSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -32,7 +28,6 @@ base_length = 0.2
 base_radius = 0.007
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 1e-3
 E = 3e7
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -49,7 +44,7 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -63,7 +58,7 @@ rod2 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -91,37 +86,31 @@ spherical_joint_sim.add_forcing_to(rod2).using(
     normal_direction=normal,
 )
 
-
-# Callback functions
-# Add call backs
-class TestJoints(CallBackBaseClass):
-    """
-    Call back function for testing joints
-    """
-
-    def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
-        self.every = step_skip
-        self.callback_params = callback_params
-
-    def make_callback(self, system, time, current_step: int):
-        if current_step % self.every == 0:
-            self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
-            return
-
+# add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 4e-3
+# dt = 1e-5
+damping_constant = 4e-3
+dt = 5e-5
+spherical_joint_sim.dampen(rod1).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+spherical_joint_sim.dampen(rod2).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
 
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-
 spherical_joint_sim.collect_diagnostics(rod1).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod1
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 spherical_joint_sim.collect_diagnostics(rod2).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod2
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
 
 spherical_joint_sim.finalize()
@@ -130,7 +119,6 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, spherical_joint_sim, final_time, total_steps)

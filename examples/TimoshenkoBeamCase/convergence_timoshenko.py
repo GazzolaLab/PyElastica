@@ -1,11 +1,7 @@
-__doc__ = """Timoshenko beam convergence study, for detailed explanation refer to 
+__doc__ = """Timoshenko beam convergence study, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
     plot_timoshenko,
@@ -14,13 +10,13 @@ from examples.TimoshenkoBeamCase.timoshenko_postprocessing import (
 from examples.convergence_functions import calculate_error_norm, plot_convergence
 
 
-class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing):
+class TimoshenkoBeamSimulator(BaseSystemCollection, Constraints, Forcing, Damping):
     pass
 
 
 # Options
 PLOT_FIGURE = True
-SAVE_FIGURE = False
+SAVE_FIGURE = True
 SAVE_RESULTS = False
 ADD_UNSHEARABLE_ROD = False
 
@@ -38,10 +34,11 @@ def simulate_timoshenko_beam_with(
     base_length = 3.0
     base_radius = 0.25
     density = 5000
-    nu = 0.1
+    nu = 0.1 / 7 / density / (np.pi * base_radius ** 2)
     E = 1e6
     # For shear modulus of 1e4, nu is 99!
     poisson_ratio = 99
+    shear_modulus = E / (poisson_ratio + 1.0)
 
     shearable_rod = CosseratRod.straight_rod(
         n_elem,
@@ -51,12 +48,20 @@ def simulate_timoshenko_beam_with(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
-        poisson_ratio,
+        shear_modulus=shear_modulus,
     )
 
     timoshenko_sim.append(shearable_rod)
+    # add damping
+    dl = base_length / n_elem
+    dt = 0.07 * dl
+    timoshenko_sim.dampen(shearable_rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=nu,
+        time_step=dt,
+    )
     timoshenko_sim.constrain(shearable_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
@@ -68,6 +73,7 @@ def simulate_timoshenko_beam_with(
     if ADD_UNSHEARABLE_ROD:
         # Start into the plane
         unshearable_start = np.array([0.0, -1.0, 0.0])
+        shear_modulus = E / (-0.7 + 1.0)
         unshearable_rod = CosseratRod.straight_rod(
             n_elem,
             unshearable_start,
@@ -76,13 +82,19 @@ def simulate_timoshenko_beam_with(
             base_length,
             base_radius,
             density,
-            nu,
+            0.0,  # internal damping constant, deprecated in v0.3.0
             E,
             # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
-            poisson_ratio=-0.7,
+            shear_modulus=shear_modulus,
         )
 
         timoshenko_sim.append(unshearable_rod)
+        # add damping
+        timoshenko_sim.dampen(unshearable_rod).using(
+            AnalyticalLinearDamper,
+            damping_constant=nu,
+            time_step=dt,
+        )
         timoshenko_sim.constrain(unshearable_rod).using(
             OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
         )

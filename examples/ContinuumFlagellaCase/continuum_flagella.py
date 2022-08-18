@@ -2,10 +2,6 @@ __doc__ = """Continuum flagella example, for detailed explanation refer to Gazzo
 section 5.2.1 """
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 import os
 from elastica import *
 from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
@@ -15,7 +11,7 @@ from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
 )
 
 
-class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class FlagellaSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
     pass
 
 
@@ -33,7 +29,6 @@ def run_flagella(
     base_length = 1.0
     base_radius = 0.025
     density = 1000
-    nu = 5.0
     E = 1e7
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
@@ -46,7 +41,7 @@ def run_flagella(
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -78,6 +73,18 @@ def run_flagella(
     )
     flagella_sim.add_forcing_to(shearable_rod).using(
         SlenderBodyTheory, dynamic_viscosity=dynamic_viscosity
+    )
+
+    # add damping
+    # old damping model (deprecated in v0.3.0) values
+    # damping_constant = 2.5
+    # dt = 2.5e-5 * period
+    damping_constant = 0.625
+    dt = 1e-4 * period
+    flagella_sim.dampen(shearable_rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=damping_constant,
+        time_step=dt,
     )
 
     # Add call backs
@@ -122,7 +129,6 @@ def run_flagella(
     # timestepper = PEFRL()
 
     final_time = (10.0 + 0.01) * period
-    dt = 2.5e-5 * period
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
     integrate(timestepper, flagella_sim, final_time, total_steps)

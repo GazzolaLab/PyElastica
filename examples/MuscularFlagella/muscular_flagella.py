@@ -1,10 +1,6 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
-import sys
 import numpy as np
-
-sys.path.append("../../")
-
 from elastica import *
 from examples.MuscularFlagella.post_processing import (
     plot_video_2D,
@@ -19,7 +15,7 @@ from examples.MuscularFlagella.muscle_forces_flagella import MuscleForces
 
 
 class MuscularFlagellaSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
 ):
     pass
 
@@ -66,7 +62,7 @@ flagella_body = CosseratRod.straight_rod(
     base_length_body,
     radius,
     density_body,
-    nu_body,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -132,7 +128,8 @@ density_muscle = 2.6e-4  # g/mm3
 base_radius_muscle = 0.01  # mm
 base_length_muscle = 0.10756
 E_muscle = 0.3e5  # MPa
-nu_muscle = 1e-6
+shear_modulus_muscle = E_muscle / (poisson_ratio + 1.0)
+nu_muscle = 1e-6 / density_muscle / (np.pi * base_radius_muscle ** 2)
 
 # Start position of the muscle is the 4th element position of body. Lets use the exact location, because this will
 # simplify the connection implementation.
@@ -151,12 +148,19 @@ flagella_muscle = CosseratRod.straight_rod(
     base_length_muscle,
     base_radius_muscle,
     density_muscle,
-    nu_muscle,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E_muscle,
-    shear_modulus=shear_modulus,
+    shear_modulus=shear_modulus_muscle,
 )
 
 muscular_flagella_sim.append(flagella_muscle)
+
+# add damping
+muscular_flagella_sim.dampen(flagella_muscle).using(
+    AnalyticalLinearDamper,
+    damping_constant=nu_muscle,
+    time_step=time_step,
+)
 
 # Connect muscle and body
 body_connection_idx = (4, 5)

@@ -1,5 +1,6 @@
 __doc__ = """ Rod classes and implementation details """
 __all__ = ["CosseratRod"]
+
 import typing
 
 import numpy as np
@@ -21,7 +22,6 @@ from elastica._calculus import (
     _difference,
     _average,
 )
-from elastica.interaction import node_to_element_pos_or_vel
 
 position_difference_kernel = _difference
 position_average = _average
@@ -158,7 +158,6 @@ class CosseratRod(RodBase, KnotTheory):
         damping_forces,
         damping_torques,
     ):
-
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
@@ -229,7 +228,7 @@ class CosseratRod(RodBase, KnotTheory):
         nu: float,
         youngs_modulus: float,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Cosserat rod constructor for straight-rod geometry.
@@ -321,7 +320,7 @@ class CosseratRod(RodBase, KnotTheory):
             nu,
             youngs_modulus,
             *args,
-            **kwargs
+            **kwargs,
         )
 
         return cls(
@@ -514,11 +513,11 @@ class CosseratRod(RodBase, KnotTheory):
         """
 
         sigma_diff = self.sigma - self.rest_sigma
-        shear_internal_torques = _batch_matvec(self.shear_matrix, sigma_diff)
+        shear_internal_forces = _batch_matvec(self.shear_matrix, sigma_diff)
 
         return (
             0.5
-            * (_batch_dot(sigma_diff, shear_internal_torques) * self.rest_lengths).sum()
+            * (_batch_dot(sigma_diff, shear_internal_forces) * self.rest_lengths).sum()
         )
 
 
@@ -728,30 +727,19 @@ def _compute_damping_forces(
     damping_forces,
     velocity_collection,
     dissipation_constant_for_forces,
-    lengths,
-    ghost_elems_idx,
 ):
     """
-    Update <damping force> given <velocity and length>
+    Update <damping force> given <velocity>
     """
 
-    # Internal damping foces.
-    elemental_velocities = node_to_element_pos_or_vel(velocity_collection)
-
-    blocksize = elemental_velocities.shape[1]
-    elemental_damping_forces = np.zeros((3, blocksize))
+    # Internal damping forces.
+    blocksize = velocity_collection.shape[1]
 
     for i in range(3):
         for k in range(blocksize):
-            elemental_damping_forces[i, k] = (
-                dissipation_constant_for_forces[k]
-                * elemental_velocities[i, k]
-                * lengths[k]
+            damping_forces[i, k] = (
+                dissipation_constant_for_forces[k] * velocity_collection[i, k]
             )
-
-    damping_forces[:] = quadrature_kernel_for_block_structure(
-        elemental_damping_forces, ghost_elems_idx
-    )
 
 
 @numba.njit(cache=True)
@@ -818,8 +806,6 @@ def _compute_internal_forces(
         damping_forces,
         velocity_collection,
         dissipation_constant_for_forces,
-        lengths,
-        ghost_elems_idx,
     )
 
     internal_forces[:] = (
@@ -830,18 +816,16 @@ def _compute_internal_forces(
 
 @numba.njit(cache=True)
 def _compute_damping_torques(
-    damping_torques, omega_collection, dissipation_constant_for_torques, lengths
+    damping_torques, omega_collection, dissipation_constant_for_torques
 ):
     """
-    Update <damping torque> given <angular velocity and length>.
+    Update <damping torque> given <angular velocity>.
     """
-    blocksize = damping_torques.shape[1]
+    blocksize = omega_collection.shape[1]
     for i in range(3):
         for k in range(blocksize):
             damping_torques[i, k] = (
-                dissipation_constant_for_torques[k]
-                * omega_collection[i, k]
-                * lengths[k]
+                dissipation_constant_for_torques[k] * omega_collection[i, k]
             )
 
 
@@ -925,7 +909,7 @@ def _compute_internal_torques(
     unsteady_dilatation = J_omega_upon_e * dilatation_rate / dilatation
 
     _compute_damping_torques(
-        damping_torques, omega_collection, dissipation_constant_for_torques, lengths
+        damping_torques, omega_collection, dissipation_constant_for_torques
     )
 
     blocksize = internal_torques.shape[1]

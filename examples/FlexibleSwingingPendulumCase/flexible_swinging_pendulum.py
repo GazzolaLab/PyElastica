@@ -1,13 +1,6 @@
 """ Flexible swinging pendulum test-case
     isort:skip_file
 """
-# FIXME without appending sys.path make it more generic
-import sys
-
-sys.path.append("../../")  # isort:skip
-
-# from collections import defaultdict
-
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -39,7 +32,6 @@ base_length = 1.0
 base_radius = 0.005
 base_area = np.pi * base_radius ** 2
 density = 1100.0
-nu = 0.0
 youngs_modulus = 5e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
@@ -52,7 +44,7 @@ pendulum_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus,
     shear_modulus=youngs_modulus / (poisson_ratio + 1.0),
 )
@@ -145,7 +137,7 @@ if PLOT_VIDEO:
         fps=60,
         step=1,
         *args,
-        **kwargs
+        **kwargs,
     ):  # (time step, x/y/z, node)
         import matplotlib.animation as manimation
 

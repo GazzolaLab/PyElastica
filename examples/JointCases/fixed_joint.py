@@ -1,10 +1,6 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../")
 from elastica import *
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
@@ -15,7 +11,7 @@ from examples.JointCases.joint_cases_postprocessing import (
 
 
 class FixedJointSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -31,7 +27,6 @@ base_length = 0.2
 base_radius = 0.007
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 1e-1
 E = 3e7
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -48,7 +43,7 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -62,7 +57,7 @@ rod2 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -76,7 +71,7 @@ fixed_joint_sim.constrain(rod1).using(
 # Connect rod 1 and rod 2
 fixed_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
-).using(FixedJoint, k=1e5, nu=0, kt=5e3)
+).using(FixedJoint, k=1e5, nu=0.0, kt=1e1, nut=0.0)
 
 # Add forces to rod2
 fixed_joint_sim.add_forcing_to(rod2).using(
@@ -88,37 +83,31 @@ fixed_joint_sim.add_forcing_to(rod2).using(
     normal_direction=normal,
 )
 
-
-# Callback functions
-# Add call backs
-class TestJoints(CallBackBaseClass):
-    """
-    Call back function for testing joints
-    """
-
-    def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
-        self.every = step_skip
-        self.callback_params = callback_params
-
-    def make_callback(self, system, time, current_step: int):
-        if current_step % self.every == 0:
-            self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
-            return
-
+# add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 0.4
+# dt = 1e-5
+damping_constant = 0.4
+dt = 1e-4
+fixed_joint_sim.dampen(rod1).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+fixed_joint_sim.dampen(rod2).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
 
 pp_list_rod1 = defaultdict(list)
 pp_list_rod2 = defaultdict(list)
 
-
 fixed_joint_sim.collect_diagnostics(rod1).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod1
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 fixed_joint_sim.collect_diagnostics(rod2).using(
-    TestJoints, step_skip=1000, callback_params=pp_list_rod2
+    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
 
 fixed_joint_sim.finalize()
@@ -127,14 +116,13 @@ timestepper = PositionVerlet()
 
 final_time = 10
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, fixed_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False
-PLOT_VIDEO = False
+PLOT_VIDEO = True
 
 # plotting results
 if PLOT_FIGURE:

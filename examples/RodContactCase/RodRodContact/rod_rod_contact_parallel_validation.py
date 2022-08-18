@@ -1,7 +1,4 @@
 import numpy as np
-import sys
-
-sys.path.append("../../../")
 from elastica import *
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
@@ -10,7 +7,7 @@ from examples.RodContactCase.post_processing import (
 
 
 class ParallelRodRodContact(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -18,7 +15,9 @@ class ParallelRodRodContact(
 parallel_rod_rod_contact_sim = ParallelRodRodContact()
 
 # Simulation parameters
-dt = 5e-5
+# old damping model (deprecated in v0.3.0) values
+# dt = 5e-5
+dt = 5e-4
 final_time = 10
 total_steps = int(final_time / dt)
 time_step = np.float64(final_time / total_steps)
@@ -56,7 +55,7 @@ rod_one = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -78,7 +77,7 @@ rod_two = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -88,6 +87,21 @@ parallel_rod_rod_contact_sim.append(rod_two)
 # Contact between two rods
 parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
     ExternalContact, k=1e3, nu=0.001
+)
+
+# add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 2e-3
+damping_constant = 2e-4
+parallel_rod_rod_contact_sim.dampen(rod_one).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+parallel_rod_rod_contact_sim.dampen(rod_two).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
 )
 
 # Add call backs

@@ -1,17 +1,12 @@
 __doc__ = """Contains SurfaceJointSideBySide class which connects two parallel rods ."""
 import numpy as np
-import numba
 from numba import njit
 from elastica.joint import FreeJoint
 
 # Join the two rods
 from elastica._linalg import (
     _batch_norm,
-    _batch_cross,
     _batch_matvec,
-    _batch_dot,
-    _batch_matmul,
-    _batch_matrix_transpose,
 )
 
 
@@ -203,28 +198,8 @@ class SurfaceJointSideBySide(FreeJoint):
             rod_two_velocity_collection[:, index_two]
             + rod_two_velocity_collection[:, index_two + 1]
         )
-
         relative_velocity = rod_two_element_velocity - rod_one_element_velocity
-
-        distance = np.linalg.norm(distance_vector)
-
-        # normalized_distance_vector = np.zeros((relative_velocity.shape))
-        #
-        # idx_nonzero_distance = np.where(distance >= 1e-12)[0]
-
-        if distance >= 1e-12:
-            normalized_distance_vector = distance_vector / distance
-        else:
-            normalized_distance_vector = np.zeros(
-                3,
-            )
-
-        normal_relative_velocity_vector = (
-            np.dot(relative_velocity, normalized_distance_vector)
-            * normalized_distance_vector
-        )
-
-        damping_force = -nu * normal_relative_velocity_vector
+        damping_force = nu * relative_velocity
 
         # Compute the total force
         total_force = spring_force + damping_force

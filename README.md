@@ -73,7 +73,7 @@ _Names arranged alphabetically_
 - Noel Naughton
 - [Seung Hyun Kim](https://github.com/skim0119)
 - Tejaswin Parthasarathy (Teja)
-- Yashraj Bhosale (Yash)
+- [Yashraj Bhosale](https://github.com/bhosale2)
 
 [//]: # (Collection of URLs.)
 

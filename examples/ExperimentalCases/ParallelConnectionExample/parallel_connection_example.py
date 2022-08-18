@@ -1,10 +1,6 @@
 __doc__ = """Parallel connection example"""
 
 import numpy as np
-import sys
-
-# FIXME without appending sys.path make it more generic
-sys.path.append("../../../")
 from elastica import *
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     get_connection_vector_straight_straight_rod,
@@ -20,7 +16,7 @@ from examples.JointCases.joint_cases_postprocessing import (
 
 
 class ParallelConnection(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks
+    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
 ):
     pass
 
@@ -36,7 +32,6 @@ base_length = 0.2
 base_radius = 0.007
 base_area = np.pi * base_radius ** 2
 density = 1750
-nu = 1e-2
 E = 3e4
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -53,7 +48,7 @@ rod_one = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -67,7 +62,7 @@ rod_two = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    nu,
+    0.0,  # internal damping constant, deprecated in v0.3.0
     E,
     shear_modulus=shear_modulus,
 )
@@ -133,6 +128,24 @@ for i in range(n_elem):
     )  # k=kg/s2 nu=kg/s 1e-2
 
 
+# add damping
+# old damping model (deprecated in v0.3.0) values
+# damping_constant = 4e-2
+# dt = 1e-5
+damping_constant = 4e-3
+dt = 1e-3
+parallel_connection_sim.dampen(rod_one).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+parallel_connection_sim.dampen(rod_two).using(
+    AnalyticalLinearDamper,
+    damping_constant=damping_constant,
+    time_step=dt,
+)
+
+
 class ParallelConnecitonCallback(CallBackBaseClass):
     """
     Call back function for parallel connection
@@ -157,19 +170,18 @@ pp_list_rod2 = defaultdict(list)
 
 
 parallel_connection_sim.collect_diagnostics(rod_one).using(
-    ParallelConnecitonCallback, step_skip=1000, callback_params=pp_list_rod1
+    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod1
 )
 parallel_connection_sim.collect_diagnostics(rod_two).using(
-    ParallelConnecitonCallback, step_skip=1000, callback_params=pp_list_rod2
+    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod2
 )
 
 
 parallel_connection_sim.finalize()
 timestepper = PositionVerlet()
 
-final_time = 5.0
+final_time = 20.0
 dl = base_length / n_elem
-dt = 1e-5
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 integrate(timestepper, parallel_connection_sim, final_time, total_steps)

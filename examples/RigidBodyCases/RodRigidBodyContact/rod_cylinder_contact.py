@@ -1,14 +1,11 @@
 import numpy as np
-import sys
-
-sys.path.append("../../../")
 from elastica import *
 from post_processing import plot_velocity, plot_video_with_surface
 
 
 def rod_cylinder_contact_case(inclination_angle=0.0):
     class RodCylinderParallelContact(
-        BaseSystemCollection, Constraints, Connections, CallBacks, Forcing
+        BaseSystemCollection, Constraints, Connections, CallBacks, Forcing, Damping
     ):
         pass
 
@@ -16,7 +13,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
     # time step etc
     final_time = 10.0
-    time_step = 1e-4
+    time_step = 5e-4
     total_steps = int(final_time / time_step) + 1
     rendering_fps = 30  # 20 * 1e1
     step_skip = int(1.0 / (rendering_fps * time_step))
@@ -28,7 +25,6 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     poisson_ratio = 0.5
     shear_modulus = E / (2 * (1 + poisson_ratio))
     n_elem = 50
-    nu = 0.5
     start = np.zeros((3,))
     direction = np.array([np.sin(inclination_angle), 0.0, np.cos(inclination_angle)])
     normal = np.array([0.0, 1.0, 0.0])
@@ -41,7 +37,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
         base_length,
         base_radius,
         density,
-        nu,
+        0.0,  # internal damping constant, deprecated in v0.3.0
         E,
         shear_modulus=shear_modulus,
     )
@@ -71,6 +67,14 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
         ExternalContact,
         k=5e4,
         nu=0.1,
+    )
+
+    # add damping
+    damping_constant = 1e-2
+    rod_cylinder_parallel_contact_simulator.dampen(rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=damping_constant,
+        time_step=time_step,
     )
 
     # Add callbacks

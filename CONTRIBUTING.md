@@ -33,15 +33,38 @@ The following is a set of guidelines for contributing to PyElastica. These are m
 
 ## Before I get started
 
-### Installation and packages
+### Setup development environment
+
+Below are steps of how to setup development environment. We mainly use `poetry` to manage
+the project, although most of the important commands will be provided in `Makefile`.
+
+1. Clone!
 
 First **create the fork repository and clone** to your local machine.
-We provide [requirements.txt](requirements.txt) to include all the dependencies.
+
+2. Virtual python workspace: `conda`, `pyenv`, or `venv`.
+
+We recommend using python version above 3.8.0.
+
 ```bash
-$ pip install -r requirements.txt
+conda create --name pyelastica-dev
+conda activate pyelastica-dev
+conda install python==3.8
 ```
 
-> **Note:** Make sure that **PyElastica** is not installed using pip.
+3. Setup [`poetry`](https://python-poetry.org) and `dependencies`!
+
+```bash
+make poetry-download
+make install
+make pre-commit-install
+```
+
+If you are planning to contribute on documentation, extra dependencies can be installed
+using `poetry install -E docs`. The detail instruction is included
+[here](https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md).
+
+4. Now your working environment is set!
 
 ### Project workflow
 
@@ -85,7 +108,7 @@ This section guides you through submitting an enhancement suggestion, including 
 	* If relevant, what **version and OS** was used.
 * Include a description of the **current behavior** and **explain expected behavior**.
 * Explain **why this enhancement would be useful**.
-	
+
 ### Your first code contribution
 
 If you are unsure regarding how to start contributing to PyElastica, you can look through `good first issue` and `help wanted` labels.
@@ -97,7 +120,7 @@ Also, you might find `TODO` or `FIXME` marks in various places in the code with 
 Once you find the issue that you are interested in, please leave a comment that you would like to resolve the issue.
 If you leave some questions in the comment, we will provide more detailed descriptions.
 
-You are also welcomed to help us pushing this project further. 
+You are also welcomed to help us pushing this project further.
 Please don't hesitate improving [documentation](https://github.com/GazzolaLab/PyElastica/tree/master/docs) or code-coverage.
 
 ### Side projects
@@ -111,15 +134,22 @@ If you are interested in hearing more, please contact one of our the maintainer.
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow the [styleguides](#styleguides)
-2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass. 
+2. If you add a new dependency, add it to the `pyproject.toml` and then run the following line from the top directory:
 
-	In order to run pytest, run the following line from the top directory:
+    `
+   make install_with_new_dependency
+   `
 
-	`
-	python3 -m pytest
-	`
+	This will update `poetry.lock` to ensure version control. Don't forget to commit `.lock` and `.toml` files for Poetry in this case!
+3. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
 
-3. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
+    In order to run pytest, run the following line from the top directory:
+
+    `
+    make test
+    `
+
+4. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
 
 The reviewer(s) may ask you to complete additional tests or changes before your pull request can be accepted.
 
@@ -139,19 +169,11 @@ Ask any question about **how to use PyElastica and detail implementation** in th
 
 We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/project/black/) for python style.
 
-You can install flake8 using pip:
-
-`pip install flake8==3.8.3`
-
-You can install black using pip:
-
-`pip install black`
-
 In order to format the code:
 
-`make all`
+`make formatting`
 
-> **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected. 
+> **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected.
 
 ### Documentation styleguide
 
