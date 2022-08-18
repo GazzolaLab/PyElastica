@@ -57,7 +57,7 @@ matplotlib = {version = "^3.3.2", optional = true, extras = ["examples"]}
 [tool.poetry.dev-dependencies]
 black = "21.12b0"
 pytest = "^7.1.1"
-coverage = "^6.3.3"
+coverage = "^6.4.4"
 pre-commit = "^2.19.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
