@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       # Ref: https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.python-version }}
       # You can test your matrix by printing the current Python version
@@ -78,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Poetry

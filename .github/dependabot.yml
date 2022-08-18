@@ -5,13 +5,10 @@
 
 version: 2
 updates:
-  - package-ecosystem: "github-actions" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 99
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
     open-pull-requests-limit: 99
+    target-branch: "update-0.3.1"
+    versioning-strategy: lockfile-only
