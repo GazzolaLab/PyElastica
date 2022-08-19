@@ -735,7 +735,7 @@ class HelicalBucklingBC(ConstraintBase):
             rod.director_collection[..., 0] = self.final_start_directors
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod: SystemType, time: float) -> None:
+    def constrain_rates(self, rod: RodType, time: float) -> None:
         if time > self.twisting_time:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0
