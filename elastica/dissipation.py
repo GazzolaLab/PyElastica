@@ -56,14 +56,14 @@ class DamperBase(ABC):
         return self._system
 
     @abstractmethod
-    def dampen_rates(self, rod: SystemType, time: float):
+    def dampen_rates(self, system: SystemType, time: float):
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
 
         Parameters
         ----------
-        rod : Union[Type[RodBase], Type[RigidBodyBase]]
+        system : Union[Type[RodBase], Type[RigidBodyBase]]
             Rod or rigid-body object.
         time : float
             The time of simulation.
@@ -144,13 +144,13 @@ class AnalyticalLinearDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, rod: SystemType, time: float):
-        rod.velocity_collection[:] = (
-            rod.velocity_collection * self.translational_damping_coefficient
+    def dampen_rates(self, system: SystemType, time: float):
+        system.velocity_collection[:] = (
+            system.velocity_collection * self.translational_damping_coefficient
         )
 
-        rod.omega_collection[:] = rod.omega_collection * np.power(
-            self.rotational_damping_coefficient, rod.dilatation
+        system.omega_collection[:] = system.omega_collection * np.power(
+            self.rotational_damping_coefficient, system.dilatation
         )
 
 
