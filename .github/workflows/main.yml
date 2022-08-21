@@ -27,8 +27,8 @@ jobs:
             path: ~/.cache/pip
           - os: macos-latest
             path: ~/Library/Caches/pip
-#          - os: windows-latest
-#            path: ~\AppData\Local\pip\Cache
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
