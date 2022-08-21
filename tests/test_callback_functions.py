@@ -317,23 +317,28 @@ class TestExportCallBackClass:
 
             saved_path_name = callback.get_last_saved_path()
             assert os.path.exists(saved_path_name), "File does not exist"
-            list_test = np.load(saved_path_name)
-
-            assert_allclose(
-                list_test["time"], list_correct["time"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["step"], list_correct["step"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["position"], list_correct["position"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["velocity"], list_correct["velocity"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["directors"], list_correct["directors"], atol=Tolerance.atol()
-            )
+            with np.load(saved_path_name) as list_test:
+                assert_allclose(
+                    list_test["time"], list_correct["time"], atol=Tolerance.atol()
+                )
+                assert_allclose(
+                    list_test["step"], list_correct["step"], atol=Tolerance.atol()
+                )
+                assert_allclose(
+                    list_test["position"],
+                    list_correct["position"],
+                    atol=Tolerance.atol(),
+                )
+                assert_allclose(
+                    list_test["velocity"],
+                    list_correct["velocity"],
+                    atol=Tolerance.atol(),
+                )
+                assert_allclose(
+                    list_test["directors"],
+                    list_correct["directors"],
+                    atol=Tolerance.atol(),
+                )
 
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
     def test_export_call_back_class_pickle_option(self, n_elems):
@@ -371,21 +376,26 @@ class TestExportCallBackClass:
 
             saved_path_name = callback.get_last_saved_path()
             assert os.path.exists(saved_path_name), "File does not exist"
-            file = open(saved_path_name, "rb")
-            list_test = pickle.load(file)
-
-            assert_allclose(
-                list_test["time"], list_correct["time"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["step"], list_correct["step"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["position"], list_correct["position"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["velocity"], list_correct["velocity"], atol=Tolerance.atol()
-            )
-            assert_allclose(
-                list_test["directors"], list_correct["directors"], atol=Tolerance.atol()
-            )
+            with open(saved_path_name, "rb") as file:
+                list_test = pickle.load(file)
+                assert_allclose(
+                    list_test["time"], list_correct["time"], atol=Tolerance.atol()
+                )
+                assert_allclose(
+                    list_test["step"], list_correct["step"], atol=Tolerance.atol()
+                )
+                assert_allclose(
+                    list_test["position"],
+                    list_correct["position"],
+                    atol=Tolerance.atol(),
+                )
+                assert_allclose(
+                    list_test["velocity"],
+                    list_correct["velocity"],
+                    atol=Tolerance.atol(),
+                )
+                assert_allclose(
+                    list_test["directors"],
+                    list_correct["directors"],
+                    atol=Tolerance.atol(),
+                )
