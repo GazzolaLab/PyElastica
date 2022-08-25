@@ -64,7 +64,7 @@ pytest-cov = "^3.0.0"
 flake8 = "^3.8"
 codecov = "^2.1"
 click = "8.0.0"
-autoflake8 = "^0.3"
+autoflake8 = "^0.4"
 
 [tool.poetry.extras]
 docs = [

@@ -1,6 +1,7 @@
 #* Variables
 PYTHON := python3
 PYTHONPATH := `pwd`
+AUTOFLAKE8_ARGS := -r --exclude '__init__.py' --keep-pass-after-docstring
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -49,8 +50,13 @@ flake8:
 .PHONY: autoflake8-check
 autoflake8-check:
 	poetry run autoflake8 --version
-	poetry run autoflake8 -r --exclude '__init__.py' elastica tests examples
-	poetry run autoflake8 --check -r --exclude '__init__.py' elastica tests examples
+	poetry run autoflake8 $(AUTOFLAKE8_ARGS) elastica tests examples
+	poetry run autoflake8 --check $(AUTOFLAKE8_ARGS) elastica tests examples
+
+.PHONY: autoflake8-format
+autoflake8-format:
+	poetry run autoflake8 --version
+	poetry run autoflake8 --in-place $(AUTOFLAKE8_ARGS) elastica tests examples
 
 .PHONY: format-codestyle
 format-codestyle: black flake8
