@@ -1,7 +1,6 @@
 __doc__ = """ Rod classes and implementation details """
 __all__ = ["CosseratRod"]
 
-import typing
 
 import numpy as np
 import functools

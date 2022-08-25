@@ -61,9 +61,10 @@ coverage = "^6.3.3"
 pre-commit = "^2.19.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
-flake8 = "3.8.3"
+flake8 = "^3.8"
 codecov = "^2.1"
 click = "8.0.0"
+autoflake8 = "^0.4"
 
 [tool.poetry.extras]
 docs = [

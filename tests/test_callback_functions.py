@@ -1,10 +1,10 @@
 __doc__ = """ Call back functions for rod test module """
-import os, sys
+import os
 
 # System imports
 import logging
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import assert_allclose
 from elastica.callback_functions import CallBackBaseClass, MyCallBack, ExportCallBack
 from elastica.utils import Tolerance
 import tempfile

@@ -1,6 +1,5 @@
 __doc__ = """ Test modules for callback """
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
 
 from elastica.modules import CallBacks

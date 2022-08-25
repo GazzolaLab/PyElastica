@@ -15,7 +15,6 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
-import numba
 from numba import njit
 
 from elastica._linalg import _batch_matvec, _batch_matrix_transpose

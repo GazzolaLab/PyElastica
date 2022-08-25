@@ -8,7 +8,6 @@ __all__ = [
     "_DynamicState",
 ]
 import numpy as np
-import numba
 from numba import njit
 from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
