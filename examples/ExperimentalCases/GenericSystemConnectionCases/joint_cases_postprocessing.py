@@ -1,7 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-from mpl_toolkits import mplot3d
 from scipy.spatial.transform import Rotation
 
 from elastica.rigidbody import Cylinder

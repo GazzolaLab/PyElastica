@@ -1,12 +1,8 @@
 __doc__ = "Analytically integrable systems, used primarily for testing time-steppers of Elastica Numba implementation"
 
 import numpy as np
-import numba
-from elastica._rotations import _get_rotation_matrix, _rotate
-from elastica._linalg import _batch_matmul
+from elastica._rotations import _rotate
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.rod.data_structures import _bootstrap_from_data
-from elastica.rod.data_structures import _KinematicState, _DynamicState
 
 
 class BaseStatefulSystem:

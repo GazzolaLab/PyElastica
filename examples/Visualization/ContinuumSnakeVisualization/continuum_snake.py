@@ -5,7 +5,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.external_forces import GravityForces, MuscleTorques
 from elastica.interaction import AnisotropicFrictionalPlane
 from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
+from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 
 

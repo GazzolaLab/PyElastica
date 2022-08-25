@@ -187,7 +187,6 @@ class TestConnectionsMixin:
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
             self.n_elems = 3  # arbitrary number
-            pass
 
         # Connections assume that this promise is met
         def __len__(self):

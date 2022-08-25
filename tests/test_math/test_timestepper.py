@@ -396,7 +396,6 @@ class TestSteppersAgainstRodLikeSystems:
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
         from elastica.systems.analytical import (
             make_simple_system_with_positions_directors,
-            SimpleSystemWithPositionsDirectors,
         )
 
         random_start_position = np.random.randn(3, 1)

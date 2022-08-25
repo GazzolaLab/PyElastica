@@ -15,7 +15,6 @@ from elastica._linalg import _batch_matvec
 from elastica.typing import SystemType, RodType
 from elastica.utils import _bspline
 
-import numba
 from numba import njit
 from elastica._linalg import _batch_product_i_k_to_ik
 
@@ -52,9 +51,7 @@ class NoForces:
         Returns
         -------
 
-
         """
-
         pass
 
     def apply_torques(self, system: SystemType, time: np.float64 = 0.0):

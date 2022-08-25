@@ -4,11 +4,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica.rod.data_structures import _bootstrap_from_data
-from elastica.rod.data_structures import (
-    _KinematicState,
-    _DynamicState,
-)
 from elastica.utils import MaxDimension
 
 from test_rods import MockTestRod
