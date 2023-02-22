@@ -2,7 +2,6 @@ __doc__ = (
     """These functions are used to synchronize periodic boundaries for ring rods.  """
 )
 
-import numba
 from numba import njit
 from elastica.boundary_conditions import ConstraintBase
 
