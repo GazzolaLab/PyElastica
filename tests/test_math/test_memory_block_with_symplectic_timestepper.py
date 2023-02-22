@@ -18,6 +18,7 @@ class MockRod:
         self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
         self.n_nodes = self.n_elems + 1
         self.n_voronoi = self.n_elems - 1
+        self.ring_rod_flag = False
 
         # Things that are scalar mapped on nodes
         self.mass = np.random.randn(self.n_nodes)
@@ -83,7 +84,7 @@ class BlockStructureWithSymplecticStepper(
     MemoryBlockCosseratRod, _RodSymplecticStepperMixin
 ):
     def __init__(self, systems):
-        MemoryBlockCosseratRod.__init__(self, systems)
+        MemoryBlockCosseratRod.__init__(self, systems, [i for i in range(len(systems))])
         _RodSymplecticStepperMixin.__init__(self)
 
     def update_accelerations(self, time):

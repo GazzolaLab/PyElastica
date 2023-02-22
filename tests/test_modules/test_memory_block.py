@@ -13,6 +13,7 @@ class BaseRodForTesting(RodBase):
         self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
         self.n_nodes = self.n_elems + 1
         self.n_voronoi = self.n_elems - 1
+        self.ring_rod_flag = False
 
         # Things that are scalar mapped on nodes
         self.mass = np.random.randn(self.n_nodes)
