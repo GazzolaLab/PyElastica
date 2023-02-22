@@ -31,6 +31,40 @@ def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
+def _compute_sigma_kappa_for_blockstructure(memory_block):
+    """
+    This function is a wrapper to call functions which computes shear stretch, strain and bending twist and strain.
+
+    Parameters
+    ----------
+    memory_block : object
+
+    Returns
+    -------
+
+    """
+    _compute_shear_stretch_strains(
+        memory_block.position_collection,
+        memory_block.volume,
+        memory_block.lengths,
+        memory_block.tangents,
+        memory_block.radius,
+        memory_block.rest_lengths,
+        memory_block.rest_voronoi_lengths,
+        memory_block.dilatation,
+        memory_block.voronoi_dilatation,
+        memory_block.director_collection,
+        memory_block.sigma,
+    )
+
+    # Compute bending twist strains for the block
+    _compute_bending_twist_strains(
+        memory_block.director_collection,
+        memory_block.rest_voronoi_lengths,
+        memory_block.kappa,
+    )
+
+
 class CosseratRod(RodBase, KnotTheory):
     """
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
@@ -156,6 +190,9 @@ class CosseratRod(RodBase, KnotTheory):
         internal_couple,
         damping_forces,
         damping_torques,
+        ring_rod_flag,
+        args,
+        kwargs,
     ):
         self.n_elems = n_elements
         self.position_collection = position
@@ -193,6 +230,7 @@ class CosseratRod(RodBase, KnotTheory):
         self.internal_couple = internal_couple
         self.damping_forces = damping_forces
         self.damping_torques = damping_torques
+        self.ring_rod_flag = ring_rod_flag
 
         # Compute shear stretch and strains.
         _compute_shear_stretch_strains(
@@ -321,6 +359,8 @@ class CosseratRod(RodBase, KnotTheory):
             *args,
             **kwargs,
         )
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = False
 
         return cls(
             n_elements,
@@ -359,6 +399,9 @@ class CosseratRod(RodBase, KnotTheory):
             internal_couple,
             damping_forces,
             damping_torques,
+            ring_rod_flag,
+            args,
+            kwargs,
         )
 
     def compute_internal_forces_and_torques(self, time):

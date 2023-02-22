@@ -17,6 +17,7 @@ from elastica.utils import MaxDimension
 class MockTestRod:
     def __init__(self):
         self.n_elem = 32
+        self.ring_rod_flag = False
         self.position_collection = np.random.randn(
             MaxDimension.value(), self.n_elem + 1
         )
@@ -29,6 +30,20 @@ class MockTestRod:
         self.omega_collection = np.random.randn(MaxDimension.value(), self.n_elem)
         self.mass = np.abs(np.random.randn(self.n_elem + 1))
         self.external_forces = np.zeros(self.n_elem + 1)
+
+
+class MockTestRingRod:
+    def __init__(self):
+        self.n_elem = 32
+        self.ring_rod_flag = True
+        self.position_collection = np.random.randn(MaxDimension.value(), self.n_elem)
+        self.director_collection = np.random.randn(
+            MaxDimension.value(), MaxDimension.value(), self.n_elem
+        )
+        self.velocity_collection = np.random.randn(MaxDimension.value(), self.n_elem)
+        self.omega_collection = np.random.randn(MaxDimension.value(), self.n_elem)
+        self.mass = np.abs(np.random.randn(self.n_elem))
+        self.external_forces = np.zeros(self.n_elem)
 
 
 # Choosing 15 and 31 as nelems to reflect common expected
