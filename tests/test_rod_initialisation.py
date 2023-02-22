@@ -51,6 +51,9 @@ class MockRodForTest:
         internal_couple,
         damping_forces,
         damping_torques,
+        ring_rod_flag,
+        *args,
+        **kwargs,
     ):
         self.n_elems = n_elements
         self.position_collection = position
@@ -88,6 +91,7 @@ class MockRodForTest:
         self.internal_couple = internal_couple
         self.damping_forces = damping_forces
         self.damping_torques = damping_torques
+        self.ring_rod_flag = ring_rod_flag
 
     @classmethod
     def straight_rod(
@@ -158,6 +162,9 @@ class MockRodForTest:
             **kwargs,
         )
 
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = False
+
         return cls(
             n_elements,
             position,
@@ -195,6 +202,9 @@ class MockRodForTest:
             internal_couple,
             damping_forces,
             damping_torques,
+            ring_rod_flag,
+            args,
+            kwargs,
         )
 
 
