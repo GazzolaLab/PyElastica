@@ -13,7 +13,7 @@ from elastica._linalg import (
     _batch_matvec,
 )
 from elastica._rotations import _inv_rotate
-from elastica.rod.factory_function import allocate
+from elastica.rod.factory_function import allocate, allocate_ring_rod
 from elastica.rod.knot_theory import KnotTheory
 from elastica._calculus import (
     quadrature_kernel_for_block_structure,
@@ -376,6 +376,158 @@ class CosseratRod(RodBase, KnotTheory):
             shear_matrix,
             bend_matrix,
             density,
+            volume,
+            mass,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
+            internal_forces,
+            internal_torques,
+            external_forces,
+            external_torques,
+            lengths,
+            rest_lengths,
+            tangents,
+            dilatation,
+            dilatation_rate,
+            voronoi_dilatation,
+            rest_voronoi_lengths,
+            sigma,
+            kappa,
+            rest_sigma,
+            rest_kappa,
+            internal_stress,
+            internal_couple,
+            damping_forces,
+            damping_torques,
+            ring_rod_flag,
+            args,
+            kwargs,
+        )
+
+    @classmethod
+    def ring_rod(
+        cls,
+        n_elements: int,
+        ring_center_position: np.ndarray,
+        direction: np.ndarray,
+        normal: np.ndarray,
+        base_length: float,
+        base_radius: float,
+        density: float,
+        nu: float,
+        youngs_modulus: float,
+        *args,
+        **kwargs,
+    ):
+        """
+        Cosserat rod constructor for straight-rod geometry.
+
+
+        Notes
+        -----
+        Since we expect the Cosserat Rod to simulate soft rod, Poisson's ratio is set to 0.5 by default.
+        It is possible to give additional argument "shear_modulus" or "poisson_ratio" to specify extra modulus.
+
+
+        Parameters
+        ----------
+        n_elements : int
+            Number of element. Must be greater than 3. Generarally recommended to start with 40-50, and adjust the resolution.
+        ring_center_position : NDArray[3, float]
+            Center coordinate for ring rod in 3D
+        direction : NDArray[3, float]
+            Direction of the rod in 3D
+        normal : NDArray[3, float]
+            Normal vector of the rod in 3D
+        base_length : float
+            Total length of the rod
+        base_radius : float
+            Uniform radius of the rod
+        density : float
+            Density of the rod
+        nu : float
+            Damping coefficient for Rayleigh damping
+        youngs_modulus : float
+            Young's modulus
+        *args : tuple
+            Additional arguments should be passed as keyward arguments.
+            (e.g. shear_modulus, poisson_ratio)
+        **kwargs : dict, optional
+            The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
+
+        Returns
+        -------
+        CosseratRod
+
+        """
+
+        (
+            n_elements,
+            position,
+            velocities,
+            omegas,
+            accelerations,
+            angular_accelerations,
+            directors,
+            radius,
+            mass_second_moment_of_inertia,
+            inv_mass_second_moment_of_inertia,
+            shear_matrix,
+            bend_matrix,
+            density_array,
+            volume,
+            mass,
+            dissipation_constant_for_forces,
+            dissipation_constant_for_torques,
+            internal_forces,
+            internal_torques,
+            external_forces,
+            external_torques,
+            lengths,
+            rest_lengths,
+            tangents,
+            dilatation,
+            dilatation_rate,
+            voronoi_dilatation,
+            rest_voronoi_lengths,
+            sigma,
+            kappa,
+            rest_sigma,
+            rest_kappa,
+            internal_stress,
+            internal_couple,
+            damping_forces,
+            damping_torques,
+        ) = allocate_ring_rod(
+            n_elements,
+            ring_center_position,
+            direction,
+            normal,
+            base_length,
+            base_radius,
+            density,
+            nu,
+            youngs_modulus,
+            *args,
+            **kwargs,
+        )
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = True
+
+        return cls(
+            n_elements,
+            position,
+            velocities,
+            omegas,
+            accelerations,
+            angular_accelerations,
+            directors,
+            radius,
+            mass_second_moment_of_inertia,
+            inv_mass_second_moment_of_inertia,
+            shear_matrix,
+            bend_matrix,
+            density_array,
             volume,
             mass,
             dissipation_constant_for_forces,
