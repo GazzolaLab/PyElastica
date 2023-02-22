@@ -36,7 +36,9 @@ We ask that any publications which use Elastica cite as following:
                   Zhi Dou and
                   Chia-Hsien (Cathy) Shih and
                   Mattia Gazzola},
-  title        = {PyElastica},
+  title        = {{PyElastica: Open-source software for the 
+                   simulation of assemblies of slender, one-
+                   dimensional structures using Cosserat Rod theory}},
   month        = feb,
   year         = 2023,
   publisher    = {Zenodo},
