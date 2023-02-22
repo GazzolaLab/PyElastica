@@ -35,8 +35,6 @@ class BaseClass:
         self.density = 1
         self.nu = nu
         self.E = 1
-        self.poisson_ratio = 0.5
-        self.shear_modulus = self.E / (self.poisson_ratio + 1.0)
 
 
 def constructor(n_elem, nu=0.0):
@@ -52,7 +50,6 @@ def constructor(n_elem, nu=0.0):
         cls.density,
         cls.nu,
         cls.E,
-        shear_modulus=cls.shear_modulus,
     )
 
     # Ghost needed for Cosserat rod functions adapted for block structure.
