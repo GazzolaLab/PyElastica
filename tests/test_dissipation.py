@@ -13,7 +13,7 @@ from numpy.testing import assert_allclose
 
 import pytest
 
-from tests.test_rod.test_rods import MockTestRod
+from tests.test_rod.test_rods import MockTestRod, MockTestRingRod
 
 
 def test_damper_base():
@@ -55,8 +55,8 @@ def test_analytical_linear_damper():
 
     test_rod = MockTestRod()
     test_rod.mass[:] = 1.0
-    test_dilatation = 2.0 * np.ones((3, test_rod.n_elem))
-    test_inv_mass_second_moment_of_inertia = 3.0 * np.ones((3, 3, test_rod.n_elem))
+    test_dilatation = 2.0 * np.ones((3, test_rod.n_elems))
+    test_inv_mass_second_moment_of_inertia = 3.0 * np.ones((3, 3, test_rod.n_elems))
     test_rod.dilatation = test_dilatation.copy()
     test_rod.inv_mass_second_moment_of_inertia = (
         test_inv_mass_second_moment_of_inertia.copy()
@@ -71,10 +71,7 @@ def test_analytical_linear_damper():
     ref_translational_damping_coefficient = np.exp(-0.25 * 0.5)
     # e ^ (-damp_coeff * dt * elemental_mass * inv_mass_second_moment_of_inertia)
     ref_rotational_damping_coefficient = np.exp(-0.25 * 0.5 * 1.0 * 3.0) * np.ones(
-        (
-            3,
-            test_rod.n_elem,
-        )
+        (3, test_rod.n_elems)
     )
     # end corrections
     ref_rotational_damping_coefficient[:, 0] = np.exp(-0.25 * 0.5 * 1.5 * 3.0)
@@ -90,11 +87,11 @@ def test_analytical_linear_damper():
         atol=Tolerance.atol(),
     )
 
-    pre_damping_velocity_collection = np.random.rand(3, test_rod.n_elem + 1)
+    pre_damping_velocity_collection = np.random.rand(3, test_rod.n_elems + 1)
     test_rod.velocity_collection = (
         pre_damping_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    pre_damping_omega_collection = np.random.rand(3, test_rod.n_elem)
+    pre_damping_omega_collection = np.random.rand(3, test_rod.n_elems)
     test_rod.omega_collection = (
         pre_damping_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -140,9 +137,9 @@ def test_laplace_dissipation_filter_init(filter_order):
     )
     assert filter_damper.filter_order == filter_order
     assert_allclose(
-        filter_damper.velocity_filter_term, np.zeros((3, test_rod.n_elem + 1))
+        filter_damper.velocity_filter_term, np.zeros((3, test_rod.n_elems + 1))
     )
-    assert_allclose(filter_damper.omega_filter_term, np.zeros((3, test_rod.n_elem)))
+    assert_allclose(filter_damper.omega_filter_term, np.zeros((3, test_rod.n_elems)))
 
 
 @pytest.mark.parametrize("filter_order", [2, 3, 4])
@@ -189,11 +186,11 @@ def test_laplace_dissipation_filter_for_flip_flop_field():
     post_damping_omega_collection[..., 1:-1] = 3.0 / 2
     # end values remain untouched
     post_damping_velocity_collection[
-        ..., 0 :: test_rod.n_elem
-    ] = pre_damping_velocity_collection[..., 0 :: test_rod.n_elem]
+        ..., 0 :: test_rod.n_elems
+    ] = pre_damping_velocity_collection[..., 0 :: test_rod.n_elems]
     post_damping_omega_collection[
-        ..., 0 :: test_rod.n_elem - 1
-    ] = pre_damping_omega_collection[..., 0 :: test_rod.n_elem - 1]
+        ..., 0 :: test_rod.n_elems - 1
+    ] = pre_damping_omega_collection[..., 0 :: test_rod.n_elems - 1]
     assert_allclose(
         post_damping_velocity_collection,
         test_rod.velocity_collection,
