@@ -232,25 +232,28 @@ class CosseratRod(RodBase, KnotTheory):
         self.damping_torques = damping_torques
         self.ring_rod_flag = ring_rod_flag
 
-        # Compute shear stretch and strains.
-        _compute_shear_stretch_strains(
-            self.position_collection,
-            self.volume,
-            self.lengths,
-            self.tangents,
-            self.radius,
-            self.rest_lengths,
-            self.rest_voronoi_lengths,
-            self.dilatation,
-            self.voronoi_dilatation,
-            self.director_collection,
-            self.sigma,
-        )
+        if not self.ring_rod_flag:
+            # For ring rod there are no periodic elements so below code won't run.
+            # We add periodic elements at the memory block construction.
+            # Compute shear stretch and strains.
+            _compute_shear_stretch_strains(
+                self.position_collection,
+                self.volume,
+                self.lengths,
+                self.tangents,
+                self.radius,
+                self.rest_lengths,
+                self.rest_voronoi_lengths,
+                self.dilatation,
+                self.voronoi_dilatation,
+                self.director_collection,
+                self.sigma,
+            )
 
-        # Compute bending twist strains
-        _compute_bending_twist_strains(
-            self.director_collection, self.rest_voronoi_lengths, self.kappa
-        )
+            # Compute bending twist strains
+            _compute_bending_twist_strains(
+                self.director_collection, self.rest_voronoi_lengths, self.kappa
+            )
 
     @classmethod
     def straight_rod(
