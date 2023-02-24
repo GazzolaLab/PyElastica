@@ -1,9 +1,8 @@
 __doc__ = """ External forcing for rod test module for Elastica implementation"""
-import sys
 
 # System imports
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import assert_allclose
 import pytest
 
 from elastica.external_forces import (

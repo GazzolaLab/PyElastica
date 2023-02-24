@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyelastica"
-version = "0.3.0"
+version = "0.3.1"
 description = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
 readme = "README.md"
 authors = ["GazzolaLab <armant2@illinois.edu>"]
@@ -22,7 +22,6 @@ classifiers = [
 "License :: OSI Approved :: MIT License",
 "Development Status :: 3 - Alpha",
 "Programming Language :: Python",
-"Programming Language :: Python :: 3.7",
 "Programming Language :: Python :: 3.8",
 "Programming Language :: Python :: 3.9",
 "Programming Language :: Python :: 3.10",
@@ -37,7 +36,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 numba = "^0.55.0"
 numpy = "^1.19.2"
 scipy = "^1.5.2"
@@ -61,9 +60,10 @@ coverage = "^6.3.3"
 pre-commit = "^2.19.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
-flake8 = "3.8.3"
+flake8 = "^3.8"
 codecov = "^2.1"
 click = "8.0.0"
+autoflake8 = "^0.4"
 
 [tool.poetry.extras]
 docs = [

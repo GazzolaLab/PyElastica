@@ -1,9 +1,8 @@
 __doc__ = """"""
 
 import numpy as np
-from abc import ABC, abstractmethod
+from abc import ABC
 from elastica._linalg import _batch_matvec, _batch_cross
-from elastica.utils import MaxDimension
 
 
 class RigidBodyBase(ABC):

@@ -8,7 +8,6 @@ interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 from typing import Iterable, Callable, AnyStr
 
 from collections.abc import MutableSequence
-from itertools import chain
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
