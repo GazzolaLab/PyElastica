@@ -70,27 +70,6 @@ def _synchronize_periodic_boundary_of_scalar_collection(input, periodic_idx):
         input[periodic_idx[0, k]] = input[periodic_idx[1, k]]
 
 
-@njit(cache=True)
-def _synchronize_periodic_boundary_of_nine_dim_vector_collection(input, periodic_idx):
-    """
-    This function synchronizes the periodic boundaries of a nine dimensional vector collection.
-    Parameters
-    ----------
-    input : numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type. Vector that is going to be synched.
-    periodic_idx : numpy.ndarray
-        2D (2, n_periodic_boundary) array containing data with 'float' type. Vector containing periodic boundary
-        index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
-
-    Returns
-    -------
-
-    """
-    for i in range(9):
-        for k in range(periodic_idx.shape[1]):
-            input[i, periodic_idx[0, k]] = input[i, periodic_idx[1, k]]
-
-
 class _ConstrainPeriodicBoundaries(ConstraintBase):
     """
     This class is used only when ring rods are present in the simulation. This class is a wrapper and its purpose
