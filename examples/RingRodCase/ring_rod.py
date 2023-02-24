@@ -1,4 +1,3 @@
-                        
 import os
 import numpy as np
 from elastica import *
@@ -9,6 +8,7 @@ from examples.RingRodCase.ring_rod_post_processing import plot_video
 
 class RingSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
     pass
+
 
 ring_sim = RingSimulator()
 
@@ -84,28 +84,19 @@ class RingRodCallBack(CallBackBaseClass):
 
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
-            self.callback_params["position"].append(
-                system.position_collection.copy()
-            )
-            self.callback_params["length"].append(
-                system.rest_lengths.copy()
-            )
-            self.callback_params["radius"].append(
-                system.radius.copy()
-            )
-            self.callback_params["velocity"].append(
-                system.velocity_collection.copy()
-            )
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["length"].append(system.rest_lengths.copy())
+            self.callback_params["radius"].append(system.radius.copy())
+            self.callback_params["velocity"].append(system.velocity_collection.copy())
             self.callback_params["avg_velocity"].append(
-                system.compute_velocity_center_of_mass()                
+                system.compute_velocity_center_of_mass()
             )
-            
-            self.callback_params["com"].append(
-                system.compute_position_center_of_mass()
-            )
+
+            self.callback_params["com"].append(system.compute_position_center_of_mass())
             self.callback_params["curvature"].append(system.kappa.copy())
 
             return
+
 
 pp_list = defaultdict(list)
 ring_sim.collect_diagnostics(ring_rod).using(

@@ -22,7 +22,7 @@ def plot_video(
 ):
     plt.rcParams.update({"font.size": 22})
 
-    folder_name = kwargs.get("folder_name","")
+    folder_name = kwargs.get("folder_name", "")
 
     # 2d case <always 2d case for now>
     import matplotlib.animation as animation
@@ -116,7 +116,7 @@ def plot_video(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         # ax.set_aspect("equal")
-        video_name_3D = folder_name+"3D_" + video_name
+        video_name_3D = folder_name + "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -207,7 +207,7 @@ def plot_video(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_xy_" + video_name
+        video_name_2D = folder_name + "2D_xy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -298,7 +298,7 @@ def plot_video(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_zy_" + video_name
+        video_name_2D = folder_name + "2D_zy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -391,7 +391,7 @@ def plot_video(
                 ax.add_artist(sphere_artists[sphere_idx])
 
         ax.set_aspect("equal")
-        video_name_2D = folder_name+"2D_xz_" + video_name
+        video_name_2D = folder_name + "2D_xz_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
             with plt.style.context("seaborn-whitegrid"):
@@ -437,5 +437,3 @@ def plot_video(
         # plt.close(fig) alone does not suffice
         # See https://github.com/matplotlib/matplotlib/issues/8560/
         plt.close(plt.gcf())
-
-
