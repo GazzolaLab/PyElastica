@@ -3,13 +3,10 @@ import matplotlib
 
 matplotlib.use("Agg")  # Must be before importing matplotlib.pyplot or pylab!
 from matplotlib import pyplot as plt
-from matplotlib.colors import to_rgb
 from matplotlib import cm
-from mpl_toolkits.mplot3d import proj3d, Axes3D
 from tqdm import tqdm
 from matplotlib.patches import Circle
 from typing import Dict, Sequence
-from collections import defaultdict
 
 
 def plot_video(

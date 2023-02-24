@@ -1,7 +1,5 @@
-import os
 import numpy as np
 from elastica import *
-from matplotlib import pyplot as plt
 
 from examples.RingRodCase.ring_rod_post_processing import plot_video
 
