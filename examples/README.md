@@ -72,6 +72,9 @@ Examples can serve as a starting template for customized usages.
 * [DynamicCantileverCase](./DynamicCantileverCase)
     * __Purpose__: Validation of dynamic cantilever vibration for multiple modes.
     * __Features__: CosseratRod, OneEndFixedRod
+* [RingRodCase](./RingRodCase)
+    * __Purpose__: Demonstrate simulation of ring rod.
+    * __Features__: RingCosseratRod, OneEndFixedRod, GravityForce
 
 ## Functional Examples
 
