@@ -11,6 +11,9 @@ from elastica.rod.data_structures import (
     _KinematicState,
     _DynamicState,
 )
+from elastica.memory_block.memory_block_rod_base import (
+    make_block_memory_periodic_boundary_metadata,
+)
 from elastica.utils import MaxDimension
 
 
@@ -44,6 +47,15 @@ class MockTestRingRod:
         self.omega_collection = np.random.randn(MaxDimension.value(), self.n_elems)
         self.mass = np.abs(np.random.randn(self.n_elems))
         self.external_forces = np.zeros(self.n_elems)
+
+        n_elems_ring_rods = (np.ones(1) * (self.n_elems - 3)).astype("int64")
+
+        (
+            _,
+            self.periodic_boundary_nodes_idx,
+            self.periodic_boundary_elems_idx,
+            self.periodic_boundary_voronoi_idx,
+        ) = make_block_memory_periodic_boundary_metadata(n_elems_ring_rods)
 
 
 # Choosing 15 and 31 as nelems to reflect common expected
