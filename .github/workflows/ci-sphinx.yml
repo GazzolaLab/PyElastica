@@ -22,13 +22,20 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      - name: Setup Poetry
-        uses: Gr1N/setup-poetry@v7
+      - name: Set up Python
+        uses: actions/setup-python@v4.2.0
         with:
-          poetry-preview: false
-      - name: Export requirements file for sphinx
+          python-version: "3.10"
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      # Install Poetry and dependencies
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
         run: |
-          poetry export -E docs --without-hashes -f requirements.txt --output docs/requirements.txt
+          poetry config virtualenvs.in-project true
+          poetry install --all-extras
 
       - name: Sphinx Build
         # You may pin to the exact commit or the version.
