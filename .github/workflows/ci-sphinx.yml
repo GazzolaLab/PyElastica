@@ -36,4 +36,5 @@ jobs:
             poetry config virtualenvs.in-project false
             poetry install --all-extras
           # The command used to build your documentation.
-          build-command: make html #"-W --keep-going" #  -n"
+          # build-command: make html #"-W --keep-going" #  -n"
+          build-command: poetry run sphinx-build docs ./docs/_build/html
