@@ -235,8 +235,7 @@ class MemoryBlockCosseratRod(
 
         # Things in nodes that are vectors
         #             0 ("position_collection", float64[:, :]),
-        #             1 ("internal_forces
-        #             ", float64[:, :]),
+        #             1 ("internal_forces", float64[:, :]),
         #             2 ("external_forces", float64[:, :]),
         #             3 ("damping_forces", float64[:, :]),
         # 6 in total
