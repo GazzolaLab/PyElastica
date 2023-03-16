@@ -229,70 +229,14 @@ class LaplaceDissipationFilter(DamperBase):
             blocksize = self._system.n_elems + 2
             self.velocity_filter_term = np.zeros((3, blocksize))
             self.omega_filter_term = np.zeros((3, blocksize))
-
-            @njit(cache=True)
-            def filter_function_generator(
-                velocity_collection,
-                velocity_filter_term,
-                omega_collection,
-                omega_filter_term,
-                filter_order,
-            ):
-                blocksize = velocity_filter_term.shape[1]
-
-                # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
-                velocity_collection_with_periodic_bc = np.empty((3, blocksize))
-                velocity_collection_with_periodic_bc[:, 1:-1] = velocity_collection[:]
-                velocity_collection_with_periodic_bc[:, 0] = velocity_collection[:, -1]
-                velocity_collection_with_periodic_bc[:, -1] = velocity_collection[:, 0]
-
-                # Transfer omega to an array which has periodic boundaries and synchornize boundaries
-                omega_collection_with_periodic_bc = np.empty((3, blocksize))
-                omega_collection_with_periodic_bc[:, 1:-1] = omega_collection[:]
-                omega_collection_with_periodic_bc[:, 0] = omega_collection[:, -1]
-                omega_collection_with_periodic_bc[:, -1] = omega_collection[:, 0]
-
-                nb_filter_rate(
-                    rate_collection=velocity_collection_with_periodic_bc,
-                    filter_term=velocity_filter_term,
-                    filter_order=filter_order,
-                )
-                nb_filter_rate(
-                    rate_collection=omega_collection_with_periodic_bc,
-                    filter_term=omega_filter_term,
-                    filter_order=filter_order,
-                )
-
-                # Transfer filtered velocity back
-                velocity_collection[:] = velocity_collection_with_periodic_bc[:, 1:-1]
-                omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
-
-            self.filter_function = filter_function_generator
+            self.filter_function = (
+                _filter_function_generator_periodic_condition_ring_rod
+            )
 
         else:
             self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
-
-            @njit(cache=True)
-            def filter_function_generator(
-                velocity_collection,
-                velocity_filter_term,
-                omega_collection,
-                omega_filter_term,
-                filter_order,
-            ):
-                nb_filter_rate(
-                    rate_collection=velocity_collection,
-                    filter_term=velocity_filter_term,
-                    filter_order=filter_order,
-                )
-                nb_filter_rate(
-                    rate_collection=omega_collection,
-                    filter_term=omega_filter_term,
-                    filter_order=filter_order,
-                )
-
-            self.filter_function = filter_function_generator
+            self.filter_function = _filter_function_generator_periodic_condition
 
     def dampen_rates(self, rod: RodType, time: float) -> None:
 
@@ -303,6 +247,64 @@ class LaplaceDissipationFilter(DamperBase):
             self.omega_filter_term,
             self.filter_order,
         )
+
+
+@njit(cache=True)
+def _filter_function_generator_periodic_condition_ring_rod(
+    velocity_collection,
+    velocity_filter_term,
+    omega_collection,
+    omega_filter_term,
+    filter_order,
+):
+    blocksize = velocity_filter_term.shape[1]
+
+    # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
+    velocity_collection_with_periodic_bc = np.empty((3, blocksize))
+    velocity_collection_with_periodic_bc[:, 1:-1] = velocity_collection[:]
+    velocity_collection_with_periodic_bc[:, 0] = velocity_collection[:, -1]
+    velocity_collection_with_periodic_bc[:, -1] = velocity_collection[:, 0]
+
+    # Transfer omega to an array which has periodic boundaries and synchornize boundaries
+    omega_collection_with_periodic_bc = np.empty((3, blocksize))
+    omega_collection_with_periodic_bc[:, 1:-1] = omega_collection[:]
+    omega_collection_with_periodic_bc[:, 0] = omega_collection[:, -1]
+    omega_collection_with_periodic_bc[:, -1] = omega_collection[:, 0]
+
+    nb_filter_rate(
+        rate_collection=velocity_collection_with_periodic_bc,
+        filter_term=velocity_filter_term,
+        filter_order=filter_order,
+    )
+    nb_filter_rate(
+        rate_collection=omega_collection_with_periodic_bc,
+        filter_term=omega_filter_term,
+        filter_order=filter_order,
+    )
+
+    # Transfer filtered velocity back
+    velocity_collection[:] = velocity_collection_with_periodic_bc[:, 1:-1]
+    omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
+
+
+@njit(cache=True)
+def _filter_function_generator_periodic_condition(
+    velocity_collection,
+    velocity_filter_term,
+    omega_collection,
+    omega_filter_term,
+    filter_order,
+):
+    nb_filter_rate(
+        rate_collection=velocity_collection,
+        filter_term=velocity_filter_term,
+        filter_order=filter_order,
+    )
+    nb_filter_rate(
+        rate_collection=omega_collection,
+        filter_term=omega_filter_term,
+        filter_order=filter_order,
+    )
 
 
 @njit(cache=True)
