@@ -1,10 +1,12 @@
 import numpy as np
-from elastica import *
+import elastica as ea
 
 from examples.RingRodCase.ring_rod_post_processing import plot_video
 
 
-class RingSimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
+class RingSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
+):
     pass
 
 
@@ -25,7 +27,7 @@ E = 2e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
-ring_rod = CosseratRod.ring_rod(
+ring_rod = ea.CosseratRod.ring_rod(
     n_elem,
     ring_center_position,
     direction,
@@ -43,20 +45,20 @@ ring_sim.append(ring_rod)
 # Add gravitational forces
 gravitational_acc = -9.80665
 ring_sim.add_forcing_to(ring_rod).using(
-    GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+    ea.GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
 )
 
 
 # Add constraints
 ring_sim.constrain(ring_rod).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Add damping
 damping_constant = 4e-3
 time_step = 1e-4
 ring_sim.dampen(ring_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=time_step,
 )
@@ -66,13 +68,13 @@ rendering_fps = 60
 step_skip = int(1.0 / (rendering_fps * time_step))
 
 # Add call backs
-class RingRodCallBack(CallBackBaseClass):
+class RingRodCallBack(ea.CallBackBaseClass):
     """
     Call back function for ring rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -96,15 +98,15 @@ class RingRodCallBack(CallBackBaseClass):
             return
 
 
-pp_list = defaultdict(list)
+pp_list = ea.defaultdict(list)
 ring_sim.collect_diagnostics(ring_rod).using(
     RingRodCallBack, step_skip=step_skip, callback_params=pp_list
 )
 
 ring_sim.finalize()
 
-timestepper = PositionVerlet()
-integrate(timestepper, ring_sim, final_time, total_steps)
+timestepper = ea.PositionVerlet()
+ea.integrate(timestepper, ring_sim, final_time, total_steps)
 
 
 filename_video = "ring_rod.mp4"
