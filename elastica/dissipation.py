@@ -229,14 +229,12 @@ class LaplaceDissipationFilter(DamperBase):
             blocksize = self._system.n_elems + 2
             self.velocity_filter_term = np.zeros((3, blocksize))
             self.omega_filter_term = np.zeros((3, blocksize))
-            self.filter_function = (
-                _filter_function_generator_periodic_condition_ring_rod
-            )
+            self.filter_function = _filter_function_periodic_condition_ring_rod
 
         else:
             self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
-            self.filter_function = _filter_function_generator_periodic_condition
+            self.filter_function = _filter_function_periodic_condition
 
     def dampen_rates(self, rod: RodType, time: float) -> None:
 
@@ -250,7 +248,7 @@ class LaplaceDissipationFilter(DamperBase):
 
 
 @njit(cache=True)
-def _filter_function_generator_periodic_condition_ring_rod(
+def _filter_function_periodic_condition_ring_rod(
     velocity_collection,
     velocity_filter_term,
     omega_collection,
@@ -288,7 +286,7 @@ def _filter_function_generator_periodic_condition_ring_rod(
 
 
 @njit(cache=True)
-def _filter_function_generator_periodic_condition(
+def _filter_function_periodic_condition(
     velocity_collection,
     velocity_filter_term,
     omega_collection,
