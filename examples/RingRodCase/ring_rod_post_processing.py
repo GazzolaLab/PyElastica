@@ -1,7 +1,4 @@
 import numpy as np
-import matplotlib
-
-matplotlib.use("Agg")  # Must be before importing matplotlib.pyplot or pylab!
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from tqdm import tqdm
