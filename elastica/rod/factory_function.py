@@ -323,6 +323,50 @@ def allocate(
     )
 
 
+"""
+Cosserat rod constructor for straight-rod geometry.
+
+
+Notes
+-----
+Since we expect the Cosserat Rod to simulate soft rod, Poisson's ratio is set to 0.5 by default.
+It is possible to give additional argument "shear_modulus" or "poisson_ratio" to specify extra modulus.
+
+
+Parameters
+----------
+n_elements : int
+    Number of element. Must be greater than 3. Generally recommended to start with 40-50, and adjust the resolution.
+ring_center_position : NDArray[3, float]
+    Ring center position coordinate in 3D
+direction : NDArray[3, float]
+    Direction of the rod in 3D
+normal : NDArray[3, float]
+    Normal vector of the rod in 3D
+base_length : float
+    Total length of the rod
+base_radius : float
+    Uniform radius of the rod
+density : float
+    Density of the rod
+nu : float
+    Damping coefficient for Rayleigh damping
+youngs_modulus : float
+    Young's modulus
+*args : tuple
+    Additional arguments should be passed as keyward arguments.
+    (e.g. shear_modulus, poisson_ratio)
+**kwargs : dict, optional
+    The "position" and/or "directors" can be overrided by passing "position" and "directors" argument.
+    Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
+
+Returns
+-------
+RingRod
+
+"""
+
+
 def allocate_ring_rod(
     n_elements,
     ring_center_position,
