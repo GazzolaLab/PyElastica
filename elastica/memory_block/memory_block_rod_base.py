@@ -66,6 +66,19 @@ def make_block_memory_periodic_boundary_metadata(n_elems_in_rods):
 
     Returns
     -------
+    n_elems
+
+    periodic_boundary_node : numpy.ndarray
+        2D (2, n_periodic_boundary_nodes) array containing data with 'float' type. Vector containing periodic boundary
+        elements index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
+
+    periodic_boundary_elems_idx : numpy.ndarray
+        2D (2, n_periodic_boundary_elems) array containing data with 'float' type. Vector containing periodic boundary
+        nodes index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
+
+    periodic_boundary_voronoi_idx : numpy.ndarray
+        2D (2, n_periodic_boundary_voronoi) array containing data with 'float' type. Vector containing periodic boundary
+        voronoi index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
     """
 
