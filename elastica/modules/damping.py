@@ -23,13 +23,14 @@ class Damping:
         _dampers: list
             List of damper classes defined for rod-like objects.
     """
-
+#First NameSpace for defining dampers self function
     def __init__(self):
         self._dampers = []
         super(Damping, self).__init__()
         self._feature_group_constrain_rates.append(self._dampen_rates)
         self._feature_group_finalize.append(self._finalize_dampers)
 
+#Second NameSpace for defining dampers system function   
     def dampen(self, system):
         """
         This method applies damping on relevant user-defined
@@ -53,6 +54,7 @@ class Damping:
 
         return _damper
 
+#Third NameSpace for storing and calling objects of the class Damping  
     def _finalize_dampers(self):
         # From stored _Damping objects, instantiate the dissipation/damping
         # inplace : https://stackoverflow.com/a/1208792
@@ -69,6 +71,9 @@ class Damping:
         # to sort dampers.
         self._dampers.sort(key=lambda x: x[0])
 
+
+   #Fourth NameSpace for the variables     
+    
     def _dampen_rates(self, time, *args, **kwargs):
         for sys_id, damper in self._dampers:
             damper.dampen_rates(self._systems[sys_id], time, *args, **kwargs)
@@ -87,7 +92,7 @@ class _Damper:
     **kwargs
         Arbitrary keyword arguments.
     """
-
+  
     def __init__(self, sys_idx: int):
         """
 
