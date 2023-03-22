@@ -182,9 +182,3 @@ def test_ConstrainPeriodicBoundaries():
     assert_allclose(
         test_omega_collection, test_rod.omega_collection, atol=Tolerance.atol()
     )
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])
