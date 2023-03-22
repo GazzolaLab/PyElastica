@@ -1409,12 +1409,3 @@ def test_ring_rod(n_elems):
         inv_mass_second_moment_of_inertia,
         atol=Tolerance.atol(),
     )
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        exec(sys.argv[1])
-    else:
-        from pytest import main
-
-        main([__file__])
