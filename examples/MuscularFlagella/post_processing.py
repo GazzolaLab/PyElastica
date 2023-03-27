@@ -1,7 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.colors import to_rgb
-from matplotlib import cm
 from tqdm import tqdm
 
 from typing import Dict, Sequence
@@ -18,8 +16,6 @@ def plot_video(
 
     # 2d case <always 2d case for now>
     import matplotlib.animation as animation
-    from matplotlib.patches import Circle
-    from mpl_toolkits.mplot3d import proj3d, Axes3D
 
     # simulation time
     sim_time = np.array(rods_history[0]["time"])
@@ -130,7 +126,6 @@ def plot_video_2D(
 
     # 2d case <always 2d case for now>
     import matplotlib.animation as animation
-    from matplotlib.patches import Circle
 
     # simulation time
     sim_time = np.array(rods_history[0]["time"])

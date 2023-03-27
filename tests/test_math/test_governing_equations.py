@@ -18,7 +18,6 @@ from elastica.rod.cosserat_rod import (
     _compute_bending_twist_strains,
     _compute_damping_torques,
     _compute_internal_torques,
-    _update_accelerations,
     _get_z_vector,
 )
 import pytest

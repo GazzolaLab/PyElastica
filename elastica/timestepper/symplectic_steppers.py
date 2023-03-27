@@ -1,7 +1,6 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
 import numpy as np
-import math
 
 # from elastica._elastica_numba._timestepper._symplectic_steppers import (
 #     SymplecticStepperTag,

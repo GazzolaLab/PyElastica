@@ -2,7 +2,6 @@ import numpy as np
 import elastica as ea
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
-    plot_velocity,
     plot_link_writhe_twist,
 )
 

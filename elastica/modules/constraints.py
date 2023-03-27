@@ -5,7 +5,6 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 
-import numpy as np
 from elastica.boundary_conditions import ConstraintBase
 
 

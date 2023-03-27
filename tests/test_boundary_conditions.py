@@ -1,5 +1,4 @@
 __doc__ = """ Test Boundary conditions for in Elastica implementation"""
-import sys
 
 # System imports
 import numpy as np

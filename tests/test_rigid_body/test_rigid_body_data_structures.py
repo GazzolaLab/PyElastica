@@ -12,8 +12,6 @@ from elastica.timestepper import (
     PositionVerlet,
     integrate,
 )
-import elastica
-import importlib
 
 
 def make_simple_system_with_positions_directors(start_position, start_director):

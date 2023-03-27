@@ -9,7 +9,6 @@ from numpy import cos
 from numpy import sqrt
 from numpy import arccos
 
-import numba
 from numba import njit
 
 from elastica._linalg import _batch_matmul

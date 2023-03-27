@@ -2,7 +2,7 @@ __doc__ = "Data structure wrapper for rod components"
 
 import numpy as np
 
-from elastica._rotations import _get_rotation_matrix, _rotate
+from elastica._rotations import _get_rotation_matrix
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 
 """

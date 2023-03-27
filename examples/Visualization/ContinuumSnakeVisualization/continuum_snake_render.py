@@ -17,7 +17,6 @@ from functools import partial
 from multiprocessing import Pool
 
 import numpy as np
-from moviepy.editor import ImageSequenceClip
 from scipy import interpolate
 from tqdm import tqdm
 
@@ -176,15 +175,10 @@ if __name__ == "__main__":
             )
             pbar.update()
 
-    # Create Video using moviepy
+    # Create Video using ffmpeg
     for view_name in stage_scripts.keys():
         imageset_path = os.path.join(OUTPUT_IMAGES_DIR, view_name)
-        imageset = [
-            os.path.join(imageset_path, path)
-            for path in os.listdir(imageset_path)
-            if path[-3:] == "png"
-        ]
-        imageset.sort()
+
         filename = OUTPUT_FILENAME + "_" + view_name + ".mp4"
-        clip = ImageSequenceClip(imageset, fps=FPS)
-        clip.write_videofile(filename, fps=FPS)
+
+        os.system(f"ffmpeg -r {FPS} -i {imageset_path}/frame_%04d.png {filename}")

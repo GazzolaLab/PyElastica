@@ -176,7 +176,7 @@ class TestExplicitStepperStateBehavior(LoadStates):
 
         test_state = func(state, derivative)
 
-        from elastica.rod.data_structures import _State, _DerivativeState
+        from elastica.rod.data_structures import _State
 
         assert_instance(test_state, _State)
 
