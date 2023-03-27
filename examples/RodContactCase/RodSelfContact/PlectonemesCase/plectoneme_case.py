@@ -1,5 +1,5 @@
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.RodContactCase.post_processing import (
     plot_video_with_surface,
     plot_velocity,
@@ -8,12 +8,12 @@ from examples.RodContactCase.post_processing import (
 
 
 class PlectonemesCase(
-    BaseSystemCollection,
-    Constraints,
-    Connections,
-    Forcing,
-    CallBacks,
-    Damping,
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.CallBacks,
+    ea.Damping,
 ):
     pass
 
@@ -53,7 +53,7 @@ start = np.zeros(
     3,
 )
 
-sherable_rod = CosseratRod.straight_rod(
+sherable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -73,7 +73,7 @@ plectonemes_sim.append(sherable_rod)
 
 # Add damping
 plectonemes_sim.dampen(sherable_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )
@@ -82,7 +82,7 @@ plectonemes_sim.dampen(sherable_rod).using(
 from elastica._rotations import _get_rotation_matrix
 
 
-class SelonoidsBC(ConstraintBase):
+class SelonoidsBC(ea.ConstraintBase):
     """ """
 
     def __init__(
@@ -167,14 +167,14 @@ plectonemes_sim.constrain(sherable_rod).using(
 )
 
 # Add self contact to prevent penetration
-plectonemes_sim.connect(sherable_rod, sherable_rod).using(SelfContact, k=1e4, nu=10)
+plectonemes_sim.connect(sherable_rod, sherable_rod).using(ea.SelfContact, k=1e4, nu=10)
 
 # Add callback functions for plotting position of the rod later on
-class RodCallBack(CallBackBaseClass):
+class RodCallBack(ea.CallBackBaseClass):
     """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -201,7 +201,7 @@ class RodCallBack(CallBackBaseClass):
             return
 
 
-post_processing_dict = defaultdict(list)  # list which collected data will be append
+post_processing_dict = ea.defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 plectonemes_sim.collect_diagnostics(sherable_rod).using(
     RodCallBack,
@@ -213,8 +213,8 @@ plectonemes_sim.collect_diagnostics(sherable_rod).using(
 plectonemes_sim.finalize()
 
 # Run the simulation
-time_stepper = PositionVerlet()
-integrate(time_stepper, plectonemes_sim, final_time, total_steps)
+time_stepper = ea.PositionVerlet()
+ea.integrate(time_stepper, plectonemes_sim, final_time, total_steps)
 
 # plotting the videos
 filename_video = "plectonemes.mp4"
@@ -255,9 +255,9 @@ segment_length = 10 * base_length
 
 type_of_additional_segment = "next_tangent"
 
-total_twist, local_twist = compute_twist(position_history, normal_history)
+total_twist, local_twist = ea.compute_twist(position_history, normal_history)
 
-total_link = compute_link(
+total_link = ea.compute_link(
     position_history,
     normal_history,
     radius_history,
@@ -265,7 +265,7 @@ total_link = compute_link(
     type_of_additional_segment,
 )
 
-total_writhe = compute_writhe(
+total_writhe = ea.compute_writhe(
     position_history, segment_length, type_of_additional_segment
 )
 

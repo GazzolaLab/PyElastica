@@ -1,14 +1,15 @@
 """ Flexible swinging pendulum test-case
     isort:skip_file
 """
+
 import numpy as np
 from matplotlib import pyplot as plt
 
-from elastica import *
+import elastica as ea
 
 
 class SwingingFlexiblePendulumSimulator(
-    BaseSystemCollection, Constraints, Forcing, CallBacks
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.CallBacks
 ):
     pass
 
@@ -36,7 +37,7 @@ youngs_modulus = 5e6
 # For shear modulus of 1e4, nu is 99!
 poisson_ratio = 0.5
 
-pendulum_rod = CosseratRod.straight_rod(
+pendulum_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -53,7 +54,7 @@ pendulum_sim.append(pendulum_rod)
 
 
 # Bad name : whats a FreeRod anyway?
-class HingeBC(ConstraintBase):
+class HingeBC(ea.ConstraintBase):
     """
     the end of the rod fixed x[0]
     """
@@ -77,18 +78,18 @@ pendulum_sim.constrain(pendulum_rod).using(
 # Add gravitational forces
 gravitational_acc = -9.80665
 pendulum_sim.add_forcing_to(pendulum_rod).using(
-    GravityForces, acc_gravity=np.array([gravitational_acc, 0.0, 0.0])
+    ea.GravityForces, acc_gravity=np.array([gravitational_acc, 0.0, 0.0])
 )
 
 
 # Add call backs
-class PendulumCallBack(CallBackBaseClass):
+class PendulumCallBack(ea.CallBackBaseClass):
     """
     Call back function for continuum snake
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -112,7 +113,7 @@ dt = (0.0007 if SAVE_RESULTS else 0.002) * dl
 total_steps = int(final_time / dt)
 
 print("Total steps", total_steps)
-recorded_history = defaultdict(list)
+recorded_history = ea.defaultdict(list)
 step_skip = (
     60
     if PLOT_VIDEO
@@ -123,10 +124,10 @@ pendulum_sim.collect_diagnostics(pendulum_rod).using(
 )
 
 pendulum_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
-integrate(timestepper, pendulum_sim, final_time, total_steps)
+ea.integrate(timestepper, pendulum_sim, final_time, total_steps)
 
 if PLOT_VIDEO:
 

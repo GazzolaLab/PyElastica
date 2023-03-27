@@ -2,7 +2,7 @@ __doc__ = """Helical buckling convergence study, for detailed explanation refer 
   section 3.4.1 """
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
@@ -11,7 +11,9 @@ from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
 from examples.convergence_functions import plot_convergence, calculate_error_norm
 
 
-class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Forcing, Damping):
+class HelicalBucklingSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping
+):
     pass
 
 
@@ -47,7 +49,7 @@ def simulate_helicalbucklin_beam_with(
     np.fill_diagonal(temp_bend_matrix, [1.345, 1.345, 0.789])
     bend_matrix = np.repeat(temp_bend_matrix[:, :, np.newaxis], n_elem - 1, axis=2)
 
-    shearable_rod = CosseratRod.straight_rod(
+    shearable_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -68,13 +70,13 @@ def simulate_helicalbucklin_beam_with(
     dl = base_length / n_elem
     dt = 1e-3 * dl
     helicalbuckling_sim.dampen(shearable_rod).using(
-        AnalyticalLinearDamper,
+        ea.AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )
 
     helicalbuckling_sim.constrain(shearable_rod).using(
-        HelicalBucklingBC,
+        ea.HelicalBucklingBC,
         constrained_position_idx=(0, -1),
         constrained_director_idx=(0, -1),
         twisting_time=500,
@@ -83,7 +85,7 @@ def simulate_helicalbucklin_beam_with(
     )
 
     helicalbuckling_sim.finalize()
-    timestepper = PositionVerlet()
+    timestepper = ea.PositionVerlet()
     shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array(
         [0, 1e-6, 0.0]
     )
@@ -92,7 +94,7 @@ def simulate_helicalbucklin_beam_with(
     final_time = 10500
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
+    ea.integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
 
     # calculate errors and norms
     # Since we need to evaluate analytical solution only on nodes, n_nodes = n_elems+1
