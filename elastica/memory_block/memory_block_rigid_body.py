@@ -1,13 +1,13 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
 import numpy as np
-from typing import Sequence
+from typing import Sequence, List
 
 from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
-    def __init__(self, systems: Sequence, system_idx_list: list[int]):
+    def __init__(self, systems: Sequence, system_idx_list: List[int]):
 
         self.n_bodies = len(systems)
         self.n_elems = self.n_bodies
