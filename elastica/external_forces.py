@@ -1,11 +1,12 @@
-__doc__ = """ Numba implementation module for boundary condition implementations that apply external forces to the rod."""
+__doc__ = """ Numba implementation module for boundary condition implementations that apply
+external forces to the system."""
 
 
 import numpy as np
 from elastica._linalg import _batch_matvec
+from elastica.typing import SystemType, RodType
 from elastica.utils import _bspline
 
-import numba
 from numba import njit
 from elastica._linalg import _batch_product_i_k_to_ik
 
@@ -27,35 +28,33 @@ class NoForces:
         """
         pass
 
-    def apply_forces(self, system, time: np.float64 = 0.0):
+    def apply_forces(self, system: SystemType, time: np.float64 = 0.0):
         """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
 
         Parameters
         ----------
-        system : object
-            System that is Rod-like.
+        system : SystemType
+            Rod or rigid-body object
         time : float
             The time of simulation.
 
         Returns
         -------
 
-
         """
-
         pass
 
-    def apply_torques(self, system, time: np.float64 = 0.0):
+    def apply_torques(self, system: SystemType, time: np.float64 = 0.0):
         """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
 
         Parameters
         ----------
-        system : object
-            System that is Rod-like.
+        system : SystemType
+            Rod or rigid-body object
         time : float
             The time of simulation.
 
@@ -89,7 +88,7 @@ class GravityForces(NoForces):
         super(GravityForces, self).__init__()
         self.acc_gravity = acc_gravity
 
-    def apply_forces(self, system, time=0.0):
+    def apply_forces(self, system: SystemType, time=0.0):
         self.compute_gravity_forces(
             self.acc_gravity, system.mass, system.external_forces
         )
@@ -124,9 +123,9 @@ class EndpointForces(NoForces):
         Attributes
         ----------
         start_force: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Force applied to first node of the rod-like object.
+            1D (dim) array containing data with 'float' type. Force applied to first node of the system.
         end_force: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Force applied to last node of the rod-like object.
+            1D (dim) array containing data with 'float' type. Force applied to last node of the system.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
 
@@ -139,10 +138,10 @@ class EndpointForces(NoForces):
         ----------
         start_force: numpy.ndarray
             1D (dim) array containing data with 'float' type.
-            Force applied to first node of the rod-like object.
+            Force applied to first node of the system.
         end_force: numpy.ndarray
             1D (dim) array containing data with 'float' type.
-            Force applied to last node of the rod-like object.
+            Force applied to last node of the system.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
 
@@ -153,7 +152,7 @@ class EndpointForces(NoForces):
         assert ramp_up_time > 0.0
         self.ramp_up_time = ramp_up_time
 
-    def apply_forces(self, system, time=0.0):
+    def apply_forces(self, system: SystemType, time=0.0):
         self.compute_end_point_forces(
             system.external_forces,
             self.start_force,
@@ -178,7 +177,7 @@ class EndpointForces(NoForces):
             1D (dim) array containing data with 'float' type.
         end_force: numpy.ndarray
             1D (dim) array containing data with 'float' type.
-            Force applied to last node of the rod-like object.
+            Force applied to last node of the system.
         time: float
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
@@ -217,7 +216,7 @@ class UniformTorques(NoForces):
         super(UniformTorques, self).__init__()
         self.torque = torque * direction
 
-    def apply_torques(self, system, time: np.float64 = 0.0):
+    def apply_torques(self, system: SystemType, time: np.float64 = 0.0):
         n_elems = system.n_elems
         torque_on_one_element = (
             _batch_product_i_k_to_ik(self.torque, np.ones((n_elems))) / n_elems
@@ -251,14 +250,14 @@ class UniformForces(NoForces):
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
-    def apply_forces(self, system, time: np.float64 = 0.0):
-        force_on_one_element = self.force / system.n_elems
+    def apply_forces(self, rod: RodType, time: np.float64 = 0.0):
+        force_on_one_element = self.force / rod.n_elems
 
-        system.external_forces += force_on_one_element
+        rod.external_forces += force_on_one_element
 
         # Because mass of first and last node is half
-        system.external_forces[..., 0] -= 0.5 * force_on_one_element[:, 0]
-        system.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]
+        rod.external_forces[..., 0] -= 0.5 * force_on_one_element[:, 0]
+        rod.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]
 
 
 class MuscleTorques(NoForces):
@@ -364,7 +363,7 @@ class MuscleTorques(NoForces):
 
             self.my_spline = constant_function(self.s)
 
-    def apply_torques(self, system, time: np.float64 = 0.0):
+    def apply_torques(self, rod: RodType, time: np.float64 = 0.0):
         self.compute_muscle_torques(
             time,
             self.my_spline,
@@ -374,8 +373,8 @@ class MuscleTorques(NoForces):
             self.phase_shift,
             self.ramp_up_time,
             self.direction,
-            system.director_collection,
-            system.external_torques,
+            rod.director_collection,
+            rod.external_torques,
         )
 
     @staticmethod
@@ -504,17 +503,17 @@ class EndpointForcesSinusoidal(NoForces):
         Parameters
         ----------
         start_force_mag: float
-            Magnitude of the force that is applied to the start of the rod (node 0).
+            Magnitude of the force that is applied to the start of the system (node 0).
         end_force_mag: float
-            Magnitude of the force that is applied to the end of the rod (node -1).
+            Magnitude of the force that is applied to the end of the system (node -1).
         ramp_up_time: float
             Applied muscle torques are ramped up until ramp up time.
         tangent_direction: np.ndarray
             An array (3,) contains type float.
-            This is the tangent direction of the rod, or normal of the plane that forces applied.
+            This is the tangent direction of the system, or normal of the plane that forces applied.
         normal_direction: np.ndarray
             An array (3,) contains type float.
-            This is the normal direction of the rod.
+            This is the normal direction of the system.
         """
         super(EndpointForcesSinusoidal, self).__init__()
         # Start force
@@ -528,7 +527,7 @@ class EndpointForcesSinusoidal(NoForces):
         assert ramp_up_time >= 0.0
         self.ramp_up_time = ramp_up_time
 
-    def apply_forces(self, system, time=0.0):
+    def apply_forces(self, system: SystemType, time=0.0):
 
         if time < self.ramp_up_time:
             # When time smaller than ramp up time apply the force in normal direction

@@ -3,7 +3,6 @@ __doc__ = (
 )
 from elastica.joint import FreeJoint, FixedJoint
 from elastica.typing import SystemType
-from elastica.utils import Tolerance, MaxDimension
 import numpy as np
 from typing import Optional
 

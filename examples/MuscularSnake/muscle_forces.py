@@ -1,7 +1,6 @@
 __doc__ = """ Muscular snake muscle forces NumPy implementation """
 __all__ = ["MuscleForces"]
 import numpy as np
-import numba
 from numba import njit
 from elastica import NoForces
 from elastica._calculus import difference_kernel

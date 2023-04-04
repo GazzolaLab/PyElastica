@@ -1,6 +1,5 @@
 __doc__ = """ Rod classes and implementation details """
 
-import typing
 
 import numpy as np
 import functools

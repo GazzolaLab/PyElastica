@@ -9,20 +9,10 @@ from elastica.interaction import (
     InteractionPlaneRigidBody,
 )
 
-import numba
 from numba import njit
 from elastica._linalg import (
-    _batch_matmul,
-    _batch_matvec,
-    _batch_cross,
-    _batch_norm,
     _batch_dot,
-    _batch_product_i_k_to_ik,
-    _batch_product_i_ik_to_k,
     _batch_product_k_ik_to_ik,
-    _batch_vector_sum,
-    _batch_matrix_transpose,
-    _batch_vec_oneD_vec_cross,
 )
 
 

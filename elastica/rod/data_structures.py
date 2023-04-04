@@ -1,7 +1,6 @@
 __doc__ = "Data structure wrapper for rod components"
 
 import numpy as np
-import numba
 from numba import njit
 from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
