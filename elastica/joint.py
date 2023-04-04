@@ -1,5 +1,5 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
+
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
 from math import sqrt

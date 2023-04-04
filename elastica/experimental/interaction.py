@@ -1,12 +1,8 @@
 __doc__ = """ Experimental interaction implementation."""
-__all__ = [
-    "AnisotropicFrictionalPlaneRigidBody",
-]
 
 
 import numpy as np
 from elastica.external_forces import NoForces
-from elastica.interaction import *
 from elastica.interaction import (
     find_slipping_elements,
     apply_normal_force_numba_rigid_body,

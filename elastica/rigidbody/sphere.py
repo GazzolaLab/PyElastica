@@ -1,5 +1,4 @@
 __doc__ = """"""
-__all__ = ["Sphere"]
 
 import numpy as np
 

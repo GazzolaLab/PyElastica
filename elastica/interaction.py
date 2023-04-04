@@ -1,10 +1,4 @@
 __doc__ = """ Numba implementation module containing interactions between a rod and its environment."""
-__all__ = [
-    "AnisotropicFrictionalPlane",
-    "InteractionPlane",
-    "InteractionPlaneRigidBody",
-    "SlenderBodyTheory",
-]
 
 
 import numpy as np
