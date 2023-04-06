@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
-from elastica import *
+import elastica as ea
 from analytical_dynamic_cantilever import AnalyticalDynamicCantilever
 
 
@@ -37,7 +37,9 @@ def simulate_dynamic_cantilever_with(
 
     """
 
-    class DynamicCantileverSimulator(BaseSystemCollection, Constraints, CallBacks):
+    class DynamicCantileverSimulator(
+        ea.BaseSystemCollection, ea.Constraints, ea.CallBacks
+    ):
         pass
 
     cantilever_sim = DynamicCantileverSimulator()
@@ -58,7 +60,7 @@ def simulate_dynamic_cantilever_with(
     step_skips = int(1.0 / (rendering_fps * dt))
 
     # Add Cosserat rod
-    cantilever_rod = CosseratRod.straight_rod(
+    cantilever_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -73,7 +75,7 @@ def simulate_dynamic_cantilever_with(
     # Add constraints
     cantilever_sim.append(cantilever_rod)
     cantilever_sim.constrain(cantilever_rod).using(
-        OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+        ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     end_velocity = 0.005
@@ -93,9 +95,9 @@ def simulate_dynamic_cantilever_with(
     cantilever_rod.velocity_collection[2, :] = initial_velocity
 
     # Add call backs
-    class CantileverCallBack(CallBackBaseClass):
+    class CantileverCallBack(ea.CallBackBaseClass):
         def __init__(self, step_skip: int, callback_params: dict):
-            CallBackBaseClass.__init__(self)
+            ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -112,7 +114,7 @@ def simulate_dynamic_cantilever_with(
                 )
                 return
 
-    recorded_history = defaultdict(list)
+    recorded_history = ea.defaultdict(list)
     cantilever_sim.collect_diagnostics(cantilever_rod).using(
         CantileverCallBack, step_skip=step_skips, callback_params=recorded_history
     )
@@ -121,9 +123,9 @@ def simulate_dynamic_cantilever_with(
     total_steps = int(final_time / dt)
     print(f"Total steps: {total_steps}")
 
-    timestepper = PositionVerlet()
+    timestepper = ea.PositionVerlet()
 
-    integrate(
+    ea.integrate(
         timestepper,
         cantilever_sim,
         final_time,

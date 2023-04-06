@@ -2,12 +2,12 @@ __doc__ = """Timoshenko beam validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.3 """
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.TimoshenkoBeamCase.timoshenko_postprocessing import plot_timoshenko
 
 
 class TimoshenkoBeamSimulator(
-    BaseSystemCollection, Constraints, Forcing, CallBacks, Damping
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.CallBacks, ea.Damping
 ):
     pass
 
@@ -36,7 +36,7 @@ E = 1e6
 poisson_ratio = 99
 shear_modulus = E / (poisson_ratio + 1.0)
 
-shearable_rod = CosseratRod.straight_rod(
+shearable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -54,18 +54,18 @@ timoshenko_sim.append(shearable_rod)
 dl = base_length / n_elem
 dt = 0.07 * dl
 timoshenko_sim.dampen(shearable_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )
 
 timoshenko_sim.constrain(shearable_rod).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force = np.array([-15.0, 0.0, 0.0])
 timoshenko_sim.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
+    ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
 )
 
 
@@ -73,7 +73,7 @@ if ADD_UNSHEARABLE_ROD:
     # Start into the plane
     unshearable_start = np.array([0.0, -1.0, 0.0])
     shear_modulus = E / (-0.7 + 1.0)
-    unshearable_rod = CosseratRod.straight_rod(
+    unshearable_rod = ea.CosseratRod.straight_rod(
         n_elem,
         unshearable_start,
         direction,
@@ -91,25 +91,25 @@ if ADD_UNSHEARABLE_ROD:
 
     # add damping
     timoshenko_sim.dampen(unshearable_rod).using(
-        AnalyticalLinearDamper,
+        ea.AnalyticalLinearDamper,
         damping_constant=nu,
         time_step=dt,
     )
     timoshenko_sim.constrain(unshearable_rod).using(
-        OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+        ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
-        EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
+        ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
     )
 
 # Add call backs
-class VelocityCallBack(CallBackBaseClass):
+class VelocityCallBack(ea.CallBackBaseClass):
     """
     Tracks the velocity norms of the rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -125,18 +125,18 @@ class VelocityCallBack(CallBackBaseClass):
             return
 
 
-recorded_history = defaultdict(list)
+recorded_history = ea.defaultdict(list)
 timoshenko_sim.collect_diagnostics(shearable_rod).using(
     VelocityCallBack, step_skip=500, callback_params=recorded_history
 )
 
 timoshenko_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, timoshenko_sim, final_time, total_steps)
+ea.integrate(timestepper, timoshenko_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     plot_timoshenko(shearable_rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD)

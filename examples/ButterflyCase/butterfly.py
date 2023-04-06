@@ -3,11 +3,11 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 
 
-from elastica import *
+import elastica as ea
 from elastica.utils import MaxDimension
 
 
-class ButterflySimulator(BaseSystemCollection, CallBacks):
+class ButterflySimulator(ea.BaseSystemCollection, ea.CallBacks):
     pass
 
 
@@ -60,7 +60,7 @@ positions[..., half_n_elem:] = positions[
     - np.sin(angle_of_inclination) * vertical_direction
 )
 
-butterfly_rod = CosseratRod.straight_rod(
+butterfly_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start=origin.reshape(3),
     direction=np.array([0.0, 0.0, 1.0]),
@@ -77,13 +77,13 @@ butterfly_rod = CosseratRod.straight_rod(
 butterfly_sim.append(butterfly_rod)
 
 # Add call backs
-class VelocityCallBack(CallBackBaseClass):
+class VelocityCallBack(ea.CallBackBaseClass):
     """
     Call back function for continuum snake
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -102,7 +102,7 @@ class VelocityCallBack(CallBackBaseClass):
             return
 
 
-recorded_history = defaultdict(list)
+recorded_history = ea.defaultdict(list)
 # initially record history
 recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
@@ -117,13 +117,13 @@ butterfly_sim.collect_diagnostics(butterfly_rod).using(
 
 
 butterfly_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, butterfly_sim, final_time, total_steps)
+ea.integrate(timestepper, butterfly_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     # Plot the histories

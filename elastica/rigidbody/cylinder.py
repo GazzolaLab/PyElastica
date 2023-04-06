@@ -1,5 +1,4 @@
 __doc__ = """"""
-__all__ = ["Cylinder"]
 
 import numpy as np
 
