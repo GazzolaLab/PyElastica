@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 
 import pytest
-import sys
 from elastica.utils import MaxDimension, Tolerance
 from elastica.rod.factory_function import allocate_ring_rod
 
