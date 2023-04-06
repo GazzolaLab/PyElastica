@@ -107,7 +107,30 @@ class MemoryBlockCosseratRod(
         memory block  and rods does not have access to periodic boundaries.
         """
         if n_ring_rods != 0:
+            """
+            Number of nodes, elements and voronoi of the ring rod is same. When user wants to access to the rod, they
+            will also see that. However, in order to be compatible with block structure implementation, it has to be
+            n_nodes=n_elems+1 and n_voronoi=n_elems-1. Thus, we add these periodic nodes, element and voronoi at the
+            end of the rod. We need 3 periodic nodes,  2 periodic elements and 1 periodic voronoi.
+            Below you will see some magic numbers such as 1, 2, and 3. These are related with the number of periodic
+            nodes, element and voronoi.
+            For example if user sets 50 elements for one ring rod with 50 elements then we need two periodic element
+            at the start and end of the rod. So there are total of 52 elements on memory block including periodic ones.
+            In our numerical method n_nodes=n_elems+1 and n_voronoi=n_elems-1 so there are 53 nodes and 51 voronoi.
+            This requires 3 additional periodic nodes and 1 additional periodic voronoi. We add one of this periodic
+            node at the start of the rod and two at the end of the rod.
+
+            So below magic number 3 is coming from having extra 3 periodic nodes for each ring rod.
+                self.start_idx_in_rod_nodes[:] = (
+                    self.periodic_boundary_nodes_idx[0, 0::3] + 1
+                )
+
+            Same idea is used for elements and voronoi as well.
+            """
             if n_straight_rods != 0:
+                # Here the idea of adding ghost nodes, elems and voronoi of straight rods is that, in memory block
+                # we place first straight rods, then ring rods.
+                # TODO: in future consider a better implementation for packing problem.
                 # +1 is because we want to start from next idx, where periodic boundary starts
                 self.periodic_boundary_nodes_idx += (
                     self.ghost_nodes_idx[n_straight_rods - 1] + 1
@@ -181,6 +204,7 @@ class MemoryBlockCosseratRod(
                     # calculate it.
                     system_to_be_added.rest_kappa[:] = system_to_be_added.kappa[:]
 
+            # We update periodic elements and voronoi because they are used in difference and trapezoidal kernels.
             _synchronize_periodic_boundary_of_vector_collection(
                 self.rest_sigma, self.periodic_boundary_elems_idx
             )
