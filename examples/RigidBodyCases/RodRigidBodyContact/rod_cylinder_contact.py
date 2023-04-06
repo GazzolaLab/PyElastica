@@ -1,11 +1,16 @@
 import numpy as np
-from elastica import *
+import elastica as ea
 from post_processing import plot_velocity, plot_video_with_surface
 
 
 def rod_cylinder_contact_case(inclination_angle=0.0):
     class RodCylinderParallelContact(
-        BaseSystemCollection, Constraints, Connections, CallBacks, Forcing, Damping
+        ea.BaseSystemCollection,
+        ea.Constraints,
+        ea.Connections,
+        ea.CallBacks,
+        ea.Forcing,
+        ea.Damping,
     ):
         pass
 
@@ -29,7 +34,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     direction = np.array([np.sin(inclination_angle), 0.0, np.cos(inclination_angle)])
     normal = np.array([0.0, 1.0, 0.0])
 
-    rod = CosseratRod.straight_rod(
+    rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -52,7 +57,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     cylinder_direction = np.array([0.0, 0.0, 1.0])
     cylinder_normal = np.array([0.0, 1.0, 0.0])
 
-    rigid_body = Cylinder(
+    rigid_body = ea.Cylinder(
         start=cylinder_start,
         direction=cylinder_direction,
         normal=cylinder_normal,
@@ -64,7 +69,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
     # Add contact between rigid body and rod
     rod_cylinder_parallel_contact_simulator.connect(rod, rigid_body).using(
-        ExternalContact,
+        ea.ExternalContact,
         k=5e4,
         nu=0.1,
     )
@@ -72,7 +77,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     # add damping
     damping_constant = 1e-2
     rod_cylinder_parallel_contact_simulator.dampen(rod).using(
-        AnalyticalLinearDamper,
+        ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=time_step,
     )
@@ -80,13 +85,13 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     # Add callbacks
     post_processing_dict_list = []
     # For rod
-    class StraightRodCallBack(CallBackBaseClass):
+    class StraightRodCallBack(ea.CallBackBaseClass):
         """
         Call back function for two arm octopus
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            CallBackBaseClass.__init__(self)
+            ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -120,7 +125,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
                 return
 
-    class RigidCylinderCallBack(CallBackBaseClass):
+    class RigidCylinderCallBack(ea.CallBackBaseClass):
         """
         Call back function for two arm octopus
         """
@@ -128,7 +133,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
         def __init__(
             self, step_skip: int, callback_params: dict, resize_cylinder_elems: int
         ):
-            CallBackBaseClass.__init__(self)
+            ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
             self.n_elem_cylinder = resize_cylinder_elems
@@ -191,14 +196,14 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
                 return
 
-    post_processing_dict_list.append(defaultdict(list))
+    post_processing_dict_list.append(ea.defaultdict(list))
     rod_cylinder_parallel_contact_simulator.collect_diagnostics(rod).using(
         StraightRodCallBack,
         step_skip=step_skip,
         callback_params=post_processing_dict_list[0],
     )
     # For rigid body
-    post_processing_dict_list.append(defaultdict(list))
+    post_processing_dict_list.append(ea.defaultdict(list))
     rod_cylinder_parallel_contact_simulator.collect_diagnostics(rigid_body).using(
         RigidCylinderCallBack,
         step_skip=step_skip,
@@ -207,9 +212,9 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     )
 
     rod_cylinder_parallel_contact_simulator.finalize()
-    timestepper = PositionVerlet()
+    timestepper = ea.PositionVerlet()
 
-    integrate(
+    ea.integrate(
         timestepper, rod_cylinder_parallel_contact_simulator, final_time, total_steps
     )
 

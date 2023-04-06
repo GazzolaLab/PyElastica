@@ -1,7 +1,6 @@
 __doc__ = (
     """ Module containing joint classes to connect rods and rigid bodies together. """
 )
-__all__ = ["GenericSystemTypeFreeJoint", "GenericSystemTypeFixedJoint"]
 from elastica.joint import FreeJoint, FixedJoint
 from elastica.typing import SystemType
 import numpy as np

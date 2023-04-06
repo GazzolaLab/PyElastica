@@ -1,7 +1,8 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
-from elastica import *
+import elastica as ea
+
 from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
     plot_position,
     plot_orientation,
@@ -12,7 +13,12 @@ from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
 
 
 class GeneralConstraintSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.Damping,
+    ea.CallBacks,
 ):
     pass
 
@@ -43,7 +49,7 @@ start_rod_1 = np.zeros((3,))
 start_rod_2 = start_rod_1 + direction * base_length
 
 # Create rod 1
-rod1 = CosseratRod.straight_rod(
+rod1 = ea.CosseratRod.straight_rod(
     n_elem,
     start_rod_1,
     direction,
@@ -59,7 +65,7 @@ general_constraint_sim.append(rod1)
 
 # Apply boundary conditions to rod1: only allow yaw
 general_constraint_sim.constrain(rod1).using(
-    GeneralConstraint,
+    ea.GeneralConstraint,
     constrained_position_idx=(0,),
     constrained_director_idx=(0,),
     translational_constraint_selector=np.array([True, True, True]),
@@ -68,37 +74,37 @@ general_constraint_sim.constrain(rod1).using(
 
 # add forces to endpoint
 general_constraint_sim.add_forcing_to(rod1).using(
-    EndpointForces,
+    ea.EndpointForces,
     start_force=np.zeros((3,)),
     end_force=1e-0 * np.ones((3,)),
     ramp_up_time=0.5,
 )
 # add uniform torsion torque
 general_constraint_sim.add_forcing_to(rod1).using(
-    UniformTorques, torque=1e-3, direction=np.array([0, 0, 1])
+    ea.UniformTorques, torque=1e-3, direction=np.array([0, 0, 1])
 )
 
 # add damping
 damping_constant = 0.4
 general_constraint_sim.dampen(rod1).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 
 
-pp_list_rod1 = defaultdict(list)
+pp_list_rod1 = ea.defaultdict(list)
 
 
 general_constraint_sim.collect_diagnostics(rod1).using(
-    MyCallBack, step_skip=diagnostic_step_skip, callback_params=pp_list_rod1
+    ea.MyCallBack, step_skip=diagnostic_step_skip, callback_params=pp_list_rod1
 )
 
 general_constraint_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 
 print("Total steps", total_steps)
-integrate(timestepper, general_constraint_sim, final_time, total_steps)
+ea.integrate(timestepper, general_constraint_sim, final_time, total_steps)
 
 
 plot_orientation(

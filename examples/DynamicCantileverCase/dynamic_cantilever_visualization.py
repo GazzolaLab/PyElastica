@@ -1,6 +1,6 @@
 __doc__ = """Visualization of simulated dynamic cantilever beam"""
 
-from elastica import *
+import elastica as ea
 from dynamic_cantilever import simulate_dynamic_cantilever_with
 from dynamic_cantilever_post_processing import (
     plot_end_position_with,
@@ -8,7 +8,7 @@ from dynamic_cantilever_post_processing import (
 )
 
 
-class DynamicCantileverSimulator(BaseSystemCollection, Constraints, CallBacks):
+class DynamicCantileverSimulator(ea.BaseSystemCollection, ea.Constraints, ea.CallBacks):
     pass
 
 

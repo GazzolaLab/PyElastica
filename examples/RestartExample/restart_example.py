@@ -3,11 +3,11 @@ This script is an example to how to use Pyelastica restart functionality.
 """
 
 import numpy as np
-from elastica import *
+import elastica as ea
 
 
 class RestartExampleSimulator(
-    BaseSystemCollection, Constraints, Forcing, Damping, CallBacks
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
 ):
     pass
 
@@ -30,7 +30,7 @@ poisson_ratio = 99
 shear_modulus = E / (poisson_ratio + 1.0)
 
 # Create rod
-shearable_rod = CosseratRod.straight_rod(
+shearable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -49,13 +49,13 @@ restart_example_simulator.append(shearable_rod)
 
 # Constrain one end of the rod.
 restart_example_simulator.constrain(shearable_rod).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Add end point forces to rod
 end_force = np.array([-15.0, 0.0, 0.0])
 restart_example_simulator.add_forcing_to(shearable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
+    ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
 )
 
 # add damping
@@ -63,7 +63,7 @@ damping_constant = 10.0
 dl = base_length / n_elem
 dt = 0.01 * dl
 restart_example_simulator.dampen(shearable_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
@@ -78,14 +78,14 @@ SAVE_DATA_RESTART = True
 restart_file_location = "data/"
 
 if LOAD_FROM_RESTART:
-    restart_time = load_state(restart_example_simulator, restart_file_location, True)
+    restart_time = ea.load_state(restart_example_simulator, restart_file_location, True)
 else:
     restart_time = np.float64(0.0)
 
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 total_steps = int(final_time / dt)
 
-time = integrate(
+time = ea.integrate(
     timestepper,
     restart_example_simulator,
     final_time,
@@ -97,4 +97,4 @@ time = integrate(
 # `restart_file_location` directory there is one file called system_0.npz . For each system appended on the simulator
 # separate system_#.npz file will be created.
 if SAVE_DATA_RESTART:
-    save_state(restart_example_simulator, restart_file_location, time, True)
+    ea.save_state(restart_example_simulator, restart_file_location, time, True)

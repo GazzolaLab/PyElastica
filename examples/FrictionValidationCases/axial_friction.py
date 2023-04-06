@@ -1,13 +1,13 @@
 __doc__ = """Axial friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
 section 4.1.4 and Appendix G """
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.FrictionValidationCases.friction_validation_postprocessing import (
     plot_axial_friction_validation,
 )
 
 
-class AxialFrictionSimulator(BaseSystemCollection, Constraints, Forcing):
+class AxialFrictionSimulator(ea.BaseSystemCollection, ea.Constraints, ea.Forcing):
     pass
 
 
@@ -39,7 +39,7 @@ def simulate_axial_friction_with(force=0.0):
     # Set shear matrix
     shear_matrix = np.repeat(1e4 * np.identity((3))[:, :, np.newaxis], n_elem, axis=2)
 
-    shearable_rod = CosseratRod.straight_rod(
+    shearable_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -56,17 +56,17 @@ def simulate_axial_friction_with(force=0.0):
     shearable_rod.shear_matrix = shear_matrix
 
     axial_friction_sim.append(shearable_rod)
-    axial_friction_sim.constrain(shearable_rod).using(FreeBC)
+    axial_friction_sim.constrain(shearable_rod).using(ea.FreeBC)
 
     # Add gravitational forces
     gravitational_acc = -9.80665
     axial_friction_sim.add_forcing_to(shearable_rod).using(
-        GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+        ea.GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
     )
 
     # Add Uniform force on the rod
     axial_friction_sim.add_forcing_to(shearable_rod).using(
-        UniformForces, force=1.0 * force, direction=direction
+        ea.UniformForces, force=1.0 * force, direction=direction
     )
 
     # Add friction forces
@@ -77,7 +77,7 @@ def simulate_axial_friction_with(force=0.0):
     kinetic_mu_array = np.array([0.4, 0.2, 0.2])  # [forward, backward, sideways]
 
     axial_friction_sim.add_forcing_to(shearable_rod).using(
-        AnisotropicFrictionalPlane,
+        ea.AnisotropicFrictionalPlane,
         k=10.0,
         nu=1e-4,
         plane_origin=origin_plane,
@@ -88,13 +88,13 @@ def simulate_axial_friction_with(force=0.0):
     )
 
     axial_friction_sim.finalize()
-    timestepper = PositionVerlet()
+    timestepper = ea.PositionVerlet()
 
     final_time = 0.25
     dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    integrate(timestepper, axial_friction_sim, final_time, total_steps)
+    ea.integrate(timestepper, axial_friction_sim, final_time, total_steps)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()

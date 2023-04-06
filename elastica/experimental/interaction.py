@@ -1,7 +1,4 @@
 __doc__ = """ Experimental interaction implementation."""
-__all__ = [
-    "AnisotropicFrictionalPlaneRigidBody",
-]
 
 
 import numpy as np

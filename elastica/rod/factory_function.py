@@ -1,5 +1,4 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
-__all__ = ["allocate"]
 from typing import Optional, Tuple
 import logging
 import numpy as np
