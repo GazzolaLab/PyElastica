@@ -47,7 +47,9 @@ def test_block_structure_scalar_validity(n_rods):
     """
 
     world_bodies = [MockRigidBody() for _ in range(n_rods)]
-    block_structure = MemoryBlockRigidBody(world_bodies)
+    block_structure = MemoryBlockRigidBody(
+        world_bodies, [i for i in range(len(world_bodies))]
+    )
 
     for i in range(n_rods):
 
@@ -124,7 +126,9 @@ def test_block_structure_vectors_validity(n_rods):
 
     """
     world_bodies = [MockRigidBody() for _ in range(n_rods)]
-    block_structure = MemoryBlockRigidBody(world_bodies)
+    block_structure = MemoryBlockRigidBody(
+        world_bodies, [i for i in range(len(world_bodies))]
+    )
 
     for i in range(n_rods):
 
@@ -184,7 +188,9 @@ def test_block_structure_matrix_validity(n_rods):
 
     """
     world_bodies = [MockRigidBody() for _ in range(n_rods)]
-    block_structure = MemoryBlockRigidBody(world_bodies)
+    block_structure = MemoryBlockRigidBody(
+        world_bodies, [i for i in range(len(world_bodies))]
+    )
 
     for i in range(n_rods):
         # director collection
@@ -246,7 +252,9 @@ def test_block_structure_symplectic_stepper_variables_validity(n_rods):
 
     """
     world_bodies = [MockRigidBody() for _ in range(n_rods)]
-    block_structure = MemoryBlockRigidBody(world_bodies)
+    block_structure = MemoryBlockRigidBody(
+        world_bodies, [i for i in range(len(world_bodies))]
+    )
 
     for i in range(n_rods):
 

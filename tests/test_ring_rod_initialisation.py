@@ -1,18 +1,14 @@
-__doc__ = """Tests for rod initialisation module"""
-from elastica.rod.factory_function import allocate
-from elastica.utils import MaxDimension, Tolerance
-
-import logging
-
+__doc__ = """Test for ring rod initialization module"""
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 import pytest
+from elastica.utils import MaxDimension, Tolerance
+from elastica.rod.factory_function import allocate_ring_rod
 
-import sys
 
-
-class MockRodForTest:
+class MockRingRodForTest:
     def __init__(
         self,
         n_elements,
@@ -94,10 +90,10 @@ class MockRodForTest:
         self.ring_rod_flag = ring_rod_flag
 
     @classmethod
-    def straight_rod(
+    def ring_rod(
         cls,
         n_elements,
-        start,
+        ring_center_position,
         direction,
         normal,
         base_length,
@@ -105,7 +101,6 @@ class MockRodForTest:
         density,
         nu,
         youngs_modulus,
-        # poisson_ratio,
         *args,
         **kwargs,
     ):
@@ -147,9 +142,9 @@ class MockRodForTest:
             internal_couple,
             damping_forces,
             damping_torques,
-        ) = allocate(
+        ) = allocate_ring_rod(
             n_elements,
-            start,
+            ring_center_position,
             direction,
             normal,
             base_length,
@@ -157,13 +152,12 @@ class MockRodForTest:
             density,
             nu,
             youngs_modulus,
-            alpha_c=(27.0 / 28.0),
             *args,
             **kwargs,
         )
 
-        # Straight rod is not ring rod set flag to false
-        ring_rod_flag = False
+        # Ring rod flag is true
+        ring_rod_flag = True
 
         return cls(
             n_elements,
@@ -209,48 +203,6 @@ class MockRodForTest:
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_deprecated_rod_nu_option(n_elems, caplog):
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0] = np.random.randn(n_elems + 1)
-    correct_position[1] = np.random.randn(n_elems + 1)
-    correct_position[..., 0] = start
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    correct_warning_message = (
-        "The option to set damping coefficient (nu) for the rod during rod "
-        "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class. "
-        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
-        "and for usage check examples/axial_stretching.py "
-        "The option to set damping coefficient (nu) during rod construction "
-        "will be removed in the future (v0.3.1)."
-    )
-    caplog.set_level(logging.WARNING)
-    _ = MockRodForTest.straight_rod(
-        n_elems,
-        start,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        shear_modulus=shear_modulus,
-        position=correct_position,
-    )
-    assert correct_warning_message in caplog.text
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
 def test_input_and_output_position_array(n_elems):
     """
     This test, tests the case if the input position array
@@ -263,7 +215,6 @@ def test_input_and_output_position_array(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -271,17 +222,16 @@ def test_input_and_output_position_array(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
+    poisson_ratio = 0.5
 
     # Check if the input position vector and output position vector are valid and same
-    correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0] = np.random.randn(n_elems + 1)
-    correct_position[1] = np.random.randn(n_elems + 1)
-    correct_position[..., 0] = start
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    mockrod = MockRodForTest.straight_rod(
+    correct_position = np.zeros((3, n_elems))
+    correct_position[0] = np.random.randn(n_elems)
+    correct_position[1] = np.random.randn(n_elems)
+    center_position = np.mean(correct_position, axis=1)
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_position,
         direction,
         normal,
         base_length,
@@ -289,7 +239,6 @@ def test_input_and_output_position_array(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         position=correct_position,
     )
     test_position = mockrod.position_collection
@@ -298,10 +247,10 @@ def test_input_and_output_position_array(n_elems):
 
 @pytest.mark.xfail(raises=AssertionError)
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_input_and_position_array_for_different_start(n_elems):
+def test_input_and_position_array_for_different_center_offset(n_elems):
     """
     This function tests fail check, for which input position array
-    first element is not user defined start position.
+    first element is not user defined center_offset position.
     Parameters
     ----------
     n_elems
@@ -310,7 +259,7 @@ def test_input_and_position_array_for_different_start(n_elems):
     -------
 
     """
-    start = np.random.randn(3)
+    center_offset = np.random.randn(3)
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -319,13 +268,12 @@ def test_input_and_position_array_for_different_start(n_elems):
     nu = 0.1
     youngs_modulus = 1e6
     poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    # Check if the input position vector start position is different than the user defined start position
-    correct_position = np.random.randn(3, n_elems + 1)
-    mockrod = MockRodForTest.straight_rod(
+    # Check if the input position vector center_offset position is different than the user defined center_offset position
+    correct_position = np.random.randn(3, n_elems)
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -333,7 +281,6 @@ def test_input_and_position_array_for_different_start(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         position=correct_position,
     )
     test_position = mockrod.position_collection
@@ -343,14 +290,14 @@ def test_input_and_position_array_for_different_start(n_elems):
 def test_compute_position_array_using_user_inputs():
     """
     This test checks if the allocate function can compute correctly
-    position vector using start, direction and base length inputs.
+    position vector using center_offset, direction and base length inputs.
     Returns
     -------
 
     """
-    n_elems = 4
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
+    n_elems = 5
+    center_offset = np.array([0.0, 0.0, 0.0])
+    direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
@@ -358,11 +305,10 @@ def test_compute_position_array_using_user_inputs():
     nu = 0.1
     youngs_modulus = 1e6
     poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     # Check if without input position vector, output position vector is valid
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -370,15 +316,21 @@ def test_compute_position_array_using_user_inputs():
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
-    correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0, :] = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+    correct_position = np.zeros((3, n_elems))
+    for i in range(n_elems):
+        correct_position[..., i] = (
+            base_length
+            / (2 * np.pi)
+            * np.array(
+                [np.cos(2 * np.pi / n_elems * i), np.sin(2 * np.pi / n_elems * i), 0]
+            )
+        )
     test_position = mockrod.position_collection
     assert_allclose(correct_position, test_position, atol=Tolerance.atol())
 
 
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
+@pytest.mark.parametrize("n_elems", [4, 5, 10])
 def test_compute_directors_matrix_using_user_inputs(n_elems):
     """
     This test checks the director array created by allocate function. For this
@@ -387,8 +339,8 @@ def test_compute_directors_matrix_using_user_inputs(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
+    direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
@@ -396,21 +348,31 @@ def test_compute_directors_matrix_using_user_inputs(n_elems):
     nu = 0.1
     youngs_modulus = 1e6
     poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     # Check directors, if we dont input any directors, computed ones should be valid
     correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
-    binormal = np.cross(direction, normal)
-    tangent_collection = np.repeat(direction[:, np.newaxis], n_elems, axis=1)
+    tangent_collection = np.zeros((MaxDimension.value(), n_elems))
+    binormal_collection = np.zeros((MaxDimension.value(), n_elems))
     normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
-    binormal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
+
+    angle = 2 * np.pi / n_elems
+    for i in range(n_elems):
+        tangent_collection[..., i] = np.array(
+            [
+                np.cos(angle * (i + 1)) - np.cos(angle * i),
+                np.sin(angle * (i + 1)) - np.sin(angle * i),
+                0,
+            ]
+        )
+        tangent_collection[..., i] /= np.linalg.norm(tangent_collection[..., i])
+        binormal_collection[..., i] = np.cross(tangent_collection[..., i], normal)
 
     correct_directors[0, ...] = normal_collection
     correct_directors[1, ...] = binormal_collection
     correct_directors[2, ...] = tangent_collection
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -418,7 +380,6 @@ def test_compute_directors_matrix_using_user_inputs(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
     test_directors = mockrod.director_collection
     assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
@@ -437,7 +398,7 @@ def test_directors_using_input_position_array(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -446,24 +407,42 @@ def test_directors_using_input_position_array(n_elems):
     nu = 0.1
     youngs_modulus = 1e6
     poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     # Check directors, give position as input and let allocate function to compute directors.
-    input_position = np.zeros((3, n_elems + 1))
-    input_position[0, :] = np.linspace(start[0], start[0] + base_length, n_elems + 1)
+    input_position = np.zeros((3, n_elems))
+    for i in range(n_elems):
+        input_position[..., i] = (
+            base_length
+            / (2 * np.pi)
+            * np.array(
+                [np.sin(2 * np.pi / n_elems * i), np.cos(2 * np.pi / n_elems * i), 0]
+            )
+        )
+    center_offset = np.mean(input_position, axis=1)
 
     correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
-    binormal = np.cross(direction, normal)
-    tangent_collection = np.repeat(direction[:, np.newaxis], n_elems, axis=1)
+    tangent_collection = np.zeros((MaxDimension.value(), n_elems))
+    binormal_collection = np.zeros((MaxDimension.value(), n_elems))
     normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
-    binormal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
+
+    angle = 2 * np.pi / n_elems
+    for i in range(n_elems):
+        tangent_collection[..., i] = np.array(
+            [
+                np.sin(angle * (i + 1)) - np.sin(angle * i),
+                np.cos(angle * (i + 1)) - np.cos(angle * i),
+                0,
+            ]
+        )
+        tangent_collection[..., i] /= np.linalg.norm(tangent_collection[..., i])
+        binormal_collection[..., i] = np.cross(tangent_collection[..., i], normal)
 
     correct_directors[0, ...] = normal_collection
     correct_directors[1, ...] = binormal_collection
     correct_directors[2, ...] = tangent_collection
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -471,64 +450,7 @@ def test_directors_using_input_position_array(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         position=input_position,
-    )
-    test_directors = mockrod.director_collection
-    assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_directors_using_input_directory_array(n_elems):
-    """
-    This test is testing the case for which directors are given as user input.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    angle = np.random.uniform(0, 2 * np.pi)
-    normal = np.array([0.0, np.cos(angle), np.sin(angle)])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    # Check directors, give position as input and let allocate function to compute directors.
-    input_position = np.zeros((3, n_elems + 1))
-    input_position[0, :] = np.linspace(start[0], start[0] + base_length, n_elems + 1)
-
-    correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
-    binormal = np.cross(direction, normal)
-    tangent_collection = np.repeat(direction[:, np.newaxis], n_elems, axis=1)
-    normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
-    binormal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
-
-    correct_directors[0, ...] = normal_collection
-    correct_directors[1, ...] = binormal_collection
-    correct_directors[2, ...] = tangent_collection
-
-    mockrod = MockRodForTest.straight_rod(
-        n_elems,
-        start,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        shear_modulus=shear_modulus,
-        position=input_position,
-        directors=correct_directors,
     )
     test_directors = mockrod.director_collection
     assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
@@ -544,7 +466,7 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
 
     """
     n_elems = 10
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -552,8 +474,6 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     # Check directors, give directors as input and check their validity.
     # Let the assertion fail by setting d3=d2 for the input director
     input_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
@@ -565,9 +485,9 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
     input_directors[1, ...] = binormal_collection
     input_directors[2, ...] = binormal_collection
 
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -575,53 +495,52 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         directors=input_directors,
     )
 
 
-@pytest.mark.xfail(raises=AssertionError)
-def test_director_if_tangent_and_d3_are_not_same():
+@pytest.mark.parametrize("n_elems", [5, 10, 50])
+def test_validity_of_user_defined_directors_matrix(n_elems):
     """
-    This test is checking the case if the tangent and d3 of the directors
-    are not equal to each other.
+    This test checks if the user defined directors are allocated correctly by allocate function.
 
     Returns
     -------
 
     """
-    n_elems = 10
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
+    direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    # Check directors, if we dont input any directors, computed ones should be valid
+    correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
+    tangent_collection = np.zeros((MaxDimension.value(), n_elems))
+    binormal_collection = np.zeros((MaxDimension.value(), n_elems))
+    normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
 
-    position = np.zeros((3, n_elems + 1))
-    end = start + direction * base_length
-    for i in range(0, 3):
-        position[i, ...] = np.linspace(start[i], end[i], n_elems + 1)
+    angle = 2 * np.pi / n_elems
+    for i in range(n_elems):
+        tangent_collection[..., i] = np.array(
+            [
+                np.cos(angle * (i + 1)) - np.cos(angle * i),
+                np.sin(angle * (i + 1)) - np.sin(angle * i),
+                0,
+            ]
+        )
+        tangent_collection[..., i] /= np.linalg.norm(tangent_collection[..., i])
+        binormal_collection[..., i] = np.cross(tangent_collection[..., i], normal)
 
-    # Set the directors such that tangent and d3 are not same.
-    input_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
-    binormal = np.cross(direction, normal)
-    normal_collection = np.repeat(binormal[:, np.newaxis], n_elems, axis=1)
-    binormal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
-    new_direction = np.cross(binormal, normal)
-    direction_collection = np.repeat(new_direction[:, np.newaxis], n_elems, axis=1)
+    correct_directors[0, ...] = normal_collection
+    correct_directors[1, ...] = binormal_collection
+    correct_directors[2, ...] = tangent_collection
 
-    input_directors[0, ...] = normal_collection
-    input_directors[1, ...] = binormal_collection
-    input_directors[2, ...] = direction_collection
-
-    MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -629,10 +548,10 @@ def test_director_if_tangent_and_d3_are_not_same():
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
-        position=position,
-        directors=input_directors,
+        directors=correct_directors,
     )
+    test_directors = mockrod.director_collection
+    assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -648,7 +567,7 @@ def test_compute_radius_using_base_radius(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -656,12 +575,10 @@ def test_compute_radius_using_base_radius(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -669,7 +586,6 @@ def test_compute_radius_using_base_radius(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
     correct_radius = base_radius * np.ones((n_elems))
     test_radius = mockrod.radius
@@ -689,7 +605,7 @@ def test_radius_using_user_defined_radius(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -697,12 +613,10 @@ def test_radius_using_user_defined_radius(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -710,7 +624,6 @@ def test_radius_using_user_defined_radius(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
     correct_radius = base_radius
     test_radius = mockrod.radius
@@ -731,7 +644,7 @@ def test_radius_not_correct_radius_shape(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -739,11 +652,9 @@ def test_radius_not_correct_radius_shape(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -751,209 +662,7 @@ def test_radius_not_correct_radius_shape(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-@pytest.mark.parametrize("shear_modulus", [5e3, 10e3, 50e3])
-def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
-    """
-    This test, is checking if for user defined shear modulus and validity of shear matrix.
-
-    Returns
-    -------
-
-    """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.1
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    base_area = np.pi * base_radius ** 2
-
-    mockrod = MockRodForTest.straight_rod(
-        n_elems,
-        start,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        shear_modulus=shear_modulus,
-    )
-
-    test_shear_matrix = mockrod.shear_matrix
-
-    correct_shear_matrix = np.zeros((3, 3))
-    np.fill_diagonal(
-        correct_shear_matrix[:],
-        [
-            (27.0 / 28.0) * shear_modulus * base_area,
-            (27.0 / 28.0) * shear_modulus * base_area,
-            youngs_modulus * base_area,
-        ],
-    )
-
-    for k in range(n_elems):
-        assert_allclose(
-            correct_shear_matrix,
-            test_shear_matrix[..., k],
-            atol=Tolerance.atol(),
-        )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-@pytest.mark.parametrize("shear_modulus", [5e3, 10e3, 50e3])
-def test_shear_matrix_for_varying_shear_modulus_error_message_check_if_poisson_ratio_defined(
-    n_elems, shear_modulus
-):
-    """
-    This test, is checking if for user defined shear modulus and validity of shear matrix,
-    if the poisson ratio is defined. We expect if poisson ratio and shear modulus defined together then Elastica will
-    raise a  UserWarning message and use the user defined shear modulus.
-
-    Returns
-    -------
-
-    """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.1
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    base_area = np.pi * base_radius ** 2
-
-    with pytest.raises(NameError):
-        mockrod = MockRodForTest.straight_rod(
-            n_elems,
-            start,
-            direction,
-            normal,
-            base_length,
-            base_radius,
-            density,
-            nu,
-            youngs_modulus,
-            shear_modulus=shear_modulus,
-            poisson_ratio=poisson_ratio,
-        )
-
-
-def test_inertia_shear_bend_matrices_for_varying_radius():
-    """
-    This test, is checking if for user defined varying radius, validity
-    of mass second moment of inertia, inv mass moment of inertia, shear and bend
-    matrices.
-    Returns
-    -------
-
-    """
-    n_elems = 4
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = np.array([0.1, 0.2, 0.3, 0.4])
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-
-    mockrod = MockRodForTest.straight_rod(
-        n_elems,
-        start,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        shear_modulus=shear_modulus,
-    )
-
-    correct_mass_second_moment_of_inertia = np.array(
-        [
-            [0.019634954, 0.019634954, 0.039269908],
-            [0.314159265, 0.314159265, 0.628318531],
-            [1.590431281, 1.590431281, 3.180862562],
-            [5.026548246, 5.026548246, 10.05309649],
-        ]
-    )
-
-    correct_inv_mass_second_moment_of_inertia = np.array(
-        [
-            [50.92958179, 50.92958179, 25.46479089],
-            [3.183098862, 3.183098862, 1.591549431],
-            [0.628760269, 0.628760269, 0.314380135],
-            [0.198943679, 0.198943679, 0.099471839],
-        ]
-    )
-
-    correct_shear_matrix = np.array(
-        [
-            [23303.02243, 23303.02243, 31415.92654],
-            [93212.08972, 93212.08972, 125663.7061],
-            [209727.20187, 209727.20187, 282743.33882],
-            [372848.35889, 372848.35889, 502654.82],
-        ]
-    )
-
-    correct_bend_matrix = np.array(
-        [
-            [667.58844, 667.58844, 1027.05914],
-            [3809.18109, 3809.18109, 5860.27860],
-            [13233.95905, 13233.95905, 20359.93700],
-        ]
-    )
-
-    correct_volume = np.array([0.007853982, 0.031415927, 0.070685835, 0.125663706])
-
-    test_mass_second_moment_of_inertia = mockrod.mass_second_moment_of_inertia
-    test_inv_mass_second_moment_of_inertia = mockrod.inv_mass_second_moment_of_inertia
-    test_shear_matrix = mockrod.shear_matrix
-    test_bend_matrix = mockrod.bend_matrix
-    for k in range(n_elems):
-        for i in range(3):
-            assert_allclose(
-                correct_mass_second_moment_of_inertia[k, i],
-                test_mass_second_moment_of_inertia[i, i, k],
-                atol=Tolerance.atol(),
-            )
-
-            assert_allclose(
-                correct_inv_mass_second_moment_of_inertia[k, i],
-                test_inv_mass_second_moment_of_inertia[i, i, k],
-                atol=Tolerance.atol(),
-            )
-
-            assert_allclose(
-                correct_shear_matrix[k, i],
-                test_shear_matrix[i, i, k],
-                atol=Tolerance.atol(),
-            )
-
-    for k in range(n_elems - 1):
-        for i in range(3):
-            assert_allclose(
-                correct_bend_matrix[k, i],
-                test_bend_matrix[i, i, k],
-                atol=Tolerance.atol(),
-            )
-
-    test_volume = mockrod.volume
-    assert_allclose(correct_volume, test_volume, atol=Tolerance.atol())
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -969,20 +678,31 @@ def test_constant_density(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
+    direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    correct_position = np.zeros((3, n_elems + 1))
+    for i in range(n_elems):
+        correct_position[..., i] = (
+            base_length
+            / (2 * np.pi)
+            * np.array(
+                [np.cos(2 * np.pi / n_elems * i), np.sin(2 * np.pi / n_elems * i), 0]
+            )
+        )
+    center_offset = np.mean(correct_position[:, :-1], axis=1)
+    correct_position[..., -1] = correct_position[..., 0]
+    position_diff = correct_position[..., 1:] - correct_position[..., :-1]
+    correct_length = np.linalg.norm(position_diff, axis=0)
+
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -990,15 +710,11 @@ def test_constant_density(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
-    correct_mass = density * np.pi * base_radius ** 2 * base_length / n_elems
+    correct_mass = density * np.pi * base_radius ** 2 * correct_length
     test_mass = mockrod.mass
 
-    for i in range(1, n_elems):
-        assert_allclose(correct_mass, test_mass[i], atol=Tolerance.atol())
-    assert_allclose(0.5 * correct_mass, test_mass[0], atol=Tolerance.atol())
-    assert_allclose(0.5 * correct_mass, test_mass[-1], atol=Tolerance.atol())
+    assert_allclose(correct_mass, test_mass, atol=Tolerance.atol())
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -1013,20 +729,18 @@ def test_varying_density(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
+    direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
     density = np.linspace(500, 1000, n_elems)
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1034,12 +748,23 @@ def test_varying_density(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
-    volume = np.pi * base_radius ** 2 * base_length / n_elems
-    correct_mass = np.zeros(n_elems + 1)
-    correct_mass[:-1] += 0.5 * density * volume
-    correct_mass[1:] += 0.5 * density * volume
+
+    correct_position = np.zeros((3, n_elems + 1))
+    for i in range(n_elems):
+        correct_position[..., i] = (
+            base_length
+            / (2 * np.pi)
+            * np.array(
+                [np.cos(2 * np.pi / n_elems * i), np.sin(2 * np.pi / n_elems * i), 0]
+            )
+        )
+    correct_position[..., -1] = correct_position[..., 0]
+    position_diff = correct_position[..., 1:] - correct_position[..., :-1]
+    correct_length = np.linalg.norm(position_diff, axis=0)
+
+    volume = np.pi * base_radius ** 2 * correct_length
+    correct_mass = density * volume
     test_mass = mockrod.mass
 
     assert_allclose(correct_mass, test_mass, atol=Tolerance.atol())
@@ -1059,7 +784,7 @@ def test_density_invalid_shape(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1067,11 +792,9 @@ def test_density_invalid_shape(n_elems):
     density = np.linspace(500, 1000, n_elems).reshape(1, n_elems)
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1079,7 +802,6 @@ def test_density_invalid_shape(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
 
 
@@ -1097,7 +819,7 @@ def test_constant_nu_for_forces(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1105,12 +827,10 @@ def test_constant_nu_for_forces(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1118,7 +838,6 @@ def test_constant_nu_for_forces(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
     correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
@@ -1139,20 +858,18 @@ def test_varying_nu_for_forces(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = np.linspace(0.1, 1.0, n_elems + 1)
+    nu = np.linspace(0.1, 1.0, n_elems)
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1160,7 +877,6 @@ def test_varying_nu_for_forces(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
     correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_forces
@@ -1181,7 +897,7 @@ def test_nu_for_forces_invalid_shape(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1189,11 +905,9 @@ def test_nu_for_forces_invalid_shape(n_elems):
     density = 1000
     nu = np.linspace(0.1, 1.0, n_elems).reshape(1, n_elems)
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1201,7 +915,6 @@ def test_nu_for_forces_invalid_shape(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
 
 
@@ -1219,7 +932,7 @@ def test_constant_nu_for_torques(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1228,12 +941,10 @@ def test_constant_nu_for_torques(n_elems):
     nu_for_forces = 0.2
     nu_for_torques = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1241,13 +952,9 @@ def test_constant_nu_for_torques(n_elems):
         density,
         nu_for_forces,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         nu_for_torques=nu_for_torques,
     )
-    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
-    elemental_mass[0] += 0.5 * mockrod.mass[0]
-    elemental_mass[-1] += 0.5 * mockrod.mass[-1]
-    correct_nu = nu_for_torques * elemental_mass
+    correct_nu = nu_for_torques * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1267,7 +974,7 @@ def test_varying_nu_for_torques(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1276,12 +983,10 @@ def test_varying_nu_for_torques(n_elems):
     nu = 0.1
     nu_for_torques = np.linspace(0.1, 1.0, n_elems)
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1289,13 +994,9 @@ def test_varying_nu_for_torques(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         nu_for_torques=nu_for_torques,
     )
-    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
-    elemental_mass[0] += mockrod.mass[0] / 2.0
-    elemental_mass[-1] += mockrod.mass[-1] / 2.0
-    correct_nu = nu_for_torques * elemental_mass
+    correct_nu = nu_for_torques * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1314,7 +1015,7 @@ def test_nu_for_torques_invalid_shape(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1323,11 +1024,9 @@ def test_nu_for_torques_invalid_shape(n_elems):
     nu = 0.1
     nu_for_torques = np.linspace(0.1, 1.0, n_elems).reshape(1, n_elems)
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1335,7 +1034,6 @@ def test_nu_for_torques_invalid_shape(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         nu_for_torques=nu_for_torques,
     )
 
@@ -1355,7 +1053,7 @@ def test_constant_nu_for_torques_if_not_input(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1363,12 +1061,10 @@ def test_constant_nu_for_torques_if_not_input(n_elems):
     density = 1000
     nu = 0.2
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1376,12 +1072,8 @@ def test_constant_nu_for_torques_if_not_input(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
-    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
-    elemental_mass[0] += 0.5 * mockrod.mass[0]
-    elemental_mass[-1] += 0.5 * mockrod.mass[-1]
-    correct_nu = nu * elemental_mass
+    correct_nu = nu * mockrod.mass
     test_nu = mockrod.dissipation_constant_for_torques
     assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
@@ -1399,7 +1091,7 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1407,15 +1099,13 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     input_rest_sigma = np.random.randn(3, n_elems)
-    input_rest_kappa = np.random.randn(3, n_elems - 1)
+    input_rest_kappa = np.random.randn(3, n_elems)
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1423,7 +1113,6 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         rest_sigma=input_rest_sigma,
         rest_kappa=input_rest_kappa,
     )
@@ -1451,7 +1140,7 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
     -------
 
     """
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1459,15 +1148,13 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     input_rest_sigma = np.random.randn(3, n_elems).reshape(n_elems, 3)
     input_rest_kappa = np.random.randn(3, n_elems - 1).reshape(n_elems - 1, 3)
 
-    MockRodForTest.straight_rod(
+    MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1475,7 +1162,6 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
         rest_sigma=input_rest_sigma,
         rest_kappa=input_rest_kappa,
     )
@@ -1495,7 +1181,7 @@ def test_validity_of_allocated(n_elems):
 
     """
 
-    start = np.array([0.0, 0.0, 0.0])
+    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -1503,11 +1189,9 @@ def test_validity_of_allocated(n_elems):
     density = 1000
     nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
-    shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1515,16 +1199,15 @@ def test_validity_of_allocated(n_elems):
         density,
         nu,
         youngs_modulus,
-        shear_modulus=shear_modulus,
     )
 
     assert_allclose(n_elems, mockrod.n_elems, atol=Tolerance.atol())
     assert_allclose(
-        mockrod.velocity_collection, np.zeros((3, n_elems + 1)), atol=Tolerance.atol()
+        mockrod.velocity_collection, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
         mockrod.acceleration_collection,
-        np.zeros((3, n_elems + 1)),
+        np.zeros((3, n_elems)),
         atol=Tolerance.atol(),
     )
     assert_allclose(
@@ -1534,13 +1217,13 @@ def test_validity_of_allocated(n_elems):
         mockrod.alpha_collection, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
-        mockrod.internal_forces, np.zeros((3, n_elems + 1)), atol=Tolerance.atol()
+        mockrod.internal_forces, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
         mockrod.internal_torques, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
-        mockrod.external_forces, np.zeros((3, n_elems + 1)), atol=Tolerance.atol()
+        mockrod.external_forces, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
         mockrod.external_torques, np.zeros((3, n_elems)), atol=Tolerance.atol()
@@ -1549,42 +1232,40 @@ def test_validity_of_allocated(n_elems):
     assert_allclose(mockrod.tangents, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.dilatation, np.zeros((n_elems)), atol=Tolerance.atol())
     assert_allclose(
-        mockrod.voronoi_dilatation, np.zeros((n_elems - 1)), atol=Tolerance.atol()
+        mockrod.voronoi_dilatation, np.zeros((n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(mockrod.dilatation_rate, np.zeros((n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.sigma, np.zeros((3, n_elems)), atol=Tolerance.atol())
-    assert_allclose(mockrod.kappa, np.zeros((3, n_elems - 1)), atol=Tolerance.atol())
+    assert_allclose(mockrod.kappa, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.rest_sigma, np.zeros((3, n_elems)), atol=Tolerance.atol())
-    assert_allclose(
-        mockrod.rest_kappa, np.zeros((3, n_elems - 1)), atol=Tolerance.atol()
-    )
+    assert_allclose(mockrod.rest_kappa, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(
         mockrod.internal_stress, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
-        mockrod.internal_couple, np.zeros((3, n_elems - 1)), atol=Tolerance.atol()
+        mockrod.internal_couple, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
-        mockrod.damping_forces, np.zeros((3, n_elems + 1)), atol=Tolerance.atol()
+        mockrod.damping_forces, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
         mockrod.damping_torques, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
 
 
-@pytest.mark.parametrize("n_elems", [5, 20, 50])
-def test_straight_rod(n_elems):
+@pytest.mark.parametrize("n_elems", [80])
+def test_ring_rod(n_elems):
 
     # setting up test params
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    center_offset = np.random.rand(3)
+    direction = np.array([1.0, 0, 0.0])
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
+    binormal = np.cross(direction, normal)
     base_length = 10
     base_radius = np.random.uniform(1, 10)
     density = np.random.uniform(1, 10)
-    mass = density * np.pi * base_radius ** 2 * base_length / n_elems
 
     nu = 0.1
     # Youngs Modulus [Pa]
@@ -1592,8 +1273,28 @@ def test_straight_rod(n_elems):
     # poisson ratio
     poisson_ratio = 0.5
     # Shear Modulus [Pa]
-    G = E / (1.0 + poisson_ratio)
-    # alpha c, constant for circular cross-sections
+    G = E / (2 * (1.0 + poisson_ratio))
+
+    correct_position = np.zeros((3, n_elems))
+    for i in range(n_elems):
+        correct_position[..., i] = (
+            base_length
+            / (2 * np.pi)
+            * (
+                np.cos(2 * np.pi / n_elems * i) * binormal
+                + np.sin(2 * np.pi / n_elems * i) * direction
+            )
+        ) + center_offset
+
+    position_diff_temp = np.hstack(
+        (correct_position, correct_position[..., 0].reshape(3, 1))
+    )
+    position_diff = position_diff_temp[..., 1:] - position_diff_temp[..., :-1]
+    correct_length = np.linalg.norm(position_diff, axis=0)
+
+    mass = density * np.pi * base_radius ** 2 * correct_length
+
+    # alpha c, constant for ring cross-sections
     # Second moment of inertia
     A0 = np.pi * base_radius * base_radius
     I0_1 = A0 * A0 / (4.0 * np.pi)
@@ -1601,24 +1302,29 @@ def test_straight_rod(n_elems):
     I0_3 = 2.0 * I0_2
     I0 = np.array([I0_1, I0_2, I0_3])
     # Mass second moment of inertia for disk cross-section
-    mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(
-        mass_second_moment_of_inertia, I0 * density * base_length / n_elems
-    )
-    # Inverse mass second of inertia
-    inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
+    mass_second_moment_of_inertia = np.zeros((3, 3, n_elems), np.float64)
+    inv_mass_second_moment_of_inertia = np.zeros((3, 3, n_elems), np.float64)
+    for i in range(n_elems):
+        np.fill_diagonal(
+            mass_second_moment_of_inertia[..., i], I0 * density * correct_length[i]
+        )
+        # Inverse mass second of inertia
+        inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
+            mass_second_moment_of_inertia[..., i]
+        )
     # Shear/Stretch matrix
     shear_matrix = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(
-        shear_matrix, [(27.0 / 28.0) * G * A0, (27.0 / 28.0) * G * A0, E * A0]
-    )
+    # Value taken based on best correlation for Poisson ratio = 0.5, from
+    # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
+    alpha_c = 27.0 / 28.0
+    np.fill_diagonal(shear_matrix, [alpha_c * G * A0, alpha_c * G * A0, E * A0])
     # Bend/Twist matrix
     bend_matrix = np.zeros((3, 3), np.float64)
     np.fill_diagonal(bend_matrix, [E * I0_1, E * I0_2, G * I0_3])
 
-    mockrod = MockRodForTest.straight_rod(
+    mockrod = MockRingRodForTest.ring_rod(
         n_elems,
-        start,
+        center_offset,
         direction,
         normal,
         base_length,
@@ -1626,90 +1332,79 @@ def test_straight_rod(n_elems):
         density,
         nu,
         E,
-        shear_modulus=G,
     )
     # checking origin and length of rod
-    assert_allclose(mockrod.position_collection[..., 0], start, atol=Tolerance.atol())
-    rod_length = np.linalg.norm(
-        mockrod.position_collection[..., -1] - mockrod.position_collection[..., 0]
+    assert_allclose(
+        mockrod.position_collection[..., 0],
+        center_offset + (base_length / (2 * np.pi)) * binormal,
+        atol=Tolerance.atol(),
     )
+    rod_length = mockrod.rest_lengths.sum()
+    lenghts_temp = np.hstack((correct_length, correct_length[0]))
     rest_voronoi_lengths = 0.5 * (
-        base_length / n_elems + base_length / n_elems
+        lenghts_temp[1:] + lenghts_temp[:-1]
     )  # element lengths are equal for all rod.
     # checking velocities, omegas and rest strains
     # density and mass
-    assert_allclose(rod_length, base_length, atol=Tolerance.atol())
+    assert_allclose(rod_length, base_length, atol=1e-2)
     assert_allclose(
-        mockrod.velocity_collection, np.zeros((3, n_elems + 1)), atol=Tolerance.atol()
+        mockrod.velocity_collection, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(
         mockrod.omega_collection, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
     assert_allclose(mockrod.rest_sigma, np.zeros((3, n_elems)), atol=Tolerance.atol())
-    assert_allclose(
-        mockrod.rest_kappa, np.zeros((3, n_elems - 1)), atol=Tolerance.atol()
-    )
+    assert_allclose(mockrod.rest_kappa, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.density, density, atol=Tolerance.atol())
     assert_allclose(
-        mockrod.dissipation_constant_for_forces,
-        nu * mockrod.mass,
-        atol=Tolerance.atol(),
+        mockrod.dissipation_constant_for_forces, nu * mass, atol=Tolerance.atol()
     )
-    elemental_mass = (mockrod.mass[1:] + mockrod.mass[:-1]) / 2.0
-    elemental_mass[0] += mockrod.mass[0] / 2.0
-    elemental_mass[-1] += mockrod.mass[-1] / 2.0
     assert_allclose(
-        mockrod.dissipation_constant_for_torques,
-        nu * elemental_mass,
-        atol=Tolerance.atol(),
+        mockrod.dissipation_constant_for_torques, nu * mass, atol=Tolerance.atol()
     )
     assert_allclose(
         rest_voronoi_lengths, mockrod.rest_voronoi_lengths, atol=Tolerance.atol()
     )
-    # Check mass at each node. Note that, node masses is
-    # half of element mass at the first and last node.
-    for i in range(1, n_elems):
-        assert_allclose(mockrod.mass[i], mass, atol=Tolerance.atol())
-    assert_allclose(mockrod.mass[0], 0.5 * mass, atol=Tolerance.atol())
-    assert_allclose(mockrod.mass[-1], 0.5 * mass, atol=Tolerance.atol())
+    assert_allclose(mockrod.mass, mass, atol=Tolerance.atol())
     # checking directors, rest length
     # and shear, bend matrices and moment of inertia
+    # Check directors, if we dont input any directors, computed ones should be valid
+    correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
+    tangent_collection = np.zeros((MaxDimension.value(), n_elems))
+    binormal_collection = np.zeros((MaxDimension.value(), n_elems))
+    normal_collection = np.repeat(normal[:, np.newaxis], n_elems, axis=1)
+
+    angle = 2 * np.pi / n_elems
     for i in range(n_elems):
-        assert_allclose(
-            mockrod.director_collection[0, :, i], normal, atol=Tolerance.atol()
+        tangent_collection[..., i] = np.array(
+            [
+                np.cos(angle * (i + 1)) - np.cos(angle * i),
+                np.sin(angle * (i + 1)) - np.sin(angle * i),
+                0,
+            ]
         )
-        assert_allclose(
-            mockrod.director_collection[1, :, i],
-            np.cross(direction, normal),
-            atol=Tolerance.atol(),
-        )
-        assert_allclose(
-            mockrod.director_collection[2, :, i], direction, atol=Tolerance.atol()
-        )
-        assert_allclose(
-            mockrod.rest_lengths, base_length / n_elems, atol=Tolerance.atol()
-        )
+        tangent_collection[..., i] /= np.linalg.norm(tangent_collection[..., i])
+        binormal_collection[..., i] = np.cross(tangent_collection[..., i], normal)
+
+    correct_directors[0, ...] = normal_collection
+    correct_directors[1, ...] = binormal_collection
+    correct_directors[2, ...] = tangent_collection
+
+    assert_allclose(mockrod.rest_lengths, correct_length, atol=Tolerance.atol())
+
+    for i in range(n_elems):
         assert_allclose(
             mockrod.shear_matrix[..., i], shear_matrix, atol=Tolerance.atol()
         )
-        assert_allclose(
-            mockrod.mass_second_moment_of_inertia[..., i],
-            mass_second_moment_of_inertia,
-            atol=Tolerance.atol(),
-        )
-        assert_allclose(
-            mockrod.inv_mass_second_moment_of_inertia[..., i],
-            inv_mass_second_moment_of_inertia,
-            atol=Tolerance.atol(),
-        )
-    for i in range(n_elems - 1):
         assert_allclose(mockrod.bend_matrix[..., i], bend_matrix, atol=Tolerance.atol())
 
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        exec(sys.argv[1])
-    else:
-        from pytest import main
-
-        main([__file__])
+    assert_allclose(
+        mockrod.mass_second_moment_of_inertia,
+        mass_second_moment_of_inertia,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        mockrod.inv_mass_second_moment_of_inertia,
+        inv_mass_second_moment_of_inertia,
+        atol=Tolerance.atol(),
+    )

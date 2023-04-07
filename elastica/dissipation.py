@@ -130,9 +130,12 @@ class AnalyticalLinearDamper(DamperBase):
         self.translational_damping_coefficient = np.exp(-damping_constant * time_step)
 
         # Compute the damping coefficient for exponential velocity
-        element_mass = 0.5 * (nodal_mass[1:] + nodal_mass[:-1])
-        element_mass[0] += 0.5 * nodal_mass[0]
-        element_mass[-1] += 0.5 * nodal_mass[-1]
+        if self._system.ring_rod_flag:
+            element_mass = nodal_mass
+        else:
+            element_mass = 0.5 * (nodal_mass[1:] + nodal_mass[:-1])
+            element_mass[0] += 0.5 * nodal_mass[0]
+            element_mass[-1] += 0.5 * nodal_mass[-1]
         self.rotational_damping_coefficient = np.exp(
             -damping_constant
             * time_step
@@ -216,20 +219,86 @@ class LaplaceDissipationFilter(DamperBase):
                 "Invalid filter order! Filter order must be a positive integer."
             )
         self.filter_order = filter_order
-        self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
-        self.omega_filter_term = np.zeros_like(self._system.omega_collection)
+
+        if self._system.ring_rod_flag:
+            # There are two periodic boundaries
+            blocksize = self._system.n_elems + 2
+            self.velocity_filter_term = np.zeros((3, blocksize))
+            self.omega_filter_term = np.zeros((3, blocksize))
+            self.filter_function = _filter_function_periodic_condition_ring_rod
+
+        else:
+            self.velocity_filter_term = np.zeros_like(self._system.velocity_collection)
+            self.omega_filter_term = np.zeros_like(self._system.omega_collection)
+            self.filter_function = _filter_function_periodic_condition
 
     def dampen_rates(self, rod: RodType, time: float) -> None:
-        nb_filter_rate(
-            rate_collection=rod.velocity_collection,
-            filter_term=self.velocity_filter_term,
-            filter_order=self.filter_order,
+
+        self.filter_function(
+            rod.velocity_collection,
+            self.velocity_filter_term,
+            rod.omega_collection,
+            self.omega_filter_term,
+            self.filter_order,
         )
-        nb_filter_rate(
-            rate_collection=rod.omega_collection,
-            filter_term=self.omega_filter_term,
-            filter_order=self.filter_order,
-        )
+
+
+@njit(cache=True)
+def _filter_function_periodic_condition_ring_rod(
+    velocity_collection,
+    velocity_filter_term,
+    omega_collection,
+    omega_filter_term,
+    filter_order,
+):
+    blocksize = velocity_filter_term.shape[1]
+
+    # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
+    velocity_collection_with_periodic_bc = np.empty((3, blocksize))
+    velocity_collection_with_periodic_bc[:, 1:-1] = velocity_collection[:]
+    velocity_collection_with_periodic_bc[:, 0] = velocity_collection[:, -1]
+    velocity_collection_with_periodic_bc[:, -1] = velocity_collection[:, 0]
+
+    # Transfer omega to an array which has periodic boundaries and synchornize boundaries
+    omega_collection_with_periodic_bc = np.empty((3, blocksize))
+    omega_collection_with_periodic_bc[:, 1:-1] = omega_collection[:]
+    omega_collection_with_periodic_bc[:, 0] = omega_collection[:, -1]
+    omega_collection_with_periodic_bc[:, -1] = omega_collection[:, 0]
+
+    nb_filter_rate(
+        rate_collection=velocity_collection_with_periodic_bc,
+        filter_term=velocity_filter_term,
+        filter_order=filter_order,
+    )
+    nb_filter_rate(
+        rate_collection=omega_collection_with_periodic_bc,
+        filter_term=omega_filter_term,
+        filter_order=filter_order,
+    )
+
+    # Transfer filtered velocity back
+    velocity_collection[:] = velocity_collection_with_periodic_bc[:, 1:-1]
+    omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
+
+
+@njit(cache=True)
+def _filter_function_periodic_condition(
+    velocity_collection,
+    velocity_filter_term,
+    omega_collection,
+    omega_filter_term,
+    filter_order,
+):
+    nb_filter_rate(
+        rate_collection=velocity_collection,
+        filter_term=velocity_filter_term,
+        filter_order=filter_order,
+    )
+    nb_filter_rate(
+        rate_collection=omega_collection,
+        filter_term=omega_filter_term,
+        filter_order=filter_order,
+    )
 
 
 @njit(cache=True)
