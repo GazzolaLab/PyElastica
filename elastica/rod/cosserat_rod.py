@@ -20,6 +20,7 @@ from elastica._calculus import (
     _difference,
     _average,
 )
+from typing import Optional
 
 position_difference_kernel = _difference
 position_average = _average
@@ -109,13 +110,6 @@ class CosseratRod(RodBase, KnotTheory):
         inv_mass_second_moment_of_inertia: numpy.ndarray
             3D (dim, dim, n_elems) array containing data with 'float' type.
             Rod element inverse mass moment of inertia.
-        dissipation_constant_for_forces: numpy.ndarray
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dissipation coefficient (nu).
-        dissipation_constant_for_torques: numpy.ndarray
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dissipation (nu).
-            Can be customized by passing 'nu_for_torques'.
         rest_voronoi_lengths: numpy.ndarray
             1D (n_voronoi) array containing data with 'float' type.
             Rod lengths on the voronoi domain at the rest configuration.
@@ -168,8 +162,6 @@ class CosseratRod(RodBase, KnotTheory):
         density,
         volume,
         mass,
-        dissipation_constant_for_forces,
-        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -187,11 +179,7 @@ class CosseratRod(RodBase, KnotTheory):
         rest_kappa,
         internal_stress,
         internal_couple,
-        damping_forces,
-        damping_torques,
         ring_rod_flag,
-        args,
-        kwargs,
     ):
         self.n_elems = n_elements
         self.position_collection = position
@@ -208,8 +196,6 @@ class CosseratRod(RodBase, KnotTheory):
         self.density = density
         self.volume = volume
         self.mass = mass
-        self.dissipation_constant_for_forces = dissipation_constant_for_forces
-        self.dissipation_constant_for_torques = dissipation_constant_for_torques
         self.internal_forces = internal_forces
         self.internal_torques = internal_torques
         self.external_forces = external_forces
@@ -227,8 +213,6 @@ class CosseratRod(RodBase, KnotTheory):
         self.rest_kappa = rest_kappa
         self.internal_stress = internal_stress
         self.internal_couple = internal_couple
-        self.damping_forces = damping_forces
-        self.damping_torques = damping_torques
         self.ring_rod_flag = ring_rod_flag
 
         if not self.ring_rod_flag:
@@ -264,9 +248,9 @@ class CosseratRod(RodBase, KnotTheory):
         base_length: float,
         base_radius: float,
         density: float,
-        nu: float,
+        *,
+        nu: Optional[float] = None,
         youngs_modulus: float,
-        *args,
         **kwargs,
     ):
         """
@@ -282,7 +266,8 @@ class CosseratRod(RodBase, KnotTheory):
         Parameters
         ----------
         n_elements : int
-            Number of element. Must be greater than 3. Generarally recommended to start with 40-50, and adjust the resolution.
+            Number of element. Must be greater than 3.
+            Generally recommended to start with 40-50, and adjust the resolution.
         start : NDArray[3, float]
             Starting coordinate in 3D
         direction : NDArray[3, float]
@@ -299,9 +284,6 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        *args : tuple
-            Additional arguments should be passed as keyward arguments.
-            (e.g. shear_modulus, poisson_ratio)
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
@@ -311,6 +293,15 @@ class CosseratRod(RodBase, KnotTheory):
 
         """
 
+        if nu is not None:
+            raise ValueError(
+                # Remove the option to set internal nu inside, beyond v0.4.0
+                "The option to set damping coefficient (nu) for the rod during rod\n"
+                "initialisation is now deprecated. Instead, for adding damping to rods,\n"
+                "please derive your simulation class from the add-on Damping mixin class.\n"
+                "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
+                "and for usage check examples/axial_stretching.py"
+            )
         (
             n_elements,
             position,
@@ -327,8 +318,6 @@ class CosseratRod(RodBase, KnotTheory):
             density,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -346,8 +335,6 @@ class CosseratRod(RodBase, KnotTheory):
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
         ) = allocate(
             n_elements,
             start,
@@ -356,9 +343,7 @@ class CosseratRod(RodBase, KnotTheory):
             base_length,
             base_radius,
             density,
-            nu,
             youngs_modulus,
-            *args,
             **kwargs,
         )
         # Straight rod is not ring rod set flag to false
@@ -380,8 +365,6 @@ class CosseratRod(RodBase, KnotTheory):
             density,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -399,11 +382,7 @@ class CosseratRod(RodBase, KnotTheory):
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
             ring_rod_flag,
-            args,
-            kwargs,
         )
 
     @classmethod
@@ -416,9 +395,9 @@ class CosseratRod(RodBase, KnotTheory):
         base_length: float,
         base_radius: float,
         density: float,
-        nu: float,
+        *,
+        nu: Optional[float] = None,
         youngs_modulus: float,
-        *args,
         **kwargs,
     ):
         """
@@ -451,9 +430,6 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        *args : tuple
-            Additional arguments should be passed as keyward arguments.
-            (e.g. shear_modulus, poisson_ratio)
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
@@ -463,6 +439,15 @@ class CosseratRod(RodBase, KnotTheory):
 
         """
 
+        if nu is not None:
+            raise ValueError(
+                # Remove the option to set internal nu inside, beyond v0.4.0
+                "The option to set damping coefficient (nu) for the rod during rod\n"
+                "initialisation is now deprecated. Instead, for adding damping to rods,\n"
+                "please derive your simulation class from the add-on Damping mixin class.\n"
+                "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
+                "and for usage check examples/axial_stretching.py"
+            )
         (
             n_elements,
             position,
@@ -479,8 +464,6 @@ class CosseratRod(RodBase, KnotTheory):
             density_array,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -498,8 +481,6 @@ class CosseratRod(RodBase, KnotTheory):
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
         ) = allocate_ring_rod(
             n_elements,
             ring_center_position,
@@ -508,9 +489,7 @@ class CosseratRod(RodBase, KnotTheory):
             base_length,
             base_radius,
             density,
-            nu,
             youngs_modulus,
-            *args,
             **kwargs,
         )
         # Straight rod is not ring rod set flag to false
@@ -532,8 +511,6 @@ class CosseratRod(RodBase, KnotTheory):
             density_array,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -551,11 +528,7 @@ class CosseratRod(RodBase, KnotTheory):
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
             ring_rod_flag,
-            args,
-            kwargs,
         )
 
     def compute_internal_forces_and_torques(self, time):
@@ -586,11 +559,6 @@ class CosseratRod(RodBase, KnotTheory):
             self.rest_sigma,
             self.shear_matrix,
             self.internal_stress,
-            self.velocity_collection,
-            self.dissipation_constant_for_forces,
-            self.damping_forces,
-            self.internal_forces,
-            self.ghost_elems_idx,
         )
 
         _compute_internal_torques(
@@ -611,8 +579,6 @@ class CosseratRod(RodBase, KnotTheory):
             self.internal_couple,
             self.dilatation,
             self.dilatation_rate,
-            self.dissipation_constant_for_torques,
-            self.damping_torques,
             self.internal_torques,
             self.ghost_voronoi_idx,
         )
@@ -919,26 +885,6 @@ def _compute_internal_bending_twist_stresses_from_model(
 
 
 @numba.njit(cache=True)
-def _compute_damping_forces(
-    damping_forces,
-    velocity_collection,
-    dissipation_constant_for_forces,
-):
-    """
-    Update <damping force> given <velocity>
-    """
-
-    # Internal damping forces.
-    blocksize = velocity_collection.shape[1]
-
-    for i in range(3):
-        for k in range(blocksize):
-            damping_forces[i, k] = (
-                dissipation_constant_for_forces[k] * velocity_collection[i, k]
-            )
-
-
-@numba.njit(cache=True)
 def _compute_internal_forces(
     position_collection,
     volume,
@@ -954,14 +900,9 @@ def _compute_internal_forces(
     rest_sigma,
     shear_matrix,
     internal_stress,
-    velocity_collection,
-    dissipation_constant_for_forces,
-    damping_forces,
-    internal_forces,
-    ghost_elems_idx,
 ):
     """
-    Update <internal force> given <director, internal_stress, velocity and damping force>.
+    Update <internal force> given <director, internal_stress and velocity>.
     """
 
     # Compute n_l and cache it using internal_stress
@@ -998,32 +939,6 @@ def _compute_internal_forces(
 
     cosserat_internal_stress /= dilatation
 
-    _compute_damping_forces(
-        damping_forces,
-        velocity_collection,
-        dissipation_constant_for_forces,
-    )
-
-    internal_forces[:] = (
-        difference_kernel_for_block_structure(cosserat_internal_stress, ghost_elems_idx)
-        - damping_forces
-    )
-
-
-@numba.njit(cache=True)
-def _compute_damping_torques(
-    damping_torques, omega_collection, dissipation_constant_for_torques
-):
-    """
-    Update <damping torque> given <angular velocity>.
-    """
-    blocksize = omega_collection.shape[1]
-    for i in range(3):
-        for k in range(blocksize):
-            damping_torques[i, k] = (
-                dissipation_constant_for_torques[k] * omega_collection[i, k]
-            )
-
 
 @numba.njit(cache=True)
 def _compute_internal_torques(
@@ -1044,8 +959,6 @@ def _compute_internal_torques(
     internal_couple,
     dilatation,
     dilatation_rate,
-    dissipation_constant_for_torques,
-    damping_torques,
     internal_torques,
     ghost_voronoi_idx,
 ):
@@ -1104,10 +1017,6 @@ def _compute_internal_torques(
     # (J \omega_L / e^2) . (de/dt)
     unsteady_dilatation = J_omega_upon_e * dilatation_rate / dilatation
 
-    _compute_damping_torques(
-        damping_torques, omega_collection, dissipation_constant_for_torques
-    )
-
     blocksize = internal_torques.shape[1]
     for i in range(3):
         for k in range(blocksize):
@@ -1117,7 +1026,6 @@ def _compute_internal_torques(
                 + shear_stretch_couple[i, k]
                 + lagrangian_transport[i, k]
                 + unsteady_dilatation[i, k]
-                - damping_torques[i, k]
             )
 
 
