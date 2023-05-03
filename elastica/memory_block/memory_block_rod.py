@@ -232,10 +232,7 @@ class MemoryBlockCosseratRod(
 
         # Things in nodes that are scalars
         #             0 ("mass", float64[:]),
-        map_scalar_dofs_in_rod_nodes = {
-            "mass": 0,
-            "dissipation_constant_for_forces": 1,
-        }
+        map_scalar_dofs_in_rod_nodes = {"mass": 0}
         self.scalar_dofs_in_rod_nodes = np.zeros(
             (len(map_scalar_dofs_in_rod_nodes), self.n_nodes)
         )
@@ -261,13 +258,11 @@ class MemoryBlockCosseratRod(
         #             0 ("position_collection", float64[:, :]),
         #             1 ("internal_forces", float64[:, :]),
         #             2 ("external_forces", float64[:, :]),
-        #             3 ("damping_forces", float64[:, :]),
         # 6 in total
         map_vector_dofs_in_rod_nodes = {
             "position_collection": 0,
             "internal_forces": 1,
             "external_forces": 2,
-            "damping_forces": 3,
         }
         self.vector_dofs_in_rod_nodes = np.zeros(
             (len(map_vector_dofs_in_rod_nodes), 3 * self.n_nodes)
@@ -316,8 +311,6 @@ class MemoryBlockCosseratRod(
         #             4 ("rest_lengths", float64[:]),
         #             5 ("dilatation", float64[:]),
         #             6 ("dilatation_rate", float64[:]),
-        #             7 ("dissipation_constant_for_forces", float64[:]),
-        #             8 ("dissipation_constant_for_torques", float64[:])
         map_scalar_dofs_in_rod_elems = {
             "radius": 0,
             "volume": 1,
@@ -326,7 +319,6 @@ class MemoryBlockCosseratRod(
             "rest_lengths": 4,
             "dilatation": 5,
             "dilatation_rate": 6,
-            "dissipation_constant_for_torques": 7,
         }
         self.scalar_dofs_in_rod_elems = np.zeros(
             (len(map_scalar_dofs_in_rod_elems), self.n_elems)
@@ -355,7 +347,6 @@ class MemoryBlockCosseratRod(
         #             2 ("rest_sigma", float64[:, :]),
         #             3 ("internal_torques", float64[:, :]),
         #             4 ("external_torques", float64[:, :]),
-        #             5 ("damping_torques", float64[:, :]),
         #             6 ("internal_stress", float64[:, :]),
         map_vector_dofs_in_rod_elems = {
             "tangents": 0,
@@ -363,8 +354,7 @@ class MemoryBlockCosseratRod(
             "rest_sigma": 2,
             "internal_torques": 3,
             "external_torques": 4,
-            "damping_torques": 5,
-            "internal_stress": 6,
+            "internal_stress": 5,
         }
         self.vector_dofs_in_rod_elems = np.zeros(
             (len(map_vector_dofs_in_rod_elems), 3 * self.n_elems)

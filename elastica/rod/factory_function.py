@@ -15,15 +15,13 @@ def allocate(
     base_length,
     base_radius,
     density,
-    nu,
     youngs_modulus: float,
-    nu_for_torques: Optional[float] = None,
+    *,
     shear_modulus: Optional[float] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
     rest_sigma: Optional[np.ndarray] = None,
     rest_kappa: Optional[np.ndarray] = None,
-    *args,
     **kwargs,
 ):
     log = logging.getLogger()
@@ -188,54 +186,6 @@ def allocate(
     mass[:-1] += 0.5 * density * volume
     mass[1:] += 0.5 * density * volume
 
-    # Set dissipation constant or nu array
-    log.warning(
-        # Remove warning and add error if nu provided in v0.3.1
-        # Remove the option to set internal nu inside, beyond v0.4.0
-        "The option to set damping coefficient (nu) for the rod during rod "
-        "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class. "
-        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
-        "and for usage check examples/axial_stretching.py "
-        "The option to set damping coefficient (nu) during rod construction "
-        "will be removed in the future (v0.3.1)."
-    )
-    dissipation_constant_for_forces = np.zeros((n_elements + 1))
-    # Check if the user input nu is valid
-    nu_temp = np.array(nu)
-    _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
-    dissipation_constant_for_forces[:] = nu * mass
-    # Check if the elements of dissipation constant greater than tolerance
-    assert np.all(
-        dissipation_constant_for_forces >= 0.0
-    ), " Dissipation constant(nu) has to be equal or greater than 0."
-
-    # Custom nu for torques
-    dissipation_constant_for_torques = np.zeros((n_elements))
-
-    if nu_for_torques is None:
-        dissipation_constant_for_torques[:] = (
-            dissipation_constant_for_forces[1:] + dissipation_constant_for_forces[:-1]
-        ) / 2
-        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
-        # their dissipation.
-        dissipation_constant_for_torques[0] += (dissipation_constant_for_forces[0]) / 2
-        dissipation_constant_for_torques[-1] += (
-            dissipation_constant_for_forces[-1]
-        ) / 2
-    else:
-        elemental_mass = (mass[1:] + mass[:-1]) / 2.0
-        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
-        # their mass.
-        elemental_mass[0] += mass[0] / 2.0
-        elemental_mass[-1] += mass[-1] / 2.0
-        dissipation_constant_for_torques[:] = (
-            np.asarray(nu_for_torques) * elemental_mass
-        )
-    _assert_dim(
-        dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
-    )
-
     # Generate rest sigma and rest kappa, use user input if defined
     # set rest strains and curvature to be  zero at start
     # if found in kwargs modify (say for curved rod)
@@ -279,9 +229,6 @@ def allocate(
     internal_stress = np.zeros((3, n_elements))
     internal_couple = np.zeros((3, n_elements - 1))
 
-    damping_forces = np.zeros((3, n_elements + 1))
-    damping_torques = np.zeros((3, n_elements))
-
     return (
         n_elements,
         position,
@@ -298,8 +245,6 @@ def allocate(
         density_array,
         volume,
         mass,
-        dissipation_constant_for_forces,
-        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -317,8 +262,6 @@ def allocate(
         rest_kappa,
         internal_stress,
         internal_couple,
-        damping_forces,
-        damping_torques,
     )
 
 
@@ -348,13 +291,8 @@ base_radius : float
     Uniform radius of the rod
 density : float
     Density of the rod
-nu : float
-    Damping coefficient for Rayleigh damping
 youngs_modulus : float
     Young's modulus
-*args : tuple
-    Additional arguments should be passed as keyward arguments.
-    (e.g. shear_modulus, poisson_ratio)
 **kwargs : dict, optional
     The "position" and/or "directors" can be overrided by passing "position" and "directors" argument.
     Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
@@ -374,15 +312,13 @@ def allocate_ring_rod(
     base_length,
     base_radius,
     density,
-    nu,
     youngs_modulus: float,
-    nu_for_torques: Optional[float] = None,
+    *,
     shear_modulus: Optional[float] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
     rest_sigma: Optional[np.ndarray] = None,
     rest_kappa: Optional[np.ndarray] = None,
-    *args,
     **kwargs,
 ):
     log = logging.getLogger()
@@ -566,39 +502,6 @@ def allocate_ring_rod(
     mass = np.zeros(n_elements)
     mass[:] = density * volume
 
-    # Set dissipation constant or nu array
-    log.warning(
-        # Remove warning and add error if nu provided in v0.3.1
-        # Remove the option to set internal nu inside, beyond v0.4.0
-        "The option to set damping coefficient (nu) for the rod during rod "
-        "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class. "
-        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
-        "and for usage check examples/axial_stretching.py "
-        "The option to set damping coefficient (nu) during rod construction "
-        "will be removed in the future (v0.3.1)."
-    )
-    dissipation_constant_for_forces = np.zeros((n_elements))
-    # Check if the user input nu is valid
-    nu_temp = np.array(nu)
-    _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
-    dissipation_constant_for_forces[:] = nu * mass
-    # Check if the elements of dissipation constant greater than tolerance
-    assert np.all(
-        dissipation_constant_for_forces >= 0.0
-    ), " Dissipation constant(nu) has to be equal or greater than 0."
-
-    # Custom nu for torques
-    dissipation_constant_for_torques = np.zeros((n_elements))
-
-    if nu_for_torques is None:
-        dissipation_constant_for_torques[:] = dissipation_constant_for_forces
-    else:
-        dissipation_constant_for_torques[:] = np.asarray(nu_for_torques) * mass
-    _assert_dim(
-        dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
-    )
-
     # Generate rest sigma and rest kappa, use user input if defined
     # set rest strains and curvature to be  zero at start
     # if found in kwargs modify (say for curved rod)
@@ -641,9 +544,6 @@ def allocate_ring_rod(
     internal_stress = np.zeros((3, n_elements))
     internal_couple = np.zeros((3, n_elements))
 
-    damping_forces = np.zeros((3, n_elements))
-    damping_torques = np.zeros((3, n_elements))
-
     return (
         n_elements,
         position,
@@ -660,8 +560,6 @@ def allocate_ring_rod(
         density_array,
         volume,
         mass,
-        dissipation_constant_for_forces,
-        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -679,8 +577,6 @@ def allocate_ring_rod(
         rest_kappa,
         internal_stress,
         internal_couple,
-        damping_forces,
-        damping_torques,
     )
 
 

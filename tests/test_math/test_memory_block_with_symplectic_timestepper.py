@@ -29,8 +29,6 @@ class MockRod:
         self.acceleration_collection = np.random.randn(3, self.n_nodes)
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
-        self.damping_forces = np.random.randn(3, self.n_nodes)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -40,7 +38,6 @@ class MockRod:
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements
         self.omega_collection = np.random.randn(3, self.n_elems)
@@ -50,7 +47,6 @@ class MockRod:
         self.rest_sigma = np.random.randn(3, self.n_elems)
         self.internal_torques = np.random.randn(3, self.n_elems)
         self.external_torques = np.random.randn(3, self.n_elems)
-        self.damping_torques = np.random.randn(3, self.n_elems)
         self.internal_stress = np.random.randn(3, self.n_elems)
 
         # Things that are matrix mapped on elements

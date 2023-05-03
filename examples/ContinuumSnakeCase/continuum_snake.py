@@ -48,8 +48,7 @@ def run_snake(
         base_length,
         base_radius,
         density,
-        0.0,  # internal damping constant, deprecated in v0.3.0
-        E,
+        youngs_modulus=E,
         shear_modulus=shear_modulus,
     )
 
@@ -98,9 +97,6 @@ def run_snake(
     )
 
     # add damping
-    # old damping model (deprecated in v0.3.0) values
-    # damping_constant = 2e-3
-    # time_step = 8e-6
     damping_constant = 2e-3
     time_step = 1e-4
     snake_sim.dampen(shearable_rod).using(

@@ -43,8 +43,7 @@ def run_flagella(
         base_length,
         base_radius,
         density,
-        0.0,  # internal damping constant, deprecated in v0.3.0
-        E,
+        youngs_modulus=E,
         shear_modulus=shear_modulus,
     )
 
@@ -78,9 +77,6 @@ def run_flagella(
     )
 
     # add damping
-    # old damping model (deprecated in v0.3.0) values
-    # damping_constant = 2.5
-    # dt = 2.5e-5 * period
     damping_constant = 0.625
     dt = 1e-4 * period
     flagella_sim.dampen(shearable_rod).using(

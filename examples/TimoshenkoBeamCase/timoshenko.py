@@ -44,8 +44,7 @@ shearable_rod = ea.CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 
@@ -81,8 +80,7 @@ if ADD_UNSHEARABLE_ROD:
         base_length,
         base_radius,
         density,
-        0.0,  # internal damping constant, deprecated in v0.3.0
-        E,
+        youngs_modulus=E,
         # Unshearable rod needs G -> inf, which is achievable with -ve poisson ratio
         shear_modulus=shear_modulus,
     )

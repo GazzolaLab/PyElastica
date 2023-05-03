@@ -1,11 +1,10 @@
 __doc__ = """Test for ring rod initialization module"""
 import numpy as np
 from numpy.testing import assert_allclose
-
-
 import pytest
 from elastica.utils import MaxDimension, Tolerance
 from elastica.rod.factory_function import allocate_ring_rod
+import elastica as ea
 
 
 class MockRingRodForTest:
@@ -26,8 +25,6 @@ class MockRingRodForTest:
         density,
         volume,
         mass,
-        dissipation_constant_for_forces,
-        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -45,11 +42,7 @@ class MockRingRodForTest:
         rest_kappa,
         internal_stress,
         internal_couple,
-        damping_forces,
-        damping_torques,
         ring_rod_flag,
-        *args,
-        **kwargs,
     ):
         self.n_elems = n_elements
         self.position_collection = position
@@ -66,8 +59,6 @@ class MockRingRodForTest:
         self.density = density
         self.volume = volume
         self.mass = mass
-        self.dissipation_constant_for_forces = dissipation_constant_for_forces
-        self.dissipation_constant_for_torques = dissipation_constant_for_torques
         self.internal_forces = internal_forces
         self.internal_torques = internal_torques
         self.external_forces = external_forces
@@ -85,8 +76,6 @@ class MockRingRodForTest:
         self.rest_kappa = rest_kappa
         self.internal_stress = internal_stress
         self.internal_couple = internal_couple
-        self.damping_forces = damping_forces
-        self.damping_torques = damping_torques
         self.ring_rod_flag = ring_rod_flag
 
     @classmethod
@@ -99,9 +88,8 @@ class MockRingRodForTest:
         base_length,
         base_radius,
         density,
-        nu,
+        *,
         youngs_modulus,
-        *args,
         **kwargs,
     ):
 
@@ -121,8 +109,6 @@ class MockRingRodForTest:
             density,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -140,8 +126,6 @@ class MockRingRodForTest:
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
         ) = allocate_ring_rod(
             n_elements,
             ring_center_position,
@@ -150,9 +134,7 @@ class MockRingRodForTest:
             base_length,
             base_radius,
             density,
-            nu,
             youngs_modulus,
-            *args,
             **kwargs,
         )
 
@@ -175,8 +157,6 @@ class MockRingRodForTest:
             density,
             volume,
             mass,
-            dissipation_constant_for_forces,
-            dissipation_constant_for_torques,
             internal_forces,
             internal_torques,
             external_forces,
@@ -194,12 +174,45 @@ class MockRingRodForTest:
             rest_kappa,
             internal_stress,
             internal_couple,
-            damping_forces,
-            damping_torques,
             ring_rod_flag,
-            args,
-            kwargs,
         )
+
+
+@pytest.mark.parametrize("n_elems", [5, 10, 50])
+def test_deprecated_rod_nu_option(n_elems):
+    start = np.array([0.0, 0.0, 0.0])
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 0.0, 1.0])
+    base_length = 1.0
+    base_radius = 0.25
+    density = 1000
+    nu = 0.1
+    youngs_modulus = 1e6
+    poisson_ratio = 0.3
+    correct_position = np.zeros((3, n_elems + 1))
+    correct_position[0] = np.random.randn(n_elems + 1)
+    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[..., 0] = start
+    correct_error_message = (
+        "The option to set damping coefficient (nu) for the rod during rod\n"
+        "initialisation is now deprecated. Instead, for adding damping to rods,\n"
+        "please derive your simulation class from the add-on Damping mixin class.\n"
+        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
+        "and for usage check examples/axial_stretching.py"
+    )
+    with pytest.raises(ValueError) as exc_info:
+        _ = ea.CosseratRod.ring_rod(
+            n_elems,
+            start,
+            direction,
+            normal,
+            base_length,
+            base_radius,
+            density,
+            nu=nu,
+            youngs_modulus=youngs_modulus,
+        )
+    assert exc_info.value.args[0] == correct_error_message
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -220,9 +233,7 @@ def test_input_and_output_position_array(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.5
 
     # Check if the input position vector and output position vector are valid and same
     correct_position = np.zeros((3, n_elems))
@@ -237,8 +248,7 @@ def test_input_and_output_position_array(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         position=correct_position,
     )
     test_position = mockrod.position_collection
@@ -265,9 +275,7 @@ def test_input_and_position_array_for_different_center_offset(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
 
     # Check if the input position vector center_offset position is different than the user defined center_offset position
     correct_position = np.random.randn(3, n_elems)
@@ -279,8 +287,7 @@ def test_input_and_position_array_for_different_center_offset(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         position=correct_position,
     )
     test_position = mockrod.position_collection
@@ -302,9 +309,7 @@ def test_compute_position_array_using_user_inputs():
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
     # Check if without input position vector, output position vector is valid
     mockrod = MockRingRodForTest.ring_rod(
         n_elems,
@@ -314,8 +319,7 @@ def test_compute_position_array_using_user_inputs():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
     correct_position = np.zeros((3, n_elems))
     for i in range(n_elems):
@@ -345,9 +349,7 @@ def test_compute_directors_matrix_using_user_inputs(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
     # Check directors, if we dont input any directors, computed ones should be valid
     correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
     tangent_collection = np.zeros((MaxDimension.value(), n_elems))
@@ -378,8 +380,7 @@ def test_compute_directors_matrix_using_user_inputs(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
     test_directors = mockrod.director_collection
     assert_allclose(correct_directors, test_directors, atol=Tolerance.atol())
@@ -398,15 +399,12 @@ def test_directors_using_input_position_array(n_elems):
     -------
 
     """
-    center_offset = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
-    poisson_ratio = 0.3
     # Check directors, give position as input and let allocate function to compute directors.
     input_position = np.zeros((3, n_elems))
     for i in range(n_elems):
@@ -448,8 +446,7 @@ def test_directors_using_input_position_array(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         position=input_position,
     )
     test_directors = mockrod.director_collection
@@ -472,7 +469,6 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
     # Check directors, give directors as input and check their validity.
     # Let the assertion fail by setting d3=d2 for the input director
@@ -493,8 +489,7 @@ def test_director_if_d3_cross_d2_notequal_to_d1():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         directors=input_directors,
     )
 
@@ -514,7 +509,6 @@ def test_validity_of_user_defined_directors_matrix(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
     # Check directors, if we dont input any directors, computed ones should be valid
     correct_directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elems))
@@ -546,8 +540,7 @@ def test_validity_of_user_defined_directors_matrix(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         directors=correct_directors,
     )
     test_directors = mockrod.director_collection
@@ -573,7 +566,6 @@ def test_compute_radius_using_base_radius(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
 
     mockrod = MockRingRodForTest.ring_rod(
@@ -584,8 +576,7 @@ def test_compute_radius_using_base_radius(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
     correct_radius = base_radius * np.ones((n_elems))
     test_radius = mockrod.radius
@@ -611,7 +602,6 @@ def test_radius_using_user_defined_radius(n_elems):
     base_length = 1.0
     base_radius = np.linspace(0.1, 0.5, n_elems)
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
 
     mockrod = MockRingRodForTest.ring_rod(
@@ -622,8 +612,7 @@ def test_radius_using_user_defined_radius(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
     correct_radius = base_radius
     test_radius = mockrod.radius
@@ -650,7 +639,6 @@ def test_radius_not_correct_radius_shape(n_elems):
     base_length = 1.0
     base_radius = np.linspace(0.1, 0.5, n_elems).reshape(1, n_elems)
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
     MockRingRodForTest.ring_rod(
         n_elems,
@@ -660,8 +648,7 @@ def test_radius_not_correct_radius_shape(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
 
 
@@ -683,7 +670,6 @@ def test_constant_density(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
 
     correct_position = np.zeros((3, n_elems + 1))
@@ -708,8 +694,7 @@ def test_constant_density(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
     correct_mass = density * np.pi * base_radius ** 2 * correct_length
     test_mass = mockrod.mass
@@ -735,7 +720,6 @@ def test_varying_density(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = np.linspace(500, 1000, n_elems)
-    nu = 0.1
     youngs_modulus = 1e6
 
     mockrod = MockRingRodForTest.ring_rod(
@@ -746,8 +730,7 @@ def test_varying_density(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
 
     correct_position = np.zeros((3, n_elems + 1))
@@ -790,7 +773,6 @@ def test_density_invalid_shape(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = np.linspace(500, 1000, n_elems).reshape(1, n_elems)
-    nu = 0.1
     youngs_modulus = 1e6
     MockRingRodForTest.ring_rod(
         n_elems,
@@ -800,282 +782,8 @@ def test_density_invalid_shape(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_constant_nu_for_forces(n_elems):
-    """
-    This function tests, for fix dissipation
-    constant for forces, validty of dissipation constant array.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.1
-    youngs_modulus = 1e6
-
-    mockrod = MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-    )
-    correct_nu = nu * mockrod.mass
-    test_nu = mockrod.dissipation_constant_for_forces
-    assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_varying_nu_for_forces(n_elems):
-    """
-    This function tests, for varying dissipation
-    constant for forces input, validty of dissipation constant array.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = np.linspace(0.1, 1.0, n_elems)
-    youngs_modulus = 1e6
-
-    mockrod = MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-    )
-    correct_nu = nu * mockrod.mass
-    test_nu = mockrod.dissipation_constant_for_forces
-    assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
-
-
-@pytest.mark.xfail(raises=AssertionError)
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_nu_for_forces_invalid_shape(n_elems):
-    """
-    This test is checking if user gives nu for forces array in incorrect
-    format and program throws an assertion error.
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = np.linspace(0.1, 1.0, n_elems).reshape(1, n_elems)
-    youngs_modulus = 1e6
-    MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-    )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_constant_nu_for_torques(n_elems):
-    """
-    This function tests, for fix dissipation
-    constant for torques input, validty of dissipation constant array.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu_for_forces = 0.2
-    nu_for_torques = 0.1
-    youngs_modulus = 1e6
-
-    mockrod = MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu_for_forces,
-        youngs_modulus,
-        nu_for_torques=nu_for_torques,
-    )
-    correct_nu = nu_for_torques * mockrod.mass
-    test_nu = mockrod.dissipation_constant_for_torques
-    assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_varying_nu_for_torques(n_elems):
-    """
-    This function tests, for varying dissipation
-    constant for torques input, validty of dissipation
-    constant for torques array.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.1
-    nu_for_torques = np.linspace(0.1, 1.0, n_elems)
-    youngs_modulus = 1e6
-
-    mockrod = MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        nu_for_torques=nu_for_torques,
-    )
-    correct_nu = nu_for_torques * mockrod.mass
-    test_nu = mockrod.dissipation_constant_for_torques
-    assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
-
-
-@pytest.mark.xfail(raises=AssertionError)
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_nu_for_torques_invalid_shape(n_elems):
-    """
-    This test is checking if user gives nu for torques array in incorrect
-    format and program throws an assertion error.
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.1
-    nu_for_torques = np.linspace(0.1, 1.0, n_elems).reshape(1, n_elems)
-    youngs_modulus = 1e6
-    MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-        nu_for_torques=nu_for_torques,
-    )
-
-
-@pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_constant_nu_for_torques_if_not_input(n_elems):
-    """
-    This function tests, dissipation constant for torques
-    if it is not in kwargs. If dissipation constant for torques
-    is not in kwargs it uses the dissipation for forces.
-
-    Parameters
-    ----------
-    n_elems
-
-    Returns
-    -------
-
-    """
-    center_offset = np.array([0.0, 0.0, 0.0])
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 0.0, 1.0])
-    base_length = 1.0
-    base_radius = 0.25
-    density = 1000
-    nu = 0.2
-    youngs_modulus = 1e6
-
-    mockrod = MockRingRodForTest.ring_rod(
-        n_elems,
-        center_offset,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        nu,
-        youngs_modulus,
-    )
-    correct_nu = nu * mockrod.mass
-    test_nu = mockrod.dissipation_constant_for_torques
-    assert_allclose(correct_nu, test_nu, atol=Tolerance.atol())
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
@@ -1097,7 +805,6 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
 
     input_rest_sigma = np.random.randn(3, n_elems)
@@ -1111,8 +818,7 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         rest_sigma=input_rest_sigma,
         rest_kappa=input_rest_kappa,
     )
@@ -1146,7 +852,6 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
 
     input_rest_sigma = np.random.randn(3, n_elems).reshape(n_elems, 3)
@@ -1160,8 +865,7 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         rest_sigma=input_rest_sigma,
         rest_kappa=input_rest_kappa,
     )
@@ -1187,7 +891,6 @@ def test_validity_of_allocated(n_elems):
     base_length = 1.0
     base_radius = 0.25
     density = 1000
-    nu = 0.1
     youngs_modulus = 1e6
     mockrod = MockRingRodForTest.ring_rod(
         n_elems,
@@ -1197,8 +900,7 @@ def test_validity_of_allocated(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
 
     assert_allclose(n_elems, mockrod.n_elems, atol=Tolerance.atol())
@@ -1245,12 +947,6 @@ def test_validity_of_allocated(n_elems):
     assert_allclose(
         mockrod.internal_couple, np.zeros((3, n_elems)), atol=Tolerance.atol()
     )
-    assert_allclose(
-        mockrod.damping_forces, np.zeros((3, n_elems)), atol=Tolerance.atol()
-    )
-    assert_allclose(
-        mockrod.damping_torques, np.zeros((3, n_elems)), atol=Tolerance.atol()
-    )
 
 
 @pytest.mark.parametrize("n_elems", [80])
@@ -1267,7 +963,6 @@ def test_ring_rod(n_elems):
     base_radius = np.random.uniform(1, 10)
     density = np.random.uniform(1, 10)
 
-    nu = 0.1
     # Youngs Modulus [Pa]
     E = 1e6
     # poisson ratio
@@ -1330,8 +1025,7 @@ def test_ring_rod(n_elems):
         base_length,
         base_radius,
         density,
-        nu,
-        E,
+        youngs_modulus=E,
     )
     # checking origin and length of rod
     assert_allclose(
@@ -1356,12 +1050,6 @@ def test_ring_rod(n_elems):
     assert_allclose(mockrod.rest_sigma, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.rest_kappa, np.zeros((3, n_elems)), atol=Tolerance.atol())
     assert_allclose(mockrod.density, density, atol=Tolerance.atol())
-    assert_allclose(
-        mockrod.dissipation_constant_for_forces, nu * mass, atol=Tolerance.atol()
-    )
-    assert_allclose(
-        mockrod.dissipation_constant_for_torques, nu * mass, atol=Tolerance.atol()
-    )
     assert_allclose(
         rest_voronoi_lengths, mockrod.rest_voronoi_lengths, atol=Tolerance.atol()
     )

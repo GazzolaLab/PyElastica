@@ -50,8 +50,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
         base_length,
         base_radius,
         density,
-        0.0,  # internal damping constant, deprecated in v0.3.0
-        E,
+        youngs_modulus=E,
         shear_modulus=shear_modulus,
     )
 
