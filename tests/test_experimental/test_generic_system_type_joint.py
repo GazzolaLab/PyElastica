@@ -26,8 +26,6 @@ def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
     base_length = 1
     base_radius = 0.2
     density = 1
-    nu = 0.1
-
     # Youngs Modulus [Pa]
     youngs_modulus = 1e6
     # poisson ratio
@@ -43,8 +41,7 @@ def init_system(system_class, origin: np.array = np.array([0.0, 0.0, 0.0])):
             base_length,
             base_radius,
             density,
-            nu,
-            youngs_modulus,
+            youngs_modulus=youngs_modulus,
             shear_modulus=shear_modulus,
         )
     elif system_class == Cylinder:

@@ -559,6 +559,8 @@ class CosseratRod(RodBase, KnotTheory):
             self.rest_sigma,
             self.shear_matrix,
             self.internal_stress,
+            self.internal_forces,
+            self.ghost_elems_idx,
         )
 
         _compute_internal_torques(
@@ -900,6 +902,8 @@ def _compute_internal_forces(
     rest_sigma,
     shear_matrix,
     internal_stress,
+    internal_forces,
+    ghost_elems_idx,
 ):
     """
     Update <internal force> given <director, internal_stress and velocity>.
@@ -938,6 +942,9 @@ def _compute_internal_forces(
                 )
 
     cosserat_internal_stress /= dilatation
+    internal_forces[:] = difference_kernel_for_block_structure(
+        cosserat_internal_stress, ghost_elems_idx
+    )
 
 
 @numba.njit(cache=True)
