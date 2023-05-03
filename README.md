@@ -3,24 +3,39 @@
 
 [![Build_status][badge-travis]][link-travis] [![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![DOI][badge-doi]][link-doi] [![Binder][badge-binder]][link-binder] [![Gitter][badge-gitter]][link-gitter]
  </div>
- 
+
 PyElastica is the python implementation of **Elastica**: an *open-source* project for simulating assemblies of slender, one-dimensional structures using Cosserat Rod theory.
 
 [![gallery][link-readme-gallary]][link-project-website]
 
 Visit [cosseratrods.org][link-project-website] for more information and learn about Elastica and Cosserat rod theory.
 
-## How to Start 
+## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
 PyElastica is compatible with Python 3.7 - 3.10.
 
 ~~~bash
-$ pip install pyelastica 
+$ pip install pyelastica
 ~~~
+
+With this you get a minimal version with very little dependencies.
+
+All options:
+- `magnetism`: use this if you want to simulate magnetic Cosserat rods
+interacting with external magnetic environments (details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica)) .
+- `examples`: installs dependencies to run example cases,
+found under the folder `examples`.
+- `docs`: packages to build documentation
+
+Options can be combined e.g.
+```bash
+pip install "pyelastica[magnetism,examples,docs]"
+```
 
 Documentation of PyElastica is available [here][link-docs-website].
 
+Example cases for simulating magnetic Cosserat rods can be found [here](https://github.com/armantekinalp/MagnetoPyElastica).
 ## Citation
 
 We ask that any publications which use Elastica cite as following:
@@ -36,7 +51,7 @@ We ask that any publications which use Elastica cite as following:
                   Zhi Dou and
                   Chia-Hsien (Cathy) Shih and
                   Mattia Gazzola},
-  title        = {{PyElastica: Open-source software for the 
+  title        = {{PyElastica: Open-source software for the
                    simulation of assemblies of slender, one-
                    dimensional structures using Cosserat Rod theory}},
   month        = feb,
@@ -50,7 +65,7 @@ We ask that any publications which use Elastica cite as following:
 
 <details>
   <summary><h4>References</h4></summary>
- 
+
 - Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628](https://doi.org/10.1098/rsos.171628)
 - Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
 
