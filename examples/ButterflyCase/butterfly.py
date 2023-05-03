@@ -68,7 +68,6 @@ butterfly_rod = ea.CosseratRod.straight_rod(
     base_length=total_length,
     base_radius=base_radius,
     density=density,
-    nu=0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus=youngs_modulus,
     shear_modulus=shear_modulus,
     position=positions,
