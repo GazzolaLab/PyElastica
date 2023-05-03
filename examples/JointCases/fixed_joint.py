@@ -48,8 +48,7 @@ rod1 = ea.CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 fixed_joint_sim.append(rod1)
@@ -62,8 +61,7 @@ rod2 = ea.CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 fixed_joint_sim.append(rod2)
@@ -89,9 +87,6 @@ fixed_joint_sim.add_forcing_to(rod2).using(
 )
 
 # add damping
-# old damping model (deprecated in v0.3.0) values
-# damping_constant = 0.4
-# dt = 1e-5
 damping_constant = 0.4
 dt = 1e-4
 fixed_joint_sim.dampen(rod1).using(

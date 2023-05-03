@@ -60,8 +60,7 @@ rod_one = ea.CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 
@@ -82,8 +81,7 @@ rod_two = ea.CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 
@@ -95,8 +93,6 @@ parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
 )
 
 # add damping
-# old damping model (deprecated in v0.3.0) values
-# damping_constant = 2e-3
 damping_constant = 2e-4
 parallel_rod_rod_contact_sim.dampen(rod_one).using(
     ea.AnalyticalLinearDamper,

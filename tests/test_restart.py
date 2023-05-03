@@ -37,7 +37,6 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 base_length=1,
                 base_radius=1,
                 density=1,
-                nu=1,
                 youngs_modulus=1,
             )
             # Bypass check, but its fine for testing
@@ -135,9 +134,3 @@ class TestRestartFunctionsWithFeaturesUsingRigidBodies:
                 test_value = getattr(test_cylinder, key)
 
                 assert_allclose(test_value, correct_value)
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])

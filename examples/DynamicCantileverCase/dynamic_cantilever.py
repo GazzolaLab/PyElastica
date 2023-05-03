@@ -68,8 +68,7 @@ def simulate_dynamic_cantilever_with(
         base_length,
         base_radius,
         density,
-        0.0,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
     )
 
     # Add constraints

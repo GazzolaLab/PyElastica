@@ -67,8 +67,7 @@ flagella_body = ea.CosseratRod.straight_rod(
     base_length_body,
     radius,
     density_body,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 
@@ -153,8 +152,7 @@ flagella_muscle = ea.CosseratRod.straight_rod(
     base_length_muscle,
     base_radius_muscle,
     density_muscle,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E_muscle,
+    youngs_modulus=E_muscle,
     shear_modulus=shear_modulus_muscle,
 )
 

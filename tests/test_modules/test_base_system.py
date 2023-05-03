@@ -160,7 +160,6 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
             base_length=1,
             base_radius=1,
             density=1,
-            nu=1,
             youngs_modulus=1,
         )
         # Bypass check, but its fine for testing

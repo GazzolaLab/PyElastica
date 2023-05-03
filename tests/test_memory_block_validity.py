@@ -22,8 +22,6 @@ class MockRod:
         self.acceleration_collection = np.random.randn(3, self.n_nodes)
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
-        self.damping_forces = np.random.randn(3, self.n_nodes)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -33,7 +31,6 @@ class MockRod:
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements
         self.omega_collection = np.random.randn(3, self.n_elems)
@@ -43,7 +40,6 @@ class MockRod:
         self.rest_sigma = np.random.randn(3, self.n_elems)
         self.internal_torques = np.random.randn(3, self.n_elems)
         self.external_torques = np.random.randn(3, self.n_elems)
-        self.damping_torques = np.random.randn(3, self.n_elems)
         self.internal_stress = np.random.randn(3, self.n_elems)
 
         # Things that are matrix mapped on elements
@@ -91,7 +87,6 @@ class MockRingRod:
         self.acceleration_collection = np.random.randn(3, self.n_nodes)
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
-        self.damping_forces = np.random.randn(3, self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -101,8 +96,6 @@ class MockRingRod:
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements
         self.omega_collection = np.random.randn(3, self.n_elems)
@@ -112,7 +105,6 @@ class MockRingRod:
         self.rest_sigma = np.random.randn(3, self.n_elems)
         self.internal_torques = np.random.randn(3, self.n_elems)
         self.external_torques = np.random.randn(3, self.n_elems)
-        self.damping_torques = np.random.randn(3, self.n_elems)
         self.internal_stress = np.random.randn(3, self.n_elems)
 
         # Things that are matrix mapped on elements
@@ -180,20 +172,6 @@ def test_block_structure_scalar_on_nodes_validity(n_rods):
             atol=Tolerance.atol(),
         )
 
-        # dissipation constant for forces
-        assert np.shares_memory(
-            block_structure.dissipation_constant_for_forces,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rod_nodes,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert_allclose(
-            block_structure.dissipation_constant_for_forces[start_idx:end_idx],
-            world_rods[i].dissipation_constant_for_forces,
-        )
-
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_block_structure_vectors_on_nodes_validity(n_rods):
@@ -254,18 +232,6 @@ def test_block_structure_vectors_on_nodes_validity(n_rods):
         assert_allclose(
             block_structure.external_forces[..., start_idx:end_idx],
             world_rods[i].external_forces,
-        )
-
-        # damping forces
-        assert np.shares_memory(
-            block_structure.damping_forces, world_rods[i].damping_forces
-        )
-        assert np.shares_memory(
-            block_structure.vector_dofs_in_rod_nodes, world_rods[i].damping_forces
-        )
-        assert_allclose(
-            block_structure.damping_forces[..., start_idx:end_idx],
-            world_rods[i].damping_forces,
         )
 
 
@@ -359,20 +325,6 @@ def test_block_structure_scalar_on_elements_validity(n_rods):
             world_rods[i].dilatation_rate,
         )
 
-        # dissipation constant for torques
-        assert np.shares_memory(
-            block_structure.dissipation_constant_for_torques,
-            world_rods[i].dissipation_constant_for_torques,
-        )
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rod_elems,
-            world_rods[i].dissipation_constant_for_torques,
-        )
-        assert_allclose(
-            block_structure.dissipation_constant_for_torques[start_idx:end_idx],
-            world_rods[i].dissipation_constant_for_torques,
-        )
-
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_block_structure_vectors_on_elements_validity(n_rods):
@@ -448,18 +400,6 @@ def test_block_structure_vectors_on_elements_validity(n_rods):
         assert_allclose(
             block_structure.external_torques[..., start_idx:end_idx],
             world_rods[i].external_torques,
-        )
-
-        # damping torques
-        assert np.shares_memory(
-            block_structure.damping_torques, world_rods[i].damping_torques
-        )
-        assert np.shares_memory(
-            block_structure.vector_dofs_in_rod_elems, world_rods[i].damping_torques
-        )
-        assert_allclose(
-            block_structure.damping_torques[..., start_idx:end_idx],
-            world_rods[i].damping_torques,
         )
 
         # internal stress
@@ -1105,9 +1045,3 @@ def test_periodic_boundary_one_ring_one_straight_rod():
         block_structure.end_idx_in_rod_voronoi,
         atol=Tolerance.atol(),
     )
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])
