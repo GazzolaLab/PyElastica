@@ -23,7 +23,7 @@ With this you get a minimal version with very little dependencies.
 
 All options:
 - `magnetism`: use this if you want to simulate magnetic Cosserat rods
-interacting with external magnetic environments.
+interacting with external magnetic environments (details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica)) .
 - `examples`: installs dependencies to run example cases,
 found under the folder `examples`.
 - `docs`: packages to build documentation
