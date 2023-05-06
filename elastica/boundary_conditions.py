@@ -504,7 +504,7 @@ class FixedConstraint(GeneralConstraint):
 
     >>> simulator.constrain(rod).using(
     ...    FixedConstraint,
-    ...    constrained_position_idx=(10)
+    ...    constrained_position_idx=(10,)
     ... )
 
     See Also
