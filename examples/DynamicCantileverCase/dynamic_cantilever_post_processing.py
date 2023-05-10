@@ -91,7 +91,7 @@ def plot_end_position_with(
     )
     ax.set_xlabel("Time [s]", fontsize=16)
     ax.set_ylabel("Displacement [m]", fontsize=16)
-    ax.grid(visible=True, which="both", color="k", linestyle="--")
+    ax.grid(which="both", color="k", linestyle="--")
 
     time = np.array(recorded_history["time"])
     positions = analytical_cantilever_soln.get_time_dependent_positions(1, time)
