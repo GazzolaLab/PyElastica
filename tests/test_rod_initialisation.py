@@ -93,6 +93,8 @@ class MockRodForTest:
         **kwargs,
     ):
 
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = False
         (
             n_elements,
             position,
@@ -128,19 +130,17 @@ class MockRodForTest:
             internal_couple,
         ) = allocate(
             n_elements,
-            start,
             direction,
             normal,
             base_length,
             base_radius,
             density,
             youngs_modulus,
+            rod_origin_position=start,
+            ring_rod_flag=ring_rod_flag,
             alpha_c=(27.0 / 28.0),
             **kwargs,
         )
-
-        # Straight rod is not ring rod set flag to false
-        ring_rod_flag = False
 
         return cls(
             n_elements,

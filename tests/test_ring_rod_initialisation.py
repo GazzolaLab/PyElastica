@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 import pytest
 from elastica.utils import MaxDimension, Tolerance
-from elastica.rod.factory_function import allocate_ring_rod
+from elastica.rod.factory_function import allocate
 import elastica as ea
 
 
@@ -93,6 +93,8 @@ class MockRingRodForTest:
         **kwargs,
     ):
 
+        # Ring rod flag is true
+        ring_rod_flag = True
         (
             n_elements,
             position,
@@ -126,20 +128,18 @@ class MockRingRodForTest:
             rest_kappa,
             internal_stress,
             internal_couple,
-        ) = allocate_ring_rod(
+        ) = allocate(
             n_elements,
-            ring_center_position,
             direction,
             normal,
             base_length,
             base_radius,
             density,
             youngs_modulus,
+            rod_origin_position=ring_center_position,
+            ring_rod_flag=ring_rod_flag,
             **kwargs,
         )
-
-        # Ring rod flag is true
-        ring_rod_flag = True
 
         return cls(
             n_elements,

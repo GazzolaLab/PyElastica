@@ -12,7 +12,7 @@ from elastica._linalg import (
     _batch_matvec,
 )
 from elastica._rotations import _inv_rotate
-from elastica.rod.factory_function import allocate, allocate_ring_rod
+from elastica.rod.factory_function import allocate
 from elastica.rod.knot_theory import KnotTheory
 from elastica._calculus import (
     quadrature_kernel_for_block_structure,
@@ -302,6 +302,8 @@ class CosseratRod(RodBase, KnotTheory):
                 "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
                 "and for usage check examples/axial_stretching.py"
             )
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = False
         (
             n_elements,
             position,
@@ -337,17 +339,16 @@ class CosseratRod(RodBase, KnotTheory):
             internal_couple,
         ) = allocate(
             n_elements,
-            start,
             direction,
             normal,
             base_length,
             base_radius,
             density,
             youngs_modulus,
+            rod_origin_position=start,
+            ring_rod_flag=ring_rod_flag,
             **kwargs,
         )
-        # Straight rod is not ring rod set flag to false
-        ring_rod_flag = False
 
         return cls(
             n_elements,
@@ -448,6 +449,8 @@ class CosseratRod(RodBase, KnotTheory):
                 "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
                 "and for usage check examples/axial_stretching.py"
             )
+        # Straight rod is not ring rod set flag to false
+        ring_rod_flag = True
         (
             n_elements,
             position,
@@ -481,19 +484,18 @@ class CosseratRod(RodBase, KnotTheory):
             rest_kappa,
             internal_stress,
             internal_couple,
-        ) = allocate_ring_rod(
+        ) = allocate(
             n_elements,
-            ring_center_position,
             direction,
             normal,
             base_length,
             base_radius,
             density,
             youngs_modulus,
+            rod_origin_position=ring_center_position,
+            ring_rod_flag=ring_rod_flag,
             **kwargs,
         )
-        # Straight rod is not ring rod set flag to false
-        ring_rod_flag = True
 
         return cls(
             n_elements,
