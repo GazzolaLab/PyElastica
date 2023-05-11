@@ -101,16 +101,12 @@ def node_to_element_mass_or_force(input):
 
 
 def nodes_to_elements(input):
-    warnings.warn(
-        # Change the warning to error on v0.3.1
-        # Remove the function beyond v0.4.0
-        "This function is now deprecated (issue #80). Please use "
-        "elastica.interaction.node_to_element_mass_or_force() "
-        "instead for node-to-element interpolation of mass/forces. "
-        "The function will be removed in the future (v0.3.1).",
-        DeprecationWarning,
+    # Remove the function beyond v0.4.0
+    raise NotImplementedError(
+        "This function is removed in v0.3.1. Please use\n"
+        "elastica.interaction.node_to_element_mass_or_force()\n"
+        "instead for node-to-element interpolation of mass/forces."
     )
-    return node_to_element_mass_or_force(input)
 
 
 @njit(cache=True)
