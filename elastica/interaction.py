@@ -18,7 +18,6 @@ from elastica._linalg import (
     _batch_matrix_transpose,
     _batch_vec_oneD_vec_cross,
 )
-import warnings
 
 
 @njit(cache=True)
