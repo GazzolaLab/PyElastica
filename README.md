@@ -13,7 +13,7 @@ Visit [cosseratrods.org][link-project-website] for more information and learn ab
 ## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
-PyElastica is compatible with Python 3.7 - 3.10.
+PyElastica is compatible with Python 3.8 - 3.10.
 
 ~~~bash
 $ pip install pyelastica
@@ -72,12 +72,15 @@ We ask that any publications which use Elastica cite as following:
 </details>
 
 ## List of publications and submissions
-
-- [Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
+- [Topology, dynamics, and control of an octopus-analog muscular hydrostat](https://arxiv.org/abs/2304.08413) (UIUC, 2023)
+- [Hierarchical control and learning of a foraging CyberOctopus](https://arxiv.org/abs/2302.05811) (UIUC, 2023)
+- [Energy-shaping control of a muscular octopus arm moving in three dimensions](https://royalsocietypublishing.org/doi/full/10.1098/rspa.2022.0593) (UIUC, 2023) (Proceedings of the Royal Society A 2023)
+- [A sensory feedback control law for octopus arm movements](https://ieeexplore.ieee.org/abstract/document/9993021/) (UIUC, 2022) (IEEE CDC 2022)
+- [Control-oriented modeling of bend propagation in an octopus arm](https://ieeexplore.ieee.org/abstract/document/9867689/) (UIUC, 2021) (IEEE ACC 2022)
 - [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (IEEE ICRA 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
-- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (ACC 2021)
+- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (IEEE ACC 2021)
 - [Elastica: A compliant mechanics environment for soft robotic control](https://ieeexplore.ieee.org/document/9369003) (UIUC, 2021) (IEEE RA-L 2021)
-- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://arxiv.org/abs/2010.03368) (UIUC, 2020)
+- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9683318) (UIUC, 2020) (IEEE CDC 2021)
 - [Energy shaping control of a CyberOctopus soft arm](https://ieeexplore.ieee.org/document/9304408) (UIUC, 2020) (IEEE CDC 2020)
 
 ## Tutorials
@@ -98,8 +101,10 @@ _Names arranged alphabetically_
 - Arman Tekinalp
 - Chia-Hsien Shih (Cathy)
 - Fan Kiat Chan
+- Ilia Nasiriziba
 - Noel Naughton
 - [Seung Hyun Kim](https://github.com/skim0119)
+- Songyuan Cui
 - Tejaswin Parthasarathy (Teja)
 - [Yashraj Bhosale](https://github.com/bhosale2)
 
