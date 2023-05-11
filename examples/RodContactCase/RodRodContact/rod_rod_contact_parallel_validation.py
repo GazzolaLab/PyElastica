@@ -20,8 +20,6 @@ class ParallelRodRodContact(
 parallel_rod_rod_contact_sim = ParallelRodRodContact()
 
 # Simulation parameters
-# old damping model (deprecated in v0.3.0) values
-# dt = 5e-5
 dt = 5e-4
 final_time = 10
 total_steps = int(final_time / dt)
