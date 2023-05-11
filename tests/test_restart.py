@@ -12,6 +12,7 @@ from elastica.modules import (
     CallBacks,
 )
 from elastica.restart import save_state, load_state
+import elastica as ea
 
 
 class GenericSimulatorClass(
@@ -77,6 +78,98 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 test_value = getattr(test_rod, key)
 
                 assert_allclose(test_value, correct_value)
+
+    def run_sim(self, final_time, load_from_restart, save_data_restart):
+        class BaseSimulatorClass(
+            BaseSystemCollection, Constraints, Forcing, Connections, CallBacks
+        ):
+            pass
+
+        simulator_class = BaseSimulatorClass()
+
+        rod_list = []
+        for _ in range(5):
+            rod = ea.CosseratRod.straight_rod(
+                n_elements=10,
+                start=np.zeros((3)),
+                direction=np.array([0, 1, 0.0]),
+                normal=np.array([1, 0, 0.0]),
+                base_length=1,
+                base_radius=1,
+                density=1,
+                youngs_modulus=1,
+            )
+            # Bypass check, but its fine for testing
+            simulator_class._systems.append(rod)
+
+            # Also add rods to a separate list
+            rod_list.append(rod)
+
+        for rod in rod_list:
+            simulator_class.add_forcing_to(rod).using(
+                ea.EndpointForces,
+                start_force=np.zeros(
+                    3,
+                ),
+                end_force=np.array([0, 0.1, 0]),
+                ramp_up_time=0.1,
+            )
+
+        # Finalize simulator
+        simulator_class.finalize()
+
+        directory = "restart_test_data/"
+
+        time_step = 1e-4
+        total_steps = int(final_time / time_step)
+
+        if load_from_restart:
+            restart_time = ea.load_state(simulator_class, directory, True)
+
+        else:
+            restart_time = np.float64(0.0)
+
+        timestepper = ea.PositionVerlet()
+        time = ea.integrate(
+            timestepper,
+            simulator_class,
+            final_time,
+            total_steps,
+            restart_time=restart_time,
+        )
+
+        if save_data_restart:
+            ea.save_state(simulator_class, directory, time, True)
+
+        # Compute final time accelerations
+        recorded_list = np.zeros((len(rod_list), rod_list[0].n_elems + 1))
+        for i, rod in enumerate(rod_list):
+            recorded_list[i, :] = rod.acceleration_collection[1, :]
+
+        return recorded_list
+
+    @pytest.mark.parametrize("final_time", [0.2, 1.0])
+    def test_save_restart_run_sim(self, final_time):
+
+        # First half of simulation
+        _ = self.run_sim(
+            final_time / 2, load_from_restart=False, save_data_restart=True
+        )
+
+        # Second half of simulation
+        recorded_list = self.run_sim(
+            final_time / 2, load_from_restart=True, save_data_restart=False
+        )
+        recorded_list_second_half = recorded_list.copy()
+
+        # Full simulation
+        recorded_list = self.run_sim(
+            final_time, load_from_restart=False, save_data_restart=False
+        )
+        recorded_list_full_sim = recorded_list.copy()
+
+        # Compare final accelerations of rods
+        assert_allclose(recorded_list_second_half, recorded_list_full_sim)
 
 
 class TestRestartFunctionsWithFeaturesUsingRigidBodies:
