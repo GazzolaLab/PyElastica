@@ -377,24 +377,18 @@ class TestAuxiliaryFunctions:
         assert_allclose(correct_output, output, atol=Tolerance.atol())
         assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
 
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_deprecated_nodes_to_elements(self, n_elem):
+    @pytest.mark.parametrize("n_elem", [2, 10])
+    def test_not_impl_error_for_nodes_to_elements(self, n_elem):
         random_vector = np.random.rand(3).reshape(3, 1)
         input = np.repeat(random_vector, n_elem + 1, axis=1)
-        input[..., 0] *= 0.5
-        input[..., -1] *= 0.5
-        correct_output = np.repeat(random_vector, n_elem, axis=1)
-        correct_warning_message = (
-            "This function is now deprecated (issue #80). Please use "
-            "elastica.interaction.node_to_element_mass_or_force() "
-            "instead for node-to-element interpolation of mass/forces. "
-            "The function will be removed in the future (v0.3.1)."
+        error_message = (
+            "This function is removed in v0.3.1. Please use\n"
+            "elastica.interaction.node_to_element_mass_or_force()\n"
+            "instead for node-to-element interpolation of mass/forces."
         )
-        with pytest.warns(DeprecationWarning) as record:
-            output = nodes_to_elements(input)
-        assert record[0].message.args[0] == correct_warning_message
-        assert_allclose(correct_output, output, atol=Tolerance.atol())
-        assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
+        with pytest.raises(NotImplementedError) as error_info:
+            nodes_to_elements(input)
+        assert error_info.value.args[0] == error_message
 
 
 class TestAnisotropicFriction:

@@ -63,7 +63,6 @@ rod1 = CosseratRod.straight_rod(
     base_length=0.5,                              # original length of rod (m)
     base_radius=10e-2,                            # original radius of rod (m)
     density=1e3,                                  # density of rod (kg/m^3)
-    nu=1e-3,                                      # Energy dissipation of rod, internal damping constant, deprecated in v0.3.0
     youngs_modulus=1e7,                           # Elastic Modulus (Pa)
     shear_modulus=1e7/(2* (1+0.5)),               # Shear Modulus (Pa)
 )
@@ -75,7 +74,6 @@ rod2 = CosseratRod.straight_rod(
     base_length=0.5,                              # original length of rod (m)
     base_radius=10e-2,                            # original radius of rod (m)
     density=1e3,                                  # density of rod (kg/m^3)
-    nu=0.0,                                       # Energy dissipation of rod,  internal damping constant, deprecated in v0.3.0
     youngs_modulus=1e7,                           # Elastic Modulus (Pa)
     shear_modulus=1e7/(2* (1+0.5)),               # Shear Modulus (Pa)
 )

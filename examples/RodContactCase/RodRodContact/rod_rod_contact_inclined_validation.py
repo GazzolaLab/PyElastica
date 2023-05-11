@@ -20,8 +20,6 @@ class InclinedRodRodContact(
 inclined_rod_rod_contact_sim = InclinedRodRodContact()
 
 # Simulation parameters
-# old damping model (deprecated in v0.3.0) values
-# dt = 5e-5
 dt = 2.5e-4
 final_time = 20
 total_steps = int(final_time / dt)
