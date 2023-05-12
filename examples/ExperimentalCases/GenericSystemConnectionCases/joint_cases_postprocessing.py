@@ -25,8 +25,8 @@ def plot_position(
     fig = plt.figure(figsize=(10, 10), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
 
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(which="minor", color="k", linestyle="--")
+    ax.grid(which="major", color="k", linestyle="-")
     ax.plot(position_of_rod1[:, 0, -1], position_of_rod1[:, 1, -1], "r-", label="rod1")
     ax.plot(
         position_of_rod2[:, 0, -1],
@@ -107,8 +107,8 @@ def plot_video(
         for time in range(1, len(time)):
             fig.clf()
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
-            ax.grid(b=True, which="minor", color="k", linestyle="--")
-            ax.grid(b=True, which="major", color="k", linestyle="-")
+            ax.grid(which="minor", color="k", linestyle="--")
+            ax.grid(which="major", color="k", linestyle="-")
             ax.plot(
                 position_of_rod1[time, 0],
                 position_of_rod1[time, 1],

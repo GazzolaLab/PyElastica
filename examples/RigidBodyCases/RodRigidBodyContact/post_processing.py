@@ -58,8 +58,8 @@ def plot_video(
 
     fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
     ax = plt.axes(projection="3d")  # fig.add_subplot(111)
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(which="minor", color="k", linestyle="--")
+    ax.grid(which="major", color="k", linestyle="-")
     # plt.axis("square")
     i = 0
     (rod_line,) = ax.plot(positions[i, 0], positions[i, 1], positions[i, 2], lw=3.0)

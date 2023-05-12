@@ -454,8 +454,8 @@ def plot_snake_velocity(
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(which="minor", color="k", linestyle="--")
+    ax.grid(which="major", color="k", linestyle="-")
     ax.plot(
         time_per_period[:], velocity_in_direction_of_rod[:, 0], "r-", label="forward"
     )

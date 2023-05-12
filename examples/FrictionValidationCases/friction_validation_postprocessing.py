@@ -21,8 +21,6 @@ def plot_friction_validation(results, SAVE_FIGURE, filename):
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    # ax.grid(b=True, which="minor", color="k", linestyle="--")
-    # ax.grid(b=True, which="major", color="k", linestyle="-")
     ax.plot(
         sweep,
         translational_energy,
@@ -71,8 +69,7 @@ def plot_axial_friction_validation(results, SAVE_FIGURE, filename):
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    # ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(which="major", color="k", linestyle="-")
     ax.plot(
         sweep,
         translational_energy,
