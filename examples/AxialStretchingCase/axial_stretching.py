@@ -26,11 +26,11 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from elastica import *
+import elastica as ea
 
 
 class StretchingBeamSimulator(
-    BaseSystemCollection, Constraints, Forcing, Damping, CallBacks
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
 ):
     pass
 
@@ -57,7 +57,7 @@ youngs_modulus = 1e4
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-stretchable_rod = CosseratRod.straight_rod(
+stretchable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -65,43 +65,39 @@ stretchable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    youngs_modulus,
+    youngs_modulus=youngs_modulus,
     shear_modulus=shear_modulus,
 )
 
 stretch_sim.append(stretchable_rod)
 stretch_sim.constrain(stretchable_rod).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 end_force_x = 1.0
 end_force = np.array([end_force_x, 0.0, 0.0])
 stretch_sim.add_forcing_to(stretchable_rod).using(
-    EndpointForces, 0.0 * end_force, end_force, ramp_up_time=1e-2
+    ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=1e-2
 )
 
 # add damping
 dl = base_length / n_elem
-# old damping model (deprecated in v0.3.0) values
-# dt = 0.01 * dl
-# damping_constant = 1.0
 dt = 0.1 * dl
 damping_constant = 0.1
 stretch_sim.dampen(stretchable_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 
 # Add call backs
-class AxialStretchingCallBack(CallBackBaseClass):
+class AxialStretchingCallBack(ea.CallBackBaseClass):
     """
     Tracks the velocity norms of the rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -120,18 +116,18 @@ class AxialStretchingCallBack(CallBackBaseClass):
             return
 
 
-recorded_history = defaultdict(list)
+recorded_history = ea.defaultdict(list)
 stretch_sim.collect_diagnostics(stretchable_rod).using(
     AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
 )
 
 stretch_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, stretch_sim, final_time, total_steps)
+ea.integrate(timestepper, stretch_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     # First-order theory with base-length

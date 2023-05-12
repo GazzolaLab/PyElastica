@@ -1,7 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from mpl_toolkits import mplot3d
-from matplotlib.colors import to_rgb
 from scipy.linalg import norm
 
 

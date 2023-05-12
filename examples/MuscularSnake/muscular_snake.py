@@ -1,6 +1,6 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.MuscularSnake.post_processing import (
     plot_video_with_surface,
     plot_snake_velocity,
@@ -14,7 +14,12 @@ from elastica.experimental.connection_contact_joint.parallel_connection import (
 
 # Set base simulator class
 class MuscularSnakeSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.CallBacks,
+    ea.Damping,
 ):
     pass
 
@@ -45,7 +50,7 @@ direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 0.0, 1.0])
 start = np.array([0.0, 0.0, base_radius_body])
 
-snake_body = CosseratRod.straight_rod(
+snake_body = ea.CosseratRod.straight_rod(
     n_elem_body,
     start,
     direction,
@@ -53,7 +58,6 @@ snake_body = CosseratRod.straight_rod(
     base_length_body,
     base_radius_body,
     density_body,
-    0.0,  # internal damping constant, deprecated in v0.3.0
     youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
@@ -115,7 +119,7 @@ for i in range(int(n_muscle_fibers / 2)):
         ]
     )
 
-    muscle_rod = CosseratRod.straight_rod(
+    muscle_rod = ea.CosseratRod.straight_rod(
         n_elem_muscle_group_one_to_three,
         start_muscle,
         direction,
@@ -123,7 +127,6 @@ for i in range(int(n_muscle_fibers / 2)):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
@@ -180,7 +183,7 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
         ]
     )
 
-    muscle_rod = CosseratRod.straight_rod(
+    muscle_rod = ea.CosseratRod.straight_rod(
         n_elem_muscle_group_two_to_four,
         start_muscle,
         direction,
@@ -188,7 +191,6 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
         base_length_muscle,
         muscle_radius,
         density_muscle,
-        0.0,  # internal damping constant, deprecated in v0.3.0
         youngs_modulus=E_muscle,
         shear_modulus=shear_modulus_muscle,
     )
@@ -228,7 +230,7 @@ for _, my_rod in enumerate(rod_list):
 
 # Add dissipation to backbone
 muscular_snake_simulator.dampen(snake_body).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=nu_body,
     time_step=time_step,
 )
@@ -236,7 +238,7 @@ muscular_snake_simulator.dampen(snake_body).using(
 # Add dissipation to muscles
 for rod in rod_list:
     muscular_snake_simulator.dampen(rod).using(
-        AnalyticalLinearDamper,
+        ea.AnalyticalLinearDamper,
         damping_constant=nu_muscle,
         time_step=time_step,
     )
@@ -245,7 +247,7 @@ for rod in rod_list:
 post_processing_forces_dict_list = []
 
 for i in range(n_muscle_fibers):
-    post_processing_forces_dict_list.append(defaultdict(list))
+    post_processing_forces_dict_list.append(ea.defaultdict(list))
     muscle_rod = muscle_rod_list[i]
     side_of_body = 1 if i % 2 == 0 else -1
 
@@ -265,7 +267,7 @@ for i in range(n_muscle_fibers):
 
 
 straight_straight_rod_connection_list = []
-straight_straight_rod_connection_post_processing_dict = defaultdict(list)
+straight_straight_rod_connection_post_processing_dict = ea.defaultdict(list)
 for idx, rod_two in enumerate(muscle_rod_list):
     rod_one = snake_body
     (
@@ -331,7 +333,7 @@ for idx, rod_two in enumerate(muscle_rod_list):
 # Only apply to the snake body.
 gravitational_acc = -9.81
 muscular_snake_simulator.add_forcing_to(snake_body).using(
-    GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
+    ea.GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
 )
 
 origin_plane = np.array([0.0, 0.0, 0.0])
@@ -345,7 +347,7 @@ kinetic_mu_array = np.array(
 )  # [forward, backward, sideways]
 static_mu_array = 2 * kinetic_mu_array
 muscular_snake_simulator.add_forcing_to(snake_body).using(
-    AnisotropicFrictionalPlane,
+    ea.AnisotropicFrictionalPlane,
     k=1e1,
     nu=40,
     plane_origin=origin_plane,
@@ -356,9 +358,9 @@ muscular_snake_simulator.add_forcing_to(snake_body).using(
 )
 
 
-class MuscularSnakeCallBack(CallBackBaseClass):
+class MuscularSnakeCallBack(ea.CallBackBaseClass):
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -383,7 +385,7 @@ class MuscularSnakeCallBack(CallBackBaseClass):
 post_processing_dict_list = []
 
 for idx, rod in enumerate(rod_list):
-    post_processing_dict_list.append(defaultdict(list))
+    post_processing_dict_list.append(ea.defaultdict(list))
     muscular_snake_simulator.collect_diagnostics(rod).using(
         MuscularSnakeCallBack,
         step_skip=step_skip,
@@ -391,8 +393,8 @@ for idx, rod in enumerate(rod_list):
     )
 
 muscular_snake_simulator.finalize()
-timestepper = PositionVerlet()
-integrate(timestepper, muscular_snake_simulator, final_time, total_steps)
+timestepper = ea.PositionVerlet()
+ea.integrate(timestepper, muscular_snake_simulator, final_time, total_steps)
 
 
 plot_video_with_surface(

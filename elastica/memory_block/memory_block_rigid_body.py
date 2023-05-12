@@ -1,24 +1,18 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
 import numpy as np
-from typing import Sequence
+from typing import Sequence, List
 
-from elastica.rigidbody import RigidBodyBase, Cylinder
-
-# from elastica.rigidbody.rigid_body import RigidBody
+from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
-from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from elastica.reset_functions_for_block_structure import _reset_scalar_ghost
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rigidbody import sphere, cylinder
-from elastica._linalg import _batch_matvec, _batch_cross
 
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
-    def __init__(self, systems: Sequence):
+    def __init__(self, systems: Sequence, system_idx_list: List[int]):
 
         self.n_bodies = len(systems)
         self.n_elems = self.n_bodies
         self.n_nodes = self.n_elems
+        self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
 
         # Allocate block structure using system collection.
         self.allocate_block_variables_scalars(systems)

@@ -1,7 +1,6 @@
 __doc__ = """ Quadrature and difference kernels """
 import numpy as np
 from numpy import zeros, empty
-import numba
 from numba import njit
 from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_vector_ghost,

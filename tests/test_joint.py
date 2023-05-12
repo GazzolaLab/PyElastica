@@ -53,8 +53,7 @@ def test_freejoint():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
@@ -65,8 +64,7 @@ def test_freejoint():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
 
@@ -147,8 +145,7 @@ def test_hingejoint():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
@@ -159,8 +156,7 @@ def test_hingejoint():
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
 
@@ -266,8 +262,7 @@ def test_fixedjoint(rest_euler_angle):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
     rod2 = CosseratRod.straight_rod(
@@ -278,8 +273,7 @@ def test_fixedjoint(rest_euler_angle):
         base_length,
         base_radius,
         density,
-        nu,
-        youngs_modulus,
+        youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
 

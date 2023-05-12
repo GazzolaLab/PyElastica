@@ -4,7 +4,6 @@ This module includes utility methods to support POVray rendering.
 
 """
 
-import os
 import subprocess
 from collections import defaultdict
 

@@ -4,11 +4,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica.rod.data_structures import _bootstrap_from_data
-from elastica.rod.data_structures import (
-    _KinematicState,
-    _DynamicState,
-)
 from elastica.utils import MaxDimension
 
 from test_rods import MockTestRod
@@ -41,7 +36,7 @@ def test_knot_theory_mixin_methods(knot_theory):
     class TestRodWithKnotTheory(MockTestRod, knot_theory.KnotTheory):
         def __init__(self):
             super().__init__()
-            self.radius = np.random.randn(MaxDimension.value(), self.n_elem)
+            self.radius = np.random.randn(MaxDimension.value(), self.n_elems)
 
     rod = TestRodWithKnotTheory()
     assert hasattr(

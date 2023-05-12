@@ -1,7 +1,8 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "ExternalContact", "SelfContact"]
+
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
+from elastica.typing import SystemType, RodType
 from math import sqrt
 import numba
 import numpy as np
@@ -43,18 +44,20 @@ class FreeJoint:
         self.k = k
         self.nu = nu
 
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(
+        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+    ):
         """
         Apply joint force to the connected rod objects.
 
         Parameters
         ----------
-        rod_one : object
-            Rod-like object
+        system_one : object
+            Rod or rigid-body object
         index_one : int
             Index of first rod for joint.
-        rod_two : object
-            Rod-like object
+        system_two : object
+            Rod or rigid-body object
         index_two : int
             Index of second rod for joint.
 
@@ -63,24 +66,26 @@ class FreeJoint:
 
         """
         end_distance_vector = (
-            rod_two.position_collection[..., index_two]
-            - rod_one.position_collection[..., index_one]
+            system_two.position_collection[..., index_two]
+            - system_one.position_collection[..., index_one]
         )
         elastic_force = self.k * end_distance_vector
 
         relative_velocity = (
-            rod_two.velocity_collection[..., index_two]
-            - rod_one.velocity_collection[..., index_one]
+            system_two.velocity_collection[..., index_two]
+            - system_one.velocity_collection[..., index_one]
         )
         damping_force = self.nu * relative_velocity
 
         contact_force = elastic_force + damping_force
-        rod_one.external_forces[..., index_one] += contact_force
-        rod_two.external_forces[..., index_two] -= contact_force
+        system_one.external_forces[..., index_one] += contact_force
+        system_two.external_forces[..., index_two] -= contact_force
 
         return
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(
+        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+    ):
         """
         Apply restoring joint torques to the connected rod objects.
 
@@ -88,12 +93,12 @@ class FreeJoint:
 
         Parameters
         ----------
-        rod_one : object
-            Rod-like object
+        system_one : object
+            Rod or rigid-body object
         index_one : int
             Index of first rod for joint.
-        rod_two : object
-            Rod-like object
+        system_two : object
+            Rod or rigid-body object
         index_two : int
             Index of second rod for joint.
 
@@ -149,10 +154,22 @@ class HingeJoint(FreeJoint):
         self.kt = kt
 
     # Apply force is same as free joint
-    def apply_forces(self, system_one, index_one, system_two, index_two):
+    def apply_forces(
+        self,
+        system_one: SystemType,
+        index_one,
+        system_two: SystemType,
+        index_two,
+    ):
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
-    def apply_torques(self, system_one, index_one, system_two, index_two):
+    def apply_torques(
+        self,
+        system_one: SystemType,
+        index_one,
+        system_two: SystemType,
+        index_two,
+    ):
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
 
@@ -237,10 +254,22 @@ class FixedJoint(FreeJoint):
         self.rest_rotation_matrix = rest_rotation_matrix
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
-        return super().apply_forces(rod_one, index_one, rod_two, index_two)
+    def apply_forces(
+        self,
+        system_one: SystemType,
+        index_one,
+        system_two: SystemType,
+        index_two,
+    ):
+        return super().apply_forces(system_one, index_one, system_two, index_two)
 
-    def apply_torques(self, system_one, index_one, system_two, index_two):
+    def apply_torques(
+        self,
+        system_one: SystemType,
+        index_one,
+        system_two: SystemType,
+        index_two,
+    ):
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies
         system_one_director = system_one.director_collection[..., index_one]
@@ -283,7 +312,12 @@ class FixedJoint(FreeJoint):
         system_two.external_torques[..., index_two] += system_two_director @ torque
 
 
-def get_relative_rotation_two_systems(system_one, index_one, system_two, index_two):
+def get_relative_rotation_two_systems(
+    system_one: SystemType,
+    index_one,
+    system_two: SystemType,
+    index_two,
+):
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
@@ -291,17 +325,17 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
     ----------
     How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
 
-        >>> rel_rot_mat = get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+        >>> rel_rot_mat = get_relative_rotation_two_systems(system1, -1, system2, 0)
 
     How to initialize a FixedJoint with a rest rotation between the two systems,
     which is enforced throughout the simulation:
 
         >>> simulator.connect(
-        ...    first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
+        ...    first_rod=system1, second_rod=system2, first_connect_idx=-1, second_connect_idx=0
         ... ).using(
         ...    FixedJoint,
         ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
-        ...    rest_rotation_matrix=get_relative_rotation_two_systems(rod1, -1, rod2, 0)
+        ...    rest_rotation_matrix=get_relative_rotation_two_systems(system1, -1, system2, 0)
         ... )
 
     See Also
@@ -310,12 +344,12 @@ def get_relative_rotation_two_systems(system_one, index_one, system_two, index_t
 
     Parameters
     ----------
-    rod_one : object
-        Rod-like object
+    system_one : SystemType
+        Rod or rigid-body object
     index_one : int
         Index of first rod for joint.
-    rod_two : object
-        Rod-like object
+    system_two : SystemType
+        Rod or rigid-body object
     index_two : int
         Index of second rod for joint.
 
@@ -921,7 +955,13 @@ class ExternalContact(FreeJoint):
         self.velocity_damping_coefficient = velocity_damping_coefficient
         self.friction_coefficient = friction_coefficient
 
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(
+        self,
+        rod_one: RodType,
+        index_one,
+        rod_two: SystemType,
+        index_two,
+    ):
         # del index_one, index_two
 
         # TODO: raise error during the initialization if rod one is rigid body.
@@ -1019,7 +1059,7 @@ class SelfContact(FreeJoint):
     def __init__(self, k, nu):
         super().__init__(k, nu)
 
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
         # del index_one, index_two
 
         _calculate_contact_forces_self_rod(

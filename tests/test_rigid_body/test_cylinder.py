@@ -2,10 +2,8 @@ __doc__ = """Tests for cylinder module"""
 import numpy as np
 from numpy.testing import assert_allclose
 
-from elastica.utils import MaxDimension, Tolerance
+from elastica.utils import Tolerance
 
-import pytest
-import sys
 
 from elastica.rigidbody import Cylinder
 

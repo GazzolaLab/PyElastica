@@ -1,7 +1,7 @@
 __doc__ = """Hinge joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
@@ -11,7 +11,12 @@ from examples.JointCases.joint_cases_postprocessing import (
 
 
 class HingeJointSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.Damping,
+    ea.CallBacks,
 ):
     pass
 
@@ -35,7 +40,7 @@ start_rod_1 = np.zeros((3,))
 start_rod_2 = start_rod_1 + direction * base_length
 
 # Create rod 1
-rod1 = CosseratRod.straight_rod(
+rod1 = ea.CosseratRod.straight_rod(
     n_elem,
     start_rod_1,
     direction,
@@ -43,13 +48,12 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 hinge_joint_sim.append(rod1)
 # Create rod 2
-rod2 = CosseratRod.straight_rod(
+rod2 = ea.CosseratRod.straight_rod(
     n_elem,
     start_rod_2,
     direction,
@@ -57,27 +61,26 @@ rod2 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 hinge_joint_sim.append(rod2)
 
 # Apply boundary conditions to rod1.
 hinge_joint_sim.constrain(rod1).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Connect rod 1 and rod 2
 hinge_joint_sim.connect(
     first_rod=rod1, second_rod=rod2, first_connect_idx=-1, second_connect_idx=0
 ).using(
-    HingeJoint, k=1e5, nu=0, kt=1e1, normal_direction=roll_direction
+    ea.HingeJoint, k=1e5, nu=0, kt=1e1, normal_direction=roll_direction
 )  # 1e-2
 
 # Add forces to rod2
 hinge_joint_sim.add_forcing_to(rod2).using(
-    EndpointForcesSinusoidal,
+    ea.EndpointForcesSinusoidal,
     start_force_mag=0,
     end_force_mag=5e-3,
     ramp_up_time=0.2,
@@ -86,41 +89,38 @@ hinge_joint_sim.add_forcing_to(rod2).using(
 )
 
 # add damping
-# old damping model (deprecated in v0.3.0) values
-# damping_constant = 4e-3
-# dt = 1e-5
 damping_constant = 4e-3
 dt = 5e-5
 hinge_joint_sim.dampen(rod1).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 hinge_joint_sim.dampen(rod2).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 
-pp_list_rod1 = defaultdict(list)
-pp_list_rod2 = defaultdict(list)
+pp_list_rod1 = ea.defaultdict(list)
+pp_list_rod2 = ea.defaultdict(list)
 
 hinge_joint_sim.collect_diagnostics(rod1).using(
-    MyCallBack, step_skip=1000, callback_params=pp_list_rod1
+    ea.MyCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 hinge_joint_sim.collect_diagnostics(rod2).using(
-    MyCallBack, step_skip=1000, callback_params=pp_list_rod2
+    ea.MyCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
 
 hinge_joint_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 final_time = 10
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, hinge_joint_sim, final_time, total_steps)
+ea.integrate(timestepper, hinge_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False
