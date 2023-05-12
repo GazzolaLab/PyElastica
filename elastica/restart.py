@@ -1,8 +1,9 @@
 __doc__ = """Generate or load restart file implementations."""
-__all__ = ["save_state", "load_state"]
+
 import numpy as np
 import os
 from itertools import groupby
+from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
 
 
 def all_equal(iterable):
@@ -41,6 +42,10 @@ def save_state(simulator, directory: str = "", time=0.0, verbose: bool = False):
     """
     os.makedirs(directory, exist_ok=True)
     for idx, rod in enumerate(simulator):
+        if isinstance(rod, MemoryBlockCosseratRod) or isinstance(
+            rod, MemoryBlockRigidBody
+        ):
+            continue
         path = os.path.join(directory, "system_{}.npz".format(idx))
         np.savez(path, time=time, **rod.__dict__)
 
@@ -69,6 +74,10 @@ def load_state(simulator, directory: str = "", verbose: bool = False):
     """
     time_list = []  # Simulation time of rods when they are saved.
     for idx, rod in enumerate(simulator):
+        if isinstance(rod, MemoryBlockCosseratRod) or isinstance(
+            rod, MemoryBlockRigidBody
+        ):
+            continue
         path = os.path.join(directory, "system_{}.npz".format(idx))
         data = np.load(path, allow_pickle=True)
         for key, value in data.items():
@@ -87,10 +96,6 @@ def load_state(simulator, directory: str = "", verbose: bool = False):
         raise ValueError(
             "Restart time of loaded rods are different, check your inputs!"
         )
-
-    # Apply boundary conditions, after loading the systems.
-    simulator.constrain_values(0.0)
-    simulator.constrain_rates(0.0)
 
     if verbose:
         print("Load complete: {}".format(directory))

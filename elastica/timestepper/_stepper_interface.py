@@ -1,7 +1,5 @@
 __doc__ = "Time stepper interface"
 
-import numpy as np
-
 
 class _TimeStepper:
     """Interface classes for all time-steppers"""

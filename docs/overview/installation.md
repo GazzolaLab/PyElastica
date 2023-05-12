@@ -2,7 +2,7 @@
 
 ## Instruction
 
-PyElastica requires Python 3.5 - 3.8, which needs to be installed prior to using PyElastica. For information on installing Python, see [here](https://realpython.com/installing-python/). If you are interested in using a package manager like Conda, see [here](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html).
+PyElastica requires Python 3.8 - 3.10, which needs to be installed prior to using PyElastica. For information on installing Python, see [here](https://realpython.com/installing-python/). If you are interested in using a package manager like Conda, see [here](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html).
 
 :::{note}
 Python version above 3.8 is tested only in Ubuntu and Mac OS. For Windows 10, some of the dependencies were not yet compatible.
@@ -10,10 +10,22 @@ Python version above 3.8 is tested only in Ubuntu and Mac OS. For Windows 10, so
 
 The easiest way to install PyElastica is with `pip`:
 
-```sh
+```bash
 $ pip install pyelastica
 ```
-You can also download the source code for PyElastica directly from [GitHub](https://github.com/GazzolaLab/PyElastica). 
+You can also download the source code for PyElastica directly from [GitHub](https://github.com/GazzolaLab/PyElastica).
+
+All options:
+- `magnetism`: use this if you want to simulate magnetic Cosserat rods
+interacting with external magnetic environments (details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica)) .
+- `examples`: installs dependencies to run example cases,
+found under the folder [`examples`](https://github.com/GazzolaLab/PyElastica/tree/master/examples).
+- `docs`: packages to build documentation
+
+Options can be combined e.g.
+```bash
+$ pip install "pyelastica[magnetism,examples,docs]"
+```
 
 ## Dependencies
 
@@ -26,4 +38,4 @@ The core of PyElastica is developed using:
 - matplotlib (visualization)
 
 Above packages will be installed along with PyElastica if you used `pip` to install.
-If you have directly downloaded the source code, you must install these packages separately. 
+If you have directly downloaded the source code, you must install these packages separately.

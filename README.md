@@ -3,24 +3,39 @@
 
 [![Build_status][badge-travis]][link-travis] [![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![DOI][badge-doi]][link-doi] [![Binder][badge-binder]][link-binder] [![Gitter][badge-gitter]][link-gitter]
  </div>
- 
+
 PyElastica is the python implementation of **Elastica**: an *open-source* project for simulating assemblies of slender, one-dimensional structures using Cosserat Rod theory.
 
 [![gallery][link-readme-gallary]][link-project-website]
 
 Visit [cosseratrods.org][link-project-website] for more information and learn about Elastica and Cosserat rod theory.
 
-## How to Start 
+## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
-PyElastica is compatible with Python 3.7 - 3.10.
+PyElastica is compatible with Python 3.8 - 3.10.
 
 ~~~bash
-$ pip install pyelastica 
+$ pip install pyelastica
 ~~~
+
+With this you get a minimal version with very little dependencies.
+
+All options:
+- `magnetism`: use this if you want to simulate magnetic Cosserat rods
+interacting with external magnetic environments (details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica)) .
+- `examples`: installs dependencies to run example cases,
+found under the folder `examples`.
+- `docs`: packages to build documentation
+
+Options can be combined e.g.
+```bash
+pip install "pyelastica[magnetism,examples,docs]"
+```
 
 Documentation of PyElastica is available [here][link-docs-website].
 
+Example cases for simulating magnetic Cosserat rods can be found [here](https://github.com/armantekinalp/MagnetoPyElastica).
 ## Citation
 
 We ask that any publications which use Elastica cite as following:
@@ -36,7 +51,7 @@ We ask that any publications which use Elastica cite as following:
                   Zhi Dou and
                   Chia-Hsien (Cathy) Shih and
                   Mattia Gazzola},
-  title        = {{PyElastica: Open-source software for the 
+  title        = {{PyElastica: Open-source software for the
                    simulation of assemblies of slender, one-
                    dimensional structures using Cosserat Rod theory}},
   month        = feb,
@@ -50,19 +65,22 @@ We ask that any publications which use Elastica cite as following:
 
 <details>
   <summary><h4>References</h4></summary>
- 
+
 - Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628](https://doi.org/10.1098/rsos.171628)
 - Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
 
 </details>
 
 ## List of publications and submissions
-
-- [Control-oriented modeling of bend propagation in an octopus arm](https://arxiv.org/abs/2110.07211) (UIUC, 2021)
+- [Topology, dynamics, and control of an octopus-analog muscular hydrostat](https://arxiv.org/abs/2304.08413) (UIUC, 2023)
+- [Hierarchical control and learning of a foraging CyberOctopus](https://arxiv.org/abs/2302.05811) (UIUC, 2023)
+- [Energy-shaping control of a muscular octopus arm moving in three dimensions](https://royalsocietypublishing.org/doi/full/10.1098/rspa.2022.0593) (UIUC, 2023) (Proceedings of the Royal Society A 2023)
+- [A sensory feedback control law for octopus arm movements](https://ieeexplore.ieee.org/abstract/document/9993021/) (UIUC, 2022) (IEEE CDC 2022)
+- [Control-oriented modeling of bend propagation in an octopus arm](https://ieeexplore.ieee.org/abstract/document/9867689/) (UIUC, 2021) (IEEE ACC 2022)
 - [A physics-informed, vision-based method to reconstruct all deformation modes in slender bodies](https://arxiv.org/abs/2109.08372) (UIUC, 2021) (IEEE ICRA 2022) [code](https://github.com/GazzolaLab/BR2-vision-based-smoothing)
-- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (ACC 2021)
+- [Optimal control of a soft CyberOctopus arm](https://ieeexplore.ieee.org/document/9483284) (UIUC, 2021) (IEEE ACC 2021)
 - [Elastica: A compliant mechanics environment for soft robotic control](https://ieeexplore.ieee.org/document/9369003) (UIUC, 2021) (IEEE RA-L 2021)
-- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://arxiv.org/abs/2010.03368) (UIUC, 2020)
+- [Controlling a CyberOctopus soft arm with muscle-like actuation](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9683318) (UIUC, 2020) (IEEE CDC 2021)
 - [Energy shaping control of a CyberOctopus soft arm](https://ieeexplore.ieee.org/document/9304408) (UIUC, 2020) (IEEE CDC 2020)
 
 ## Tutorials
@@ -83,8 +101,10 @@ _Names arranged alphabetically_
 - Arman Tekinalp
 - Chia-Hsien Shih (Cathy)
 - Fan Kiat Chan
+- Ilia Nasiriziba
 - Noel Naughton
 - [Seung Hyun Kim](https://github.com/skim0119)
+- Songyuan Cui
 - Tejaswin Parthasarathy (Teja)
 - [Yashraj Bhosale](https://github.com/bhosale2)
 

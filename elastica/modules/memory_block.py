@@ -21,14 +21,18 @@ def construct_memory_block_structures(systems):
     _memory_blocks = []
     temp_list_for_cosserat_rod_systems = []
     temp_list_for_rigid_body_systems = []
+    temp_list_for_cosserat_rod_systems_idx = []
+    temp_list_for_rigid_body_systems_idx = []
 
     for system_idx, sys_to_be_added in enumerate(systems):
 
         if issubclass(sys_to_be_added.__class__, RodBase):
             temp_list_for_cosserat_rod_systems.append(sys_to_be_added)
+            temp_list_for_cosserat_rod_systems_idx.append(system_idx)
 
         elif issubclass(sys_to_be_added.__class__, RigidBodyBase):
             temp_list_for_rigid_body_systems.append(sys_to_be_added)
+            temp_list_for_rigid_body_systems_idx.append(system_idx)
 
         else:
             raise TypeError(
@@ -44,10 +48,17 @@ def construct_memory_block_structures(systems):
 
     if temp_list_for_cosserat_rod_systems:
         _memory_blocks.append(
-            MemoryBlockCosseratRod(temp_list_for_cosserat_rod_systems)
+            MemoryBlockCosseratRod(
+                temp_list_for_cosserat_rod_systems,
+                temp_list_for_cosserat_rod_systems_idx,
+            )
         )
 
     if temp_list_for_rigid_body_systems:
-        _memory_blocks.append(MemoryBlockRigidBody(temp_list_for_rigid_body_systems))
+        _memory_blocks.append(
+            MemoryBlockRigidBody(
+                temp_list_for_rigid_body_systems, temp_list_for_rigid_body_systems_idx
+            )
+        )
 
     return _memory_blocks

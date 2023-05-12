@@ -1,6 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from mpl_toolkits import mplot3d
 from matplotlib.colors import to_rgb
 from scipy.linalg import norm
 
@@ -31,8 +30,8 @@ def plot_convergence(results, SAVE_FIGURE, filename):
 
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(which="minor", color="k", linestyle="--")
+    ax.grid(which="major", color="k", linestyle="-")
     ax.loglog(
         convergence_elements,
         l1,

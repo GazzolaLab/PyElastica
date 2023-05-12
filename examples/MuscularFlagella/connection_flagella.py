@@ -1,7 +1,6 @@
 __doc__ = """Muscular flagella connection class Numba implementation. """
 __all__ = ["MuscularFlagellaConnection"]
 import numpy as np
-import numba
 from numba import njit
 from elastica.joint import FreeJoint
 from elastica._linalg import _batch_matvec

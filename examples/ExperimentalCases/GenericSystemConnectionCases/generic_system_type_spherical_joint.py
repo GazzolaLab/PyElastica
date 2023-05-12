@@ -2,7 +2,7 @@ __doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zh
 methods section."""
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
     GenericSystemTypeFreeJoint,
 )
@@ -15,7 +15,12 @@ from joint_cases_postprocessing import (
 
 
 class SphericalJointSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, Damping, CallBacks
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.Damping,
+    ea.CallBacks,
 ):
     pass
 
@@ -46,7 +51,7 @@ start_rod_2 = start_rod_1 + direction * base_length
 start_cylinder = start_rod_2 + direction * base_length
 
 # Create rod 1
-rod1 = CosseratRod.straight_rod(
+rod1 = ea.CosseratRod.straight_rod(
     n_elem,
     start_rod_1,
     direction,
@@ -54,13 +59,12 @@ rod1 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod1)
 # Create rod 2
-rod2 = CosseratRod.straight_rod(
+rod2 = ea.CosseratRod.straight_rod(
     n_elem,
     start_rod_2,
     direction,
@@ -68,13 +72,12 @@ rod2 = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 spherical_joint_sim.append(rod2)
 # Create cylinder
-cylinder = Cylinder(
+cylinder = ea.Cylinder(
     start=start_cylinder,
     direction=direction,
     normal=normal,
@@ -86,7 +89,7 @@ spherical_joint_sim.append(cylinder)
 
 # Apply boundary conditions to rod1.
 spherical_joint_sim.constrain(rod1).using(
-    OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
+    ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
 
 # Connect rod 1 and rod 2
@@ -107,7 +110,7 @@ spherical_joint_sim.connect(
 
 # Add forces to rod2
 spherical_joint_sim.add_forcing_to(rod2).using(
-    EndpointForcesSinusoidal,
+    ea.EndpointForcesSinusoidal,
     start_force_mag=0,
     end_force_mag=5e-3,
     ramp_up_time=0.2,
@@ -116,43 +119,40 @@ spherical_joint_sim.add_forcing_to(rod2).using(
 )
 
 # add damping
-# old damping model (deprecated in v0.3.0) values
-# damping_constant = 4e-3
-# dt = 1e-5
 damping_constant = 4e-3
 spherical_joint_sim.dampen(rod1).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 spherical_joint_sim.dampen(rod2).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=dt,
 )
 
-pp_list_rod1 = defaultdict(list)
-pp_list_rod2 = defaultdict(list)
-pp_list_cylinder = defaultdict(list)
+pp_list_rod1 = ea.defaultdict(list)
+pp_list_rod2 = ea.defaultdict(list)
+pp_list_cylinder = ea.defaultdict(list)
 
 spherical_joint_sim.collect_diagnostics(rod1).using(
-    MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1
+    ea.MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1
 )
 spherical_joint_sim.collect_diagnostics(rod2).using(
-    MyCallBack, step_skip=step_skip, callback_params=pp_list_rod2
+    ea.MyCallBack, step_skip=step_skip, callback_params=pp_list_rod2
 )
 spherical_joint_sim.collect_diagnostics(cylinder).using(
-    MyCallBack, step_skip=step_skip, callback_params=pp_list_cylinder
+    ea.MyCallBack, step_skip=step_skip, callback_params=pp_list_cylinder
 )
 
 spherical_joint_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, spherical_joint_sim, final_time, total_steps)
+ea.integrate(timestepper, spherical_joint_sim, final_time, total_steps)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = True

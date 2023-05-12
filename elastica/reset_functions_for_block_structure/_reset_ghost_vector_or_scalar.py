@@ -1,7 +1,5 @@
 __doc__ = """Reset the ghost vectors or scalar variables using functions implemented in Numba"""
 
-import numpy as np
-import numba
 from numba import njit
 
 

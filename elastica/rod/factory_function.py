@@ -1,5 +1,4 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
-__all__ = ["allocate"]
 from typing import Optional, Tuple
 import logging
 import numpy as np
@@ -10,21 +9,20 @@ from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
 
 def allocate(
     n_elements,
-    start,
     direction,
     normal,
     base_length,
     base_radius,
     density,
-    nu,
     youngs_modulus: float,
-    nu_for_torques: Optional[float] = None,
+    *,
+    rod_origin_position: np.ndarray,
+    ring_rod_flag: bool,
     shear_modulus: Optional[float] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
     rest_sigma: Optional[np.ndarray] = None,
     rest_kappa: Optional[np.ndarray] = None,
-    *args,
     **kwargs,
 ):
     log = logging.getLogger()
@@ -36,22 +34,49 @@ def allocate(
         )
 
     # sanity checks here
-    assert n_elements > 1
+    assert n_elements > 2 if ring_rod_flag else n_elements > 1
     assert base_length > Tolerance.atol()
     assert np.sqrt(np.dot(normal, normal)) > Tolerance.atol()
     assert np.sqrt(np.dot(direction, direction)) > Tolerance.atol()
 
+    # define the number of nodes and voronoi elements based on if rod is
+    # straight and open or closed and ring shaped
+    n_nodes = n_elements if ring_rod_flag else n_elements + 1
+    n_voronoi_elements = n_elements if ring_rod_flag else n_elements - 1
+
     # check if position is given.
     if position is None:  # Generate straight and uniform rod
         # Set the position array
-        position = np.zeros((MaxDimension.value(), n_elements + 1))
-        end = start + direction * base_length
-        for i in range(0, 3):
-            position[i, ...] = np.linspace(start[i], end[i], n_elements + 1)
-    _position_validity_checker(position, start, n_elements)
+        position = np.zeros((MaxDimension.value(), n_nodes))
+        if not ring_rod_flag:  # i.e. a straight open rod
+            start = rod_origin_position
+            end = start + direction * base_length
+            for i in range(0, 3):
+                position[i, ...] = np.linspace(start[i], end[i], n_elements + 1)
+            _position_validity_checker(position, start, n_elements)
+        else:  # i.e a closed ring rod
+            ring_center_position = rod_origin_position
+            binormal = np.cross(direction, normal)
+            for i in range(n_elements):
+                position[..., i] = (
+                    base_length
+                    / (2 * np.pi)
+                    * (
+                        np.cos(2 * np.pi / n_elements * i) * binormal
+                        + np.sin(2 * np.pi / n_elements * i) * direction
+                    )
+                ) + ring_center_position
+            _position_validity_checker_ring_rod(
+                position, ring_center_position, n_elements
+            )
 
     # Compute rest lengths and tangents
-    position_diff = position[..., 1:] - position[..., :-1]
+    position_for_difference = (
+        np.hstack((position, position[..., 0].reshape(3, 1)))
+        if ring_rod_flag
+        else position
+    )
+    position_diff = position_for_difference[..., 1:] - position_for_difference[..., :-1]
     rest_lengths = _batch_norm(position_diff)
     tangents = position_diff / rest_lengths
     normal /= np.linalg.norm(normal)
@@ -159,7 +184,7 @@ def allocate(
 
     # Bend/Twist matrix
     bend_matrix = np.zeros(
-        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
+        (MaxDimension.value(), MaxDimension.value(), n_voronoi_elements + 1), np.float64
     )
     for i in range(n_elements):
         np.fill_diagonal(
@@ -170,72 +195,32 @@ def allocate(
                 shear_modulus * I0_3[i],
             ],
         )
+    if ring_rod_flag:  # wrap around the value in the last element
+        bend_matrix[..., -1] = bend_matrix[..., 0]
     for i in range(0, MaxDimension.value()):
         assert np.all(
             bend_matrix[i, i, :] > Tolerance.atol()
         ), " Bend matrix has to be greater than 0."
 
     # Compute bend matrix in Voronoi Domain
+    rest_lengths_temp_for_voronoi = (
+        np.hstack((rest_lengths, rest_lengths[0])) if ring_rod_flag else rest_lengths
+    )
     bend_matrix = (
-        bend_matrix[..., 1:] * rest_lengths[1:]
-        + bend_matrix[..., :-1] * rest_lengths[0:-1]
-    ) / (rest_lengths[1:] + rest_lengths[:-1])
+        bend_matrix[..., 1:] * rest_lengths_temp_for_voronoi[1:]
+        + bend_matrix[..., :-1] * rest_lengths_temp_for_voronoi[0:-1]
+    ) / (rest_lengths_temp_for_voronoi[1:] + rest_lengths_temp_for_voronoi[:-1])
 
     # Compute volume of elements
     volume = np.pi * radius ** 2 * rest_lengths
 
     # Compute mass of elements
-    mass = np.zeros(n_elements + 1)
-    mass[:-1] += 0.5 * density * volume
-    mass[1:] += 0.5 * density * volume
-
-    # Set dissipation constant or nu array
-    log.warning(
-        # Remove warning and add error if nu provided in v0.3.1
-        # Remove the option to set internal nu inside, beyond v0.4.0
-        "The option to set damping coefficient (nu) for the rod during rod "
-        "initialisation is now deprecated. Instead, for adding damping to rods, "
-        "please derive your simulation class from the add-on Damping mixin class. "
-        "For reference see the class elastica.dissipation.AnalyticalLinearDamper(), "
-        "and for usage check examples/axial_stretching.py "
-        "The option to set damping coefficient (nu) during rod construction "
-        "will be removed in the future (v0.3.1)."
-    )
-    dissipation_constant_for_forces = np.zeros((n_elements + 1))
-    # Check if the user input nu is valid
-    nu_temp = np.array(nu)
-    _assert_dim(nu_temp, 2, "dissipation constant (nu) for forces)")
-    dissipation_constant_for_forces[:] = nu * mass
-    # Check if the elements of dissipation constant greater than tolerance
-    assert np.all(
-        dissipation_constant_for_forces >= 0.0
-    ), " Dissipation constant(nu) has to be equal or greater than 0."
-
-    # Custom nu for torques
-    dissipation_constant_for_torques = np.zeros((n_elements))
-
-    if nu_for_torques is None:
-        dissipation_constant_for_torques[:] = (
-            dissipation_constant_for_forces[1:] + dissipation_constant_for_forces[:-1]
-        ) / 2
-        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
-        # their dissipation.
-        dissipation_constant_for_torques[0] += (dissipation_constant_for_forces[0]) / 2
-        dissipation_constant_for_torques[-1] += (
-            dissipation_constant_for_forces[-1]
-        ) / 2
+    mass = np.zeros(n_nodes)
+    if not ring_rod_flag:
+        mass[:-1] += 0.5 * density * volume
+        mass[1:] += 0.5 * density * volume
     else:
-        elemental_mass = (mass[1:] + mass[:-1]) / 2.0
-        # Treat the end elements carefully, since end nodes only have one neighboring element we need to add all of
-        # their mass.
-        elemental_mass[0] += mass[0] / 2.0
-        elemental_mass[-1] += mass[-1] / 2.0
-        dissipation_constant_for_torques[:] = (
-            np.asarray(nu_for_torques) * elemental_mass
-        )
-    _assert_dim(
-        dissipation_constant_for_torques, 2, "dissipation constant (nu) for torque)"
-    )
+        mass[:] = density * volume
 
     # Generate rest sigma and rest kappa, use user input if defined
     # set rest strains and curvature to be  zero at start
@@ -245,21 +230,19 @@ def allocate(
     _assert_shape(rest_sigma, (MaxDimension.value(), n_elements), "rest_sigma")
 
     if rest_kappa is None:
-        rest_kappa = np.zeros((MaxDimension.value(), n_elements - 1))
-    _assert_shape(rest_kappa, (MaxDimension.value(), n_elements - 1), "rest_kappa")
+        rest_kappa = np.zeros((MaxDimension.value(), n_voronoi_elements))
+    _assert_shape(rest_kappa, (MaxDimension.value(), n_voronoi_elements), "rest_kappa")
 
     # Compute rest voronoi length
-    rest_voronoi_lengths = 0.5 * (rest_lengths[1:] + rest_lengths[:-1])
+    rest_voronoi_lengths = 0.5 * (
+        rest_lengths_temp_for_voronoi[1:] + rest_lengths_temp_for_voronoi[:-1]
+    )
 
     # Allocate arrays for Cosserat Rod equations
-    velocities = np.zeros((MaxDimension.value(), n_elements + 1))
+    velocities = np.zeros((MaxDimension.value(), n_nodes))
     omegas = np.zeros((MaxDimension.value(), n_elements))
     accelerations = 0.0 * velocities
     angular_accelerations = 0.0 * omegas
-    # _vector_states = np.hstack(
-    #     (position, velocities, omegas, accelerations, angular_accelerations)
-    # )
-    # _matrix_states = directors.copy()
 
     internal_forces = 0.0 * accelerations
     internal_torques = 0.0 * angular_accelerations
@@ -271,17 +254,14 @@ def allocate(
     tangents = np.zeros((3, n_elements))
 
     dilatation = np.zeros((n_elements))
-    voronoi_dilatation = np.zeros((n_elements - 1))
+    voronoi_dilatation = np.zeros((n_voronoi_elements))
     dilatation_rate = np.zeros((n_elements))
 
     sigma = np.zeros((3, n_elements))
-    kappa = np.zeros((3, n_elements - 1))
+    kappa = np.zeros((3, n_voronoi_elements))
 
     internal_stress = np.zeros((3, n_elements))
-    internal_couple = np.zeros((3, n_elements - 1))
-
-    damping_forces = np.zeros((3, n_elements + 1))
-    damping_torques = np.zeros((3, n_elements))
+    internal_couple = np.zeros((3, n_voronoi_elements))
 
     return (
         n_elements,
@@ -299,8 +279,6 @@ def allocate(
         density_array,
         volume,
         mass,
-        dissipation_constant_for_forces,
-        dissipation_constant_for_torques,
         internal_forces,
         internal_torques,
         external_forces,
@@ -318,9 +296,43 @@ def allocate(
         rest_kappa,
         internal_stress,
         internal_couple,
-        damping_forces,
-        damping_torques,
     )
+
+
+"""
+Cosserat rod constructor for straight-rod or ring rod geometry.
+
+
+Notes
+-----
+Since we expect the Cosserat Rod to simulate soft rod, Poisson's ratio is set to 0.5 by default.
+It is possible to give additional argument "shear_modulus" or "poisson_ratio" to specify extra modulus.
+
+
+Parameters
+----------
+n_elements : int
+    Number of element. Must be greater than 3. Generally recommended to start with 40-50, and adjust the resolution.
+direction : NDArray[3, float]
+    Direction of the rod in 3D
+normal : NDArray[3, float]
+    Normal vector of the rod in 3D
+base_length : float
+    Total length of the rod
+base_radius : float
+    Uniform radius of the rod
+density : float
+    Density of the rod
+youngs_modulus : float
+    Young's modulus
+**kwargs : dict, optional
+    The "position" and/or "directors" can be overrided by passing "position" and "directors" argument.
+    Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
+
+Returns
+-------
+
+"""
 
 
 def _assert_dim(vector, max_dim: int, name: str):
@@ -398,4 +410,20 @@ def _directors_validity_checker(directors, tangents, n_elements):
         d3,
         atol=Tolerance.atol(),
         err_msg=" Tangent vector computed using node positions is different than d3 vector of input directors",
+    )
+
+
+def _position_validity_checker_ring_rod(position, ring_center_position, n_elements):
+    """Checker on user-defined position validity"""
+    _assert_shape(position, (MaxDimension.value(), n_elements), "position")
+
+    # Check if the start position of the rod and first entry of position array are the same
+    assert_allclose(
+        np.mean(position, axis=1),
+        ring_center_position,
+        atol=Tolerance.atol(),
+        err_msg=str(
+            "Ring rod center " + " (" + str(np.mean(position, axis=1)) + " ) "
+            " is different than ring center " + " (" + str(ring_center_position) + " ) "
+        ),
     )

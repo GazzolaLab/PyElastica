@@ -13,19 +13,16 @@ from elastica.rod.cosserat_rod import (
     _compute_shear_stretch_strains,
     _compute_internal_shear_stretch_stresses_from_model,
     _compute_internal_bending_twist_stresses_from_model,
-    _compute_damping_forces,
     _compute_internal_forces,
     _compute_bending_twist_strains,
-    _compute_damping_torques,
     _compute_internal_torques,
-    _update_accelerations,
     _get_z_vector,
 )
 import pytest
 
 
 class BaseClass:
-    def __init__(self, n_elem, nu=0.0):
+    def __init__(self, n_elem):
         super(BaseClass, self).__init__()
         self.n_elem = n_elem
         self.start = np.array([0.0, 0.0, 0.0])
@@ -34,15 +31,12 @@ class BaseClass:
         self.base_length = 1.0
         self.base_radius = 0.25
         self.density = 1
-        self.nu = nu
         self.E = 1
-        self.poisson_ratio = 0.5
-        self.shear_modulus = self.E / (self.poisson_ratio + 1.0)
 
 
-def constructor(n_elem, nu=0.0):
+def constructor(n_elem):
 
-    cls = BaseClass(n_elem, nu)
+    cls = BaseClass(n_elem)
     rod = CosseratRod.straight_rod(
         cls.n_elem,
         cls.start,
@@ -51,9 +45,7 @@ def constructor(n_elem, nu=0.0):
         cls.base_length,
         cls.base_radius,
         cls.density,
-        cls.nu,
-        cls.E,
-        shear_modulus=cls.shear_modulus,
+        youngs_modulus=cls.E,
     )
 
     # Ghost needed for Cosserat rod functions adapted for block structure.
@@ -164,7 +156,7 @@ def compute_forces_analytically(n_elem, dilatation):
 
 class TestingClass:
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_geomerty_from_state(self, n_elem, nu=0):
+    def test_case_compute_geomerty_from_state(self, n_elem):
         """
         This test case, tests compute_geometry_from_state
         function by comparing with analytical solution.
@@ -173,7 +165,7 @@ class TestingClass:
         :return:
         """
 
-        initial, test_rod = constructor(n_elem, nu)
+        initial, test_rod = constructor(n_elem)
         position, rest_lengths, tangents, radius = compute_geometry_analytically(n_elem)
         # Compute geometry from state
         _compute_geometry_from_state(
@@ -379,9 +371,6 @@ class TestingClass:
             test_rod.rest_sigma,
             test_rod.shear_matrix,
             test_rod.internal_stress,
-            test_rod.velocity_collection,
-            test_rod.dissipation_constant_for_forces,
-            test_rod.damping_forces,
             test_rod.internal_forces,
             ghost_elems_idx=np.empty((0), dtype=int),
         )
@@ -389,65 +378,6 @@ class TestingClass:
         assert_allclose(
             test_rod.internal_forces, internal_forces, atol=Tolerance.atol()
         )
-
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    @pytest.mark.parametrize("nu", [0.1, 0.2, 0.5, 2])
-    def test_compute_damping_forces_torques(self, n_elem, nu):
-        """
-        In this test case, we initialize a straight rod and modify
-        velocities of nodes and angular velocities of elements.
-        By doing that we can test damping forces on nodes and
-        damping torques on elements.
-        This test function tests
-            _compute_damping_forces
-            _compute_damping_torques
-        """
-        # This is an artificial test, this part exists just to
-        # keep our coverage percentage.
-
-        initial, test_rod = constructor(n_elem, nu)
-        # Construct velocity and omega
-        test_rod.velocity_collection[:] = 1.0
-        test_rod.omega_collection[:] = 1.0
-        # Compute damping forces and torques
-        damping_forces = (
-            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem + 1, axis=1)
-            * nu
-            * test_rod.mass
-        )
-        elemental_mass = (test_rod.mass[1:] + test_rod.mass[:-1]) / 2.0
-        elemental_mass[0] += test_rod.mass[0] / 2.0
-        elemental_mass[-1] += test_rod.mass[-1] / 2.0
-        damping_torques = (
-            np.repeat(np.array([1.0, 1.0, 1.0])[:, np.newaxis], n_elem, axis=1)
-            * nu
-            * elemental_mass
-        )
-        # Compute geometry from state
-        _compute_geometry_from_state(
-            test_rod.position_collection,
-            test_rod.volume,
-            test_rod.lengths,
-            test_rod.tangents,
-            test_rod.radius,
-        )
-        # Compute damping forces and torques using in class functions
-        _compute_damping_forces(
-            test_rod.damping_forces,
-            test_rod.velocity_collection,
-            test_rod.dissipation_constant_for_forces,
-        )
-        _compute_damping_torques(
-            test_rod.damping_torques,
-            test_rod.omega_collection,
-            test_rod.dissipation_constant_for_torques,
-        )
-
-        test_damping_forces = test_rod.damping_forces
-        test_damping_torques = test_rod.damping_torques
-        # Compare damping forces and torques computed using in class functions and above
-        assert_allclose(test_damping_forces, damping_forces, atol=Tolerance.atol())
-        assert_allclose(test_damping_torques, damping_torques, atol=Tolerance.atol())
 
     # alpha is base angle of isosceles triangle
     @pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
@@ -466,7 +396,7 @@ class TestingClass:
         """
 
         n_elem = 2
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
         base_length = initial.base_length
         # Change the coordinates of nodes, artificially bend the rod.
         #              /\
@@ -607,8 +537,6 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.dissipation_constant_for_torques,
-            test_rod.damping_torques,
             test_rod.internal_torques,
             test_rod.ghost_voronoi_idx,
         )
@@ -632,7 +560,7 @@ class TestingClass:
 
         """
         n_elem = 2
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
         position = np.zeros((MaxDimension.value(), n_elem + 1))
         position[..., 0] = np.array([0.0, 0.0, 0.0])
         position[..., 1] = np.array([0.0, 0.0, 0.5])
@@ -696,8 +624,6 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.dissipation_constant_for_torques,
-            test_rod.damping_torques,
             test_rod.internal_torques,
             test_rod.ghost_voronoi_idx,
         )
@@ -726,7 +652,7 @@ class TestingClass:
         """
 
         n_elem = 2
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
         # TODO: find one more test in which you dont set J=I, may be some analytical test
         # Set the mass moment of inertia matrix to identity matrix for simplification.
         # When lagrangian transport tested, total torque computed by the function has
@@ -769,9 +695,6 @@ class TestingClass:
             test_rod.rest_sigma,
             test_rod.shear_matrix,
             test_rod.internal_stress,
-            test_rod.velocity_collection,
-            test_rod.dissipation_constant_for_forces,
-            test_rod.damping_forces,
             test_rod.internal_forces,
             test_rod.ghost_elems_idx,
         )
@@ -801,8 +724,6 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.dissipation_constant_for_torques,
-            test_rod.damping_torques,
             test_rod.internal_torques,
             ghost_voronoi_idx=np.empty((0), dtype=int),
         )
@@ -855,8 +776,6 @@ class TestingClass:
             test_rod.internal_couple,
             test_rod.dilatation,
             test_rod.dilatation_rate,
-            test_rod.dissipation_constant_for_torques,
-            test_rod.damping_torques,
             test_rod.internal_torques,
             test_rod.ghost_voronoi_idx,
         )
@@ -883,7 +802,7 @@ class TestingClass:
 
         """
 
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
 
         test_rod.compute_internal_forces_and_torques(time=0)
 
@@ -900,7 +819,7 @@ class TestingClass:
 
         """
 
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
         mass = test_rod.mass
 
         external_forces = np.zeros(3 * (n_elem + 1)).reshape(3, n_elem + 1)
@@ -946,7 +865,7 @@ class TestingClass:
         )
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_translational_energy(self, n_elem, nu=0):
+    def test_case_compute_translational_energy(self, n_elem):
         """
         This function tests compute translational energy function. We
         take an initial input energy for the rod and compute the velocity and
@@ -964,7 +883,7 @@ class TestingClass:
 
         """
 
-        initial, test_rod = constructor(n_elem, nu)
+        initial, test_rod = constructor(n_elem)
         base_length = 1.0
         base_radius = 0.25
         density = 1.0
@@ -980,7 +899,7 @@ class TestingClass:
         assert_allclose(output_energy, input_energy, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_rotational_energy(self, n_elem, nu=0):
+    def test_case_compute_rotational_energy(self, n_elem):
         """
         This function tests compute rotational energy function. We
         take an initial input energy for the rod and compute the angular velocity and
@@ -992,14 +911,13 @@ class TestingClass:
         Parameters
         ----------
         n_elem
-        nu
 
         Returns
         -------
 
         """
 
-        initial, test_rod = constructor(n_elem, nu)
+        initial, test_rod = constructor(n_elem)
         input_energy = 10
         omega = np.sqrt(
             2
@@ -1025,7 +943,7 @@ class TestingClass:
         assert_allclose(output_energy, input_energy, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_velocity_center_of_mass(self, n_elem, nu=0.0):
+    def test_case_compute_velocity_center_of_mass(self, n_elem):
         """
         This function tests compute velocity center of mass function. We initialize a
         random velocity vector and copy this vector to velocity_collection array. We call
@@ -1035,7 +953,6 @@ class TestingClass:
         Parameters
         ----------
         n_elem
-        nu
 
         Returns
         -------
@@ -1044,7 +961,7 @@ class TestingClass:
 
         correct_velocity = np.random.rand(3) / (n_elem + 1)
 
-        initial, test_rod = constructor(n_elem, nu)
+        initial, test_rod = constructor(n_elem)
 
         test_rod.velocity_collection[..., :] = np.array(correct_velocity).reshape(3, 1)
         output_velocity = test_rod.compute_velocity_center_of_mass()
@@ -1052,7 +969,7 @@ class TestingClass:
         assert_allclose(output_velocity, correct_velocity, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_position_center_of_mass(self, n_elem, nu=0.0):
+    def test_case_compute_position_center_of_mass(self, n_elem):
         """
         This function tests compute position center of mass function. We initialize a
         random position vector and copy this vector to position_collection array. We call
@@ -1062,7 +979,6 @@ class TestingClass:
         Parameters
         ----------
         n_elem
-        nu
 
         Returns
         -------
@@ -1071,7 +987,7 @@ class TestingClass:
 
         correct_position = np.random.rand(3) / (n_elem + 1)
 
-        initial, test_rod = constructor(n_elem, nu)
+        initial, test_rod = constructor(n_elem)
 
         test_rod.position_collection[..., :] = np.array(correct_position).reshape(3, 1)
         output_position = test_rod.compute_position_center_of_mass()
@@ -1080,7 +996,7 @@ class TestingClass:
 
     # alpha is base angle of isosceles triangle
     @pytest.mark.parametrize("alpha", np.radians([22.5, 30, 45, 60, 70]))
-    def test_case_compute_bending_energy(self, alpha, nu=0.0):
+    def test_case_compute_bending_energy(self, alpha):
         """
         Similar to the previous test case test_case_bend_straight_rod.
         In this test case we initialize a straight rod with 2 elements
@@ -1094,14 +1010,13 @@ class TestingClass:
         Parameters
         ----------
         alpha
-        nu
 
         Returns
         -------
 
         """
         n_elem = 2
-        initial, test_rod = constructor(n_elem, nu=0.0)
+        initial, test_rod = constructor(n_elem)
         base_length = initial.base_length
         # Change the coordinates of nodes, artificially bend the rod.
         #              /\
@@ -1254,9 +1169,6 @@ class TestingClass:
             test_rod.rest_sigma,
             test_rod.shear_matrix,
             test_rod.internal_stress,
-            test_rod.velocity_collection,
-            test_rod.dissipation_constant_for_forces,
-            test_rod.damping_forces,
             test_rod.internal_forces,
             test_rod.ghost_elems_idx,
         )
@@ -1297,9 +1209,3 @@ def test_get_z_vector_function():
     """
     correct_z_vector = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
     assert_allclose(correct_z_vector, _get_z_vector(), atol=Tolerance.atol())
-
-
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])

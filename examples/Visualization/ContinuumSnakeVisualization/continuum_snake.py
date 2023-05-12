@@ -1,15 +1,11 @@
 import numpy as np
 from collections import defaultdict
-from elastica.modules import BaseSystemCollection, Constraints, Forcing, CallBacks
-from elastica.rod.cosserat_rod import CosseratRod
-from elastica.external_forces import GravityForces, MuscleTorques
-from elastica.interaction import AnisotropicFrictionalPlane
-from elastica.callback_functions import CallBackBaseClass
-from elastica.timestepper.symplectic_steppers import PositionVerlet, PEFRL
-from elastica.timestepper import integrate
+import elastica as ea
 
 
-class SnakeSimulator(BaseSystemCollection, Constraints, Forcing, CallBacks):
+class SnakeSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
+):
     pass
 
 
@@ -24,14 +20,12 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
     density = 1000
-    nu = 5.0
     E = 1e7
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
 
-    shearable_rod = CosseratRod.straight_rod(
+    shearable_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -39,8 +33,7 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
         base_length,
         base_radius,
         density,
-        nu,
-        E,
+        youngs_modulus=E,
         shear_modulus=shear_modulus,
     )
 
@@ -49,13 +42,13 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
     # Add gravitational forces
     gravitational_acc = -9.80665
     snake_sim.add_forcing_to(shearable_rod).using(
-        GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+        ea.GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
     )
 
     period = 1.0
     wave_length = b_coeff[-1]
     snake_sim.add_forcing_to(shearable_rod).using(
-        MuscleTorques,
+        ea.MuscleTorques,
         base_length=base_length,
         b_coeff=b_coeff[:-1],
         period=period,
@@ -78,7 +71,7 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
     )  # [forward, backward, sideways]
     static_mu_array = 2 * kinetic_mu_array
     snake_sim.add_forcing_to(shearable_rod).using(
-        AnisotropicFrictionalPlane,
+        ea.AnisotropicFrictionalPlane,
         k=1.0,
         nu=1e-6,
         plane_origin=origin_plane,
@@ -88,14 +81,23 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
         kinetic_mu_array=kinetic_mu_array,
     )
 
+    # add damping
+    damping_constant = 5.0
+    dt = 5.0e-5 * period
+    snake_sim.dampen(shearable_rod).using(
+        ea.AnalyticalLinearDamper,
+        damping_constant=damping_constant,
+        time_step=dt,
+    )
+
     # Add call backs
-    class ContinuumSnakeCallBack(CallBackBaseClass):
+    class ContinuumSnakeCallBack(ea.CallBackBaseClass):
         """
         Call back function for continuum snake
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            CallBackBaseClass.__init__(self)
+            ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -116,14 +118,13 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
     )
 
     snake_sim.finalize()
-    timestepper = PositionVerlet()
+    timestepper = ea.PositionVerlet()
     # timestepper = PEFRL()
 
     final_time = (11.0 + 0.01) * period
-    dt = 5.0e-5 * period
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    integrate(timestepper, snake_sim, final_time, total_steps)
+    ea.integrate(timestepper, snake_sim, final_time, total_steps)
 
     if SAVE_RESULTS:
         import pickle

@@ -1,7 +1,7 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.MuscularFlagella.post_processing import (
     plot_video_2D,
     plot_video,
@@ -15,7 +15,12 @@ from examples.MuscularFlagella.muscle_forces_flagella import MuscleForces
 
 
 class MuscularFlagellaSimulator(
-    BaseSystemCollection, Constraints, Connections, Forcing, CallBacks, Damping
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Connections,
+    ea.Forcing,
+    ea.CallBacks,
+    ea.Damping,
 ):
     pass
 
@@ -54,7 +59,7 @@ normal = np.array([0.0, 0.0, 1.0])
 binormal = np.cross(direction, normal)
 nu_body = 0
 
-flagella_body = CosseratRod.straight_rod(
+flagella_body = ea.CosseratRod.straight_rod(
     n_elem_body,
     start,
     direction,
@@ -62,8 +67,7 @@ flagella_body = CosseratRod.straight_rod(
     base_length_body,
     radius,
     density_body,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 
@@ -140,7 +144,7 @@ element_pos = 0.5 * (
 start_muscle = np.array([4.5 * base_length_muscle, 0.0053, 0.1])
 
 
-flagella_muscle = CosseratRod.straight_rod(
+flagella_muscle = ea.CosseratRod.straight_rod(
     n_elem_muscle,
     start_muscle,
     direction,
@@ -148,8 +152,7 @@ flagella_muscle = CosseratRod.straight_rod(
     base_length_muscle,
     base_radius_muscle,
     density_muscle,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E_muscle,
+    youngs_modulus=E_muscle,
     shear_modulus=shear_modulus_muscle,
 )
 
@@ -157,7 +160,7 @@ muscular_flagella_sim.append(flagella_muscle)
 
 # add damping
 muscular_flagella_sim.dampen(flagella_muscle).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=nu_muscle,
     time_step=time_step,
 )
@@ -193,13 +196,13 @@ density_fluid = 1.15e-3  # g/mm3
 reynolds_number = 1.8e-2
 dynamic_viscosity = 1.2e-3
 muscular_flagella_sim.add_forcing_to(flagella_body).using(
-    SlenderBodyTheory, dynamic_viscosity=dynamic_viscosity
+    ea.SlenderBodyTheory, dynamic_viscosity=dynamic_viscosity
 )
 
 # Add call backs
-class MuscularFlagellaCallBack(CallBackBaseClass):
+class MuscularFlagellaCallBack(ea.CallBackBaseClass):
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -214,14 +217,14 @@ class MuscularFlagellaCallBack(CallBackBaseClass):
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-post_processing_dict_body = defaultdict(list)
+post_processing_dict_body = ea.defaultdict(list)
 muscular_flagella_sim.collect_diagnostics(flagella_body).using(
     MuscularFlagellaCallBack,
     step_skip=step_skip,
     callback_params=post_processing_dict_body,
 )
 
-post_processing_dict_muscle = defaultdict(list)
+post_processing_dict_muscle = ea.defaultdict(list)
 muscular_flagella_sim.collect_diagnostics(flagella_muscle).using(
     MuscularFlagellaCallBack,
     step_skip=step_skip,
@@ -231,9 +234,9 @@ muscular_flagella_sim.collect_diagnostics(flagella_muscle).using(
 
 muscular_flagella_sim.finalize()
 
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 print("Total steps", total_steps)
-integrate(timestepper, muscular_flagella_sim, final_time, total_steps)
+ea.integrate(timestepper, muscular_flagella_sim, final_time, total_steps)
 
 
 # Plot the videos

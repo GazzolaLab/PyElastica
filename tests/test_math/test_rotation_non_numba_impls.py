@@ -16,8 +16,6 @@ from elastica._rotations import (
     _skew_symmetrize_sq,  # noqa
 )
 
-from elastica.utils import Tolerance
-
 
 ###############################################################################
 ##################### Implementation tests start ##############################

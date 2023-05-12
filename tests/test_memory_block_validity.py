@@ -11,6 +11,7 @@ class MockRod:
         self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
         self.n_nodes = self.n_elems + 1
         self.n_voronoi = self.n_elems - 1
+        self.ring_rod_flag = False
 
         # Things that are scalar mapped on nodes
         self.mass = np.random.randn(self.n_nodes)
@@ -21,8 +22,6 @@ class MockRod:
         self.acceleration_collection = np.random.randn(3, self.n_nodes)
         self.internal_forces = np.random.randn(3, self.n_nodes)
         self.external_forces = np.random.randn(3, self.n_nodes)
-        self.damping_forces = np.random.randn(3, self.n_nodes)
-        self.dissipation_constant_for_forces = np.random.rand(self.n_nodes)
 
         # Things that are scalar mapped on elements
         self.radius = np.random.rand(self.n_elems)
@@ -32,7 +31,6 @@ class MockRod:
         self.rest_lengths = self.lengths.copy()
         self.dilatation = np.random.rand(self.n_elems)
         self.dilatation_rate = np.random.rand(self.n_elems)
-        self.dissipation_constant_for_torques = np.random.rand(self.n_elems)
 
         # Things that are vector mapped on elements
         self.omega_collection = np.random.randn(3, self.n_elems)
@@ -42,7 +40,71 @@ class MockRod:
         self.rest_sigma = np.random.randn(3, self.n_elems)
         self.internal_torques = np.random.randn(3, self.n_elems)
         self.external_torques = np.random.randn(3, self.n_elems)
-        self.damping_torques = np.random.randn(3, self.n_elems)
+        self.internal_stress = np.random.randn(3, self.n_elems)
+
+        # Things that are matrix mapped on elements
+        self.director_collection = np.zeros((3, 3, self.n_elems))
+        for i in range(3):
+            for j in range(3):
+                self.director_collection[i, j, ...] = 3 * i + j
+        # self.director_collection *= np.random.randn()
+        self.mass_second_moment_of_inertia = np.random.randn() * np.ones(
+            (3, 3, self.n_elems)
+        )
+        self.inv_mass_second_moment_of_inertia = np.random.randn() * np.ones(
+            (3, 3, self.n_elems)
+        )
+        self.shear_matrix = np.random.randn() * np.ones((3, 3, self.n_elems))
+
+        # Things that are scalar mapped on voronoi
+        self.voronoi_dilatation = np.random.rand(self.n_voronoi)
+        self.rest_voronoi_lengths = np.random.rand(self.n_voronoi)
+
+        # Things that are vectors mapped on voronoi
+        self.kappa = np.random.randn(3, self.n_voronoi)
+        self.rest_kappa = np.random.randn(3, self.n_voronoi)
+        self.internal_couple = np.random.randn(3, self.n_voronoi)
+
+        # Things that are matrix mapped on voronoi
+        self.bend_matrix = np.random.randn() * np.ones((3, 3, self.n_voronoi))
+
+        # self.density = fake_idx
+
+
+class MockRingRod:
+    def __init__(self, n_elems):
+        self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
+        self.n_nodes = self.n_elems
+        self.n_voronoi = self.n_elems
+        self.ring_rod_flag = True
+
+        # Things that are scalar mapped on nodes
+        self.mass = np.random.randn(self.n_nodes)
+
+        # Things that are vectors mapped on nodes
+        self.position_collection = np.random.randn(3, self.n_nodes)
+        self.velocity_collection = np.random.randn(3, self.n_nodes)
+        self.acceleration_collection = np.random.randn(3, self.n_nodes)
+        self.internal_forces = np.random.randn(3, self.n_nodes)
+        self.external_forces = np.random.randn(3, self.n_nodes)
+
+        # Things that are scalar mapped on elements
+        self.radius = np.random.rand(self.n_elems)
+        self.volume = np.random.rand(self.n_elems)
+        self.density = np.random.rand(self.n_elems)
+        self.lengths = np.random.rand(self.n_elems)
+        self.rest_lengths = self.lengths.copy()
+        self.dilatation = np.random.rand(self.n_elems)
+        self.dilatation_rate = np.random.rand(self.n_elems)
+
+        # Things that are vector mapped on elements
+        self.omega_collection = np.random.randn(3, self.n_elems)
+        self.alpha_collection = np.random.randn(3, self.n_elems)
+        self.tangents = np.random.randn(3, self.n_elems)
+        self.sigma = np.random.randn(3, self.n_elems)
+        self.rest_sigma = np.random.randn(3, self.n_elems)
+        self.internal_torques = np.random.randn(3, self.n_elems)
+        self.external_torques = np.random.randn(3, self.n_elems)
         self.internal_stress = np.random.randn(3, self.n_elems)
 
         # Things that are matrix mapped on elements
@@ -92,7 +154,9 @@ def test_block_structure_scalar_on_nodes_validity(n_rods):
     """
 
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_nodes[i]
@@ -106,20 +170,6 @@ def test_block_structure_scalar_on_nodes_validity(n_rods):
             block_structure.mass[start_idx:end_idx],
             world_rods[i].mass,
             atol=Tolerance.atol(),
-        )
-
-        # dissipation constant for forces
-        assert np.shares_memory(
-            block_structure.dissipation_constant_for_forces,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rod_nodes,
-            world_rods[i].dissipation_constant_for_forces,
-        )
-        assert_allclose(
-            block_structure.dissipation_constant_for_forces[start_idx:end_idx],
-            world_rods[i].dissipation_constant_for_forces,
         )
 
 
@@ -140,7 +190,9 @@ def test_block_structure_vectors_on_nodes_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_nodes[i]
@@ -182,18 +234,6 @@ def test_block_structure_vectors_on_nodes_validity(n_rods):
             world_rods[i].external_forces,
         )
 
-        # damping forces
-        assert np.shares_memory(
-            block_structure.damping_forces, world_rods[i].damping_forces
-        )
-        assert np.shares_memory(
-            block_structure.vector_dofs_in_rod_nodes, world_rods[i].damping_forces
-        )
-        assert_allclose(
-            block_structure.damping_forces[..., start_idx:end_idx],
-            world_rods[i].damping_forces,
-        )
-
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_block_structure_scalar_on_elements_validity(n_rods):
@@ -213,7 +253,9 @@ def test_block_structure_scalar_on_elements_validity(n_rods):
     """
 
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_elems[i]
@@ -283,20 +325,6 @@ def test_block_structure_scalar_on_elements_validity(n_rods):
             world_rods[i].dilatation_rate,
         )
 
-        # dissipation constant for torques
-        assert np.shares_memory(
-            block_structure.dissipation_constant_for_torques,
-            world_rods[i].dissipation_constant_for_torques,
-        )
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rod_elems,
-            world_rods[i].dissipation_constant_for_torques,
-        )
-        assert_allclose(
-            block_structure.dissipation_constant_for_torques[start_idx:end_idx],
-            world_rods[i].dissipation_constant_for_torques,
-        )
-
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_block_structure_vectors_on_elements_validity(n_rods):
@@ -315,7 +343,9 @@ def test_block_structure_vectors_on_elements_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_elems[i]
@@ -372,18 +402,6 @@ def test_block_structure_vectors_on_elements_validity(n_rods):
             world_rods[i].external_torques,
         )
 
-        # damping torques
-        assert np.shares_memory(
-            block_structure.damping_torques, world_rods[i].damping_torques
-        )
-        assert np.shares_memory(
-            block_structure.vector_dofs_in_rod_elems, world_rods[i].damping_torques
-        )
-        assert_allclose(
-            block_structure.damping_torques[..., start_idx:end_idx],
-            world_rods[i].damping_torques,
-        )
-
         # internal stress
         assert np.shares_memory(
             block_structure.internal_stress, world_rods[i].internal_stress
@@ -414,7 +432,9 @@ def test_block_structure_matrices_on_elements_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_elems[i]
@@ -490,7 +510,9 @@ def test_block_structure_scalar_on_voronoi_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_voronoi[i]
@@ -540,7 +562,9 @@ def test_block_structure_vectors_on_voronoi_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_voronoi[i]
@@ -594,7 +618,9 @@ def test_block_structure_matrices_on_voronoi_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     for i in range(n_rods):
         start_idx = block_structure.start_idx_in_rod_voronoi[i]
@@ -631,7 +657,9 @@ def test_block_structure_rate_collection_validity(n_rods):
 
     """
     world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = MemoryBlockCosseratRod(world_rods)
+    block_structure = MemoryBlockCosseratRod(
+        world_rods, [i for i in range(len(world_rods))]
+    )
 
     # Test vectors on nodes
     for i in range(n_rods):
@@ -707,7 +735,313 @@ def test_block_structure_rate_collection_validity(n_rods):
     )
 
 
-if __name__ == "__main__":
-    from pytest import main
+def test_periodic_boundary_one_ring_rod():
+    """
+    This function is testing the validity of periodic boundary nodes, elements and voronoi as well as start and end
+    index of ring rod nodes, elements and voronoi.
+    Returns
+    -------
 
-    main([__file__])
+    """
+
+    n_elems = 5
+    ring_rod = MockRingRod(n_elems)
+    block_structure = MemoryBlockCosseratRod([ring_rod], [0])
+
+    correct_periodic_boundary_node_idx = np.array(
+        [[0, 6, 7], [5, 1, 2]], dtype=np.int64
+    )
+    correct_periodic_boundary_elem_idx = np.array([[0, 6], [5, 1]], dtype=np.int64)
+    correct_periodic_boundary_voronoi_idx = np.array([[0], [5]], dtype=np.int64)
+
+    assert_allclose(
+        correct_periodic_boundary_node_idx,
+        block_structure.periodic_boundary_nodes_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_elem_idx,
+        block_structure.periodic_boundary_elems_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_voronoi_idx,
+        block_structure.periodic_boundary_voronoi_idx,
+        atol=Tolerance.atol(),
+    )
+
+    correct_start_node_idx = np.array([1], dtype=np.int64)
+    correct_end_node_idx = np.array([6], dtype=np.int64)
+
+    correct_start_elem_idx = np.array([1], dtype=np.int64)
+    correct_end_elem_idx = np.array([6], dtype=np.int64)
+
+    correct_start_voronoi_idx = np.array([1], dtype=np.int64)
+    correct_end_voronoi_idx = np.array([6], dtype=np.int64)
+
+    assert_allclose(
+        correct_start_node_idx,
+        block_structure.start_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_node_idx,
+        block_structure.end_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_elem_idx,
+        block_structure.start_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_elem_idx,
+        block_structure.end_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_voronoi_idx,
+        block_structure.start_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_voronoi_idx,
+        block_structure.end_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+
+
+def test_periodic_boundary_two_ring_rod():
+    """
+    This function is testing the validity of periodic boundary nodes, elements and voronoi as well as start and end
+    index of two ring rod nodes, elements and voronoi.
+    Returns
+    -------
+
+    """
+
+    n_elems = 5
+    ring_rod_1 = MockRingRod(n_elems)
+    ring_rod_2 = MockRingRod(n_elems)
+    block_structure = MemoryBlockCosseratRod([ring_rod_1, ring_rod_2], [0, 1])
+
+    correct_periodic_boundary_node_idx = np.array(
+        [[0, 6, 7, 9, 15, 16], [5, 1, 2, 14, 10, 11]], dtype=np.int64
+    )
+    correct_periodic_boundary_elem_idx = np.array(
+        [[0, 6, 9, 15], [5, 1, 14, 10]], dtype=np.int64
+    )
+    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 14]], dtype=np.int64)
+
+    assert_allclose(
+        correct_periodic_boundary_node_idx,
+        block_structure.periodic_boundary_nodes_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_elem_idx,
+        block_structure.periodic_boundary_elems_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_voronoi_idx,
+        block_structure.periodic_boundary_voronoi_idx,
+        atol=Tolerance.atol(),
+    )
+
+    correct_start_node_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_node_idx = np.array([6, 15], dtype=np.int64)
+
+    correct_start_elem_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_elem_idx = np.array([6, 15], dtype=np.int64)
+
+    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_voronoi_idx = np.array([6, 15], dtype=np.int64)
+
+    assert_allclose(
+        correct_start_node_idx,
+        block_structure.start_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_node_idx,
+        block_structure.end_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_elem_idx,
+        block_structure.start_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_elem_idx,
+        block_structure.end_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_voronoi_idx,
+        block_structure.start_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_voronoi_idx,
+        block_structure.end_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+
+
+def test_periodic_boundary_two_ring_rod_different_nelems():
+    """
+    This function is testing the validity of periodic boundary nodes, elements and voronoi as well as start and end
+    index of two ring rod nodes, elements and voronoi. For this test case number of elements are different for two
+    ring rods.
+
+    Returns
+    -------
+
+    """
+
+    ring_rod_1 = MockRingRod(5)
+    ring_rod_2 = MockRingRod(3)
+    block_structure = MemoryBlockCosseratRod([ring_rod_1, ring_rod_2], [0, 1])
+
+    correct_periodic_boundary_node_idx = np.array(
+        [[0, 6, 7, 9, 13, 14], [5, 1, 2, 12, 10, 11]], dtype=np.int64
+    )
+    correct_periodic_boundary_elem_idx = np.array(
+        [[0, 6, 9, 13], [5, 1, 12, 10]], dtype=np.int64
+    )
+    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 12]], dtype=np.int64)
+
+    assert_allclose(
+        correct_periodic_boundary_node_idx,
+        block_structure.periodic_boundary_nodes_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_elem_idx,
+        block_structure.periodic_boundary_elems_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_voronoi_idx,
+        block_structure.periodic_boundary_voronoi_idx,
+        atol=Tolerance.atol(),
+    )
+
+    correct_start_node_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_node_idx = np.array([6, 13], dtype=np.int64)
+
+    correct_start_elem_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_elem_idx = np.array([6, 13], dtype=np.int64)
+
+    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int64)
+    correct_end_voronoi_idx = np.array([6, 13], dtype=np.int64)
+
+    assert_allclose(
+        correct_start_node_idx,
+        block_structure.start_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_node_idx,
+        block_structure.end_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_elem_idx,
+        block_structure.start_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_elem_idx,
+        block_structure.end_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_voronoi_idx,
+        block_structure.start_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_voronoi_idx,
+        block_structure.end_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+
+
+def test_periodic_boundary_one_ring_one_straight_rod():
+    """
+    This function is testing the validity of periodic boundary nodes, elements and voronoi as well as start and end
+    index of one ring rod nodes, elements and voronoi.
+    Returns
+    -------
+
+    """
+
+    n_elems = 5
+    ring_rod = MockRingRod(n_elems)
+    straight_rod = MockRod(n_elems)
+    block_structure = MemoryBlockCosseratRod([ring_rod, straight_rod], [0, 1])
+
+    correct_periodic_boundary_node_idx = np.array(
+        [[7, 13, 14], [12, 8, 9]], dtype=np.int64
+    )
+    correct_periodic_boundary_elem_idx = np.array([[7, 13], [12, 8]], dtype=np.int64)
+    correct_periodic_boundary_voronoi_idx = np.array([[7], [12]], dtype=np.int64)
+
+    assert_allclose(
+        correct_periodic_boundary_node_idx,
+        block_structure.periodic_boundary_nodes_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_elem_idx,
+        block_structure.periodic_boundary_elems_idx,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_periodic_boundary_voronoi_idx,
+        block_structure.periodic_boundary_voronoi_idx,
+        atol=Tolerance.atol(),
+    )
+
+    correct_start_node_idx = np.array([0, 8], dtype=np.int64)
+    correct_end_node_idx = np.array([6, 13], dtype=np.int64)
+
+    correct_start_elem_idx = np.array([0, 8], dtype=np.int64)
+    correct_end_elem_idx = np.array([5, 13], dtype=np.int64)
+
+    correct_start_voronoi_idx = np.array([0, 8], dtype=np.int64)
+    correct_end_voronoi_idx = np.array([4, 13], dtype=np.int64)
+
+    assert_allclose(
+        correct_start_node_idx,
+        block_structure.start_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_node_idx,
+        block_structure.end_idx_in_rod_nodes,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_elem_idx,
+        block_structure.start_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_elem_idx,
+        block_structure.end_idx_in_rod_elems,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_start_voronoi_idx,
+        block_structure.start_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )
+    assert_allclose(
+        correct_end_voronoi_idx,
+        block_structure.end_idx_in_rod_voronoi,
+        atol=Tolerance.atol(),
+    )

@@ -8,11 +8,11 @@ interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 from typing import Iterable, Callable, AnyStr
 
 from collections.abc import MutableSequence
-from itertools import chain
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 from elastica.modules.memory_block import construct_memory_block_structures
+from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
 
 class BaseSystemCollection(MutableSequence):
@@ -141,6 +141,22 @@ class BaseSystemCollection(MutableSequence):
 
         # construct memory block
         self._memory_blocks = construct_memory_block_structures(self._systems)
+
+        """
+        In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
+        periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
+        constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
+        """
+        for i in range(len(self._memory_blocks)):
+            # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
+            self.append(self._memory_blocks[i])
+            if hasattr(self._memory_blocks[i], "ring_rod_flag"):
+                # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
+                # sys idx among other systems added and then apply boundary conditions.
+                memory_block_idx = self._get_sys_idx_if_valid(self._memory_blocks[i])
+                self.constrain(self._systems[memory_block_idx]).using(
+                    _ConstrainPeriodicBoundaries,
+                )
 
         # Recurrent call finalize functions for all components.
         for finalize in self._feature_group_finalize:

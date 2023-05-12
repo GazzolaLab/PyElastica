@@ -69,6 +69,12 @@ Examples can serve as a starting template for customized usages.
 * [BoundaryConditionsCases](./BoundaryConditionsCases)
     * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
     * __Features__: GeneralConstraint, CosseratRod
+* [DynamicCantileverCase](./DynamicCantileverCase)
+    * __Purpose__: Validation of dynamic cantilever vibration for multiple modes.
+    * __Features__: CosseratRod, OneEndFixedRod
+* [RingRodCase](./RingRodCase)
+    * __Purpose__: Demonstrate simulation of ring rod.
+    * __Features__: RingCosseratRod, OneEndFixedRod, GravityForce
 
 ## Functional Examples
 

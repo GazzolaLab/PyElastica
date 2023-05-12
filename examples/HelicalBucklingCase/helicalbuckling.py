@@ -2,13 +2,15 @@ __doc__ = """Helical buckling validation case, for detailed explanation refer to
 Gazzola et. al. R. Soc. 2018  section 3.4.1 """
 
 import numpy as np
-from elastica import *
+import elastica as ea
 from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
     plot_helicalbuckling,
 )
 
 
-class HelicalBucklingSimulator(BaseSystemCollection, Constraints, Damping, Forcing):
+class HelicalBucklingSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Damping, ea.Forcing
+):
     pass
 
 
@@ -42,7 +44,7 @@ temp_bend_matrix = np.zeros((3, 3))
 np.fill_diagonal(temp_bend_matrix, [1.345, 1.345, 0.789])
 bend_matrix = np.repeat(temp_bend_matrix[:, :, np.newaxis], n_elem - 1, axis=2)
 
-shearable_rod = CosseratRod.straight_rod(
+shearable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -50,8 +52,7 @@ shearable_rod = CosseratRod.straight_rod(
     base_length,
     base_radius,
     density,
-    0.0,  # internal damping constant, deprecated in v0.3.0
-    E,
+    youngs_modulus=E,
     shear_modulus=shear_modulus,
 )
 # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
@@ -65,13 +66,13 @@ helicalbuckling_sim.append(shearable_rod)
 dl = base_length / n_elem
 dt = 1e-3 * dl
 helicalbuckling_sim.dampen(shearable_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=nu,
     time_step=dt,
 )
 
 helicalbuckling_sim.constrain(shearable_rod).using(
-    HelicalBucklingBC,
+    ea.HelicalBucklingBC,
     constrained_position_idx=(0, -1),
     constrained_director_idx=(0, -1),
     twisting_time=500,
@@ -80,14 +81,14 @@ helicalbuckling_sim.constrain(shearable_rod).using(
 )
 
 helicalbuckling_sim.finalize()
-timestepper = PositionVerlet()
+timestepper = ea.PositionVerlet()
 shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 0.0])
 # timestepper = PEFRL()
 
 final_time = 10500.0
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
+ea.integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
 
 if PLOT_FIGURE:
     plot_helicalbuckling(shearable_rod, SAVE_FIGURE)
