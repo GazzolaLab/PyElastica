@@ -16,7 +16,7 @@ def plot_phase_space_with(
     fig = plt.figure(figsize=(20, 8), frameon=True, dpi=150)
 
     ax_freq = fig.add_subplot(121)
-    ax_freq.grid(visible=True, which="both", color="k", linestyle="-")
+    ax_freq.grid(which="both", color="k", linestyle="-")
     ax_freq.plot(
         densities,
         theory_frequency,
