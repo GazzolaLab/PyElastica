@@ -36,6 +36,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
 
    overview/welcome_page
    overview/installation
+   overview/FAQs
 
 .. toctree::
    :maxdepth: 1
@@ -50,7 +51,7 @@ If you are interested to contribute, please read `contribution-guide`_ first.
 .. toctree::
    :maxdepth: 2
    :caption: API Documentation
-   
+
    api/rods
    api/rigidbody
    api/constraints
