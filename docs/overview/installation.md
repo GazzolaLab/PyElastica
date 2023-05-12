@@ -16,16 +16,22 @@ $ pip install pyelastica
 You can also download the source code for PyElastica directly from [GitHub](https://github.com/GazzolaLab/PyElastica).
 
 All options:
-- `magnetism`: use this if you want to simulate magnetic Cosserat rods
-interacting with external magnetic environments (details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica)) .
 - `examples`: installs dependencies to run example cases,
 found under the folder [`examples`](https://github.com/GazzolaLab/PyElastica/tree/master/examples).
 - `docs`: packages to build documentation
 
 Options can be combined e.g.
 ```bash
-$ pip install "pyelastica[magnetism,examples,docs]"
+$ pip install "pyelastica[examples,docs]"
 ```
+
+If you want to simulate magnetic Cosserat rods interacting with external magnetic environments you can install the derived package using
+
+```bash
+$ pip install magneto_pyelastica
+```
+
+Details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica).
 
 ## Dependencies
 

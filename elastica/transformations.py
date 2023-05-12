@@ -17,6 +17,7 @@ from .utils import MaxDimension, isqrt
 def format_vector_shape(vector_collection):
     """
     Function for formatting vector shapes into correct format
+
     Parameters
     ----------
     vector_collection: numpy.ndarray
@@ -61,6 +62,7 @@ def format_vector_shape(vector_collection):
 def format_matrix_shape(matrix_collection):
     """
     Formats input matrix into correct format
+
     Parameters
     ----------
     matrix_collection: numpy.ndarray
