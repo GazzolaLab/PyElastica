@@ -145,7 +145,10 @@ def grouper(iterable, n):
 
 
 def extend_instance(obj, cls):
-    """Apply mixins to a class instance after creation
+    """
+
+    Apply mixins to a class instance after creation
+
     Parameters
     ----------
     obj : object (not class!) targeted for interface extension
@@ -159,6 +162,7 @@ def extend_instance(obj, cls):
     Credits
     -------
     https://stackoverflow.com/a/31075641
+
     """
     base_cls = obj.__class__
     base_cls_name = obj.__class__.__name__

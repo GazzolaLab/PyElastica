@@ -1,3 +1,38 @@
+# Release 0.3.1
+
+## New Features
+
+* Ring Cosserat rods by @armantekinalp in https://github.com/GazzolaLab/PyElastica/pull/229
+* Magnetic Cosserat rods functionality by @bhosale2 in https://github.com/GazzolaLab/PyElastica/pull/245
+
+## What's Changed
+
+* Dynamic validation example by @sy-cui in https://github.com/GazzolaLab/PyElastica/pull/173
+* Refactor: change typings in forcing/constraints/connections to SystemType or RodType by @sy-cui in https://github.com/GazzolaLab/PyElastica/pull/191
+* Wildcard imports removed by @AsadNizami in https://github.com/GazzolaLab/PyElastica/pull/238
+* Remove internal damping option for Cosserat rod by @bhosale2 in https://github.com/GazzolaLab/PyElastica/pull/243
+
+## Minor Fixes
+
+* Fix main yml windows python version by @armantekinalp in https://github.com/GazzolaLab/PyElastica/pull/206
+* Fix restart functionality by @armantekinalp in https://github.com/GazzolaLab/PyElastica/pull/249
+* Replaced 'moviepy' with 'ffmpeg' for video generation by @Rahul-JOON in https://github.com/GazzolaLab/PyElastica/pull/232
+
+## Repository Update
+
+* Windows CI fix by @bhosale2 in https://github.com/GazzolaLab/PyElastica/pull/192
+* autoflake funtionality by @bhosale2 in https://github.com/GazzolaLab/PyElastica/pull/175
+
+## New Contributors
+
+* @sy-cui made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/173
+* @Rahul-JOON made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/232
+* @AsadNizami made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/238
+* @erfanhamdi made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/247
+
+**Full Changelog**: https://github.com/GazzolaLab/PyElastica/compare/v0.3.0...v0.3.1
+
+
 # Release v0.3.0
 
 ## New Features
