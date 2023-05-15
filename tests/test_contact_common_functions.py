@@ -114,7 +114,7 @@ class TestOutOfBounds:
         assert _out_of_bounds(x, low, high) == result
 
 
-class TestFinMinDist:
+class TestFindMinDist:
     "class to test the _find_min_dist function"
 
     def test_find_min_dist(self):
