@@ -8,7 +8,7 @@ PyElastica is the python implementation of **Elastica**: an *open-source* projec
 
 [![gallery][link-readme-gallary]][link-project-website]
 
-Visit [cosseratrods.org][link-project-website] for more information and learn about Elastica and Cosserat rod theory.
+Visit [www.cosseratrods.org][link-project-website] for more information and learn about Elastica and Cosserat rod theory.
 
 ## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
@@ -93,7 +93,7 @@ We ask that any publications which use Elastica cite as following:
 
 We have created several Jupyter notebooks and Python scripts to help users get started with PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica.
 
-We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/visualization`](examples/visualization)).
+We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/Visualization`](examples/Visualization)).
 
 ## Contribution
 
