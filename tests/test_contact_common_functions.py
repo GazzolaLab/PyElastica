@@ -1,4 +1,4 @@
-__doc__ = """ Test Common functions in Elastica.joint implementation"""
+__doc__ = """ Test common functions used in contact in Elastica.joint implementation"""
 
 import pytest
 import numpy as np
@@ -13,7 +13,7 @@ from elastica.joint import (
 )
 
 
-class Testdotproduct:
+class TestDotProduct:
     "class to test the dot product function"
 
     @pytest.mark.parametrize("ndim", [3])
@@ -57,7 +57,7 @@ class Testdotproduct:
         assert_allclose(dot_product, 5)
 
 
-class Testnorm:
+class TestNorm:
     "class to test the _norm function"
 
     def test_norm_with_verified_values(self):
@@ -84,7 +84,7 @@ class Testnorm:
         assert_allclose(norm, 0.0037416573867739412)
 
 
-class Testclip:
+class TestClip:
     "class to test the _clip function"
 
     @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ class Testclip:
         assert _clip(x, low, high) == result
 
 
-class Testoutofbounds:
+class TestOutOfBounds:
     "class to test the _out_of_bounds function"
 
     @pytest.mark.parametrize(
@@ -114,7 +114,7 @@ class Testoutofbounds:
         assert _out_of_bounds(x, low, high) == result
 
 
-class Testfinmindist:
+class TestFinMinDist:
     "class to test the _find_min_dist function"
 
     def test_find_min_dist(self):
@@ -164,7 +164,7 @@ class Testfinmindist:
         assert_allclose(closestpointofline2, [7, 0, 3.5])
 
 
-class Testaabbsintersecting:
+class TestAABBSNotIntersecting:
     "class to test the _aabb_intersecting function"
 
     def test_aabbs_not_intersectin(self):
