@@ -19,7 +19,7 @@ class TestPruneUsingAABBSRodRigidBody:
         rod_one_length_collection = np.array([2.0, 1.0])
         cylinder_position = np.array([[4, 5, 6]])
         cylinder_director = np.array(
-            [[[1, 0, 0], [0, 0.707, -0.707], [0, 0.707, 0.707]]]
+            [[[1], [0], [0]], [[0], [0.707], [-0.707]], [[0], [0.707], [0.707]]]
         )
         cylinder_radius = 1.5
         cylinder_length = 5.0
