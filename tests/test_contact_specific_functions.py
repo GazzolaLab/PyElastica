@@ -2,16 +2,8 @@ __doc__ = (
     """ Test specific functions used in contact in Elastica.joint implementation"""
 )
 
-import pytest
 import numpy as np
-from numpy.testing import assert_allclose
-from elastica.joint import (
-    _prune_using_aabbs_rod_rigid_body,
-    _prune_using_aabbs_rod_rod,
-    _calculate_contact_forces_rod_rigid_body,
-    _calculate_contact_forces_rod_rod,
-    _calculate_contact_forces_self_rod,
-)
+from elastica.joint import _prune_using_aabbs_rod_rigid_body, _prune_using_aabbs_rod_rod
 
 
 class TestPruneUsingAABBSRodRigidBody:
