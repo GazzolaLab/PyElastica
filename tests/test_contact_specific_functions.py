@@ -14,10 +14,10 @@ class TestPruneUsingAABBSRodRigidBody:
 
         "Intersecting rod and cylinder"
         "dummy inputs were generated using chatgpt"
-        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6]])
+        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         rod_one_radius_collection = np.array([1.0, 0.5])
         rod_one_length_collection = np.array([2.0, 1.0])
-        cylinder_position = np.array([[2, 3, 4]])
+        cylinder_position = np.array([[4, 5, 6]])
         cylinder_director = np.array(
             [[[1, 0, 0], [0, 0.707, -0.707], [0, 0.707, 0.707]]]
         )
@@ -37,7 +37,7 @@ class TestPruneUsingAABBSRodRigidBody:
         )
 
         "Non - Intersecting rod and cylinder"
-        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6]])
+        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         rod_one_radius_collection = np.array([1.0, 0.5])
         rod_one_length_collection = np.array([2.0, 1.0])
         cylinder_position = np.array([[20, 3, 4]])
@@ -68,10 +68,10 @@ class TestPruneUsingAABBSRodRod:
 
         "Intersecting rod and rod"
         "dummy inputs were generated using chatgpt"
-        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6]])
+        rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         rod_one_radius_collection = np.array([1.0, 0.5])
         rod_one_length_collection = np.array([2.0, 1.0])
-        rod_two_position_collection = np.array([[2, 3, 4], [5, 6, 7]])
+        rod_two_position_collection = np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
         rod_two_radius_collection = np.array([0.8, 1.2])
         rod_two_length_collection = np.array([1.5, 2.5])
         assert (
@@ -88,13 +88,13 @@ class TestPruneUsingAABBSRodRod:
 
         "Non - Intersecting rod and rod"
         rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        rod_one_radius_collection = np.array([0.5, 0.3, 0.7])
-        rod_one_length_collection = np.array([1, 2, 3])
+        rod_one_radius_collection = np.array([0.5, 0.3])
+        rod_one_length_collection = np.array([1, 2])
         rod_two_position_collection = np.array(
             [[15, 16, 17], [18, 19, 20], [21, 22, 23]]
         )
-        rod_two_radius_collection = np.array([0.4, 0.2, 0.6])
-        rod_two_length_collection = np.array([2, 3, 1])
+        rod_two_radius_collection = np.array([0.4, 0.2])
+        rod_two_length_collection = np.array([2, 3])
         assert (
             _prune_using_aabbs_rod_rod(
                 rod_one_position_collection,
