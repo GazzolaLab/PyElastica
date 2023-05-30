@@ -22,7 +22,7 @@ class TestPruneUsingAABBSRodRigidBody:
         rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         rod_one_radius_collection = np.array([1.0, 0.5])
         rod_one_length_collection = np.array([2.0, 1.0])
-        cylinder_position = np.array([4, 5, 6])
+        cylinder_position = np.array([[4], [5], [6]])
         cylinder_director = np.array(
             [[[1], [0], [0]], [[0], [0.707], [-0.707]], [[0], [0.707], [0.707]]]
         )
@@ -45,7 +45,7 @@ class TestPruneUsingAABBSRodRigidBody:
         rod_one_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         rod_one_radius_collection = np.array([1.0, 0.5])
         rod_one_length_collection = np.array([2.0, 1.0])
-        cylinder_position = np.array([20, 3, 4])
+        cylinder_position = np.array([[20], [3], [4]])
         cylinder_director = np.array(
             [[[1], [0], [0]], [[0], [0.707], [-0.707]], [[0], [0.707], [0.707]]]
         )
@@ -154,7 +154,7 @@ class TestCalculateContactForcesRodRigidBody:
         )
 
         "initializing cylinder parameters"
-        cylinder_position = np.array([[4, 5, 6]])
+        cylinder_position = np.array([[4], [5], [6]])
         cylinder_director = np.array(
             [[[1], [0], [0]], [[0], [0.707], [-0.707]], [[0], [0.707], [0.707]]]
         )
@@ -212,13 +212,13 @@ class TestCalculateContactForcesRodRigidBody:
         "Test values"
         assert_allclose(
             cylinder_external_forces,
-            np.array([[-1.11766], [-0.223515], [1.692252]]),
+            np.array([[-1.389433], [-0.180767], [1.662106]]),
             rtol=tol,
             atol=tol,
         )
         assert_allclose(
             cylinder_external_torques,
-            np.array([[0.211712], [-2.439156], [0.310859]]),
+            np.array([[0.159707], [-2.261999], [0.310859]]),
             rtol=tol,
             atol=tol,
         )
@@ -226,9 +226,9 @@ class TestCalculateContactForcesRodRigidBody:
             rod_external_forces,
             np.array(
                 [
-                    [-1.273255, 1.5668, 2.040335],
-                    [-0.29907, -0.106998, -0.31385],
-                    [-0.779112, -0.890331, 0.178224],
+                    [-1.383582, 1.647523, 2.341712],
+                    [-0.350649, -0.154162, -0.257856],
+                    [-0.702578, -0.836991, 0.078497],
                 ]
             ),
             rtol=tol,
