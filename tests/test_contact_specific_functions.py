@@ -9,6 +9,7 @@ from elastica.joint import (
     _prune_using_aabbs_rod_rod,
     _calculate_contact_forces_rod_rigid_body,
     _calculate_contact_forces_rod_rod,
+    _calculate_contact_forces_self_rod,
 )
 
 
@@ -337,6 +338,66 @@ def test_calculate_contact_forces_rod_rod():
                 [0.126155, -0.125392, -1.013333],
                 [0.719324, 1.120859, 1.575353],
                 [1.790064, 0.204983, 1.113846],
+            ]
+        ),
+        rtol=tol,
+        atol=tol,
+    )
+
+
+def test_claculate_contact_forces_self_rod():
+    "Function to test the calculate contact forces self rod function"
+
+    "Testing function with analytically verified values"
+
+    tol = 1e-5
+
+    "initializing rod parameters"
+    rod_position_collection = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    rod_radius_collection = np.array([1.3, 0.5])
+    rod_length_collection = np.array([2.1, 0.9])
+    rod_tangent_collection = np.array([[0, -0.29], [-0.029, 1.12], [-1.04, -1.165]])
+
+    rod_external_forces = np.array(
+        [
+            [-1.55308218, 1.00714652, 2.04033497],
+            [-0.35890683, -0.22667242, -0.31385005],
+            [-0.66969949, -0.67150666, 0.17822428],
+        ]
+    )
+
+    rod_velocity_collection = np.array(
+        [
+            [-0.91917535, -1.04929632, -0.32208191],
+            [0.13459384, -1.77261144, -0.28656239],
+            [1.63574433, 0.31741648, 1.43917516],
+        ]
+    )
+
+    "initializing constants"
+    k = 1.0
+    nu = 0.5
+
+    "Function call"
+    _calculate_contact_forces_self_rod(
+        rod_position_collection,
+        rod_radius_collection,
+        rod_length_collection,
+        rod_tangent_collection,
+        rod_velocity_collection,
+        rod_external_forces,
+        k,
+        nu,
+    )
+
+    "Test values"
+    assert_allclose(
+        rod_external_forces,
+        np.array(
+            [
+                [-1.553082, 1.007147, 2.040335],
+                [-0.358907, -0.226672, -0.31385],
+                [-0.669699, -0.671507, 0.178224],
             ]
         ),
         rtol=tol,
