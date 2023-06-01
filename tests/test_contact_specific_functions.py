@@ -380,7 +380,7 @@ def test_claculate_contact_forces_self_rod():
 
     "Function call"
     _calculate_contact_forces_self_rod(
-        rod_position_collection,
+        rod_position_collection[..., :-1],
         rod_radius_collection,
         rod_length_collection,
         rod_tangent_collection,
