@@ -345,7 +345,7 @@ def test_calculate_contact_forces_rod_rod():
     )
 
 
-def test_claculate_contact_forces_self_rod():
+def test_calculate_contact_forces_self_rod():
     "Function to test the calculate contact forces self rod function"
 
     "Testing function with analytically verified values"
