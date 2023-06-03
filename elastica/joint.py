@@ -726,7 +726,7 @@ def _calculate_contact_forces_self_rod(
     edge_collection_rod_one = _batch_product_k_ik_to_ik(length_rod, tangent_rod)
 
     for i in range(n_points_rod):
-        skip = 1 + np.ceil(0.8 * np.pi * radius_rod[i] / length_rod[i])
+        skip = int(1 + np.ceil(0.8 * np.pi * radius_rod[i] / length_rod[i]))
         for j in range(i - skip, -1, -1):
             radii_sum = radius_rod[i] + radius_rod[j]
             length_sum = length_rod[i] + length_rod[j]
