@@ -265,7 +265,9 @@ def test_calculate_contact_forces_rod_rod():
     )
 
     "initializing rod 2 parameters"
-    rod_two_position_collection = np.array([[3, 4, 5], [1, 2, 3], [4, 4, 4]])
+    rod_two_position_collection = np.array(
+        [[1.0000001, 2.0000034, 3], [4, 5, 6], [7, 8, 9]]
+    )
     rod_two_radius_collection = np.array([2.3, 0.4])
     rod_two_length_collection = np.array([1.5, 1.0])
     rod_two_tangent_collection = np.array([[0, -0.39], [-0.29, 1.00], [-1.0, -0.165]])
@@ -322,9 +324,9 @@ def test_calculate_contact_forces_rod_rod():
         rod_one_external_forces,
         np.array(
             [
-                [-1.553082, 1.007147, 2.040335],
-                [-0.358907, -0.226672, -0.31385],
-                [-0.669699, -0.671507, 0.178224],
+                [-2.752861, -2.349062, 1.083684],
+                [-0.358907, 0.627338, 0.54016],
+                [-0.669699, 0.387652, 1.237383],
             ]
         ),
         rtol=tol,
@@ -335,9 +337,9 @@ def test_calculate_contact_forces_rod_rod():
         rod_two_external_forces,
         np.array(
             [
-                [0.126155, -0.125392, -1.013333],
-                [0.719324, 1.120859, 1.575353],
-                [1.790064, 0.204983, 1.113846],
+                [0.23889, 2.687294, 1.573883],
+                [-0.565314, -0.37547, 2.648301],
+                [0.825641, -1.336387, 1.501321],
             ]
         ),
         rtol=tol,
