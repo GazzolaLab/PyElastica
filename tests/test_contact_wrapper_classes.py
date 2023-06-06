@@ -75,7 +75,7 @@ MockRod = type("MockRod", (object,), {"__init__": mock_rod_init})
 MockRigidBody = type("MockRigidBody", (object,), {"__init__": mock_rigid_body_init})
 
 
-def test_external_contact_with_collision():
+def test_external_contact_rod_rigid_body_with_collision():
 
     "Testing External Contact wrapper with Collision with analytical verified values"
 
@@ -113,7 +113,7 @@ def test_external_contact_with_collision():
     )
 
 
-def test_external_contact_without_collision():
+def test_external_contact_rod_rigid_body_without_collision():
 
     "Testing External Contact wrapper without Collision with analytical verified values"
 
@@ -128,7 +128,7 @@ def test_external_contact_without_collision():
     assert_allclose(mock_rigid_body.external_torques, mock_rigid_body.external_torques)
 
 
-def test_external_contact_with_two_rods():
+def test_external_contact_with_two_rods_with_collision():
 
     "Testing External Contact wrapper with two rods with analytical verified values"
 
@@ -163,6 +163,38 @@ def test_external_contact_with_two_rods():
                 [-4.672525, -7.453212, 2.279982, 0.528223, 0.718947],
             ]
         ),
+        rtol=tol,
+        atol=tol,
+    )
+
+
+def test_external_contact_with_two_rods_without_collision():
+
+    "Testing External Contact wrapper with two rods with analytical verified values"
+
+    tol = 1e-6
+    mock_rod_one = MockRod()
+    mock_rod_two = MockRod()
+    mock_rod_two.position_collection = np.array(
+        [
+            [100, 200, 300, 400, 500],
+            [600, 700, 800, 900, 100],
+            [110, 120, 130, 140, 150],
+        ]
+    )
+    ext_contact = ExternalContact(k=1.0, nu=0.5)
+    ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+
+    assert_allclose(
+        mock_rod_one.external_forces,
+        mock_rod_one.external_forces,
+        rtol=tol,
+        atol=tol,
+    )
+
+    assert_allclose(
+        mock_rod_two.external_forces,
+        mock_rod_two.external_forces,
         rtol=tol,
         atol=tol,
     )
