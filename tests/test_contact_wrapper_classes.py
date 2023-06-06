@@ -9,6 +9,7 @@ def mock_rod_init(self):
 
     "Initializing Rod"
 
+    self.n_elems = 2
     self.position_collection = np.array(
         [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15]]
     )
@@ -125,3 +126,43 @@ def test_external_contact_without_collision():
     assert_allclose(mock_rod.external_forces, mock_rod.external_forces)
     assert_allclose(mock_rigid_body.external_forces, mock_rigid_body.external_forces)
     assert_allclose(mock_rigid_body.external_torques, mock_rigid_body.external_torques)
+
+
+def test_external_contact_with_two_rods():
+
+    "Testing External Contact wrapper with two rods with analytical verified values"
+
+    tol = 1e-6
+    mock_rod_one = MockRod()
+    mock_rod_two = MockRod()
+    mock_rod_two.position_collection = np.array(
+        [[1.2, 2.2, 3.2, 4.2, 5.2], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15]]
+    )
+    ext_contact = ExternalContact(k=1.0, nu=0.5)
+    ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+
+    assert_allclose(
+        mock_rod_one.external_forces,
+        np.array(
+            [
+                [-5.848848, -7.696102, 2.569813, 0.257867, -0.091002],
+                [-3.177381, -2.169013, 2.890443, -0.240067, -0.864637],
+                [-1.309157, 4.732951, 7.427895, 0.333335, 0.835572],
+            ]
+        ),
+        rtol=tol,
+        atol=tol,
+    )
+
+    assert_allclose(
+        mock_rod_two.external_forces,
+        np.array(
+            [
+                [-6.167549, -1.298545, 10.66082, 1.435384, 0.030468],
+                [-2.17321, -4.425968, -1.173107, -0.060764, -0.887081],
+                [-4.672525, -7.453212, 2.279982, 0.528223, 0.718947],
+            ]
+        ),
+        rtol=tol,
+        atol=tol,
+    )
