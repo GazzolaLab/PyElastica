@@ -2,7 +2,7 @@ __doc__ = """ Test Wrapper Classes used in contact in Elastica.joint implementat
 
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.joint import ExternalContact
+from elastica.joint import ExternalContact, SelfContact
 
 
 def mock_rod_init(self):
@@ -195,6 +195,55 @@ def test_external_contact_with_two_rods_without_collision():
     assert_allclose(
         mock_rod_two.external_forces,
         mock_rod_two.external_forces,
+        rtol=tol,
+        atol=tol,
+    )
+
+
+def test_self_contact_with_rod_self_collision():
+
+    "Testing Self Contact wrapper rod self collision with analytical verified values"
+
+    tol = 1e-6
+    mock_rod = MockRod()
+    sel_contact = SelfContact(k=1.0, nu=0.5)
+    sel_contact.apply_forces(mock_rod, 0, mock_rod, 0)
+
+    assert_allclose(
+        mock_rod.external_forces,
+        np.array(
+            [
+                [-0.976629, -0.663611, -0.934193, -0.471303, -0.028112],
+                [-1.125742, -2.077304, -1.465054, -0.595825, -0.876467],
+                [0.204132, 0.967667, 0.062506, -0.299531, 0.776233],
+            ]
+        ),
+        rtol=tol,
+        atol=tol,
+    )
+
+
+def test_self_contact_with_rod_no_self_collision():
+
+    "Testing Self Contact wrapper rod no self collision with analytical verified values"
+
+    tol = 1e-6
+    mock_rod = MockRod()
+    mock_rod.position_collection = np.array(
+        [[1, 3, 5, 7, 9], [11, 13, 15, 17, 19], [21, 23, 25, 27, 29]]
+    )
+    sel_contact = SelfContact(k=1.0, nu=0.5)
+    sel_contact.apply_forces(mock_rod, 0, mock_rod, 0)
+
+    assert_allclose(
+        mock_rod.external_forces,
+        np.array(
+            [
+                [-0.77306421, -0.25648047, -0.93419262, -0.77665042, -0.33345937],
+                [-1.04834225, -1.92250527, -1.46505411, -0.71192403, -0.99256648],
+                [0.33465609, 1.22871475, 0.06250578, -0.49531749, 0.58044695],
+            ]
+        ),
         rtol=tol,
         atol=tol,
     )
