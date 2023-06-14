@@ -1,5 +1,11 @@
 from collections import defaultdict
-from elastica.rod.knot_theory import KnotTheory, KnotTheoryCompatibleProtocol
+from elastica.rod.knot_theory import (
+    KnotTheory,
+    KnotTheoryCompatibleProtocol,
+    compute_link,
+    compute_twist,
+    compute_writhe,
+)
 from elastica.rod.rod_base import RodBase
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody.rigid_body import RigidBodyBase
