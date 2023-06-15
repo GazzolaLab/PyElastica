@@ -121,9 +121,13 @@ def test_external_contact_rod_rigid_body_without_collision():
     mock_rigid_body = MockRigidBody()
     ext_contact = ExternalContact(k=1.0, nu=0.5)
     mock_rigid_body.position_collection = np.array([[400], [500], [600]])
-    mock_rod_external_forces_before_execution = mock_rod.external_forces
-    mock_rigid_body_external_forces_before_execution = mock_rigid_body.external_forces
-    mock_rigid_body_external_torques_before_execution = mock_rigid_body.external_torques
+    mock_rod_external_forces_before_execution = mock_rod.external_forces.copy()
+    mock_rigid_body_external_forces_before_execution = (
+        mock_rigid_body.external_forces.copy()
+    )
+    mock_rigid_body_external_torques_before_execution = (
+        mock_rigid_body.external_torques.copy()
+    )
     ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
 
     assert_allclose(mock_rod.external_forces, mock_rod_external_forces_before_execution)
@@ -192,8 +196,8 @@ def test_external_contact_with_two_rods_without_collision():
         ]
     )
     ext_contact = ExternalContact(k=1.0, nu=0.5)
-    mock_rod_one_external_forces_before_execution = mock_rod_one.external_forces
-    mock_rod_two_external_forces_before_execution = mock_rod_two.external_forces
+    mock_rod_one_external_forces_before_execution = mock_rod_one.external_forces.copy()
+    mock_rod_two_external_forces_before_execution = mock_rod_two.external_forces.copy()
     ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
 
     assert_allclose(
