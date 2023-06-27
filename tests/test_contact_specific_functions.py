@@ -20,19 +20,21 @@ def mock_rod_init(self):
 
     """This is a small rod with 2 elements;
     Initial Parameters:
-    radius = 1, length = 0.5,
+    element's radius = 1, length = 1,
     tangent vector for both elements is (1, 0, 0),
     stationary rod i.e velocity vector of each node is (0, 0, 0),
     internal/external forces vectors are also (0, 0, 0)"""
 
     self.n_elems = 2
-    self.position_collection = np.array([[1, 2], [0, 0], [0, 0]])
+    self.position_collection = np.array([[1, 2, 3], [0, 0, 0], [0, 0, 0]])
     self.radius_collection = np.array([1, 1])
-    self.length_collection = np.array([0.5, 0.5])
+    self.length_collection = np.array([1, 1])
     self.tangent_collection = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
-    self.velocity_collection = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
-    self.internal_forces = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
-    self.external_forces = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
+    self.velocity_collection = np.array(
+        [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    )
+    self.internal_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    self.external_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
 
 
 def mock_rigid_body_init(self):
@@ -50,7 +52,7 @@ def mock_rigid_body_init(self):
     self.n_elems = 1
     self.position = np.array([[0], [0], [0]])
     self.director = np.array(
-        [[[1.0], [0.0], [0.0]], [[0.0], [0.0], [1.0]], [[0.0], [0.0], [1.0]]]
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
     )
     self.radius = 1.0
     self.length = 2.0
@@ -133,7 +135,7 @@ def test_prune_using_aabbs_rod_rod():
 
     "Non - Intersecting rod and rod"
     """Changing the position of rod_two in 3D space so the rod_one and rod_two don't overlap/intersect."""
-    rod_two.position_collection = np.array([[20, 21], [22, 23], [24, 25]])
+    rod_two.position_collection = np.array([[20, 21, 22], [0, 0, 0], [0, 0, 0]])
     assert (
         _prune_using_aabbs_rod_rod(
             rod_one.position_collection,
@@ -195,15 +197,18 @@ def test_claculate_contact_forces_rod_rigid_body():
     )
 
     "Test values"
-    """The two systems were placed such that they are penetrating and
+    """The two systems were placed such that they are penetrating by 0.5 units and
     resulting forces act along the x-axis only.
-    The net force was calculated by halving the contact force i.e net force = 0.5 * contact force = -0.25;
-                                                                    where, contact force = k(1) * penetration depth(-1) * gamma(0.5) = -0.5
+    The net force was calculated by halving the contact force i.e
+                                            net force = 0.5 * contact force = -0.25;
+                                                where, contact force = k(1) * min distance between colliding elements(-1) * gamma(0.5) = -0.5
     The net force is then divided to the nodes of the rod and the cylinder as per indices."""
-    assert_allclose(cylinder.external_forces, np.array([[-0.5], [0], [0]]))
-    assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]))
+    assert_allclose(cylinder.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6)
+    assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
     assert_allclose(
-        rod.external_forces, np.array([[0.16, 0.33], [0, 0], [0, 0]]), atol=1e-2
+        rod.external_forces,
+        np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
+        atol=1e-6,
     )
 
 
@@ -215,9 +220,8 @@ def test_calculate_contact_forces_rod_rod():
     rod_one = MockRod()
 
     rod_two = MockRod()
-    """Placing rod two such that its first element pentrates the second element of rod one
-    by 1.0 unit in the x-direction."""
-    rod_two.position_collection = np.array([[2.5, 3.5], [0, 0], [0, 0]])
+    """Placing rod two such that its first element just touches the last element of rod one."""
+    rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
 
     "initializing constants"
     """Setting contact_k = 1 and nu to 0,
@@ -247,14 +251,21 @@ def test_calculate_contact_forces_rod_rod():
 
     "Test values"
     """Resulting forces act along the x-axis only.
-    The net force was calculated by halving the contact force i.e net force = 0.5 * contact force = 0.5;
-                                                                    where, contact force = k(1) * penetration depth(1) * gamma(1) = 1
-    The net force is then divided to the nodes of the rod and the cylinder as per indices."""
+    The net force was calculated by halving the contact force i.e
+                                            net force = 0.5 * contact force = 0.5;
+                                                where, contact force = k(1) * min distance between colliding elements(1) * gamma(1) = 1
+    The net force is then divided to the nodes of the two rods as per indices."""
     assert_allclose(
-        rod_one.external_forces, np.array([[-0.33, -0.66], [0, 0], [0, 0]]), atol=1e-2
+        rod_one.external_forces,
+        np.array(
+            [[0, -0.5, -0.5], [0, 0, 0], [0, 0, 0]],
+        ),
+        atol=1e-6,
     )
     assert_allclose(
-        rod_two.external_forces, np.array([[0.33, 0.66], [0, 0], [0, 0]]), atol=1e-2
+        rod_two.external_forces,
+        np.array([[0.333333, 0.666666, 0], [0, 0, 0], [0, 0, 0]]),
+        atol=1e-6,
     )
 
 
@@ -264,14 +275,15 @@ def test_calculate_contact_forces_self_rod():
     "Testing function with analytically verified values"
 
     rod = MockRod()
-    """Increasing rod elements and length to establish self contact in rod;
-    elements are placed such that they are penetrating the next to next element by 1.0 unit in the x-direction."""
-    rod.n_elems = 4
-    rod.position_collection = np.array([[1, 3, 5, 7], [0, 0, 0, 0], [0, 0, 0, 0]])
-    rod.radius_collection = np.array([1, 1, 1, 1])
-    rod.length_collection = np.array([3.0, 3.0, 3.0, 3.0])
+    """Changing rod parameters to establish self contact in rod;
+    elements are placed such that the a 'U' rod is formed in the x-y plane,
+    where the rod is penetrating itself by 0.5 units by radius."""
+    rod.n_elems = 3
+    rod.position_collection = np.array([[1, 4, 4, 1], [0, 0, 1, 1], [0, 0, 0, 0]])
+    rod.radius_collection = np.array([1, 1, 1])
+    rod.length_collection = np.array([3, 3, 3])
     rod.tangent_collection = np.array(
-        [[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
+        [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
     )
     rod.velocity_collection = np.array(
         [[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
@@ -302,12 +314,13 @@ def test_calculate_contact_forces_self_rod():
     )
 
     "Test values"
-    """Resulting forces act along the x-axis only.
-    The net force was calculated by halving the contact force i.e net force = 0.5 * contact force = -0.5;
-                                                                    where, contact force = k(1) * penetration depth(-1) * gamma(1) = -1
-    The net force is then divided to the nodes of the rod and the cylinder as per indices."""
+    """Resulting forces act along the y-axis only.
+    The net force was calculated by halving the contact force i.e
+                                        net force = 0.5 * contact force = -0.5;
+                                            where, contact force = k(1) * minimum distance between colliding elements centres(-1) * gamma(1) = -1
+    The net force is then divided to the nodes of the rod as per indices."""
     assert_allclose(
         rod.external_forces,
-        np.array([[-0.33, -0.66, 0.5, 0.5], [0, 0, 0, 0], [0, 0, 0, 0]]),
-        atol=1e-2,
+        np.array([[0, 0, 0, 0], [-0.333333, -0.666666, 0.5, 0.5], [0, 0, 0, 0]]),
+        atol=1e-6,
     )
