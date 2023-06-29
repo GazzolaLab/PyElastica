@@ -3,6 +3,7 @@ __doc__ = """ Test mesh initialization in Elastica """
 from mesh.mesh_initializer import MeshInitialize
 import numpy as np
 from numpy.testing import assert_allclose
+from sys import platform
 
 
 """
@@ -19,7 +20,11 @@ def test_mesh_faces():
     of faces generated.
     """
 
-    mockmesh = MeshInitialize(r"assets\cube.stl")
+    if platform == "win32":
+        path = r"assets\cube.stl"
+    else:
+        path = r"assets/cube.stl"
+    mockmesh = MeshInitialize(path)
     calculated_faces = np.array(
         [
             [
