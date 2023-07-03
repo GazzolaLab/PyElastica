@@ -149,130 +149,258 @@ def test_prune_using_aabbs_rod_rod():
     )
 
 
-def test_claculate_contact_forces_rod_rigid_body():
-    "Function to test the calculate contact forces rod rigid body function"
+class TestCalculateContactForcesRodRigidBody:
+    "Class to test the calculate contact forces rod rigid body function"
 
-    "Testing function with analytically verified values"
+    "Testing function with handcrafted/calculated values"
 
-    "initializing rod parameters"
-    rod = MockRod()
-    rod_element_position = 0.5 * (
-        rod.position_collection[..., 1:] + rod.position_collection[..., :-1]
-    )
+    def test_claculate_contact_forces_rod_rigid_body_with_k_without_nu(self):
 
-    "initializing cylinder parameters"
-    cylinder = MockRigidBody()
-    x_cyl = (
-        cylinder.position[..., 0] - 0.5 * cylinder.length * cylinder.director[2, :, 0]
-    )
+        "initializing rod parameters"
+        rod = MockRod()
+        rod_element_position = 0.5 * (
+            rod.position_collection[..., 1:] + rod.position_collection[..., :-1]
+        )
 
-    "initializing constants"
-    """Setting contact_k = 1 and other parameters to 0,
-    so the net forces becomes a function of contact forces only."""
-    k = 1.0
-    nu = 0
-    velocity_damping_coefficient = 0
-    friction_coefficient = 0
+        "initializing cylinder parameters"
+        cylinder = MockRigidBody()
+        x_cyl = (
+            cylinder.position[..., 0]
+            - 0.5 * cylinder.length * cylinder.director[2, :, 0]
+        )
 
-    "Function call"
-    _calculate_contact_forces_rod_rigid_body(
-        rod_element_position,
-        rod.length_collection * rod.tangent_collection,
-        cylinder.position[..., 0],
-        x_cyl,
-        cylinder.length * cylinder.director[2, :, 0],
-        rod.radius_collection + cylinder.radius,
-        rod.length_collection + cylinder.length,
-        rod.internal_forces,
-        rod.external_forces,
-        cylinder.external_forces,
-        cylinder.external_torques,
-        cylinder.director[:, :, 0],
-        rod.velocity_collection,
-        cylinder.velocity_collection,
-        k,
-        nu,
-        velocity_damping_coefficient,
-        friction_coefficient,
-    )
+        "initializing constants"
+        """Setting contact_k = 1 and other parameters to 0,
+        so the net forces becomes a function of contact forces only."""
+        k = 1.0
+        nu = 0
+        velocity_damping_coefficient = 0
+        friction_coefficient = 0
 
-    "Test values"
-    """The two systems were placed such that they are penetrating by 0.5 units and
-    resulting forces act along the x-axis only.
-    The net force was calculated by halving the contact force i.e
-                                            net force = 0.5 * contact force = -0.25;
-                                                where, contact force = k(1) * min distance between colliding elements(-1) * gamma(0.5) = -0.5
-    The net force is then divided to the nodes of the rod and the cylinder as per indices."""
-    assert_allclose(cylinder.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6)
-    assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
-    assert_allclose(
-        rod.external_forces,
-        np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
-        atol=1e-6,
-    )
+        "Function call"
+        _calculate_contact_forces_rod_rigid_body(
+            rod_element_position,
+            rod.length_collection * rod.tangent_collection,
+            cylinder.position[..., 0],
+            x_cyl,
+            cylinder.length * cylinder.director[2, :, 0],
+            rod.radius_collection + cylinder.radius,
+            rod.length_collection + cylinder.length,
+            rod.internal_forces,
+            rod.external_forces,
+            cylinder.external_forces,
+            cylinder.external_torques,
+            cylinder.director[:, :, 0],
+            rod.velocity_collection,
+            cylinder.velocity_collection,
+            k,
+            nu,
+            velocity_damping_coefficient,
+            friction_coefficient,
+        )
+
+        "Test values"
+        """The two systems were placed such that they are penetrating by 0.5 units and
+        resulting forces act along the x-axis only.
+        The net force was calculated by halving the contact force i.e
+                                                net force = 0.5 * contact force = -0.25;
+                                                    where, contact force = k(1) * min distance between colliding elements(-1) * gamma(0.5) = -0.5
+        The net force is then divided to the nodes of the rod and the cylinder as per indices."""
+        assert_allclose(
+            cylinder.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
+        assert_allclose(
+            rod.external_forces,
+            np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
+    def test_claculate_contact_forces_rod_rigid_body_without_k_with_nu(self):
+
+        "initializing rod parameters"
+        rod = MockRod()
+        "Moving rod towards the cylinder with a velocity of -1 in x-axis"
+        rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+        rod_element_position = 0.5 * (
+            rod.position_collection[..., 1:] + rod.position_collection[..., :-1]
+        )
+
+        "initializing cylinder parameters"
+        cylinder = MockRigidBody()
+        "Moving cylinder towards the rod with a velocity of 1 in x-axis"
+        cylinder.velocity_collection = np.array([[1], [0], [0]])
+        x_cyl = (
+            cylinder.position[..., 0]
+            - 0.5 * cylinder.length * cylinder.director[2, :, 0]
+        )
+
+        "initializing constants"
+        """Setting contact_nu = 1 and other parameters to 0,
+        so the net forces becomes a function of contact damping forces only."""
+        k = 0.0
+        nu = 1.0
+        velocity_damping_coefficient = 0
+        friction_coefficient = 0
+
+        "Function call"
+        _calculate_contact_forces_rod_rigid_body(
+            rod_element_position,
+            rod.length_collection * rod.tangent_collection,
+            cylinder.position[..., 0],
+            x_cyl,
+            cylinder.length * cylinder.director[2, :, 0],
+            rod.radius_collection + cylinder.radius,
+            rod.length_collection + cylinder.length,
+            rod.internal_forces,
+            rod.external_forces,
+            cylinder.external_forces,
+            cylinder.external_torques,
+            cylinder.director[:, :, 0],
+            rod.velocity_collection,
+            cylinder.velocity_collection,
+            k,
+            nu,
+            velocity_damping_coefficient,
+            friction_coefficient,
+        )
+
+        "Test values"
+        """The two systems were placed such that they are penetrating by 0.5 units and
+        resulting forces act along the x-axis only.
+        The net force was calculated by halving the contact damping force i.e
+                                                net force = 0.5 * contact damping force = -0.75;
+                                                    where, contact damping force = -nu(1) * penetration velocity(1.5)[x-axis] = -1.5
+        The net force is then divided to the nodes of the rod and the cylinder as per indices."""
+        assert_allclose(
+            cylinder.external_forces, np.array([[-1.5], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
+        assert_allclose(
+            rod.external_forces,
+            np.array([[0.5, 1, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
 
 
-def test_calculate_contact_forces_rod_rod():
+class TestCalculateContactForcesRodRod:
     "Function to test the calculate contact forces rod rod function"
 
-    "Testing function with analytically verified values"
+    "Testing function with handcrafted/calculated values"
 
-    rod_one = MockRod()
+    def test_calculate_contact_forces_rod_rod_with_k_without_nu(self):
 
-    rod_two = MockRod()
-    """Placing rod two such that its first element just touches the last element of rod one."""
-    rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
+        rod_one = MockRod()
+        rod_two = MockRod()
+        """Placing rod two such that its first element just touches the last element of rod one."""
+        rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
 
-    "initializing constants"
-    """Setting contact_k = 1 and nu to 0,
-    so the net forces becomes a function of contact forces only."""
-    k = 1.0
-    nu = 0.0
+        "initializing constants"
+        """Setting contact_k = 1 and nu to 0,
+        so the net forces becomes a function of contact forces only."""
+        k = 1.0
+        nu = 0.0
 
-    "Function call"
-    _calculate_contact_forces_rod_rod(
-        rod_one.position_collection[..., :-1],
-        rod_one.radius_collection,
-        rod_one.length_collection,
-        rod_one.tangent_collection,
-        rod_one.velocity_collection,
-        rod_one.internal_forces,
-        rod_one.external_forces,
-        rod_two.position_collection[..., :-1],
-        rod_two.radius_collection,
-        rod_two.length_collection,
-        rod_two.tangent_collection,
-        rod_two.velocity_collection,
-        rod_two.internal_forces,
-        rod_two.external_forces,
-        k,
-        nu,
-    )
+        "Function call"
+        _calculate_contact_forces_rod_rod(
+            rod_one.position_collection[..., :-1],
+            rod_one.radius_collection,
+            rod_one.length_collection,
+            rod_one.tangent_collection,
+            rod_one.velocity_collection,
+            rod_one.internal_forces,
+            rod_one.external_forces,
+            rod_two.position_collection[..., :-1],
+            rod_two.radius_collection,
+            rod_two.length_collection,
+            rod_two.tangent_collection,
+            rod_two.velocity_collection,
+            rod_two.internal_forces,
+            rod_two.external_forces,
+            k,
+            nu,
+        )
 
-    "Test values"
-    """Resulting forces act along the x-axis only.
-    The net force was calculated by halving the contact force i.e
-                                            net force = 0.5 * contact force = 0.5;
-                                                where, contact force = k(1) * min distance between colliding elements(1) * gamma(1) = 1
-    The net force is then divided to the nodes of the two rods as per indices."""
-    assert_allclose(
-        rod_one.external_forces,
-        np.array(
-            [[0, -0.5, -0.5], [0, 0, 0], [0, 0, 0]],
-        ),
-        atol=1e-6,
-    )
-    assert_allclose(
-        rod_two.external_forces,
-        np.array([[0.333333, 0.666666, 0], [0, 0, 0], [0, 0, 0]]),
-        atol=1e-6,
-    )
+        "Test values"
+        """Resulting forces act along the x-axis only.
+        The net force was calculated by halving the contact force i.e
+                                                net force = 0.5 * contact force = 0.5;
+                                                    where, contact force = k(1) * min distance between colliding elements(1) * gamma(1) = 1
+        The net force is then divided to the nodes of the two rods as per indices."""
+        assert_allclose(
+            rod_one.external_forces,
+            np.array(
+                [[0, -0.5, -0.5], [0, 0, 0], [0, 0, 0]],
+            ),
+            atol=1e-6,
+        )
+        assert_allclose(
+            rod_two.external_forces,
+            np.array([[0.333333, 0.666666, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
+    def test_calculate_contact_forces_rod_rod_without_k_with_nu(self):
+
+        rod_one = MockRod()
+        rod_two = MockRod()
+        """Placing rod two such that its first element just touches the last element of rod one."""
+        rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
+
+        """Moving the rods towards each other with a velocity of 1 along the x-axis."""
+        rod_one.velocity_collection = np.array([[1, 0, 0], [1, 0, 0], [1, 0, 0]])
+        rod_two.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+
+        "initializing constants"
+        """Setting contact_nu = 1 and nu to 0,
+        so the net forces becomes a function of contact damping forces only."""
+        k = 0.0
+        nu = 1.0
+
+        "Function call"
+        _calculate_contact_forces_rod_rod(
+            rod_one.position_collection[..., :-1],
+            rod_one.radius_collection,
+            rod_one.length_collection,
+            rod_one.tangent_collection,
+            rod_one.velocity_collection,
+            rod_one.internal_forces,
+            rod_one.external_forces,
+            rod_two.position_collection[..., :-1],
+            rod_two.radius_collection,
+            rod_two.length_collection,
+            rod_two.tangent_collection,
+            rod_two.velocity_collection,
+            rod_two.internal_forces,
+            rod_two.external_forces,
+            k,
+            nu,
+        )
+
+        "Test values"
+        """Resulting forces act along the x-axis only.
+        The net force was calculated by halving the contact damping force i.e
+                                                net force = 0.5 * contact damping force = 0.25;
+                                                    where, contact damping force = nu(1) * penetration velocity(0.5)[x-axis] = 0.5
+        The net force is then divided to the nodes of the two rods as per indices."""
+        assert_allclose(
+            rod_one.external_forces,
+            np.array(
+                [[0, -0.25, -0.25], [0, 0, 0], [0, 0, 0]],
+            ),
+            atol=1e-6,
+        )
+        assert_allclose(
+            rod_two.external_forces,
+            np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
 
 
 def test_calculate_contact_forces_self_rod():
     "Function to test the calculate contact forces self rod function"
 
-    "Testing function with analytically verified values"
+    "Testing function with handcrafted/calculated values"
 
     rod = MockRod()
     """Changing rod parameters to establish self contact in rod;
@@ -296,10 +424,8 @@ def test_calculate_contact_forces_self_rod():
     )
 
     "initializing constants"
-    """Setting contact_k = 1 and nu to 0,
-    so the net forces becomes a function of contact forces only."""
     k = 1.0
-    nu = 0.0
+    nu = 1.0
 
     "Function call"
     _calculate_contact_forces_self_rod(
@@ -315,6 +441,7 @@ def test_calculate_contact_forces_self_rod():
 
     "Test values"
     """Resulting forces act along the y-axis only.
+    Since the rod is stationary i.e velocity = 0, the net force is a function of contact force only.
     The net force was calculated by halving the contact force i.e
                                         net force = 0.5 * contact force = -0.5;
                                             where, contact force = k(1) * minimum distance between colliding elements centres(-1) * gamma(1) = -1
