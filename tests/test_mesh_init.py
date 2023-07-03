@@ -16,8 +16,8 @@ in numpy-stl documentation (https://numpy-stl.readthedocs.io/en/latest/usage.htm
 def test_mesh_faces():
 
     """
-    This function initializes a new cube mesh checks for the geometry
-    of faces generated.
+    This function initializes a new cube mesh and checks for
+    the geometry of faces generated.
     """
 
     if platform == "win32":
