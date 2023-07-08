@@ -144,7 +144,7 @@ class TestExternalContact:
 
         assert_allclose(
             mock_rod_one.external_forces,
-            np.array([[0, -0.5, -0.5], [0, 0, 0], [0, 0, 0]]),
+            np.array([[0, -0.666666, -0.333333], [0, 0, 0], [0, 0, 0]]),
             atol=1e-6,
         )
         assert_allclose(
@@ -173,7 +173,7 @@ class TestExternalContact:
         assert_allclose(
             mock_rod_one.external_forces,
             np.array(
-                [[0, -0.25, -0.25], [0, 0, 0], [0, 0, 0]],
+                [[0, -0.333333, -0.166666], [0, 0, 0], [0, 0, 0]],
             ),
             atol=1e-6,
         )
@@ -224,9 +224,9 @@ class TestSelfContact:
             [[1, 4, 4, 1], [0, 0, 1, 1], [0, 0, 0, 0]]
         )
         mock_rod.radius = np.array([1, 1, 1])
-        mock_rod.lengths = np.array([3, 3, 3])
+        mock_rod.lengths = np.array([3, 1, 3])
         mock_rod.tangents = np.array(
-            [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+            [[1.0, 0.0, -1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
         )
         mock_rod.velocity_collection = np.array(
             [[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
@@ -242,7 +242,9 @@ class TestSelfContact:
 
         assert_allclose(
             mock_rod.external_forces,
-            np.array([[0, 0, 0, 0], [-0.333333, -0.666666, 0.5, 0.5], [0, 0, 0, 0]]),
+            np.array(
+                [[0, 0, 0, 0], [-0.333333, -0.666666, 0.666666, 0.333333], [0, 0, 0, 0]]
+            ),
             atol=1e-6,
         )
 

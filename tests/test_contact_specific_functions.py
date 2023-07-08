@@ -118,7 +118,7 @@ def test_prune_using_aabbs_rod_rod():
     "Testing function with analytically verified values"
 
     "Intersecting rod and rod"
-    """Since both the rods have same position, node's radius and lenght, they are overlapping/intersecting in 3D space."""
+    """Since both the rods have same position, node's radius and length, they are overlapping/intersecting in 3D space."""
     rod_one = MockRod()
     rod_two = MockRod()
     assert (
@@ -330,7 +330,7 @@ class TestCalculateContactForcesRodRod:
         assert_allclose(
             rod_one.external_forces,
             np.array(
-                [[0, -0.5, -0.5], [0, 0, 0], [0, 0, 0]],
+                [[0, -0.666666, -0.333333], [0, 0, 0], [0, 0, 0]],
             ),
             atol=1e-6,
         )
@@ -386,7 +386,7 @@ class TestCalculateContactForcesRodRod:
         assert_allclose(
             rod_one.external_forces,
             np.array(
-                [[0, -0.25, -0.25], [0, 0, 0], [0, 0, 0]],
+                [[0, -0.333333, -0.166666], [0, 0, 0], [0, 0, 0]],
             ),
             atol=1e-6,
         )
@@ -409,9 +409,9 @@ def test_calculate_contact_forces_self_rod():
     rod.n_elems = 3
     rod.position_collection = np.array([[1, 4, 4, 1], [0, 0, 1, 1], [0, 0, 0, 0]])
     rod.radius_collection = np.array([1, 1, 1])
-    rod.length_collection = np.array([3, 3, 3])
+    rod.length_collection = np.array([3, 1, 3])
     rod.tangent_collection = np.array(
-        [[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        [[1.0, 0.0, -1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
     )
     rod.velocity_collection = np.array(
         [[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
@@ -448,6 +448,8 @@ def test_calculate_contact_forces_self_rod():
     The net force is then divided to the nodes of the rod as per indices."""
     assert_allclose(
         rod.external_forces,
-        np.array([[0, 0, 0, 0], [-0.333333, -0.666666, 0.5, 0.5], [0, 0, 0, 0]]),
+        np.array(
+            [[0, 0, 0, 0], [-0.333333, -0.666666, 0.666666, 0.333333], [0, 0, 0, 0]]
+        ),
         atol=1e-6,
     )
