@@ -571,7 +571,7 @@ def _calculate_contact_forces_rod_rigid_body(
             cylinder_total_contact_torques += np.cross(
                 moment_arm, 2.0 * net_contact_force
             )
-        elif i == n_points:
+        elif i == n_points - 1:
             external_forces_rod[..., i] -= 4 / 3 * net_contact_force
             external_forces_rod[..., i + 1] -= 2 / 3 * net_contact_force
             cylinder_total_contact_forces += 2.0 * net_contact_force
