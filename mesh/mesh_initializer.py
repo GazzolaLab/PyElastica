@@ -41,14 +41,16 @@ class MeshInitialize():
     """
     def __init__(self, filepath):
         self.mesh = pv.read(filepath)
-        self.face_normals = self.mesh.face_normals
+        self.mesh_center = self.mesh.center
+        self.pyvista_face_normals = self.mesh.face_normals
         self.pyvista_faces = self.mesh.faces
         self.number_of_faces = self.mesh.n_faces
         self.pyvista_points = self.mesh.points
         self.bounds = self.mesh.bounds
+        self.face_normals = self.face_normal_calculation(self.pyvista_face_normals)
         self.faces = self.face_calculation(self.pyvista_faces, self.pyvista_points, self.number_of_faces)
         self.face_centers = self.face_center_calculation(self.faces, self.number_of_faces)
-        self.mesh_scale, self.mesh_center = self.mesh_scale_and_center_calculation(self.bounds)
+        self.mesh_scale = self.mesh_scale_calculation(self.bounds)
 
     def face_calculation(self, pvfaces, meshpoints, n_faces):
         """
@@ -87,6 +89,16 @@ class MeshInitialize():
 
         return faces
 
+    def face_normal_calculation(self, pyvista_face_normals):
+        """
+        This function converts the face normals from pyvista to pyelastica geometry,
+        in pyelastica the face are stored in the format of (n_faces, 3 spatial coordinates),
+        this is converted into (3 spatial coordinates, n_faces).
+        """
+        face_normals = np.transpose(pyvista_face_normals)
+
+        return face_normals
+
     def face_center_calculation(self, faces, n_faces):
         """
         This function calculates the position vector of each face of the mesh
@@ -94,26 +106,22 @@ class MeshInitialize():
         """
         face_centers = np.zeros((3, n_faces))
 
-        for i in range(3):
-            for j in range(n_faces):
-                temp_sum = faces[i][..., j].sum()
-                face_centers[i][j] = temp_sum / 3
+        for i in range(n_faces):
+            for j in range(3):
+                temp_sum = faces[j][..., i].sum()
+                face_centers[j][i] = temp_sum / 3
 
         return face_centers
 
-    def mesh_scale_and_center_calculation(self, bounds):
+    def mesh_scale_calculation(self, bounds):
         """
-        This function calculates scale and center of the mesh,
-        for the scale it calculates the maximum distance between mesh's farthest verticies in each axis,
-        and for the center it calculates the average of the maximum and minimum values of the
-        farthest mesh verticies in each axis.
+        This function calculates scale of the mesh,
+        it calculates the maximum distance between mesh's farthest verticies in each axis.
         """
         scale = np.zeros(3)
-        center = np.zeros(3)
         axis = 0
         for i in range(0, 5, 2):
             scale[axis] = bounds[i + 1] - bounds[i]
-            center[axis] = (bounds[i + 1] + bounds[i]) / 2
             axis += 1
 
-        return scale, center
+        return scale
