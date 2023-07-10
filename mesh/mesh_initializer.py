@@ -42,7 +42,7 @@ class Mesh():
         - Stores the coordinates of the position vector of the center of the smallest box that could fit the mesh.
         - Dimension: (3 spatial coordinates)
     """
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str) -> None:
         self.mesh = pv.read(filepath)
         self.mesh_center = self.mesh.center
         self.pyvista_face_normals = self.mesh.face_normals
