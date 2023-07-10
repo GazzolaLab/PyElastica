@@ -12,7 +12,7 @@ class Mesh():
     How to initialize a mesh?
     -------------------------
 
-    mesh = MeshInitialize(r"<filepath>")
+    mesh = Mesh(r"<filepath>")
 
     Notes:
     ------
