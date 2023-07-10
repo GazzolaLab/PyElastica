@@ -48,7 +48,9 @@ MockRigidBody = type(
 
 
 class TestExternalContact:
-    def test_external_contact_rod_rigid_body_with_collision_with_k_without_nu(self):
+    def test_external_contact_rod_rigid_body_with_collision_with_k_without_nu_and_friction(
+        self,
+    ):
 
         "Testing External Contact wrapper with Collision with analytical verified values"
 
@@ -72,7 +74,9 @@ class TestExternalContact:
             mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_with_collision_without_k_with_nu(self):
+    def test_external_contact_rod_rigid_body_with_collision_with_nu_without_k_and_friction(
+        self,
+    ):
 
         "Testing External Contact wrapper with Collision with analytical verified values"
 
@@ -100,7 +104,9 @@ class TestExternalContact:
             mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_with_collision_with_k_and_nu(self):
+    def test_external_contact_rod_rigid_body_with_collision_with_k_and_nu_without_friction(
+        self,
+    ):
 
         "Testing External Contact wrapper with Collision with analytical verified values"
 
@@ -122,6 +128,44 @@ class TestExternalContact:
 
         assert_allclose(
             mock_rigid_body.external_forces, np.array([[-2], [0], [0]]), atol=1e-6
+        )
+
+        assert_allclose(
+            mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
+        )
+
+    def test_external_contact_rod_rigid_body_with_collision_with_k_and_nu_and_friction(
+        self,
+    ):
+
+        "Testing External Contact wrapper with Collision with analytical verified values"
+
+        mock_rod = MockRod()
+        "Moving rod towards the cylinder with a velocity of -1 in x-axis"
+        mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+        mock_rigid_body = MockRigidBody()
+        "Moving cylinder towards the rod with a velocity of 1 in x-axis"
+        mock_rigid_body.velocity_collection = np.array([[1], [0], [0]])
+        ext_contact = ExternalContact(
+            k=1.0, nu=1.0, velocity_damping_coefficient=0.1, friction_coefficient=0.1
+        )
+        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_rigid_body()'"""
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array(
+                [
+                    [0.666666, 1.333333, 0],
+                    [0.033333, 0.066666, 0],
+                    [0.033333, 0.066666, 0],
+                ]
+            ),
+            atol=1e-6,
+        )
+
+        assert_allclose(
+            mock_rigid_body.external_forces, np.array([[-2], [-0.1], [-0.1]]), atol=1e-6
         )
 
         assert_allclose(

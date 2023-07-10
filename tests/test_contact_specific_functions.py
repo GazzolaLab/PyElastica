@@ -166,7 +166,9 @@ class TestCalculateContactForcesRodRigidBody:
 
     "Testing function with handcrafted/calculated values"
 
-    def test_claculate_contact_forces_rod_rigid_body_with_k_without_nu(self):
+    def test_calculate_contact_forces_rod_rigid_body_with_k_without_nu_and_friction(
+        self,
+    ):
 
         "initializing rod parameters"
         rod = MockRod()
@@ -232,7 +234,9 @@ class TestCalculateContactForcesRodRigidBody:
             atol=1e-6,
         )
 
-    def test_claculate_contact_forces_rod_rigid_body_without_k_with_nu(self):
+    def test_calculate_contact_forces_rod_rigid_body_with_nu_without_k_and_friction(
+        self,
+    ):
 
         "initializing rod parameters"
         rod = MockRod()
@@ -302,7 +306,9 @@ class TestCalculateContactForcesRodRigidBody:
             atol=1e-6,
         )
 
-    def test_claculate_contact_forces_rod_rigid_body_with_k_and_nu(self):
+    def test_calculate_contact_forces_rod_rigid_body_with_k_and_nu_without_friction(
+        self,
+    ):
 
         "initializing rod parameters"
         rod = MockRod()
@@ -362,6 +368,80 @@ class TestCalculateContactForcesRodRigidBody:
         assert_allclose(
             rod.external_forces,
             np.array([[0.666666, 1.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
+    def test_calculate_contact_forces_rod_rigid_body_with_k_and_nu_and_friction(self):
+
+        "initializing rod parameters"
+        rod = MockRod()
+        "Moving rod towards the cylinder with a velocity of -1 in x-axis"
+        rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+        rod_element_position = 0.5 * (
+            rod.position_collection[..., 1:] + rod.position_collection[..., :-1]
+        )
+
+        "initializing cylinder parameters"
+        cylinder = MockRigidBody()
+        "Moving cylinder towards the rod with a velocity of 1 in x-axis"
+        cylinder.velocity_collection = np.array([[1], [0], [0]])
+        x_cyl = (
+            cylinder.position[..., 0]
+            - 0.5 * cylinder.length * cylinder.director[2, :, 0]
+        )
+
+        "initializing constants"
+        k = 1.0
+        nu = 1.0
+        velocity_damping_coefficient = 0.1
+        friction_coefficient = 0.1
+
+        "Function call"
+        _calculate_contact_forces_rod_rigid_body(
+            rod_element_position,
+            rod.length_collection * rod.tangent_collection,
+            cylinder.position[..., 0],
+            x_cyl,
+            cylinder.length * cylinder.director[2, :, 0],
+            rod.radius_collection + cylinder.radius,
+            rod.length_collection + cylinder.length,
+            rod.internal_forces,
+            rod.external_forces,
+            cylinder.external_forces,
+            cylinder.external_torques,
+            cylinder.director[:, :, 0],
+            rod.velocity_collection,
+            cylinder.velocity_collection,
+            k,
+            nu,
+            velocity_damping_coefficient,
+            friction_coefficient,
+        )
+
+        "Test values"
+        """
+        With friction, we have to subtract the frictional forces from the net contact forces.
+        from above values the frictional forces are calculated as:
+            coulombic friction force = friction coefficient(0.1) * net contact force before friction(1) * slip_direction_velocity_unitized(0.5^-2) = 0.07071... (for y and z axis)
+            slip direction friction = velocity damping coefficient(0.1) * slip_direction_velocity(0.5^-2) * slip_direction_velocity_unitized(0.5^-2) = 0.05 (for y and z axis)
+        the minimum of the two is slip direction friciton, so the frictional force is that only:
+            friction force = slip direction friction = 0.05
+        after applying sign convention and dividing the force among the nodes of rod and cylinder,
+        we get the following values.
+        """
+        assert_allclose(
+            cylinder.external_forces, np.array([[-2], [-0.1], [-0.1]]), atol=1e-6
+        )
+        assert_allclose(cylinder.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
+        assert_allclose(
+            rod.external_forces,
+            np.array(
+                [
+                    [0.666666, 1.333333, 0],
+                    [0.033333, 0.066666, 0],
+                    [0.033333, 0.066666, 0],
+                ]
+            ),
             atol=1e-6,
         )
 
