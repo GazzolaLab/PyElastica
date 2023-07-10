@@ -1,6 +1,6 @@
 __doc__ = """ Test mesh initialization with attributes in Elastica """
 
-from mesh.mesh_initializer import MeshInitialize
+from mesh.mesh_initializer import Mesh
 import numpy as np
 from numpy.testing import assert_allclose
 from sys import platform
@@ -22,7 +22,7 @@ def cube_mesh_init():
     else:
         path = r"tests/cube.stl"
 
-    mockmesh = MeshInitialize(path)
+    mockmesh = Mesh(path)
     return mockmesh
 
 

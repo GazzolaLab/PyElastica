@@ -4,7 +4,7 @@ import pyvista as pv
 import numpy as np
 
 
-class MeshInitialize():
+class Mesh():
     """
     This Mesh Initializer class uses pyvista to import mesh files in the
     STL or OBJ file formats and initializes the necessary mesh information.
@@ -14,7 +14,10 @@ class MeshInitialize():
 
     mesh = MeshInitialize(r"<filepath>")
 
-    PS: Please be sure to add .stl / .obj at the end of the filepath, if already present, ignore.
+    Notes:
+    ------
+
+    - Please be sure to add .stl / .obj at the end of the filepath, if already present, ignore.
 
     Attributes:
     -----------
@@ -39,7 +42,7 @@ class MeshInitialize():
         - Stores the coordinates of the position vector of the center of the smallest box that could fit the mesh.
         - Dimension: (3 spatial coordinates)
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath: str):
         self.mesh = pv.read(filepath)
         self.mesh_center = self.mesh.center
         self.pyvista_face_normals = self.mesh.face_normals
@@ -52,7 +55,7 @@ class MeshInitialize():
         self.face_centers = self.face_center_calculation(self.faces, self.number_of_faces)
         self.mesh_scale = self.mesh_scale_calculation(self.bounds)
 
-    def face_calculation(self, pvfaces, meshpoints, n_faces):
+    def face_calculation(self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int) -> np.ndarray:
         """
         This function converts the faces from pyvista to pyelastica geometry
 
@@ -75,9 +78,11 @@ class MeshInitialize():
           then establishes connection between verticies of same cell/face through the 'mesh.faces' array
           and returns an array with dimension (3 spatial coordinates, 3 vertices, n faces), where n_faces is the number of faces in the mesh.
 
-        PS: This function has been tested for triangular meshes only.
-        """
+        Notes:
+        ------
 
+        - This function has been tested for triangular meshes only.
+        """
         faces = np.zeros((3, 3, n_faces))
         vertice_no = 0
 
@@ -89,7 +94,7 @@ class MeshInitialize():
 
         return faces
 
-    def face_normal_calculation(self, pyvista_face_normals):
+    def face_normal_calculation(self, pyvista_face_normals: np.ndarray) -> np.ndarray:
         """
         This function converts the face normals from pyvista to pyelastica geometry,
         in pyelastica the face are stored in the format of (n_faces, 3 spatial coordinates),
@@ -99,7 +104,7 @@ class MeshInitialize():
 
         return face_normals
 
-    def face_center_calculation(self, faces, n_faces):
+    def face_center_calculation(self, faces: np.ndarray, n_faces: int) -> np.ndarray:
         """
         This function calculates the position vector of each face of the mesh
         simply by averaging all the vertices of every face/cell.
@@ -113,10 +118,10 @@ class MeshInitialize():
 
         return face_centers
 
-    def mesh_scale_calculation(self, bounds):
+    def mesh_scale_calculation(self, bounds: np.ndarray) -> np.ndarray:
         """
         This function calculates scale of the mesh,
-        it calculates the maximum distance between mesh's farthest verticies in each axis.
+        for that it calculates the maximum distance between mesh's farthest verticies in each axis.
         """
         scale = np.zeros(3)
         axis = 0
