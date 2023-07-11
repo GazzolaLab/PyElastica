@@ -37,24 +37,41 @@ class TestDotProduct:
         vec2 = [2, 0, 0]
         dot_product = _dot_product(vec1, vec2)
         assert_allclose(dot_product, 2)
+        """Calcutlations :  vec1 . vect2
+                            [1, 0, 0] . [2, 0, 0]
+                            1*2 + 0*0 + 0*0
+                            2 (Answer)"""
 
         "test for perpendicular vectors"
         vec1 = [1, 0, 0]
         vec2 = [0, 1, 0]
         dot_product = _dot_product(vec1, vec2)
         assert_allclose(dot_product, 0)
+        """Calcutlations :  vec1 . vect2
+                            [1, 0, 0] . [0, 1, 0]
+                            1*0 + 0*1 + 0*0
+                            0 (Answer)"""
 
         "test for opposite vectors"
         vec1 = [1, 0, 0]
         vec2 = [-1, 0, 0]
         dot_product = _dot_product(vec1, vec2)
         assert_allclose(dot_product, -1)
+        """Calcutlations :  vec1 . vect2
+                            [1, 0, 0] . [-1, 0, 0]
+                            1*-1 + 0*0 + 0*0
+                            -1 (Answer)"""
 
-        "test for complex vectors"
+        "test for arbitrary vectors"
         vec1 = [1, -2, 3]
         vec2 = [-2, 1, 3]
         dot_product = _dot_product(vec1, vec2)
         assert_allclose(dot_product, 5)
+        """Calcutlations :  vec1 . vect2
+                            [1, -2, 3] . [-2, 1, 3]
+                            1*-2 + -2*1 + 3*3
+                            -2 - 2 + 9
+                            5 (Answer)"""
 
 
 def test_norm_with_verified_values():
@@ -66,21 +83,36 @@ def test_norm_with_verified_values():
     vec1 = [0, 0, 0]
     norm = _norm(vec1)
     assert_allclose(norm, 0)
+    """Calcutlations :  sqrt(0^2 + 0^2 + 0^2)
+                        sqrt(0 + 0 + 0)
+                        0 (Answer)"""
 
     "test for unit vector"
     vec1 = [1, 1, 1]
     norm = _norm(vec1)
     assert_allclose(norm, 1.7320508075688772)
+    """Calcutlations :  sqrt(1^2 + 1^2 + 1^2)
+                        sqrt(1 + 1 + 1)
+                        sqrt(3)
+                        1.7320508075688772 (Answer)"""
 
     "test for arbitrary natural number vector"
     vec1 = [1, 2, 3]
     norm = _norm(vec1)
     assert_allclose(norm, 3.7416573867739413)
+    """Calcutlations :  sqrt(1^2 + 2^2 + 3^2)
+                        sqrt(1 + 4 + 9)
+                        sqrt(14)
+                        3.7416573867739413 (Answer)"""
 
     "test for decimal values vector"
     vec1 = [0.001, 0.002, 0.003]
     norm = _norm(vec1)
     assert_allclose(norm, 0.0037416573867739412)
+    """Calcutlations :  sqrt(0.001^2 + 0.002^2 + 0.003^2)
+                        sqrt(0.000001 + 0.000004 + 0.000009)
+                        sqrt(0.000014)
+                        0.0037416573867739412 (Answer)"""
 
 
 @pytest.mark.parametrize(
@@ -91,7 +123,8 @@ def test_clip_with_verified_values(x, result):
 
     "Function to test the _clip function"
 
-    "Testing function with analytically verified values"
+    """_clip is a simple comparison function;
+       The tests are made to get _clip to return 'low', 'x', 'high' in the respective order"""
 
     low = 1.0
     high = 2.0
@@ -106,7 +139,7 @@ def test_out_of_bounds_with_verified_values(x, result):
 
     "Function to test the _out_of_bounds function"
 
-    "testing function with analytically verified values"
+    """_out_of_bounds returns 1 if x < low or x > high, else returns 0"""
 
     low = 1.0
     high = 2.0
@@ -121,41 +154,49 @@ def test_find_min_dist():
     "intersecting lines"
     x1 = np.array([0, 0, 0])
     e1 = np.array([1, 1, 1])
+    # line 1 starts along origin and points towards (1,1,1)
     x2 = np.array([0, 1, 0])
     e2 = np.array([1, 0, 1])
-    min_dist_vec, closestpointofline1, closestpointofline2 = _find_min_dist(
+    # line 2 starts along (0,1,0) and points towards (1,0,1)
+    min_dist_vec, contact_point_of_system2, contact_point_of_system1 = _find_min_dist(
         x1, e1, x2, e2
     )
     assert_allclose(min_dist_vec, [0, 0, 0])
-    assert_allclose(closestpointofline1, [1, 1, 1])
-    assert_allclose(closestpointofline2, [-1, -1, -1])
+    # since the lines intersect, the minimum distance is 0.
+    assert_allclose(contact_point_of_system2, [1, 1, 1])
+    # the contact point of line 2 and line 1 is (1,1,1)
+    assert_allclose(contact_point_of_system1, [-1, -1, -1])
+    # the function returns -1 for contact point of system 1 in case of intersecting lines
 
-    "arbitrary close lines"
-    tol = 1e-5
+    "non intersecting lines"
     x1 = np.array([0, 0, 0])
-    e1 = np.array([1, 1, 1])
-    x2 = np.array([0, 0, 1])
-    e2 = np.array([1.5, 2, 0])
-    min_dist_vec, closestpointofline1, closestpointofline2 = _find_min_dist(
-        x1, e1, x2, e2
-    )
-    assert_allclose(min_dist_vec, [-0.153846, 0.115385, 0.038462], rtol=tol, atol=tol)
-    assert_allclose(closestpointofline1, [0.807692, 1.076923, 1], rtol=tol, atol=tol)
-    assert_allclose(
-        closestpointofline2, [-0.961538, -0.961538, -0.961538], rtol=tol, atol=tol
-    )
-
-    "arbitrary away lines"
-    x1 = np.array([7, 0, 3.5])
     e1 = np.array([1, 0, 0])
-    x2 = np.array([0, 70, 0])
-    e2 = np.array([0, 0, 11.5])
-    min_dist_vec, closestpointofline1, closestpointofline2 = _find_min_dist(
+    # line 1 starts along origin and points towards (1,0,0)
+    x2 = np.array([0, 1, 0])
+    e2 = np.array([0, 0, 1])
+    # line 2 starts along (0,1,0) and points towards (0,0,1)
+    min_dist_vec, contact_point_of_system2, contact_point_of_system1 = _find_min_dist(
         x1, e1, x2, e2
     )
-    assert_allclose(min_dist_vec, [-7, 70, 0])
-    assert_allclose(closestpointofline1, [0, 70, 3.5])
-    assert_allclose(closestpointofline2, [7, 0, 3.5])
+    assert_allclose(min_dist_vec, [0, 1, 0])
+    # minimum distance is 1 unit(verified using GeoGebra 3D calculator visualisation)
+    assert_allclose(contact_point_of_system2, [0, 1, 0])
+    assert_allclose(contact_point_of_system1, [0, 0, 0])
+
+    "parallel lines"
+    x1 = np.array([0, 0, 0])
+    e1 = np.array([1, 0, 0])
+    # line 1 starts along origin and points towards (1,0,0)
+    x2 = np.array([0, 1, 0])
+    e2 = np.array([1, 1, 0])
+    # line 2 starts along (0,1,0) and points towards (1,1,0)
+    min_dist_vec, contact_point_of_system2, contact_point_of_system1 = _find_min_dist(
+        x1, e1, x2, e2
+    )
+    assert_allclose(min_dist_vec, [0, 1, 0])
+    # minimum distance is 1 unit(verified using GeoGebra 3D calculator visualisation)
+    assert_allclose(contact_point_of_system2, [0, 1, 0])
+    assert_allclose(contact_point_of_system1, [0, 0, 0])
 
 
 def test_aabbs_not_intersectin():
@@ -166,9 +207,12 @@ def test_aabbs_not_intersectin():
     " intersecting boxes"
     aabb_one = np.array([[0, 0], [0, 0], [0, 0]])
     aabb_two = np.array([[0, 0], [0, 0], [0, 0]])
+    "both boxes are overlapping perfectly thus intersecting"
     assert _aabbs_not_intersecting(aabb_one, aabb_two) == 0
 
     " non Intersecting boxes"
     aabb_one = np.array([[0, 1], [0, 1], [0, 1]])
+    "box one is a unit size cube in the first quadrant with origin as one of its vertices"
     aabb_two = np.array([[2, 3], [2, 3], [2, 3]])
+    "box two is a unit size cube in the first quadrant with (2,2,2) as the closest vertex to box 1"
     assert _aabbs_not_intersecting(aabb_one, aabb_two) == 1
