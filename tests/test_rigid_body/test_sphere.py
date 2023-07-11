@@ -78,7 +78,7 @@ def test_sphere_initialization():
     )
 
 
-def test_cylinder_update_accelerations():
+def test_sphere_update_accelerations():
     """
     This test is testing the update acceleration method of Sphere class.
 
