@@ -41,9 +41,46 @@ class Mesh():
     mesh.mesh_center:
         - Stores the coordinates of the position vector of the center of the smallest box that could fit the mesh.
         - Dimension: (3 spatial coordinates)
+
+    Methods:
+    --------
+
+    mesh.mesh_update():
+    Parameters: None
+        - This method updates/refreshes the mesh attributes in pyelastica geometry.
+        - By default this method is called at initialization and after every method that might change the mesh attributes.
+
+    mesh.visualize():
+    Parameters: None
+        - This method visualizes the mesh using pyvista.
+
+    mesh.translate():
+    Parameters: {numpy.ndarray-(3 spatial coordinates)}
+    ex : mesh.translate(np.array([1,1,1]))
+        - This method translates the mesh by a given vector.
+        - By default, the mesh's center is at the origin;
+          by calling this method, the mesh's center is translated to the given vector.
+
+    mesh.scale():
+    Parameters: {numpy.ndarray-(3 spatial constants)}
+    ex : mesh.scale(np.array([1,1,1]))
+        - This method scales the mesh by a given factor in respective axes.
+
+    mesh.rotate():
+    Parameters: {rotation_axis: unit vector[numpy.ndarray-(3 spatial coordinates)], angle: in degrees[float]}
+    ex : mesh.rotate(np.array([1,0,0]), 90)
+        - This method rotates the mesh by a given angle about a given axis.
     """
     def __init__(self, filepath: str) -> None:
         self.mesh = pv.read(filepath)
+        self.mesh_update()
+
+    def mesh_update(self) -> None:
+        """
+        This method updates/refreshes the mesh attributes in pyelastica geometry.
+        This needs to be performed at the first initialization as well as
+        after every method that might change the mesh attributes.
+        """
         self.mesh_center = self.mesh.center
         self.pyvista_face_normals = self.mesh.face_normals
         self.pyvista_faces = self.mesh.faces
@@ -130,3 +167,34 @@ class Mesh():
             axis += 1
 
         return scale
+
+    def visualize(self) -> None:
+        """
+        This function visualizes the mesh using pyvista.
+        """
+        pyvista_plotter = pv.Plotter()
+        pyvista_plotter.add_mesh(self.mesh)
+        pyvista_plotter.show()
+
+    def translate(self, target_center: np.ndarray) -> None:
+        """
+        This method moves the mesh by center to the
+        the target point given by the user.
+        """
+        self.mesh = self.mesh.translate(target_center)
+        self.mesh_update()
+
+    def scale(self, factor: np.ndarray) -> None:
+        """
+        This method scales the mesh by the given factor.
+        """
+        self.mesh = self.mesh.scale(factor)
+        self.mesh_update()
+
+    def rotate(self, axis: np.ndarray, angle: float) -> None:
+        """
+        This method rotates the mesh by the given angle
+        on the give rotation axis.
+        """
+        self.mesh = self.mesh.rotate_vector(axis, angle)
+        self.mesh_update()
