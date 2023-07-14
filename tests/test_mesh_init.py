@@ -146,3 +146,16 @@ def test_mesh_center():
     """
     calculated_mesh_center = np.array([0, 0, 0])
     assert_allclose(mockmesh.mesh_center, calculated_mesh_center)
+
+
+def test_mesh_orientation():
+    """
+    This functions tests the orientation of the cube mesh.
+    """
+    mockmesh = cube_mesh_init()
+    """
+    The cube is situated at origin and the initial orientation is upright
+    in the general 3-D cartesian plane.
+    """
+    calculated_mesh_orientation = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    assert_allclose(mockmesh.mesh_orientation, calculated_mesh_orientation)

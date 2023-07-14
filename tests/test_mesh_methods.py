@@ -217,3 +217,11 @@ def test_mesh_rotate():
     "Rotating the mesh"
     mockmesh.rotate(rotation_axis, rotation_angle)
     assert_allclose(mockmesh.bounds, target_bounds)
+
+    """
+    Testing the final orientation of the mesh
+    """
+    correct_orientation_after_rotation = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+    assert_allclose(
+        mockmesh.mesh_orientation, correct_orientation_after_rotation, atol=1e-6
+    )

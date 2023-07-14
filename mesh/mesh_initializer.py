@@ -42,6 +42,11 @@ class Mesh():
         - Stores the coordinates of the position vector of the center of the smallest box that could fit the mesh.
         - Dimension: (3 spatial coordinates)
 
+    mesh.mesh_orientation:
+        - store the 3 orthonormal basis vectors that define the mesh orientation.
+        - Dimension: (3 spatial coordinates, 3 orthonormal basis vectors)
+        - Initial value: [[1,0,0],[0,1,0],[0,0,1]]
+
     Methods:
     --------
 
@@ -71,8 +76,10 @@ class Mesh():
     ex : mesh.rotate(np.array([1,0,0]), 90)
         - This method rotates the mesh by a given angle about a given axis.
     """
+
     def __init__(self, filepath: str) -> None:
         self.mesh = pv.read(filepath)
+        self.orientation_cube = pv.Cube()
         self.mesh_update()
 
     def mesh_update(self) -> None:
@@ -91,6 +98,7 @@ class Mesh():
         self.faces = self.face_calculation(self.pyvista_faces, self.pyvista_points, self.number_of_faces)
         self.face_centers = self.face_center_calculation(self.faces, self.number_of_faces)
         self.mesh_scale = self.mesh_scale_calculation(self.bounds)
+        self.mesh_orientation = self.orientation_calculation(self.orientation_cube.face_normals)
 
     def face_calculation(self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int) -> np.ndarray:
         """
@@ -168,6 +176,27 @@ class Mesh():
 
         return scale
 
+    def orientation_calculation(self, cube_face_normals: np.ndarray) -> np.ndarray:
+        """
+        This function calculates the orientation of the mesh
+        by using a dummy cube utility from pyvista.
+        This dummy cube has minimal values for lengths to minimize the calculation time.
+
+        How the orientation is calculated?:
+        ------------------------------------
+        The dummy cube's orthogonal face normals are extracted to keep record of the orientation of cube;
+        the cube is rotated with the mesh everytime the mesh.rotate() is called, so the orientation
+        of the cube is same as the mesh.
+        Lastly we find the orientation of the mesh by extracting unit face normal vector for each axis.
+        """
+        orientation = np.zeros((3, 3))
+        axis = 0
+        for i in range(1, 6, 2):
+            orientation[axis] = cube_face_normals[i]
+            axis += 1
+
+        return orientation
+
     def visualize(self) -> None:
         """
         This function visualizes the mesh using pyvista.
@@ -197,4 +226,5 @@ class Mesh():
         on the give rotation axis.
         """
         self.mesh = self.mesh.rotate_vector(axis, angle)
+        self.orientation_cube = self.orientation_cube.rotate_vector(axis, angle)
         self.mesh_update()
