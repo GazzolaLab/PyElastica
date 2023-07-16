@@ -89,15 +89,10 @@ class Mesh():
         after every method that might change the mesh attributes.
         """
         self.mesh_center = self.mesh.center
-        self.pyvista_face_normals = self.mesh.face_normals
-        self.pyvista_faces = self.mesh.faces
-        self.number_of_faces = self.mesh.n_faces
-        self.pyvista_points = self.mesh.points
-        self.bounds = self.mesh.bounds
-        self.face_normals = self.face_normal_calculation(self.pyvista_face_normals)
-        self.faces = self.face_calculation(self.pyvista_faces, self.pyvista_points, self.number_of_faces)
-        self.face_centers = self.face_center_calculation(self.faces, self.number_of_faces)
-        self.mesh_scale = self.mesh_scale_calculation(self.bounds)
+        self.face_normals = self.face_normal_calculation(self.mesh.face_normals)
+        self.faces = self.face_calculation(self.mesh.faces, self.mesh.points, self.mesh.n_faces)
+        self.face_centers = self.face_center_calculation(self.faces, self.mesh.n_faces)
+        self.mesh_scale = self.mesh_scale_calculation(self.mesh.bounds)
         self.mesh_orientation = self.orientation_calculation(self.orientation_cube.face_normals)
 
     def face_calculation(self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int) -> np.ndarray:
@@ -207,6 +202,9 @@ class Mesh():
 
     def translate(self, target_center: np.ndarray) -> None:
         """
+        Parameters: {numpy.ndarray-(3 spatial coordinates)}
+        ex : mesh.translate(np.array([1,1,1]))
+
         This method moves the mesh by center to the
         the target point given by the user.
         """
@@ -215,6 +213,9 @@ class Mesh():
 
     def scale(self, factor: np.ndarray) -> None:
         """
+        Parameters: {numpy.ndarray-(3 spatial constants)}
+        ex : mesh.scale(np.array([1,1,1]))
+
         This method scales the mesh by the given factor.
         """
         self.mesh = self.mesh.scale(factor)
@@ -222,6 +223,9 @@ class Mesh():
 
     def rotate(self, axis: np.ndarray, angle: float) -> None:
         """
+        Parameters: {rotation_axis: unit vector[numpy.ndarray-(3 spatial coordinates)], angle: in degrees[float]}
+        ex : mesh.rotate(np.array([1,0,0]), 90)
+
         This method rotates the mesh by the given angle
         on the give rotation axis.
         """

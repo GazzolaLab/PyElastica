@@ -114,7 +114,7 @@ def test_mesh_translate():
 
     "Testing the translation"
     assert_allclose(mockmesh.mesh_center, target_center)
-    assert_allclose(mockmesh.bounds, target_bounds)
+    assert_allclose(mockmesh.mesh.bounds, target_bounds)
     assert_allclose(mockmesh.face_centers, target_face_centers, atol=1e-6)
 
 
@@ -189,7 +189,7 @@ def test_mesh_scale():
 
     "Scaling the mesh"
     mockmesh.scale(scaling_factor)
-    assert_allclose(mockmesh.bounds, target_bounds)
+    assert_allclose(mockmesh.mesh.bounds, target_bounds)
     assert_allclose(mockmesh.face_centers, target_face_centers, atol=1e-6)
 
 
@@ -216,7 +216,7 @@ def test_mesh_rotate():
     mockmesh.scale(np.array([1, 2, 1]))
     "Rotating the mesh"
     mockmesh.rotate(rotation_axis, rotation_angle)
-    assert_allclose(mockmesh.bounds, target_bounds)
+    assert_allclose(mockmesh.mesh.bounds, target_bounds)
 
     """
     Testing the final orientation of the mesh
