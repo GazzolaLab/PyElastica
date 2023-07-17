@@ -11,6 +11,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody.rigid_body import RigidBodyBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
+from elastica.surface.surface_base import SurfaceBase
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
@@ -29,6 +30,9 @@ from elastica.external_forces import (
     UniformTorques,
     MuscleTorques,
     EndpointForcesSinusoidal,
+)
+from elastica.contact_forces import (
+    NoContact,
 )
 from elastica.interaction import (
     AnisotropicFrictionalPlane,
@@ -54,6 +58,7 @@ from elastica.modules.connections import Connections
 from elastica.modules.constraints import Constraints
 from elastica.modules.forcing import Forcing
 from elastica.modules.damping import Damping
+from elastica.modules.contact import Contact
 from elastica.transformations import inv_skew_symmetrize
 from elastica.transformations import rotate
 from elastica._calculus import (
@@ -66,7 +71,7 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.timestepper import (
     integrate,
     PositionVerlet,
