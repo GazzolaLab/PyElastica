@@ -288,7 +288,7 @@ class TestConnectionsMixin:
         assert _mock_connect in scwc._connections
         assert _mock_connect.__class__ == _Connect
         # check sane defaults provided for connection indices
-        assert None in _mock_connect.id() and None in _mock_connect.id()
+        assert None == _mock_connect.id()[2] and None == _mock_connect.id()[3]
 
     from elastica.joint import FreeJoint
 
