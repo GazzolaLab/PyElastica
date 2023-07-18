@@ -1,11 +1,6 @@
 __doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
 
-
-import numpy as np
-from elastica.typing import SystemType, RodType, AllowedContactType
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase, Sphere, Cylinder
-from elastica.surface import SurfaceBase
+from elastica.typing import SystemType, AllowedContactType
 
 
 class NoContact:
