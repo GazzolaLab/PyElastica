@@ -4,7 +4,7 @@ import pyvista as pv
 import numpy as np
 
 
-class Mesh():
+class Mesh:
     """
     This Mesh Initializer class uses pyvista to import mesh files in the
     STL or OBJ file formats and initializes the necessary mesh information.
@@ -90,12 +90,18 @@ class Mesh():
         """
         self.mesh_center = self.mesh.center
         self.face_normals = self.face_normal_calculation(self.mesh.face_normals)
-        self.faces = self.face_calculation(self.mesh.faces, self.mesh.points, self.mesh.n_faces)
+        self.faces = self.face_calculation(
+            self.mesh.faces, self.mesh.points, self.mesh.n_faces
+        )
         self.face_centers = self.face_center_calculation(self.faces, self.mesh.n_faces)
         self.mesh_scale = self.mesh_scale_calculation(self.mesh.bounds)
-        self.mesh_orientation = self.orientation_calculation(self.orientation_cube.face_normals)
+        self.mesh_orientation = self.orientation_calculation(
+            self.orientation_cube.face_normals
+        )
 
-    def face_calculation(self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int) -> np.ndarray:
+    def face_calculation(
+        self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int
+    ) -> np.ndarray:
         """
         This function converts the faces from pyvista to pyelastica geometry
 

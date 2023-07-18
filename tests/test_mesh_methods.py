@@ -1,6 +1,6 @@
 __doc__ = """ Test mesh class's methods in Elastica """
 
-from mesh.mesh_initializer import Mesh
+from elastica.mesh.mesh_initializer import Mesh
 import numpy as np
 from numpy.testing import assert_allclose
 from sys import platform
