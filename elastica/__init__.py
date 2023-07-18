@@ -42,6 +42,9 @@ from elastica.joint import (
     HingeJoint,
     SelfContact,
 )
+from elastica.contact_forces import (
+    NoContact,
+)
 from elastica.callback_functions import CallBackBaseClass, ExportCallBack, MyCallBack
 from elastica.dissipation import (
     DamperBase,
@@ -54,6 +57,8 @@ from elastica.modules.connections import Connections
 from elastica.modules.constraints import Constraints
 from elastica.modules.forcing import Forcing
 from elastica.modules.damping import Damping
+from elastica.modules.contact import Contact
+
 from elastica.transformations import inv_skew_symmetrize
 from elastica.transformations import rotate
 from elastica._calculus import (
@@ -66,7 +71,7 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.timestepper import (
     integrate,
     PositionVerlet,
