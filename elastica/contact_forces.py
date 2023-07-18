@@ -22,9 +22,6 @@ class NoContact:
 
         """
 
-    def _generate_contact_function(self, system_one, system_two):
-        self._apply_contact = NotImplementedError
-
     def apply_contact(
         self,
         system_one: SystemType,
@@ -45,6 +42,4 @@ class NoContact:
         -------
 
         """
-        self._apply_contact(system_one, system_two)
-
-        return
+        pass

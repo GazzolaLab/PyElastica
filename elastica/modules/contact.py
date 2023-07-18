@@ -59,16 +59,6 @@ class Contact:
         # step. Being lazy, I put them both in the same array
         self._contacts[:] = [(*contact.id(), contact()) for contact in self._contacts]
 
-        for (
-            first_sys_idx,
-            second_sys_idx,
-            contact,
-        ) in self._contacts:
-            contact._generate_contact_function(
-                self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
-            )
-
     def _call_contacts(self, time, *args, **kwargs):
         for (
             first_sys_idx,
