@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose
 
 from elastica.utils import MaxDimension
 
-from test_rods import MockTestRod
+from mock_rod import MockTestRod
 
 from elastica.rod.rod_base import RodBase
 from elastica.rod.knot_theory import (
