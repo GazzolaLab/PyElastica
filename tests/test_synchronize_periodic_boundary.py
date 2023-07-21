@@ -9,7 +9,7 @@ from elastica._synchronize_periodic_boundary import (
 )
 from elastica.utils import Tolerance
 import pytest
-from tests.test_rod.test_rods import MockTestRingRod
+from tests.test_rod.mock_rod import MockTestRingRod
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 40])

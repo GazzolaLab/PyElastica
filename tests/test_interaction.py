@@ -13,7 +13,7 @@ from elastica.interaction import (
     SlenderBodyTheory,
 )
 
-from tests.test_rod.test_rods import MockTestRod
+from tests.test_rod.mock_rod import MockTestRod
 
 
 class BaseRodClass(MockTestRod):
