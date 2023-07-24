@@ -127,14 +127,16 @@ class Mesh:
         Notes:
         ------
 
-        - This function has been tested for triangular meshes only.
+        - This function works only if each face of the mesh has equal no. of vertices i.e
+          all the faces of the mesh has similar geometry.
         """
-        faces = np.zeros((3, 3, n_faces))
+        no_of_vetices_in_each_face = pvfaces[0]
+        faces = np.zeros((3, no_of_vetices_in_each_face, n_faces))
         vertice_no = 0
 
         for i in range(n_faces):
             vertice_no += 1
-            for j in range(3):
+            for j in range(no_of_vetices_in_each_face):
                 faces[..., j, i] = meshpoints[pvfaces[vertice_no]]
                 vertice_no += 1
 
@@ -159,8 +161,9 @@ class Mesh:
 
         for i in range(n_faces):
             for j in range(3):
+                vertices = len(faces[j][..., i])
                 temp_sum = faces[j][..., i].sum()
-                face_centers[j][i] = temp_sum / 3
+                face_centers[j][i] = temp_sum / vertices
 
         return face_centers
 
