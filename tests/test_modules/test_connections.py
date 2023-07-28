@@ -4,6 +4,8 @@ import pytest
 
 from elastica.modules import Connections
 from elastica.modules.connections import _Connect
+from numpy.testing import assert_allclose
+from elastica.utils import Tolerance
 
 
 class TestConnect:
@@ -332,6 +334,75 @@ class TestConnectionsMixin:
             assert sconnect is None
             assert type(connect) is connect_cls
 
-    def test_connect_call_on_systems(self):
-        # TODO Finish after the architecture is complete
-        pass
+    @pytest.fixture
+    def load_rod_with_connects_and_indices(self, load_system_with_connects):
+        scwcai = load_system_with_connects
+
+        mock_rod_one = self.MockRod(1.0, 2.0, 3.0, 4.0)
+        mock_rod_one.position_collection = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0], [3.0, 0.0, 0.0]]
+        )
+        mock_rod_one.velocity_collection = np.array(
+            [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
+        )
+        mock_rod_one.external_forces = np.array(
+            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        )
+        scwcai.append(mock_rod_one)
+        mock_rod_two = self.MockRod(1.0, 1.0)
+        mock_rod_two.position_collection = np.array(
+            [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [4.0, 0.0, 0.0], [6.0, 0.0, 0.0]]
+        )
+        mock_rod_two.velocity_collection = np.array(
+            [[2.0, 0.0, 0.0], [2.0, 0.0, 0.0], [-2.0, 0.0, 0.0], [-2.0, 0.0, 0.0]]
+        )
+        mock_rod_two.external_forces = np.array(
+            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        )
+        scwcai.append(mock_rod_two)
+
+        def mock_init(self, *args, **kwargs):
+            self.k = 1.0
+            self.nu = 0.1
+            pass
+
+        # in place class
+        MockConnect = type(
+            "MockConnect", (self.FreeJoint, object), {"__init__": mock_init}
+        )
+
+        # Constrain any and all systems
+        scwcai.connect(mock_rod_one, mock_rod_two, 0, 0).using(
+            MockConnect, 2, 42
+        )  # with connection indices
+        return scwcai, MockConnect
+
+    def test_connect_call_on_systems(self, load_rod_with_connects_and_indices):
+        scwcai, connect_cls = load_rod_with_connects_and_indices
+
+        scwcai._finalize_connections()
+        scwcai._call_connections()
+
+        for (fidx, sidx, fconnect, sconnect, connect) in scwcai._connections:
+            end_distance_vector = (
+                scwcai._systems[sidx].position_collection[..., sconnect]
+                - scwcai._systems[fidx].position_collection[..., fconnect]
+            )
+            elastic_force = connect.k * end_distance_vector
+
+            relative_velocity = (
+                scwcai._systems[sidx].velocity_collection[..., sconnect]
+                - scwcai._systems[fidx].velocity_collection[..., fconnect]
+            )
+            damping_force = connect.nu * relative_velocity
+
+            contact_force = elastic_force + damping_force
+
+            assert_allclose(
+                scwcai._systems[fidx].external_forces[..., fconnect], contact_force
+            )
+            assert_allclose(
+                scwcai._systems[sidx].external_forces[..., sconnect],
+                -1 * contact_force,
+                atol=Tolerance.atol(),
+            )

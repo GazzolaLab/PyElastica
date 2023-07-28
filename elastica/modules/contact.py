@@ -31,10 +31,10 @@ class Contact:
 
         Parameters
         ----------
-        first_rod : object
-            Rod-like object
-        second_rod : object
-            Rod-like object or surface object
+        first_system : object
+            Rod or rigid body object
+        second_system : object
+            Rod, rigid body or surface object
 
         Returns
         -------
@@ -58,6 +58,17 @@ class Contact:
         # Technically we can use another array but it its one more book-keeping
         # step. Being lazy, I put them both in the same array
         self._contacts[:] = [(*contact.id(), contact()) for contact in self._contacts]
+
+        # check contact order
+        for (
+            first_sys_idx,
+            second_sys_idx,
+            contact,
+        ) in self._contacts:
+            contact._order_check(
+                self._systems[first_sys_idx],
+                self._systems[second_sys_idx],
+            )
 
     def _call_contacts(self, time, *args, **kwargs):
         for (

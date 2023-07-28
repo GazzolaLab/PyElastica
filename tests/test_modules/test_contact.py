@@ -76,10 +76,28 @@ class TestContactMixin:
         pass
 
     from elastica.rod import RodBase
+    from elastica.rigidbody import RigidBodyBase
+    from elastica.surface import SurfaceBase
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
             self.n_elems = 3  # arbitrary number
+
+        # Contacts assume that this promise is met
+        def __len__(self):
+            return 2  # a random number
+
+    class MockRigidBody(RigidBodyBase):
+        def __init__(self, *args, **kwargs):
+            self.n_elems = 1
+
+        # Contacts assume that this promise is met
+        def __len__(self):
+            return 2  # a random number
+
+    class MockSurface(SurfaceBase):
+        def __init__(self, *args, **kwargs):
+            self.n_facets = 1
 
         # Contacts assume that this promise is met
         def __len__(self):
@@ -208,7 +226,6 @@ class TestContactMixin:
         scwc.add_contact_to(0, mock_rod_one).using(
             MockContact
         )  # index/system based contact
-
         return scwc, MockContact
 
     def test_contact_finalize_correctness(self, load_rod_with_contacts):
@@ -221,6 +238,37 @@ class TestContactMixin:
             assert type(sidx) is int
             assert type(contact) is contact_cls
 
+    @pytest.fixture
+    def load_contact_objects_with_incorrect_order(self, load_system_with_contacts):
+        scwc = load_system_with_contacts
+
+        mock_rod = self.MockRod(2, 3, 4, 5)
+        scwc.append(mock_rod)
+        mock_rigid_body = self.MockRigidBody(5.0, 5.0)
+        scwc.append(mock_rigid_body)
+
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        # in place class
+        MockContact = type(
+            "MockContact", (self.NoContact, object), {"__init__": mock_init}
+        )
+
+        # incorrect order contact
+        scwc.add_contact_to(mock_rigid_body, mock_rod).using(
+            MockContact
+        )  # rigid body before rod
+
+        return scwc, MockContact
+
+    def test_contact_order_check(self, load_contact_objects_with_incorrect_order):
+        scwc, contact_cls = load_contact_objects_with_incorrect_order
+
+        with pytest.raises(TypeError) as excinfo:
+            scwc._finalize_contact()
+        assert "Incorrect order" in str(excinfo.value)
+
     def test_contact_call_on_systems(self):
-        # TODO Finish after the architecture is complete
+        # TODO Finish when other contact classes are made
         pass
