@@ -364,7 +364,6 @@ class TestConnectionsMixin:
         def mock_init(self, *args, **kwargs):
             self.k = 1.0
             self.nu = 0.1
-            pass
 
         # in place class
         MockConnect = type(
