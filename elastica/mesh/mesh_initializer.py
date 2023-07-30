@@ -130,13 +130,13 @@ class Mesh:
         - This function works only if each face of the mesh has equal no. of vertices i.e
           all the faces of the mesh has similar geometry.
         """
-        no_of_vetices_in_each_face = pvfaces[0]
-        faces = np.zeros((3, no_of_vetices_in_each_face, n_faces))
+        n_of_vertices_in_each_face = pvfaces[0]
+        faces = np.zeros((3, n_of_vertices_in_each_face, n_faces))
         vertice_no = 0
 
         for i in range(n_faces):
             vertice_no += 1
-            for j in range(no_of_vetices_in_each_face):
+            for j in range(n_of_vertices_in_each_face):
                 faces[..., j, i] = meshpoints[pvfaces[vertice_no]]
                 vertice_no += 1
 
