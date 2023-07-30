@@ -130,7 +130,7 @@ class Mesh:
         - This function works only if each face of the mesh has equal no. of vertices i.e
           all the faces of the mesh has similar geometry.
         """
-        n_of_vertices_in_each_face = pvfaces[0]
+        no_of_vetices_in_each_face = pvfaces[0]
         faces = np.zeros((3, no_of_vetices_in_each_face, n_faces))
         vertice_no = 0
 
