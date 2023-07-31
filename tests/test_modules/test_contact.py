@@ -87,10 +87,6 @@ class TestContactMixin:
         def __init__(self, *args, **kwargs):
             self.n_elems = 1
 
-        # Contacts assume that this promise is met
-        def __len__(self):
-            return 2  # a random number
-
     class MockSurface(SurfaceBase):
         def __init__(self, *args, **kwargs):
             self.n_facets = 1
