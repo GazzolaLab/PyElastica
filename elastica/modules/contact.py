@@ -156,7 +156,7 @@ class _Contact:
     def __call__(self, *args, **kwargs):
         if not self._contact_cls:
             raise RuntimeError(
-                "No contacts provided to link rod-like object id {0}"
+                "No contacts provided to to establish contact between rod-like object id {0}"
                 " and {1}, but a Contact"
                 "was intended as per code. Did you forget to"
                 "call the `using` method?".format(*self.id())
