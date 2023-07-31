@@ -46,7 +46,10 @@ class NoContact:
         if issubclass(system_two.__class__, RodBase):
             if not issubclass(system_one.__class__, RodBase):
                 raise TypeError(
-                    "Systems provided to the contact class have incorrect order. First system is {0} and second system is {1} If the first system is a rod, the second system can be a rod, rigid body or surface. If the first system is a rigid body, the second system can be a rigid body or surface.".format(
+                    "Systems provided to the contact class have incorrect order. \n"
+                    " First system is {0} and second system is {1} . \n"
+                    " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
+                    " If the first system is a rigid body, the second system can be a rigid body or surface.".format(
                         system_one.__class__, system_two.__class__
                     )
                 )
