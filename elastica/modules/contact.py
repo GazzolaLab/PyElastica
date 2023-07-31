@@ -44,7 +44,7 @@ class Contact:
         for i_sys, sys in enumerate((first_system, second_system)):
             sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
 
-        # Create _Constraint object, cache it and return to user
+        # Create _Contact object, cache it and return to user
         _contact = _Contact(*sys_idx)
         self._contacts.append(_contact)
 

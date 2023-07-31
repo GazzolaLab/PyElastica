@@ -180,7 +180,7 @@ class TestConnect:
 class TestConnectionsMixin:
     from elastica.modules import BaseSystemCollection
 
-    class SystemCollectionWithConnectionsMixedin(BaseSystemCollection, Connections):
+    class SystemCollectionWithConnectionsMixin(BaseSystemCollection, Connections):
         pass
 
     # TODO fix link after new PR
@@ -190,14 +190,10 @@ class TestConnectionsMixin:
         def __init__(self, *args, **kwargs):
             self.n_elems = 3  # arbitrary number
 
-        # Connections assume that this promise is met
-        def __len__(self):
-            return 2  # a random number
-
     @pytest.fixture(scope="function", params=[2, 10])
     def load_system_with_connects(self, request):
         n_sys = request.param
-        sys_coll_with_connects = self.SystemCollectionWithConnectionsMixedin()
+        sys_coll_with_connects = self.SystemCollectionWithConnectionsMixin()
         for i_sys in range(n_sys):
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects

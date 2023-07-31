@@ -72,7 +72,7 @@ class TestContact:
 class TestContactMixin:
     from elastica.modules import BaseSystemCollection
 
-    class SystemCollectionWithContactMixedin(BaseSystemCollection, Contact):
+    class SystemCollectionWithContactMixin(BaseSystemCollection, Contact):
         pass
 
     from elastica.rod import RodBase
@@ -82,10 +82,6 @@ class TestContactMixin:
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
             self.n_elems = 3  # arbitrary number
-
-        # Contacts assume that this promise is met
-        def __len__(self):
-            return 2  # a random number
 
     class MockRigidBody(RigidBodyBase):
         def __init__(self, *args, **kwargs):
@@ -99,14 +95,10 @@ class TestContactMixin:
         def __init__(self, *args, **kwargs):
             self.n_facets = 1
 
-        # Contacts assume that this promise is met
-        def __len__(self):
-            return 2  # a random number
-
     @pytest.fixture(scope="function", params=[2, 10])
     def load_system_with_contacts(self, request):
         n_sys = request.param
-        sys_coll_with_contacts = self.SystemCollectionWithContactMixedin()
+        sys_coll_with_contacts = self.SystemCollectionWithContactMixin()
         for i_sys in range(n_sys):
             sys_coll_with_contacts.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_contacts
@@ -267,7 +259,7 @@ class TestContactMixin:
 
         with pytest.raises(TypeError) as excinfo:
             scwc._finalize_contact()
-        assert "Incorrect order" in str(excinfo.value)
+        assert "incorrect order" in str(excinfo.value)
 
     def test_contact_call_on_systems(self):
         # TODO Finish when other contact classes are made
