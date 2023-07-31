@@ -13,14 +13,33 @@ in numpy-stl documentation (https://numpy-stl.readthedocs.io/en/latest/usage.htm
 """
 
 
-def cube_mesh_init():
+def cube_mesh_stl_init():
     """
-    This function initializes a new cube mesh.
+    This function initializes a new cube mesh in stl file format.
     """
     if platform == "win32":
         path = r"tests\cube.stl"
     else:
         path = r"tests/cube.stl"
+
+    mockmesh = Mesh(path)
+    return mockmesh
+
+
+"""
+A dummy cube mesh obj file is used for testing at tests/cube.obj
+This dummy file was created manually by guidelines at https://all3dp.com/1/obj-file-format-3d-printing-cad/
+"""
+
+
+def cube_mesh_obj_init():
+    """
+    This function initializes a new cube mesh in obj file format.
+    """
+    if platform == "win32":
+        path = r"tests\cube.obj"
+    else:
+        path = r"tests/cube.obj"
 
     mockmesh = Mesh(path)
     return mockmesh
@@ -40,10 +59,11 @@ def test_mesh_translate():
     """
     This function tests the translation of the mesh.
     """
-    mockmesh = cube_mesh_init()
+    mockmeshstl = cube_mesh_stl_init()
+    mockmeshobj = cube_mesh_obj_init()
 
     """
-    By default the cube's center is to be situated at the origin,
+    By default both the cubes's(stl & obj) centers are to be situated at the origin,
     lets move its center to [1,1,1]
     """
     target_center = np.array([1, 1, 1])
@@ -63,7 +83,7 @@ def test_mesh_translate():
     Since mesh face centers are calculated using mesh vertices,
     if the face centers are correct, the mesh vertices are also correct.
     """
-    target_face_centers = np.array(
+    target_face_centers_stl = np.array(
         [
             [
                 0.666666,
@@ -109,20 +129,28 @@ def test_mesh_translate():
             ],
         ]
     )
+    target_face_centers_obj = np.array(
+        [[1, 1, 2, 1, 0, 1], [0, 2, 1, 1, 1, 1], [1, 1, 1, 0, 1, 2]]
+    )
     "Translating the mesh"
-    mockmesh.translate(target_center)
+    mockmeshstl.translate(target_center)
+    mockmeshobj.translate(target_center)
 
-    "Testing the translation"
-    assert_allclose(mockmesh.mesh_center, target_center)
-    assert_allclose(mockmesh.mesh.bounds, target_bounds)
-    assert_allclose(mockmesh.face_centers, target_face_centers, atol=1e-6)
+    "Testing the translation for both the stl and obj meshes"
+    assert_allclose(mockmeshstl.mesh_center, target_center)
+    assert_allclose(mockmeshobj.mesh_center, target_center)
+    assert_allclose(mockmeshstl.mesh.bounds, target_bounds)
+    assert_allclose(mockmeshobj.mesh.bounds, target_bounds)
+    assert_allclose(mockmeshstl.face_centers, target_face_centers_stl, atol=1e-6)
+    assert_allclose(mockmeshobj.face_centers, target_face_centers_obj, atol=1e-6)
 
 
 def test_mesh_scale():
     """
     This function tests the scaling of the mesh.
     """
-    mockmesh = cube_mesh_init()
+    mockmeshstl = cube_mesh_stl_init()
+    mockmeshobj = cube_mesh_obj_init()
     scaling_factor = np.array([2, 2, 2])
 
     """
@@ -140,7 +168,7 @@ def test_mesh_scale():
     Since mesh face centers are calculated using mesh vertices,
     if the face centers are correct, the mesh vertices are also correct.
     """
-    target_face_centers = np.array(
+    target_face_centers_stl = np.array(
         [
             [
                 -0.666666,
@@ -186,18 +214,26 @@ def test_mesh_scale():
             ],
         ]
     )
+    target_face_centers_obj = np.array(
+        [[0, 0, 2, 0, -2, 0], [-2, 2, 0, 0, 0, 0], [0, 0, 0, -2, 0, 2]]
+    )
 
     "Scaling the mesh"
-    mockmesh.scale(scaling_factor)
-    assert_allclose(mockmesh.mesh.bounds, target_bounds)
-    assert_allclose(mockmesh.face_centers, target_face_centers, atol=1e-6)
+    mockmeshstl.scale(scaling_factor)
+    mockmeshobj.scale(scaling_factor)
+    "Testing the scaling for both the stl and obj meshes"
+    assert_allclose(mockmeshstl.mesh.bounds, target_bounds)
+    assert_allclose(mockmeshobj.mesh.bounds, target_bounds)
+    assert_allclose(mockmeshstl.face_centers, target_face_centers_stl, atol=1e-6)
+    assert_allclose(mockmeshobj.face_centers, target_face_centers_obj, atol=1e-6)
 
 
 def test_mesh_rotate():
     """
     This function tests the rotation of the mesh.
     """
-    mockmesh = cube_mesh_init()
+    mockmeshstl = cube_mesh_stl_init()
+    mockmeshobj = cube_mesh_obj_init()
     rotation_angle = 90.0
     rotation_axis = np.array([1, 0, 0])
 
@@ -213,15 +249,22 @@ def test_mesh_rotate():
     so the longer edge of the cuboid is now in z direction;
     then we test the bounds as formatted above.
     """
-    mockmesh.scale(np.array([1, 2, 1]))
+    mockmeshstl.scale(np.array([1, 2, 1]))
+    mockmeshobj.scale(np.array([1, 2, 1]))
     "Rotating the mesh"
-    mockmesh.rotate(rotation_axis, rotation_angle)
-    assert_allclose(mockmesh.mesh.bounds, target_bounds)
+    mockmeshstl.rotate(rotation_axis, rotation_angle)
+    mockmeshobj.rotate(rotation_axis, rotation_angle)
+    "Testing the bounds for both the stl and obj meshes"
+    assert_allclose(mockmeshstl.mesh.bounds, target_bounds)
+    assert_allclose(mockmeshobj.mesh.bounds, target_bounds)
 
     """
-    Testing the final orientation of the mesh
+    Testing the final orientation of the meshes
     """
     correct_orientation_after_rotation = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
     assert_allclose(
-        mockmesh.mesh_orientation, correct_orientation_after_rotation, atol=1e-6
+        mockmeshstl.mesh_orientation, correct_orientation_after_rotation, atol=1e-6
+    )
+    assert_allclose(
+        mockmeshobj.mesh_orientation, correct_orientation_after_rotation, atol=1e-6
     )
