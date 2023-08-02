@@ -126,11 +126,11 @@ class TestContactMixin:
         scwc = load_system_with_contacts
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.add_contact_to(*sys_idx)
+            scwc.detect_contact_between(*sys_idx)
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.add_contact_to(*[np.int_(x) for x in sys_idx])
+            scwc.detect_contact_between(*[np.int_(x) for x in sys_idx])
         assert "exceeds number of" in str(excinfo.value)
 
     def test_contact_with_unregistered_system_throws(self, load_system_with_contacts):
@@ -143,12 +143,12 @@ class TestContactMixin:
         mock_rod = self.MockRod(2, 3, 4, 5)
 
         with pytest.raises(ValueError) as excinfo:
-            scwc.add_contact_to(mock_rod, mock_rod_registered)
+            scwc.detect_contact_between(mock_rod, mock_rod_registered)
         assert "was not found, did you" in str(excinfo.value)
 
         # Switch arguments
         with pytest.raises(ValueError) as excinfo:
-            scwc.add_contact_to(mock_rod_registered, mock_rod)
+            scwc.detect_contact_between(mock_rod_registered, mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
     def test_contact_with_illegal_system_throws(self, load_system_with_contacts):
@@ -162,12 +162,12 @@ class TestContactMixin:
         mock_rod = [1, 2, 3, 5]
 
         with pytest.raises(TypeError) as excinfo:
-            scwc.add_contact_to(mock_rod, mock_rod_registered)
+            scwc.detect_contact_between(mock_rod, mock_rod_registered)
         assert "not a sys" in str(excinfo.value)
 
         # Switch arguments
         with pytest.raises(TypeError) as excinfo:
-            scwc.add_contact_to(mock_rod_registered, mock_rod)
+            scwc.detect_contact_between(mock_rod_registered, mock_rod)
         assert "not a sys" in str(excinfo.value)
 
     """
@@ -183,7 +183,7 @@ class TestContactMixin:
         mock_rod_two = self.MockRod(4, 5)
         scwc.append(mock_rod_two)
 
-        _mock_contact = scwc.add_contact_to(mock_rod_one, mock_rod_two)
+        _mock_contact = scwc.detect_contact_between(mock_rod_one, mock_rod_two)
         assert _mock_contact in scwc._contacts
         assert _mock_contact.__class__ == _Contact
 
@@ -207,11 +207,11 @@ class TestContactMixin:
         )
 
         # Constrain any and all systems
-        scwc.add_contact_to(0, 1).using(MockContact)  # index based contact
-        scwc.add_contact_to(mock_rod_one, mock_rod_two).using(
+        scwc.detect_contact_between(0, 1).using(MockContact)  # index based contact
+        scwc.detect_contact_between(mock_rod_one, mock_rod_two).using(
             MockContact
         )  # system based contact
-        scwc.add_contact_to(0, mock_rod_one).using(
+        scwc.detect_contact_between(0, mock_rod_one).using(
             MockContact
         )  # index/system based contact
         return scwc, MockContact
@@ -244,7 +244,7 @@ class TestContactMixin:
         )
 
         # incorrect order contact
-        scwc.add_contact_to(mock_rigid_body, mock_rod).using(
+        scwc.detect_contact_between(mock_rigid_body, mock_rod).using(
             MockContact
         )  # rigid body before rod
 

@@ -24,9 +24,9 @@ class Contact:
         self._feature_group_synchronize.append(self._call_contacts)
         self._feature_group_finalize.append(self._finalize_contact)
 
-    def add_contact_to(self, first_system, second_system):
+    def detect_contact_between(self, first_system, second_system):
         """
-        This method adds contact between two objects using the selected contact class.
+        This method adds contact detection between two objects using the selected contact class.
         You need to input the two objects that are to be connected.
 
         Parameters
