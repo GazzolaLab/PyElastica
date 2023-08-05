@@ -11,6 +11,7 @@ from collections.abc import MutableSequence
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
+from elastica.surface import SurfaceBase
 from elastica.modules.memory_block import construct_memory_block_structures
 from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
@@ -54,7 +55,7 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
-        self.allowed_sys_types = (RodBase, RigidBodyBase)
+        self.allowed_sys_types = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
         # Flag Finalize: Finalizing twice will cause an error,
