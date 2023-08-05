@@ -168,10 +168,6 @@ class TestContactMixin:
     def test_contact_with_illegal_system_throws(self, load_system_with_contacts):
         system_collection_with_contacts = load_system_with_contacts
 
-        from elastica.rod import RodBase
-        from elastica.rigidbody import RigidBodyBase
-        from elastica.surface import SurfaceBase
-
         # Register this rod
         mock_rod_registered = self.MockRod(5, 5, 5, 5)
         system_collection_with_contacts.append(mock_rod_registered)
