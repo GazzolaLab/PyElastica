@@ -18,7 +18,11 @@ class TestContact:
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_contact.using(illegal_contact)
-        assert "not a valid contact class" in str(excinfo.value)
+        assert "{} is not a valid contact class. Did you forget to derive from NoContact?".format(
+            illegal_contact
+        ) == str(
+            excinfo.value
+        )
 
     from elastica.contact_forces import NoContact
 
@@ -43,7 +47,10 @@ class TestContact:
 
         with pytest.raises(RuntimeError) as excinfo:
             contact()
-        assert "No contacts provided" in str(excinfo.value)
+        assert "No contacts provided to to establish contact between rod-like object id {0}"
+        " and {1}, but a Contact"
+        "was intended as per code. Did you forget to"
+        "call the `using` method?".format(*contact.id()) == str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_contact):
         # Example of bad initiailization function
@@ -66,7 +73,8 @@ class TestContact:
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = contact()
-        assert "Unable to construct" in str(excinfo.value)
+        assert r"Unable to construct contact class.\n"
+        r"Did you provide all necessary contact properties?" == str(excinfo.value)
 
 
 class TestContactMixin:
@@ -153,6 +161,10 @@ class TestContactMixin:
 
     def test_contact_with_illegal_system_throws(self, load_system_with_contacts):
         scwc = load_system_with_contacts
+
+        from elastica.rod import RodBase
+        from elastica.rigidbody import RigidBodyBase
+        from elastica.surface import SurfaceBase
 
         # Register this rod
         mock_rod_registered = self.MockRod(5, 5, 5, 5)
@@ -250,12 +262,22 @@ class TestContactMixin:
 
         return scwc, MockContact
 
-    def test_contact_order_check(self, load_contact_objects_with_incorrect_order):
+    def test_contact_check_order(self, load_contact_objects_with_incorrect_order):
         scwc, contact_cls = load_contact_objects_with_incorrect_order
+
+        from elastica.rod import RodBase
+        from elastica.rigidbody import RigidBodyBase
 
         with pytest.raises(TypeError) as excinfo:
             scwc._finalize_contact()
-        assert "incorrect order" in str(excinfo.value)
+        assert "Systems provided to the contact class have incorrect order. \n"
+        " First system is {0} and second system is {1} . \n"
+        " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
+        " If the first system is a rigid body, the second system can be a rigid body or surface.".format(
+            RigidBodyBase, RodBase
+        ) in str(
+            excinfo.value
+        )
 
     def test_contact_call_on_systems(self):
         # TODO Finish when other contact classes are made

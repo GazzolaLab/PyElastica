@@ -174,7 +174,8 @@ class TestConnect:
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = connect()
-        assert "Unable to construct" in str(excinfo.value)
+        assert r"Unable to construct connection class.\n"
+        r"Did you provide all necessary joint properties?" == str(excinfo.value)
 
 
 class TestConnectionsMixin:
