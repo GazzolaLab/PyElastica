@@ -223,51 +223,51 @@ class TestConnectionsMixin:
     def test_connect_with_illegal_index_throws(
         self, load_system_with_connects, sys_idx
     ):
-        scwc = load_system_with_connects
+        system_collection_with_connections = load_system_with_connects
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.connect(*sys_idx)
+            system_collection_with_connections.connect(*sys_idx)
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.connect(*[np.int_(x) for x in sys_idx])
+            system_collection_with_connections.connect(*[np.int_(x) for x in sys_idx])
         assert "exceeds number of" in str(excinfo.value)
 
     def test_connect_with_unregistered_system_throws(self, load_system_with_connects):
-        scwc = load_system_with_connects
+        system_collection_with_connections = load_system_with_connects
 
         # Register this rod
         mock_rod_registered = self.MockRod(5, 5, 5, 5)
-        scwc.append(mock_rod_registered)
+        system_collection_with_connections.append(mock_rod_registered)
         # Don't register this rod
         mock_rod = self.MockRod(2, 3, 4, 5)
 
         with pytest.raises(ValueError) as excinfo:
-            scwc.connect(mock_rod, mock_rod_registered)
+            system_collection_with_connections.connect(mock_rod, mock_rod_registered)
         assert "was not found, did you" in str(excinfo.value)
 
         # Switch arguments
         with pytest.raises(ValueError) as excinfo:
-            scwc.connect(mock_rod_registered, mock_rod)
+            system_collection_with_connections.connect(mock_rod_registered, mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
     def test_connect_with_illegal_system_throws(self, load_system_with_connects):
-        scwc = load_system_with_connects
+        system_collection_with_connections = load_system_with_connects
 
         # Register this rod
         mock_rod_registered = self.MockRod(5, 5, 5, 5)
-        scwc.append(mock_rod_registered)
+        system_collection_with_connections.append(mock_rod_registered)
 
         # Not a rod, but a list!
         mock_rod = [1, 2, 3, 5]
 
         with pytest.raises(TypeError) as excinfo:
-            scwc.connect(mock_rod, mock_rod_registered)
+            system_collection_with_connections.connect(mock_rod, mock_rod_registered)
         assert "not a sys" in str(excinfo.value)
 
         # Switch arguments
         with pytest.raises(TypeError) as excinfo:
-            scwc.connect(mock_rod_registered, mock_rod)
+            system_collection_with_connections.connect(mock_rod_registered, mock_rod)
         assert "not a sys" in str(excinfo.value)
 
     """
@@ -275,16 +275,18 @@ class TestConnectionsMixin:
     """
 
     def test_connect_registers_and_returns_Connect(self, load_system_with_connects):
-        scwc = load_system_with_connects
+        system_collection_with_connections = load_system_with_connects
 
         mock_rod_one = self.MockRod(2, 3, 4, 5)
-        scwc.append(mock_rod_one)
+        system_collection_with_connections.append(mock_rod_one)
 
         mock_rod_two = self.MockRod(4, 5)
-        scwc.append(mock_rod_two)
+        system_collection_with_connections.append(mock_rod_two)
 
-        _mock_connect = scwc.connect(mock_rod_one, mock_rod_two)
-        assert _mock_connect in scwc._connections
+        _mock_connect = system_collection_with_connections.connect(
+            mock_rod_one, mock_rod_two
+        )
+        assert _mock_connect in system_collection_with_connections._connections
         assert _mock_connect.__class__ == _Connect
         # check sane defaults provided for connection indices
         assert _mock_connect.id()[2] is None and _mock_connect.id()[3] is None
@@ -293,12 +295,12 @@ class TestConnectionsMixin:
 
     @pytest.fixture
     def load_rod_with_connects(self, load_system_with_connects):
-        scwc = load_system_with_connects
+        system_collection_with_connections = load_system_with_connects
 
         mock_rod_one = self.MockRod(2, 3, 4, 5)
-        scwc.append(mock_rod_one)
+        system_collection_with_connections.append(mock_rod_one)
         mock_rod_two = self.MockRod(5.0, 5.0)
-        scwc.append(mock_rod_two)
+        system_collection_with_connections.append(mock_rod_two)
 
         def mock_init(self, *args, **kwargs):
             pass
@@ -309,22 +311,30 @@ class TestConnectionsMixin:
         )
 
         # Constrain any and all systems
-        scwc.connect(0, 1).using(MockConnect, 2, 42)  # index based connect
-        scwc.connect(mock_rod_one, mock_rod_two).using(
+        system_collection_with_connections.connect(0, 1).using(
+            MockConnect, 2, 42
+        )  # index based connect
+        system_collection_with_connections.connect(mock_rod_one, mock_rod_two).using(
             MockConnect, 2, 3
         )  # system based connect
-        scwc.connect(0, mock_rod_one).using(
+        system_collection_with_connections.connect(0, mock_rod_one).using(
             MockConnect, 1, 2
         )  # index/system based connect
 
-        return scwc, MockConnect
+        return system_collection_with_connections, MockConnect
 
     def test_connect_finalize_correctness(self, load_rod_with_connects):
-        scwc, connect_cls = load_rod_with_connects
+        system_collection_with_connections, connect_cls = load_rod_with_connects
 
-        scwc._finalize_connections()
+        system_collection_with_connections._finalize_connections()
 
-        for (fidx, sidx, fconnect, sconnect, connect) in scwc._connections:
+        for (
+            fidx,
+            sidx,
+            fconnect,
+            sconnect,
+            connect,
+        ) in system_collection_with_connections._connections:
             assert type(fidx) is int
             assert type(sidx) is int
             assert fconnect is None
@@ -333,7 +343,7 @@ class TestConnectionsMixin:
 
     @pytest.fixture
     def load_rod_with_connects_and_indices(self, load_system_with_connects):
-        scwcai = load_system_with_connects
+        system_collection_with_connections_and_indices = load_system_with_connects
 
         mock_rod_one = self.MockRod(1.0, 2.0, 3.0, 4.0)
         mock_rod_one.position_collection = np.array(
@@ -345,7 +355,7 @@ class TestConnectionsMixin:
         mock_rod_one.external_forces = np.array(
             [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
         )
-        scwcai.append(mock_rod_one)
+        system_collection_with_connections_and_indices.append(mock_rod_one)
         mock_rod_two = self.MockRod(1.0, 1.0)
         mock_rod_two.position_collection = np.array(
             [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [4.0, 0.0, 0.0], [6.0, 0.0, 0.0]]
@@ -356,7 +366,7 @@ class TestConnectionsMixin:
         mock_rod_two.external_forces = np.array(
             [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
         )
-        scwcai.append(mock_rod_two)
+        system_collection_with_connections_and_indices.append(mock_rod_two)
 
         def mock_init(self, *args, **kwargs):
             self.k = 1.0
@@ -368,37 +378,61 @@ class TestConnectionsMixin:
         )
 
         # Constrain any and all systems
-        scwcai.connect(mock_rod_one, mock_rod_two, 0, 0).using(
+        system_collection_with_connections_and_indices.connect(
+            mock_rod_one, mock_rod_two, 0, 0
+        ).using(
             MockConnect, 2, 42
         )  # with connection indices
-        return scwcai, MockConnect
+        return system_collection_with_connections_and_indices, MockConnect
 
     def test_connect_call_on_systems(self, load_rod_with_connects_and_indices):
-        scwcai, connect_cls = load_rod_with_connects_and_indices
+        (
+            system_collection_with_connections_and_indices,
+            connect_cls,
+        ) = load_rod_with_connects_and_indices
 
-        scwcai._finalize_connections()
-        scwcai._call_connections()
+        system_collection_with_connections_and_indices._finalize_connections()
+        system_collection_with_connections_and_indices._call_connections()
 
-        for (fidx, sidx, fconnect, sconnect, connect) in scwcai._connections:
+        for (
+            fidx,
+            sidx,
+            fconnect,
+            sconnect,
+            connect,
+        ) in system_collection_with_connections_and_indices._connections:
             end_distance_vector = (
-                scwcai._systems[sidx].position_collection[..., sconnect]
-                - scwcai._systems[fidx].position_collection[..., fconnect]
+                system_collection_with_connections_and_indices._systems[
+                    sidx
+                ].position_collection[..., sconnect]
+                - system_collection_with_connections_and_indices._systems[
+                    fidx
+                ].position_collection[..., fconnect]
             )
             elastic_force = connect.k * end_distance_vector
 
             relative_velocity = (
-                scwcai._systems[sidx].velocity_collection[..., sconnect]
-                - scwcai._systems[fidx].velocity_collection[..., fconnect]
+                system_collection_with_connections_and_indices._systems[
+                    sidx
+                ].velocity_collection[..., sconnect]
+                - system_collection_with_connections_and_indices._systems[
+                    fidx
+                ].velocity_collection[..., fconnect]
             )
             damping_force = connect.nu * relative_velocity
 
             contact_force = elastic_force + damping_force
 
             assert_allclose(
-                scwcai._systems[fidx].external_forces[..., fconnect], contact_force
+                system_collection_with_connections_and_indices._systems[
+                    fidx
+                ].external_forces[..., fconnect],
+                contact_force,
             )
             assert_allclose(
-                scwcai._systems[sidx].external_forces[..., sconnect],
+                system_collection_with_connections_and_indices._systems[
+                    sidx
+                ].external_forces[..., sconnect],
                 -1 * contact_force,
                 atol=Tolerance.atol(),
             )
