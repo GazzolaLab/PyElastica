@@ -65,7 +65,7 @@ class Contact:
             second_sys_idx,
             contact,
         ) in self._contacts:
-            contact._order_check(
+            contact._check_order(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )

@@ -20,7 +20,7 @@ class NoContact:
         NoContact class does not need any input parameters.
         """
 
-    def _order_check(
+    def _check_order(
         self,
         system_one: SystemType,
         system_two: AllowedContactType,
