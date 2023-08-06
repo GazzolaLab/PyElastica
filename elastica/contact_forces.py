@@ -36,9 +36,6 @@ class NoContact:
             SystemType
         system_two
             AllowedContactType
-        Returns
-        -------
-
         """
         if issubclass(system_two.__class__, RodBase):
             if not issubclass(system_one.__class__, RodBase):
@@ -67,8 +64,5 @@ class NoContact:
             Rod or rigid-body object
         system_two : AllowedContactType
             Rod, rigid-body, or surface object
-        Returns
-        -------
-
         """
         pass
