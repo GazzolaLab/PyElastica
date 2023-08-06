@@ -55,7 +55,7 @@ class NoContact:
         self,
         system_one: SystemType,
         system_two: AllowedContactType,
-    ):
+    ) -> None:
         """
         Apply contact forces and torques between SystemType object and AllowedContactType object.
 
