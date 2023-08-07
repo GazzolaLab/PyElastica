@@ -6,6 +6,8 @@ Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
 
+from elastica.typing import SystemType, AllowedContactType
+
 
 class Contact:
     """
@@ -24,16 +26,18 @@ class Contact:
         self._feature_group_synchronize.append(self._call_contacts)
         self._feature_group_finalize.append(self._finalize_contact)
 
-    def detect_contact_between(self, first_system, second_system):
+    def detect_contact_between(
+        self, first_system: SystemType, second_system: AllowedContactType
+    ):
         """
         This method adds contact detection between two objects using the selected contact class.
         You need to input the two objects that are to be connected.
 
         Parameters
         ----------
-        first_system : object
+        first_system : SystemType
             Rod or rigid body object
-        second_system : object
+        second_system : AllowedContactType
             Rod, rigid body or surface object
 
         Returns
@@ -70,7 +74,7 @@ class Contact:
                 self._systems[second_sys_idx],
             )
 
-    def _call_contacts(self, time, *args, **kwargs):
+    def _call_contacts(self, *args, **kwargs):
         for (
             first_sys_idx,
             second_sys_idx,
@@ -117,7 +121,7 @@ class _Contact:
         self._args = ()
         self._kwargs = {}
 
-    def using(self, contact_cls, *args, **kwargs):
+    def using(self, contact_cls: object, *args, **kwargs):
         """
         This method is a module to set which contact class is used to apply contact
         between user defined rod-like objects.
@@ -125,7 +129,7 @@ class _Contact:
         Parameters
         ----------
         contact_cls: object
-            User defined callback class.
+            User defined contact class.
         *args
             Variable length argument list
         **kwargs
