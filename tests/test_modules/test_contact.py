@@ -1,0 +1,301 @@
+__doc__ = """ Test modules for contact """
+import numpy as np
+import pytest
+
+from elastica.modules import Contact
+from elastica.modules.contact import _Contact
+
+
+class TestContact:
+    @pytest.fixture(scope="function")
+    def load_contact(self, request):
+        # contact between 15th and 23rd rod
+        return _Contact(15, 23)
+
+    @pytest.mark.parametrize("illegal_contact", [int, list])
+    def test_using_with_illegal_contact_throws_assertion_error(
+        self, load_contact, illegal_contact
+    ):
+        with pytest.raises(AssertionError) as excinfo:
+            load_contact.using(illegal_contact)
+        assert "{} is not a valid contact class. Did you forget to derive from NoContact?".format(
+            illegal_contact
+        ) == str(
+            excinfo.value
+        )
+
+    from elastica.contact_forces import NoContact
+
+    # TODO Add other legal contact later
+    @pytest.mark.parametrize("legal_contact", [NoContact])
+    def test_using_with_legal_contact(self, load_contact, legal_contact):
+        contact = load_contact
+        contact.using(legal_contact, 3, 4.0, "5", k=1, l_var="2", j=3.0)
+
+        assert contact._contact_cls == legal_contact
+        assert contact._args == (3, 4.0, "5")
+        assert contact._kwargs == {"k": 1, "l_var": "2", "j": 3.0}
+
+    def test_id(self, load_contact):
+        contact = load_contact
+        # This is purely for coverage purposes, no actual test
+        # since its a simple return
+        assert contact.id() == (15, 23)
+
+    def test_call_without_setting_contact_throws_runtime_error(self, load_contact):
+        contact = load_contact
+
+        with pytest.raises(RuntimeError) as excinfo:
+            contact()
+        assert "No contacts provided to to establish contact between rod-like object id {0}"
+        " and {1}, but a Contact"
+        "was intended as per code. Did you forget to"
+        "call the `using` method?".format(*contact.id()) == str(excinfo.value)
+
+    def test_call_improper_args_throws(self, load_contact):
+        # Example of bad initiailization function
+        # This needs at least four args which the user might
+        # forget to pass later on
+        def mock_init(self, *args, **kwargs):
+            self.nu = args[3]  # Need at least four args
+            self.k = kwargs.get("k")
+
+        # in place class
+        MockContact = type(
+            "MockContact", (self.NoContact, object), {"__init__": mock_init}
+        )
+
+        # The user thinks 4.0 goes to nu, but we don't accept it because of error in
+        # construction og a Contact class
+        contact = load_contact
+        contact.using(MockContact, 4.0, k=1, l_var="2", j=3.0)
+
+        # Actual test is here, this should not throw
+        with pytest.raises(TypeError) as excinfo:
+            _ = contact()
+        assert r"Unable to construct contact class.\n"
+        r"Did you provide all necessary contact properties?" == str(excinfo.value)
+
+
+class TestContactMixin:
+    from elastica.modules import BaseSystemCollection
+
+    class SystemCollectionWithContactMixin(BaseSystemCollection, Contact):
+        pass
+
+    from elastica.rod import RodBase
+    from elastica.rigidbody import RigidBodyBase
+    from elastica.surface import SurfaceBase
+
+    class MockRod(RodBase):
+        def __init__(self, *args, **kwargs):
+            self.n_elems = 3  # arbitrary number
+
+    class MockRigidBody(RigidBodyBase):
+        def __init__(self, *args, **kwargs):
+            self.n_elems = 1
+
+    class MockSurface(SurfaceBase):
+        def __init__(self, *args, **kwargs):
+            self.n_facets = 1
+
+    @pytest.fixture(scope="function", params=[2, 10])
+    def load_system_with_contacts(self, request):
+        n_sys = request.param
+        sys_coll_with_contacts = self.SystemCollectionWithContactMixin()
+        for i_sys in range(n_sys):
+            sys_coll_with_contacts.append(self.MockRod(2, 3, 4, 5))
+        return sys_coll_with_contacts
+
+    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    and are here because of legacy reasons. I have not removed them because there
+    are Contacts require testing against multiple indices, which is still use
+    ful to cross-verify against.
+
+    START
+    """
+
+    @pytest.mark.parametrize(
+        "sys_idx",
+        [
+            (12, 3),
+            (3, 12),
+            (-12, 3),
+            (-3, 12),
+            (12, -3),
+            (-12, -3),
+            (3, -12),
+            (-3, -12),
+        ],
+    )
+    def test_contact_with_illegal_index_throws(
+        self, load_system_with_contacts, sys_idx
+    ):
+        system_collection_with_contacts = load_system_with_contacts
+
+        with pytest.raises(AssertionError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(*sys_idx)
+        assert "exceeds number of" in str(excinfo.value)
+
+        with pytest.raises(AssertionError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(
+                *[np.int_(x) for x in sys_idx]
+            )
+        assert "exceeds number of" in str(excinfo.value)
+
+    def test_contact_with_unregistered_system_throws(self, load_system_with_contacts):
+        system_collection_with_contacts = load_system_with_contacts
+
+        # Register this rod
+        mock_rod_registered = self.MockRod(5, 5, 5, 5)
+        system_collection_with_contacts.append(mock_rod_registered)
+        # Don't register this rod
+        mock_rod = self.MockRod(2, 3, 4, 5)
+
+        with pytest.raises(ValueError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(
+                mock_rod, mock_rod_registered
+            )
+        assert "was not found, did you" in str(excinfo.value)
+
+        # Switch arguments
+        with pytest.raises(ValueError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(
+                mock_rod_registered, mock_rod
+            )
+        assert "was not found, did you" in str(excinfo.value)
+
+    def test_contact_with_illegal_system_throws(self, load_system_with_contacts):
+        system_collection_with_contacts = load_system_with_contacts
+
+        # Register this rod
+        mock_rod_registered = self.MockRod(5, 5, 5, 5)
+        system_collection_with_contacts.append(mock_rod_registered)
+
+        # Not a rod, but a list!
+        mock_rod = [1, 2, 3, 5]
+
+        with pytest.raises(TypeError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(
+                mock_rod, mock_rod_registered
+            )
+        assert "not a sys" in str(excinfo.value)
+
+        # Switch arguments
+        with pytest.raises(TypeError) as excinfo:
+            system_collection_with_contacts.detect_contact_between(
+                mock_rod_registered, mock_rod
+            )
+        assert "not a sys" in str(excinfo.value)
+
+    """
+    END of testing BaseSystem calls
+    """
+
+    def test_contact_registers_and_returns_Contact(self, load_system_with_contacts):
+        system_collection_with_contacts = load_system_with_contacts
+
+        mock_rod_one = self.MockRod(2, 3, 4, 5)
+        system_collection_with_contacts.append(mock_rod_one)
+
+        mock_rod_two = self.MockRod(4, 5)
+        system_collection_with_contacts.append(mock_rod_two)
+
+        _mock_contact = system_collection_with_contacts.detect_contact_between(
+            mock_rod_one, mock_rod_two
+        )
+        assert _mock_contact in system_collection_with_contacts._contacts
+        assert _mock_contact.__class__ == _Contact
+
+    from elastica.contact_forces import NoContact
+
+    @pytest.fixture
+    def load_rod_with_contacts(self, load_system_with_contacts):
+        system_collection_with_contacts = load_system_with_contacts
+
+        mock_rod_one = self.MockRod(2, 3, 4, 5)
+        system_collection_with_contacts.append(mock_rod_one)
+        mock_rod_two = self.MockRod(5.0, 5.0)
+        system_collection_with_contacts.append(mock_rod_two)
+
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        # in place class
+        MockContact = type(
+            "MockContact", (self.NoContact, object), {"__init__": mock_init}
+        )
+
+        # Constrain any and all systems
+        system_collection_with_contacts.detect_contact_between(0, 1).using(
+            MockContact
+        )  # index based contact
+        system_collection_with_contacts.detect_contact_between(
+            mock_rod_one, mock_rod_two
+        ).using(
+            MockContact
+        )  # system based contact
+        system_collection_with_contacts.detect_contact_between(0, mock_rod_one).using(
+            MockContact
+        )  # index/system based contact
+        return system_collection_with_contacts, MockContact
+
+    def test_contact_finalize_correctness(self, load_rod_with_contacts):
+        system_collection_with_contacts, contact_cls = load_rod_with_contacts
+
+        system_collection_with_contacts._finalize_contact()
+
+        for (fidx, sidx, contact) in system_collection_with_contacts._contacts:
+            assert type(fidx) is int
+            assert type(sidx) is int
+            assert type(contact) is contact_cls
+
+    @pytest.fixture
+    def load_contact_objects_with_incorrect_order(self, load_system_with_contacts):
+        system_collection_with_contacts = load_system_with_contacts
+
+        mock_rod = self.MockRod(2, 3, 4, 5)
+        system_collection_with_contacts.append(mock_rod)
+        mock_rigid_body = self.MockRigidBody(5.0, 5.0)
+        system_collection_with_contacts.append(mock_rigid_body)
+
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        # in place class
+        MockContact = type(
+            "MockContact", (self.NoContact, object), {"__init__": mock_init}
+        )
+
+        # incorrect order contact
+        system_collection_with_contacts.detect_contact_between(
+            mock_rigid_body, mock_rod
+        ).using(
+            MockContact
+        )  # rigid body before rod
+
+        return system_collection_with_contacts, MockContact
+
+    def test_contact_check_order(self, load_contact_objects_with_incorrect_order):
+        (
+            system_collection_with_contacts,
+            contact_cls,
+        ) = load_contact_objects_with_incorrect_order
+
+        from elastica.rod import RodBase
+        from elastica.rigidbody import RigidBodyBase
+
+        with pytest.raises(TypeError) as excinfo:
+            system_collection_with_contacts._finalize_contact()
+        assert "Systems provided to the contact class have incorrect order. \n"
+        " First system is {0} and second system is {1} . \n"
+        " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
+        " If the first system is a rigid body, the second system can be a rigid body or surface.".format(
+            RigidBodyBase, RodBase
+        ) in str(
+            excinfo.value
+        )
+
+    def test_contact_call_on_systems(self):
+        # TODO Finish when other contact classes are made
+        pass
