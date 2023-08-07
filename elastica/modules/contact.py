@@ -50,7 +50,7 @@ class Contact:
 
         return _contact
 
-    def _finalize_contact(self):
+    def _finalize_contact(self) -> None:
 
         # dev : the first indices stores the
         # (first_rod_idx, second_rod_idx)
