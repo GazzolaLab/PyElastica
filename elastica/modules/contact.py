@@ -103,7 +103,7 @@ class _Contact:
         self,
         first_sys_idx: int,
         second_sys_idx: int,
-    ):
+    ) -> None:
         """
 
         Parameters
