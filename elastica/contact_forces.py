@@ -24,7 +24,7 @@ class NoContact:
         self,
         system_one: SystemType,
         system_two: AllowedContactType,
-    ):
+    ) -> None:
         """
         This checks the contact order between a SystemType object and an AllowedContactType object, the order should follow: Rod, Rigid body, Surface.
         In NoContact class, this just checks if system_two is a rod then system_one must be a rod.
