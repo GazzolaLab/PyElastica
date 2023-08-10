@@ -155,7 +155,7 @@ class TestRodCylinderContact:
         rod_cylinder_contact = RodCylinderContact(k=1.0, nu=1.0)
         rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_cylinder()'"""
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'"""
         assert_allclose(
             mock_rod.external_forces,
             np.array([[0.666666, 1.333333, 0], [0, 0, 0], [0, 0, 0]]),
