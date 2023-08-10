@@ -1,9 +1,10 @@
 __doc__ = """ Test modules for contact """
 import numpy as np
 import pytest
-
 from elastica.modules import Contact
 from elastica.modules.contact import _Contact
+from numpy.testing import assert_allclose
+from elastica.utils import Tolerance
 
 
 class TestContact:
@@ -24,10 +25,11 @@ class TestContact:
             excinfo.value
         )
 
-    from elastica.contact_forces import NoContact
+    from elastica.contact_forces import NoContact, RodRodContact, RodSelfContact
 
-    # TODO Add other legal contact later
-    @pytest.mark.parametrize("legal_contact", [NoContact])
+    @pytest.mark.parametrize(
+        "legal_contact", [NoContact, RodRodContact, RodSelfContact]
+    )
     def test_using_with_legal_contact(self, load_contact, legal_contact):
         contact = load_contact
         contact.using(legal_contact, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -47,10 +49,11 @@ class TestContact:
 
         with pytest.raises(RuntimeError) as excinfo:
             contact()
-        assert "No contacts provided to to establish contact between rod-like object id {0}"
-        " and {1}, but a Contact"
-        "was intended as per code. Did you forget to"
-        "call the `using` method?".format(*contact.id()) == str(excinfo.value)
+        assert "No contacts provided to to establish contact between rod-like object id {0} and {1}, but a Contact was intended as per code. Did you forget to call the `using` method?".format(
+            *contact.id()
+        ) == str(
+            excinfo.value
+        )
 
     def test_call_improper_args_throws(self, load_contact):
         # Example of bad initiailization function
@@ -73,8 +76,10 @@ class TestContact:
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = contact()
-        assert r"Unable to construct contact class.\n"
-        r"Did you provide all necessary contact properties?" == str(excinfo.value)
+        assert (
+            r"Unable to construct contact class.\nDid you provide all necessary contact properties?"
+            == str(excinfo.value)
+        )
 
 
 class TestContactMixin:
@@ -89,7 +94,20 @@ class TestContactMixin:
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
-            self.n_elems = 3  # arbitrary number
+            self.n_elems = 2
+            self.position_collection = np.array([[1, 2, 3], [0, 0, 0], [0, 0, 0]])
+            self.radius = np.array([1, 1])
+            self.lengths = np.array([1, 1])
+            self.tangents = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
+            self.velocity_collection = np.array(
+                [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+            )
+            self.internal_forces = np.array(
+                [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+            )
+            self.external_forces = np.array(
+                [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+            )
 
     class MockRigidBody(RigidBodyBase):
         def __init__(self, *args, **kwargs):
@@ -282,20 +300,93 @@ class TestContactMixin:
             contact_cls,
         ) = load_contact_objects_with_incorrect_order
 
-        from elastica.rod import RodBase
-        from elastica.rigidbody import RigidBodyBase
+        mock_rod = self.MockRod(2, 3, 4, 5)
+        mock_rigid_body = self.MockRigidBody(5.0, 5.0)
 
         with pytest.raises(TypeError) as excinfo:
             system_collection_with_contacts._finalize_contact()
-        assert "Systems provided to the contact class have incorrect order. \n"
-        " First system is {0} and second system is {1} . \n"
-        " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
-        " If the first system is a rigid body, the second system can be a rigid body or surface.".format(
-            RigidBodyBase, RodBase
-        ) in str(
-            excinfo.value
-        )
+        assert (
+            "Systems provided to the contact class have incorrect order. \n"
+            " First system is {0} and second system is {1}. \n"
+            " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
+            " If the first system is a rigid body, the second system can be a rigid body or surface."
+        ).format(mock_rigid_body.__class__, mock_rod.__class__) == str(excinfo.value)
 
-    def test_contact_call_on_systems(self):
-        # TODO Finish when other contact classes are made
-        pass
+    @pytest.fixture
+    def load_system_with_rods_in_contact(self, load_system_with_contacts):
+        system_collection_with_rods_in_contact = load_system_with_contacts
+
+        mock_rod_one = self.MockRod(1.0, 2.0, 3.0, 4.0)
+        system_collection_with_rods_in_contact.append(mock_rod_one)
+        mock_rod_two = self.MockRod(1.0, 1.0)
+        "Move second rod above first rod to make contact in parallel"
+        mock_rod_two.position_collection = np.array(
+            [[1, 2, 3], [0.5, 0.5, 0.5], [0, 0, 0]]
+        )
+        system_collection_with_rods_in_contact.append(mock_rod_two)
+
+        # in place class
+        from elastica.contact_forces import RodRodContact
+
+        # Constrain any and all systems
+        system_collection_with_rods_in_contact.detect_contact_between(
+            mock_rod_one, mock_rod_two
+        ).using(
+            RodRodContact,
+            k=1.0,
+            nu=0.1,
+        )
+        return system_collection_with_rods_in_contact
+
+    def test_contact_call_on_systems(self, load_system_with_rods_in_contact):
+
+        system_collection_with_rods_in_contact = load_system_with_rods_in_contact
+
+        system_collection_with_rods_in_contact._finalize_contact()
+        system_collection_with_rods_in_contact._call_contacts()
+
+        from elastica.contact_forces import _calculate_contact_forces_rod_rod
+
+        for (
+            fidx,
+            sidx,
+            contact,
+        ) in system_collection_with_rods_in_contact._contacts:
+            system_one = system_collection_with_rods_in_contact._systems[fidx]
+            system_two = system_collection_with_rods_in_contact._systems[sidx]
+            external_forces_system_one = np.zeros_like(system_one.external_forces)
+            external_forces_system_two = np.zeros_like(system_two.external_forces)
+
+            _calculate_contact_forces_rod_rod(
+                system_one.position_collection[
+                    ..., :-1
+                ],  # Discount last node, we want element start position
+                system_one.radius,
+                system_one.lengths,
+                system_one.tangents,
+                system_one.velocity_collection,
+                system_one.internal_forces,
+                external_forces_system_one,
+                system_two.position_collection[
+                    ..., :-1
+                ],  # Discount last node, we want element start position
+                system_two.radius,
+                system_two.lengths,
+                system_two.tangents,
+                system_two.velocity_collection,
+                system_two.internal_forces,
+                external_forces_system_two,
+                contact.k,
+                contact.nu,
+            )
+
+            assert_allclose(
+                system_collection_with_rods_in_contact._systems[fidx].external_forces,
+                external_forces_system_one,
+                atol=Tolerance.atol(),
+            )
+            assert_allclose(
+                system_collection_with_rods_in_contact._systems[sidx].external_forces,
+                external_forces_system_two,
+                atol=Tolerance.atol(),
+            )

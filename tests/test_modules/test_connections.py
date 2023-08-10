@@ -174,8 +174,10 @@ class TestConnect:
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = connect()
-        assert r"Unable to construct connection class.\n"
-        r"Did you provide all necessary joint properties?" == str(excinfo.value)
+        assert (
+            r"Unable to construct connection class.\nDid you provide all necessary joint properties?"
+            == str(excinfo.value)
+        )
 
 
 class TestConnectionsMixin:
@@ -428,6 +430,7 @@ class TestConnectionsMixin:
                     fidx
                 ].external_forces[..., fconnect],
                 contact_force,
+                atol=Tolerance.atol(),
             )
             assert_allclose(
                 system_collection_with_connections_and_indices._systems[
