@@ -84,7 +84,7 @@ class TestRodCylinderContact:
             " First system should be a rod, second should be a cylinder"
         ).format(mock_cylinder.__class__, mock_rod.__class__) == str(excinfo.value)
 
-    def test_contact_rod_Cylinder_with_collision_with_k_without_nu_and_friction(
+    def test_contact_rod_cylinder_with_collision_with_k_without_nu_and_friction(
         self,
     ):
 
