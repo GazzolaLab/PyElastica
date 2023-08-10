@@ -9,7 +9,7 @@ from examples.RodContactCase.post_processing import (
 class ParallelRodRodContact(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
+    ea.Contact,
     ea.Forcing,
     ea.Damping,
     ea.CallBacks,
@@ -86,8 +86,8 @@ rod_two = ea.CosseratRod.straight_rod(
 parallel_rod_rod_contact_sim.append(rod_two)
 
 # Contact between two rods
-parallel_rod_rod_contact_sim.connect(rod_one, rod_two).using(
-    ea.ExternalContact, k=1e3, nu=0.001
+parallel_rod_rod_contact_sim.detect_contact_between(rod_one, rod_two).using(
+    ea.RodRodContact, k=1e3, nu=0.001
 )
 
 # add damping

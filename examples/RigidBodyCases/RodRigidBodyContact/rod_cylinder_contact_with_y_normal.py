@@ -6,7 +6,7 @@ from post_processing import plot_video, plot_cylinder_rod_position
 class SingleRodSingleCylinderInteractionSimulator(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
+    ea.Contact,
     ea.Forcing,
     ea.CallBacks,
     ea.Damping,
@@ -87,7 +87,9 @@ cylinder = ea.Cylinder(
 )
 single_rod_sim.append(cylinder)
 
-single_rod_sim.connect(rod1, cylinder).using(ea.ExternalContact, 1e2, 0.1)
+single_rod_sim.detect_contact_between(rod1, cylinder).using(
+    ea.RodCylinderContact, 1e2, 0.1
+)
 
 
 # Add call backs
