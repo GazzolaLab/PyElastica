@@ -635,7 +635,8 @@ class RodRodContact(NoContact):
         system_two: AllowedContactType,
     ) -> None:
         """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object, For the RodRodContact class both systems must be distinct rods.
+        This checks the contact order and type of a SystemType object and an AllowedContactType object.
+        For the RodRodContact class both systems must be distinct rods.
 
         Parameters
         ----------
