@@ -3,7 +3,7 @@ __doc__ = """ Test common functions used in contact in Elastica.joint implementa
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.joint import (
+from elastica.contact_forces import (
     _dot_product,
     _norm,
     _clip,

@@ -1,14 +1,13 @@
-__doc__ = (
-    """ Test specific functions used in contact in Elastica.joint implementation"""
-)
+__doc__ = """ Test specific functions used in contact in Elastica.contact_forces implementation"""
 
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.typing import RodBase, RigidBodyBase
-from elastica.joint import (
-    _prune_using_aabbs_rod_rigid_body,
+from elastica.typing import RodBase
+from elastica.rigidbody import Cylinder
+from elastica.contact_forces import (
+    _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
-    _calculate_contact_forces_rod_rigid_body,
+    _calculate_contact_forces_rod_cylinder,
     _calculate_contact_forces_rod_rod,
     _calculate_contact_forces_self_rod,
 )
@@ -29,9 +28,9 @@ def mock_rod_init(self):
 
     self.n_elems = 2
     self.position_collection = np.array([[1, 2, 3], [0, 0, 0], [0, 0, 0]])
-    self.radius_collection = np.array([1, 1])
-    self.length_collection = np.array([1, 1])
-    self.tangent_collection = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
+    self.radius = np.array([1, 1])
+    self.lengths = np.array([1, 1])
+    self.tangents = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
     self.velocity_collection = np.array(
         [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
     )
@@ -39,9 +38,9 @@ def mock_rod_init(self):
     self.external_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
 
 
-def mock_rigid_body_init(self):
+def mock_cylinder_init(self):
 
-    "Initializing Rigid Body as a cylinder"
+    "Initializing Cylinder"
 
     """
     This is a rigid body cylinder;,
@@ -67,13 +66,11 @@ def mock_rigid_body_init(self):
 
 MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
 
-MockRigidBody = type(
-    "MockRigidBody", (RigidBodyBase,), {"__init__": mock_rigid_body_init}
-)
+MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
 
 
-def test_prune_using_aabbs_rod_rigid_body():
-    "Function to test the prune using aabbs rod rigid body function"
+def test_prune_using_aabbs_rod_cylinder():
+    "Function to test the prune using aabbs rod cylinder function"
 
     "Testing function with analytically verified values"
 
@@ -84,12 +81,12 @@ def test_prune_using_aabbs_rod_rigid_body():
     Hence they are intersectiong and the function should return 0
     """
     rod = MockRod()
-    cylinder = MockRigidBody()
+    cylinder = MockCylinder()
     assert (
-        _prune_using_aabbs_rod_rigid_body(
+        _prune_using_aabbs_rod_cylinder(
             rod.position_collection,
-            rod.radius_collection,
-            rod.length_collection,
+            rod.radius,
+            rod.lengths,
             cylinder.position,
             cylinder.director,
             cylinder.radius,
@@ -100,17 +97,17 @@ def test_prune_using_aabbs_rod_rigid_body():
 
     "Non - Intersecting rod and cylinder"
     rod = MockRod()
-    cylinder = MockRigidBody()
+    cylinder = MockCylinder()
 
     """
     Changing the position of cylinder in 3D space so the rod and cylinder don't overlap/intersect.
     """
     cylinder.position = np.array([[20], [3], [4]])
     assert (
-        _prune_using_aabbs_rod_rigid_body(
+        _prune_using_aabbs_rod_cylinder(
             rod.position_collection,
-            rod.radius_collection,
-            rod.length_collection,
+            rod.radius,
+            rod.lengths,
             cylinder.position,
             cylinder.director,
             cylinder.radius,
@@ -134,11 +131,11 @@ def test_prune_using_aabbs_rod_rod():
     assert (
         _prune_using_aabbs_rod_rod(
             rod_one.position_collection,
-            rod_one.radius_collection,
-            rod_one.length_collection,
+            rod_one.radius,
+            rod_one.lengths,
             rod_two.position_collection,
-            rod_two.radius_collection,
-            rod_two.length_collection,
+            rod_two.radius,
+            rod_two.lengths,
         )
         == 0
     )
@@ -151,22 +148,22 @@ def test_prune_using_aabbs_rod_rod():
     assert (
         _prune_using_aabbs_rod_rod(
             rod_one.position_collection,
-            rod_one.radius_collection,
-            rod_one.length_collection,
+            rod_one.radius,
+            rod_one.lengths,
             rod_two.position_collection,
-            rod_two.radius_collection,
-            rod_two.length_collection,
+            rod_two.radius,
+            rod_two.lengths,
         )
         == 1
     )
 
 
-class TestCalculateContactForcesRodRigidBody:
-    "Class to test the calculate contact forces rod rigid body function"
+class TestCalculateContactForcesRodCylinder:
+    "Class to test the calculate contact forces rod cylinder function"
 
     "Testing function with handcrafted/calculated values"
 
-    def test_calculate_contact_forces_rod_rigid_body_with_k_without_nu_and_friction(
+    def test_calculate_contact_forces_rod_cylinder_with_k_without_nu_and_friction(
         self,
     ):
 
@@ -177,7 +174,7 @@ class TestCalculateContactForcesRodRigidBody:
         )
 
         "initializing cylinder parameters"
-        cylinder = MockRigidBody()
+        cylinder = MockCylinder()
         x_cyl = (
             cylinder.position[..., 0]
             - 0.5 * cylinder.length * cylinder.director[2, :, 0]
@@ -194,14 +191,14 @@ class TestCalculateContactForcesRodRigidBody:
         friction_coefficient = 0
 
         "Function call"
-        _calculate_contact_forces_rod_rigid_body(
+        _calculate_contact_forces_rod_cylinder(
             rod_element_position,
-            rod.length_collection * rod.tangent_collection,
+            rod.lengths * rod.tangents,
             cylinder.position[..., 0],
             x_cyl,
             cylinder.length * cylinder.director[2, :, 0],
-            rod.radius_collection + cylinder.radius,
-            rod.length_collection + cylinder.length,
+            rod.radius + cylinder.radius,
+            rod.lengths + cylinder.length,
             rod.internal_forces,
             rod.external_forces,
             cylinder.external_forces,
@@ -234,7 +231,7 @@ class TestCalculateContactForcesRodRigidBody:
             atol=1e-6,
         )
 
-    def test_calculate_contact_forces_rod_rigid_body_with_nu_without_k_and_friction(
+    def test_calculate_contact_forces_rod_cylinder_with_nu_without_k_and_friction(
         self,
     ):
 
@@ -247,7 +244,7 @@ class TestCalculateContactForcesRodRigidBody:
         )
 
         "initializing cylinder parameters"
-        cylinder = MockRigidBody()
+        cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
         cylinder.velocity_collection = np.array([[1], [0], [0]])
         x_cyl = (
@@ -266,14 +263,14 @@ class TestCalculateContactForcesRodRigidBody:
         friction_coefficient = 0
 
         "Function call"
-        _calculate_contact_forces_rod_rigid_body(
+        _calculate_contact_forces_rod_cylinder(
             rod_element_position,
-            rod.length_collection * rod.tangent_collection,
+            rod.lengths * rod.tangents,
             cylinder.position[..., 0],
             x_cyl,
             cylinder.length * cylinder.director[2, :, 0],
-            rod.radius_collection + cylinder.radius,
-            rod.length_collection + cylinder.length,
+            rod.radius + cylinder.radius,
+            rod.lengths + cylinder.length,
             rod.internal_forces,
             rod.external_forces,
             cylinder.external_forces,
@@ -306,7 +303,7 @@ class TestCalculateContactForcesRodRigidBody:
             atol=1e-6,
         )
 
-    def test_calculate_contact_forces_rod_rigid_body_with_k_and_nu_without_friction(
+    def test_calculate_contact_forces_rod_cylinder_with_k_and_nu_without_friction(
         self,
     ):
 
@@ -319,7 +316,7 @@ class TestCalculateContactForcesRodRigidBody:
         )
 
         "initializing cylinder parameters"
-        cylinder = MockRigidBody()
+        cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
         cylinder.velocity_collection = np.array([[1], [0], [0]])
         x_cyl = (
@@ -338,14 +335,14 @@ class TestCalculateContactForcesRodRigidBody:
         friction_coefficient = 0
 
         "Function call"
-        _calculate_contact_forces_rod_rigid_body(
+        _calculate_contact_forces_rod_cylinder(
             rod_element_position,
-            rod.length_collection * rod.tangent_collection,
+            rod.lengths * rod.tangents,
             cylinder.position[..., 0],
             x_cyl,
             cylinder.length * cylinder.director[2, :, 0],
-            rod.radius_collection + cylinder.radius,
-            rod.length_collection + cylinder.length,
+            rod.radius + cylinder.radius,
+            rod.lengths + cylinder.length,
             rod.internal_forces,
             rod.external_forces,
             cylinder.external_forces,
@@ -371,7 +368,7 @@ class TestCalculateContactForcesRodRigidBody:
             atol=1e-6,
         )
 
-    def test_calculate_contact_forces_rod_rigid_body_with_k_and_nu_and_friction(self):
+    def test_calculate_contact_forces_rod_cylinder_with_k_and_nu_and_friction(self):
 
         "initializing rod parameters"
         rod = MockRod()
@@ -382,7 +379,7 @@ class TestCalculateContactForcesRodRigidBody:
         )
 
         "initializing cylinder parameters"
-        cylinder = MockRigidBody()
+        cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
         cylinder.velocity_collection = np.array([[1], [0], [0]])
         x_cyl = (
@@ -397,14 +394,14 @@ class TestCalculateContactForcesRodRigidBody:
         friction_coefficient = 0.1
 
         "Function call"
-        _calculate_contact_forces_rod_rigid_body(
+        _calculate_contact_forces_rod_cylinder(
             rod_element_position,
-            rod.length_collection * rod.tangent_collection,
+            rod.lengths * rod.tangents,
             cylinder.position[..., 0],
             x_cyl,
             cylinder.length * cylinder.director[2, :, 0],
-            rod.radius_collection + cylinder.radius,
-            rod.length_collection + cylinder.length,
+            rod.radius + cylinder.radius,
+            rod.lengths + cylinder.length,
             rod.internal_forces,
             rod.external_forces,
             cylinder.external_forces,
@@ -469,16 +466,16 @@ class TestCalculateContactForcesRodRod:
         "Function call"
         _calculate_contact_forces_rod_rod(
             rod_one.position_collection[..., :-1],
-            rod_one.radius_collection,
-            rod_one.length_collection,
-            rod_one.tangent_collection,
+            rod_one.radius,
+            rod_one.lengths,
+            rod_one.tangents,
             rod_one.velocity_collection,
             rod_one.internal_forces,
             rod_one.external_forces,
             rod_two.position_collection[..., :-1],
-            rod_two.radius_collection,
-            rod_two.length_collection,
-            rod_two.tangent_collection,
+            rod_two.radius,
+            rod_two.lengths,
+            rod_two.tangents,
             rod_two.velocity_collection,
             rod_two.internal_forces,
             rod_two.external_forces,
@@ -529,16 +526,16 @@ class TestCalculateContactForcesRodRod:
         "Function call"
         _calculate_contact_forces_rod_rod(
             rod_one.position_collection[..., :-1],
-            rod_one.radius_collection,
-            rod_one.length_collection,
-            rod_one.tangent_collection,
+            rod_one.radius,
+            rod_one.lengths,
+            rod_one.tangents,
             rod_one.velocity_collection,
             rod_one.internal_forces,
             rod_one.external_forces,
             rod_two.position_collection[..., :-1],
-            rod_two.radius_collection,
-            rod_two.length_collection,
-            rod_two.tangent_collection,
+            rod_two.radius,
+            rod_two.lengths,
+            rod_two.tangents,
             rod_two.velocity_collection,
             rod_two.internal_forces,
             rod_two.external_forces,
@@ -589,16 +586,16 @@ class TestCalculateContactForcesRodRod:
         "Function call"
         _calculate_contact_forces_rod_rod(
             rod_one.position_collection[..., :-1],
-            rod_one.radius_collection,
-            rod_one.length_collection,
-            rod_one.tangent_collection,
+            rod_one.radius,
+            rod_one.lengths,
+            rod_one.tangents,
             rod_one.velocity_collection,
             rod_one.internal_forces,
             rod_one.external_forces,
             rod_two.position_collection[..., :-1],
-            rod_two.radius_collection,
-            rod_two.length_collection,
-            rod_two.tangent_collection,
+            rod_two.radius,
+            rod_two.lengths,
+            rod_two.tangents,
             rod_two.velocity_collection,
             rod_two.internal_forces,
             rod_two.external_forces,
@@ -635,11 +632,9 @@ def test_calculate_contact_forces_self_rod():
     where the rod is penetrating itself by 0.5 units by radius."""
     rod.n_elems = 3
     rod.position_collection = np.array([[1, 4, 4, 1], [0, 0, 1, 1], [0, 0, 0, 0]])
-    rod.radius_collection = np.array([1, 1, 1])
-    rod.length_collection = np.array([3, 1, 3])
-    rod.tangent_collection = np.array(
-        [[1.0, 0.0, -1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
-    )
+    rod.radius = np.array([1, 1, 1])
+    rod.lengths = np.array([3, 1, 3])
+    rod.tangents = np.array([[1.0, 0.0, -1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]])
     rod.velocity_collection = np.array(
         [[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
     )
@@ -657,9 +652,9 @@ def test_calculate_contact_forces_self_rod():
     "Function call"
     _calculate_contact_forces_self_rod(
         rod.position_collection[..., :-1],
-        rod.radius_collection,
-        rod.length_collection,
-        rod.tangent_collection,
+        rod.radius,
+        rod.lengths,
+        rod.tangents,
         rod.velocity_collection,
         rod.external_forces,
         k,

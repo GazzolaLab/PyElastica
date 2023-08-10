@@ -1,9 +1,11 @@
-__doc__ = """ Test Wrapper Classes used in contact in Elastica.joint implementation"""
+__doc__ = """ Test Wrapper Classes used in contact in Elastica.contact_forces implementation"""
 
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.joint import ExternalContact, SelfContact
-from elastica.typing import RodBase, RigidBodyBase
+from elastica.contact_forces import RodRodContact, RodCylinderContact, RodSelfContact
+from elastica.typing import RodBase
+from elastica.rigidbody import Cylinder
+import pytest
 
 
 def mock_rod_init(self):
@@ -23,9 +25,9 @@ def mock_rod_init(self):
     )
 
 
-def mock_rigid_body_init(self):
+def mock_cylinder_init(self):
 
-    "Initializing Rigid Body"
+    "Initializing Cylinder"
     "Details of initialization are given in test_contact_specific_functions.py"
 
     self.n_elems = 1
@@ -42,24 +44,58 @@ def mock_rigid_body_init(self):
 
 MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
 
-MockRigidBody = type(
-    "MockRigidBody", (RigidBodyBase,), {"__init__": mock_rigid_body_init}
-)
+MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
 
 
-class TestExternalContact:
-    def test_external_contact_rod_rigid_body_with_collision_with_k_without_nu_and_friction(
+class TestRodCylinderContact:
+    def test_check_incorrect_order_type(
+        self,
+    ):
+        mock_rod = MockRod()
+        mock_list = [1, 2, 3]
+        mock_cylinder = MockCylinder()
+        rod_cylinder_contact = RodCylinderContact(k=1.0, nu=0.0)
+
+        "Testing Rod Cylinder Contact wrapper with incorrect type for second argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_cylinder_contact._check_order_and_type(mock_rod, mock_list)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a cylinder"
+        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+
+        "Testing Rod Cylinder Contact wrapper with incorrect type for first argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_cylinder_contact._check_order_and_type(mock_list, mock_rod)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a cylinder"
+        ).format(mock_list.__class__, mock_rod.__class__) == str(excinfo.value)
+
+        "Testing Rod Cylinder Contact wrapper with incorrect order"
+        with pytest.raises(TypeError) as excinfo:
+            rod_cylinder_contact._check_order_and_type(mock_cylinder, mock_rod)
+            print(excinfo.value)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a cylinder"
+        ).format(mock_cylinder.__class__, mock_rod.__class__) == str(excinfo.value)
+
+    def test_contact_rod_Cylinder_with_collision_with_k_without_nu_and_friction(
         self,
     ):
 
-        "Testing External Contact wrapper with Collision with analytical verified values"
+        "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
-        mock_rigid_body = MockRigidBody()
-        ext_contact = ExternalContact(k=1.0, nu=0.0)
-        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+        mock_cylinder = MockCylinder()
+        rod_cylinder_contact = RodCylinderContact(k=1.0, nu=0.0)
+        rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_rigid_body()'"""
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'"""
         assert_allclose(
             mock_rod.external_forces,
             np.array([[0.166666, 0.333333, 0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]),
@@ -67,29 +103,29 @@ class TestExternalContact:
         )
 
         assert_allclose(
-            mock_rigid_body.external_forces, np.array([[-0.5], [0.0], [0.0]]), atol=1e-6
+            mock_cylinder.external_forces, np.array([[-0.5], [0.0], [0.0]]), atol=1e-6
         )
 
         assert_allclose(
-            mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
+            mock_cylinder.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_with_collision_with_nu_without_k_and_friction(
+    def test_contact_rod_cylinder_with_collision_with_nu_without_k_and_friction(
         self,
     ):
 
-        "Testing External Contact wrapper with Collision with analytical verified values"
+        "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
         mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
-        mock_rigid_body = MockRigidBody()
+        mock_cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
-        mock_rigid_body.velocity_collection = np.array([[1], [0], [0]])
-        ext_contact = ExternalContact(k=0.0, nu=1.0)
-        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+        mock_cylinder.velocity_collection = np.array([[1], [0], [0]])
+        rod_cylinder_contact = RodCylinderContact(k=0.0, nu=1.0)
+        rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_rigid_body()'"""
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'"""
         assert_allclose(
             mock_rod.external_forces,
             np.array([[0.5, 1, 0], [0, 0, 0], [0, 0, 0]]),
@@ -97,29 +133,29 @@ class TestExternalContact:
         )
 
         assert_allclose(
-            mock_rigid_body.external_forces, np.array([[-1.5], [0], [0]]), atol=1e-6
+            mock_cylinder.external_forces, np.array([[-1.5], [0], [0]]), atol=1e-6
         )
 
         assert_allclose(
-            mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
+            mock_cylinder.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_with_collision_with_k_and_nu_without_friction(
+    def test_contact_rod_cylinder_with_collision_with_k_and_nu_without_friction(
         self,
     ):
 
-        "Testing External Contact wrapper with Collision with analytical verified values"
+        "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
         mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
-        mock_rigid_body = MockRigidBody()
+        mock_cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
-        mock_rigid_body.velocity_collection = np.array([[1], [0], [0]])
-        ext_contact = ExternalContact(k=1.0, nu=1.0)
-        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+        mock_cylinder.velocity_collection = np.array([[1], [0], [0]])
+        rod_cylinder_contact = RodCylinderContact(k=1.0, nu=1.0)
+        rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_rigid_body()'"""
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_cylinder()'"""
         assert_allclose(
             mock_rod.external_forces,
             np.array([[0.666666, 1.333333, 0], [0, 0, 0], [0, 0, 0]]),
@@ -127,31 +163,31 @@ class TestExternalContact:
         )
 
         assert_allclose(
-            mock_rigid_body.external_forces, np.array([[-2], [0], [0]]), atol=1e-6
+            mock_cylinder.external_forces, np.array([[-2], [0], [0]]), atol=1e-6
         )
 
         assert_allclose(
-            mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
+            mock_cylinder.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_with_collision_with_k_and_nu_and_friction(
+    def test_contact_rod_cylinder_with_collision_with_k_and_nu_and_friction(
         self,
     ):
 
-        "Testing External Contact wrapper with Collision with analytical verified values"
+        "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
         mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
-        mock_rigid_body = MockRigidBody()
+        mock_cylinder = MockCylinder()
         "Moving cylinder towards the rod with a velocity of 1 in x-axis"
-        mock_rigid_body.velocity_collection = np.array([[1], [0], [0]])
-        ext_contact = ExternalContact(
+        mock_cylinder.velocity_collection = np.array([[1], [0], [0]])
+        rod_cylinder_contact = RodCylinderContact(
             k=1.0, nu=1.0, velocity_damping_coefficient=0.1, friction_coefficient=0.1
         )
-        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+        rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_claculate_contact_forces_rod_rigid_body()'"""
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'"""
         assert_allclose(
             mock_rod.external_forces,
             np.array(
@@ -165,54 +201,90 @@ class TestExternalContact:
         )
 
         assert_allclose(
-            mock_rigid_body.external_forces, np.array([[-2], [-0.1], [-0.1]]), atol=1e-6
+            mock_cylinder.external_forces, np.array([[-2], [-0.1], [-0.1]]), atol=1e-6
         )
 
         assert_allclose(
-            mock_rigid_body.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
+            mock_cylinder.external_torques, np.array([[0.0], [0.0], [0.0]]), atol=1e-6
         )
 
-    def test_external_contact_rod_rigid_body_without_collision(self):
+    def test_contact_rod_cylinder_without_collision(self):
 
-        "Testing External Contact wrapper without Collision with analytical verified values"
+        "Testing Rod Cylinder Contact wrapper without Collision with analytical verified values"
 
         mock_rod = MockRod()
-        mock_rigid_body = MockRigidBody()
-        ext_contact = ExternalContact(k=1.0, nu=0.5)
+        mock_cylinder = MockCylinder()
+        rod_cylinder_contact = RodCylinderContact(k=1.0, nu=0.5)
 
-        """Setting rigid body position such that there is no collision"""
-        mock_rigid_body.position_collection = np.array([[400], [500], [600]])
+        """Setting cylinder position such that there is no collision"""
+        mock_cylinder.position_collection = np.array([[400], [500], [600]])
         mock_rod_external_forces_before_execution = mock_rod.external_forces.copy()
-        mock_rigid_body_external_forces_before_execution = (
-            mock_rigid_body.external_forces.copy()
+        mock_cylinder_external_forces_before_execution = (
+            mock_cylinder.external_forces.copy()
         )
-        mock_rigid_body_external_torques_before_execution = (
-            mock_rigid_body.external_torques.copy()
+        mock_cylinder_external_torques_before_execution = (
+            mock_cylinder.external_torques.copy()
         )
-        ext_contact.apply_forces(mock_rod, 0, mock_rigid_body, 1)
+        rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
         assert_allclose(
             mock_rod.external_forces, mock_rod_external_forces_before_execution
         )
         assert_allclose(
-            mock_rigid_body.external_forces,
-            mock_rigid_body_external_forces_before_execution,
+            mock_cylinder.external_forces,
+            mock_cylinder_external_forces_before_execution,
         )
         assert_allclose(
-            mock_rigid_body.external_torques,
-            mock_rigid_body_external_torques_before_execution,
+            mock_cylinder.external_torques,
+            mock_cylinder_external_torques_before_execution,
         )
 
-    def test_external_contact_with_two_rods_with_collision_with_k_without_nu(self):
 
-        "Testing External Contact wrapper with two rods with analytical verified values"
+class TestRodRodContact:
+    def test_check_incorrect_order_type(
+        self,
+    ):
+        mock_rod_one = MockRod()
+        mock_list = [1, 2, 3]
+        rod_rod_contact = RodRodContact(k=1.0, nu=0.0)
+
+        "Testing Rod Rod Contact wrapper with incorrect type for second argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_rod_contact._check_order_and_type(mock_rod_one, mock_list)
+        assert (
+            "Systems provided to the contact class have incorrect order. \n"
+            " First system is {0} and second system is {1}. \n"
+            " Both systems must be distinct rods"
+        ).format(mock_rod_one.__class__, mock_list.__class__) == str(excinfo.value)
+
+        "Testing Rod Rod Contact wrapper with incorrect type for first argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_rod_contact._check_order_and_type(mock_list, mock_rod_one)
+        assert (
+            "Systems provided to the contact class have incorrect order. \n"
+            " First system is {0} and second system is {1}. \n"
+            " Both systems must be distinct rods"
+        ).format(mock_list.__class__, mock_rod_one.__class__) == str(excinfo.value)
+
+        "Testing Rod Rod Contact wrapper with same rod for both arguments"
+        with pytest.raises(TypeError) as excinfo:
+            rod_rod_contact._check_order_and_type(mock_rod_one, mock_rod_one)
+        assert (
+            "First rod is identical to second rod. \n"
+            "Rods must be distinct for RodRodConact. \n"
+            "If you want self contact, use RodSelfContact instead"
+        ) == str(excinfo.value)
+
+    def test_contact_with_two_rods_with_collision_with_k_without_nu(self):
+
+        "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
         mock_rod_one = MockRod()
         mock_rod_two = MockRod()
         mock_rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
-        ext_contact = ExternalContact(k=1.0, nu=0.0)
-        ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+        rod_rod_contact = RodRodContact(k=1.0, nu=0.0)
+        rod_rod_contact.apply_contact(mock_rod_one, mock_rod_two)
 
         assert_allclose(
             mock_rod_one.external_forces,
@@ -225,9 +297,9 @@ class TestExternalContact:
             atol=1e-6,
         )
 
-    def test_external_contact_with_two_rods_with_collision_without_k_with_nu(self):
+    def test_contact_with_two_rods_with_collision_without_k_with_nu(self):
 
-        "Testing External Contact wrapper with two rods with analytical verified values"
+        "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
         mock_rod_one = MockRod()
@@ -239,8 +311,8 @@ class TestExternalContact:
             [[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]]
         )
         mock_rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
-        ext_contact = ExternalContact(k=0.0, nu=1.0)
-        ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+        rod_rod_contact = RodRodContact(k=0.0, nu=1.0)
+        rod_rod_contact.apply_contact(mock_rod_one, mock_rod_two)
 
         assert_allclose(
             mock_rod_one.external_forces,
@@ -255,9 +327,9 @@ class TestExternalContact:
             atol=1e-6,
         )
 
-    def test_external_contact_with_two_rods_with_collision_with_k_and_nu(self):
+    def test_contact_with_two_rods_with_collision_with_k_and_nu(self):
 
-        "Testing External Contact wrapper with two rods with analytical verified values"
+        "Testing RodRod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
         mock_rod_one = MockRod()
@@ -269,8 +341,8 @@ class TestExternalContact:
             [[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]]
         )
         mock_rod_two.position_collection = np.array([[4, 5, 6], [0, 0, 0], [0, 0, 0]])
-        ext_contact = ExternalContact(k=1.0, nu=1.0)
-        ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+        rod_rod_contact = RodRodContact(k=1.0, nu=1.0)
+        rod_rod_contact.apply_contact(mock_rod_one, mock_rod_two)
 
         assert_allclose(
             mock_rod_one.external_forces,
@@ -285,9 +357,9 @@ class TestExternalContact:
             atol=1e-6,
         )
 
-    def test_external_contact_with_two_rods_without_collision(self):
+    def test_contact_with_two_rods_without_collision(self):
 
-        "Testing External Contact wrapper with two rods with analytical verified values"
+        "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
 
         mock_rod_one = MockRod()
         mock_rod_two = MockRod()
@@ -296,14 +368,14 @@ class TestExternalContact:
         mock_rod_two.position_collection = np.array(
             [[100, 101, 102], [0, 0, 0], [0, 0, 0]]
         )
-        ext_contact = ExternalContact(k=1.0, nu=1.0)
+        rod_rod_contact = RodRodContact(k=1.0, nu=1.0)
         mock_rod_one_external_forces_before_execution = (
             mock_rod_one.external_forces.copy()
         )
         mock_rod_two_external_forces_before_execution = (
             mock_rod_two.external_forces.copy()
         )
-        ext_contact.apply_forces(mock_rod_one, 0, mock_rod_two, 0)
+        rod_rod_contact.apply_contact(mock_rod_one, mock_rod_two)
 
         assert_allclose(
             mock_rod_one.external_forces, mock_rod_one_external_forces_before_execution
@@ -313,7 +385,45 @@ class TestExternalContact:
         )
 
 
-class TestSelfContact:
+class TestRodSelfContact:
+    def test_check_incorrect_order_type(
+        self,
+    ):
+        mock_rod_one = MockRod()
+        mock_rod_two = MockRod()
+        mock_list = [1, 2, 3]
+        self_contact = RodSelfContact(k=1.0, nu=0.0)
+
+        "Testing Self Contact wrapper with incorrect type for second argument"
+        with pytest.raises(TypeError) as excinfo:
+            self_contact._check_order_and_type(mock_rod_one, mock_list)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system and second system should be the same rod \n"
+            " If you want rod rod contact, use RodRodContact instead"
+        ).format(mock_rod_one.__class__, mock_list.__class__) == str(excinfo.value)
+
+        "Testing Self Contact wrapper with incorrect type for first argument"
+        with pytest.raises(TypeError) as excinfo:
+            self_contact._check_order_and_type(mock_list, mock_rod_one)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system and second system should be the same rod \n"
+            " If you want rod rod contact, use RodRodContact instead"
+        ).format(mock_list.__class__, mock_rod_one.__class__) == str(excinfo.value)
+
+        "Testing Self Contact wrapper with different rods"
+        with pytest.raises(TypeError) as excinfo:
+            self_contact._check_order_and_type(mock_rod_one, mock_rod_two)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system and second system should be the same rod \n"
+            " If you want rod rod contact, use RodRodContact instead"
+        ).format(mock_rod_one.__class__, mock_rod_two.__class__) == str(excinfo.value)
+
     def test_self_contact_with_rod_self_collision(self):
 
         "Testing Self Contact wrapper rod self collision with analytical verified values"
@@ -339,8 +449,8 @@ class TestSelfContact:
         mock_rod.external_forces = np.array(
             [[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
         )
-        sel_contact = SelfContact(k=1.0, nu=0.0)
-        sel_contact.apply_forces(mock_rod, 0, mock_rod, 0)
+        self_contact = RodSelfContact(k=1.0, nu=0.0)
+        self_contact.apply_contact(mock_rod, mock_rod)
 
         assert_allclose(
             mock_rod.external_forces,
@@ -358,8 +468,8 @@ class TestSelfContact:
 
         "the initially set rod does not have self collision"
         mock_rod_external_forces_before_execution = mock_rod.external_forces.copy()
-        sel_contact = SelfContact(k=1.0, nu=1.0)
-        sel_contact.apply_forces(mock_rod, 0, mock_rod, 0)
+        self_contact = RodSelfContact(k=1.0, nu=1.0)
+        self_contact.apply_contact(mock_rod, mock_rod)
 
         assert_allclose(
             mock_rod.external_forces, mock_rod_external_forces_before_execution
