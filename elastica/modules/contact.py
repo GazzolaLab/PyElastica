@@ -69,7 +69,7 @@ class Contact:
             second_sys_idx,
             contact,
         ) in self._contacts:
-            contact._check_order_and_type(
+            contact._check_systems_validity(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )
