@@ -1,9 +1,9 @@
-__doc__ = """ Test common functions used in contact in Elastica.joint implementation"""
+__doc__ = """ Test common functions used in contact in Elastica.joint implementation, should be removed along with contact in joint"""
 
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.contact_forces import (
+from elastica.joint import (
     _dot_product,
     _norm,
     _clip,
