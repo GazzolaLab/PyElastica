@@ -958,7 +958,7 @@ class ExternalContact(FreeJoint):
         log = logging.getLogger()
         log.warning(
             # Remove warning and add error if ExternalContact is used in v0.3.3
-            # Remove the option to use ExternalContact, beyond v0.4.0
+            # Remove the option to use ExternalContact, beyond v0.3.3
             "The option to use the ExternalContact joint for the rod-rod and rod-cylinder contact is now deprecated.\n"
             "Instead, for rod-rod contact or rod-cylinder contact,use RodRodContact or RodCylinderContact from the add-on Contact mixin class.\n"
             "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact().\n"
