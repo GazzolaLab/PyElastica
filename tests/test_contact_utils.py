@@ -1,4 +1,4 @@
-__doc__ = """ Test common functions used in contact in Elastica.joint implementation"""
+__doc__ = """ Test helper functions in elastica/contact_util.py used for contact"""
 
 import pytest
 import numpy as np
