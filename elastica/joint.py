@@ -1072,7 +1072,7 @@ class SelfContact(FreeJoint):
         log = logging.getLogger()
         log.warning(
             # Remove warning and add error if SelfContact is used in v0.3.3
-            # Remove the option to use SelfContact, beyond v0.4.0
+            # Remove the option to use SelfContact, beyond v0.3.3
             "The option to use the SelfContact joint for the rod self contact is now deprecated.\n"
             "Instead, for rod self contact use RodSelfContact from the add-on Contact mixin class.\n"
             "For reference see the class elastica.contact_forces.RodSelfContact(), and for usage check examples/RodContactCase/RodSelfContact/solenoids.py.\n"
