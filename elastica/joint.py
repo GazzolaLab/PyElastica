@@ -959,13 +959,11 @@ class ExternalContact(FreeJoint):
         log.warning(
             # Remove warning and add error if ExternalContact is used in v0.3.3
             # Remove the option to use ExternalContact, beyond v0.4.0
-            "The option to use the ExternalContact joint for the rod-rod and rod-cylinder "
-            "contact is now deprecated. Instead, for rod-rod contact or rod-cylinder contact, "
-            "use RodRodContact or RodCylinderContact from the add-on Contact mixin class. "
-            "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact(),"
-            " and for usage check examples/RigidbodyCases/RodRigidBodyContact/rod_cylinder_contact.py and examples/RodContactCase/RodRodContact/rod_rod_contact_parallel_validation.py."
-            " The option to use the ExternalContact joint for the rod-rod and rod-cylinder"
-            " will be removed in the future (v0.3.3)."
+            "The option to use the ExternalContact joint for the rod-rod and rod-cylinder contact is now deprecated.\n"
+            "Instead, for rod-rod contact or rod-cylinder contact,use RodRodContact or RodCylinderContact from the add-on Contact mixin class.\n"
+            "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact().\n"
+            "For usage check examples/RigidbodyCases/RodRigidBodyContact/rod_cylinder_contact.py and examples/RodContactCase/RodRodContact/rod_rod_contact_parallel_validation.py.\n"
+            " The option to use the ExternalContact joint for the rod-rod and rod-cylinder will be removed in the future (v0.3.3).\n"
         )
 
     def apply_forces(
@@ -1075,13 +1073,10 @@ class SelfContact(FreeJoint):
         log.warning(
             # Remove warning and add error if SelfContact is used in v0.3.3
             # Remove the option to use SelfContact, beyond v0.4.0
-            "The option to use the SelfContact joint for the rod self "
-            "contact is now deprecated. Instead, for rod self contact "
-            "use RodSelfContact from the add-on Contact mixin class."
-            "For reference see the class elastica.contact_forces.RodSelfContact(),"
-            " and for usage check examples/RodContactCase/RodSelfContact/solenoids.py."
-            " The option to use the SelfContact joint for the rod self contact"
-            " will be removed in the future (v0.3.3)."
+            "The option to use the SelfContact joint for the rod self contact is now deprecated.\n"
+            "Instead, for rod self contact use RodSelfContact from the add-on Contact mixin class.\n"
+            "For reference see the class elastica.contact_forces.RodSelfContact(), and for usage check examples/RodContactCase/RodSelfContact/solenoids.py.\n"
+            "The option to use the SelfContact joint for the rod self contact will be removed in the future (v0.3.3).\n"
         )
 
     def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
