@@ -1069,7 +1069,7 @@ class SelfContact(FreeJoint):
 
     def __init__(self, k, nu):
         super().__init__(k, nu)
-        log = logging.getLogger()
+        log = logging.getLogger(self.__class__.__name__)
         log.warning(
             # Remove warning and add error if SelfContact is used in v0.3.3
             # Remove the option to use SelfContact, beyond v0.3.3
