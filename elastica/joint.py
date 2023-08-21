@@ -955,7 +955,7 @@ class ExternalContact(FreeJoint):
         super().__init__(k, nu)
         self.velocity_damping_coefficient = velocity_damping_coefficient
         self.friction_coefficient = friction_coefficient
-        log = logging.getLogger()
+        log = logging.getLogger(self.__class__.__name__)
         log.warning(
             # Remove warning and add error if ExternalContact is used in v0.3.3
             # Remove the option to use ExternalContact, beyond v0.3.3
