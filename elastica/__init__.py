@@ -44,6 +44,9 @@ from elastica.joint import (
 )
 from elastica.contact_forces import (
     NoContact,
+    RodRodContact,
+    RodCylinderContact,
+    RodSelfContact,
 )
 from elastica.callback_functions import CallBackBaseClass, ExportCallBack, MyCallBack
 from elastica.dissipation import (

@@ -1,15 +1,19 @@
-__doc__ = """ Test common functions used in contact in Elastica.joint implementation, should be removed along with contact in joint"""
+__doc__ = """ Test helper functions in elastica/contact_util.py used for contact"""
 
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.joint import (
+from elastica.typing import RodBase
+from elastica.rigidbody import Cylinder
+from elastica.contact_utils import (
     _dot_product,
     _norm,
     _clip,
     _out_of_bounds,
     _find_min_dist,
     _aabbs_not_intersecting,
+    _prune_using_aabbs_rod_cylinder,
+    _prune_using_aabbs_rod_rod,
 )
 
 
@@ -216,3 +220,148 @@ def test_aabbs_not_intersectin():
     aabb_two = np.array([[2, 3], [2, 3], [2, 3]])
     "box two is a unit size cube in the first quadrant with (2,2,2) as the closest vertex to box 1"
     assert _aabbs_not_intersecting(aabb_one, aabb_two) == 1
+
+
+def mock_rod_init(self):
+
+    "Initializing Rod"
+
+    """
+    This is a small rod with 2 elements;
+    Initial Parameters:
+    element's radius = 1, length = 1,
+    tangent vector for both elements is (1, 0, 0),
+    stationary rod i.e velocity vector of each node is (0, 0, 0),
+    internal/external forces vectors are also (0, 0, 0)
+    """
+
+    self.n_elems = 2
+    self.position_collection = np.array([[1, 2, 3], [0, 0, 0], [0, 0, 0]])
+    self.radius = np.array([1, 1])
+    self.lengths = np.array([1, 1])
+    self.tangents = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
+    self.velocity_collection = np.array(
+        [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    )
+    self.internal_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    self.external_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+
+
+def mock_cylinder_init(self):
+
+    "Initializing Cylinder"
+
+    """
+    This is a rigid body cylinder;,
+    Initial Parameters:
+    radius = 1, length = 2,
+    center positioned at origin i.e (0, 0, 0),
+    cylinder's upright in x,y,z plane thus the director array,
+    stationary cylinder i.e velocity vector is (0, 0, 0),
+    external forces and torques vectors are also (0, 0, 0)
+    """
+
+    self.n_elems = 1
+    self.position = np.array([[0], [0], [0]])
+    self.director = np.array(
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
+    )
+    self.radius = 1.0
+    self.length = 2.0
+    self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
+    self.external_forces = np.array([[0.0], [0.0], [0.0]])
+    self.external_torques = np.array([[0.0], [0.0], [0.0]])
+
+
+MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
+
+MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
+
+
+def test_prune_using_aabbs_rod_cylinder():
+    "Function to test the prune using aabbs rod cylinder function"
+
+    "Testing function with analytically verified values"
+
+    "Intersecting rod and cylinder"
+
+    """
+    Since both the initialized rod and cylinder are overlapping in 3D space at (1, 1, 1);
+    Hence they are intersectiong and the function should return 0
+    """
+    rod = MockRod()
+    cylinder = MockCylinder()
+    assert (
+        _prune_using_aabbs_rod_cylinder(
+            rod.position_collection,
+            rod.radius,
+            rod.lengths,
+            cylinder.position,
+            cylinder.director,
+            cylinder.radius,
+            cylinder.length,
+        )
+        == 0
+    )
+
+    "Non - Intersecting rod and cylinder"
+    rod = MockRod()
+    cylinder = MockCylinder()
+
+    """
+    Changing the position of cylinder in 3D space so the rod and cylinder don't overlap/intersect.
+    """
+    cylinder.position = np.array([[20], [3], [4]])
+    assert (
+        _prune_using_aabbs_rod_cylinder(
+            rod.position_collection,
+            rod.radius,
+            rod.lengths,
+            cylinder.position,
+            cylinder.director,
+            cylinder.radius,
+            cylinder.length,
+        )
+        == 1
+    )
+
+
+def test_prune_using_aabbs_rod_rod():
+    "Function to test the prune using aabbs rod rod function"
+
+    "Testing function with analytically verified values"
+
+    "Intersecting rod and rod"
+    """
+    Since both the rods have same position, node's radius and length, they are overlapping/intersecting in 3D space.
+    """
+    rod_one = MockRod()
+    rod_two = MockRod()
+    assert (
+        _prune_using_aabbs_rod_rod(
+            rod_one.position_collection,
+            rod_one.radius,
+            rod_one.lengths,
+            rod_two.position_collection,
+            rod_two.radius,
+            rod_two.lengths,
+        )
+        == 0
+    )
+
+    "Non - Intersecting rod and rod"
+    """
+    Changing the position of rod_two in 3D space so the rod_one and rod_two don't overlap/intersect.
+    """
+    rod_two.position_collection = np.array([[20, 21, 22], [0, 0, 0], [0, 0, 0]])
+    assert (
+        _prune_using_aabbs_rod_rod(
+            rod_one.position_collection,
+            rod_one.radius,
+            rod_one.lengths,
+            rod_two.position_collection,
+            rod_two.radius,
+            rod_two.lengths,
+        )
+        == 1
+    )

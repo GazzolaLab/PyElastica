@@ -6,6 +6,7 @@ from elastica.typing import SystemType, RodType
 from math import sqrt
 import numba
 import numpy as np
+import logging
 
 
 class FreeJoint:
@@ -954,6 +955,16 @@ class ExternalContact(FreeJoint):
         super().__init__(k, nu)
         self.velocity_damping_coefficient = velocity_damping_coefficient
         self.friction_coefficient = friction_coefficient
+        log = logging.getLogger(self.__class__.__name__)
+        log.warning(
+            # Remove warning and add error if ExternalContact is used in v0.3.3
+            # Remove the option to use ExternalContact, beyond v0.3.3
+            "The option to use the ExternalContact joint for the rod-rod and rod-cylinder contact is now deprecated.\n"
+            "Instead, for rod-rod contact or rod-cylinder contact,use RodRodContact or RodCylinderContact from the add-on Contact mixin class.\n"
+            "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact().\n"
+            "For usage check examples/RigidbodyCases/RodRigidBodyContact/rod_cylinder_contact.py and examples/RodContactCase/RodRodContact/rod_rod_contact_parallel_validation.py.\n"
+            " The option to use the ExternalContact joint for the rod-rod and rod-cylinder will be removed in the future (v0.3.3).\n"
+        )
 
     def apply_forces(
         self,
@@ -1058,6 +1069,15 @@ class SelfContact(FreeJoint):
 
     def __init__(self, k, nu):
         super().__init__(k, nu)
+        log = logging.getLogger(self.__class__.__name__)
+        log.warning(
+            # Remove warning and add error if SelfContact is used in v0.3.3
+            # Remove the option to use SelfContact, beyond v0.3.3
+            "The option to use the SelfContact joint for the rod self contact is now deprecated.\n"
+            "Instead, for rod self contact use RodSelfContact from the add-on Contact mixin class.\n"
+            "For reference see the class elastica.contact_forces.RodSelfContact(), and for usage check examples/RodContactCase/RodSelfContact/solenoids.py.\n"
+            "The option to use the SelfContact joint for the rod self contact will be removed in the future (v0.3.3).\n"
+        )
 
     def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
         # del index_one, index_two

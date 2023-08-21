@@ -1,4 +1,4 @@
-__doc__ = """ Test Wrapper Classes used in contact in Elastica.joint implementation"""
+__doc__ = """ Test Wrapper Classes used in contact in Elastica.joint implementation, should be removed along with contact in joint"""
 
 import numpy as np
 from numpy.testing import assert_allclose

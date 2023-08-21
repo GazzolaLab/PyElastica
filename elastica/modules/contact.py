@@ -69,7 +69,7 @@ class Contact:
             second_sys_idx,
             contact,
         ) in self._contacts:
-            contact._check_order(
+            contact._check_systems_validity(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )
@@ -162,8 +162,8 @@ class _Contact:
             raise RuntimeError(
                 "No contacts provided to to establish contact between rod-like object id {0}"
                 " and {1}, but a Contact"
-                "was intended as per code. Did you forget to"
-                "call the `using` method?".format(*self.id())
+                " was intended as per code. Did you forget to"
+                " call the `using` method?".format(*self.id())
             )
 
         try:

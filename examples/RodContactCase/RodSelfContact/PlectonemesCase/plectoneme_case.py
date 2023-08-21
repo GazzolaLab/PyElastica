@@ -9,7 +9,7 @@ from examples.RodContactCase.post_processing import (
 class PlectonemesCase(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
+    ea.Contact,
     ea.Forcing,
     ea.CallBacks,
     ea.Damping,
@@ -165,7 +165,9 @@ plectonemes_sim.constrain(sherable_rod).using(
 )
 
 # Add self contact to prevent penetration
-plectonemes_sim.connect(sherable_rod, sherable_rod).using(ea.SelfContact, k=1e4, nu=10)
+plectonemes_sim.detect_contact_between(sherable_rod, sherable_rod).using(
+    ea.RodSelfContact, k=1e4, nu=10
+)
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(ea.CallBackBaseClass):
