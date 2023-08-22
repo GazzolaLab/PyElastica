@@ -3,6 +3,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica.surface import Plane
+import pytest
 
 
 # tests Initialisation of plane
@@ -30,6 +31,14 @@ def test_plane_initialization():
 
     # checking plane normal
     assert_allclose(test_plane.normal, plane_normal, atol=Tolerance.atol())
+
+    # check unnormalized error message
+    invalid_plane_normal = np.zeros(
+        3,
+    )
+    with pytest.raises(AssertionError) as excinfo:
+        test_plane = Plane(plane_origin, invalid_plane_normal)
+    assert "plane normal is not a unit vector" in str(excinfo.value)
 
 
 if __name__ == "__main__":
