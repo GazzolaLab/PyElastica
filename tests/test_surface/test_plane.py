@@ -41,7 +41,3 @@ def test_plane_initialization():
     assert "plane normal is not a unit vector" in str(excinfo.value)
 
 
-if __name__ == "__main__":
-    from pytest import main
-
-    main([__file__])
