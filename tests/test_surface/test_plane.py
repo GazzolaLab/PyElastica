@@ -39,5 +39,3 @@ def test_plane_initialization():
     with pytest.raises(AssertionError) as excinfo:
         test_plane = Plane(plane_origin, invalid_plane_normal)
     assert "plane normal is not a unit vector" in str(excinfo.value)
-
-
