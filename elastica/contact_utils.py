@@ -3,6 +3,7 @@ __doc__ = """ Helper functions for contact force calculation """
 from math import sqrt
 import numba
 import numpy as np
+from elastica.interaction import node_to_element_position
 
 
 @numba.njit(cache=True)
@@ -186,3 +187,63 @@ def _prune_using_aabbs_rod_rod(
         )
 
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
+
+
+def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collection):
+
+    element_position = node_to_element_position(position_collection)
+    n_element = element_position.shape[-1]
+    position_idx_array = np.empty((0))
+    facet_idx_array = np.empty((0))
+    grid_position = np.round(
+        (element_position[0:2, :] - np.array([x_min, y_min]).reshape((2, 1)))
+        / grid_size
+    )
+
+    # find facet neighborhood of each element position
+
+    for i in range(n_element):
+        try:
+            facet_idx_1 = faces_grid[
+                (int(grid_position[0, i]), int(grid_position[1, i]))
+            ]  # first quadrant
+        except Exception:
+            facet_idx_1 = np.empty((0))
+        try:
+            facet_idx_2 = faces_grid[
+                (int(grid_position[0, i] - 1), int(grid_position[1, i]))
+            ]  # second quadrant
+        except Exception:
+            facet_idx_2 = np.empty((0))
+        try:
+            facet_idx_3 = faces_grid[
+                (int(grid_position[0, i] - 1), int(grid_position[1, i] - 1))
+            ]  # third quadrant
+        except Exception:
+            facet_idx_3 = np.empty((0))
+        try:
+            facet_idx_4 = faces_grid[
+                (int(grid_position[0, i]), int(grid_position[1, i] - 1))
+            ]  # fourth quadrant
+        except Exception:
+            facet_idx_4 = np.empty((0))
+        facet_idx_element = np.concatenate(
+            (facet_idx_1, facet_idx_2, facet_idx_3, facet_idx_4)
+        )
+        facet_idx_element_no_duplicates = np.unique(facet_idx_element)
+        if facet_idx_element_no_duplicates.size == 0:
+            raise RuntimeError(
+                "Snake outside surface boundary"
+            )  # a snake element is on four grids with no facets
+
+        facet_idx_array = np.concatenate(
+            (facet_idx_array, facet_idx_element_no_duplicates)
+        )
+        n_contacts = facet_idx_element_no_duplicates.shape[0]
+        position_idx_array = np.concatenate(
+            (position_idx_array, i * np.ones((n_contacts,)))
+        )
+
+    position_idx_array = position_idx_array.astype(int)
+    facet_idx_array = facet_idx_array.astype(int)
+    return position_idx_array, facet_idx_array, element_position

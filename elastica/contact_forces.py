@@ -3,15 +3,17 @@ __doc__ = """ Numba implementation module containing contact between rods and ri
 from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.rod import RodBase
 from elastica.rigidbody import Cylinder
+from elastica.surface import MeshSurface
 from elastica.contact_utils import (
     _dot_product,
     _norm,
     _find_min_dist,
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
+    find_contact_faces_idx,
 )
-
-from elastica._linalg import _batch_product_k_ik_to_ik
+from elastica.interaction import node_to_element_velocity, elements_to_nodes_inplace
+from elastica._linalg import _batch_product_k_ik_to_ik, _batch_dot, _batch_norm
 import numba
 import numpy as np
 
@@ -423,6 +425,102 @@ def _calculate_contact_forces_self_rod(
                 external_forces_rod[..., j + 1] += net_contact_force
 
 
+@numba.njit(cache=True)
+def apply_normal_force_numba(
+    faces_normals,
+    faces_centers,
+    element_position,
+    position_idx_array,
+    face_idx_array,
+    surface_tol,
+    k,
+    nu,
+    radius,
+    mass,
+    position_collection,
+    velocity_collection,
+    internal_forces,
+    external_forces,
+    lengths,
+):
+    """
+    This function computes the plane force response on the element, in the
+    case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+    is used.
+
+    Parameters
+    ----------
+    system_one
+
+    Returns
+    -------
+    magnitude of the plane response
+    """
+
+    # Damping force response due to velocity towards the plane
+    element_velocity = node_to_element_velocity(
+        mass=mass, node_velocity_collection=velocity_collection
+    )
+
+    if len(face_idx_array) > 0:
+        element_position_contacts = element_position[:, position_idx_array]
+        contact_facet_centers = faces_centers[:, face_idx_array]
+        normals_on_elements = faces_normals[:, face_idx_array]
+        radius_contacts = radius[position_idx_array]
+        element_velocity_contacts = element_velocity[:, position_idx_array]
+
+    else:
+        element_position_contacts = element_position
+        contact_facet_centers = np.zeros_like(element_position)
+        normals_on_elements = np.zeros_like(element_position)
+        radius_contacts = radius
+        element_velocity_contacts = element_velocity
+
+    # Elastic force response due to penetration
+
+    distance_from_plane = _batch_dot(
+        normals_on_elements, (element_position_contacts - contact_facet_centers)
+    )
+    plane_penetration = (
+        -np.abs(np.minimum(distance_from_plane - radius_contacts, 0.0)) ** 1.5
+    )
+    elastic_force = -k * _batch_product_k_ik_to_ik(
+        plane_penetration, normals_on_elements
+    )
+
+    normal_component_of_element_velocity = _batch_dot(
+        normals_on_elements, element_velocity_contacts
+    )
+    damping_force = -nu * _batch_product_k_ik_to_ik(
+        normal_component_of_element_velocity, normals_on_elements
+    )
+
+    # Compute total plane response force
+    plane_response_force_contacts = elastic_force + damping_force
+
+    # Check if the rod elements are in contact with plane.
+    no_contact_point_idx = np.where(
+        (distance_from_plane - radius_contacts) > surface_tol
+    )[0]
+    # If rod element does not have any contact with plane, plane cannot apply response
+    # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
+    plane_response_force_contacts[..., no_contact_point_idx] = 0.0
+
+    plane_response_forces = np.zeros_like(external_forces)
+    for i in range(len(position_idx_array)):
+        plane_response_forces[
+            :, position_idx_array[i]
+        ] += plane_response_force_contacts[:, i]
+
+    # Update the external forces
+    elements_to_nodes_inplace(plane_response_forces, external_forces)
+    return (
+        _batch_norm(plane_response_force_contacts),
+        no_contact_point_idx,
+        normals_on_elements,
+    )
+
+
 class RodRodContact(NoContact):
     """
     This class is for applying contact forces between rod-rod.
@@ -724,4 +822,129 @@ class RodSelfContact(NoContact):
             system_one.external_forces,
             self.k,
             self.nu,
+        )
+
+
+class RodMeshSurfaceContact(NoContact):
+    """
+    This class is for applying contact forces between rod-mesh_surface.
+    First system is always rod and second system is always mesh_surface.
+
+    Examples
+    --------
+    How to define contact between rod and mesh_surface.
+
+    >>> simulator.detect_contact_between(rod, mesh_surface).using(
+    ...    RodMeshSurfaceContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ...    surface_tol=1e-2,
+    ... )
+
+
+    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
+    """
+
+    def __init__(self, k: float, nu: float, surface_tol=1e-4):
+        """
+
+        Parameters
+        ----------
+        k: float
+            Stiffness coefficient between the plane and the rod-like object.
+        nu: float
+            Dissipation coefficient between the plane and the rod-like object.
+        surface_tol: float
+            Penetration tolerance between the surface and the rod-like object.
+
+        """
+        super(RodMeshSurfaceContact, self).__init__()
+        # n_faces = faces.shape[-1]
+        self.k = k
+        self.nu = nu
+        self.surface_tol = surface_tol
+
+    def _check_systems_validity(
+        self,
+        system_one: SystemType,
+        system_two: AllowedContactType,
+    ) -> None:
+        """
+        This checks the contact order and type of a SystemType object and an AllowedContactType object.
+        For the RodMeshSurfaceContact class first_system should be a rod and second_system should be a mesh_surface.
+
+        Parameters
+        ----------
+        system_one
+            SystemType
+        system_two
+            AllowedContactType
+        """
+        if not issubclass(system_one.__class__, RodBase) or not issubclass(
+            system_two.__class__, MeshSurface
+        ):
+            raise TypeError(
+                "Systems provided to the contact class have incorrect order/type. \n"
+                " First system is {0} and second system is {1}. \n"
+                " First system should be a rod, second should be a mesh surface".format(
+                    system_one.__class__, system_two.__class__
+                )
+            )
+
+    def apply_normal_force(
+        self, system_one: RodType, system_two: AllowedContactType
+    ) -> tuple[np.array, np.array]:
+        """
+        In the case of contact with the plane, this function computes the plane reaction force on the element.
+
+        Parameters
+        ----------
+        system_one: object
+            Rod-like object.
+        system_two: Surface
+            Mesh surface.
+
+        Returns
+        -------
+        plane_response_force_mag : numpy.ndarray
+            1D (blocksize) array containing data with 'float' type.
+            Magnitude of plane response force acting on rod-like object.
+        no_contact_point_idx : numpy.ndarray
+            1D (blocksize) array containing data with 'int' type.
+            Index of rod-like object elements that are not in contact with the plane.
+        """
+
+        self.mesh_surface_faces = system_two.faces
+        self.mesh_surface_x_min = np.min(self.mesh_surface_faces[0, :, :])
+        self.mesh_surface_y_min = np.min(self.mesh_surface_faces[1, :, :])
+        self.mesh_surface_face_normals = system_two.face_normals
+        self.mesh_surface_face_centers = system_two.face_centers
+        (
+            self.position_idx_array,
+            self.face_idx_array,
+            self.element_position,
+        ) = find_contact_faces_idx(
+            self.facets_grid,
+            self.mesh_surface_x_min,
+            self.mesh_surface_y_min,
+            self.grid_size,
+            system_one.position_collection,
+        )
+
+        return apply_normal_force_numba(
+            self.mesh_surface_face_normals,
+            self.mesh_surface_face_centers,
+            self.element_position,
+            self.position_idx_array,
+            self.face_idx_array,
+            self.surface_tol,
+            self.k,
+            self.nu,
+            system_one.radius,
+            system_one.mass,
+            system_one.position_collection,
+            system_one.velocity_collection,
+            system_one.internal_forces,
+            system_one.external_forces,
+            system_one.lengths,
         )
