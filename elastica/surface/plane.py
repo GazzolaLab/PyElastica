@@ -13,12 +13,12 @@ class Plane(SurfaceBase):
 
         Parameters
         ----------
-        plane_origin: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-        Origin of the plane.
-        plane_normal: numpy.ndarray
-        2D (dim, 1) array containing data with 'float' type.
-        The normal vector of the plane, must be normalized.
+        plane_origin: np.ndarray
+            Origin of the plane.
+            Expect (3,1)-shaped array.
+        plane_normal: np.ndarray
+            The normal vector of the plane, must be normalized.
+            Expect (3,1)-shaped array.
         """
 
         assert_allclose(
