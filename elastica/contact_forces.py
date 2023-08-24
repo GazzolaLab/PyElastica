@@ -893,7 +893,7 @@ class RodMeshSurfaceContact(NoContact):
 
     def apply_normal_force(
         self, system_one: RodType, system_two: AllowedContactType
-    ) -> tuple[np.array, np.array]:
+    ) -> tuple:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 
