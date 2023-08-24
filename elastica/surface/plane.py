@@ -27,5 +27,5 @@ class Plane(SurfaceBase):
             atol=Tolerance.atol(),
             err_msg="plane normal is not a unit vector",
         )
-        self.normal = plane_normal.reshape(3)
+        self.normal = np.asarray(plane_normal).reshape(3)
         self.origin = plane_origin.reshape(3, 1)
