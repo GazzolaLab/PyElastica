@@ -28,4 +28,4 @@ class Plane(SurfaceBase):
             err_msg="plane normal is not a unit vector",
         )
         self.normal = np.asarray(plane_normal).reshape(3)
-        self.origin = plane_origin.reshape(3, 1)
+        self.origin = np.asarray(plane_origin).reshape(3, 1)
