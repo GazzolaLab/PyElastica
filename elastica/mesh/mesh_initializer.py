@@ -2,6 +2,7 @@ __doc__ = """ Mesh Initializer using Pyvista """
 
 import pyvista as pv
 import numpy as np
+import os
 
 
 class Mesh:
@@ -47,6 +48,9 @@ class Mesh:
         - Dimension: (3 spatial coordinates, 3 orthonormal basis vectors)
         - Initial value: [[1,0,0],[0,1,0],[0,0,1]]
 
+    mesh.model_path:
+            - Stores the path to the mesh file.
+
     Methods:
     --------
 
@@ -78,9 +82,16 @@ class Mesh:
     """
 
     def __init__(self, filepath: str) -> None:
-        self.mesh = pv.read(filepath)
-        self.orientation_cube = pv.Cube()
-        self.mesh_update()
+        if os.path.isfile(filepath):
+            self.mesh = pv.read(filepath)
+            self.model_path = filepath
+            self.orientation_cube = pv.Cube()
+            self.mesh_update()
+        else:
+            raise FileNotFoundError(
+                "Please check the filepath.\n"
+                " Please be sure to add .stl / .obj at the end of the filepath, if already present, ignore"
+            )
 
     def mesh_update(self) -> None:
         """

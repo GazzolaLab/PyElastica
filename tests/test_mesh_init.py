@@ -4,6 +4,7 @@ from elastica.mesh.mesh_initializer import Mesh
 import numpy as np
 from numpy.testing import assert_allclose
 from sys import platform
+import pytest
 
 
 """
@@ -11,6 +12,24 @@ A dummy cube mesh stl file is used for testing at tests/cube.stl
 This dummy file was created using the open source code for creating meshes using 'numpy-stl'
 in numpy-stl documentation (https://numpy-stl.readthedocs.io/en/latest/usage.html#initial-usage)
 """
+
+
+def test_mesh_init_error_message():
+    """
+    Testing mesh_surface error message by providing an invalid path to a stl mesh file.
+    """
+    if platform == "win32":
+        path = r"cube.stl"
+    else:
+        path = r"cube.stl"
+
+    with pytest.raises(FileNotFoundError) as excinfo:
+        test_mesh_surface = Mesh(path)
+
+    assert "Please check the filepath.\n"
+    " Please be sure to add .stl / .obj at the end of the filepath, if already present, ignore" in str(
+        excinfo.value
+    )
 
 
 def cube_mesh_stl_init():
@@ -242,3 +261,17 @@ def test_mesh_orientation():
     calculated_mesh_orientation = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     assert_allclose(mockmeshstl.mesh_orientation, calculated_mesh_orientation)
     assert_allclose(mockmeshobj.mesh_orientation, calculated_mesh_orientation)
+
+
+def test_model_path():
+    """
+    This functions tests the model path of the cube mesh.
+    """
+    if platform == "win32":
+        path = r"tests\cube.stl"
+    else:
+        path = r"tests/cube.stl"
+
+    mockmeshstl = Mesh(path)
+
+    assert mockmeshstl.model_path == path

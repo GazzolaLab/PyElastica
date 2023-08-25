@@ -426,7 +426,7 @@ def _calculate_contact_forces_self_rod(
 
 
 @numba.njit(cache=True)
-def apply_normal_force_numba(
+def _calculate_contact_forces_rod_mesh_surface(
     faces_normals,
     faces_centers,
     element_position,
@@ -464,14 +464,14 @@ def apply_normal_force_numba(
 
     if len(face_idx_array) > 0:
         element_position_contacts = element_position[:, position_idx_array]
-        contact_facet_centers = faces_centers[:, face_idx_array]
+        contact_face_centers = faces_centers[:, face_idx_array]
         normals_on_elements = faces_normals[:, face_idx_array]
         radius_contacts = radius[position_idx_array]
         element_velocity_contacts = element_velocity[:, position_idx_array]
 
     else:
         element_position_contacts = element_position
-        contact_facet_centers = np.zeros_like(element_position)
+        contact_face_centers = np.zeros_like(element_position)
         normals_on_elements = np.zeros_like(element_position)
         radius_contacts = radius
         element_velocity_contacts = element_velocity
@@ -479,7 +479,7 @@ def apply_normal_force_numba(
     # Elastic force response due to penetration
 
     distance_from_plane = _batch_dot(
-        normals_on_elements, (element_position_contacts - contact_facet_centers)
+        normals_on_elements, (element_position_contacts - contact_face_centers)
     )
     plane_penetration = (
         -np.abs(np.minimum(distance_from_plane - radius_contacts, 0.0)) ** 1.5
@@ -825,7 +825,7 @@ class RodSelfContact(NoContact):
         )
 
 
-class RodMeshSurfaceContact(NoContact):
+class RodMeshSurfaceContactWithGridMethod(NoContact):
     """
     This class is for applying contact forces between rod-mesh_surface.
     First system is always rod and second system is always mesh_surface.
@@ -835,17 +835,16 @@ class RodMeshSurfaceContact(NoContact):
     How to define contact between rod and mesh_surface.
 
     >>> simulator.detect_contact_between(rod, mesh_surface).using(
-    ...    RodMeshSurfaceContact,
+    ...    RodMeshSurfaceContactWithGridMethod,
     ...    k=1e4,
     ...    nu=10,
     ...    surface_tol=1e-2,
     ... )
-
-
-    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
     """
 
-    def __init__(self, k: float, nu: float, surface_tol=1e-4):
+    def __init__(
+        self, k: float, nu: float, faces_grid: dict, grid_size: float, surface_tol=1e-4
+    ):
         """
 
         Parameters
@@ -854,24 +853,33 @@ class RodMeshSurfaceContact(NoContact):
             Stiffness coefficient between the plane and the rod-like object.
         nu: float
             Dissipation coefficient between the plane and the rod-like object.
+        faces_grid: dict
+            Dictionary containing the grid information of the mesh surface.
+        grid_size: float
+            Grid size of the mesh surface.
         surface_tol: float
             Penetration tolerance between the surface and the rod-like object.
 
         """
-        super(RodMeshSurfaceContact, self).__init__()
+        super(RodMeshSurfaceContactWithGridMethod, self).__init__()
         # n_faces = faces.shape[-1]
         self.k = k
         self.nu = nu
+        self.faces_grid = faces_grid
+        self.grid_size = grid_size
         self.surface_tol = surface_tol
 
     def _check_systems_validity(
         self,
         system_one: SystemType,
         system_two: AllowedContactType,
+        faces_grid: dict,
+        grid_size: float,
     ) -> None:
         """
         This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodMeshSurfaceContact class first_system should be a rod and second_system should be a mesh_surface.
+        For the RodMeshSurfaceContact class first_system should be a rod and second_system should be a mesh_surface;
+        morever, the imported grid's attributes should match imported rod-mesh_surface(in contact) grid's attributes.
 
         Parameters
         ----------
@@ -891,7 +899,22 @@ class RodMeshSurfaceContact(NoContact):
                 )
             )
 
-    def apply_normal_force(
+        elif not faces_grid["grid_size"] == grid_size:
+            raise TypeError(
+                "Imported grid size does not match with the current rod-mesh_surface grid size. "
+            )
+
+        elif not faces_grid["model_path"] == system_two.model_path:
+            raise TypeError(
+                "Imported grid's model path does not match with the current mesh_surface model path. "
+            )
+
+        elif not faces_grid["surface_reorient"] == system_two.mesh_orientation:
+            raise TypeError(
+                "Imported grid's surface orientation does not match with the current mesh_surface rientation. "
+            )
+
+    def apply_contact(
         self, system_one: RodType, system_two: AllowedContactType
     ) -> tuple:
         """
@@ -924,14 +947,14 @@ class RodMeshSurfaceContact(NoContact):
             self.face_idx_array,
             self.element_position,
         ) = find_contact_faces_idx(
-            self.facets_grid,
+            self.faces_grid,
             self.mesh_surface_x_min,
             self.mesh_surface_y_min,
             self.grid_size,
             system_one.position_collection,
         )
 
-        return apply_normal_force_numba(
+        return _calculate_contact_forces_rod_mesh_surface(
             self.mesh_surface_face_normals,
             self.mesh_surface_face_centers,
             self.element_position,

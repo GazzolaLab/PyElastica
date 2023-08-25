@@ -2,10 +2,9 @@ __doc__ = """mesh surface class"""
 
 from elastica.surface.surface_base import SurfaceBase
 from elastica.mesh.mesh_initializer import Mesh
-import os
 
 
-class MeshSurface(SurfaceBase):
+class MeshSurface(SurfaceBase, Mesh):
     def __init__(self, filepath: str) -> None:
         """
         Mesh surface initializer.
@@ -43,6 +42,9 @@ class MeshSurface(SurfaceBase):
             - Dimension: (3 spatial coordinates, 3 orthonormal basis vectors)
             - Initial value: [[1,0,0],[0,1,0],[0,0,1]]
 
+        mesh_surface.model_path:
+            - Stores the path to the mesh file.
+
         Methods:
         --------
 
@@ -72,13 +74,8 @@ class MeshSurface(SurfaceBase):
         ex : mesh.rotate(np.array([1,0,0]), 90)
             - This method rotates the mesh by a given angle about a given axis.
         """
+        SurfaceBase.__init__(self)  # inhereting the parent class attributes, methods
+        Mesh.__init__(self, filepath)
 
-        if os.path.isfile(filepath):
-            mesh_surface = Mesh(filepath)
-            mesh_surface.mesh_update()  # using a mesh method so flake doesn't throw the error of unused variable
-
-        else:
-            raise FileNotFoundError(
-                "Please check the filepath.\n"
-                " Please be sure to add .stl / .obj at the end of the filepath, if already present, ignore"
-            )
+        mesh_surface = Mesh(filepath)
+        mesh_surface.mesh_update()  # using a mesh method so flake doesn't throw the error of unused variable
