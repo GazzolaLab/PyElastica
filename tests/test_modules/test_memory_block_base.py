@@ -8,7 +8,6 @@ from elastica.memory_block.memory_block_rod_base import (
 )
 
 
-@pytest.mark.module
 @pytest.mark.parametrize(
     "n_elems_in_rods, outputs",
     [
