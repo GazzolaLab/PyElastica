@@ -548,7 +548,7 @@ class MemoryBlockCosseratRod(
         # Copy systems variables on nodes to block structure
         map_rate_collection_dofs_in_rod_nodes = {
             "velocity_collection": 0,
-            "acceleration_collection": 1,
+            "acceleration_collection": 2,
         }
         for k, v in map_rate_collection_dofs_in_rod_nodes.items():
             self.__dict__[k] = np.lib.stride_tricks.as_strided(
@@ -568,8 +568,8 @@ class MemoryBlockCosseratRod(
 
         # Copy systems variables on elements to block structure
         map_rate_collection_dofs_in_rod_elems = {
-            "omega_collection": 0,
-            "alpha_collection": 1,
+            "omega_collection": 1,
+            "alpha_collection": 3,
         }
         for k, v in map_rate_collection_dofs_in_rod_elems.items():
             self.__dict__[k] = np.lib.stride_tricks.as_strided(
