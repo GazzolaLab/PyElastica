@@ -1,4 +1,4 @@
-__doc__ = """" Test modules to construct memory block """
+__doc__ = """" Test modules to construct memory block for Cosserat rods """
 
 import pytest
 import numpy as np
