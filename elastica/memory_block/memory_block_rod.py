@@ -177,10 +177,10 @@ class MemoryBlockCosseratRod(
                 )
 
         # Allocate block structure using system collection.
-        self.allocate_block_variables_in_nodes(systems)
-        self.allocate_block_variables_in_elements(systems)
-        self.allocate_blocks_variables_in_voronoi(systems)
-        self.allocate_blocks_variables_for_symplectic_stepper(systems)
+        self._allocate_block_variables_in_nodes(systems)
+        self._allocate_block_variables_in_elements(systems)
+        self._allocate_blocks_variables_in_voronoi(systems)
+        self._allocate_blocks_variables_for_symplectic_stepper(systems)
 
         # Reset ghosts of mass, rest length and rest voronoi length to 1. Otherwise
         # since ghosts are not modified, this causes a division by zero error.
@@ -215,7 +215,7 @@ class MemoryBlockCosseratRod(
         # Initialize the mixin class for symplectic time-stepper.
         _RodSymplecticStepperMixin.__init__(self)
 
-    def allocate_block_variables_in_nodes(self, systems: Sequence):
+    def _allocate_block_variables_in_nodes(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         node for block-structure and references allocated variables back to the
@@ -288,7 +288,7 @@ class MemoryBlockCosseratRod(
         # Things in nodes that are matrices
         # Null set
 
-    def allocate_block_variables_in_elements(self, systems: Sequence):
+    def _allocate_block_variables_in_elements(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         elements for block-structure and references allocated variables back to the
@@ -409,7 +409,7 @@ class MemoryBlockCosseratRod(
                 self.__dict__[k], self.periodic_boundary_elems_idx
             )
 
-    def allocate_blocks_variables_in_voronoi(self, systems: Sequence):
+    def _allocate_blocks_variables_in_voronoi(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         voronoi for block-structure and references allocated variables back to the
@@ -507,7 +507,7 @@ class MemoryBlockCosseratRod(
                 self.__dict__[k], self.periodic_boundary_voronoi_idx
             )
 
-    def allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
@@ -535,29 +535,6 @@ class MemoryBlockCosseratRod(
             "alpha_collection": 3,
         }
         self.rate_collection = np.zeros((len(map_rate_collection), 3 * self.n_nodes))
-        for k, v in map_rate_collection.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.rate_collection[v], (3, self.n_nodes)
-            )
-
-        self.__dict__["velocity_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[0], (3, self.n_nodes)
-        )
-
-        self.__dict__["omega_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[1],
-            (3, self.n_elems),
-        )
-
-        self.__dict__["acceleration_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[2],
-            (3, self.n_nodes),
-        )
-
-        self.__dict__["alpha_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[3],
-            (3, self.n_elems),
-        )
 
         # For Dynamic state update of position Verlet create references
         self.v_w_collection = np.lib.stride_tricks.as_strided(
@@ -565,7 +542,7 @@ class MemoryBlockCosseratRod(
         )
 
         self.dvdt_dwdt_collection = np.lib.stride_tricks.as_strided(
-            self.rate_collection[2:-1], (2, 3 * self.n_nodes)
+            self.rate_collection[2:], (2, 3 * self.n_nodes)
         )
 
         # Copy systems variables on nodes to block structure
@@ -574,6 +551,9 @@ class MemoryBlockCosseratRod(
             "acceleration_collection": 1,
         }
         for k, v in map_rate_collection_dofs_in_rod_nodes.items():
+            self.__dict__[k] = np.lib.stride_tricks.as_strided(
+                self.rate_collection[v], (3, self.n_nodes)
+            )
             for system_idx, system in enumerate(systems):
                 start_idx = self.start_idx_in_rod_nodes[system_idx]
                 end_idx = self.end_idx_in_rod_nodes[system_idx]
@@ -586,12 +566,15 @@ class MemoryBlockCosseratRod(
                 self.__dict__[k], self.periodic_boundary_nodes_idx
             )
 
-        # Copy systems variables on nodes to block structure
+        # Copy systems variables on elements to block structure
         map_rate_collection_dofs_in_rod_elems = {
             "omega_collection": 0,
             "alpha_collection": 1,
         }
         for k, v in map_rate_collection_dofs_in_rod_elems.items():
+            self.__dict__[k] = np.lib.stride_tricks.as_strided(
+                self.rate_collection[v], (3, self.n_elems)
+            )
             for system_idx, system in enumerate(systems):
                 start_idx = self.start_idx_in_rod_elems[system_idx]
                 end_idx = self.end_idx_in_rod_elems[system_idx]
