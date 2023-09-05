@@ -45,11 +45,9 @@ class BaseRodForTesting(RodBase):
         self.internal_stress = np.random.randn(3, self.n_elems)
 
         # Things that are matrix mapped on elements
-        self.director_collection = np.zeros((3, 3, self.n_elems))
-        for i in range(3):
-            for j in range(3):
-                self.director_collection[i, j, ...] = 3 * i + j
-        # self.director_collection *= np.random.randn()
+        self.director_collection = np.tile(
+            np.eye(3).reshape(3, 3, 1), (1, 1, self.n_elems)
+        )
         self.mass_second_moment_of_inertia = np.random.randn() * np.ones(
             (3, 3, self.n_elems)
         )
@@ -72,7 +70,7 @@ class BaseRodForTesting(RodBase):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_construct_memory_block_structures_for_Cosserat_rod(n_rods):
+def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
     """
     This test is only testing the validity of created block-structure class, using the
     construct_memory_block_structures function.
@@ -91,3 +89,87 @@ def test_construct_memory_block_structures_for_Cosserat_rod(n_rods):
     memory_block_list = construct_memory_block_structures(systems)
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
+
+
+@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
+def test_memory_block_rod_straight_rods(n_rods):
+
+    # Define a temporary list of systems
+    n_elems = np.random.randint(low=10, high=31, size=(n_rods,))
+    systems = [BaseRodForTesting(n_elems=n_elems[k]) for k in range(n_rods)]
+    system_idx_list = np.arange(0, n_rods)
+
+    # Initialize memory blocks
+    memory_block = MemoryBlockCosseratRod(
+        systems=systems, system_idx_list=system_idx_list
+    )
+    attr_list = dir(memory_block)
+
+    # Test basic attributes
+    assert memory_block.n_rods == n_rods
+
+    start_idx_dict = {
+        "node": memory_block.start_idx_in_rod_nodes.view(),
+        "element": memory_block.start_idx_in_rod_elems.view(),
+        "voronoi": memory_block.start_idx_in_rod_voronoi.view(),
+    }
+
+    end_idx_dict = {
+        "node": memory_block.end_idx_in_rod_nodes.view(),
+        "element": memory_block.end_idx_in_rod_elems.view(),
+        "voronoi": memory_block.end_idx_in_rod_voronoi.view(),
+    }
+
+    expected_attr_dict = {
+        "mass": "node",
+        "position_collection": "node",
+        "internal_forces": "node",
+        "external_forces": "node",
+        "radius": "element",
+        "volume": "element",
+        "density": "element",
+        "lengths": "element",
+        "rest_lengths": "element",
+        "dilatation": "element",
+        "dilatation_rate": "element",
+        "tangents": "element",
+        "sigma": "element",
+        "rest_sigma": "element",
+        "internal_torques": "element",
+        "external_torques": "element",
+        "internal_stress": "element",
+        "director_collection": "element",
+        "mass_second_moment_of_inertia": "element",
+        "inv_mass_second_moment_of_inertia": "element",
+        "shear_matrix": "element",
+        "voronoi_dilatation": "voronoi",
+        "rest_voronoi_lengths": "voronoi",
+        "kappa": "voronoi",
+        "rest_kappa": "voronoi",
+        "internal_couple": "voronoi",
+        "bend_matrix": "voronoi",
+        "velocity_collection": "node",
+        "omega_collection": "element",
+        "acceleration_collection": "node",
+        "alpha_collection": "element",
+    }
+
+    for attr, domain in expected_attr_dict.items():
+        # Check if the memory block has the attribute
+        assert attr in attr_list
+
+        start_idx = start_idx_dict[domain]
+        end_idx = end_idx_dict[domain]
+
+        for k, system in enumerate(systems):
+            block_view = memory_block.__dict__[attr].view()
+
+            # Assert that the rod's and memory block's attributes share memory
+            assert np.shares_memory(
+                block_view[..., start_idx[k] : end_idx[k]], system.__dict__[attr]
+            )
+
+            # Assert that the rod's and memory block's attributes are equal in values
+            assert np.all(
+                system.__dict__[attr] == block_view[..., start_idx[k] : end_idx[k]]
+            )
