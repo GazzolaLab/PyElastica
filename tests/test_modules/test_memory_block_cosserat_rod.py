@@ -2,6 +2,7 @@ __doc__ = """" Test modules to construct memory block for Cosserat rods """
 
 import pytest
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from elastica.rod import RodBase
 from elastica.modules.memory_block import construct_memory_block_structures
@@ -182,6 +183,6 @@ def test_memory_block_rod_straight_rods(n_rods):
             )
 
             # Assert that the rod's and memory block's attributes are equal in values
-            assert np.all(
-                system.__dict__[attr] == block_view[..., start_idx[k] : end_idx[k]]
+            assert_array_equal(
+                block_view[..., start_idx[k] : end_idx[k]], system.__dict__[attr]
             )
