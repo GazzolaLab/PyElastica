@@ -86,7 +86,10 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
 
     """
 
-    systems = [BaseRodForTesting(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    systems = [
+        BaseRodForTesting(np.random.randint(10, 30 + 1), ring_rod_flag=False)
+        for _ in range(n_rods)
+    ]
 
     memory_block_list = construct_memory_block_structures(systems)
 
