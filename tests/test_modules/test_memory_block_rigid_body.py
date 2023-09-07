@@ -65,7 +65,7 @@ def test_construct_memory_block_structures_for_rigid_bodies(n_bodies):
     assert issubclass(memory_block_list[0].__class__, MemoryBlockRigidBody)
 
 
-@pytest.mark.parametrize("n_bodies", [5])
+@pytest.mark.parametrize("n_bodies", [1, 2, 5, 6])
 def test_memory_block_rigid_body(n_bodies):
     """
     Test memory block logic for rigid bodies.
