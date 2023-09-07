@@ -1,6 +1,7 @@
 __doc__ = """" Test modules to construct memory block for Cosserat rods """
 
 import pytest
+import random
 import numpy as np
 from numpy.testing import assert_array_equal
 
@@ -10,11 +11,11 @@ from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
 
 
 class BaseRodForTesting(RodBase):
-    def __init__(self, n_elems):
+    def __init__(self, n_elems: np.int64, ring_rod_flag: bool):
         self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
-        self.n_nodes = self.n_elems + 1
-        self.n_voronoi = self.n_elems - 1
-        self.ring_rod_flag = False
+        self.n_nodes = n_elems if ring_rod_flag else n_elems + 1
+        self.n_voronoi = n_elems if ring_rod_flag else n_elems - 1
+        self.ring_rod_flag = ring_rod_flag
 
         # Things that are scalar mapped on nodes
         self.mass = np.random.randn(self.n_nodes)
@@ -92,12 +93,26 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
     assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
 
 
-@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_memory_block_rod_straight_rods(n_rods):
+@pytest.mark.parametrize("n_straight_rods", [0, 1, 2, 5])
+@pytest.mark.parametrize("n_ring_rods", [0, 1, 2, 5])
+def test_memory_block_rod(n_straight_rods, n_ring_rods):
+
+    n_rods = n_straight_rods + n_ring_rods
+
+    # Skip test if both are zero
+    if n_rods == 0:
+        pytest.skip()
 
     # Define a temporary list of systems
     n_elems = np.random.randint(low=10, high=31, size=(n_rods,))
-    systems = [BaseRodForTesting(n_elems=n_elems[k]) for k in range(n_rods)]
+    systems = [
+        BaseRodForTesting(n_elems=n_elems[k], ring_rod_flag=False)
+        for k in range(n_straight_rods)
+    ] + [
+        BaseRodForTesting(n_elems=n_elems[k + n_straight_rods], ring_rod_flag=True)
+        for k in range(n_ring_rods)
+    ]
+    random.shuffle(systems)
     system_idx_list = np.arange(0, n_rods)
 
     # Initialize memory blocks
@@ -107,7 +122,12 @@ def test_memory_block_rod_straight_rods(n_rods):
     attr_list = dir(memory_block)
 
     # Test basic attributes
+    expected_n_elems = np.sum(n_elems) + 2 * n_ring_rods + 2 * (n_rods - 1)
+
     assert memory_block.n_rods == n_rods
+    assert memory_block.n_elems == expected_n_elems
+    assert memory_block.n_nodes == expected_n_elems + 1
+    assert memory_block.n_voronoi == expected_n_elems - 1
 
     start_idx_dict = {
         "node": memory_block.start_idx_in_rod_nodes.view(),
@@ -174,15 +194,14 @@ def test_memory_block_rod_straight_rods(n_rods):
         start_idx = start_idx_dict[domain]
         end_idx = end_idx_dict[domain]
 
-        for k, system in enumerate(systems):
-            block_view = memory_block.__dict__[attr].view()
-
+        block_view = memory_block.__dict__[attr].view()
+        for i, k in enumerate(memory_block.system_idx_list):
             # Assert that the rod's and memory block's attributes share memory
             assert np.shares_memory(
-                block_view[..., start_idx[k] : end_idx[k]], system.__dict__[attr]
+                block_view[..., start_idx[i] : end_idx[i]], systems[k].__dict__[attr]
             )
 
             # Assert that the rod's and memory block's attributes are equal in values
             assert_array_equal(
-                block_view[..., start_idx[k] : end_idx[k]], system.__dict__[attr]
+                block_view[..., start_idx[i] : end_idx[i]], systems[k].__dict__[attr]
             )
