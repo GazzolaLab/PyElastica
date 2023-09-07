@@ -96,6 +96,20 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
 @pytest.mark.parametrize("n_straight_rods", [0, 1, 2, 5])
 @pytest.mark.parametrize("n_ring_rods", [0, 1, 2, 5])
 def test_memory_block_rod(n_straight_rods, n_ring_rods):
+    """
+    Test memory block logic for Cosserat rods. This test suite supports
+    a mixture of straight rods and ring rods, the order of which is internally
+    randomized. Correct system indexing is required within the memory block
+    implementation to pass this test.
+
+    Parameters
+    ----------
+    n_straight_rods: int
+        Number of straight rods.
+    n_ring_rods: int
+        Number of ring rods.
+
+    """
 
     n_rods = n_straight_rods + n_ring_rods
 
