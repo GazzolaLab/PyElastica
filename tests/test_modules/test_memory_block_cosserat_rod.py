@@ -175,17 +175,6 @@ def test_memory_block_rod(n_straight_rods, n_ring_rods):
         "alpha_collection": "element",
     }
 
-    # Self check: make sure memory block attributes do not share memory with each other
-    for attr_x in expected_attr_dict:
-        for attr_y in expected_attr_dict:
-            if attr_x == attr_y:
-                continue
-
-            assert not np.may_share_memory(
-                memory_block.__dict__[attr_x],
-                memory_block.__dict__[attr_y],
-            )
-
     # Cross check: make sure memory block and rod attributes are views of each other
     for attr, domain in expected_attr_dict.items():
         # Check if the memory block has the attribute
@@ -204,4 +193,15 @@ def test_memory_block_rod(n_straight_rods, n_ring_rods):
             # Assert that the rod's and memory block's attributes are equal in values
             assert_array_equal(
                 block_view[..., start_idx[i] : end_idx[i]], systems[k].__dict__[attr]
+            )
+
+    # Self check: make sure memory block attributes do not share memory with each other
+    for attr_x in expected_attr_dict:
+        for attr_y in expected_attr_dict:
+            if attr_x == attr_y:
+                continue
+
+            assert not np.may_share_memory(
+                memory_block.__dict__[attr_x],
+                memory_block.__dict__[attr_y],
             )
