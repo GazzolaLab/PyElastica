@@ -142,39 +142,24 @@ class MemoryBlockCosseratRod(
                     self.ghost_voronoi_idx[2::3][n_straight_rods - 1] + 1
                 )
 
-                # Compute the start and end of the rod nodes again. This time, boundary cells are added.
-                self.start_idx_in_rod_nodes[n_straight_rods:] = (
-                    self.periodic_boundary_nodes_idx[0, 0::3] + 1
-                )
-                self.end_idx_in_rod_nodes[
-                    n_straight_rods:
-                ] = self.periodic_boundary_nodes_idx[0, 1::3]
+            # Compute the start and end of the rod nodes again. This time, boundary cells are added.
+            self.start_idx_in_rod_nodes[n_straight_rods:] = (
+                self.periodic_boundary_nodes_idx[0, 0::3] + 1
+            )
+            self.end_idx_in_rod_nodes[
+                n_straight_rods:
+            ] = self.periodic_boundary_nodes_idx[0, 1::3]
 
-                self.start_idx_in_rod_elems[n_straight_rods:] = (
-                    self.periodic_boundary_elems_idx[0, 0::2] + 1
-                )
-                self.end_idx_in_rod_elems[
-                    n_straight_rods:
-                ] = self.periodic_boundary_elems_idx[0, 1::2]
+            self.start_idx_in_rod_elems[n_straight_rods:] = (
+                self.periodic_boundary_elems_idx[0, 0::2] + 1
+            )
+            self.end_idx_in_rod_elems[
+                n_straight_rods:
+            ] = self.periodic_boundary_elems_idx[0, 1::2]
 
-                self.start_idx_in_rod_voronoi[n_straight_rods:] = (
-                    self.periodic_boundary_voronoi_idx[0, :] + 1
-                )
-            else:
-                # Compute the start and end of the rod nodes again. This time, boundary cells are added.
-                self.start_idx_in_rod_nodes[:] = (
-                    self.periodic_boundary_nodes_idx[0, 0::3] + 1
-                )
-                self.end_idx_in_rod_nodes[:] = self.periodic_boundary_nodes_idx[0, 1::3]
-
-                self.start_idx_in_rod_elems[:] = (
-                    self.periodic_boundary_elems_idx[0, 0::2] + 1
-                )
-                self.end_idx_in_rod_elems[:] = self.periodic_boundary_elems_idx[0, 1::2]
-
-                self.start_idx_in_rod_voronoi[:] = (
-                    self.periodic_boundary_voronoi_idx[0, :] + 1
-                )
+            self.start_idx_in_rod_voronoi[n_straight_rods:] = (
+                self.periodic_boundary_voronoi_idx[0, :] + 1
+            )
 
         # Allocate block structure using system collection.
         self._allocate_block_variables_in_nodes(systems)
