@@ -1,6 +1,6 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
-from typing import Sequence
+from typing import Sequence, Literal, Callable
 from elastica.memory_block.memory_block_rod_base import (
     MemoryBlockRodBase,
     make_block_memory_metadata,
@@ -142,45 +142,30 @@ class MemoryBlockCosseratRod(
                     self.ghost_voronoi_idx[2::3][n_straight_rods - 1] + 1
                 )
 
-                # Compute the start and end of the rod nodes again. This time, boundary cells are added.
-                self.start_idx_in_rod_nodes[n_straight_rods:] = (
-                    self.periodic_boundary_nodes_idx[0, 0::3] + 1
-                )
-                self.end_idx_in_rod_nodes[
-                    n_straight_rods:
-                ] = self.periodic_boundary_nodes_idx[0, 1::3]
+            # Compute the start and end of the rod nodes again. This time, boundary cells are added.
+            self.start_idx_in_rod_nodes[n_straight_rods:] = (
+                self.periodic_boundary_nodes_idx[0, 0::3] + 1
+            )
+            self.end_idx_in_rod_nodes[
+                n_straight_rods:
+            ] = self.periodic_boundary_nodes_idx[0, 1::3]
 
-                self.start_idx_in_rod_elems[n_straight_rods:] = (
-                    self.periodic_boundary_elems_idx[0, 0::2] + 1
-                )
-                self.end_idx_in_rod_elems[
-                    n_straight_rods:
-                ] = self.periodic_boundary_elems_idx[0, 1::2]
+            self.start_idx_in_rod_elems[n_straight_rods:] = (
+                self.periodic_boundary_elems_idx[0, 0::2] + 1
+            )
+            self.end_idx_in_rod_elems[
+                n_straight_rods:
+            ] = self.periodic_boundary_elems_idx[0, 1::2]
 
-                self.start_idx_in_rod_voronoi[n_straight_rods:] = (
-                    self.periodic_boundary_voronoi_idx[0, :] + 1
-                )
-            else:
-                # Compute the start and end of the rod nodes again. This time, boundary cells are added.
-                self.start_idx_in_rod_nodes[:] = (
-                    self.periodic_boundary_nodes_idx[0, 0::3] + 1
-                )
-                self.end_idx_in_rod_nodes[:] = self.periodic_boundary_nodes_idx[0, 1::3]
-
-                self.start_idx_in_rod_elems[:] = (
-                    self.periodic_boundary_elems_idx[0, 0::2] + 1
-                )
-                self.end_idx_in_rod_elems[:] = self.periodic_boundary_elems_idx[0, 1::2]
-
-                self.start_idx_in_rod_voronoi[:] = (
-                    self.periodic_boundary_voronoi_idx[0, :] + 1
-                )
+            self.start_idx_in_rod_voronoi[n_straight_rods:] = (
+                self.periodic_boundary_voronoi_idx[0, :] + 1
+            )
 
         # Allocate block structure using system collection.
-        self.allocate_block_variables_in_nodes(systems)
-        self.allocate_block_variables_in_elements(systems)
-        self.allocate_blocks_variables_in_voronoi(systems)
-        self.allocate_blocks_variables_for_symplectic_stepper(systems)
+        self._allocate_block_variables_in_nodes(systems)
+        self._allocate_block_variables_in_elements(systems)
+        self._allocate_blocks_variables_in_voronoi(systems)
+        self._allocate_blocks_variables_for_symplectic_stepper(systems)
 
         # Reset ghosts of mass, rest length and rest voronoi length to 1. Otherwise
         # since ghosts are not modified, this causes a division by zero error.
@@ -215,7 +200,7 @@ class MemoryBlockCosseratRod(
         # Initialize the mixin class for symplectic time-stepper.
         _RodSymplecticStepperMixin.__init__(self)
 
-    def allocate_block_variables_in_nodes(self, systems: Sequence):
+    def _allocate_block_variables_in_nodes(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         node for block-structure and references allocated variables back to the
@@ -236,23 +221,13 @@ class MemoryBlockCosseratRod(
         self.scalar_dofs_in_rod_nodes = np.zeros(
             (len(map_scalar_dofs_in_rod_nodes), self.n_nodes)
         )
-        for k, v in map_scalar_dofs_in_rod_nodes.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.scalar_dofs_in_rod_nodes[v], (self.n_nodes,)
-            )
-
-        for k, v in map_scalar_dofs_in_rod_nodes.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_nodes[system_idx]
-                end_idx = self.end_idx_in_rod_nodes[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic node boundaries
-            _synchronize_periodic_boundary_of_scalar_collection(
-                self.__dict__[k], self.periodic_boundary_nodes_idx
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_scalar_dofs_in_rod_nodes,
+            systems=systems,
+            block_memory=self.scalar_dofs_in_rod_nodes,
+            domain_type="node",
+            value_type="scalar",
+        )
 
         # Things in nodes that are vectors
         #             0 ("position_collection", float64[:, :]),
@@ -267,28 +242,15 @@ class MemoryBlockCosseratRod(
         self.vector_dofs_in_rod_nodes = np.zeros(
             (len(map_vector_dofs_in_rod_nodes), 3 * self.n_nodes)
         )
-        for k, v in map_vector_dofs_in_rod_nodes.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.vector_dofs_in_rod_nodes[v], (3, self.n_nodes)
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_vector_dofs_in_rod_nodes,
+            systems=systems,
+            block_memory=self.vector_dofs_in_rod_nodes,
+            domain_type="node",
+            value_type="vector",
+        )
 
-        for k, v in map_vector_dofs_in_rod_nodes.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_nodes[system_idx]
-                end_idx = self.end_idx_in_rod_nodes[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic node boundaries
-            _synchronize_periodic_boundary_of_vector_collection(
-                self.__dict__[k], self.periodic_boundary_nodes_idx
-            )
-
-        # Things in nodes that are matrices
-        # Null set
-
-    def allocate_block_variables_in_elements(self, systems: Sequence):
+    def _allocate_block_variables_in_elements(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         elements for block-structure and references allocated variables back to the
@@ -323,23 +285,13 @@ class MemoryBlockCosseratRod(
         self.scalar_dofs_in_rod_elems = np.zeros(
             (len(map_scalar_dofs_in_rod_elems), self.n_elems)
         )
-        for k, v in map_scalar_dofs_in_rod_elems.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.scalar_dofs_in_rod_elems[v], (self.n_elems,)
-            )
-
-        for k, v in map_scalar_dofs_in_rod_elems.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_elems[system_idx]
-                end_idx = self.end_idx_in_rod_elems[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic element boundaries
-            _synchronize_periodic_boundary_of_scalar_collection(
-                self.__dict__[k], self.periodic_boundary_elems_idx
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_scalar_dofs_in_rod_elems,
+            systems=systems,
+            block_memory=self.scalar_dofs_in_rod_elems,
+            domain_type="element",
+            value_type="scalar",
+        )
 
         # Things in elements that are vectors
         #             0 ("tangents", float64[:, :]),
@@ -359,23 +311,13 @@ class MemoryBlockCosseratRod(
         self.vector_dofs_in_rod_elems = np.zeros(
             (len(map_vector_dofs_in_rod_elems), 3 * self.n_elems)
         )
-        for k, v in map_vector_dofs_in_rod_elems.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.vector_dofs_in_rod_elems[v], (3, self.n_elems)
-            )
-
-        for k, v in map_vector_dofs_in_rod_elems.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_elems[system_idx]
-                end_idx = self.end_idx_in_rod_elems[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic element boundaries
-            _synchronize_periodic_boundary_of_vector_collection(
-                self.__dict__[k], self.periodic_boundary_elems_idx
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_vector_dofs_in_rod_elems,
+            systems=systems,
+            block_memory=self.vector_dofs_in_rod_elems,
+            domain_type="element",
+            value_type="vector",
+        )
 
         # Things in elements that are matrices
         #             0 ("director_collection", float64[:, :, :]),
@@ -391,25 +333,15 @@ class MemoryBlockCosseratRod(
         self.matrix_dofs_in_rod_elems = np.zeros(
             (len(map_matrix_dofs_in_rod_elems), 9 * self.n_elems)
         )
-        for k, v in map_matrix_dofs_in_rod_elems.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.matrix_dofs_in_rod_elems[v], (3, 3, self.n_elems)
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_matrix_dofs_in_rod_elems,
+            systems=systems,
+            block_memory=self.matrix_dofs_in_rod_elems,
+            domain_type="element",
+            value_type="tensor",
+        )
 
-        for k, v in map_matrix_dofs_in_rod_elems.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_elems[system_idx]
-                end_idx = self.end_idx_in_rod_elems[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic element boundaries
-            _synchronize_periodic_boundary_of_matrix_collection(
-                self.__dict__[k], self.periodic_boundary_elems_idx
-            )
-
-    def allocate_blocks_variables_in_voronoi(self, systems: Sequence):
+    def _allocate_blocks_variables_in_voronoi(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables on
         voronoi for block-structure and references allocated variables back to the
@@ -434,23 +366,13 @@ class MemoryBlockCosseratRod(
         self.scalar_dofs_in_rod_voronois = np.zeros(
             (len(map_scalar_dofs_in_rod_voronois), self.n_voronoi)
         )
-        for k, v in map_scalar_dofs_in_rod_voronois.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.scalar_dofs_in_rod_voronois[v], (self.n_voronoi,)
-            )
-
-        for k, v in map_scalar_dofs_in_rod_voronois.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_voronoi[system_idx]
-                end_idx = self.end_idx_in_rod_voronoi[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic voronoi boundaries
-            _synchronize_periodic_boundary_of_scalar_collection(
-                self.__dict__[k], self.periodic_boundary_voronoi_idx
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_scalar_dofs_in_rod_voronois,
+            systems=systems,
+            block_memory=self.scalar_dofs_in_rod_voronois,
+            domain_type="voronoi",
+            value_type="scalar",
+        )
 
         # Things in voronoi that are vectors
         #             0 ("kappa", float64[:, :]),
@@ -464,23 +386,13 @@ class MemoryBlockCosseratRod(
         self.vector_dofs_in_rod_voronois = np.zeros(
             (len(map_vector_dofs_in_rod_voronois), 3 * self.n_voronoi)
         )
-        for k, v in map_vector_dofs_in_rod_voronois.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.vector_dofs_in_rod_voronois[v], (3, self.n_voronoi)
-            )
-
-        for k, v in map_vector_dofs_in_rod_voronois.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_voronoi[system_idx]
-                end_idx = self.end_idx_in_rod_voronoi[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic voronoi boundaries
-            _synchronize_periodic_boundary_of_vector_collection(
-                self.__dict__[k], self.periodic_boundary_voronoi_idx
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_vector_dofs_in_rod_voronois,
+            systems=systems,
+            block_memory=self.vector_dofs_in_rod_voronois,
+            domain_type="voronoi",
+            value_type="vector",
+        )
 
         # Things in voronoi that are matrices
         #             0 ("bend_matrix", float64[:, :, :]),
@@ -488,26 +400,15 @@ class MemoryBlockCosseratRod(
         self.matrix_dofs_in_rod_voronois = np.zeros(
             (len(map_matrix_dofs_in_rod_voronois), 9 * self.n_voronoi)
         )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_matrix_dofs_in_rod_voronois,
+            systems=systems,
+            block_memory=self.matrix_dofs_in_rod_voronois,
+            domain_type="voronoi",
+            value_type="tensor",
+        )
 
-        for k, v in map_matrix_dofs_in_rod_voronois.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.matrix_dofs_in_rod_voronois[v], (3, 3, self.n_voronoi)
-            )
-
-        for k, v in map_matrix_dofs_in_rod_voronois.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_voronoi[system_idx]
-                end_idx = self.end_idx_in_rod_voronoi[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic voronoi boundaries
-            _synchronize_periodic_boundary_of_matrix_collection(
-                self.__dict__[k], self.periodic_boundary_voronoi_idx
-            )
-
-    def allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
@@ -535,29 +436,6 @@ class MemoryBlockCosseratRod(
             "alpha_collection": 3,
         }
         self.rate_collection = np.zeros((len(map_rate_collection), 3 * self.n_nodes))
-        for k, v in map_rate_collection.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.rate_collection[v], (3, self.n_nodes)
-            )
-
-        self.__dict__["velocity_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[0], (3, self.n_nodes)
-        )
-
-        self.__dict__["omega_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[1],
-            (3, self.n_elems),
-        )
-
-        self.__dict__["acceleration_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[2],
-            (3, self.n_nodes),
-        )
-
-        self.__dict__["alpha_collection"] = np.lib.stride_tricks.as_strided(
-            self.rate_collection[3],
-            (3, self.n_elems),
-        )
 
         # For Dynamic state update of position Verlet create references
         self.v_w_collection = np.lib.stride_tricks.as_strided(
@@ -565,41 +443,137 @@ class MemoryBlockCosseratRod(
         )
 
         self.dvdt_dwdt_collection = np.lib.stride_tricks.as_strided(
-            self.rate_collection[2:-1], (2, 3 * self.n_nodes)
+            self.rate_collection[2:], (2, 3 * self.n_nodes)
         )
 
         # Copy systems variables on nodes to block structure
         map_rate_collection_dofs_in_rod_nodes = {
             "velocity_collection": 0,
-            "acceleration_collection": 1,
+            "acceleration_collection": 2,
         }
-        for k, v in map_rate_collection_dofs_in_rod_nodes.items():
-            for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_nodes[system_idx]
-                end_idx = self.end_idx_in_rod_nodes[system_idx]
-                self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., start_idx:end_idx]
-                )
-            # synchronize the periodic node boundaries
-            _synchronize_periodic_boundary_of_vector_collection(
-                self.__dict__[k], self.periodic_boundary_nodes_idx
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_rate_collection_dofs_in_rod_nodes,
+            systems=systems,
+            block_memory=self.rate_collection,
+            domain_type="node",
+            value_type="vector",
+        )
+
+        # Copy systems variables on elements to block structure
+        map_rate_collection_dofs_in_rod_elems = {
+            "omega_collection": 1,
+            "alpha_collection": 3,
+        }
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_rate_collection_dofs_in_rod_elems,
+            systems=systems,
+            block_memory=self.rate_collection,
+            domain_type="element",
+            value_type="vector",
+        )
+
+    def _map_system_properties_to_block_memory(
+        self,
+        mapping_dict: dict,
+        systems: Sequence,
+        block_memory: np.ndarray,
+        domain_type: Literal["node", "element", "voronoi"],
+        value_type: Literal["scalar", "vector", "tensor"],
+    ) -> None:
+        """Map system (Cosserat rods) properties to memory blocks.
+
+        This method take domain types (node, element, voronoi) and value
+        types (scalar, vector, tensor) as inputs and compute internally how to
+        construct the mapping properly.
+
+        Parameters
+        ----------
+        mapping_dict: dict
+            Dictionary with attribute names as keys and block row index as values.
+        systems: Sequence
+            A sequence containing Cosserat rod objects to map from.
+        block_memory: ndarray
+            Memory block that, at the end of the method execution, contains all designated
+            attributes of all systems.
+        domain_type: str
+            A string that indicates the discretized domain where the attributes reside.
+            Options among "node", "element", and "voronoi".
+        value_type: str
+            A string that indicates the shape of the attribute.
+            Options among "scalar", "vector", and "tensor".
+
+        """
+
+        # typedef
+        start_idx_list: np.ndarray
+        end_idx_list: np.ndarray
+        periodic_boundary_idx: np.ndarray
+        synchronize_periodic_boundary: Callable
+        domain_num: np.int64
+        view_shape: tuple
+
+        if domain_type == "node":
+            start_idx_list = self.start_idx_in_rod_nodes.view()
+            end_idx_list = self.end_idx_in_rod_nodes.view()
+            domain_num = self.n_nodes
+            periodic_boundary_idx = self.periodic_boundary_nodes_idx.view()
+
+        elif domain_type == "element":
+            start_idx_list = self.start_idx_in_rod_elems.view()
+            end_idx_list = self.end_idx_in_rod_elems.view()
+            domain_num = self.n_elems
+            periodic_boundary_idx = self.periodic_boundary_elems_idx.view()
+
+        elif domain_type == "voronoi":
+            start_idx_list = self.start_idx_in_rod_voronoi.view()
+            end_idx_list = self.end_idx_in_rod_voronoi.view()
+            domain_num = self.n_voronoi
+            periodic_boundary_idx = self.periodic_boundary_voronoi_idx.view()
+
+        else:
+            raise ValueError(
+                "Incorrect domain type. Must be one of node, element, and voronoi"
             )
 
-        # Copy systems variables on nodes to block structure
-        map_rate_collection_dofs_in_rod_elems = {
-            "omega_collection": 0,
-            "alpha_collection": 1,
-        }
-        for k, v in map_rate_collection_dofs_in_rod_elems.items():
+        if value_type == "scalar":
+            view_shape = (domain_num,)
+            synchronize_periodic_boundary = (
+                _synchronize_periodic_boundary_of_scalar_collection
+            )
+
+        elif value_type == "vector":
+            view_shape = (3, domain_num)
+            synchronize_periodic_boundary = (
+                _synchronize_periodic_boundary_of_vector_collection
+            )
+
+        elif value_type == "tensor":
+            view_shape = (3, 3, domain_num)
+            synchronize_periodic_boundary = (
+                _synchronize_periodic_boundary_of_matrix_collection
+            )
+
+        else:
+            raise ValueError(
+                "Incorrect value type. Must be one of scalar, vector, and tensor."
+            )
+
+        for k, v in mapping_dict.items():
+            # Map class attributes to block memory
+            self.__dict__[k] = np.lib.stride_tricks.as_strided(
+                block_memory[v],
+                shape=view_shape,
+            )
+
+            # Copy system attributes into block memory, then make system attributes
+            # views into the block memory
             for system_idx, system in enumerate(systems):
-                start_idx = self.start_idx_in_rod_elems[system_idx]
-                end_idx = self.end_idx_in_rod_elems[system_idx]
+                start_idx = start_idx_list[system_idx]
+                end_idx = end_idx_list[system_idx]
                 self.__dict__[k][..., start_idx:end_idx] = system.__dict__[k].copy()
                 system.__dict__[k] = np.ndarray.view(
                     self.__dict__[k][..., start_idx:end_idx]
                 )
-            # synchronize the periodic node boundaries
-            _synchronize_periodic_boundary_of_vector_collection(
-                self.__dict__[k], self.periodic_boundary_elems_idx
-            )
+
+            # Synchronize periodic boundaries
+            synchronize_periodic_boundary(self.__dict__[k], periodic_boundary_idx)
