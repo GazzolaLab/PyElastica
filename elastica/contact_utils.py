@@ -189,6 +189,45 @@ def _prune_using_aabbs_rod_rod(
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
 
 
+@numba.njit(cache=True)
+def _prune_using_aabbs_rod_sphere(
+    rod_one_position_collection,
+    rod_one_radius_collection,
+    rod_one_length_collection,
+    sphere_position,
+    sphere_director,
+    sphere_radius,
+):
+    max_possible_dimension = np.zeros((3,))
+    aabb_rod = np.empty((3, 2))
+    aabb_sphere = np.empty((3, 2))
+    max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
+        rod_one_length_collection
+    )
+    for i in range(3):
+        aabb_rod[i, 0] = (
+            np.min(rod_one_position_collection[i]) - max_possible_dimension[i]
+        )
+        aabb_rod[i, 1] = (
+            np.max(rod_one_position_collection[i]) + max_possible_dimension[i]
+        )
+
+    sphere_dimensions_in_local_FOR = np.array(
+        [sphere_radius, sphere_radius, sphere_radius]
+    )
+    sphere_dimensions_in_world_FOR = np.zeros_like(sphere_dimensions_in_local_FOR)
+    for i in range(3):
+        for j in range(3):
+            sphere_dimensions_in_world_FOR[i] += (
+                sphere_director[j, i, 0] * sphere_dimensions_in_local_FOR[j]
+            )
+
+    max_possible_dimension = np.abs(sphere_dimensions_in_world_FOR)
+    aabb_sphere[..., 0] = sphere_position[..., 0] - max_possible_dimension
+    aabb_sphere[..., 1] = sphere_position[..., 0] + max_possible_dimension
+    return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
+
+
 def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collection):
 
     element_position = node_to_element_position(position_collection)
@@ -249,9 +288,15 @@ def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collect
     return position_idx_array, face_idx_array, element_position
 
 
-"""
 @numba.njit(cache=True)
-def surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up):
+def surface_grid_numba(
+    faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up
+):
+    """
+    Computes the faces_grid dictionary for rod-meshsurface contact
+
+    Consider calling surface_grid for face_grid generation
+    """
     x_min = np.min(faces[0, :, :])
     y_min = np.min(faces[1, :, :])
     n_x_positions = int(np.ceil((np.max(faces[0, :, :]) - x_min) / grid_size))
@@ -263,16 +308,43 @@ def surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down,
         for j in range(n_y_positions):
             y_down = y_min + (j * grid_size)
             y_up = y_min + ((j + 1) * grid_size)
-            if np.any(np.where(((face_y_down > y_up) + (face_y_up < y_down) + (face_x_right < x_left) + (face_x_left > x_right)) == 0)[0]):
-                faces_grid[(i, j)] = np.where(((face_y_down > y_up) + (face_y_up < y_down) + (face_x_right < x_left) + (face_x_left > x_right)) == 0)[0]
+            if np.any(
+                np.where(
+                    (
+                        (face_y_down > y_up)
+                        + (face_y_up < y_down)
+                        + (face_x_right < x_left)
+                        + (face_x_left > x_right)
+                    )
+                    == 0
+                )[0]
+            ):
+                faces_grid[(i, j)] = np.where(
+                    (
+                        (face_y_down > y_up)
+                        + (face_y_up < y_down)
+                        + (face_x_right < x_left)
+                        + (face_x_left > x_right)
+                    )
+                    == 0
+                )[0]
     return faces_grid
 
 
 def surface_grid(faces, grid_size):
+    """
+    Returns the faces_grid dictionary for rod-meshsurface contact
+
+    This function only creates the faces_grid dict;
+    the user must store the data in a binary file using pickle.dump
+    """
     face_x_left = np.min(faces[0, :, :], axis=0)
     face_y_down = np.min(faces[1, :, :], axis=0)
     face_x_right = np.max(faces[0, :, :], axis=0)
     face_y_up = np.max(faces[1, :, :], axis=0)
 
-    return dict(surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up))
-"""
+    return dict(
+        surface_grid_numba(
+            faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up
+        )
+    )
