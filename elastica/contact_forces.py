@@ -427,22 +427,19 @@ def _calculate_contact_forces_self_rod(
 
 @numba.njit(cache=True)
 def _calculate_contact_forces_rod_mesh_surface(
-    faces_normals,
-    faces_centers,
-    element_position,
-    position_idx_array,
+    faces_normals: np.ndarray,
+    faces_centers: np.ndarray,
+    element_position: np.ndarray,
+    position_idx_array: np.ndarray,
     face_idx_array,
-    surface_tol,
-    k,
-    nu,
-    radius,
-    mass,
-    position_collection,
-    velocity_collection,
-    internal_forces,
-    external_forces,
-    lengths,
-):
+    surface_tol: float,
+    k: float,
+    nu: float,
+    radius: np.array,
+    mass: np.array,
+    velocity_collection: np.ndarray,
+    external_forces: np.ndarray,
+) -> tuple:
     """
     This function computes the plane force response on the element, in the
     case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
@@ -450,7 +447,30 @@ def _calculate_contact_forces_rod_mesh_surface(
 
     Parameters
     ----------
-    system_one
+    faces_normals: np.ndarray
+        mesh cell's normal vectors
+    faces_centers: np.ndarray
+        mesh cell's center points
+    element_position: np.ndarray
+        rod element's center points
+    position_idx_array: np.ndarray
+        rod element's index array
+    face_idx_array: np.ndarray
+        mesh cell's index array
+    surface_tol: float
+        Penetration tolerance between the surface and the rod-like object
+    k: float
+        Contact spring constant
+    nu: float
+        Contact damping constant
+    radius: np.array
+        rod element's radius
+    mass: np.array
+        rod element's mass
+    velocity_collection: np.ndarray
+        rod element's velocity
+    external_forces: np.ndarray
+        rod element's external forces
 
     Returns
     -------
@@ -965,9 +985,6 @@ class RodMeshSurfaceContactWithGridMethod(NoContact):
             self.nu,
             system_one.radius,
             system_one.mass,
-            system_one.position_collection,
             system_one.velocity_collection,
-            system_one.internal_forces,
             system_one.external_forces,
-            system_one.lengths,
         )
