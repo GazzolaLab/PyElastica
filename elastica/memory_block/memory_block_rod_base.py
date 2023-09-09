@@ -1,23 +1,32 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
+from typing import Iterable
 
 
-def make_block_memory_metadata(n_elems_in_rods):
+def make_block_memory_metadata(n_elems_in_rods: np.ndarray) -> Iterable:
     """
-    This function, takes number of elements of each rod as an numpy array and computes,
+    This function, takes number of elements of each rod as a numpy array and computes,
     ghost nodes, elements and voronoi element indexes and numbers and returns it.
 
     Parameters
     ----------
-    n_elems_in_rods
+    n_elems_in_rods: ndarray
+        An integer array containing the number of elements in each of the n rod.
 
     Returns
     -------
-
+    n_elems_with_ghosts: int64
+        Total number of elements with ghost elements included. There are two ghost elements
+        between each pair of two rods adjacent in memory block.
+    ghost_nodes_idx: ndarray
+        An integer array of length n - 1 containing the indices of ghost nodes in memory block.
+    ghost_elements_idx: ndarray
+        An integer array of length 2 * (n - 1) containing the indices of ghost elements in memory block.
+    ghost_voronoi_idx: ndarray
+        An integer array of length 2 * (n - 1) containing the indices of ghost Voronoi nodes in memory block.
     """
-    n_nodes_in_rods = n_elems_in_rods + 1
-    n_voronois_in_rods = n_elems_in_rods - 1
 
+    n_nodes_in_rods = n_elems_in_rods + 1
     n_rods = n_elems_in_rods.shape[0]
 
     # Gap between two rods have one ghost node
@@ -27,28 +36,18 @@ def make_block_memory_metadata(n_elems_in_rods):
     # Gap between two rods have three ghost voronois : comes out to n_nodes_with_ghosts - 2
     # n_voronoi_with_ghosts = np.sum(n_voronois_in_rods) + 3 * (n_rods - 1)
 
-    # To be nulled
-    ghost_nodes_idx = np.zeros(((n_rods - 1),), dtype=np.int64)
-    ghost_nodes_idx[:] = n_nodes_in_rods[:-1]
-    ghost_nodes_idx = np.cumsum(ghost_nodes_idx)
+    ghost_nodes_idx = np.cumsum(n_nodes_in_rods[:-1], dtype=np.int64)
     # Add [0, 1, 2, ... n_rods-2] to the ghost_nodes idx to accommodate miscounting
     ghost_nodes_idx += np.arange(0, n_rods - 1, dtype=np.int64)
 
     ghost_elems_idx = np.zeros((2 * (n_rods - 1),), dtype=np.int64)
-    ghost_elems_idx[::2] = n_elems_in_rods[:-1]
-    ghost_elems_idx[1::2] = 1
-    ghost_elems_idx = np.cumsum(ghost_elems_idx)
-    # Add [0, 0, 1, 1, 2, 2, ... n_rods-2, n_rods-2] to the ghost_elems idx to accommodate miscounting
-    ghost_elems_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int64), 2)
+    ghost_elems_idx[::2] = ghost_nodes_idx - 1
+    ghost_elems_idx[1::2] = ghost_nodes_idx.copy()
 
     ghost_voronoi_idx = np.zeros((3 * (n_rods - 1),), dtype=np.int64)
-    ghost_voronoi_idx[::3] = n_voronois_in_rods[:-1]
-    ghost_voronoi_idx[1::3] = 1
-    ghost_voronoi_idx[2::3] = 1
-    ghost_voronoi_idx = np.cumsum(ghost_voronoi_idx)
-    # Add [0, 0, 0, 1, 1, 1, 2, 2, 2, ... n_rods-2, n_rods-2, n_rods-2] to the ghost_voronoi idx
-    # to accommodate miscounting
-    ghost_voronoi_idx += np.repeat(np.arange(0, n_rods - 1, dtype=np.int64), 3)
+    ghost_voronoi_idx[::3] = ghost_nodes_idx - 2
+    ghost_voronoi_idx[1::3] = ghost_nodes_idx - 1
+    ghost_voronoi_idx[2::3] = ghost_nodes_idx.copy()
 
     return n_elems_with_ghosts, ghost_nodes_idx, ghost_elems_idx, ghost_voronoi_idx
 

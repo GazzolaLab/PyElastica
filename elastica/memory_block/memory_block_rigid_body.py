@@ -1,13 +1,13 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
 import numpy as np
-from typing import Sequence, List
+from typing import Sequence, Literal
 
 from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
-    def __init__(self, systems: Sequence, system_idx_list: List[int]):
+    def __init__(self, systems: Sequence, system_idx_list: Sequence[np.int64]):
 
         self.n_bodies = len(systems)
         self.n_elems = self.n_bodies
@@ -15,15 +15,15 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
 
         # Allocate block structure using system collection.
-        self.allocate_block_variables_scalars(systems)
-        self.allocate_block_variables_vectors(systems)
-        self.allocate_block_variables_matrix(systems)
-        self.allocate_block_variables_for_symplectic_stepper(systems)
+        self._allocate_block_variables_scalars(systems)
+        self._allocate_block_variables_vectors(systems)
+        self._allocate_block_variables_matrix(systems)
+        self._allocate_block_variables_for_symplectic_stepper(systems)
 
         # Initialize the mixin class for symplectic time-stepper.
         _RigidRodSymplecticStepperMixin.__init__(self)
 
-    def allocate_block_variables_scalars(self, systems: Sequence):
+    def _allocate_block_variables_scalars(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables for
         block-structure and references allocated variables back to the systems.
@@ -55,19 +55,14 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             (len(map_scalar_dofs_in_rigid_bodies), self.n_elems)
         )
 
-        for k, v in map_scalar_dofs_in_rigid_bodies.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.scalar_dofs_in_rigid_bodies[v], (self.n_elems,)
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_scalar_dofs_in_rigid_bodies,
+            systems=systems,
+            block_memory=self.scalar_dofs_in_rigid_bodies,
+            value_type="scalar",
+        )
 
-        for k, v in map_scalar_dofs_in_rigid_bodies.items():
-            for system_idx, system in enumerate(systems):
-                self.__dict__[k][..., system_idx : system_idx + 1] = system.__dict__[k]
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., system_idx : system_idx + 1]
-                )
-
-    def allocate_block_variables_vectors(self, systems: Sequence):
+    def _allocate_block_variables_vectors(self, systems: Sequence):
         """
         This function takes system collection and allocates the vector variables for
         block-structure and references allocated vector variables back to the systems.
@@ -96,28 +91,21 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             (len(map_vector_dofs_in_rigid_bodies), 3 * self.n_elems)
         )
 
-        for k, v in map_vector_dofs_in_rigid_bodies.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.vector_dofs_in_rigid_bodies[v], (3, self.n_elems)
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_vector_dofs_in_rigid_bodies,
+            systems=systems,
+            block_memory=self.vector_dofs_in_rigid_bodies,
+            value_type="vector",
+        )
 
-        for k, v in map_vector_dofs_in_rigid_bodies.items():
-            for system_idx, system in enumerate(systems):
-                self.__dict__[k][..., system_idx : system_idx + 1] = system.__dict__[
-                    k
-                ].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., system_idx : system_idx + 1]
-                )
-
-    def allocate_block_variables_matrix(self, systems: Sequence):
+    def _allocate_block_variables_matrix(self, systems: Sequence):
         """
         This function takes system collection and allocates the matrix variables for
         block-structure and references allocated matrix variables back to the systems.
 
         Parameters
         ----------
-        system
+        systems
 
         Returns
         -------
@@ -139,21 +127,14 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             (len(map_matrix_dofs_in_rigid_bodies), 9 * self.n_elems)
         )
 
-        for k, v in map_matrix_dofs_in_rigid_bodies.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.matrix_dofs_in_rigid_bodies[v], (3, 3, self.n_elems)
-            )
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_matrix_dofs_in_rigid_bodies,
+            systems=systems,
+            block_memory=self.matrix_dofs_in_rigid_bodies,
+            value_type="tensor",
+        )
 
-        for k, v in map_matrix_dofs_in_rigid_bodies.items():
-            for system_idx, system in enumerate(systems):
-                self.__dict__[k][..., system_idx : system_idx + 1] = system.__dict__[
-                    k
-                ].copy()
-                system.__dict__[k] = np.ndarray.view(
-                    self.__dict__[k][..., system_idx : system_idx + 1]
-                )
-
-    def allocate_block_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_block_variables_for_symplectic_stepper(self, systems: Sequence):
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
@@ -181,11 +162,12 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             "alpha_collection": 3,
         }
         self.rate_collection = np.zeros((len(map_rate_collection), 3 * self.n_elems))
-        for k, v in map_rate_collection.items():
-            self.__dict__[k] = np.lib.stride_tricks.as_strided(
-                self.rate_collection[v], (3, self.n_elems)
-            )
-
+        self._map_system_properties_to_block_memory(
+            mapping_dict=map_rate_collection,
+            systems=systems,
+            block_memory=self.rate_collection,
+            value_type="vector",
+        )
         # For Dynamic state update of position Verlet create references
         self.v_w_collection = np.lib.stride_tricks.as_strided(
             self.rate_collection[0:2], (2, 3 * self.n_elems)
@@ -195,11 +177,55 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             self.rate_collection[2:-1], (2, 3 * self.n_elems)
         )
 
-        for k, v in map_rate_collection.items():
+    def _map_system_properties_to_block_memory(
+        self,
+        mapping_dict: dict,
+        systems: Sequence,
+        block_memory: np.ndarray,
+        value_type: Literal["scalar", "vector", "tensor"],
+    ) -> None:
+        """Map system (rigid bodies) properties to memory blocks.
+
+        Parameters
+        ----------
+        mapping_dict: dict
+            Dictionary with attribute names as keys and block row index as values.
+        systems: Sequence
+            A sequence containing Cosserat rod objects to map from.
+        block_memory: ndarray
+            Memory block that, at the end of the method execution, contains all designated
+            attributes of all systems.
+        value_type: str
+            A string that indicates the shape of the attribute.
+            Options among "scalar", "vector", and "tensor".
+
+        """
+        if value_type == "scalar":
+            view_shape = (self.n_elems,)
+
+        elif value_type == "vector":
+            view_shape = (3, self.n_elems)
+
+        elif value_type == "tensor":
+            view_shape = (3, 3, self.n_elems)
+
+        else:
+            raise ValueError(
+                "Incorrect value type. Must be one of scalar, vector, and tensor."
+            )
+
+        for k, v in mapping_dict.items():
+            self.__dict__[k] = np.lib.stride_tricks.as_strided(
+                block_memory[v],
+                shape=view_shape,
+            )
+
             for system_idx, system in enumerate(systems):
-                self.__dict__[k][..., system_idx : system_idx + 1] = system.__dict__[
-                    k
-                ].copy()
+                self.__dict__[k][..., system_idx : system_idx + 1] = (
+                    system.__dict__[k]
+                    if value_type == "scalar"
+                    else system.__dict__[k].copy()
+                )
                 system.__dict__[k] = np.ndarray.view(
                     self.__dict__[k][..., system_idx : system_idx + 1]
                 )
