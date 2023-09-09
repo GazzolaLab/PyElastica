@@ -186,3 +186,42 @@ def _prune_using_aabbs_rod_rod(
         )
 
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
+
+
+@numba.njit(cache=True)
+def _prune_using_aabbs_rod_sphere(
+    rod_one_position_collection,
+    rod_one_radius_collection,
+    rod_one_length_collection,
+    sphere_position,
+    sphere_director,
+    sphere_radius,
+):
+    max_possible_dimension = np.zeros((3,))
+    aabb_rod = np.empty((3, 2))
+    aabb_sphere = np.empty((3, 2))
+    max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
+        rod_one_length_collection
+    )
+    for i in range(3):
+        aabb_rod[i, 0] = (
+            np.min(rod_one_position_collection[i]) - max_possible_dimension[i]
+        )
+        aabb_rod[i, 1] = (
+            np.max(rod_one_position_collection[i]) + max_possible_dimension[i]
+        )
+
+    sphere_dimensions_in_local_FOR = np.array(
+        [sphere_radius, sphere_radius, sphere_radius]
+    )
+    sphere_dimensions_in_world_FOR = np.zeros_like(sphere_dimensions_in_local_FOR)
+    for i in range(3):
+        for j in range(3):
+            sphere_dimensions_in_world_FOR[i] += (
+                sphere_director[j, i, 0] * sphere_dimensions_in_local_FOR[j]
+            )
+
+    max_possible_dimension = np.abs(sphere_dimensions_in_world_FOR)
+    aabb_sphere[..., 0] = sphere_position[..., 0] - max_possible_dimension
+    aabb_sphere[..., 1] = sphere_position[..., 0] + max_possible_dimension
+    return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
