@@ -745,7 +745,6 @@ class RodCylinderContact(NoContact):
     def apply_contact(
         self, system_one: RodType, system_two: SystemType, *args, **kwargs
     ):
-
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -850,7 +849,6 @@ class RodSelfContact(NoContact):
     def apply_contact(
         self, system_one: RodType, system_two: RodType, *args, **kwargs
     ) -> None:
-
         _calculate_contact_forces_self_rod(
             system_one.position_collection[
                 ..., :-1
@@ -919,7 +917,7 @@ class RodSphereContact(NoContact):
     ) -> None:
         """
         This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodCylinderContact class first_system should be a rod and second_system should be a sphere.
+        For the RodSphereContact class first_system should be a rod and second_system should be a sphere.
         Parameters
         ----------
         system_one
@@ -939,7 +937,6 @@ class RodSphereContact(NoContact):
             )
 
     def apply_contact(self, system_one: RodType, system_two: AllowedContactType):
-
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_sphere(
