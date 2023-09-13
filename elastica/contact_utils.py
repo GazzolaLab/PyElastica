@@ -190,7 +190,6 @@ def _prune_using_aabbs_rod_rod(
 
 
 def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collection):
-
     element_position = node_to_element_position(position_collection)
     n_element = element_position.shape[-1]
     position_idx_array = np.empty((0))
@@ -234,7 +233,7 @@ def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collect
         if face_idx_element_no_duplicates.size == 0:
             raise RuntimeError(
                 "Rod object out of grid bounds"
-            )  # a snake element is on four grids with no faces
+            )  # a rod element is on four grids with no faces
 
         face_idx_array = np.concatenate(
             (face_idx_array, face_idx_element_no_duplicates)
@@ -249,9 +248,14 @@ def find_contact_faces_idx(faces_grid, x_min, y_min, grid_size, position_collect
     return position_idx_array, face_idx_array, element_position
 
 
-"""
 @numba.njit(cache=True)
-def surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up):
+def surface_grid_numba(
+    faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up
+):
+    """
+    Computes the faces_grid dictionary for rod-meshsurface contact
+    Consider calling surface_grid for face_grid generation
+    """
     x_min = np.min(faces[0, :, :])
     y_min = np.min(faces[1, :, :])
     n_x_positions = int(np.ceil((np.max(faces[0, :, :]) - x_min) / grid_size))
@@ -263,16 +267,42 @@ def surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down,
         for j in range(n_y_positions):
             y_down = y_min + (j * grid_size)
             y_up = y_min + ((j + 1) * grid_size)
-            if np.any(np.where(((face_y_down > y_up) + (face_y_up < y_down) + (face_x_right < x_left) + (face_x_left > x_right)) == 0)[0]):
-                faces_grid[(i, j)] = np.where(((face_y_down > y_up) + (face_y_up < y_down) + (face_x_right < x_left) + (face_x_left > x_right)) == 0)[0]
+            if np.any(
+                np.where(
+                    (
+                        (face_y_down > y_up)
+                        + (face_y_up < y_down)
+                        + (face_x_right < x_left)
+                        + (face_x_left > x_right)
+                    )
+                    == 0
+                )[0]
+            ):
+                faces_grid[(i, j)] = np.where(
+                    (
+                        (face_y_down > y_up)
+                        + (face_y_up < y_down)
+                        + (face_x_right < x_left)
+                        + (face_x_left > x_right)
+                    )
+                    == 0
+                )[0]
     return faces_grid
 
 
 def surface_grid(faces, grid_size):
+    """
+    Returns the faces_grid dictionary for rod-meshsurface contact
+    This function only creates the faces_grid dict;
+    the user must store the data in a binary file using pickle.dump
+    """
     face_x_left = np.min(faces[0, :, :], axis=0)
     face_y_down = np.min(faces[1, :, :], axis=0)
     face_x_right = np.max(faces[0, :, :], axis=0)
     face_y_up = np.max(faces[1, :, :], axis=0)
 
-    return dict(surface_grid_numba(faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up))
-"""
+    return dict(
+        surface_grid_numba(
+            faces, grid_size, face_x_left, face_x_right, face_y_down, face_y_up
+        )
+    )
