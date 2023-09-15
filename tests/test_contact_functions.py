@@ -74,7 +74,7 @@ def mock_sphere_init(self):
     radius = 1,
     center positioned at origin i.e (0, 0, 0),
     sphere's upright in x,y,z plane thus the director array,
-    stationary cylinder i.e velocity vector is (0, 0, 0),
+    stationary sphere i.e velocity vector is (0, 0, 0),
     external forces and torques vectors are also (0, 0, 0)
     """
 

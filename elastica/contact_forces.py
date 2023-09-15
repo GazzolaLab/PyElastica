@@ -451,7 +451,7 @@ def _calculate_contact_forces_rod_sphere(
     for i in range(n_points):
         # Element-wise bounding box
         x_selected = x_collection_rod[..., i]
-        # x_cylinder is already a (,) array from outised
+        # x_sphere is already a (,) array from outside
         del_x = x_selected - x_sphere_tip
         norm_del_x = _norm(del_x)
 
@@ -943,15 +943,15 @@ class RodSphereContact(NoContact):
             system_one.position_collection,
             system_one.radius,
             system_one.lengths,
-            system_two.position_collection,
-            system_two.director_collection,
-            system_two.radius[0],
+            system_two.position,
+            system_two.director,
+            system_two.radius,
         ):
             return
 
         x_sph = (
-            system_two.position_collection[..., 0]
-            - system_two.radius * system_two.director_collection[2, :, 0]
+            system_two.position[..., 0]
+            - system_two.radius * system_two.director[2, :, 0]
         )
 
         rod_element_position = 0.5 * (
@@ -961,16 +961,16 @@ class RodSphereContact(NoContact):
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             system_one.lengths * system_one.tangents,
-            system_two.position_collection[..., 0],
+            system_two.position[..., 0],
             x_sph,
-            system_two.radius * system_two.director_collection[2, :, 0],
+            system_two.radius * system_two.director[2, :, 0],
             system_one.radius + system_two.radius,
-            system_one.lengths + system_two.lengths,
+            system_one.lengths + 2 * system_two.radius,
             system_one.internal_forces,
             system_one.external_forces,
             system_two.external_forces,
             system_two.external_torques,
-            system_two.director_collection[:, :, 0],
+            system_two.director[:, :, 0],
             system_one.velocity_collection,
             system_two.velocity_collection,
             self.k,
