@@ -3,12 +3,13 @@ __doc__ = """ Test specific functions used in contact in Elastica.contact_forces
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.typing import RodBase
-from elastica.rigidbody import Cylinder
+from elastica.rigidbody import Cylinder, Sphere
 
 from elastica.contact_forces import (
     _calculate_contact_forces_rod_cylinder,
     _calculate_contact_forces_rod_rod,
     _calculate_contact_forces_self_rod,
+    _calculate_contact_forces_rod_sphere,
 )
 
 
@@ -63,9 +64,36 @@ def mock_cylinder_init(self):
     self.external_torques = np.array([[0.0], [0.0], [0.0]])
 
 
+def mock_sphere_init(self):
+
+    "Initializing Sphere"
+
+    """
+    This is a rigid body sphere;,
+    Initial Parameters:
+    radius = 1,
+    center positioned at origin i.e (0, 0, 0),
+    sphere's upright in x,y,z plane thus the director array,
+    stationary sphere i.e velocity vector is (0, 0, 0),
+    external forces and torques vectors are also (0, 0, 0)
+    """
+
+    self.n_elems = 1
+    self.position = np.array([[0], [0], [0]])
+    self.director = np.array(
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
+    )
+    self.radius = 1.0
+    self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
+    self.external_forces = np.array([[0.0], [0.0], [0.0]])
+    self.external_torques = np.array([[0.0], [0.0], [0.0]])
+
+
 MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
 
 MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
+
+MockSphere = type("MockSphere", (Sphere,), {"__init__": mock_sphere_init})
 
 
 class TestCalculateContactForcesRodCylinder:
@@ -585,3 +613,72 @@ def test_calculate_contact_forces_self_rod():
         ),
         atol=1e-6,
     )
+
+
+class TestCalculateContactForcesRodSphere:
+    "Class to test the calculate contact forces rod sphere function"
+
+    "Testing function with handcrafted/calculated values"
+
+    def test_calculate_contact_forces_rod_sphere_with_k_without_nu_and_friction(
+        self,
+    ):
+
+        "initializing rod parameters"
+        rod = MockRod()
+        rod_element_position = 0.5 * (
+            rod.position_collection[..., 1:] + rod.position_collection[..., :-1]
+        )
+
+        "initializing sphere parameters"
+        sphere = MockSphere()
+        x_sph = sphere.position[..., 0] - sphere.radius * sphere.director[2, :, 0]
+
+        "initializing constants"
+        """
+        Setting contact_k = 1 and other parameters to 0,
+        so the net forces becomes a function of contact forces only.
+        """
+        k = 1.0
+        nu = 0
+        velocity_damping_coefficient = 0
+        friction_coefficient = 0
+
+        "Function call"
+        _calculate_contact_forces_rod_sphere(
+            rod_element_position,
+            rod.lengths * rod.tangents,
+            sphere.position[..., 0],
+            x_sph,
+            sphere.radius * sphere.director[2, :, 0],
+            rod.radius + sphere.radius,
+            rod.lengths + sphere.radius * 2,
+            rod.internal_forces,
+            rod.external_forces,
+            sphere.external_forces,
+            sphere.external_torques,
+            sphere.director[:, :, 0],
+            rod.velocity_collection,
+            sphere.velocity_collection,
+            k,
+            nu,
+            velocity_damping_coefficient,
+            friction_coefficient,
+        )
+
+        "Test values"
+        """
+        The two systems were placed such that they are penetrating by 0.5 units and
+        resulting forces act along the x-axis only.
+        The net force was calculated by halving the contact force i.e
+                                                net force = 0.5 * contact force = -0.25;
+                                                    where, contact force = k(1) * min distance between colliding elements(-1) * gamma(0.5) = -0.5
+        The net force is then divided to the nodes of the rod and the sphere as per indices.
+        """
+        assert_allclose(sphere.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6)
+        assert_allclose(sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6)
+        assert_allclose(
+            rod.external_forces,
+            np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )

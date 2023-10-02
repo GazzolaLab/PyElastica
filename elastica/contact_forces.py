@@ -2,13 +2,14 @@ __doc__ = """ Numba implementation module containing contact between rods and ri
 
 from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.rod import RodBase
-from elastica.rigidbody import Cylinder
+from elastica.rigidbody import Cylinder, Sphere
 from elastica.contact_utils import (
     _dot_product,
     _norm,
     _find_min_dist,
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
+    _prune_using_aabbs_rod_sphere,
 )
 
 from elastica._linalg import _batch_product_k_ik_to_ik
@@ -423,6 +424,143 @@ def _calculate_contact_forces_self_rod(
                 external_forces_rod[..., j + 1] += net_contact_force
 
 
+def _calculate_contact_forces_rod_sphere(
+    x_collection_rod,
+    edge_collection_rod,
+    x_sphere_center,
+    x_sphere_tip,
+    edge_sphere,
+    radii_sum,
+    length_sum,
+    internal_forces_rod,
+    external_forces_rod,
+    external_forces_sphere,
+    external_torques_sphere,
+    sphere_director_collection,
+    velocity_rod,
+    velocity_sphere,
+    contact_k,
+    contact_nu,
+    velocity_damping_coefficient,
+    friction_coefficient,
+) -> None:
+    # We already pass in only the first n_elem x
+    n_points = x_collection_rod.shape[1]
+    sphere_total_contact_forces = np.zeros((3))
+    sphere_total_contact_torques = np.zeros((3))
+    for i in range(n_points):
+        # Element-wise bounding box
+        x_selected = x_collection_rod[..., i]
+        # x_sphere is already a (,) array from outside
+        del_x = x_selected - x_sphere_tip
+        norm_del_x = _norm(del_x)
+
+        # If outside then don't process
+        if norm_del_x >= (radii_sum[i] + length_sum[i]):
+            continue
+
+        # find the shortest line segment between the two centerline
+        distance_vector, x_sphere_contact_point, _ = _find_min_dist(
+            x_selected, edge_collection_rod[..., i], x_sphere_tip, edge_sphere
+        )
+        distance_vector_length = _norm(distance_vector)
+        distance_vector /= distance_vector_length
+
+        gamma = radii_sum[i] - distance_vector_length
+
+        # If distance is large, don't worry about it
+        if gamma < -1e-5:
+            continue
+
+        rod_elemental_forces = 0.5 * (
+            external_forces_rod[..., i]
+            + external_forces_rod[..., i + 1]
+            + internal_forces_rod[..., i]
+            + internal_forces_rod[..., i + 1]
+        )
+        equilibrium_forces = -rod_elemental_forces + external_forces_sphere[..., 0]
+
+        normal_force = _dot_product(equilibrium_forces, distance_vector)
+        # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
+        normal_force = abs(min(normal_force, 0.0))
+
+        # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
+        # As a quick fix, use this instead
+        mask = (gamma > 0.0) * 1.0
+
+        # Compute contact spring force
+        contact_force = contact_k * gamma * distance_vector
+        interpenetration_velocity = velocity_sphere[..., 0] - 0.5 * (
+            velocity_rod[..., i] + velocity_rod[..., i + 1]
+        )
+        # Compute contact damping
+        normal_interpenetration_velocity = (
+            _dot_product(interpenetration_velocity, distance_vector) * distance_vector
+        )
+        contact_damping_force = -contact_nu * normal_interpenetration_velocity
+
+        # magnitude* direction
+        net_contact_force = 0.5 * mask * (contact_damping_force + contact_force)
+
+        # Compute friction
+        slip_interpenetration_velocity = (
+            interpenetration_velocity - normal_interpenetration_velocity
+        )
+        slip_interpenetration_velocity_mag = np.linalg.norm(
+            slip_interpenetration_velocity
+        )
+        slip_interpenetration_velocity_unitized = slip_interpenetration_velocity / (
+            slip_interpenetration_velocity_mag + 1e-14
+        )
+        # Compute friction force in the slip direction.
+        damping_force_in_slip_direction = (
+            velocity_damping_coefficient * slip_interpenetration_velocity_mag
+        )
+        # Compute Coulombic friction
+        coulombic_friction_force = friction_coefficient * np.linalg.norm(
+            net_contact_force
+        )
+        # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
+        friction_force = (
+            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            * slip_interpenetration_velocity_unitized
+        )
+        # Update contact force
+        net_contact_force += friction_force
+
+        # Torques acting on the cylinder
+        moment_arm = x_sphere_contact_point - x_sphere_center
+
+        # Add it to the rods at the end of the day
+        if i == 0:
+            external_forces_rod[..., i] -= 2 / 3 * net_contact_force
+            external_forces_rod[..., i + 1] -= 4 / 3 * net_contact_force
+            sphere_total_contact_forces += 2.0 * net_contact_force
+            sphere_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
+        elif i == n_points - 1:
+            external_forces_rod[..., i] -= 4 / 3 * net_contact_force
+            external_forces_rod[..., i + 1] -= 2 / 3 * net_contact_force
+            sphere_total_contact_forces += 2.0 * net_contact_force
+            sphere_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
+        else:
+            external_forces_rod[..., i] -= net_contact_force
+            external_forces_rod[..., i + 1] -= net_contact_force
+            sphere_total_contact_forces += 2.0 * net_contact_force
+            sphere_total_contact_torques += np.cross(
+                moment_arm, 2.0 * net_contact_force
+            )
+
+    # Update the cylinder external forces and torques
+    external_forces_sphere[..., 0] += sphere_total_contact_forces
+    external_torques_sphere[..., 0] += (
+        sphere_director_collection @ sphere_total_contact_torques
+    )
+
+
 class RodRodContact(NoContact):
     """
     This class is for applying contact forces between rod-rod.
@@ -607,7 +745,6 @@ class RodCylinderContact(NoContact):
     def apply_contact(
         self, system_one: RodType, system_two: SystemType, *args, **kwargs
     ):
-
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -712,7 +849,6 @@ class RodSelfContact(NoContact):
     def apply_contact(
         self, system_one: RodType, system_two: RodType, *args, **kwargs
     ) -> None:
-
         _calculate_contact_forces_self_rod(
             system_one.position_collection[
                 ..., :-1
@@ -724,4 +860,121 @@ class RodSelfContact(NoContact):
             system_one.external_forces,
             self.k,
             self.nu,
+        )
+
+
+class RodSphereContact(NoContact):
+    """
+    This class is for applying contact forces between rod-sphere.
+    First system is always rod and second system is always sphere.
+    In addition to the contact forces, user can define apply friction forces between rod and cylinder that
+    are in contact. For details on friction model refer to this [1]_.
+    Notes
+    -----
+    The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
+    (static friction), while friction_coefficient corresponds to the Coulombic friction coefficient.
+    Examples
+    --------
+    How to define contact between rod and sphere.
+    >>> simulator.detect_contact_between(rod, sphere).using(
+    ...    RodSphereContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ... )
+    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
+    """
+
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        velocity_damping_coefficient=0.0,
+        friction_coefficient=0.0,
+    ):
+        """
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant.
+        velocity_damping_coefficient : float
+            Velocity damping coefficient between rigid-body and rod contact is used to apply friction force in the
+            slip direction.
+        friction_coefficient : float
+            For Coulombic friction coefficient for rigid-body and rod contact.
+        """
+        super(RodSphereContact, self).__init__()
+        self.k = k
+        self.nu = nu
+        self.velocity_damping_coefficient = velocity_damping_coefficient
+        self.friction_coefficient = friction_coefficient
+
+    def _check_systems_validity(
+        self,
+        system_one: SystemType,
+        system_two: AllowedContactType,
+    ) -> None:
+        """
+        This checks the contact order and type of a SystemType object and an AllowedContactType object.
+        For the RodSphereContact class first_system should be a rod and second_system should be a sphere.
+        Parameters
+        ----------
+        system_one
+            SystemType
+        system_two
+            AllowedContactType
+        """
+        if not issubclass(system_one.__class__, RodBase) or not issubclass(
+            system_two.__class__, Sphere
+        ):
+            raise TypeError(
+                "Systems provided to the contact class have incorrect order/type. \n"
+                " First system is {0} and second system is {1}. \n"
+                " First system should be a rod, second should be a sphere".format(
+                    system_one.__class__, system_two.__class__
+                )
+            )
+
+    def apply_contact(self, system_one: RodType, system_two: AllowedContactType):
+        # First, check for a global AABB bounding box, and see whether that
+        # intersects
+        if _prune_using_aabbs_rod_sphere(
+            system_one.position_collection,
+            system_one.radius,
+            system_one.lengths,
+            system_two.position,
+            system_two.director,
+            system_two.radius,
+        ):
+            return
+
+        x_sph = (
+            system_two.position[..., 0]
+            - system_two.radius * system_two.director[2, :, 0]
+        )
+
+        rod_element_position = 0.5 * (
+            system_one.position_collection[..., 1:]
+            + system_one.position_collection[..., :-1]
+        )
+        _calculate_contact_forces_rod_sphere(
+            rod_element_position,
+            system_one.lengths * system_one.tangents,
+            system_two.position[..., 0],
+            x_sph,
+            system_two.radius * system_two.director[2, :, 0],
+            system_one.radius + system_two.radius,
+            system_one.lengths + 2 * system_two.radius,
+            system_one.internal_forces,
+            system_one.external_forces,
+            system_two.external_forces,
+            system_two.external_torques,
+            system_two.director[:, :, 0],
+            system_one.velocity_collection,
+            system_two.velocity_collection,
+            self.k,
+            self.nu,
+            self.velocity_damping_coefficient,
+            self.friction_coefficient,
         )
