@@ -753,8 +753,8 @@ class RodCylinderContact(NoContact):
             system_one.lengths,
             system_two.position_collection,
             system_two.director_collection,
-            system_two.radius[0],
-            system_two.length[0],
+            system_two.radius,
+            system_two.length,
         ):
             return
 
@@ -867,7 +867,7 @@ class RodSphereContact(NoContact):
     """
     This class is for applying contact forces between rod-sphere.
     First system is always rod and second system is always sphere.
-    In addition to the contact forces, user can define apply friction forces between rod and cylinder that
+    In addition to the contact forces, user can define apply friction forces between rod and sphere that
     are in contact. For details on friction model refer to this [1]_.
     Notes
     -----
@@ -936,22 +936,22 @@ class RodSphereContact(NoContact):
                 )
             )
 
-    def apply_contact(self, system_one: RodType, system_two: AllowedContactType):
+    def apply_contact(self, system_one: RodType, system_two: SystemType):
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_sphere(
             system_one.position_collection,
             system_one.radius,
             system_one.lengths,
-            system_two.position,
-            system_two.director,
+            system_two.position_collection,
+            system_two.director_collection,
             system_two.radius,
         ):
             return
 
         x_sph = (
-            system_two.position[..., 0]
-            - system_two.radius * system_two.director[2, :, 0]
+            system_two.position_collection[..., 0]
+            - system_two.radius * system_two.director_collection[2, :, 0]
         )
 
         rod_element_position = 0.5 * (
@@ -961,16 +961,16 @@ class RodSphereContact(NoContact):
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             system_one.lengths * system_one.tangents,
-            system_two.position[..., 0],
+            system_two.position_collection[..., 0],
             x_sph,
-            system_two.radius * system_two.director[2, :, 0],
+            system_two.radius * system_two.director_collection[2, :, 0],
             system_one.radius + system_two.radius,
             system_one.lengths + 2 * system_two.radius,
             system_one.internal_forces,
             system_one.external_forces,
             system_two.external_forces,
             system_two.external_torques,
-            system_two.director[:, :, 0],
+            system_two.director_collection[:, :, 0],
             system_one.velocity_collection,
             system_two.velocity_collection,
             self.k,
