@@ -136,7 +136,7 @@ def _prune_using_aabbs_rod_cylinder(
     # d^T @ Q
     cylinder_dimensions_in_local_FOR = np.array(
         [cylinder_radius, cylinder_radius, 0.5 * cylinder_length]
-    ).reshape(3)
+    )
     cylinder_dimensions_in_world_FOR = np.zeros_like(cylinder_dimensions_in_local_FOR)
     for i in range(3):
         for j in range(3):
@@ -213,7 +213,7 @@ def _prune_using_aabbs_rod_sphere(
 
     sphere_dimensions_in_local_FOR = np.array(
         [sphere_radius, sphere_radius, sphere_radius]
-    ).reshape(3)
+    )
     sphere_dimensions_in_world_FOR = np.zeros_like(sphere_dimensions_in_local_FOR)
     for i in range(3):
         for j in range(3):

@@ -753,8 +753,8 @@ class RodCylinderContact(NoContact):
             system_one.lengths,
             system_two.position_collection,
             system_two.director_collection,
-            system_two.radius,
-            system_two.length,
+            system_two.radius[0],
+            system_two.length[0],
         ):
             return
 
@@ -945,7 +945,7 @@ class RodSphereContact(NoContact):
             system_one.lengths,
             system_two.position_collection,
             system_two.director_collection,
-            system_two.radius,
+            system_two.radius[0],
         ):
             return
 

@@ -53,11 +53,11 @@ def mock_sphere_init(self):
     "Details of initialization are given in test_contact_specific_functions.py"
 
     self.n_elems = 1
-    self.position = np.array([[0], [0], [0]])
-    self.director = np.array(
+    self.position_collection = np.array([[0], [0], [0]])
+    self.director_collection = np.array(
         [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
     )
-    self.radius = 1.0
+    self.radius = np.array([1.0])
     self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
     self.external_forces = np.array([[0.0], [0.0], [0.0]])
     self.external_torques = np.array([[0.0], [0.0], [0.0]])
