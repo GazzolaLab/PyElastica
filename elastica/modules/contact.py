@@ -74,7 +74,7 @@ class Contact:
                 self._systems[second_sys_idx],
             )
 
-    def _call_contacts(self, *args, **kwargs):
+    def _call_contacts(self):
         for (
             first_sys_idx,
             second_sys_idx,
@@ -83,8 +83,6 @@ class Contact:
             contact.apply_contact(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
-                *args,
-                **kwargs,
             )
 
 
@@ -118,8 +116,6 @@ class _Contact:
         self.first_sys_idx = first_sys_idx
         self.second_sys_idx = second_sys_idx
         self._contact_cls = None
-        self._args = ()
-        self._kwargs = {}
 
     def using(self, contact_cls: object, *args, **kwargs):
         """

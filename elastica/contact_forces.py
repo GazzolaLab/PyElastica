@@ -131,18 +131,6 @@ def _calculate_contact_forces_rod_cylinder(
         if gamma < -1e-5:
             continue
 
-        rod_elemental_forces = 0.5 * (
-            external_forces_rod[..., i]
-            + external_forces_rod[..., i + 1]
-            + internal_forces_rod[..., i]
-            + internal_forces_rod[..., i + 1]
-        )
-        equilibrium_forces = -rod_elemental_forces + external_forces_cylinder[..., 0]
-
-        normal_force = _dot_product(equilibrium_forces, distance_vector)
-        # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
-        normal_force = abs(min(normal_force, 0.0))
-
         # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
         # As a quick fix, use this instead
         mask = (gamma > 0.0) * 1.0
@@ -292,6 +280,7 @@ def _calculate_contact_forces_rod_rod(
 
             equilibrium_forces = -rod_one_elemental_forces + rod_two_elemental_forces
 
+            """FIX ME: Remove normal force and tune rod-rod contact example"""
             normal_force = _dot_product(equilibrium_forces, distance_vector)
             # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
             normal_force = abs(min(normal_force, 0.0))
@@ -472,18 +461,6 @@ def _calculate_contact_forces_rod_sphere(
         if gamma < -1e-5:
             continue
 
-        rod_elemental_forces = 0.5 * (
-            external_forces_rod[..., i]
-            + external_forces_rod[..., i + 1]
-            + internal_forces_rod[..., i]
-            + internal_forces_rod[..., i + 1]
-        )
-        equilibrium_forces = -rod_elemental_forces + external_forces_sphere[..., 0]
-
-        normal_force = _dot_product(equilibrium_forces, distance_vector)
-        # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
-        normal_force = abs(min(normal_force, 0.0))
-
         # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
         # As a quick fix, use this instead
         mask = (gamma > 0.0) * 1.0
@@ -623,7 +600,7 @@ class RodRodContact(NoContact):
                 "If you want self contact, use RodSelfContact instead"
             )
 
-    def apply_contact(self, system_one: RodType, system_two: RodType, *args, **kwargs):
+    def apply_contact(self, system_one: RodType, system_two: RodType):
         # First, check for a global AABB bounding box, and see whether that
         # intersects
 
@@ -742,9 +719,7 @@ class RodCylinderContact(NoContact):
                 )
             )
 
-    def apply_contact(
-        self, system_one: RodType, system_two: SystemType, *args, **kwargs
-    ):
+    def apply_contact(self, system_one: RodType, system_two: SystemType):
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -846,9 +821,7 @@ class RodSelfContact(NoContact):
                 )
             )
 
-    def apply_contact(
-        self, system_one: RodType, system_two: RodType, *args, **kwargs
-    ) -> None:
+    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
         _calculate_contact_forces_self_rod(
             system_one.position_collection[
                 ..., :-1
