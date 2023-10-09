@@ -74,7 +74,7 @@ class Contact:
                 self._systems[second_sys_idx],
             )
 
-    def _call_contacts(self):
+    def _call_contacts(self, time: float):
         for (
             first_sys_idx,
             second_sys_idx,
