@@ -600,7 +600,7 @@ class RodRodContact(NoContact):
                 "If you want self contact, use RodSelfContact instead"
             )
 
-    def apply_contact(self, system_one: RodType, system_two: RodType):
+    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
         # First, check for a global AABB bounding box, and see whether that
         # intersects
 
