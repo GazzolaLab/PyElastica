@@ -343,7 +343,7 @@ class TestContactMixin:
         system_collection_with_rods_in_contact = load_system_with_rods_in_contact
 
         system_collection_with_rods_in_contact._finalize_contact()
-        system_collection_with_rods_in_contact._call_contacts()
+        system_collection_with_rods_in_contact._call_contacts(time=0)
 
         from elastica.contact_forces import _calculate_contact_forces_rod_rod
 

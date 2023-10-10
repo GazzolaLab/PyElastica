@@ -2,9 +2,14 @@ __doc__ = """ Test Wrapper Classes used in contact in Elastica.contact_forces im
 
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.contact_forces import RodRodContact, RodCylinderContact, RodSelfContact
+from elastica.contact_forces import (
+    RodRodContact,
+    RodCylinderContact,
+    RodSelfContact,
+    RodSphereContact,
+)
 from elastica.typing import RodBase
-from elastica.rigidbody import Cylinder
+from elastica.rigidbody import Cylinder, Sphere
 import pytest
 
 
@@ -42,9 +47,27 @@ def mock_cylinder_init(self):
     self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
 
 
+def mock_sphere_init(self):
+
+    "Initializing Sphere"
+    "Details of initialization are given in test_contact_specific_functions.py"
+
+    self.n_elems = 1
+    self.position_collection = np.array([[0], [0], [0]])
+    self.director_collection = np.array(
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
+    )
+    self.radius = np.array([1.0])
+    self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
+    self.external_forces = np.array([[0.0], [0.0], [0.0]])
+    self.external_torques = np.array([[0.0], [0.0], [0.0]])
+
+
 MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
 
 MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
+
+MockSphere = type("MockSphere", (Sphere,), {"__init__": mock_sphere_init})
 
 
 class TestRodCylinderContact:
@@ -473,4 +496,66 @@ class TestRodSelfContact:
 
         assert_allclose(
             mock_rod.external_forces, mock_rod_external_forces_before_execution
+        )
+
+
+class TestRodSphereContact:
+    def test_check_systems_validity_with_invalid_systems(
+        self,
+    ):
+        mock_rod = MockRod()
+        mock_list = [1, 2, 3]
+        mock_sphere = MockSphere()
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
+
+        "Testing Rod Sphere Contact wrapper with incorrect type for second argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_sphere_contact._check_systems_validity(mock_rod, mock_list)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a sphere"
+        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+
+        "Testing Rod Sphere Contact wrapper with incorrect type for first argument"
+        with pytest.raises(TypeError) as excinfo:
+            rod_sphere_contact._check_systems_validity(mock_list, mock_rod)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a sphere"
+        ).format(mock_list.__class__, mock_rod.__class__) == str(excinfo.value)
+
+        "Testing Rod Sphere Contact wrapper with incorrect order"
+        with pytest.raises(TypeError) as excinfo:
+            rod_sphere_contact._check_systems_validity(mock_sphere, mock_rod)
+            print(excinfo.value)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a rod, second should be a sphere"
+        ).format(mock_sphere.__class__, mock_rod.__class__) == str(excinfo.value)
+
+    def test_contact_rod_sphere_with_collision_with_k_without_nu_and_friction(
+        self,
+    ):
+
+        "Testing Rod Sphere Contact wrapper with Collision with analytical verified values"
+
+        mock_rod = MockRod()
+        mock_sphere = MockSphere()
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_sphere_with_k_without_nu_and_friction()'"""
+        assert_allclose(
+            mock_sphere.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array([[0.166666, 0.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
         )

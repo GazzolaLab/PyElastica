@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.typing import RodBase
-from elastica.rigidbody import Cylinder
+from elastica.rigidbody import Cylinder, Sphere
 from elastica.contact_utils import (
     _dot_product,
     _norm,
@@ -14,6 +14,7 @@ from elastica.contact_utils import (
     _aabbs_not_intersecting,
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
+    _prune_using_aabbs_rod_sphere,
 )
 
 
@@ -273,9 +274,36 @@ def mock_cylinder_init(self):
     self.external_torques = np.array([[0.0], [0.0], [0.0]])
 
 
+def mock_sphere_init(self):
+
+    "Initializing Sphere"
+
+    """
+    This is a rigid body sphere;,
+    Initial Parameters:
+    radius = 1,
+    center positioned at origin i.e (0, 0, 0),
+    sphere's upright in x,y,z plane thus the director array,
+    stationary sphere i.e velocity vector is (0, 0, 0),
+    external forces and torques vectors are also (0, 0, 0)
+    """
+
+    self.n_elems = 1
+    self.position = np.array([[0], [0], [0]])
+    self.director = np.array(
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
+    )
+    self.radius = 1.0
+    self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
+    self.external_forces = np.array([[0.0], [0.0], [0.0]])
+    self.external_torques = np.array([[0.0], [0.0], [0.0]])
+
+
 MockRod = type("MockRod", (RodBase,), {"__init__": mock_rod_init})
 
 MockCylinder = type("MockCylinder", (Cylinder,), {"__init__": mock_cylinder_init})
+
+MockSphere = type("MockSphere", (Sphere,), {"__init__": mock_sphere_init})
 
 
 def test_prune_using_aabbs_rod_cylinder():
@@ -362,6 +390,51 @@ def test_prune_using_aabbs_rod_rod():
             rod_two.position_collection,
             rod_two.radius,
             rod_two.lengths,
+        )
+        == 1
+    )
+
+
+def test_prune_using_aabbs_rod_sphere():
+    "Function to test the prune using aabbs rod sphere function"
+
+    "Testing function with analytically verified values"
+
+    "Intersecting rod and sphere"
+    """
+    Since both the rod and sphere are overlapping in 3D space at (1, 1, 1);
+    Hence they are intersectiong and the function should return 0
+    """
+    rod = MockRod()
+    sphere = MockSphere()
+    assert (
+        _prune_using_aabbs_rod_sphere(
+            rod.position_collection,
+            rod.radius,
+            rod.lengths,
+            sphere.position,
+            sphere.director,
+            sphere.radius,
+        )
+        == 0
+    )
+
+    "Non - Intersecting rod and sphere"
+    rod = MockRod()
+    sphere = MockSphere()
+
+    """
+    Changing the position of sphere in 3D space so the rod and sphere don't overlap/intersect.
+    """
+    sphere.position = np.array([[20], [3], [4]])
+    assert (
+        _prune_using_aabbs_rod_sphere(
+            rod.position_collection,
+            rod.radius,
+            rod.lengths,
+            sphere.position,
+            sphere.director,
+            sphere.radius,
         )
         == 1
     )
