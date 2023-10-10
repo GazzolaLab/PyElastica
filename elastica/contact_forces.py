@@ -719,7 +719,7 @@ class RodCylinderContact(NoContact):
                 )
             )
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType):
+    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
