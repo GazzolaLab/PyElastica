@@ -25,6 +25,7 @@ classifiers = [
 "Programming Language :: Python :: 3.8",
 "Programming Language :: Python :: 3.9",
 "Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: 3.11",
 "Programming Language :: Python :: Implementation :: CPython",
 "Intended Audience :: Science/Research",
 "Intended Audience :: Education",
@@ -36,8 +37,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
-numba = "^0.55.0"
+python = ">=3.8,<3.12"
+numba = "^0.57.0"
 numpy = "^1.19.2"
 scipy = "^1.5.2"
 tqdm = "^4.61.1"
