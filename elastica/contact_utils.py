@@ -3,6 +3,9 @@ __doc__ = """ Helper functions for contact force calculation """
 from math import sqrt
 import numba
 import numpy as np
+from elastica._linalg import (
+    _batch_norm,
+)
 
 
 @numba.njit(cache=True)
@@ -225,3 +228,193 @@ def _prune_using_aabbs_rod_sphere(
     aabb_sphere[..., 0] = sphere_position[..., 0] - max_possible_dimension
     aabb_sphere[..., 1] = sphere_position[..., 0] + max_possible_dimension
     return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
+
+
+@numba.njit(cache=True)
+def _find_slipping_elements(velocity_slip, velocity_threshold):
+    """
+    This function takes the velocity of elements and checks if they are larger than the threshold velocity.
+    If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
+    In other words, kinetic friction will be acting on those elements, not static friction.
+    This function outputs an array called slip function, this array has a size of the number of elements.
+    If the velocity of the element is smaller than the threshold velocity slip function value for that element is 1,
+    which means static friction is acting on that element. If the velocity of the element is larger than
+    the threshold velocity slip function value for that element is between 0 and 1, which means kinetic friction is acting
+    on that element.
+
+    Parameters
+    ----------
+    velocity_slip : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+        Rod-like object element velocity.
+    velocity_threshold : float
+        Threshold velocity to determine slip.
+
+    Returns
+    -------
+    slip_function : numpy.ndarray
+        2D (dim, blocksize) array containing data with 'float' type.
+    """
+    """
+    Developer Notes
+    -----
+    Benchmark results, for a blocksize of 100 using timeit
+    python version: 18.9 µs ± 2.98 µs per loop
+    this version: 1.96 µs ± 58.3 ns per loop
+    """
+    abs_velocity_slip = _batch_norm(velocity_slip)
+    slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
+    slip_function = np.ones((velocity_slip.shape[1]))
+    slip_function[slip_points] = np.fabs(
+        1.0 - np.minimum(1.0, abs_velocity_slip[slip_points] / velocity_threshold - 1.0)
+    )
+    return slip_function
+
+
+@numba.njit(cache=True)
+def _node_to_element_mass_or_force(input):
+    """
+    This function converts the mass/forces on rod nodes to
+    elements, where special treatment is necessary at the ends.
+
+    Parameters
+    ----------
+    input: numpy.ndarray
+        2D (dim, blocksize) array containing nodal mass/forces
+        with 'float' type.
+
+    Returns
+    -------
+    output: numpy.ndarray
+        2D (dim, blocksize) array containing elemental mass/forces
+        with 'float' type.
+    """
+    """
+    Developer Notes
+    -----
+    Benchmark results, for a blocksize of 100 using timeit
+    Python version: 18.1 µs ± 1.03 µs per loop
+    This version: 1.55 µs ± 13.4 ns per loop
+    """
+    blocksize = input.shape[1] - 1  # nelem
+    output = np.zeros((3, blocksize))
+    for i in range(3):
+        for k in range(0, blocksize):
+            output[i, k] += 0.5 * (input[i, k] + input[i, k + 1])
+
+            # Put extra care for the first and last element
+    output[..., 0] += 0.5 * input[..., 0]
+    output[..., -1] += 0.5 * input[..., -1]
+
+    return output
+
+
+@numba.njit(cache=True)
+def _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
+    """
+    Updating nodal forces using the forces computed on elements
+    Parameters
+    ----------
+    vector_in_element_frame
+    vector_in_node_frame
+
+    Returns
+    -------
+    Notes
+    -----
+    Benchmark results, for a blocksize of 100 using timeit
+    Python version: 23.1 µs ± 7.57 µs per loop
+    This version: 696 ns ± 10.2 ns per loop
+    """
+    for i in range(3):
+        for k in range(vector_in_element_frame.shape[1]):
+            vector_in_node_frame[i, k] += 0.5 * vector_in_element_frame[i, k]
+            vector_in_node_frame[i, k + 1] += 0.5 * vector_in_element_frame[i, k]
+
+
+@numba.njit(cache=True)
+def _node_to_element_position(node_position_collection):
+    """
+    This function computes the position of the elements
+    from the nodal values.
+    Here we define a separate function because benchmark results
+    showed that using Numba, we get more than 3 times faster calculation.
+
+    Parameters
+    ----------
+    node_position_collection: numpy.ndarray
+        2D (dim, blocksize) array containing nodal positions with
+        'float' type.
+
+    Returns
+    -------
+    element_position_collection: numpy.ndarray
+        2D (dim, blocksize) array containing elemental positions with
+        'float' type.
+    """
+    """
+    Developer Notes
+    -----
+    Benchmark results, for a blocksize of 100,
+
+    Python version: 3.5 µs ± 149 ns per loop
+
+    This version: 729 ns ± 14.3 ns per loop
+
+    """
+    n_elem = node_position_collection.shape[1] - 1
+    element_position_collection = np.empty((3, n_elem))
+    for k in range(n_elem):
+        element_position_collection[0, k] = 0.5 * (
+            node_position_collection[0, k + 1] + node_position_collection[0, k]
+        )
+        element_position_collection[1, k] = 0.5 * (
+            node_position_collection[1, k + 1] + node_position_collection[1, k]
+        )
+        element_position_collection[2, k] = 0.5 * (
+            node_position_collection[2, k + 1] + node_position_collection[2, k]
+        )
+
+    return element_position_collection
+
+
+@numba.njit(cache=True)
+def _node_to_element_velocity(mass, node_velocity_collection):
+    """
+    This function computes the velocity of the elements
+    from the nodal values. Uses the velocity of center of mass
+    in order to conserve momentum during computation.
+
+    Parameters
+    ----------
+    mass: numpy.ndarray
+        2D (dim, blocksize) array containing nodal masses with
+        'float' type.
+    node_velocity_collection: numpy.ndarray
+        2D (dim, blocksize) array containing nodal velocities with
+        'float' type.
+
+    Returns
+    -------
+    element_velocity_collection: numpy.ndarray
+        2D (dim, blocksize) array containing elemental velocities with
+        'float' type.
+    """
+    n_elem = node_velocity_collection.shape[1] - 1
+    element_velocity_collection = np.empty((3, n_elem))
+    for k in range(n_elem):
+        element_velocity_collection[0, k] = (
+            mass[k + 1] * node_velocity_collection[0, k + 1]
+            + mass[k] * node_velocity_collection[0, k]
+        )
+        element_velocity_collection[1, k] = (
+            mass[k + 1] * node_velocity_collection[1, k + 1]
+            + mass[k] * node_velocity_collection[1, k]
+        )
+        element_velocity_collection[2, k] = (
+            mass[k + 1] * node_velocity_collection[2, k + 1]
+            + mass[k] * node_velocity_collection[2, k]
+        )
+        element_velocity_collection[:, k] /= mass[k + 1] + mass[k]
+
+    return element_velocity_collection
