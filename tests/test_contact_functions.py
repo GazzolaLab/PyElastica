@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose
 from elastica.typing import RodBase
 from elastica.rigidbody import Cylinder, Sphere
 
-from elastica.contact_forces import (
+from elastica._contact_functions import (
     _calculate_contact_forces_rod_cylinder,
     _calculate_contact_forces_rod_rod,
     _calculate_contact_forces_self_rod,
