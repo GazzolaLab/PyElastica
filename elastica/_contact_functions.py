@@ -1,4 +1,4 @@
-__doc__ = """ Numba implementation module containing contact functions between rods and rigid bodies and other rods, rigid bodies or surfaces."""
+__doc__ = """ Numba implementation module containing contact force calculation functions between rods and rigid bodies and other rods, rigid bodies or surfaces."""
 
 from elastica.contact_utils import (
     _dot_product,

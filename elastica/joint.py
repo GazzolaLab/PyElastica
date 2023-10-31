@@ -1,10 +1,6 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-
-from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType
-from math import sqrt
-import numba
 import numpy as np
 import logging
 
