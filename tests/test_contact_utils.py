@@ -3,6 +3,7 @@ __doc__ = """ Test helper functions in elastica/contact_util.py used for contact
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
+from elastica.utils import Tolerance
 from elastica.typing import RodBase
 from elastica.rigidbody import Cylinder, Sphere
 from elastica.contact_utils import (
@@ -15,6 +16,11 @@ from elastica.contact_utils import (
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
     _prune_using_aabbs_rod_sphere,
+    _find_slipping_elements,
+    _node_to_element_mass_or_force,
+    _elements_to_nodes_inplace,
+    _node_to_element_position,
+    _node_to_element_velocity,
 )
 
 
@@ -204,7 +210,7 @@ def test_find_min_dist():
     assert_allclose(contact_point_of_system1, [0, 0, 0])
 
 
-def test_aabbs_not_intersectin():
+def test_aabbs_not_intersecting():
     "Function to test the _aabb_intersecting function"
 
     "testing function with analytically verified values"
@@ -438,3 +444,138 @@ def test_prune_using_aabbs_rod_sphere():
         )
         == 1
     )
+
+
+class TestRodPlaneAuxiliaryFunctions:
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_linear_interpolation_slip(self, n_elem):
+        velocity_threshold = 1.0
+
+        # if slip velocity larger than threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = _find_slipping_elements(velocity_slip, velocity_threshold)
+        correct_slip_function = np.zeros(n_elem)
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if slip velocity smaller than threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = _find_slipping_elements(velocity_slip, velocity_threshold)
+        correct_slip_function = np.ones(n_elem)
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if slip velocity smaller than threshold but very close to threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 1.0 - 1e-6]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = _find_slipping_elements(velocity_slip, velocity_threshold)
+        correct_slip_function = np.ones(n_elem)
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if slip velocity larger than threshold but very close to threshold
+        velocity_slip = np.repeat(
+            np.array([0.0, 0.0, 1.0 + 1e-6]).reshape(3, 1), n_elem, axis=1
+        )
+        slip_function = _find_slipping_elements(velocity_slip, velocity_threshold)
+        correct_slip_function = np.ones(n_elem) - 1e-6
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+        # if half of the array slip velocity is larger than threshold and half of it
+        # smaller than threshold
+        velocity_slip = np.hstack(
+            (
+                np.repeat(np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1),
+                np.repeat(np.array([0.0, 0.0, 0.0]).reshape(3, 1), n_elem, axis=1),
+            )
+        )
+        slip_function = _find_slipping_elements(velocity_slip, velocity_threshold)
+        correct_slip_function = np.hstack((np.zeros(n_elem), np.ones(n_elem)))
+        assert_allclose(correct_slip_function, slip_function, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_node_to_element_mass_or_force(self, n_elem):
+        random_vector = np.random.rand(3).reshape(3, 1)
+        input = np.repeat(random_vector, n_elem + 1, axis=1)
+        input[..., 0] *= 0.5
+        input[..., -1] *= 0.5
+        correct_output = np.repeat(random_vector, n_elem, axis=1)
+        output = _node_to_element_mass_or_force(input)
+        assert_allclose(correct_output, output, atol=Tolerance.atol())
+        assert_allclose(np.sum(input), np.sum(output), atol=Tolerance.atol())
+
+    # These functions are used in the case if Numba is available
+    class TestGeneralAuxiliaryFunctions:
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_node_to_element_position(self, n_elem):
+            """
+            This function tests _node_to_element_position function. We are
+            converting node positions to element positions. Here also
+            we are using numba to speed up the process.
+
+            Parameters
+            ----------
+            n_elem
+
+            Returns
+            -------
+
+            """
+            random = np.random.rand()  # Adding some random numbers
+            input_position = random * np.ones((3, n_elem + 1))
+            correct_output = random * np.ones((3, n_elem))
+
+            output = _node_to_element_position(input_position)
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_node_to_element_velocity(self, n_elem):
+            """
+            This function tests _node_to_element_velocity function. We are
+            converting node velocities to element velocities. Here also
+            we are using numba to speed up the process.
+
+            Parameters
+            ----------
+            n_elem
+
+            Returns
+            -------
+
+            """
+            random = np.random.rand()  # Adding some random numbers
+            input_velocity = random * np.ones((3, n_elem + 1))
+            input_mass = 2.0 * random * np.ones(n_elem + 1)
+            correct_output = random * np.ones((3, n_elem))
+
+            output = _node_to_element_velocity(
+                mass=input_mass, node_velocity_collection=input_velocity
+            )
+            assert_allclose(correct_output, output, atol=Tolerance.atol())
+
+        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+        def test_elements_to_nodes_inplace(self, n_elem):
+            """
+            This function _elements_to_nodes_inplace. We are
+            converting node velocities to element velocities. Here also
+            we are using numba to speed up the process.
+
+            Parameters
+            ----------
+            n_elem
+
+            Returns
+            -------
+
+            """
+            random = np.random.rand()  # Adding some random numbers
+            vector_in_element_frame = random * np.ones((3, n_elem))
+            vector_in_node_frame = np.zeros((3, n_elem + 1))
+            correct_output = vector_in_node_frame.copy()
+            correct_output[:, :n_elem] += 0.5 * vector_in_element_frame
+            correct_output[:, 1 : n_elem + 1] += 0.5 * vector_in_element_frame
+
+            _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame)
+            assert_allclose(correct_output, vector_in_node_frame, atol=Tolerance.atol())

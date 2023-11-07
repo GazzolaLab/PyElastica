@@ -3,100 +3,36 @@ __doc__ = """ Numba implementation module containing interactions between a rod 
 
 import numpy as np
 from elastica.external_forces import NoForces
-
-
 from numba import njit
 from elastica._linalg import (
-    _batch_matvec,
-    _batch_cross,
     _batch_norm,
-    _batch_dot,
     _batch_product_i_k_to_ik,
     _batch_product_i_ik_to_k,
-    _batch_product_k_ik_to_ik,
-    _batch_vector_sum,
-    _batch_matrix_transpose,
-    _batch_vec_oneD_vec_cross,
+)
+from elastica.contact_utils import (
+    _elements_to_nodes_inplace,
+    _node_to_element_velocity,
+)
+from elastica._contact_functions import (
+    _calculate_contact_forces_rod_plane,
+    _calculate_contact_forces_rod_plane_with_anisotropic_friction,
 )
 
 
-@njit(cache=True)
 def find_slipping_elements(velocity_slip, velocity_threshold):
-    """
-    This function takes the velocity of elements and checks if they are larger than the threshold velocity.
-    If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
-    In other words, kinetic friction will be acting on those elements, not static friction.
-    This function outputs an array called slip function, this array has a size of the number of elements.
-    If the velocity of the element is smaller than the threshold velocity slip function value for that element is 1,
-    which means static friction is acting on that element. If the velocity of the element is larger than
-    the threshold velocity slip function value for that element is between 0 and 1, which means kinetic friction is acting
-    on that element.
-
-    Parameters
-    ----------
-    velocity_slip : numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-        Rod-like object element velocity.
-    velocity_threshold : float
-        Threshold velocity to determine slip.
-
-    Returns
-    -------
-    slip_function : numpy.ndarray
-        2D (dim, blocksize) array containing data with 'float' type.
-    """
-    """
-    Developer Notes
-    -----
-    Benchmark results, for a blocksize of 100 using timeit
-    python version: 18.9 µs ± 2.98 µs per loop
-    this version: 1.96 µs ± 58.3 ns per loop
-    """
-    abs_velocity_slip = _batch_norm(velocity_slip)
-    slip_points = np.where(np.fabs(abs_velocity_slip) > velocity_threshold)
-    slip_function = np.ones((velocity_slip.shape[1]))
-    slip_function[slip_points] = np.fabs(
-        1.0 - np.minimum(1.0, abs_velocity_slip[slip_points] / velocity_threshold - 1.0)
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._find_slipping_elements()\n"
+        "instead for finding slipping elements."
     )
-    return slip_function
 
 
-@njit(cache=True)
 def node_to_element_mass_or_force(input):
-    """
-    This function converts the mass/forces on rod nodes to
-    elements, where special treatment is necessary at the ends.
-
-    Parameters
-    ----------
-    input: numpy.ndarray
-        2D (dim, blocksize) array containing nodal mass/forces
-        with 'float' type.
-
-    Returns
-    -------
-    output: numpy.ndarray
-        2D (dim, blocksize) array containing elemental mass/forces
-        with 'float' type.
-    """
-    """
-    Developer Notes
-    -----
-    Benchmark results, for a blocksize of 100 using timeit
-    Python version: 18.1 µs ± 1.03 µs per loop
-    This version: 1.55 µs ± 13.4 ns per loop
-    """
-    blocksize = input.shape[1] - 1  # nelem
-    output = np.zeros((3, blocksize))
-    for i in range(3):
-        for k in range(0, blocksize):
-            output[i, k] += 0.5 * (input[i, k] + input[i, k + 1])
-
-            # Put extra care for the first and last element
-    output[..., 0] += 0.5 * input[..., 0]
-    output[..., -1] += 0.5 * input[..., -1]
-
-    return output
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._node_to_element_mass_or_force()\n"
+        "instead for converting the mass/forces on rod nodes to elements."
+    )
 
 
 def nodes_to_elements(input):
@@ -110,25 +46,11 @@ def nodes_to_elements(input):
 
 @njit(cache=True)
 def elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
-    """
-    Updating nodal forces using the forces computed on elements
-    Parameters
-    ----------
-    vector_in_element_frame
-    vector_in_node_frame
-
-    Returns
-    -------
-    Notes
-    -----
-    Benchmark results, for a blocksize of 100 using timeit
-    Python version: 23.1 µs ± 7.57 µs per loop
-    This version: 696 ns ± 10.2 ns per loop
-    """
-    for i in range(3):
-        for k in range(vector_in_element_frame.shape[1]):
-            vector_in_node_frame[i, k] += 0.5 * vector_in_element_frame[i, k]
-            vector_in_node_frame[i, k + 1] += 0.5 * vector_in_element_frame[i, k]
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._elements_to_nodes_inplace()\n"
+        "instead for updating nodal forces using the forces computed on elements."
+    )
 
 
 # base class for interaction
@@ -196,7 +118,7 @@ class InteractionPlane:
             1D (blocksize) array containing data with 'int' type.
             Index of rod-like object elements that are not in contact with the plane.
         """
-        return apply_normal_force_numba(
+        return _calculate_contact_forces_rod_plane(
             self.plane_origin,
             self.plane_normal,
             self.surface_tol,
@@ -211,7 +133,6 @@ class InteractionPlane:
         )
 
 
-@njit(cache=True)
 def apply_normal_force_numba(
     plane_origin,
     plane_normal,
@@ -225,75 +146,11 @@ def apply_normal_force_numba(
     internal_forces,
     external_forces,
 ):
-    """
-    This function computes the plane force response on the element, in the
-    case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
-    is used.
-
-    Parameters
-    ----------
-    system
-
-    Returns
-    -------
-    magnitude of the plane response
-    """
-
-    # Compute plane response force
-    nodal_total_forces = _batch_vector_sum(internal_forces, external_forces)
-    element_total_forces = node_to_element_mass_or_force(nodal_total_forces)
-
-    force_component_along_normal_direction = _batch_product_i_ik_to_k(
-        plane_normal, element_total_forces
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. For rod plane contact please use: \n"
+        "elastica._contact_functions._calculate_contact_forces_rod_plane() \n"
+        "For detail, refer to issue #113."
     )
-    forces_along_normal_direction = _batch_product_i_k_to_ik(
-        plane_normal, force_component_along_normal_direction
-    )
-
-    # If the total force component along the plane normal direction is greater than zero that means,
-    # total force is pushing rod away from the plane not towards the plane. Thus, response force
-    # applied by the surface has to be zero.
-    forces_along_normal_direction[
-        ..., np.where(force_component_along_normal_direction > 0)[0]
-    ] = 0.0
-    # Compute response force on the element. Plane response force
-    # has to be away from the surface and towards the element. Thus
-    # multiply forces along normal direction with negative sign.
-    plane_response_force = -forces_along_normal_direction
-
-    # Elastic force response due to penetration
-    element_position = node_to_element_position(position_collection)
-    distance_from_plane = _batch_product_i_ik_to_k(
-        plane_normal, (element_position - plane_origin)
-    )
-    plane_penetration = np.minimum(distance_from_plane - radius, 0.0)
-    elastic_force = -k * _batch_product_i_k_to_ik(plane_normal, plane_penetration)
-
-    # Damping force response due to velocity towards the plane
-    element_velocity = node_to_element_velocity(
-        mass=mass, node_velocity_collection=velocity_collection
-    )
-    normal_component_of_element_velocity = _batch_product_i_ik_to_k(
-        plane_normal, element_velocity
-    )
-    damping_force = -nu * _batch_product_i_k_to_ik(
-        plane_normal, normal_component_of_element_velocity
-    )
-
-    # Compute total plane response force
-    plane_response_force_total = plane_response_force + elastic_force + damping_force
-
-    # Check if the rod elements are in contact with plane.
-    no_contact_point_idx = np.where((distance_from_plane - radius) > surface_tol)[0]
-    # If rod element does not have any contact with plane, plane cannot apply response
-    # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
-    plane_response_force[..., no_contact_point_idx] = 0.0
-    plane_response_force_total[..., no_contact_point_idx] = 0.0
-
-    # Update the external forces
-    elements_to_nodes_inplace(plane_response_force_total, external_forces)
-
-    return (_batch_norm(plane_response_force), no_contact_point_idx)
 
 
 # class for anisotropic frictional plane
@@ -391,7 +248,7 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
         -------
 
         """
-        anisotropic_friction(
+        _calculate_contact_forces_rod_plane_with_anisotropic_friction(
             self.plane_origin,
             self.plane_normal,
             self.surface_tol,
@@ -418,7 +275,6 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
         )
 
 
-@njit(cache=True)
 def anisotropic_friction(
     plane_origin,
     plane_normal,
@@ -444,188 +300,10 @@ def anisotropic_friction(
     internal_torques,
     external_torques,
 ):
-    plane_response_force_mag, no_contact_point_idx = apply_normal_force_numba(
-        plane_origin,
-        plane_normal,
-        surface_tol,
-        k,
-        nu,
-        radius,
-        mass,
-        position_collection,
-        velocity_collection,
-        internal_forces,
-        external_forces,
-    )
-
-    # First compute component of rod tangent in plane. Because friction forces acts in plane not out of plane. Thus
-    # axial direction has to be in plane, it cannot be out of plane. We are projecting rod element tangent vector in
-    # to the plane. So friction forces can only be in plane forces and not out of plane.
-    tangent_along_normal_direction = _batch_product_i_ik_to_k(plane_normal, tangents)
-    tangent_perpendicular_to_normal_direction = tangents - _batch_product_i_k_to_ik(
-        plane_normal, tangent_along_normal_direction
-    )
-    tangent_perpendicular_to_normal_direction_mag = _batch_norm(
-        tangent_perpendicular_to_normal_direction
-    )
-    # Normalize tangent_perpendicular_to_normal_direction. This is axial direction for plane. Here we are adding
-    # small tolerance (1e-10) for normalization, in order to prevent division by 0.
-    axial_direction = _batch_product_k_ik_to_ik(
-        1 / (tangent_perpendicular_to_normal_direction_mag + 1e-14),
-        tangent_perpendicular_to_normal_direction,
-    )
-    element_velocity = node_to_element_velocity(
-        mass=mass, node_velocity_collection=velocity_collection
-    )
-    # first apply axial kinetic friction
-    velocity_mag_along_axial_direction = _batch_dot(element_velocity, axial_direction)
-    velocity_along_axial_direction = _batch_product_k_ik_to_ik(
-        velocity_mag_along_axial_direction, axial_direction
-    )
-
-    # Friction forces depends on the direction of velocity, in other words sign
-    # of the velocity vector.
-    velocity_sign_along_axial_direction = np.sign(velocity_mag_along_axial_direction)
-    # Check top for sign convention
-    kinetic_mu = 0.5 * (
-        kinetic_mu_forward * (1 + velocity_sign_along_axial_direction)
-        + kinetic_mu_backward * (1 - velocity_sign_along_axial_direction)
-    )
-    # Call slip function to check if elements slipping or not
-    slip_function_along_axial_direction = find_slipping_elements(
-        velocity_along_axial_direction, slip_velocity_tol
-    )
-
-    # Now rolling kinetic friction
-    rolling_direction = _batch_vec_oneD_vec_cross(axial_direction, plane_normal)
-    torque_arm = _batch_product_i_k_to_ik(-plane_normal, radius)
-    velocity_along_rolling_direction = _batch_dot(element_velocity, rolling_direction)
-    directors_transpose = _batch_matrix_transpose(director_collection)
-    # w_rot = Q.T @ omega @ Q @ r
-    rotation_velocity = _batch_matvec(
-        directors_transpose,
-        _batch_cross(omega_collection, _batch_matvec(director_collection, torque_arm)),
-    )
-    rotation_velocity_along_rolling_direction = _batch_dot(
-        rotation_velocity, rolling_direction
-    )
-    slip_velocity_mag_along_rolling_direction = (
-        velocity_along_rolling_direction + rotation_velocity_along_rolling_direction
-    )
-    slip_velocity_along_rolling_direction = _batch_product_k_ik_to_ik(
-        slip_velocity_mag_along_rolling_direction, rolling_direction
-    )
-    slip_function_along_rolling_direction = find_slipping_elements(
-        slip_velocity_along_rolling_direction, slip_velocity_tol
-    )
-    # Compute unitized total slip velocity vector. We will use this to distribute the weight of the rod in axial
-    # and rolling directions.
-    unitized_total_velocity = (
-        slip_velocity_along_rolling_direction + velocity_along_axial_direction
-    )
-    unitized_total_velocity /= _batch_norm(unitized_total_velocity + 1e-14)
-    # Apply kinetic friction in axial direction.
-    kinetic_friction_force_along_axial_direction = -(
-        (1.0 - slip_function_along_axial_direction)
-        * kinetic_mu
-        * plane_response_force_mag
-        * _batch_dot(unitized_total_velocity, axial_direction)
-        * axial_direction
-    )
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-    kinetic_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-    elements_to_nodes_inplace(
-        kinetic_friction_force_along_axial_direction, external_forces
-    )
-    # Apply kinetic friction in rolling direction.
-    kinetic_friction_force_along_rolling_direction = -(
-        (1.0 - slip_function_along_rolling_direction)
-        * kinetic_mu_sideways
-        * plane_response_force_mag
-        * _batch_dot(unitized_total_velocity, rolling_direction)
-        * rolling_direction
-    )
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set kinetic friction force to 0.0 for the no contact points.
-    kinetic_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
-    elements_to_nodes_inplace(
-        kinetic_friction_force_along_rolling_direction, external_forces
-    )
-    # torque = Q @ r @ Fr
-    external_torques += _batch_matvec(
-        director_collection,
-        _batch_cross(torque_arm, kinetic_friction_force_along_rolling_direction),
-    )
-
-    # now axial static friction
-    nodal_total_forces = _batch_vector_sum(internal_forces, external_forces)
-    element_total_forces = node_to_element_mass_or_force(nodal_total_forces)
-    force_component_along_axial_direction = _batch_dot(
-        element_total_forces, axial_direction
-    )
-    force_component_sign_along_axial_direction = np.sign(
-        force_component_along_axial_direction
-    )
-    # check top for sign convention
-    static_mu = 0.5 * (
-        static_mu_forward * (1 + force_component_sign_along_axial_direction)
-        + static_mu_backward * (1 - force_component_sign_along_axial_direction)
-    )
-    max_friction_force = (
-        slip_function_along_axial_direction * static_mu * plane_response_force_mag
-    )
-    # friction = min(mu N, pushing force)
-    static_friction_force_along_axial_direction = -(
-        np.minimum(np.fabs(force_component_along_axial_direction), max_friction_force)
-        * force_component_sign_along_axial_direction
-        * axial_direction
-    )
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set static friction force to 0.0 for the no contact points.
-    static_friction_force_along_axial_direction[..., no_contact_point_idx] = 0.0
-    elements_to_nodes_inplace(
-        static_friction_force_along_axial_direction, external_forces
-    )
-
-    # now rolling static friction
-    # there is some normal, tangent and rolling directions inconsitency from Elastica
-    total_torques = _batch_matvec(
-        directors_transpose, (internal_torques + external_torques)
-    )
-    # Elastica has opposite defs of tangents in interaction.h and rod.cpp
-    total_torques_along_axial_direction = _batch_dot(total_torques, axial_direction)
-    force_component_along_rolling_direction = _batch_dot(
-        element_total_forces, rolling_direction
-    )
-    noslip_force = -(
-        (
-            radius * force_component_along_rolling_direction
-            - 2.0 * total_torques_along_axial_direction
-        )
-        / 3.0
-        / radius
-    )
-    max_friction_force = (
-        slip_function_along_rolling_direction
-        * static_mu_sideways
-        * plane_response_force_mag
-    )
-    noslip_force_sign = np.sign(noslip_force)
-    static_friction_force_along_rolling_direction = (
-        np.minimum(np.fabs(noslip_force), max_friction_force)
-        * noslip_force_sign
-        * rolling_direction
-    )
-    # If rod element does not have any contact with plane, plane cannot apply friction
-    # force on the element. Thus lets set plane static friction force to 0.0 for the no contact points.
-    static_friction_force_along_rolling_direction[..., no_contact_point_idx] = 0.0
-    elements_to_nodes_inplace(
-        static_friction_force_along_rolling_direction, external_forces
-    )
-    external_torques += _batch_matvec(
-        director_collection,
-        _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. For anisotropic_friction please use: \n"
+        "elastica._contact_functions._calculate_contact_forces_rod_plane_with_anisotropic_friction() \n"
+        "For detail, refer to issue #113."
     )
 
 
@@ -670,100 +348,28 @@ def sum_over_elements(input):
     return output
 
 
-@njit(cache=True)
 def node_to_element_position(node_position_collection):
-    """
-    This function computes the position of the elements
-    from the nodal values.
-    Here we define a separate function because benchmark results
-    showed that using Numba, we get more than 3 times faster calculation.
-
-    Parameters
-    ----------
-    node_position_collection: numpy.ndarray
-        2D (dim, blocksize) array containing nodal positions with
-        'float' type.
-
-    Returns
-    -------
-    element_position_collection: numpy.ndarray
-        2D (dim, blocksize) array containing elemental positions with
-        'float' type.
-    """
-    """
-    Developer Notes
-    -----
-    Benchmark results, for a blocksize of 100,
-
-    Python version: 3.5 µs ± 149 ns per loop
-
-    This version: 729 ns ± 14.3 ns per loop
-
-    """
-    n_elem = node_position_collection.shape[1] - 1
-    element_position_collection = np.empty((3, n_elem))
-    for k in range(n_elem):
-        element_position_collection[0, k] = 0.5 * (
-            node_position_collection[0, k + 1] + node_position_collection[0, k]
-        )
-        element_position_collection[1, k] = 0.5 * (
-            node_position_collection[1, k + 1] + node_position_collection[1, k]
-        )
-        element_position_collection[2, k] = 0.5 * (
-            node_position_collection[2, k + 1] + node_position_collection[2, k]
-        )
-
-    return element_position_collection
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. For node-to-element_position() interpolation please use: \n"
+        "elastica.contact_utils._node_to_element_position() for rod position \n"
+        "For detail, refer to issue #113."
+    )
 
 
-@njit(cache=True)
 def node_to_element_velocity(mass, node_velocity_collection):
-    """
-    This function computes the velocity of the elements
-    from the nodal values. Uses the velocity of center of mass
-    in order to conserve momentum during computation.
-
-    Parameters
-    ----------
-    mass: numpy.ndarray
-        2D (dim, blocksize) array containing nodal masses with
-        'float' type.
-    node_velocity_collection: numpy.ndarray
-        2D (dim, blocksize) array containing nodal velocities with
-        'float' type.
-
-    Returns
-    -------
-    element_velocity_collection: numpy.ndarray
-        2D (dim, blocksize) array containing elemental velocities with
-        'float' type.
-    """
-    n_elem = node_velocity_collection.shape[1] - 1
-    element_velocity_collection = np.empty((3, n_elem))
-    for k in range(n_elem):
-        element_velocity_collection[0, k] = (
-            mass[k + 1] * node_velocity_collection[0, k + 1]
-            + mass[k] * node_velocity_collection[0, k]
-        )
-        element_velocity_collection[1, k] = (
-            mass[k + 1] * node_velocity_collection[1, k + 1]
-            + mass[k] * node_velocity_collection[1, k]
-        )
-        element_velocity_collection[2, k] = (
-            mass[k + 1] * node_velocity_collection[2, k + 1]
-            + mass[k] * node_velocity_collection[2, k]
-        )
-        element_velocity_collection[:, k] /= mass[k + 1] + mass[k]
-
-    return element_velocity_collection
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. For node-to-element_velocity() interpolation please use: \n"
+        "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
+        "For detail, refer to issue #113."
+    )
 
 
 def node_to_element_pos_or_vel(vector_in_node_frame):
     # Remove the function beyond v0.4.0
     raise NotImplementedError(
         "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
-        "elastica.interaction.node_to_element_position() for rod position \n"
-        "elastica.interaction.node_to_element_velocity() for rod velocity. \n"
+        "elastica.contact_utils._node_to_element_position() for rod position \n"
+        "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
         "For detail, refer to issue #80."
     )
 
@@ -819,7 +425,7 @@ def slender_body_forces(
 
     f = np.empty((tangents.shape[0], tangents.shape[1]))
     total_length = sum_over_elements(lengths)
-    element_velocity = node_to_element_velocity(
+    element_velocity = _node_to_element_velocity(
         mass=mass, node_velocity_collection=velocity_collection
     )
 
@@ -916,7 +522,7 @@ class SlenderBodyTheory(NoForces):
             system.radius,
             system.mass,
         )
-        elements_to_nodes_inplace(stokes_force, system.external_forces)
+        _elements_to_nodes_inplace(stokes_force, system.external_forces)
 
 
 # base class for interaction
