@@ -20,6 +20,7 @@ class MuscularSnakeSimulator(
     ea.Forcing,
     ea.CallBacks,
     ea.Damping,
+    ea.Contact,
 ):
     pass
 
@@ -346,12 +347,13 @@ kinetic_mu_array = np.array(
     [1.0 * mu, 1.5 * mu, 2.0 * mu]
 )  # [forward, backward, sideways]
 static_mu_array = 2 * kinetic_mu_array
-muscular_snake_simulator.add_forcing_to(snake_body).using(
-    ea.AnisotropicFrictionalPlane,
+friction_plane = ea.Plane(plane_origin=origin_plane, plane_normal=normal_plane)
+muscular_snake_simulator.append(friction_plane)
+
+muscular_snake_simulator.detect_contact_between(snake_body, friction_plane).using(
+    ea.RodPlaneContactWithAnisotropicFriction,
     k=1e1,
     nu=40,
-    plane_origin=origin_plane,
-    plane_normal=normal_plane,
     slip_velocity_tol=slip_velocity_tol,
     static_mu_array=static_mu_array,
     kinetic_mu_array=kinetic_mu_array,
