@@ -2,7 +2,6 @@ __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
 import os
 import numpy as np
-import argparse
 import pickle
 
 from elastica import *
