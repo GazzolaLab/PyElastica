@@ -124,7 +124,6 @@ def run_snake(
         direction=normal,
         with_spline=True,
         switch_on_time=2.0,
-        is_lateral_wave=False,
     )
 
     # Some common parameters first - define friction ratio etc.

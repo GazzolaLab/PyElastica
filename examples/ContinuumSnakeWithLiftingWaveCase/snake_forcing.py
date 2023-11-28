@@ -19,10 +19,9 @@ from elastica.external_forces import (
 class MuscleTorques_lifting(NoForces):
     """
     This class applies muscle torques along the body. The applied muscle torques are treated
-    as applied external forces. This class can apply
+    as applied external forces. This class can apply lifting
     muscle torques as a traveling wave with a beta spline or only
-    as a traveling wave. For implementation details refer to Gazzola et. al.
-    RSoS. (2018).
+    as a traveling wave. For implementation details refer to X. Zhang et. al. Nat. Comm. 2021
 
             Attributes
             ----------
@@ -38,12 +37,8 @@ class MuscleTorques_lifting(NoForces):
                     Applied muscle torques are ramped up until ramp up time.
             my_spline: numpy.ndarray
                     1D (blocksize) array containing data with 'float' type. Generated spline.
-
-            NEW PARAMETER:
             switch_on_time: float
                     time to switch on the muscle activation.
-            is_lateral_wave: bool
-                    check if it is lateral muscle torque.
     """
 
     def __init__(
@@ -58,7 +53,6 @@ class MuscleTorques_lifting(NoForces):
         ramp_up_time=0.0,
         with_spline=False,
         switch_on_time=0.0,
-        is_lateral_wave=True,
         *args,
         **kwargs,
     ):
@@ -83,12 +77,8 @@ class MuscleTorques_lifting(NoForces):
                 Applied muscle torques are ramped up until ramp up time.
         with_spline: boolean
                 Option to use beta-spline.
-
-        NEW PARAMETER:
         switch_on_time: float
                 time to switch on the muscle activation.
-        is_lateral_wave: bool
-                check if it is lateral muscle torque.
 
         """
         super(MuscleTorques_lifting, self).__init__()
@@ -102,7 +92,6 @@ class MuscleTorques_lifting(NoForces):
         self.ramp_up_time = ramp_up_time
         assert switch_on_time >= 0.0
         self.switch_on_time = switch_on_time
-        self.is_lateral_wave = is_lateral_wave
 
         # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
         # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
