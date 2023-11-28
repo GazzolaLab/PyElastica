@@ -14,7 +14,7 @@ from continuum_snake_postprocessing import (
     plot_curvature,
 )
 from snake_forcing import (
-    MuscleTorques_snake,
+    MuscleTorques_lifting,
 )
 from snake_contact import SnakeRodPlaneContact
 
@@ -31,36 +31,24 @@ def run_snake(
     SAVE_FIGURE=False,
     SAVE_VIDEO=False,
     SAVE_RESULTS=False,
-    args=[],
 ):
     # Initialize the simulation class
     snake_sim = SnakeSimulator()
 
-    # Get parser args
-    phase_space_params = args
-
     # Simulation parameters
     period = 2.0
     final_time = 20.0
-    time_step = phase_space_params.timestep
+    time_step = 5e-5
     total_steps = int(final_time / time_step)
     rendering_fps = 100
     step_skip = int(1.0 / (rendering_fps * time_step))
 
     # collection of snake characteristics
-    n_elem_collect = np.array([25, 50])
-    base_length_collect = np.array([0.35, 0.8])
-    base_radius_collect = np.array([0.009, 0.009])
-    snake_torque_ratio_collect = np.array([30.0, 20.0])
-    snake_torque_lift_ratio_collect = np.array([10.0, 20.0])
-
-    # select snake to run
-    snake_ID = 0
-
-    # setting up test params
-    n_elem = n_elem_collect[snake_ID]
-    base_length = base_length_collect[snake_ID]
-    base_radius = base_radius_collect[snake_ID]
+    n_elem = 25
+    base_length = 0.35
+    base_radius = 0.009
+    snake_torque_ratio = 30.0
+    snake_torque_liftratio = 10.0
 
     start = np.array([0.0, 0.0, 0.0 + base_radius])
     direction = np.array([1.0, 0.0, 0.0])
@@ -83,7 +71,7 @@ def run_snake(
     )
 
     snake_sim.append(shearable_rod)
-    damping_constant = phase_space_params.damping
+    damping_constant = 1e-1
 
     # use linear damping with constant damping ratio
     snake_sim.dampen(shearable_rod).using(
@@ -101,14 +89,12 @@ def run_snake(
 
     # 1. Add muscle torques -- lateral wave
     # Define lateral wave parameters
-    lateral_wave_length = phase_space_params.wave_length
-    snake_torque_ratio = snake_torque_ratio_collect[snake_ID]
-    snake_torque_liftratio = snake_torque_lift_ratio_collect[snake_ID]
+    lateral_wave_length = 1.0
     lateral_amp = b_coeff_lat[:-1]
 
     lateral_ratio = 1.0  # switch of lateral wave
     snake_sim.add_forcing_to(shearable_rod).using(
-        MuscleTorques_snake,
+        MuscleTorques,
         base_length=base_length,
         b_coeff=snake_torque_ratio * lateral_ratio * lateral_amp,
         period=period,
@@ -128,7 +114,7 @@ def run_snake(
     lift_ratio = 1.0  # switch of lifting wave
     phase = 0.5
     snake_sim.add_forcing_to(shearable_rod).using(
-        MuscleTorques_snake,
+        MuscleTorques_lifting,
         base_length=base_length,
         b_coeff=snake_torque_liftratio * lift_ratio * lift_amp,
         period=period,
@@ -236,28 +222,6 @@ def run_snake(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--wave_length",
-        type=float,
-        default=1.0,
-    )
-    parser.add_argument(
-        "--timestep",
-        type=float,
-        default=5e-5,
-    )
-    parser.add_argument(
-        "--damping",
-        type=float,
-        default=1e-1,
-    )
-    args = parser.parse_args()
-
-    # print(args.wave_length)
-    # print(args.block_size)
-
     # Options
     PLOT_FIGURE = True
     SAVE_FIGURE = False
@@ -307,7 +271,7 @@ if __name__ == "__main__":
 
         # run the simulation
         [avg_forward, avg_lateral, pp_list] = run_snake(
-            t_coeff_optimized, PLOT_FIGURE, SAVE_FIGURE, SAVE_VIDEO, SAVE_RESULTS, args
+            t_coeff_optimized, PLOT_FIGURE, SAVE_FIGURE, SAVE_VIDEO, SAVE_RESULTS
         )
 
         print("average forward velocity:", avg_forward)

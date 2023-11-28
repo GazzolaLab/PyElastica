@@ -17,7 +17,7 @@ from elastica.external_forces import (
 )
 
 
-class MuscleTorques_snake(NoForces):
+class MuscleTorques_lifting(NoForces):
     """
     This class applies muscle torques along the body. The applied muscle torques are treated
     as applied external forces. This class can apply
@@ -92,7 +92,7 @@ class MuscleTorques_snake(NoForces):
                 check if it is lateral muscle torque.
 
         """
-        super(MuscleTorques_snake, self).__init__()
+        super(MuscleTorques_lifting, self).__init__()
 
         self.direction = direction  # Direction torque applied
         self.angular_frequency = 2.0 * np.pi / period
@@ -189,24 +189,21 @@ class MuscleTorques_snake(NoForces):
             )
             # Head and tail of the snake is opposite compared to elastica cpp. We need to iterate torque_mag
             # from last to first element.
-            if is_lateral_wave:
-                torque = _batch_product_i_k_to_ik(direction, torque_mag[-2::-1])
-            else:
-                # compute torque direction for lifting wave.
-                # Here, direction of each element is computed separately
-                # based on the rod tangent and normal direction. This is implemented to
-                # correct the binormal direction when snake undergoes lateral bending
-                avg_element_direction = 0.5 * (tangents[..., :-1] + tangents[..., 1:])
-                torque_direction = _batch_vec_oneD_vec_cross(
-                    avg_element_direction, direction
-                )
-                torque_direction_unit = _batch_product_k_ik_to_ik(
-                    1 / (_batch_norm(torque_direction) + 1e-14),
-                    torque_direction,
-                )
-                torque = _batch_product_k_ik_to_ik(
-                    torque_mag[-2::-1], torque_direction_unit
-                )
+            # compute torque direction for lifting wave.
+            # Here, direction of each element is computed separately
+            # based on the rod tangent and normal direction. This is implemented to
+            # correct the binormal direction when snake undergoes lateral bending
+            avg_element_direction = 0.5 * (tangents[..., :-1] + tangents[..., 1:])
+            torque_direction = _batch_vec_oneD_vec_cross(
+                avg_element_direction, direction
+            )
+            torque_direction_unit = _batch_product_k_ik_to_ik(
+                1 / (_batch_norm(torque_direction) + 1e-14),
+                torque_direction,
+            )
+            torque = _batch_product_k_ik_to_ik(
+                torque_mag[-2::-1], torque_direction_unit
+            )
 
             inplace_addition(
                 external_torques[..., 1:],
