@@ -6,7 +6,6 @@ from elastica.utils import _bspline
 from numba import njit
 from elastica._linalg import (
     _batch_norm,
-    _batch_product_i_k_to_ik,
     _batch_product_k_ik_to_ik,
     _batch_vec_oneD_vec_cross,
 )
