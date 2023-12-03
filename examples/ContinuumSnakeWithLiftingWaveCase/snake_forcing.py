@@ -16,7 +16,7 @@ from elastica.external_forces import (
 )
 
 
-class MuscleTorques_lifting(NoForces):
+class MuscleTorquesLifting(NoForces):
     """
     This class applies muscle torques along the body. The applied muscle torques are treated
     as applied external forces. This class can apply lifting
@@ -43,7 +43,6 @@ class MuscleTorques_lifting(NoForces):
 
     def __init__(
         self,
-        base_length,
         b_coeff,
         period,
         wave_number,
@@ -53,15 +52,11 @@ class MuscleTorques_lifting(NoForces):
         ramp_up_time=0.0,
         with_spline=False,
         switch_on_time=0.0,
-        *args,
-        **kwargs,
     ):
         """
 
         Parameters
         ----------
-        base_length: float
-                Rest length of the rod-like object.
         b_coeff: nump.ndarray
                 1D array containing data with 'float' type.
                 Beta coefficients for beta-spline.
@@ -81,7 +76,7 @@ class MuscleTorques_lifting(NoForces):
                 time to switch on the muscle activation.
 
         """
-        super(MuscleTorques_lifting, self).__init__()
+        super().__init__()
 
         self.direction = direction  # Direction torque applied
         self.angular_frequency = 2.0 * np.pi / period
@@ -104,32 +99,16 @@ class MuscleTorques_lifting(NoForces):
 
         if with_spline:
             assert b_coeff.size != 0, "Beta spline coefficient array (t_coeff) is empty"
-            my_spline, ctr_pts, ctr_coeffs = _bspline(b_coeff)
-            self.my_spline = my_spline(self.s)
+            spline, ctr_pts, ctr_coeffs = _bspline(b_coeff)
+            self.spline = spline(self.s)
 
         else:
-
-            def constant_function(input):
-                """
-                Return array of ones same as the size of the input array. This
-                function is called when Beta spline function is not used.
-
-                Parameters
-                ----------
-                input
-
-                Returns
-                -------
-
-                """
-                return np.ones(input.shape)
-
-            self.my_spline = constant_function(self.s)
+            self.spline = np.full_like(self.s)
 
     def apply_torques(self, system, time: np.float64 = 0.0):
         self.compute_muscle_torques(
             time,
-            self.my_spline,
+            self.spline,
             self.s,
             self.angular_frequency,
             self.wave_number,
@@ -146,7 +125,7 @@ class MuscleTorques_lifting(NoForces):
     @njit(cache=True)
     def compute_muscle_torques(
         time,
-        my_spline,
+        spline,
         s,
         angular_frequency,
         wave_number,
@@ -167,7 +146,7 @@ class MuscleTorques_lifting(NoForces):
             # front of wave number is positive, in Elastica cpp it is negative.
             torque_mag = (
                 factor
-                * my_spline
+                * spline
                 * np.sin(
                     angular_frequency * (time - switch_on_time - phase_shift)
                     - wave_number * s

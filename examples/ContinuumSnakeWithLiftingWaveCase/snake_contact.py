@@ -275,7 +275,7 @@ class SnakeRodPlaneContact(NoContact):
                 1D (3,) array containing data with 'float' type.
                 [forward, backward, sideways] kinetic friction coefficients.
         """
-        super(SnakeRodPlaneContact, self).__init__()
+        super().__init__()
         self.k = k
         self.nu = nu
         self.surface_tol = 1e-4

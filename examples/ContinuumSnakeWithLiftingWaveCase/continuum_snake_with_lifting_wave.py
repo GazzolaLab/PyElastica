@@ -13,7 +13,7 @@ from continuum_snake_postprocessing import (
     plot_curvature,
 )
 from snake_forcing import (
-    MuscleTorques_lifting,
+    MuscleTorquesLifting,
 )
 from snake_contact import SnakeRodPlaneContact
 
@@ -113,8 +113,7 @@ def run_snake(
     lift_ratio = 1.0  # switch of lifting wave
     phase = 0.5
     snake_sim.add_forcing_to(shearable_rod).using(
-        MuscleTorques_lifting,
-        base_length=base_length,
+        MuscleTorquesLifting,
         b_coeff=snake_torque_liftratio * lift_ratio * lift_amp,
         period=period,
         wave_number=2.0 * np.pi / (lift_wave_length),
