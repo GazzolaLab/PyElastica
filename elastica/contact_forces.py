@@ -539,7 +539,7 @@ class RodPlaneContact(NoContact):
     ) -> None:
         """
         This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodSphereContact class first_system should be a rod and second_system should be a plane.
+        For the RodPlaneContact class first_system should be a rod and second_system should be a plane.
         Parameters
         ----------
         system_one

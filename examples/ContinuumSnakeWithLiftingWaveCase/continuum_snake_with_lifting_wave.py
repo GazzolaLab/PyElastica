@@ -2,50 +2,62 @@ __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 
 import os
 import numpy as np
-import elastica as ea
+import pickle
 
-from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
+from elastica import *
+
+from continuum_snake_postprocessing import (
     plot_snake_velocity,
     plot_video,
     compute_projected_velocity,
     plot_curvature,
 )
+from snake_forcing import (
+    MuscleTorquesLifting,
+)
+from snake_contact import SnakeRodPlaneContact
 
 
 class SnakeSimulator(
-    ea.BaseSystemCollection,
-    ea.Constraints,
-    ea.Forcing,
-    ea.Damping,
-    ea.CallBacks,
-    ea.Contact,
+    BaseSystemCollection, Constraints, Forcing, Damping, CallBacks, Contact
 ):
     pass
 
 
 def run_snake(
-    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False
+    b_coeff_lat,
+    PLOT_FIGURE=False,
+    SAVE_FIGURE=False,
+    SAVE_VIDEO=False,
+    SAVE_RESULTS=False,
 ):
     # Initialize the simulation class
     snake_sim = SnakeSimulator()
 
     # Simulation parameters
-    period = 2
-    final_time = (11.0 + 0.01) * period
+    period = 2.0
+    final_time = 20.0
+    time_step = 5e-5
+    total_steps = int(final_time / time_step)
+    rendering_fps = 100
+    step_skip = int(1.0 / (rendering_fps * time_step))
 
-    # setting up test params
-    n_elem = 50
-    start = np.zeros((3,))
-    direction = np.array([0.0, 0.0, 1.0])
-    normal = np.array([0.0, 1.0, 0.0])
+    # collection of snake characteristics
+    n_elem = 25
     base_length = 0.35
-    base_radius = base_length * 0.011
+    base_radius = 0.009
+    snake_torque_ratio = 30.0
+    snake_torque_liftratio = 10.0
+
+    start = np.array([0.0, 0.0, 0.0 + base_radius])
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 0.0, 1.0])
     density = 1000
     E = 1e6
     poisson_ratio = 0.5
     shear_modulus = E / (poisson_ratio + 1.0)
 
-    shearable_rod = ea.CosseratRod.straight_rod(
+    shearable_rod = CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -58,21 +70,34 @@ def run_snake(
     )
 
     snake_sim.append(shearable_rod)
+    damping_constant = 1e-1
+
+    # use linear damping with constant damping ratio
+    snake_sim.dampen(shearable_rod).using(
+        AnalyticalLinearDamper,
+        damping_constant=damping_constant,
+        time_step=time_step,
+    )
 
     # Add gravitational forces
     gravitational_acc = -9.80665
+
     snake_sim.add_forcing_to(shearable_rod).using(
-        ea.GravityForces, acc_gravity=np.array([0.0, gravitational_acc, 0.0])
+        GravityForces, acc_gravity=np.array([0.0, 0.0, gravitational_acc])
     )
 
-    # Add muscle torques
-    wave_length = b_coeff[-1]
+    # 1. Add muscle torques -- lateral wave
+    # Define lateral wave parameters
+    lateral_wave_length = 1.0
+    lateral_amp = b_coeff_lat[:-1]
+
+    lateral_ratio = 1.0  # switch of lateral wave
     snake_sim.add_forcing_to(shearable_rod).using(
-        ea.MuscleTorques,
+        MuscleTorques,
         base_length=base_length,
-        b_coeff=b_coeff[:-1],
+        b_coeff=snake_torque_ratio * lateral_ratio * lateral_amp,
         period=period,
-        wave_number=2.0 * np.pi / (wave_length),
+        wave_number=2.0 * np.pi / (lateral_wave_length),
         phase_shift=0.0,
         rest_lengths=shearable_rod.rest_lengths,
         ramp_up_time=period,
@@ -80,48 +105,54 @@ def run_snake(
         with_spline=True,
     )
 
-    # Add friction forces
-    ground_plane = ea.Plane(
-        plane_origin=np.array([0.0, -base_radius, 0.0]), plane_normal=normal
+    # 2. Add muscle torques -- lifting wave
+    # Define lifting wave parameters
+    lift_wave_length = lateral_wave_length
+    lift_amp = np.array([1e-3, 2e-3, 2e-3, 2e-3, 2e-3, 1e-3])
+
+    lift_ratio = 1.0  # switch of lifting wave
+    phase = 0.5
+    snake_sim.add_forcing_to(shearable_rod).using(
+        MuscleTorquesLifting,
+        b_coeff=snake_torque_liftratio * lift_ratio * lift_amp,
+        period=period,
+        wave_number=2.0 * np.pi / (lift_wave_length),
+        phase_shift=phase * period,
+        rest_lengths=shearable_rod.rest_lengths,
+        ramp_up_time=0.01,
+        direction=normal,
+        with_spline=True,
+        switch_on_time=2.0,
     )
-    snake_sim.append(ground_plane)
+
+    # Some common parameters first - define friction ratio etc.
     slip_velocity_tol = 1e-8
     froude = 0.1
     mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
     kinetic_mu_array = np.array(
         [mu, 1.5 * mu, 2.0 * mu]
     )  # [forward, backward, sideways]
-    static_mu_array = np.zeros(kinetic_mu_array.shape)
+    normal_plane = normal
+    origin_plane = np.array([0.0, 0.0, 0.0])
+    ground_plane = Plane(plane_normal=normal_plane, plane_origin=origin_plane)
+    snake_sim.append(ground_plane)
+
     snake_sim.detect_contact_between(shearable_rod, ground_plane).using(
-        ea.RodPlaneContactWithAnisotropicFriction,
-        k=1.0,
-        nu=1e-6,
+        SnakeRodPlaneContact,
+        k=1e2,
+        nu=1e-1,
         slip_velocity_tol=slip_velocity_tol,
-        static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
     )
 
-    # add damping
-    damping_constant = 2e-3
-    time_step = 1e-4
-    snake_sim.dampen(shearable_rod).using(
-        ea.AnalyticalLinearDamper,
-        damping_constant=damping_constant,
-        time_step=time_step,
-    )
-
-    total_steps = int(final_time / time_step)
-    rendering_fps = 60
-    step_skip = int(1.0 / (rendering_fps * time_step))
-
     # Add call backs
-    class ContinuumSnakeCallBack(ea.CallBackBaseClass):
+    class ContinuumSnakeCallBack(CallBackBaseClass):
         """
         Call back function for continuum snake
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -134,6 +165,7 @@ def run_snake(
                 self.callback_params["position"].append(
                     system.position_collection.copy()
                 )
+                self.callback_params["radius"].append(system.radius.copy())
                 self.callback_params["velocity"].append(
                     system.velocity_collection.copy()
                 )
@@ -148,15 +180,15 @@ def run_snake(
 
                 return
 
-    pp_list = ea.defaultdict(list)
+    pp_list = defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
         ContinuumSnakeCallBack, step_skip=step_skip, callback_params=pp_list
     )
 
     snake_sim.finalize()
 
-    timestepper = ea.PositionVerlet()
-    ea.integrate(timestepper, snake_sim, final_time, total_steps)
+    timestepper = PositionVerlet()
+    integrate(timestepper, snake_sim, final_time, total_steps)
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"
@@ -164,17 +196,16 @@ def run_snake(
         plot_curvature(pp_list, shearable_rod.rest_lengths, period, SAVE_FIGURE)
 
         if SAVE_VIDEO:
-            filename_video = "continuum_snake.mp4"
+            filename_video = "continuum_snake_with_lifting_wave.mp4"
             plot_video(
                 pp_list,
                 video_name=filename_video,
                 fps=rendering_fps,
-                xlim=(0, 4),
+                xlim=(0, 3),
                 ylim=(-1, 1),
             )
 
     if SAVE_RESULTS:
-        import pickle
 
         filename = "continuum_snake.dat"
         file = open(filename, "wb")
@@ -188,12 +219,11 @@ def run_snake(
 
 
 if __name__ == "__main__":
-
     # Options
     PLOT_FIGURE = True
-    SAVE_FIGURE = True
+    SAVE_FIGURE = False
     SAVE_VIDEO = True
-    SAVE_RESULTS = False
+    SAVE_RESULTS = True
     CMA_OPTION = False
 
     if CMA_OPTION:
@@ -231,7 +261,8 @@ if __name__ == "__main__":
         else:
             wave_length = 1.0
             t_coeff_optimized = np.array(
-                [3.4e-3, 3.3e-3, 4.2e-3, 2.6e-3, 3.6e-3, 3.5e-3]
+                [4e-3, 4e-3, 4e-3, 4e-3, 4e-3, 4e-3]
+                # [3.4e-3, 3.3e-3, 5.7e-3, 2.8e-3, 3.0e-3, 3.0e-3]
             )
             t_coeff_optimized = np.hstack((t_coeff_optimized, wave_length))
 
