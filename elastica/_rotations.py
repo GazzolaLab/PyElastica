@@ -146,7 +146,8 @@ def _inv_rotate(director_collection):
             )
         )
 
-        # Clip the trace to between -3 and 3. It any deviation beyond this is numerical error
+        # Clip the trace to between -3 and 3.
+        # Any deviation beyond this is numerical error
         trace = min(trace, 3.0)
         trace = max(trace, -3.0)
         theta = arccos(0.5 * trace - 0.5)
