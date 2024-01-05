@@ -165,7 +165,7 @@ def _inv_rotate(director_collection):
 def _generate_skew_map(dim: int):
     # TODO Documentation
     # Preallocate
-    mapping_list = [None] * ((dim**2 - dim) // 2)
+    mapping_list = [None] * ((dim ** 2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
     # r = 2, r here is rank, we deal with only matrices
     for index, (i, j) in enumerate(combinations(range(dim), r=2)):
