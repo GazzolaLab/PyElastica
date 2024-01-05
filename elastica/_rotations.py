@@ -147,9 +147,9 @@ def _inv_rotate(director_collection):
         )
 
         # Clip the trace to between -3 and 3. It any deviation beyond this is numerical error
-        trace = min(trace,3.0)
-        trace = max(trace,-3.0)
-        theta = arccos(0.5 * trace - 0.5 )
+        trace = min(trace, 3.0)
+        trace = max(trace, -3.0)
+        theta = arccos(0.5 * trace - 0.5)
 
         # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
         vector_collection[0, k] *= -0.5 * theta / sin(theta + 1e-14)
@@ -164,7 +164,7 @@ def _inv_rotate(director_collection):
 def _generate_skew_map(dim: int):
     # TODO Documentation
     # Preallocate
-    mapping_list = [None] * ((dim ** 2 - dim) // 2)
+    mapping_list = [None] * ((dim**2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
     # r = 2, r here is rank, we deal with only matrices
     for index, (i, j) in enumerate(combinations(range(dim), r=2)):
