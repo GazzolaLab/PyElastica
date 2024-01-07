@@ -146,7 +146,7 @@ def _inv_rotate(director_collection):
             )
         )
 
-        # Clip the trace to between -3 and 3.
+        # Clip the trace to between -1 and 3.
         # Any deviation beyond this is numerical error
         trace = min(trace, 3.0)
         trace = max(trace, -1.0)
