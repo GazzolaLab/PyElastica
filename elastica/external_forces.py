@@ -40,9 +40,6 @@ class NoForces:
         time : float
             The time of simulation.
 
-        Returns
-        -------
-
         """
         pass
 
@@ -57,9 +54,6 @@ class NoForces:
             Rod or rigid-body object
         time : float
             The time of simulation.
-
-        Returns
-        -------
 
         """
         pass

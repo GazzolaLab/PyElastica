@@ -61,8 +61,6 @@ class FreeJoint:
         index_two : int
             Index of second rod for joint.
 
-        Returns
-        -------
 
         """
         end_distance_vector = (
@@ -101,9 +99,6 @@ class FreeJoint:
             Rod or rigid-body object
         index_two : int
             Index of second rod for joint.
-
-        Returns
-        -------
 
         """
         pass

@@ -63,7 +63,7 @@ Built-in External Forces
    :noindex:
 
 .. autoclass:: NoForces
-   :special-members: __init__
+   :special-members: __init__, apply_forces, apply_torques
 
 .. autoclass:: EndpointForces
    :special-members: __init__
