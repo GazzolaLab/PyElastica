@@ -16,6 +16,7 @@ from elastica._contact_functions import (
     _calculate_contact_forces_rod_sphere,
     _calculate_contact_forces_rod_plane,
     _calculate_contact_forces_rod_plane_with_anisotropic_friction,
+    _calculate_contact_forces_cylinder_plane,
 )
 import numpy as np
 
@@ -706,4 +707,90 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
             system_one.external_forces,
             system_one.internal_torques,
             system_one.external_torques,
+        )
+
+
+class CylinderPlaneContact(NoContact):
+    """
+    This class is for applying contact forces between cylinder-plane.
+    First system is always cylinder and second system is always plane.
+    For more details regarding the contact module refer to
+    Eqn 4.8 of Gazzola et al. RSoS (2018).
+
+        How to define contact between cylinder and plane.
+    >>> simulator.detect_contact_between(cylinder, plane).using(
+    ...    CylinderPlaneContact,
+    ...    k=1e4,
+    ...    nu=10,
+    ... )
+    """
+
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+    ):
+        """
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant.
+        """
+        super(CylinderPlaneContact, self).__init__()
+        self.k = k
+        self.nu = nu
+        self.surface_tol = 1e-4
+
+    def _check_systems_validity(
+        self,
+        system_one: SystemType,
+        system_two: AllowedContactType,
+    ) -> None:
+        """
+        This checks the contact order and type of a SystemType object and an AllowedContactType object.
+        For the RodPlaneContact class first_system should be a cylinder and second_system should be a plane.
+        Parameters
+        ----------
+        system_one
+            SystemType
+        system_two
+            AllowedContactType
+        """
+        if not issubclass(system_one.__class__, Cylinder) or not issubclass(
+            system_two.__class__, Plane
+        ):
+            raise TypeError(
+                "Systems provided to the contact class have incorrect order/type. \n"
+                " First system is {0} and second system is {1}. \n"
+                " First system should be a cylinder, second should be a plane".format(
+                    system_one.__class__, system_two.__class__
+                )
+            )
+
+    def apply_contact(self, system_one: Cylinder, system_two: SystemType):
+        """
+        This function computes the plane force response on the rigid body, in the
+        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+        is used.
+
+        Parameters
+        ----------
+        system_one: object
+            cylinder object.
+        system_two: object
+            Plane object.
+
+        """
+        return _calculate_contact_forces_cylinder_plane(
+            system_two.origin,
+            system_two.normal,
+            self.surface_tol,
+            self.k,
+            self.nu,
+            system_one.length,
+            system_one.position_collection,
+            system_one.velocity_collection,
+            system_one.external_forces,
         )
