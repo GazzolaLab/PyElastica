@@ -12,6 +12,7 @@ from elastica.interaction import (
     SlenderBodyTheory,
     nodes_to_elements,
     elements_to_nodes_inplace,
+    apply_normal_force_numba_rigid_body,
 )
 from elastica.contact_utils import (
     _node_to_element_mass_or_force,
@@ -846,7 +847,7 @@ try:
         @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
         def test_elements_to_nodes_inplace_error_message(self, n_elem):
             """
-            This function _elements_to_nodes_inplace. We are
+            This function tests _elements_to_nodes_inplace. We are
             converting node velocities to element velocities. Here also
             we are using numba to speed up the process.
 
@@ -1010,3 +1011,42 @@ class TestSlenderBody:
         slender_body_theory.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
+
+
+@pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+def test_apply_normal_force_numba_rigid_body_error_message(n_elem):
+    """
+    This function _elements_to_nodes_inplace. We are
+    converting node velocities to element velocities. Here also
+    we are using numba to speed up the process.
+
+    Parameters
+    ----------
+    n_elem
+
+    Returns
+    -------
+
+    """
+
+    position_collection = np.zeros((3, n_elem + 1))
+    position_collection[0, :] = np.linspace(0, 1.0, n_elem + 1)
+
+    error_message = (
+        "This function is removed in v0.3.2. For cylinder plane contact please use: \n"
+        "elastica._contact_functions._calculate_contact_forces_cylinder_plane() \n"
+        "For detail, refer to issue #113."
+    )
+    with pytest.raises(NotImplementedError) as error_info:
+        apply_normal_force_numba_rigid_body(
+            plane_origin=np.array([0.0, 0.0, 0.0]),
+            plane_normal=np.array([0.0, 0.0, 1.0]),
+            surface_tol=1e-4,
+            k=1.0,
+            nu=1.0,
+            length=1.0,
+            position_collection=position_collection,
+            velocity_collection=np.zeros((3, n_elem + 1)),
+            external_forces=np.zeros((3, n_elem + 1)),
+        )
+    assert error_info.value.args[0] == error_message
