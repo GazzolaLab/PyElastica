@@ -4,11 +4,6 @@ __doc__ = """ Numba implementation module containing interactions between a rod 
 import numpy as np
 from elastica.external_forces import NoForces
 from numba import njit
-from elastica._linalg import (
-    _batch_norm,
-    _batch_product_i_k_to_ik,
-    _batch_product_i_ik_to_k,
-)
 from elastica.contact_utils import (
     _elements_to_nodes_inplace,
     _node_to_element_velocity,
