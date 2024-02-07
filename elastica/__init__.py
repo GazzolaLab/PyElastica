@@ -1,10 +1,17 @@
 from collections import defaultdict
-from elastica.rod.knot_theory import KnotTheory, KnotTheoryCompatibleProtocol
+from elastica.rod.knot_theory import (
+    KnotTheory,
+    KnotTheoryCompatibleProtocol,
+    compute_link,
+    compute_twist,
+    compute_writhe,
+)
 from elastica.rod.rod_base import RodBase
 from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody.rigid_body import RigidBodyBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
+from elastica.surface.plane import Plane
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
@@ -36,6 +43,15 @@ from elastica.joint import (
     HingeJoint,
     SelfContact,
 )
+from elastica.contact_forces import (
+    NoContact,
+    RodRodContact,
+    RodCylinderContact,
+    RodSelfContact,
+    RodSphereContact,
+    RodPlaneContact,
+    RodPlaneContactWithAnisotropicFriction,
+)
 from elastica.callback_functions import CallBackBaseClass, ExportCallBack, MyCallBack
 from elastica.dissipation import (
     DamperBase,
@@ -48,6 +64,8 @@ from elastica.modules.connections import Connections
 from elastica.modules.constraints import Constraints
 from elastica.modules.forcing import Forcing
 from elastica.modules.damping import Damping
+from elastica.modules.contact import Contact
+
 from elastica.transformations import inv_skew_symmetrize
 from elastica.transformations import rotate
 from elastica._calculus import (
@@ -60,7 +78,7 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.timestepper import (
     integrate,
     PositionVerlet,

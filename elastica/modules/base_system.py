@@ -11,6 +11,7 @@ from collections.abc import MutableSequence
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
+from elastica.surface import SurfaceBase
 from elastica.modules.memory_block import construct_memory_block_structures
 from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
@@ -54,7 +55,7 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
-        self.allowed_sys_types = (RodBase, RigidBodyBase)
+        self.allowed_sys_types = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
         # Flag Finalize: Finalizing twice will cause an error,
@@ -168,9 +169,20 @@ class BaseSystemCollection(MutableSequence):
 
         # Toggle the finalize_flag
         self._finalize_flag = True
+        # sort _feature_group_synchronize so that _call_contacts is at the end
+        _call_contacts_index = []
+        for idx, feature in enumerate(self._feature_group_synchronize):
+            if feature.__name__ == "_call_contacts":
+                _call_contacts_index.append(idx)
+
+        # Move to the _call_contacts to the end of the _feature_group_synchronize list.
+        for index in _call_contacts_index:
+            self._feature_group_synchronize.append(
+                self._feature_group_synchronize.pop(index)
+            )
 
     def synchronize(self, time: float):
-        # Collection call _featuer_group_synchronize
+        # Collection call _feature_group_synchronize
         for feature in self._feature_group_synchronize:
             feature(time)
 

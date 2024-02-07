@@ -5,6 +5,7 @@ Cosserat Rods, Rigid Body etc.
 
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
+from elastica.surface import SurfaceBase
 from elastica.memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
 
 
@@ -34,6 +35,9 @@ def construct_memory_block_structures(systems):
             temp_list_for_rigid_body_systems.append(sys_to_be_added)
             temp_list_for_rigid_body_systems_idx.append(system_idx)
 
+        elif issubclass(sys_to_be_added.__class__, SurfaceBase):
+            pass
+
         else:
             raise TypeError(
                 "{0}\n"
@@ -43,7 +47,9 @@ def construct_memory_block_structures(systems):
                 "satisfies all criteria for being a system, please add\n"
                 "it here with correct memory block implementation.\n"
                 "The allowed types are\n"
-                "{1} {2}".format(sys_to_be_added.__class__, RodBase, RigidBodyBase)
+                "{1} {2} {3}".format(
+                    sys_to_be_added.__class__, RodBase, RigidBodyBase, SurfaceBase
+                )
             )
 
     if temp_list_for_cosserat_rod_systems:

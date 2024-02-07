@@ -13,7 +13,12 @@ from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
 
 
 class SnakeSimulator(
-    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
+    ea.BaseSystemCollection,
+    ea.Constraints,
+    ea.Forcing,
+    ea.Damping,
+    ea.CallBacks,
+    ea.Contact,
 ):
     pass
 
@@ -76,8 +81,10 @@ def run_snake(
     )
 
     # Add friction forces
-    origin_plane = np.array([0.0, -base_radius, 0.0])
-    normal_plane = normal
+    ground_plane = ea.Plane(
+        plane_origin=np.array([0.0, -base_radius, 0.0]), plane_normal=normal
+    )
+    snake_sim.append(ground_plane)
     slip_velocity_tol = 1e-8
     froude = 0.1
     mu = base_length / (period * period * np.abs(gravitational_acc) * froude)
@@ -85,12 +92,10 @@ def run_snake(
         [mu, 1.5 * mu, 2.0 * mu]
     )  # [forward, backward, sideways]
     static_mu_array = np.zeros(kinetic_mu_array.shape)
-    snake_sim.add_forcing_to(shearable_rod).using(
-        ea.AnisotropicFrictionalPlane,
+    snake_sim.detect_contact_between(shearable_rod, ground_plane).using(
+        ea.RodPlaneContactWithAnisotropicFriction,
         k=1.0,
         nu=1e-6,
-        plane_origin=origin_plane,
-        plane_normal=normal_plane,
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,

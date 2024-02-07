@@ -10,3 +10,4 @@ from .constraints import Constraints
 from .forcing import Forcing
 from .callbacks import CallBacks
 from .damping import Damping
+from .contact import Contact

@@ -16,7 +16,7 @@ from numpy.testing import assert_allclose
 import pytest
 from pytest import main
 from scipy.spatial.transform import Rotation
-from tests.test_rod.test_rods import MockTestRod
+from tests.test_rod.mock_rod import MockTestRod
 
 test_built_in_boundary_condition_impls = [
     FreeBC,
