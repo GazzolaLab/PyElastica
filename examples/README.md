@@ -26,17 +26,20 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Physical convergence test of simple pendulum with flexible rod.
     * __Features__: CosseratRod, HingeBC, GravityForces
 * [ContinuumSnakeCase](./ContinuumSnakeCase)
-    * __Purpose__: Demonstrate simple case of modeling biological creature using PyElastica. The example use friction to create slithering snake, and optimize the speed using [CMA](https://github.com/CMA-ES/pycma).
-    * __Features__: CosseratRod, MuscleTorques, AnisotropicFrictionalPlane, Gravity, CMA Optimization
-    * [MuscularSnake](./MuscularSnake)
-      * __Purpose__: Example of [Parallel connection module](../elastica/experimental/connection_contact_joint/parallel_connection.py) and customized [Force module](./MuscularSnake/muscle_forces.py) to implement muscular snake.
-      * __Features__: MuscleForces(custom implemented)
+    * __Purpose__: Demonstrate simple case of modeling biological creature using PyElastica. The example uses friction to create slithering snake, and optimize the speed using [CMA](https://github.com/CMA-ES/pycma).
+    * __Features__: CosseratRod, MuscleTorques, RodPlaneContactWithAnisotropicFriction, Gravity, CMA Optimization
+* [ContinuumSnakeWithLiftingWaveCase](./ContinuumSnakeWithLiftingWaveCase)
+    * __Purpose__: Demonstrate simple case of modeling biological creature using PyElastica. The example uses friction to create slithering snake with lift.
+    * __Features__: CosseratRod, MuscleTorquesLifting(custom implemented), SnakeRodPlaneContact(custom implemented), Gravity
+* [MuscularSnake](./MuscularSnake)
+    * __Purpose__: Example of [Parallel connection module](../elastica/experimental/connection_contact_joint/parallel_connection.py) and customized [Force module](./MuscularSnake/muscle_forces.py) to implement muscular snake.
+    * __Features__: MuscleForces(custom implemented)
 * [ButterflyCase](./ButterflyCase)
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
 * [FrictionValidationCases](./FrictionValidationCases)
     * __Purpose__: Physical validation of rolling and translational friction.
-    * __Features__: CosseratRod, UniformForces, AnisotropicFrictionalPlane
+    * __Features__: CosseratRod, UniformForces, RodPlaneContactWithAnisotropicFriction
 * [JointCases](./JointCases)
     * __Purpose__: Demonstrate various joint usage with Cosserat Rod.
     * __Features__: FreeJoint, FixedJoint, HingeJoint, OneEndFixedRod, EndpointForcesSinusoidal
@@ -45,27 +48,27 @@ Examples can serve as a starting template for customized usages.
     * __Features__: Cylinder, Sphere
     * [RodRigidBodyContact](./RigidBodyCases/RodRigidBodyContact)
       * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
-      * __Features__: Cylinder, CosseratRods, ExternalContact
+      * __Features__: Cylinder, CosseratRods, RodCylinderContact
 * [HelicalBucklingCase](./HelicalBucklingCase)
     * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
     * __Features__: HelicalBucklingBC
 * [ContinuumFlagellaCase](./ContinuumFlagellaCase)
     * __Purpose__: Demonstrate flagella modeling using PyElastica.
     * __Features__: SlenderBodyTheory, MuscleTorques,
-    * [MuscularFlagella](./MuscularFlagella)
-        * __Purpose__: Example of customizing [Joint module](./MuscularFlagella/connection_flagella.py) and [Force module](./MuscularFlagella/muscle_forces_flagella.py) to implement muscular flagella.
-        * __Features__: MuscleForces(custom implemented)
+* [MuscularFlagella](./MuscularFlagella)
+    * __Purpose__: Example of customizing [Joint module](./MuscularFlagella/connection_flagella.py) and [Force module](./MuscularFlagella/muscle_forces_flagella.py) to implement muscular flagella.
+    * __Features__: MuscleForces(custom implemented)
 * [RodContactCase](./RodContactCase)
   * [RodRodContact](./RodContactCase/RodRodContact)
     * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
-    * __Features__: CosseratRod, ExternalContact
+    * __Features__: CosseratRod, RodRodContact
   * [RodSelfContact](./RodContactCase/RodSelfContact)
     * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
       * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
+      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
     * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
       * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, SelfContact, Link-Writhe-Twist
+      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
 * [BoundaryConditionsCases](./BoundaryConditionsCases)
     * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
     * __Features__: GeneralConstraint, CosseratRod

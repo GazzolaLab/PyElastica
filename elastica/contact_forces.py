@@ -91,8 +91,8 @@ class RodRodContact(NoContact):
 
     Examples
     --------
-
     How to define contact between rod and rod.
+
     >>> simulator.detect_contact_between(first_rod, second_rod).using(
     ...    RodRodContact,
     ...    k=1e4,
@@ -148,6 +148,17 @@ class RodRodContact(NoContact):
             )
 
     def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+        """
+        Apply contact forces and torques between RodType object and RodType object.
+
+        Parameters
+        ----------
+        system_one: object
+            Rod object.
+        system_two: object
+            Rod object.
+
+        """
         # First, check for a global AABB bounding box, and see whether that
         # intersects
 
@@ -315,7 +326,10 @@ class RodSelfContact(NoContact):
     """
     This class is modeling self contact of rod.
 
+    Examples
+    --------
     How to define contact rod self contact.
+
     >>> simulator.detect_contact_between(rod, rod).using(
     ...    RodSelfContact,
     ...    k=1e4,
@@ -369,6 +383,17 @@ class RodSelfContact(NoContact):
             )
 
     def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+        """
+        Apply contact forces and torques between RodType object and itself.
+
+        Parameters
+        ----------
+        system_one: object
+            Rod object.
+        system_two: object
+            Rod object.
+
+        """
         _calculate_contact_forces_self_rod(
             system_one.position_collection[
                 ..., :-1
@@ -389,18 +414,22 @@ class RodSphereContact(NoContact):
     First system is always rod and second system is always sphere.
     In addition to the contact forces, user can define apply friction forces between rod and sphere that
     are in contact. For details on friction model refer to this [1]_.
+
     Notes
     -----
     The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
     (static friction), while friction_coefficient corresponds to the Coulombic friction coefficient.
+
     Examples
     --------
     How to define contact between rod and sphere.
+
     >>> simulator.detect_contact_between(rod, sphere).using(
     ...    RodSphereContact,
     ...    k=1e4,
     ...    nu=10,
     ... )
+
     .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
     """
 
@@ -457,6 +486,17 @@ class RodSphereContact(NoContact):
             )
 
     def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+        """
+        Apply contact forces and torques between RodType object and Sphere object.
+
+        Parameters
+        ----------
+        system_one: object
+            Rod object.
+        system_two: object
+            Sphere object.
+
+        """
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_sphere(
@@ -507,7 +547,10 @@ class RodPlaneContact(NoContact):
     For more details regarding the contact module refer to
     Eqn 4.8 of Gazzola et al. RSoS (2018).
 
-        How to define contact between rod and plane.
+    Examples
+    --------
+    How to define contact between rod and plane.
+
     >>> simulator.detect_contact_between(rod, plane).using(
     ...    RodPlaneContact,
     ...    k=1e4,
@@ -561,7 +604,7 @@ class RodPlaneContact(NoContact):
 
     def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
         """
-        In the case of contact with the plane, this function computes the plane reaction force on the element.
+        Apply contact forces and torques between RodType object and Plane object.
 
         Parameters
         ----------
@@ -593,7 +636,10 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
     For more details regarding the contact module refer to
     Eqn 4.8 of Gazzola et al. RSoS (2018).
 
+    Examples
+    --------
     How to define contact between rod and plane.
+
     >>> simulator.detect_contact_between(rod, plane).using(
     ...    RodPlaneContactWithAnisotropicFriction,
     ...    k=1e4,
@@ -672,7 +718,7 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
 
     def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
         """
-        In the case of contact with the plane, this function computes the plane reaction force on the element.
+        Apply contact forces and torques between RodType object and Plane object with anisotropic friction.
 
         Parameters
         ----------
@@ -717,7 +763,10 @@ class CylinderPlaneContact(NoContact):
     For more details regarding the contact module refer to
     Eqn 4.8 of Gazzola et al. RSoS (2018).
 
-        How to define contact between cylinder and plane.
+    Examples
+    --------
+    How to define contact between cylinder and plane.
+
     >>> simulator.detect_contact_between(cylinder, plane).using(
     ...    CylinderPlaneContact,
     ...    k=1e4,
@@ -771,14 +820,14 @@ class CylinderPlaneContact(NoContact):
 
     def apply_contact(self, system_one: Cylinder, system_two: SystemType):
         """
-        This function computes the plane force response on the rigid body, in the
+        This function computes the plane force response on the cylinder, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
         is used.
 
         Parameters
         ----------
         system_one: object
-            cylinder object.
+            Cylinder object.
         system_two: object
             Plane object.
 

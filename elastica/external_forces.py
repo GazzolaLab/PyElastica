@@ -40,9 +40,6 @@ class NoForces:
         time : float
             The time of simulation.
 
-        Returns
-        -------
-
         """
         pass
 
@@ -57,9 +54,6 @@ class NoForces:
             Rod or rigid-body object
         time : float
             The time of simulation.
-
-        Returns
-        -------
 
         """
         pass
@@ -108,9 +102,6 @@ class GravityForces(NoForces):
             1D (blocksize) array containing data with 'float' type. Mass on the nodes.
         external_forces: numpy.ndarray
             2D (dim, blocksize) array containing data with 'float' type. External force vector.
-
-        Returns
-        -------
 
         """
         inplace_addition(external_forces, _batch_product_i_k_to_ik(acc_gravity, mass))
@@ -181,9 +172,6 @@ class EndpointForces(NoForces):
         time: float
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
-
-        Returns
-        -------
 
         """
         factor = min(1.0, time / ramp_up_time)
@@ -345,23 +333,7 @@ class MuscleTorques(NoForces):
             self.my_spline = my_spline(self.s)
 
         else:
-
-            def constant_function(input):
-                """
-                Return array of ones same as the size of the input array. This
-                function is called when Beta spline function is not used.
-
-                Parameters
-                ----------
-                input
-
-                Returns
-                -------
-
-                """
-                return np.ones(input.shape)
-
-            self.my_spline = constant_function(self.s)
+            self.my_spline = np.full_like(self.s, fill_value=1.0)
 
     def apply_torques(self, rod: RodType, time: np.float64 = 0.0):
         self.compute_muscle_torques(
@@ -430,8 +402,6 @@ def inplace_addition(external_force_or_torque, force_or_torque):
     force_or_torque: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
 
-    Returns
-    -------
 
     """
     blocksize = force_or_torque.shape[1]
@@ -454,8 +424,6 @@ def inplace_substraction(external_force_or_torque, force_or_torque):
     force_or_torque: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
 
-    Returns
-    -------
 
     """
     blocksize = force_or_torque.shape[1]
