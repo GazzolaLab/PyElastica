@@ -8,6 +8,8 @@ exclude_lines =
     def __repr__
     from
     import
+    raise AssertionError
+    raise NotImplementedError
 show_missing = true
 
 [run]
