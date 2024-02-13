@@ -780,3 +780,69 @@ def _calculate_contact_forces_rod_plane_with_anisotropic_friction(
         director_collection,
         _batch_cross(torque_arm, static_friction_force_along_rolling_direction),
     )
+
+
+@numba.njit(cache=True)
+def _calculate_contact_forces_cylinder_plane(
+    plane_origin,
+    plane_normal,
+    surface_tol,
+    k,
+    nu,
+    length,
+    position_collection,
+    velocity_collection,
+    external_forces,
+):
+
+    # Compute plane response force
+    # total_forces = system.internal_forces + system.external_forces
+    total_forces = external_forces
+    force_component_along_normal_direction = _batch_product_i_ik_to_k(
+        plane_normal, total_forces
+    )
+    forces_along_normal_direction = _batch_product_i_k_to_ik(
+        plane_normal, force_component_along_normal_direction
+    )
+    # If the total force component along the plane normal direction is greater than zero that means,
+    # total force is pushing rod away from the plane not towards the plane. Thus, response force
+    # applied by the surface has to be zero.
+    forces_along_normal_direction[
+        ..., np.where(force_component_along_normal_direction > 0)[0]
+    ] = 0.0
+    # Compute response force on the element. Plane response force
+    # has to be away from the surface and towards the element. Thus
+    # multiply forces along normal direction with negative sign.
+    plane_response_force = -forces_along_normal_direction
+
+    # Elastic force response due to penetration
+    element_position = position_collection
+    distance_from_plane = _batch_product_i_ik_to_k(
+        plane_normal, (element_position - plane_origin)
+    )
+    plane_penetration = np.minimum(distance_from_plane - length / 2, 0.0)
+    elastic_force = -k * _batch_product_i_k_to_ik(plane_normal, plane_penetration)
+
+    # Damping force response due to velocity towards the plane
+    element_velocity = velocity_collection
+    normal_component_of_element_velocity = _batch_product_i_ik_to_k(
+        plane_normal, element_velocity
+    )
+    damping_force = -nu * _batch_product_i_k_to_ik(
+        plane_normal, normal_component_of_element_velocity
+    )
+
+    # Compute total plane response force
+    plane_response_force_total = plane_response_force + elastic_force + damping_force
+
+    # Check if the rigid body is in contact with plane.
+    no_contact_point_idx = np.where((distance_from_plane - length / 2) > surface_tol)[0]
+    # If rod element does not have any contact with plane, plane cannot apply response
+    # force on the element. Thus lets set plane response force to 0.0 for the no contact points.
+    plane_response_force[..., no_contact_point_idx] = 0.0
+    plane_response_force_total[..., no_contact_point_idx] = 0.0
+
+    # Update the external forces
+    external_forces += plane_response_force_total
+
+    return (_batch_norm(plane_response_force), no_contact_point_idx)

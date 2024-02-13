@@ -10,6 +10,7 @@ from elastica.contact_forces import (
     RodSphereContact,
     RodPlaneContact,
     RodPlaneContactWithAnisotropicFriction,
+    CylinderPlaneContact,
 )
 from elastica.typing import RodBase
 from elastica.rigidbody import Cylinder, Sphere
@@ -593,7 +594,7 @@ class TestRodPlaneContact:
         # create rod
         rod = MockRod()
         start = np.array([0.0, 0.0, 0.0])
-        direction = np.array([0.0, 0.0, 0.0])
+        direction = np.array([0.0, 0.0, 1.0])
         end = start + 1.0 * direction
         rod.position_collection = np.zeros((3, 3))
         for i in range(0, 3):
@@ -638,7 +639,7 @@ class TestRodPlaneContact:
             " First system should be a rod, second should be a plane"
         ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
 
-        "Testing Self Contact wrapper with incorrect type for first argument"
+        "Testing Rod Plane Contact wrapper with incorrect type for first argument"
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_list, mock_plane)
         assert (
@@ -747,7 +748,7 @@ class TestRodPlaneContact:
         offset_of_plane_with_respect_to_rod = 2.0 * 0.25
 
         # plane normal changed, it is towards the negative direction, because rod
-        # is under the rod.
+        # is under the plane.
         plane_normal = np.array([0.0, -1.0, 0.0])
 
         [rod, plane, rod_plane_contact, external_forces] = self.initializer(
@@ -776,7 +777,7 @@ class TestRodPlaneContact:
         shift = offset_of_plane_with_respect_to_rod - np.random.random_sample(1).item()
 
         # plane normal changed, it is towards the negative direction, because rod
-        # is under the rod.
+        # is under the plane.
         plane_normal = np.array([0.0, -1.0, 0.0])
 
         [rod, plane, rod_plane_contact, external_forces] = self.initializer(
@@ -813,7 +814,7 @@ class TestRodPlaneContact:
         offset_of_plane_with_respect_to_rod = 2.0 * 0.25
 
         # plane normal changed, it is towards the negative direction, because rod
-        # is under the rod.
+        # is under the plane.
         plane_normal = np.array([0.0, -1.0, 0.0])
 
         [rod, plane, rod_plane_contact, external_forces] = self.initializer(
@@ -913,7 +914,7 @@ class TestRodPlaneWithAnisotropicFriction:
             " First system should be a rod, second should be a plane"
         ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
 
-        "Testing Self Contact wrapper with incorrect type for first argument"
+        "Testing Rod Plane wrapper with incorrect type for first argument"
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_list, mock_plane)
         assert (
@@ -1196,3 +1197,233 @@ class TestRodPlaneWithAnisotropicFriction:
         )
 
         assert_allclose(correct_torques, rod.external_torques, atol=Tolerance.atol())
+
+
+class TestCylinderPlaneContact:
+    def initializer(
+        self,
+        shift=0.0,
+        k_w=0.0,
+        nu_w=0.0,
+        plane_normal=np.array([0.0, 1.0, 0.0]),
+    ):
+        # create cylinder
+        cylinder = MockCylinder()
+
+        # create plane
+        plane = MockPlane()
+        plane.origin = np.array([0.0, -cylinder.radius[0] + shift, 0.0]).reshape(3, 1)
+        plane.normal = plane_normal.reshape(
+            3,
+        )
+        cylinder_plane_contact = CylinderPlaneContact(k_w, nu_w)
+
+        fnormal = -10.0 * np.sign(plane_normal[1]) * np.random.random_sample(1).item()
+        external_forces = np.array([0.0, fnormal, 0.0]).reshape(3, 1)
+        cylinder.external_forces = external_forces.copy()
+
+        return cylinder, plane, cylinder_plane_contact, external_forces
+
+    def test_check_systems_validity_with_invalid_systems(
+        self,
+    ):
+        mock_cylinder = MockCylinder()
+        mock_plane = MockPlane()
+        mock_list = [1, 2, 3]
+        cylinder_plane_contact = CylinderPlaneContact(k=1.0, nu=0.0)
+
+        "Testing Cylinder Plane Contact wrapper with incorrect type for second argument"
+        with pytest.raises(TypeError) as excinfo:
+            cylinder_plane_contact._check_systems_validity(mock_cylinder, mock_list)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a cylinder, second should be a plane"
+        ).format(mock_cylinder.__class__, mock_list.__class__) == str(excinfo.value)
+
+        "Testing Cylinder Plane wrapper with incorrect type for first argument"
+        with pytest.raises(TypeError) as excinfo:
+            cylinder_plane_contact._check_systems_validity(mock_list, mock_plane)
+        assert (
+            "Systems provided to the contact class have incorrect order/type. \n"
+            " First system is {0} and second system is {1}. \n"
+            " First system should be a cylinder, second should be a plane"
+        ).format(mock_list.__class__, mock_plane.__class__) == str(excinfo.value)
+
+    def test_cylinder_plane_contact_without_contact(self):
+        """
+        This test case tests the forces on cylinder, when there is no
+        contact between cylinder and the plane.
+
+        """
+
+        shift = -(
+            (2.0 - 1.0) * np.random.random_sample(1) + 1.0
+        ).item()  # we move plane away from cylinder
+        print("q")
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            shift
+        )
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+        correct_forces = external_forces  # since no contact
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    def test_cylinder_plane_contact_without_k_and_nu(self):
+        """
+        This function tests wall response on the cylinder. Here
+        wall stiffness coefficient and damping coefficient set
+        to zero to check only sum of all forces on the cylinder.
+
+        """
+
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer()
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+
+        correct_forces = np.zeros((3, 1))
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
+    def test_cylinder_plane_contact_with_k_without_nu(self, k_w):
+        """
+        Here wall stiffness coefficient changed parametrically
+        and damping coefficient set to zero .
+        Parameters
+        ----------
+        k_w
+
+
+        """
+
+        shift = np.random.random_sample(1).item()  # we move plane towards to cylinder
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            shift=shift, k_w=k_w
+        )
+        correct_forces = k_w * np.array([0.0, shift, 0.0]).reshape(3, 1)
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
+    def test_cylinder_plane_contact_without_k_with_nu(self, nu_w):
+        """
+        Here wall damping coefficient are changed parametrically and
+        wall response functions tested.
+        Parameters
+        ----------
+        nu_w
+        """
+
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            nu_w=nu_w
+        )
+
+        normal_velocity = np.random.random_sample(1).item()
+        cylinder.velocity_collection[..., :] += np.array(
+            [0.0, -normal_velocity, 0.0]
+        ).reshape(3, 1)
+
+        correct_forces = nu_w * np.array([0.0, normal_velocity, 0.0]).reshape(3, 1)
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    def test_cylinder_plane_contact_when_cylinder_is_under_plane(self):
+        """
+        This test case tests plane response forces on the cylinder
+        in the case cylinder is under the plane and pushed towards
+        the plane.
+
+        """
+
+        # we move plane on top of the cylinder. Note that 1.0 is radius of the cylinder.
+        offset_of_plane_with_respect_to_cylinder = 2.0 * 1.0
+
+        # plane normal changed, it is towards the negative direction, because cylinder
+        # is under the plane.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            shift=offset_of_plane_with_respect_to_cylinder, plane_normal=plane_normal
+        )
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+        correct_forces = np.zeros((3, 1))
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
+    def test_cylinder_plane_contact_when_cylinder_is_under_plane_with_k_without_nu(
+        self, k_w
+    ):
+        """
+        In this test case we move the cylinder under the plane.
+        Here wall stiffness coefficient changed parametrically
+        and damping coefficient set to zero .
+        Parameters
+        ----------
+        k_w
+
+        """
+        # we move plane on top of the cylinder. Note that 1.0 is radius of the cylinder.
+        offset_of_plane_with_respect_to_cylinder = 2.0 * 1.0
+
+        # we move plane towards to cylinder by random distance
+        shift = (
+            offset_of_plane_with_respect_to_cylinder - np.random.random_sample(1).item()
+        )
+
+        # plane normal changed, it is towards the negative direction, because cylinder
+        # is under the plane.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            shift=shift, k_w=k_w, plane_normal=plane_normal
+        )
+
+        # we have to substract cylinder offset because top part
+        correct_forces = k_w * np.array(
+            [0.0, shift - offset_of_plane_with_respect_to_cylinder, 0.0]
+        ).reshape(3, 1)
+
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
+
+    @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
+    def test_cylinder_plane_contact_when_cylinder_is_under_plane_without_k_with_nu(
+        self, nu_w
+    ):
+        """
+        In this test case we move under the plane and test damping force.
+        Here wall damping coefficient are changed parametrically and
+        wall response functions tested.
+        Parameters
+        ----------
+        nu_w
+
+        """
+        # we move plane on top of the cylinder. Note that 1.0 is radius of the cylinder.
+        offset_of_plane_with_respect_to_cylinder = 2.0 * 1.0
+
+        # plane normal changed, it is towards the negative direction, because cylinder
+        # is under the plane.
+        plane_normal = np.array([0.0, -1.0, 0.0])
+
+        [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
+            shift=offset_of_plane_with_respect_to_cylinder,
+            nu_w=nu_w,
+            plane_normal=plane_normal,
+        )
+
+        normal_velocity = np.random.random_sample(1).item()
+        cylinder.velocity_collection[..., :] += np.array(
+            [0.0, -normal_velocity, 0.0]
+        ).reshape(3, 1)
+
+        correct_forces = nu_w * np.array([0.0, normal_velocity, 0.0]).reshape(3, 1)
+        cylinder_plane_contact.apply_contact(cylinder, plane)
+
+        assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
