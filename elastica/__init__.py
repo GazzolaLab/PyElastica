@@ -11,6 +11,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rigidbody.rigid_body import RigidBodyBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
+from elastica.surface.plane import Plane
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
@@ -44,6 +45,13 @@ from elastica.joint import (
 )
 from elastica.contact_forces import (
     NoContact,
+    RodRodContact,
+    RodCylinderContact,
+    RodSelfContact,
+    RodSphereContact,
+    RodPlaneContact,
+    RodPlaneContactWithAnisotropicFriction,
+    CylinderPlaneContact,
 )
 from elastica.callback_functions import CallBackBaseClass, ExportCallBack, MyCallBack
 from elastica.dissipation import (

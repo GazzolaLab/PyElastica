@@ -69,12 +69,12 @@ class Contact:
             second_sys_idx,
             contact,
         ) in self._contacts:
-            contact._check_order(
+            contact._check_systems_validity(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )
 
-    def _call_contacts(self, *args, **kwargs):
+    def _call_contacts(self, time: float):
         for (
             first_sys_idx,
             second_sys_idx,
@@ -83,8 +83,6 @@ class Contact:
             contact.apply_contact(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
-                *args,
-                **kwargs,
             )
 
 
@@ -118,8 +116,6 @@ class _Contact:
         self.first_sys_idx = first_sys_idx
         self.second_sys_idx = second_sys_idx
         self._contact_cls = None
-        self._args = ()
-        self._kwargs = {}
 
     def using(self, contact_cls: object, *args, **kwargs):
         """
@@ -162,8 +158,8 @@ class _Contact:
             raise RuntimeError(
                 "No contacts provided to to establish contact between rod-like object id {0}"
                 " and {1}, but a Contact"
-                "was intended as per code. Did you forget to"
-                "call the `using` method?".format(*self.id())
+                " was intended as per code. Did you forget to"
+                " call the `using` method?".format(*self.id())
             )
 
         try:

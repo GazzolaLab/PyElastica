@@ -14,6 +14,11 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         self.n_nodes = self.n_elems
         self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
 
+        self.start_idx_in_rod_nodes = np.arange(0, self.n_bodies, dtype=np.int64)
+        self.end_idx_in_rod_nodes = np.arange(1, self.n_bodies + 1, dtype=np.int64)
+        self.start_idx_in_rod_elems = self.start_idx_in_rod_nodes
+        self.end_idx_in_rod_elems = self.end_idx_in_rod_nodes
+
         # Allocate block structure using system collection.
         self.allocate_block_variables_scalars(systems)
         self.allocate_block_variables_vectors(systems)
