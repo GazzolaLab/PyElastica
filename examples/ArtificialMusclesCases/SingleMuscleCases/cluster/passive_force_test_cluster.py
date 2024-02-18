@@ -110,7 +110,7 @@ elif not test_sim_settings.isometric_test and test_sim_settings.isobaric_test:
     for radius in test_muscle.geometry.start_radius_list:
         initial_coil_radius += radius
     coil_radius_sim[0] = initial_coil_radius
-    test_sim_settings.final_time = 1.0
+    test_sim_settings.final_time = 2.0
     test_sim_settings.force_mag = args.force_mag / (
         1e-3
         * n_muscles

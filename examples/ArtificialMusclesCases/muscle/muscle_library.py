@@ -932,13 +932,13 @@ class Samuel_supercoil_stl:
         self.geometry = Dict2Class(muscle_geometry_dict)
         self.properties = Dict2Class(nylon_material_properties_dict)
         self.name = "Samuel_supercoil_stl"
-        self.experimental_tensile_test = np.loadtxt(
-            "ExperimentalData/SamuelMuscles/Supercoil/supercoiled_tensile_test.txt"
-        )
-        self.experimental_tensile_test_single_fiber_times_3 = np.loadtxt(
-            "ExperimentalData/SamuelMuscles/Supercoil/supercoiled_one_fiber_tensile_test.txt"
-        )
-        self.experimental_tensile_test_single_fiber_times_3[:, 1] *= 3
+        # self.experimental_tensile_test = np.loadtxt(
+        #     "ExperimentalData/SamuelMuscles/Supercoil/supercoiled_tensile_test.txt"
+        # )
+        # self.experimental_tensile_test_single_fiber_times_3 = np.loadtxt(
+        #     "ExperimentalData/SamuelMuscles/Supercoil/supercoiled_one_fiber_tensile_test.txt"
+        # )
+        # self.experimental_tensile_test_single_fiber_times_3[:, 1] *= 3
         self.strain_experimental = np.linspace(0, 1.5, 6)  # np.linspace(0,0.35,6)
         self.passive_force_experimental = np.linspace(0, 50, 6)
 
