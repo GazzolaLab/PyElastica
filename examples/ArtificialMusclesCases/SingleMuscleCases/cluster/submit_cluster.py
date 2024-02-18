@@ -155,7 +155,7 @@ if __name__ == "__main__":
         )
         os.makedirs(folder_name, exist_ok=True)
         PROGRAM_NAME = "single_muscle_simulator_cluster.py"
-        ENVIRONMENT_NAME = "pyelastica-dev-muscles"
+        ENVIRONMENT_NAME = "pyelastica-dev-muscle"
         PARTITION = "shared"
         TIME = "08:00:00"
         NUM_THREADS = 4
