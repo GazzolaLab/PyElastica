@@ -240,9 +240,6 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
         system
         time
 
-        Returns
-        -------
-
         """
         _calculate_contact_forces_rod_plane_with_anisotropic_friction(
             self.plane_origin,
@@ -504,9 +501,6 @@ class SlenderBodyTheory(NoForces):
         Parameters
         ----------
         system
-
-        Returns
-        -------
 
         """
 

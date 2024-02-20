@@ -51,6 +51,7 @@ from elastica.contact_forces import (
     RodSphereContact,
     RodPlaneContact,
     RodPlaneContactWithAnisotropicFriction,
+    CylinderPlaneContact,
 )
 from elastica.callback_functions import CallBackBaseClass, ExportCallBack, MyCallBack
 from elastica.dissipation import (
