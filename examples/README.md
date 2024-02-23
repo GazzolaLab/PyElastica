@@ -79,7 +79,7 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Demonstrate simulation of ring rod.
     * __Features__: RingCosseratRod, OneEndFixedRod, GravityForce
 * [CatenaryCase](./CatenaryCase)
-    * __Purpose__: Demonstrate simulation of cosserat rod under gravity with fixed ends, compared with Catenary Analytical Solution from Routh, Edward John (1891). [<strong>"Chapter X: On Strings".</strong>](https://books.google.com/books?id=3N5JAAAAMAAJ&pg=PA315#v=onepage&q&f=false). A Treatise on Analytical Statics. University Press.
+    * __Purpose__: Demonstrate simulation of cosserat rod under gravity with fixed ends, compared with Catenary Analytical Solution from Routh, Edward John (1891). [<strong>"Chapter X: On Strings"</strong>](https://books.google.com/books?id=3N5JAAAAMAAJ&pg=PA315#v=onepage&q&f=false). A Treatise on Analytical Statics. University Press.
     * __Features__: CosseratRod, FixedConstraint, GravityForce
 
 ## Functional Examples
