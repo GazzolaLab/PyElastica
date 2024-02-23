@@ -44,9 +44,11 @@ def plot_video(
 
 
 def plot_catenary(plot_params: dict, xlim=(0, 1), ylim=(-0.5, 0.5), base_length=1.0):
+    """
+    Catenary analytical solution from Routh, Edward John (1891). "Chapter X: On Strings". A Treatise on Analytical Statics. University Press.
+    """
     matplotlib.use("TkAgg")
     position = np.array(plot_params["position"])
-    n_elem = position.shape[-1]
     lowest_point = np.min(position[-1][2])
     x_catenary = np.linspace(0, base_length, 100)
 
