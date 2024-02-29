@@ -1,6 +1,0 @@
-name: dev-binder-poetry
-channels:
-  - defaults
-dependencies:
-  - python==3.8
-prefix: /Users/ali-7800/opt/anaconda3/envs/dev-binder-poetry
