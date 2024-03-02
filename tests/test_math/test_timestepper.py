@@ -1,6 +1,7 @@
 __doc__ = """Testing timesteppers in Elastica Numba implementation """
 import numpy as np
 import pytest
+import unittest
 from numpy.testing import assert_allclose
 
 from elastica.systems.analytical import (
@@ -398,10 +399,10 @@ class TestSteppersAgainstRodLikeSystems:
             make_simple_system_with_positions_directors,
         )
 
-        random_start_position = np.random.randn(3, 1)
-        random_end_position = np.random.randn(3, 1)
-        random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
-        random_directors = random_directors.reshape(3, 3, 1)
+        random_start_position = np.array([[0.0], [0.0], [0.0]])
+        random_end_position = np.array([[1.0], [0.0], [0.0]])
+        random_directors = np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]])
+        random_directors = random_directors.reshape(3, 3)
 
         rod_like_system = make_simple_system_with_positions_directors(
             random_start_position, random_end_position, random_directors
