@@ -113,7 +113,7 @@ class AnalyticalLinearDamper(DamperBase):
         Damping coefficient acting on rotational velocity.
     """
 
-    def __init__(self, damping_constant, time_step, **kwargs):
+    def __init__(self, damping_constant: float, time_step: float, **kwargs):
         """
         Analytical linear damper initializer
 

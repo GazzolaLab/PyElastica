@@ -15,10 +15,9 @@ class RodBase:
         """
         RodBase does not take any arguments.
         """
-        pass
-        # self.position_collection = NotImplemented
-        # self.omega_collection = NotImplemented
-        # self.acceleration_collection = NotImplemented
-        # self.alpha_collection = NotImplemented
-        # self.external_forces = NotImplemented
-        # self.external_torques = NotImplemented
+        self.position_collection: int
+        self.omega_collection: int
+        self.acceleration_collection: int
+        self.alpha_collection: int
+        self.external_forces: int
+        self.external_torques: int
