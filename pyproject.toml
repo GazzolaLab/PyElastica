@@ -25,6 +25,8 @@ classifiers = [
 "Programming Language :: Python :: 3.8",
 "Programming Language :: Python :: 3.9",
 "Programming Language :: Python :: 3.10",
+"Programming Language :: Python :: 3.11",
+"Programming Language :: Python :: 3.12",
 "Programming Language :: Python :: Implementation :: CPython",
 "Intended Audience :: Science/Research",
 "Intended Audience :: Education",
@@ -36,10 +38,19 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
-numba = "^0.55.0"
-numpy = "^1.19.2"
-scipy = "^1.5.2"
+python = ">=3.8,<3.13"
+numba = [
+    {version = "^0.55.0", python = ">=3.8,<3.11"},
+    {version = "^0.59.0", python = ">=3.11"}
+]
+numpy = [
+    {version = "^1.19.2", python = ">=3.8,<3.11"},
+    {version = "^1.26.4", python = ">=3.11"}
+]
+scipy = [
+    {version = "^1.5.2", python = ">=3.8,<3.11"},
+    {version = "^1.12.0", python = ">=3.11"}
+]
 tqdm = "^4.61.1"
 # A list of all of the optional dependencies, some of which are included in the
 # below `extras`. They can be opted into by apps.
