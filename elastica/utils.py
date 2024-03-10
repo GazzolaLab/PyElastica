@@ -10,6 +10,7 @@ from scipy.interpolate import BSpline
 
 from numpy.typing import NDArray
 
+
 # Slower than the python3.8 isqrt implementation for small ints
 # python isqrt : ~130 ns
 # this : 621 ns ± 17.7 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
@@ -172,7 +173,7 @@ def extend_instance(obj: Any, cls: Any):
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 
 
-def _bspline(t_coeff: NDArray, l_centerline: float =1.0):
+def _bspline(t_coeff: NDArray, l_centerline: float = 1.0):
     """Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
     default and keep_pts for keeping record of control points
