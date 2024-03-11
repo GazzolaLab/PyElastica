@@ -77,8 +77,11 @@ We ask that any publications which use Elastica cite as following:
 </details>
 
 ## List of publications and submissions
+- [Soft, slender and active structures in fluids: embedding Cosserat rods in vortex methods](https://doi.org/10.48550/arXiv.2401.09506) (UIUC 2024)
+- [Neural models and algorithms for sensorimotor control of an octopus arm](https://doi.org/10.48550/arXiv.2402.01074)(UIUC 2024)
+- [On the mechanical origins of waving, coiling and skewing in Arabidopsis thaliana roots](https://www.pnas.org/doi/10.1073/pnas.2312761121) (Tel Aviv University, UIUC 2024) (PNAS)
 - [Topology, dynamics, and control of an octopus-analog muscular hydrostat](https://arxiv.org/abs/2304.08413) (UIUC, 2023)
-- [Hierarchical control and learning of a foraging CyberOctopus](https://arxiv.org/abs/2302.05811) (UIUC, 2023)
+- [Hierarchical control and learning of a foraging CyberOctopus](https://onlinelibrary.wiley.com/doi/full/10.1002/aisy.202300088) (UIUC, 2023) (Advanced Intelligent Systems)
 - [Energy-shaping control of a muscular octopus arm moving in three dimensions](https://royalsocietypublishing.org/doi/full/10.1098/rspa.2022.0593) (UIUC, 2023) (Proceedings of the Royal Society A 2023)
 - [A sensory feedback control law for octopus arm movements](https://ieeexplore.ieee.org/abstract/document/9993021/) (UIUC, 2022) (IEEE CDC 2022)
 - [Control-oriented modeling of bend propagation in an octopus arm](https://ieeexplore.ieee.org/abstract/document/9867689/) (UIUC, 2021) (IEEE ACC 2022)
@@ -99,10 +102,11 @@ We have also included an example script for visualizing PyElastica simulations u
 
 If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md)
 
-PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University of Illinois at Urbana-Champaign.
+PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University of Illinois Urbana-Champaign.
 
 ## Senior Developers ✨
 _Names arranged alphabetically_
+- Ali Albazroun
 - Arman Tekinalp
 - Chia-Hsien Shih (Cathy)
 - Fan Kiat Chan
