@@ -1,4 +1,4 @@
-Connections / Contact / Joints
+Connections / Joints
 ==============================
 
 .. _connections:
@@ -8,44 +8,34 @@ Connections / Contact / Joints
 Description
 -----------
 
-.. rubric:: Available Connection/Contact/Joints
+.. rubric:: Available Connections/Joints
 
 .. autosummary::
    :nosignatures:
 
    FreeJoint
-   ExternalContact
    FixedJoint
    HingeJoint
-   SelfContact
 
 Compatibility
 ~~~~~~~~~~~~~
 
-=============================== ==== =========== 
-Connection / Contact / Joints   Rod  Rigid Body
-=============================== ==== =========== 
+=============================== ==== ===========
+Connection / Joints   		Rod  Rigid Body
+=============================== ==== ===========
 FreeJoint                       ✅   ❌
-ExternalContact                 ✅   ❌
 FixedJoint                      ✅   ❌
 HingeJoint                      ✅   ❌
-SelfContact                     ✅   ❌
-=============================== ==== =========== 
+=============================== ==== ===========
 
-Built-in Connection / Contact / Joint
+Built-in Connection / Joint
 -------------------------------------
 
 .. autoclass:: FreeJoint
-   :special-members: __init__
-
-.. autoclass:: ExternalContact
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: FixedJoint
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: HingeJoint
-   :special-members: __init__
-
-.. autoclass:: SelfContact
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques

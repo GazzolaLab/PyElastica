@@ -63,25 +63,25 @@ Built-in External Forces
    :noindex:
 
 .. autoclass:: NoForces
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: EndpointForces
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: GravityForces
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: UniformForces
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: UniformTorques
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: MuscleTorques
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: EndpointForcesSinusoidal
-   :special-members: __init__
+   :special-members: __init__,apply_forces,apply_torques
 
 Built-in Environment Interactions
 ---------------------------------
