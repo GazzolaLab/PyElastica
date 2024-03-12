@@ -1,4 +1,4 @@
-__doc__ = """plane surface class"""
+__doc__ = """"""
 
 from elastica.surface.surface_base import SurfaceBase
 import numpy as np
