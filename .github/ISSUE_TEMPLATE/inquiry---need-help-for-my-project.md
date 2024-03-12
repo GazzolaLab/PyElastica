@@ -12,7 +12,7 @@ A clear description of your problem.
 
 **To Reproduce**
 - URL for project repository
-- Code implementation
+- Code implementation (If your code is long, please use Gist and share the link.)
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
