@@ -1,7 +1,7 @@
 """ Handy utilities
 """
 
-from typing import Iterable, Any
+from typing import Iterable, Any, List
 import functools
 import numpy as np
 from numpy import finfo, float64
@@ -92,7 +92,7 @@ class Tolerance:
         return finfo(float64).eps * 1e11
 
 
-def perm_parity(lst: list[int]):
+def perm_parity(lst: List[int]):
     """
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
