@@ -7,6 +7,12 @@ from elastica.experimental.connection_contact_joint.parallel_connection import (
     SurfaceJointSideBySide,
 )
 from elastica._calculus import difference_kernel
+import sys
+
+sys.path.append("../")
+sys.path.append("../../")
+sys.path.append("../../../")
+
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
