@@ -1,9 +1,10 @@
 __doc__ = """ Built-in boundary condition implementationss """
 
 import warnings
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from abc import ABC, abstractmethod
 
@@ -143,7 +144,12 @@ class OneEndFixedBC(ConstraintBase):
     ... )
     """
 
-    def __init__(self, fixed_position, fixed_directors, **kwargs):
+    def __init__(
+        self,
+        fixed_position: Tuple[int, ...],
+        fixed_directors: Tuple[int, ...],
+        **kwargs,
+    ):
         """
 
         Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
@@ -180,10 +186,10 @@ class OneEndFixedBC(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection,
-        fixed_position_collection,
-        director_collection,
-        fixed_directors_collection,
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        director_collection: NDArray[np.floating],
+        fixed_directors_collection: NDArray[np.floating],
     ):
         """
         Computes constrain values in numba njit decorator
@@ -208,7 +214,10 @@ class OneEndFixedBC(ConstraintBase):
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, omega_collection):
+    def compute_constrain_rates(
+        velocity_collection: NDArray[np.floating],
+        omega_collection: NDArray[np.floating],
+    ):
         """
         Compute contrain rates in numba njit decorator
 
@@ -358,7 +367,10 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_values(
-        position_collection, fixed_position_collection, indices, constraint_selector
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -393,7 +405,9 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_rates(
-        velocity_collection, indices, constraint_selector
+        velocity_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Compute constrain rates in numba njit decorator
@@ -422,7 +436,10 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_rotational_rates(
-        director_collection, omega_collection, indices, constraint_selector
+        director_collection: NDArray[np.floating],
+        omega_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Compute constrain rates in numba njit decorator
@@ -537,7 +554,9 @@ class FixedConstraint(GeneralConstraint):
     @staticmethod
     @njit(cache=True)
     def nb_constraint_rotational_values(
-        director_collection, fixed_director_collection, indices
+        director_collection: NDArray[np.floating],
+        fixed_director_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -558,7 +577,9 @@ class FixedConstraint(GeneralConstraint):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_values(
-        position_collection, fixed_position_collection, indices
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -578,7 +599,9 @@ class FixedConstraint(GeneralConstraint):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_translational_rates(velocity_collection, indices) -> None:
+    def nb_constrain_translational_rates(
+        velocity_collection: NDArray[np.floating], indices: NDArray[np.integer]
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
         Parameters
@@ -598,7 +621,9 @@ class FixedConstraint(GeneralConstraint):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_rotational_rates(omega_collection, indices) -> None:
+    def nb_constrain_rotational_rates(
+        omega_collection: NDArray[np.floating], indices: NDArray[np.integer]
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
         Parameters

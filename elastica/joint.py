@@ -1,11 +1,14 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 
+from typing import Optional, Sequence
+
 from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType
 from math import sqrt
 import numba
 import numpy as np
+from numpy.typing import NDArray
 
 
 class FreeJoint:
@@ -30,7 +33,7 @@ class FreeJoint:
     # pass the k and nu for the forces
     # also the necessary rods for the joint
     # indices should be 0 or -1, we will provide wrappers for users later
-    def __init__(self, k, nu):
+    def __init__(self, k: float, nu: float):
         """
 
         Parameters
@@ -45,7 +48,11 @@ class FreeJoint:
         self.nu = nu
 
     def apply_forces(
-        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
     ):
         """
         Apply joint force to the connected rod objects.
@@ -84,7 +91,11 @@ class FreeJoint:
         return
 
     def apply_torques(
-        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
     ):
         """
         Apply restoring joint torques to the connected rod objects.
@@ -130,7 +141,9 @@ class HingeJoint(FreeJoint):
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
-    def __init__(self, k, nu, kt, normal_direction):
+    def __init__(
+        self, k: float, nu: float, kt: float, normal_direction: NDArray[np.floating]
+    ):
         """
 
         Parameters
@@ -157,18 +170,18 @@ class HingeJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
+        index_two: int,
     ):
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
+        index_two: int,
     ):
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
@@ -218,7 +231,14 @@ class FixedJoint(FreeJoint):
             is enforced.
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        kt: float,
+        nut: float = 0.0,
+        rest_rotation_matrix: Optional[NDArray[np.floating]] = None,
+    ):
         """
 
         Parameters
@@ -257,18 +277,18 @@ class FixedJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
+        index_two: int,
     ):
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
+        index_two: int,
     ):
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies
@@ -314,9 +334,9 @@ class FixedJoint(FreeJoint):
 
 def get_relative_rotation_two_systems(
     system_one: SystemType,
-    index_one,
+    index_one: int,
     system_two: SystemType,
-    index_two,
+    index_two: int,
 ):
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
@@ -365,7 +385,7 @@ def get_relative_rotation_two_systems(
 
 
 @numba.njit(cache=True)
-def _dot_product(a, b):
+def _dot_product(a: Sequence[float], b: Sequence[float]):
     sum = 0.0
     for i in range(3):
         sum += a[i] * b[i]
@@ -373,23 +393,25 @@ def _dot_product(a, b):
 
 
 @numba.njit(cache=True)
-def _norm(a):
+def _norm(a: Sequence[float]):
     return sqrt(_dot_product(a, a))
 
 
 @numba.njit(cache=True)
-def _clip(x, low, high):
+def _clip(x: float, low: float, high: float):
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
 @numba.njit(cache=True)
-def _out_of_bounds(x, low, high):
+def _out_of_bounds(x: float, low: float, high: float):
     return (x < low) or (x > high)
 
 
 @numba.njit(cache=True)
-def _find_min_dist(x1, e1, x2, e2):
+def _find_min_dist(
+    x1: Sequence[float], e1: Sequence[float], x2: Sequence[float], e2: Sequence[float]
+):
     e1e1 = _dot_product(e1, e1)
     e1e2 = _dot_product(e1, e2)
     e2e2 = _dot_product(e2, e2)
@@ -936,7 +958,13 @@ class ExternalContact(FreeJoint):
     # potentially dangerous as it does not deal with "end" conditions
     # correctly.
 
-    def __init__(self, k, nu, velocity_damping_coefficient=0, friction_coefficient=0):
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        velocity_damping_coefficient: float = 0,
+        friction_coefficient: float = 0,
+    ):
         """
 
         Parameters
@@ -958,9 +986,9 @@ class ExternalContact(FreeJoint):
     def apply_forces(
         self,
         rod_one: RodType,
-        index_one,
+        index_one: int,
         rod_two: SystemType,
-        index_two,
+        index_two: int,
     ):
         # del index_one, index_two
 
@@ -1056,10 +1084,12 @@ class SelfContact(FreeJoint):
 
     """
 
-    def __init__(self, k, nu):
+    def __init__(self, k: float, nu: float):
         super().__init__(k, nu)
 
-    def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
+    def apply_forces(
+        self, rod_one: RodType, index_one: int, rod_two: SystemType, index_two: int
+    ):
         # del index_one, index_two
 
         _calculate_contact_forces_self_rod(

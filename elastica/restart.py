@@ -5,8 +5,10 @@ import os
 from itertools import groupby
 from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
 
+from typing import Iterable, Any
 
-def all_equal(iterable):
+
+def all_equal(iterable: Iterable[Any]):
     """
     Checks if all elements of list are equal.
     Parameters
@@ -24,7 +26,9 @@ def all_equal(iterable):
     return next(g, True) and not next(g, False)
 
 
-def save_state(simulator, directory: str = "", time=0.0, verbose: bool = False):
+def save_state(
+    simulator, directory: str = "", time: float = 0.0, verbose: bool = False
+):
     """
     Save state parameters of each rod.
     TODO : environment list variable is not uniform at the current stage of development.

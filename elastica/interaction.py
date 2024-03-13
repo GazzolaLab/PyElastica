@@ -19,9 +19,15 @@ from elastica._linalg import (
     _batch_vec_oneD_vec_cross,
 )
 
+from numpy.typing import NDArray
+
+from elastica.typing import SystemType
+
 
 @njit(cache=True)
-def find_slipping_elements(velocity_slip, velocity_threshold):
+def find_slipping_elements(
+    velocity_slip: NDArray[np.floating], velocity_threshold: float
+):
     """
     This function takes the velocity of elements and checks if they are larger than the threshold velocity.
     If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
@@ -62,7 +68,7 @@ def find_slipping_elements(velocity_slip, velocity_threshold):
 
 
 @njit(cache=True)
-def node_to_element_mass_or_force(input):
+def node_to_element_mass_or_force(input: NDArray[np.floating]):
     """
     This function converts the mass/forces on rod nodes to
     elements, where special treatment is necessary at the ends.
@@ -109,7 +115,10 @@ def nodes_to_elements(input):
 
 
 @njit(cache=True)
-def elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
+def elements_to_nodes_inplace(
+    vector_in_element_frame: NDArray[np.floating],
+    vector_in_node_frame: NDArray[np.floating],
+):
     """
     Updating nodal forces using the forces computed on elements
     Parameters
@@ -156,7 +165,13 @@ class InteractionPlane:
 
     """
 
-    def __init__(self, k, nu, plane_origin, plane_normal):
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        plane_origin: NDArray[np.floating],
+        plane_normal: NDArray[np.floating],
+    ):
         """
 
         Parameters
@@ -178,7 +193,7 @@ class InteractionPlane:
         self.plane_normal = plane_normal.reshape(3)
         self.surface_tol = 1e-4
 
-    def apply_normal_force(self, system):
+    def apply_normal_force(self, system: SystemType):
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 
@@ -333,13 +348,13 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
 
     def __init__(
         self,
-        k,
-        nu,
-        plane_origin,
-        plane_normal,
-        slip_velocity_tol,
-        static_mu_array,
-        kinetic_mu_array,
+        k: float,
+        nu: float,
+        plane_origin: NDArray[np.floating],
+        plane_normal: NDArray[np.floating],
+        slip_velocity_tol: float,
+        static_mu_array: NDArray[np.floating],
+        kinetic_mu_array: NDArray[np.floating],
     ):
         """
 
@@ -379,7 +394,7 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
 
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
-    def apply_forces(self, system, time=0.0):
+    def apply_forces(self, system: SystemType, time: float = 0.0):
         """
         Call numba implementation to apply friction forces
         Parameters
@@ -631,7 +646,7 @@ def anisotropic_friction(
 
 # Slender body module
 @njit(cache=True)
-def sum_over_elements(input):
+def sum_over_elements(input: NDArray[np.floating]):
     """
     This function sums all elements of the input array.
     Using a Numba njit decorator shows better performance
@@ -671,7 +686,7 @@ def sum_over_elements(input):
 
 
 @njit(cache=True)
-def node_to_element_position(node_position_collection):
+def node_to_element_position(node_position_collection: NDArray[np.floating]):
     """
     This function computes the position of the elements
     from the nodal values.
@@ -717,7 +732,9 @@ def node_to_element_position(node_position_collection):
 
 
 @njit(cache=True)
-def node_to_element_velocity(mass, node_velocity_collection):
+def node_to_element_velocity(
+    mass: NDArray[np.floating], node_velocity_collection: NDArray[np.floating]
+):
     """
     This function computes the velocity of the elements
     from the nodal values. Uses the velocity of center of mass
@@ -770,7 +787,12 @@ def node_to_element_pos_or_vel(vector_in_node_frame):
 
 @njit(cache=True)
 def slender_body_forces(
-    tangents, velocity_collection, dynamic_viscosity, lengths, radius, mass
+    tangents: NDArray[np.floating],
+    velocity_collection: NDArray[np.floating],
+    dynamic_viscosity: float,
+    lengths: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    mass: NDArray[np.floating],
 ):
     r"""
     This function computes hydrodynamic forces on a body using slender body theory.
@@ -882,7 +904,7 @@ class SlenderBodyTheory(NoForces):
 
     """
 
-    def __init__(self, dynamic_viscosity):
+    def __init__(self, dynamic_viscosity: float):
         """
 
         Parameters
@@ -893,7 +915,7 @@ class SlenderBodyTheory(NoForces):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
 
-    def apply_forces(self, system, time=0.0):
+    def apply_forces(self, system: SystemType, time: float = 0.0):
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in
@@ -922,14 +944,20 @@ class SlenderBodyTheory(NoForces):
 # base class for interaction
 # only applies normal force no friction
 class InteractionPlaneRigidBody:
-    def __init__(self, k, nu, plane_origin, plane_normal):
+    def __init__(
+        self,
+        k: float,
+        nu: float,
+        plane_origin: NDArray[np.floating],
+        plane_normal: NDArray[np.floating],
+    ):
         self.k = k
         self.nu = nu
         self.plane_origin = plane_origin.reshape(3, 1)
         self.plane_normal = plane_normal.reshape(3)
         self.surface_tol = 1e-4
 
-    def apply_normal_force(self, system):
+    def apply_normal_force(self, system: SystemType):
         """
         This function computes the plane force response on the rigid body, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper

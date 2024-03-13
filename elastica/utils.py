@@ -1,11 +1,14 @@
 """ Handy utilities
 """
 
+from typing import Iterable, Any, List
 import functools
 import numpy as np
 from numpy import finfo, float64
 from itertools import islice
 from scipy.interpolate import BSpline
+
+from numpy.typing import NDArray
 
 
 # Slower than the python3.8 isqrt implementation for small ints
@@ -89,7 +92,7 @@ class Tolerance:
         return finfo(float64).eps * 1e11
 
 
-def perm_parity(lst):
+def perm_parity(lst: List[int]):
     """
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
@@ -115,7 +118,7 @@ def perm_parity(lst):
     return parity
 
 
-def grouper(iterable, n):
+def grouper(iterable: Iterable[Any], n: int):
     """Collect data into fixed-length chunks or blocks"
 
     Parameters
@@ -144,7 +147,7 @@ def grouper(iterable, n):
         yield group
 
 
-def extend_instance(obj, cls):
+def extend_instance(obj: Any, cls: Any):
     """
 
     Apply mixins to a class instance after creation
@@ -170,7 +173,7 @@ def extend_instance(obj, cls):
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 
 
-def _bspline(t_coeff, l_centerline=1.0):
+def _bspline(t_coeff: NDArray, l_centerline: float = 1.0):
     """Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
     default and keep_pts for keeping record of control points
@@ -198,7 +201,7 @@ def _bspline(t_coeff, l_centerline=1.0):
     return __bspline_impl__(control_pts, t_coeff, degree)
 
 
-def __bspline_impl__(x_pts, t_c, degree):
+def __bspline_impl__(x_pts: NDArray, t_c: NDArray, degree: int):
     """"""
 
     # Update the knots

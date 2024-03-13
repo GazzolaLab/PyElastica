@@ -7,6 +7,8 @@ import logging
 
 from collections import defaultdict
 
+from elastica.typing import RodType, SystemType
+
 
 class CallBackBaseClass:
     """
@@ -25,7 +27,7 @@ class CallBackBaseClass:
         """
         pass
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, syste: RodType, time: float, current_step: int):
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users
@@ -59,7 +61,7 @@ class MyCallBack(CallBackBaseClass):
             Collected callback data is saved in this dictionary.
     """
 
-    def __init__(self, step_skip: int, callback_params):
+    def __init__(self, step_skip: int, callback_params: dict):
         """
 
         Parameters
@@ -73,7 +75,7 @@ class MyCallBack(CallBackBaseClass):
         self.sample_every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, system: SystemType, time, current_step: int):
 
         if current_step % self.sample_every == 0:
 
@@ -189,7 +191,7 @@ class ExportCallBack(CallBackBaseClass):
             self._pickle = pickle
             self._ext = "pkl"
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, system: SystemType, time, current_step: int):
         """
 
         Parameters

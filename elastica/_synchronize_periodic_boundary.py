@@ -3,11 +3,15 @@ __doc__ = (
 )
 
 from numba import njit
+import numpy as np
+from numpy.typing import NDArray
 from elastica.boundary_conditions import ConstraintBase
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_vector_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_vector_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+):
     """
     This function synchronizes the periodic boundaries of a vector collection.
     Parameters
@@ -28,7 +32,9 @@ def _synchronize_periodic_boundary_of_vector_collection(input, periodic_idx):
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_matrix_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_matrix_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+):
     """
     This function synchronizes the periodic boundaries of a matrix collection.
     Parameters
@@ -50,7 +56,9 @@ def _synchronize_periodic_boundary_of_matrix_collection(input, periodic_idx):
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_scalar_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_scalar_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+):
     """
     This function synchronizes the periodic boundaries of a scalar collection.
 
