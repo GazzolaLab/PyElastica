@@ -399,13 +399,16 @@ class TestSteppersAgainstRodLikeSystems:
             make_simple_system_with_positions_directors,
         )
 
-        random_start_position = np.array([[0.0], [0.0], [0.0]])
-        random_end_position = np.array([[1.0], [0.0], [0.0]])
-        random_directors, _ = np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]])
+        random_start_position = [np.array([[0.0], [0.0], [0.0]]),np.array([[1.0], [1.0], [1.0]]),np.array([[-1.0], [-1.0], [-1.0]]),np.array([[0.0], [0.0], [1.0]]),np.array([[1.0], [0.0], [0.0]]),]
+        random_end_position = [np.array([[1.0], [0.0], [0.0]]),np.array([[0.0], [1.0], [0.0]]),np.array([[0.0], [0.0], [1.0]]),np.array([[2.0], [2.0], [2.0]]),np.array([[-2.0], [-2.0], [-2.0]]),]
+        random_directors, _ =  [np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]),np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[1.0], [1.0], [0.0]]]),np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [1.0], [1.0]]]),np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [0.0]]]),np.array([[[1.0], [0.0], [0.0]], [[1.0], [0.0], [0.0]], [[1.0], [0.0], [0.0]]]),]
         random_directors = random_directors.reshape(3, 3)
-
-        rod_like_system = make_simple_system_with_positions_directors(
-            random_start_position, random_end_position, random_directors
+        
+        for start_pos in random_start_position:
+            for end_pos in random_end_position:
+                for director in random_directors:
+                    rod_like_system = make_simple_system_with_positions_directors(
+            start_pos, end_pos,director
         )
         final_time = 1.0
         n_steps = 1000
