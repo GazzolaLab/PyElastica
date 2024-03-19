@@ -117,7 +117,7 @@ def plot_video_with_surface(
         video_name_3D = folder_name + "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
-            with plt.style.context("seaborn-whitegrid"):
+            with plt.style.context("seaborn-v0_8-whitegrid"):
                 for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
                     for rod_idx in range(n_visualized_rods):
