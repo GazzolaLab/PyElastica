@@ -401,7 +401,7 @@ class TestSteppersAgainstRodLikeSystems:
 
         random_start_position = np.array([[0.0], [0.0], [0.0]])
         random_end_position = np.array([[1.0], [0.0], [0.0]])
-        random_directors = np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]])
+        random_directors, _ = np.array([[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]])
         random_directors = random_directors.reshape(3, 3)
 
         rod_like_system = make_simple_system_with_positions_directors(
