@@ -31,6 +31,11 @@ Options can be combined e.g.
 $ pip install "pyelastica[examples,docs]"
 ```
 
+For plotting videos, ffmpeg has to be installed:
+```bash
+$ conda install -c conda-forge ffmpeg
+```
+
 Documentation of PyElastica is available [here][link-docs-website].
 
 If you want to simulate magnetic Cosserat rods interacting with external magnetic environments you can install the derived package using
