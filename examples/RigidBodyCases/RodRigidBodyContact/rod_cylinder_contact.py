@@ -7,7 +7,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     class RodCylinderParallelContact(
         ea.BaseSystemCollection,
         ea.Constraints,
-        ea.Connections,
+        ea.Contact,
         ea.CallBacks,
         ea.Forcing,
         ea.Damping,
@@ -67,8 +67,10 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
     rod_cylinder_parallel_contact_simulator.append(rigid_body)
 
     # Add contact between rigid body and rod
-    rod_cylinder_parallel_contact_simulator.connect(rod, rigid_body).using(
-        ea.ExternalContact,
+    rod_cylinder_parallel_contact_simulator.detect_contact_between(
+        rod, rigid_body
+    ).using(
+        ea.RodCylinderContact,
         k=5e4,
         nu=0.1,
     )

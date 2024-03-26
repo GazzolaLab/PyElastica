@@ -61,7 +61,7 @@ make pre-commit-install
 ```
 
 If you are planning to contribute to the examples,
-extra dependencies can be installed using `poetry install -E examples`.
+extra dependencies can be installed using `make install_examples_dependencies`.
 
 If you are planning to contribute on documentation, extra dependencies can be installed
 using `poetry install -E docs`.

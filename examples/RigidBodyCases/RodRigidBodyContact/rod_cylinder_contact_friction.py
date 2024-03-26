@@ -9,7 +9,7 @@ def rod_cylinder_contact_friction_case(
     class RodCylinderParallelContact(
         ea.BaseSystemCollection,
         ea.Constraints,
-        ea.Connections,
+        ea.Contact,
         ea.CallBacks,
         ea.Forcing,
         ea.Damping,
@@ -93,8 +93,10 @@ def rod_cylinder_contact_friction_case(
     )
 
     # Add contact between rigid body and rod
-    rod_cylinder_parallel_contact_simulator.connect(rod, rigid_body).using(
-        ea.ExternalContact,
+    rod_cylinder_parallel_contact_simulator.detect_contact_between(
+        rod, rigid_body
+    ).using(
+        ea.RodCylinderContact,
         k=1e5,
         nu=100,
         velocity_damping_coefficient=1e5,

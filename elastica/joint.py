@@ -1,11 +1,8 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-
-from elastica._linalg import _batch_product_k_ik_to_ik
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType
-from math import sqrt
-import numba
 import numpy as np
+import logging
 
 
 class FreeJoint:
@@ -364,97 +361,47 @@ def get_relative_rotation_two_systems(
     )
 
 
-@numba.njit(cache=True)
+# everything below this comment should be removed beyond v0.4.0
 def _dot_product(a, b):
-    sum = 0.0
-    for i in range(3):
-        sum += a[i] * b[i]
-    return sum
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._dot_product()\n"
+        "instead for find the dot product between a and b."
+    )
 
 
-@numba.njit(cache=True)
 def _norm(a):
-    return sqrt(_dot_product(a, a))
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._norm()\n"
+        "instead for finding the norm of a."
+    )
 
 
-@numba.njit(cache=True)
 def _clip(x, low, high):
-    return max(low, min(x, high))
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._clip()\n"
+        "instead for clipping x."
+    )
 
 
-# Can this be made more efficient than 2 comp, 1 or?
-@numba.njit(cache=True)
 def _out_of_bounds(x, low, high):
-    return (x < low) or (x > high)
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._out_of_bounds()\n"
+        "instead for checking if x is out of bounds."
+    )
 
 
-@numba.njit(cache=True)
 def _find_min_dist(x1, e1, x2, e2):
-    e1e1 = _dot_product(e1, e1)
-    e1e2 = _dot_product(e1, e2)
-    e2e2 = _dot_product(e2, e2)
-
-    x1e1 = _dot_product(x1, e1)
-    x1e2 = _dot_product(x1, e2)
-    x2e1 = _dot_product(e1, x2)
-    x2e2 = _dot_product(x2, e2)
-
-    s = 0.0
-    t = 0.0
-
-    parallel = abs(1.0 - e1e2 ** 2 / (e1e1 * e2e2)) < 1e-6
-    if parallel:
-        # Some are parallel, so do processing
-        t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal
-        t = _clip(t, 0.0, 1.0)
-        s = (x1e2 + t * e1e2 - x2e2) / e2e2  # Same as before
-        s = _clip(s, 0.0, 1.0)
-    else:
-        # Using the Cauchy-Binet formula on eq(7) in docstring referenc
-        s = (e1e1 * (x1e2 - x2e2) + e1e2 * (x2e1 - x1e1)) / (e1e1 * e2e2 - (e1e2) ** 2)
-        t = (e1e2 * s + x2e1 - x1e1) / e1e1
-
-        if _out_of_bounds(s, 0.0, 1.0) or _out_of_bounds(t, 0.0, 1.0):
-            # potential_s = -100.0
-            # potential_t = -100.0
-            # potential_d = -100.0
-            # overall_minimum_distance = 1e20
-
-            # Fill in the possibilities
-            potential_t = (x2e1 - x1e1) / e1e1
-            s = 0.0
-            t = _clip(potential_t, 0.0, 1.0)
-            potential_d = _norm(x1 + e1 * t - x2)
-            overall_minimum_distance = potential_d
-
-            potential_t = (x2e1 + e1e2 - x1e1) / e1e1
-            potential_t = _clip(potential_t, 0.0, 1.0)
-            potential_d = _norm(x1 + e1 * potential_t - x2 - e2)
-            if potential_d < overall_minimum_distance:
-                s = 1.0
-                t = potential_t
-                overall_minimum_distance = potential_d
-
-            potential_s = (x1e2 - x2e2) / e2e2
-            potential_s = _clip(potential_s, 0.0, 1.0)
-            potential_d = _norm(x2 + potential_s * e2 - x1)
-            if potential_d < overall_minimum_distance:
-                s = potential_s
-                t = 0.0
-                overall_minimum_distance = potential_d
-
-            potential_s = (x1e2 + e1e2 - x2e2) / e2e2
-            potential_s = _clip(potential_s, 0.0, 1.0)
-            potential_d = _norm(x2 + potential_s * e2 - x1 - e1)
-            if potential_d < overall_minimum_distance:
-                s = potential_s
-                t = 1.0
-
-    # Return distance, contact point of system 2, contact point of system 1
-    return x2 + s * e2 - x1 - t * e1, x2 + s * e2, x1 - t * e1
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._find_min_dist()\n"
+        "instead for finding minimum distance between contact points."
+    )
 
 
-@numba.njit(cache=True)
 def _calculate_contact_forces_rod_rigid_body(
     x_collection_rod,
     edge_collection_rod,
@@ -475,125 +422,13 @@ def _calculate_contact_forces_rod_rigid_body(
     velocity_damping_coefficient,
     friction_coefficient,
 ):
-    # We already pass in only the first n_elem x
-    n_points = x_collection_rod.shape[1]
-    cylinder_total_contact_forces = np.zeros((3))
-    cylinder_total_contact_torques = np.zeros((3))
-    for i in range(n_points):
-        # Element-wise bounding box
-        x_selected = x_collection_rod[..., i]
-        # x_cylinder is already a (,) array from outised
-        del_x = x_selected - x_cylinder_tip
-        norm_del_x = _norm(del_x)
-
-        # If outside then don't process
-        if norm_del_x >= (radii_sum[i] + length_sum[i]):
-            continue
-
-        # find the shortest line segment between the two centerline
-        # segments : differs from normal cylinder-cylinder intersection
-        distance_vector, x_cylinder_contact_point, _ = _find_min_dist(
-            x_selected, edge_collection_rod[..., i], x_cylinder_tip, edge_cylinder
-        )
-        distance_vector_length = _norm(distance_vector)
-        distance_vector /= distance_vector_length
-
-        gamma = radii_sum[i] - distance_vector_length
-
-        # If distance is large, don't worry about it
-        if gamma < -1e-5:
-            continue
-
-        rod_elemental_forces = 0.5 * (
-            external_forces_rod[..., i]
-            + external_forces_rod[..., i + 1]
-            + internal_forces_rod[..., i]
-            + internal_forces_rod[..., i + 1]
-        )
-        equilibrium_forces = -rod_elemental_forces + external_forces_cylinder[..., 0]
-
-        normal_force = _dot_product(equilibrium_forces, distance_vector)
-        # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
-        normal_force = abs(min(normal_force, 0.0))
-
-        # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
-        # As a quick fix, use this instead
-        mask = (gamma > 0.0) * 1.0
-
-        # Compute contact spring force
-        contact_force = contact_k * gamma * distance_vector
-        interpenetration_velocity = velocity_cylinder[..., 0] - 0.5 * (
-            velocity_rod[..., i] + velocity_rod[..., i + 1]
-        )
-        # Compute contact damping
-        normal_interpenetration_velocity = (
-            _dot_product(interpenetration_velocity, distance_vector) * distance_vector
-        )
-        contact_damping_force = -contact_nu * normal_interpenetration_velocity
-
-        # magnitude* direction
-        net_contact_force = 0.5 * mask * (contact_damping_force + contact_force)
-
-        # Compute friction
-        slip_interpenetration_velocity = (
-            interpenetration_velocity - normal_interpenetration_velocity
-        )
-        slip_interpenetration_velocity_mag = np.linalg.norm(
-            slip_interpenetration_velocity
-        )
-        slip_interpenetration_velocity_unitized = slip_interpenetration_velocity / (
-            slip_interpenetration_velocity_mag + 1e-14
-        )
-        # Compute friction force in the slip direction.
-        damping_force_in_slip_direction = (
-            velocity_damping_coefficient * slip_interpenetration_velocity_mag
-        )
-        # Compute Coulombic friction
-        coulombic_friction_force = friction_coefficient * np.linalg.norm(
-            net_contact_force
-        )
-        # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
-        friction_force = (
-            -min(damping_force_in_slip_direction, coulombic_friction_force)
-            * slip_interpenetration_velocity_unitized
-        )
-        # Update contact force
-        net_contact_force += friction_force
-
-        # Torques acting on the cylinder
-        moment_arm = x_cylinder_contact_point - x_cylinder_center
-
-        # Add it to the rods at the end of the day
-        if i == 0:
-            external_forces_rod[..., i] -= 2 / 3 * net_contact_force
-            external_forces_rod[..., i + 1] -= 4 / 3 * net_contact_force
-            cylinder_total_contact_forces += 2.0 * net_contact_force
-            cylinder_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
-        elif i == n_points:
-            external_forces_rod[..., i] -= 4 / 3 * net_contact_force
-            external_forces_rod[..., i + 1] -= 2 / 3 * net_contact_force
-            cylinder_total_contact_forces += 2.0 * net_contact_force
-            cylinder_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
-        else:
-            external_forces_rod[..., i] -= net_contact_force
-            external_forces_rod[..., i + 1] -= net_contact_force
-            cylinder_total_contact_forces += 2.0 * net_contact_force
-            cylinder_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
-
-    # Update the cylinder external forces and torques
-    external_forces_cylinder[..., 0] += cylinder_total_contact_forces
-    external_torques_cylinder[..., 0] += (
-        cylinder_director_collection @ cylinder_total_contact_torques
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica._contact_functions._calculate_contact_forces_rod_cylinder()\n"
+        "instead for calculating rod cylinder contact forces."
     )
 
 
-@numba.njit(cache=True)
 def _calculate_contact_forces_rod_rod(
     x_collection_rod_one,
     radius_rod_one,
@@ -612,105 +447,13 @@ def _calculate_contact_forces_rod_rod(
     contact_k,
     contact_nu,
 ):
-    # We already pass in only the first n_elem x
-    n_points_rod_one = x_collection_rod_one.shape[1]
-    n_points_rod_two = x_collection_rod_two.shape[1]
-    edge_collection_rod_one = _batch_product_k_ik_to_ik(length_rod_one, tangent_rod_one)
-    edge_collection_rod_two = _batch_product_k_ik_to_ik(length_rod_two, tangent_rod_two)
-
-    for i in range(n_points_rod_one):
-        for j in range(n_points_rod_two):
-            radii_sum = radius_rod_one[i] + radius_rod_two[j]
-            length_sum = length_rod_one[i] + length_rod_two[j]
-            # Element-wise bounding box
-            x_selected_rod_one = x_collection_rod_one[..., i]
-            x_selected_rod_two = x_collection_rod_two[..., j]
-
-            del_x = x_selected_rod_one - x_selected_rod_two
-            norm_del_x = _norm(del_x)
-
-            # If outside then don't process
-            if norm_del_x >= (radii_sum + length_sum):
-                continue
-
-            # find the shortest line segment between the two centerline
-            # segments : differs from normal cylinder-cylinder intersection
-            distance_vector, _, _ = _find_min_dist(
-                x_selected_rod_one,
-                edge_collection_rod_one[..., i],
-                x_selected_rod_two,
-                edge_collection_rod_two[..., j],
-            )
-            distance_vector_length = _norm(distance_vector)
-            distance_vector /= distance_vector_length
-
-            gamma = radii_sum - distance_vector_length
-
-            # If distance is large, don't worry about it
-            if gamma < -1e-5:
-                continue
-
-            rod_one_elemental_forces = 0.5 * (
-                external_forces_rod_one[..., i]
-                + external_forces_rod_one[..., i + 1]
-                + internal_forces_rod_one[..., i]
-                + internal_forces_rod_one[..., i + 1]
-            )
-
-            rod_two_elemental_forces = 0.5 * (
-                external_forces_rod_two[..., j]
-                + external_forces_rod_two[..., j + 1]
-                + internal_forces_rod_two[..., j]
-                + internal_forces_rod_two[..., j + 1]
-            )
-
-            equilibrium_forces = -rod_one_elemental_forces + rod_two_elemental_forces
-
-            normal_force = _dot_product(equilibrium_forces, distance_vector)
-            # Following line same as np.where(normal_force < 0.0, -normal_force, 0.0)
-            normal_force = abs(min(normal_force, 0.0))
-
-            # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
-            # As a quick fix, use this instead
-            mask = (gamma > 0.0) * 1.0
-
-            contact_force = contact_k * gamma
-            interpenetration_velocity = 0.5 * (
-                (velocity_rod_one[..., i] + velocity_rod_one[..., i + 1])
-                - (velocity_rod_two[..., j] + velocity_rod_two[..., j + 1])
-            )
-            contact_damping_force = contact_nu * _dot_product(
-                interpenetration_velocity, distance_vector
-            )
-
-            # magnitude* direction
-            net_contact_force = (
-                normal_force + 0.5 * mask * (contact_damping_force + contact_force)
-            ) * distance_vector
-
-            # Add it to the rods at the end of the day
-            if i == 0:
-                external_forces_rod_one[..., i] -= net_contact_force * 2 / 3
-                external_forces_rod_one[..., i + 1] -= net_contact_force * 4 / 3
-            elif i == n_points_rod_one:
-                external_forces_rod_one[..., i] -= net_contact_force * 4 / 3
-                external_forces_rod_one[..., i + 1] -= net_contact_force * 2 / 3
-            else:
-                external_forces_rod_one[..., i] -= net_contact_force
-                external_forces_rod_one[..., i + 1] -= net_contact_force
-
-            if j == 0:
-                external_forces_rod_two[..., j] += net_contact_force * 2 / 3
-                external_forces_rod_two[..., j + 1] += net_contact_force * 4 / 3
-            elif j == n_points_rod_two:
-                external_forces_rod_two[..., j] += net_contact_force * 4 / 3
-                external_forces_rod_two[..., j + 1] += net_contact_force * 2 / 3
-            else:
-                external_forces_rod_two[..., j] += net_contact_force
-                external_forces_rod_two[..., j + 1] += net_contact_force
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica._contact_functions._calculate_contact_forces_rod_rod()\n"
+        "instead for calculating rod rod contact forces."
+    )
 
 
-@numba.njit(cache=True)
 def _calculate_contact_forces_self_rod(
     x_collection_rod,
     radius_rod,
@@ -721,97 +464,21 @@ def _calculate_contact_forces_self_rod(
     contact_k,
     contact_nu,
 ):
-    # We already pass in only the first n_elem x
-    n_points_rod = x_collection_rod.shape[1]
-    edge_collection_rod_one = _batch_product_k_ik_to_ik(length_rod, tangent_rod)
-
-    for i in range(n_points_rod):
-        skip = 1 + np.ceil(0.8 * np.pi * radius_rod[i] / length_rod[i])
-        for j in range(i - skip, -1, -1):
-            radii_sum = radius_rod[i] + radius_rod[j]
-            length_sum = length_rod[i] + length_rod[j]
-            # Element-wise bounding box
-            x_selected_rod_index_i = x_collection_rod[..., i]
-            x_selected_rod_index_j = x_collection_rod[..., j]
-
-            del_x = x_selected_rod_index_i - x_selected_rod_index_j
-            norm_del_x = _norm(del_x)
-
-            # If outside then don't process
-            if norm_del_x >= (radii_sum + length_sum):
-                continue
-
-            # find the shortest line segment between the two centerline
-            # segments : differs from normal cylinder-cylinder intersection
-            distance_vector, _, _ = _find_min_dist(
-                x_selected_rod_index_i,
-                edge_collection_rod_one[..., i],
-                x_selected_rod_index_j,
-                edge_collection_rod_one[..., j],
-            )
-            distance_vector_length = _norm(distance_vector)
-            distance_vector /= distance_vector_length
-
-            gamma = radii_sum - distance_vector_length
-
-            # If distance is large, don't worry about it
-            if gamma < -1e-5:
-                continue
-
-            # CHECK FOR GAMMA > 0.0, heaviside but we need to overload it in numba
-            # As a quick fix, use this instead
-            mask = (gamma > 0.0) * 1.0
-
-            contact_force = contact_k * gamma
-            interpenetration_velocity = 0.5 * (
-                (velocity_rod[..., i] + velocity_rod[..., i + 1])
-                - (velocity_rod[..., j] + velocity_rod[..., j + 1])
-            )
-            contact_damping_force = contact_nu * _dot_product(
-                interpenetration_velocity, distance_vector
-            )
-
-            # magnitude* direction
-            net_contact_force = (
-                0.5 * mask * (contact_damping_force + contact_force)
-            ) * distance_vector
-
-            # Add it to the rods at the end of the day
-            # if i == 0:
-            #     external_forces_rod[...,i] -= net_contact_force *2/3
-            #     external_forces_rod[...,i+1] -= net_contact_force * 4/3
-            if i == n_points_rod:
-                external_forces_rod[..., i] -= net_contact_force * 4 / 3
-                external_forces_rod[..., i + 1] -= net_contact_force * 2 / 3
-            else:
-                external_forces_rod[..., i] -= net_contact_force
-                external_forces_rod[..., i + 1] -= net_contact_force
-
-            if j == 0:
-                external_forces_rod[..., j] += net_contact_force * 2 / 3
-                external_forces_rod[..., j + 1] += net_contact_force * 4 / 3
-            # elif j == n_points_rod:
-            #     external_forces_rod[..., j] += net_contact_force * 4/3
-            #     external_forces_rod[..., j+1] += net_contact_force * 2/3
-            else:
-                external_forces_rod[..., j] += net_contact_force
-                external_forces_rod[..., j + 1] += net_contact_force
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica._contact_functions._calculate_contact_forces_self_rod()\n"
+        "instead for calculating rod self-contact forces."
+    )
 
 
-@numba.njit(cache=True)
 def _aabbs_not_intersecting(aabb_one, aabb_two):
-    """Returns true if not intersecting else false"""
-    if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
-        return 1
-    if (aabb_one[1, 1] < aabb_two[1, 0]) | (aabb_one[1, 0] > aabb_two[1, 1]):
-        return 1
-    if (aabb_one[2, 1] < aabb_two[2, 0]) | (aabb_one[2, 0] > aabb_two[2, 1]):
-        return 1
-
-    return 0
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._aabbs_not_intersecting()\n"
+        "instead for checking aabbs intersection."
+    )
 
 
-@numba.njit(cache=True)
 def _prune_using_aabbs_rod_rigid_body(
     rod_one_position_collection,
     rod_one_radius_collection,
@@ -821,39 +488,13 @@ def _prune_using_aabbs_rod_rigid_body(
     cylinder_radius,
     cylinder_length,
 ):
-    max_possible_dimension = np.zeros((3,))
-    aabb_rod = np.empty((3, 2))
-    aabb_cylinder = np.empty((3, 2))
-    max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
-        rod_one_length_collection
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._prune_using_aabbs_rod_cylinder()\n"
+        "instead for checking rod cylinder intersection."
     )
-    for i in range(3):
-        aabb_rod[i, 0] = (
-            np.min(rod_one_position_collection[i]) - max_possible_dimension[i]
-        )
-        aabb_rod[i, 1] = (
-            np.max(rod_one_position_collection[i]) + max_possible_dimension[i]
-        )
-
-    # Is actually Q^T * d but numba complains about performance so we do
-    # d^T @ Q
-    cylinder_dimensions_in_local_FOR = np.array(
-        [cylinder_radius, cylinder_radius, 0.5 * cylinder_length]
-    )
-    cylinder_dimensions_in_world_FOR = np.zeros_like(cylinder_dimensions_in_local_FOR)
-    for i in range(3):
-        for j in range(3):
-            cylinder_dimensions_in_world_FOR[i] += (
-                cylinder_director[j, i, 0] * cylinder_dimensions_in_local_FOR[j]
-            )
-
-    max_possible_dimension = np.abs(cylinder_dimensions_in_world_FOR)
-    aabb_cylinder[..., 0] = cylinder_position[..., 0] - max_possible_dimension
-    aabb_cylinder[..., 1] = cylinder_position[..., 0] + max_possible_dimension
-    return _aabbs_not_intersecting(aabb_cylinder, aabb_rod)
 
 
-@numba.njit(cache=True)
 def _prune_using_aabbs_rod_rod(
     rod_one_position_collection,
     rod_one_radius_collection,
@@ -862,33 +503,11 @@ def _prune_using_aabbs_rod_rod(
     rod_two_radius_collection,
     rod_two_length_collection,
 ):
-    max_possible_dimension = np.zeros((3,))
-    aabb_rod_one = np.empty((3, 2))
-    aabb_rod_two = np.empty((3, 2))
-    max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
-        rod_one_length_collection
+    raise NotImplementedError(
+        "This function is removed in v0.3.2. Please use\n"
+        "elastica.contact_utils._prune_using_aabbs_rod_rod()\n"
+        "instead for checking rod rod intersection."
     )
-    for i in range(3):
-        aabb_rod_one[i, 0] = (
-            np.min(rod_one_position_collection[i]) - max_possible_dimension[i]
-        )
-        aabb_rod_one[i, 1] = (
-            np.max(rod_one_position_collection[i]) + max_possible_dimension[i]
-        )
-
-    max_possible_dimension[...] = np.max(rod_two_radius_collection) + np.max(
-        rod_two_length_collection
-    )
-
-    for i in range(3):
-        aabb_rod_two[i, 0] = (
-            np.min(rod_two_position_collection[i]) - max_possible_dimension[i]
-        )
-        aabb_rod_two[i, 1] = (
-            np.max(rod_two_position_collection[i]) + max_possible_dimension[i]
-        )
-
-    return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
 
 
 class ExternalContact(FreeJoint):
@@ -954,6 +573,16 @@ class ExternalContact(FreeJoint):
         super().__init__(k, nu)
         self.velocity_damping_coefficient = velocity_damping_coefficient
         self.friction_coefficient = friction_coefficient
+        log = logging.getLogger(self.__class__.__name__)
+        log.warning(
+            # Remove warning and add error if ExternalContact is used in v0.3.3
+            # Remove the option to use ExternalContact, beyond v0.3.3
+            "The option to use the ExternalContact joint for the rod-rod and rod-cylinder contact is now deprecated.\n"
+            "Instead, for rod-rod contact or rod-cylinder contact,use RodRodContact or RodCylinderContact from the add-on Contact mixin class.\n"
+            "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact().\n"
+            "For usage check examples/RigidbodyCases/RodRigidBodyContact/rod_cylinder_contact.py and examples/RodContactCase/RodRodContact/rod_rod_contact_parallel_validation.py.\n"
+            " The option to use the ExternalContact joint for the rod-rod and rod-cylinder will be removed in the future (v0.3.3).\n"
+        )
 
     def apply_forces(
         self,
@@ -963,6 +592,14 @@ class ExternalContact(FreeJoint):
         index_two,
     ):
         # del index_one, index_two
+        from elastica.contact_utils import (
+            _prune_using_aabbs_rod_cylinder,
+            _prune_using_aabbs_rod_rod,
+        )
+        from elastica._contact_functions import (
+            _calculate_contact_forces_rod_cylinder,
+            _calculate_contact_forces_rod_rod,
+        )
 
         # TODO: raise error during the initialization if rod one is rigid body.
 
@@ -971,7 +608,7 @@ class ExternalContact(FreeJoint):
             cylinder_two = rod_two
             # First, check for a global AABB bounding box, and see whether that
             # intersects
-            if _prune_using_aabbs_rod_rigid_body(
+            if _prune_using_aabbs_rod_cylinder(
                 rod_one.position_collection,
                 rod_one.radius,
                 rod_one.lengths,
@@ -991,7 +628,7 @@ class ExternalContact(FreeJoint):
                 rod_one.position_collection[..., 1:]
                 + rod_one.position_collection[..., :-1]
             )
-            _calculate_contact_forces_rod_rigid_body(
+            _calculate_contact_forces_rod_cylinder(
                 rod_element_position,
                 rod_one.lengths * rod_one.tangents,
                 cylinder_two.position_collection[..., 0],
@@ -1058,9 +695,21 @@ class SelfContact(FreeJoint):
 
     def __init__(self, k, nu):
         super().__init__(k, nu)
+        log = logging.getLogger(self.__class__.__name__)
+        log.warning(
+            # Remove warning and add error if SelfContact is used in v0.3.3
+            # Remove the option to use SelfContact, beyond v0.3.3
+            "The option to use the SelfContact joint for the rod self contact is now deprecated.\n"
+            "Instead, for rod self contact use RodSelfContact from the add-on Contact mixin class.\n"
+            "For reference see the class elastica.contact_forces.RodSelfContact(), and for usage check examples/RodContactCase/RodSelfContact/solenoids.py.\n"
+            "The option to use the SelfContact joint for the rod self contact will be removed in the future (v0.3.3).\n"
+        )
 
     def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
         # del index_one, index_two
+        from elastica._contact_functions import (
+            _calculate_contact_forces_self_rod,
+        )
 
         _calculate_contact_forces_self_rod(
             rod_one.position_collection[

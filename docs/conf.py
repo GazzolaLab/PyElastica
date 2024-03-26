@@ -22,7 +22,7 @@ from elastica.version import VERSION
 # -- Project information -----------------------------------------------------
 
 project = 'PyElastica'
-copyright = '2023, Gazzola Lab'
+copyright = '2024, Gazzola Lab'
 author = 'Gazzola Lab'
 
 # The full version, including alpha/beta/rc tags

@@ -77,7 +77,7 @@ class MuscleForces(NoForces):
         self.step = step
         self.counter = 0
 
-    def apply_forces(self, system, time: np.float = 0.0):
+    def apply_forces(self, system, time: np.float64 = 0.0):
         forces = self._apply_forces(
             self.amplitude,
             self.wave_number,
