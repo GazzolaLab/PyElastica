@@ -51,25 +51,26 @@ Details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica).
 We ask that any publications which use Elastica cite as following:
 
 ```
-@software{arman_tekinalp_2023_7931429,
+@software{arman_tekinalp_2024_10883271,
   author       = {Arman Tekinalp and
                   Seung Hyun Kim and
                   Yashraj Bhosale and
                   Tejaswin Parthasarathy and
                   Noel Naughton and
-                  Ilia Nasiriziba and
+                  Ali Albazroun and
+                  Rahul Joon and
                   Songyuan Cui and
+                  Ilia Nasiriziba and
                   Maximilian Stölzle and
                   Chia-Hsien (Cathy) Shih and
-                  Mattia Gazzola
-                  },
-  title        = {GazzolaLab/PyElastica: v0.3.1},
-  month        = may,
-  year         = 2023,
+                  Mattia Gazzola},
+  title        = {GazzolaLab/PyElastica: v0.3.2},
+  month        = mar,
+  year         = 2024,
   publisher    = {Zenodo},
-  version      = {v0.3.1},
-  doi          = {10.5281/zenodo.7931429},
-  url          = {https://doi.org/10.5281/zenodo.7931429}
+  version      = {v0.3.2},
+  doi          = {10.5281/zenodo.10883271},
+  url          = {https://doi.org/10.5281/zenodo.10883271}
 }
 ```
 
