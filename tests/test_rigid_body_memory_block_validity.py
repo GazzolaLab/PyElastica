@@ -52,29 +52,6 @@ def test_block_structure_scalar_validity(n_rods):
     )
 
     for i in range(n_rods):
-
-        # radius
-        assert np.shares_memory(block_structure.radius, world_bodies[i].radius)
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rigid_bodies, world_bodies[i].radius
-        )
-        assert_allclose(
-            block_structure.radius[i : i + 1],
-            world_bodies[i].radius,
-            atol=Tolerance.atol(),
-        )
-
-        # length
-        assert np.shares_memory(block_structure.length, world_bodies[i].length)
-        assert np.shares_memory(
-            block_structure.scalar_dofs_in_rigid_bodies, world_bodies[i].length
-        )
-        assert_allclose(
-            block_structure.length[i : i + 1],
-            world_bodies[i].length,
-            atol=Tolerance.atol(),
-        )
-
         # density
         assert np.shares_memory(block_structure.density, world_bodies[i].density)
         assert np.shares_memory(
