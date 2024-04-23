@@ -10,5 +10,5 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 99
-    target-branch: "update-0.3.2"
+    target-branch: "update-0.3.3"
     versioning-strategy: lockfile-only
