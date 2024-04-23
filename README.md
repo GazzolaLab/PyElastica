@@ -13,7 +13,7 @@ Visit [www.cosseratrods.org][link-project-website] for more information and lear
 ## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
-PyElastica is compatible with Python 3.8 - 3.11.
+PyElastica is compatible with Python 3.10 - 3.11.
 
 ~~~bash
 $ pip install pyelastica
@@ -121,6 +121,7 @@ _Names arranged alphabetically_
 - [Seung Hyun Kim](https://github.com/skim0119)
 - Songyuan Cui
 - Tejaswin Parthasarathy (Teja)
+- Xiaotian Zhang
 - [Yashraj Bhosale](https://github.com/bhosale2)
 
 [//]: # (Collection of URLs.)
