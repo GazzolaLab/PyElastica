@@ -121,6 +121,7 @@ _Names arranged alphabetically_
 - [Seung Hyun Kim](https://github.com/skim0119)
 - Songyuan Cui
 - Tejaswin Parthasarathy (Teja)
+- Xiaotian Zhang
 - [Yashraj Bhosale](https://github.com/bhosale2)
 
 [//]: # (Collection of URLs.)
