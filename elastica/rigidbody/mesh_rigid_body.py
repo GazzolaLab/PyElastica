@@ -37,6 +37,13 @@ class MeshRigidBody(RigidBodyBase):
         normal = np.array([1.0, 0.0, 0.0]).reshape(3, 1)
         tangents = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
         binormal = _batch_cross(tangents, normal)
+        # initialize material frame to be the same as lab frame
+        self.director_collection = np.zeros(
+            (MaxDimension.value(), MaxDimension.value(), 1)
+        )
+        self.director_collection[0, ...] = normal
+        self.director_collection[1, ...] = binormal
+        self.director_collection[2, ...] = tangents
         self.faces = mesh.faces.copy()
         self.n_faces = mesh.faces.shape[-1]
         self.face_centers = np.array(mesh.face_centers.copy())
@@ -74,37 +81,18 @@ class MeshRigidBody(RigidBodyBase):
 
         self.velocity_collection = np.zeros((MaxDimension.value(), 1))
         self.omega_collection = np.zeros((MaxDimension.value(), 1))
-        self.acceleration_collection = 0.0 * self.velocity_collection
-        self.alpha_collection = 0.0 * self.omega_collection
-
-        self.director_collection = np.zeros(
-            (MaxDimension.value(), MaxDimension.value(), 1)
-        )
-        self.director_collection[0, ...] = normal
-        self.director_collection[1, ...] = binormal
-        self.director_collection[2, ...] = tangents
-
-        test_faces = np.zeros((3, 3, self.n_faces))  # dim,vertices,faces
-        for k in range(self.n_faces):
-            for m in range(3):
-                for i in range(3):
-                    test_faces[i, m, k] += center_of_mass[i]
-                    for j in range(3):
-                        test_faces[i, m, k] += (
-                            self.distance_to_faces[m, k]
-                            * self.director_collection[i, j, 0]
-                            * self.direction_to_faces[j, m, k]
-                        )
-
+        self.acceleration_collection = np.zeros((MaxDimension.value(), 1))
+        self.alpha_collection = np.zeros((MaxDimension.value(), 1))
         self.face_normals_lagrangian = np.zeros((MaxDimension.value(), self.n_faces))
 
         # self.face_normals_lagrangian = self.director_collection[...,0].T@self.face_normals
-        for i in range(3):
-            for j in range(3):
-                for k in range(self.n_faces):
-                    self.face_normals_lagrangian[i, k] += (
-                        self.director_collection[j, i, 0] * self.face_normals[j, k]
-                    )
+        # for i in range(3):
+        #     for j in range(3):
+        #         for k in range(self.n_faces):
+        #             self.face_normals_lagrangian[i, k] += (
+        #                 self.director_collection[j, i, 0] * self.face_normals[j, k]
+        #             )
+        self.face_normals_lagrangian = self.face_normals.copy()
 
         self.external_forces = np.zeros((MaxDimension.value())).reshape(
             MaxDimension.value(), 1
