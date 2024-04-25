@@ -107,42 +107,44 @@ class MeshRigidBody(RigidBodyBase):
     def update_faces(self):
         _update_faces(
             self.director_collection,
-            self.faces,
-            self.position_collection,
-            self.distance_to_faces_from_center_of_mass,
-            self.direction_to_faces_from_center_of_mass_in_material_frame,
-            self.n_faces,
-        )
-        _update_face_centers(
-            self.director_collection,
             self.face_centers,
             self.position_collection,
             self.distance_to_face_centers_from_center_of_mass,
             self.direction_to_face_centers_from_center_of_mass_in_material_frame,
-            self.n_faces,
-        )
-        _update_face_normals(
-            self.director_collection,
             self.face_normals,
             self.face_normals_in_material_frame,
+            self.faces,
+            self.distance_to_faces_from_center_of_mass,
+            self.direction_to_faces_from_center_of_mass_in_material_frame,
             self.n_faces,
         )
 
 
 @numba.njit(cache=True)
-def _update_face_centers(
+def _update_faces(
     director_collection,
     face_centers,
     center_of_mass,
     distance_to_face_centers_from_center_of_mass,
     direction_to_face_centers_from_center_of_mass_in_material_frame,
+    face_normals,
+    face_normals_in_material_frame,
+    faces,
+    distance_to_faces_from_center_of_mass,
+    direction_to_faces_from_center_of_mass_in_material_frame,
     n_faces,
 ):
-    face_centers[:] = np.zeros((3, n_faces))
-    for k in range(n_faces):
-        for i in range(3):
+    # this function updates the face_centers, face_normals, and faces
+    face_centers[:] = np.zeros((3, n_faces))  # dim,faces
+    face_normals[:] = np.zeros((3, n_faces))  # dim,faces
+    faces[:] = np.zeros((3, 3, n_faces))  # dim,vertices,faces
+
+    for k in range(n_faces):  # loop through the faces
+        for i in range(3):  # loop through the three dimensions
             face_centers[i, k] += center_of_mass[i, 0]
-            for j in range(3):
+            faces[i, :, k] += center_of_mass[i, 0]
+            for j in range(3):  # dummy variable for matrix multiplication
+                # update face centers [face_centers_in_lab_frame = CoM + distance_to_face_centers_from_CoM@material_frame_to_lab_frame_director@direction_to_face_centers_from_CoM_in_material_frame]
                 face_centers[i, k] += (
                     distance_to_face_centers_from_center_of_mass[i]
                     * director_collection[i, j, 0]
@@ -150,23 +152,12 @@ def _update_face_centers(
                         j, k
                     ]
                 )
-
-
-@numba.njit(cache=True)
-def _update_faces(
-    director_collection,
-    faces,
-    center_of_mass,
-    distance_to_faces_from_center_of_mass,
-    direction_to_faces_from_center_of_mass_in_material_frame,
-    n_faces,
-):
-    faces[:] = np.zeros((3, 3, n_faces))  # dim,vertices,faces
-    for k in range(n_faces):
-        for m in range(3):
-            for i in range(3):
-                faces[i, m, k] += center_of_mass[i, 0]
-                for j in range(3):
+                # update face normals [face_normals_in_lab_frame = material_frame_to_lab_frame_director@face_normals_in_material_frame]
+                face_normals[i, k] += (
+                    director_collection[i, j, 0] * face_normals_in_material_frame[j, k]
+                )
+                for m in range(3):  # loop through the vertices
+                    # update faces [face_vertices_in_lab_frame = CoM + distance_to_face_vertices_from_CoM@material_frame_to_lab_frame_director@direction_to_face_vertices_from_CoM_in_material_frame]
                     faces[i, m, k] += (
                         distance_to_faces_from_center_of_mass[m, k]
                         * director_collection[i, j, 0]
@@ -174,20 +165,3 @@ def _update_faces(
                             j, m, k
                         ]
                     )
-
-
-@numba.njit(cache=True)
-def _update_face_normals(
-    director_collection,
-    face_normals,
-    face_normals_in_material_frame,
-    n_faces,
-):
-
-    face_normals[:] = np.zeros((3, n_faces))
-    for i in range(3):
-        for j in range(3):
-            for k in range(n_faces):
-                face_normals[i, k] += (
-                    director_collection[i, j, 0] * face_normals_in_material_frame[j, k]
-                )
