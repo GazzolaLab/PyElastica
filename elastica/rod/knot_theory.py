@@ -120,7 +120,9 @@ class KnotTheory:
         )[0]
 
     def compute_link(
-        self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
+        self: MIXIN_PROTOCOL,
+        type_of_additional_segment: str = "next_tangent",
+        alpha: float = 1.0,
     ):
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
@@ -130,13 +132,16 @@ class KnotTheory:
         type_of_additional_segment : str
             Determines the method to compute new segments (elements) added to the rod.
             Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+        alpha : float
+            Empirical factor to scale the segment length, where segment length is the rest length of the rod.
+            Default is 1.0.
         """
-        print(self.rest_lengths.sum())
+
         return compute_link(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
             self.radius[None, ...],
-            self.rest_lengths.sum(),
+            alpha * self.rest_lengths.sum(),
             type_of_additional_segment,
         )[0]
 
