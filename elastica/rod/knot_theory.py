@@ -134,7 +134,7 @@ class KnotTheory:
             Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
         alpha : float
             Empirical factor to scale the segment length, where segment length is the rest length of the rod.
-            Default is 1.0.
+            Depending on the error between Lk-(Tw+Wr), alpha value can be increased to reduce the error. Default is 1.0.
         """
 
         return compute_link(
