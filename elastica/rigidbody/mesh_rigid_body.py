@@ -21,11 +21,19 @@ class MeshRigidBody(RigidBodyBase):
 
         Parameters
         ----------
-        mesh
-        center_of_mass
-        mass_second_moment_of_inertia
-        density
-        volume
+        mesh: mesh object
+            mesh object which the mesh rigid body is based on
+        center_of_mass: numpy.ndarray
+            1D (3,) array containing data with 'float' type
+            center of mass of the mesh rigid body
+        mass_second_moment_of_inertia: numpy.ndarray
+            2D (3,3) array containing data with 'float' type
+            mass second moment of inertia of the mesh rigid body
+        density: float
+            density of the mesh rigid body
+        volume: float
+            volume of the mesh rigid body
+
         """
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
