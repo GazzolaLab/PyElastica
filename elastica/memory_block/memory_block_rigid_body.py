@@ -39,7 +39,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
 
         # Things in rigid bodies that are scalars
         #           0 ("density", float64),
-        #           1 ("volume" , float 64),
+        #           1 ("volume" , float64),
         #           2 ("mass, float64),
 
         map_scalar_dofs_in_rigid_bodies = {
