@@ -61,6 +61,10 @@ autoflake8-format:
 .PHONY: format-codestyle
 format-codestyle: black flake8
 
+.PHONY: mypy
+mypy:
+	poetry run mypy --config-file pyproject.toml elastica
+
 .PHONY: test
 test:
 	poetry run pytest
@@ -81,7 +85,7 @@ formatting: format-codestyle
 
 .PHONY: update-dev-deps
 update-dev-deps:
-	poetry add -D pytest@latest coverage@latest pytest-html@latest pytest-cov@latest black@latest
+	poetry add -D mypy@latest pytest@latest coverage@latest pytest-html@latest pytest-cov@latest black@latest
 
 #* Cleaning
 .PHONY: pycache-remove
@@ -91,6 +95,10 @@ pycache-remove:
 .PHONY: dsstore-remove
 dsstore-remove:
 	find . | grep -E ".DS_Store" | xargs rm -rf
+
+.PHONY: mypycache-remove
+mypycache-remove:
+	find . | grep -E ".mypy_cache" | xargs rm -rf
 
 .PHONY: ipynbcheckpoints-remove
 ipynbcheckpoints-remove:
@@ -105,7 +113,7 @@ build-remove:
 	rm -rf build/
 
 .PHONY: cleanup
-cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove
+cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove
 
 all: format-codestyle cleanup test
 
