@@ -35,7 +35,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	poetry run black --version
-	poetry run black --config pyproject.toml --required-version 21.12b0 elastica tests examples
+	poetry run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
 
 .PHONY: black-check
 black-check:
