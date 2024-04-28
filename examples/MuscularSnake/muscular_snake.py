@@ -45,7 +45,7 @@ E = 1e7
 nu = 4e-3
 shear_modulus = E / 2 * (0.5 + 1.0)
 poisson_ratio = 0.5
-nu_body = nu / density_body / (np.pi * base_radius_body ** 2)
+nu_body = nu / density_body / (np.pi * base_radius_body**2)
 
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 0.0, 1.0])
@@ -104,7 +104,7 @@ below.
 muscle_radius = np.zeros((n_elem_muscle_group_one_to_three))
 muscle_radius[:] = 0.003  # First set tendon radius for whole rod.
 muscle_radius[4 * 3 : 9 * 3] = 0.006  # Change the radius of muscle elements
-nu_muscle /= density_muscle * np.pi * 0.003 ** 2
+nu_muscle /= density_muscle * np.pi * 0.003**2
 
 for i in range(int(n_muscle_fibers / 2)):
 

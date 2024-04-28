@@ -56,7 +56,7 @@ mypy = "^1.10.0"
 mypy-extensions = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
-black = "21.12b0"
+black = "24.3.0"
 pytest = "^7.1.1"
 coverage = "^6.3.3"
 pre-commit = "^2.19.0"
@@ -83,7 +83,7 @@ examples = [
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ["py38"]
+target-version = ["py310"]
 line-length = 88
 color = true
 exclude = '''
@@ -135,3 +135,35 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_lines = [
+    # Enable pragma
+    "pragma: no cover",
+    "TODO",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == __main__:",
+    "pass",
+    "def __repr__",
+    "from",
+    "import",
+    "if TYPE_CHECKING:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    '''class '.*\bProtocol\)':''',
+    # ''''@(abc\.)?'abstractmethod''',
+]
+fail_under = 40
+show_missing = true
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "*/.local/*",
+	"setup.py",
+    "elastica/systems/analytical.py",
+    "elastica/experimental/*",
+]

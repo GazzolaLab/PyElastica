@@ -156,7 +156,6 @@ def make_block_memory_periodic_boundary_metadata(n_elems_in_rods):
 
 
 class MemoryBlockRodBase:
-
     """
     This is the base class for memory blocks for rods.
     """

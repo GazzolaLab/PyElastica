@@ -206,7 +206,7 @@ class TestForcingMixin:
 
         scwf._finalize_forcing()
 
-        for (x, y) in scwf._ext_forces_torques:
+        for x, y in scwf._ext_forces_torques:
             assert type(x) is int
             assert type(y) is forcing_cls
 
@@ -218,7 +218,7 @@ class TestForcingMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwf._ext_forces_torques:
+        for x, _ in scwf._ext_forces_torques:
             assert num < x
             num = x
 

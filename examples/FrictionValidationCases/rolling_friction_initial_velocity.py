@@ -31,7 +31,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     nu = 1e-6 / 2
@@ -117,9 +117,9 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     rotational_energy = shearable_rod.compute_rotational_energy()
 
     # compute translational and rotational energy using analytical equations
-    analytical_translational_energy = 0.5 * mass * Vs ** 2 / (1.0 + IFactor / 2) ** 2
+    analytical_translational_energy = 0.5 * mass * Vs**2 / (1.0 + IFactor / 2) ** 2
     analytical_rotational_energy = (
-        0.5 * mass * Vs ** 2 * (IFactor / 2.0) / (1.0 + IFactor / 2) ** 2
+        0.5 * mass * Vs**2 * (IFactor / 2.0) / (1.0 + IFactor / 2) ** 2
     )
 
     return {

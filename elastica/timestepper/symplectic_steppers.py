@@ -22,7 +22,7 @@ class _SystemInstanceStepper:
     def do_step(
         TimeStepper, _steps_and_prefactors, System, time: np.float64, dt: np.float64
     ):
-        for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
+        for kin_prefactor, kin_step, dyn_step in _steps_and_prefactors[:-1]:
             kin_step(TimeStepper, System, time, dt)
             time += kin_prefactor(TimeStepper, dt)
             System.update_internal_forces_and_torques(time)
@@ -62,7 +62,7 @@ class _SystemCollectionStepper:
         -------
 
         """
-        for (kin_prefactor, kin_step, dyn_step) in _steps_and_prefactors[:-1]:
+        for kin_prefactor, kin_step, dyn_step in _steps_and_prefactors[:-1]:
 
             for system in SystemCollection._memory_blocks:
                 kin_step(TimeStepper, system, time, dt)

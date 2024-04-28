@@ -29,7 +29,7 @@ binormal = np.cross(direction, normal)
 # catenary parameters
 base_length = 1.0
 base_radius = 0.01
-base_area = np.pi * (base_radius ** 2)
+base_area = np.pi * (base_radius**2)
 volume = base_area * base_length
 mass = 0.2
 density = mass / volume

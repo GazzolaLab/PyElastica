@@ -1,5 +1,6 @@
 """ Axis Aligned Bounding Boxes for coarse collision detection
 """
+
 import numpy as np
 from elastica.utils import MaxDimension
 
@@ -129,8 +130,8 @@ class AABBHierarchy:
         # Check which is the closest and use that as the number of levels
 
         # Else check differences
-        if (4 ** n_levels_bound_above - potential_n_aabbs_in_final_level) > (
-            potential_n_aabbs_in_final_level - 4 ** n_levels_bound_below
+        if (4**n_levels_bound_above - potential_n_aabbs_in_final_level) > (
+            potential_n_aabbs_in_final_level - 4**n_levels_bound_below
         ):
             self.n_levels = n_levels_bound_below + 1
         else:

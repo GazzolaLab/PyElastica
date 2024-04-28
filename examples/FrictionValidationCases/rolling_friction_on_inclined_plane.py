@@ -31,7 +31,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     E = 1e9
@@ -107,7 +107,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     force_slip = static_mu_array[0] * mass * gravitational_acc * np.cos(alpha)
     force_noslip = -mass * gravitational_acc * np.sin(alpha) / 3.0
 
-    mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
+    mass_moment_of_inertia = 0.5 * mass * base_radius**2
 
     if np.abs(force_noslip) <= np.abs(force_slip):
         analytical_translational_energy = (

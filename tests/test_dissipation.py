@@ -101,7 +101,7 @@ def test_analytical_linear_damper():
     )
     # multiplying_factor = ref_rot_coeff ^ dilation
     post_damping_omega_collection = (
-        pre_damping_omega_collection * ref_rotational_damping_coefficient ** 2.0
+        pre_damping_omega_collection * ref_rotational_damping_coefficient**2.0
     )
     assert_allclose(
         post_damping_velocity_collection,
@@ -185,12 +185,12 @@ def test_laplace_dissipation_filter_for_flip_flop_field():
     post_damping_velocity_collection[..., 1:-1] = 2.0 / 2
     post_damping_omega_collection[..., 1:-1] = 3.0 / 2
     # end values remain untouched
-    post_damping_velocity_collection[
-        ..., 0 :: test_rod.n_elems
-    ] = pre_damping_velocity_collection[..., 0 :: test_rod.n_elems]
-    post_damping_omega_collection[
-        ..., 0 :: test_rod.n_elems - 1
-    ] = pre_damping_omega_collection[..., 0 :: test_rod.n_elems - 1]
+    post_damping_velocity_collection[..., 0 :: test_rod.n_elems] = (
+        pre_damping_velocity_collection[..., 0 :: test_rod.n_elems]
+    )
+    post_damping_omega_collection[..., 0 :: test_rod.n_elems - 1] = (
+        pre_damping_omega_collection[..., 0 :: test_rod.n_elems - 1]
+    )
     assert_allclose(
         post_damping_velocity_collection,
         test_rod.velocity_collection,

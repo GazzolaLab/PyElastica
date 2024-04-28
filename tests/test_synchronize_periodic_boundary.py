@@ -136,16 +136,16 @@ def test_ConstrainPeriodicBoundaries():
 
     for i in range(3):
         for k in range(periodic_boundary_node_idx.shape[1]):
-            test_position_collection[
-                i, periodic_boundary_node_idx[0, k]
-            ] = test_position_collection[i, periodic_boundary_node_idx[1, k]]
+            test_position_collection[i, periodic_boundary_node_idx[0, k]] = (
+                test_position_collection[i, periodic_boundary_node_idx[1, k]]
+            )
 
     for i in range(3):
         for j in range(3):
             for k in range(periodic_boundary_elems_idx.shape[1]):
-                test_director_collection[
-                    i, j, periodic_boundary_elems_idx[0, k]
-                ] = test_director_collection[i, j, periodic_boundary_elems_idx[1, k]]
+                test_director_collection[i, j, periodic_boundary_elems_idx[0, k]] = (
+                    test_director_collection[i, j, periodic_boundary_elems_idx[1, k]]
+                )
 
     assert_allclose(
         test_position_collection, test_rod.position_collection, atol=Tolerance.atol()
@@ -166,15 +166,15 @@ def test_ConstrainPeriodicBoundaries():
 
     for i in range(3):
         for k in range(periodic_boundary_node_idx.shape[1]):
-            test_velocity_collection[
-                i, periodic_boundary_node_idx[0, k]
-            ] = test_velocity_collection[i, periodic_boundary_node_idx[1, k]]
+            test_velocity_collection[i, periodic_boundary_node_idx[0, k]] = (
+                test_velocity_collection[i, periodic_boundary_node_idx[1, k]]
+            )
 
     for i in range(3):
         for k in range(periodic_boundary_elems_idx.shape[1]):
-            test_omega_collection[
-                i, periodic_boundary_elems_idx[0, k]
-            ] = test_omega_collection[i, periodic_boundary_elems_idx[1, k]]
+            test_omega_collection[i, periodic_boundary_elems_idx[0, k]] = (
+                test_omega_collection[i, periodic_boundary_elems_idx[1, k]]
+            )
 
     assert_allclose(
         test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()

@@ -117,9 +117,9 @@ def test_inv_skew_symmetrize_against_input_shapes(ndim):
     input_matrix = _skew_symmetrize(input_vector)
 
     if ndim == 1:
-        input_matrix = input_matrix.reshape(dim ** 2)
+        input_matrix = input_matrix.reshape(dim**2)
     elif ndim == 2:
-        input_matrix = input_matrix.reshape(dim ** 2, blocksize)
+        input_matrix = input_matrix.reshape(dim**2, blocksize)
     elif ndim == 3:
         input_matrix = input_matrix.reshape(dim, dim, blocksize)
 
@@ -152,9 +152,9 @@ def test_inv_skew_symmetrize_raises_dimension_error(ndim):
     blocksize = 8
     # Matrix not necessary to be sk-symm in this case
     if ndim == 1:
-        incorrect_input_matrix = np.random.randn(dim ** 2)
+        incorrect_input_matrix = np.random.randn(dim**2)
     elif ndim == 2:
-        incorrect_input_matrix = np.random.randn(dim ** 2, blocksize)
+        incorrect_input_matrix = np.random.randn(dim**2, blocksize)
     elif ndim == 3:
         incorrect_input_matrix = np.random.randn(dim, dim, blocksize)
 
@@ -248,7 +248,7 @@ def test_format_matrix_shape_1D():
     # cannot be square matrix.
     dim = 3
     blocksize = 1
-    input_matrix = np.random.randn(dim ** 2)
+    input_matrix = np.random.randn(dim**2)
     test_matrix = format_matrix_shape(input_matrix)
 
     # Reshape the input matrix
@@ -261,7 +261,7 @@ def test_format_matrix_dim_power_2_blocksize(blocksize):
     # Testing if elements of input matrix is column vector of dim**2
     # Change block sizes using parametric testing ##
     dim = 3
-    input_matrix = np.random.randn(dim ** 2, blocksize)
+    input_matrix = np.random.randn(dim**2, blocksize)
     test_matrix = format_matrix_shape(input_matrix)
 
     # Reshape the input matrix

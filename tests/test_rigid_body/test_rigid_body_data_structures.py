@@ -74,14 +74,14 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
     def analytical_solution(self, type, time):
         if type == "Positions":
             analytical_solution = (
-                np.hstack((self.init_pos)) + np.sin(np.pi * time) / np.pi ** 2
+                np.hstack((self.init_pos)) + np.sin(np.pi * time) / np.pi**2
             )
         elif type == "Velocity":
             analytical_solution = (
                 0.0 * np.hstack((self.init_pos)) + np.cos(np.pi * time) / np.pi
             )
         elif type == "Directors":
-            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
+            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time**2
             axis = np.array([0.0, 0.0, 1.0]).reshape(3, 1)  # There is only one director
             # Reshaping done to prevent numba equivalent to complain
             # While we can prevent it here, its' done to make the front end testing scripts "look"
