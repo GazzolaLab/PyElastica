@@ -10,8 +10,6 @@ Following example cases includes computing LWT quantities to study the bifurcati
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 
-import sys
-
 from typing import Protocol, Union
 
 from numba import njit
