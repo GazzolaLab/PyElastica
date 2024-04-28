@@ -31,7 +31,7 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([1.0, 0.0, 0.0])
 base_length = 1.0
 base_radius = 0.005
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1100.0
 youngs_modulus = 5e6
 # For shear modulus of 1e4, nu is 99!

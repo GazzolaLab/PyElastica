@@ -46,7 +46,7 @@ def _find_min_dist(x1, e1, x2, e2):
     s = 0.0
     t = 0.0
 
-    parallel = abs(1.0 - e1e2 ** 2 / (e1e1 * e2e2)) < 1e-6
+    parallel = abs(1.0 - e1e2**2 / (e1e1 * e2e2)) < 1e-6
     if parallel:
         # Some are parallel, so do processing
         t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal

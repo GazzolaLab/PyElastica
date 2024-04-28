@@ -991,7 +991,7 @@ def _compute_internal_torques(
     )
 
     # FIXME: change memory overload instead for the below calls!
-    voronoi_dilatation_inv_cube_cached = 1.0 / voronoi_dilatation ** 3
+    voronoi_dilatation_inv_cube_cached = 1.0 / voronoi_dilatation**3
     # Delta(\tau_L / \Epsilon^3)
     bend_twist_couple_2D = difference_kernel_for_block_structure(
         internal_couple * voronoi_dilatation_inv_cube_cached, ghost_voronoi_idx

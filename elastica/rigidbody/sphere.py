@@ -26,7 +26,7 @@ class Sphere(RigidBodyBase):
         self.density = density
         self.length = 2 * base_radius
         # This is for a rigid body cylinder
-        self.volume = 4.0 / 3.0 * np.pi * base_radius ** 3
+        self.volume = 4.0 / 3.0 * np.pi * base_radius**3
         self.mass = np.array([self.volume * self.density])
         normal = np.array([1.0, 0.0, 0.0]).reshape(3, 1)
         tangents = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
@@ -37,7 +37,7 @@ class Sphere(RigidBodyBase):
             (MaxDimension.value(), MaxDimension.value()), np.float64
         )
         np.fill_diagonal(
-            mass_second_moment_of_inertia, 2.0 / 5.0 * self.mass * self.radius ** 2
+            mass_second_moment_of_inertia, 2.0 / 5.0 * self.mass * self.radius**2
         )
 
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia.reshape(
