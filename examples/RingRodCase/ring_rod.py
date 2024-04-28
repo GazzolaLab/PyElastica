@@ -66,6 +66,7 @@ total_steps = int(final_time / time_step)
 rendering_fps = 60
 step_skip = int(1.0 / (rendering_fps * time_step))
 
+
 # Add call backs
 class RingRodCallBack(ea.CallBackBaseClass):
     """

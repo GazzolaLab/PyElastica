@@ -312,9 +312,7 @@ def test_general_constraint(
     # test `nb_constrain_rotational_rates` for directors not equal to identity matrix
     # rotate angular velocities to inertial frame
     omega_collection_lab_frame = _batch_matvec(
-        test_director_collection[
-            ...,
-        ].transpose(1, 0, 2),
+        test_director_collection[...,].transpose(1, 0, 2),
         test_omega_collection,
     )
     # apply constraint selector to angular velocities in inertial frame

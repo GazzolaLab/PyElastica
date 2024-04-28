@@ -48,9 +48,9 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_synchronize: Iterable[Callable[[float], None]] = []
         self._feature_group_constrain_values: Iterable[Callable[[float], None]] = []
         self._feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
-        self._feature_group_callback: Iterable[
-            Callable[[float, int, AnyStr], None]
-        ] = []
+        self._feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = (
+            []
+        )
         self._feature_group_finalize: Iterable[Callable] = []
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()

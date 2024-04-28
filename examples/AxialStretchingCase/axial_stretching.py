@@ -23,6 +23,7 @@
 
     isort:skip_file
 """
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -50,7 +51,7 @@ direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 1.0
 base_radius = 0.025
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1000
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
@@ -89,6 +90,7 @@ stretch_sim.dampen(stretchable_rod).using(
     damping_constant=damping_constant,
     time_step=dt,
 )
+
 
 # Add call backs
 class AxialStretchingCallBack(ea.CallBackBaseClass):

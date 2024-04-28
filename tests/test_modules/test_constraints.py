@@ -318,7 +318,7 @@ class TestConstraintsMixin:
 
         scwc._finalize_constraints()
 
-        for (x, y) in scwc._constraints:
+        for x, y in scwc._constraints:
             assert type(x) is int
             assert type(y) is bc_cls
 
@@ -346,7 +346,7 @@ class TestConstraintsMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwc._constraints:
+        for x, _ in scwc._constraints:
             assert num < x
             num = x
 

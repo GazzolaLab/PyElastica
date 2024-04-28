@@ -146,16 +146,16 @@ class MemoryBlockCosseratRod(
             self.start_idx_in_rod_nodes[n_straight_rods:] = (
                 self.periodic_boundary_nodes_idx[0, 0::3] + 1
             )
-            self.end_idx_in_rod_nodes[
-                n_straight_rods:
-            ] = self.periodic_boundary_nodes_idx[0, 1::3]
+            self.end_idx_in_rod_nodes[n_straight_rods:] = (
+                self.periodic_boundary_nodes_idx[0, 1::3]
+            )
 
             self.start_idx_in_rod_elems[n_straight_rods:] = (
                 self.periodic_boundary_elems_idx[0, 0::2] + 1
             )
-            self.end_idx_in_rod_elems[
-                n_straight_rods:
-            ] = self.periodic_boundary_elems_idx[0, 1::2]
+            self.end_idx_in_rod_elems[n_straight_rods:] = (
+                self.periodic_boundary_elems_idx[0, 1::2]
+            )
 
             self.start_idx_in_rod_voronoi[n_straight_rods:] = (
                 self.periodic_boundary_voronoi_idx[0, :] + 1

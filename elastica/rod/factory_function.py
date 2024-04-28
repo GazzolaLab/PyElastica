@@ -212,7 +212,7 @@ def allocate(
     ) / (rest_lengths_temp_for_voronoi[1:] + rest_lengths_temp_for_voronoi[:-1])
 
     # Compute volume of elements
-    volume = np.pi * radius ** 2 * rest_lengths
+    volume = np.pi * radius**2 * rest_lengths
 
     # Compute mass of elements
     mass = np.zeros(n_nodes)

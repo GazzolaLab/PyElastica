@@ -185,7 +185,7 @@ class TestDampingMixin:
 
         scwd._finalize_dampers()
 
-        for (x, y) in scwd._dampers:
+        for x, y in scwd._dampers:
             assert type(x) is int
             assert type(y) is damper_cls
 
@@ -209,6 +209,6 @@ class TestDampingMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwd._dampers:
+        for x, _ in scwd._dampers:
             assert num < x
             num = x

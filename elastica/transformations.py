@@ -79,7 +79,7 @@ def format_matrix_shape(matrix_collection):
     # we need to convert the matrix in that case.
     def assert_proper_square(num1):
         sqrt_num = isqrt(num1)
-        assert sqrt_num ** 2 == num1, "Matrix dimension passed is not a perfect square"
+        assert sqrt_num**2 == num1, "Matrix dimension passed is not a perfect square"
         return sqrt_num
 
     if n_dim == 1:
