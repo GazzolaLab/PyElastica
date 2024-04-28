@@ -104,3 +104,37 @@ exclude = '''
 # https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
 # Directories that are not visited by pytest collector:
 norecursedirs =["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_lines = [
+    # Enable pragma
+    "pragma: no cover",
+    "TODO",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == __main__:",
+    "pass",
+    "def __repr__",
+    "from",
+    "import",
+    "if TYPE_CHECKING:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    '''class '.*\bProtocol\)':''',
+    # ''''@(abc\.)?'abstractmethod''',
+]
+fail_under = 40
+show_missing = true
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "*/.local/*",
+	"setup.py",
+    "elastica/systems/analytical.py",
+    "elastica/_elastica_numpy.py",
+    "elastica/_elastica_numba.py",
+    "elastica/experimental/*",
+]
