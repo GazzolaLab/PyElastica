@@ -2,16 +2,6 @@ __doc__ = """Symplectic time steppers and concepts for integrating the kinematic
 
 import numpy as np
 
-# from elastica._elastica_numba._timestepper._symplectic_steppers import (
-#     SymplecticStepperTag,
-#     PositionVerlet,
-#     PEFRL,
-# )
-
-# from elastica.timestepper._stepper_interface import (
-#     _TimeStepper,
-#     _LinearExponentialIntegratorMixin,
-# )
 from elastica.rod.data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,

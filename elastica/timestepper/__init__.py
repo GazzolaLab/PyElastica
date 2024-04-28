@@ -25,36 +25,26 @@ def extend_stepper_interface(Stepper, System):
     # by checking for the [] method
     is_this_system_a_collection = is_system_a_collection(System)
 
-    """
-    # Stateful steppers are no more used so remove them
-    ConcreteStepper = (
-        Stepper.stepper if _StatefulStepper in Stepper.__class__.mro() else Stepper
-    )
-    """
-    ConcreteStepper = Stepper
-
-    if type(ConcreteStepper.Tag) == SymplecticStepperTag:
+    if type(Stepper.Tag) == SymplecticStepperTag:
         from elastica.timestepper.symplectic_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
             SymplecticStepperMethods as StepperMethodCollector,
         )
-    elif type(ConcreteStepper.Tag) == ExplicitStepperTag:
+    elif type(Stepper.Tag) == ExplicitStepperTag:
         from elastica.timestepper.explicit_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
             ExplicitStepperMethods as StepperMethodCollector,
         )
-    # elif SymplecticCosseratRodStepper in ConcreteStepper.__class__.mro():
-    #    return  # hacky fix for now. remove HybridSteppers in a future version.
     else:
         raise NotImplementedError(
             "Only explicit and symplectic steppers are supported, given stepper is {}".format(
-                ConcreteStepper.__class__.__name__
+                Stepper.__class__.__name__
             )
         )
 
-    stepper_methods = StepperMethodCollector(ConcreteStepper)
+    stepper_methods = StepperMethodCollector(Stepper)
     do_step_method = (
         _SystemCollectionStepper.do_step
         if is_this_system_a_collection
