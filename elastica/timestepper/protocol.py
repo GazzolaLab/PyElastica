@@ -1,17 +1,10 @@
 __doc__ = "Time stepper interface"
 
+from typing import Protocol
 
-class _TimeStepper:
-    """Interface classes for all time-steppers"""
-
-    def __init__(self):
-        pass
-
-    def do_step(self, *args, **kwargs):
-        raise NotImplementedError(
-            "TimeStepper hierarchy is not supposed to access the do-step routine of the TimeStepper base class. "
-        )
-
+class TimeStepperProtocol(Protocol):
+    """Protocol for all time-steppers"""
+    def do_step(self, *args, **kwargs): ...
 
 # class _StatefulStepper:
 #     """

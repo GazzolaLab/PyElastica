@@ -18,7 +18,6 @@ from elastica.timestepper.explicit_steppers import (
 # TODO: Both extend_stepper_interface and integrate should be in separate file.
 # __init__ is probably not an ideal place to have these scripts.
 def extend_stepper_interface(Stepper, System):
-    from elastica.utils import extend_instance
     from elastica.systems import is_system_a_collection
 
     # Check if system is a "collection" of smaller systems
@@ -53,7 +52,6 @@ def extend_stepper_interface(Stepper, System):
     return do_step_method, stepper_methods.step_methods()
 
 
-# TODO Improve interface of this function to take args and kwargs for ease of use
 def integrate(
     StatefulStepper,
     System,
@@ -61,7 +59,6 @@ def integrate(
     n_steps: int = 1000,
     restart_time: float = 0.0,
     progress_bar: bool = True,
-    **kwargs,
 ):
     """
 

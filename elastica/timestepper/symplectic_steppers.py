@@ -202,9 +202,6 @@ class PositionVerlet:
 
     Tag = SymplecticStepperTag()
 
-    def __init__(self):
-        pass
-
     def _first_prefactor(self, dt):
         return 0.5 * dt
 
