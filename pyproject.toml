@@ -54,7 +54,7 @@ docutils = {version = "^0.18", optional = true}
 cma = {version = "^3.2.2", optional = true}
 
 [tool.poetry.dev-dependencies]
-black = "21.12b0"
+black = "24.3.0"
 pytest = "^7.1.1"
 coverage = "^6.3.3"
 pre-commit = "^2.19.0"
@@ -81,7 +81,7 @@ examples = [
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ["py38"]
+target-version = ["py310"]
 line-length = 88
 color = true
 exclude = '''
