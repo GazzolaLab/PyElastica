@@ -134,7 +134,5 @@ omit = [
     "*/.local/*",
 	"setup.py",
     "elastica/systems/analytical.py",
-    "elastica/_elastica_numpy.py",
-    "elastica/_elastica_numba.py",
     "elastica/experimental/*",
 ]
