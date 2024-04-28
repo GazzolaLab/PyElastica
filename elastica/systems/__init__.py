@@ -1,4 +1,4 @@
-def is_system_a_collection(system):
+def is_system_a_collection(system: object) -> bool:
     # Check if system is a "collection" of smaller systems
     # by checking for the [] method
     """
