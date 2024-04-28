@@ -719,7 +719,7 @@ def test_shear_matrix_for_varying_shear_modulus(n_elems, shear_modulus):
     base_radius = 0.1
     density = 1000
     youngs_modulus = 1e6
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     mockrod = MockRodForTest.straight_rod(
         n_elems,
@@ -930,7 +930,7 @@ def test_constant_density(n_elems):
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    correct_mass = density * np.pi * base_radius ** 2 * base_length / n_elems
+    correct_mass = density * np.pi * base_radius**2 * base_length / n_elems
     test_mass = mockrod.mass
 
     for i in range(1, n_elems):
@@ -972,7 +972,7 @@ def test_varying_density(n_elems):
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
     )
-    volume = np.pi * base_radius ** 2 * base_length / n_elems
+    volume = np.pi * base_radius**2 * base_length / n_elems
     correct_mass = np.zeros(n_elems + 1)
     correct_mass[:-1] += 0.5 * density * volume
     correct_mass[1:] += 0.5 * density * volume
@@ -1203,7 +1203,7 @@ def test_straight_rod(n_elems):
     base_length = 10
     base_radius = np.random.uniform(1, 10)
     density = np.random.uniform(1, 10)
-    mass = density * np.pi * base_radius ** 2 * base_length / n_elems
+    mass = density * np.pi * base_radius**2 * base_length / n_elems
     # Youngs Modulus [Pa]
     E = 1e6
     # poisson ratio

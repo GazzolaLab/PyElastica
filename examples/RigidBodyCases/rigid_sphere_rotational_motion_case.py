@@ -96,8 +96,8 @@ def rigid_sphere_rolling_verification(torque=0.0):
     translational_energy = sphere.compute_translational_energy()
     rotational_energy = sphere.compute_rotational_energy()
     # compute translational and rotational energy using analytical equations
-    mass = 4.0 / 3.0 * np.pi * sphere_radius ** 3 * density
-    mass_moment_of_inertia = 2.0 / 5.0 * mass * sphere_radius ** 2
+    mass = 4.0 / 3.0 * np.pi * sphere_radius**3 * density
+    mass_moment_of_inertia = 2.0 / 5.0 * mass * sphere_radius**2
 
     analytical_translational_energy = 0.0
     analytical_rotational_energy = (
