@@ -21,6 +21,7 @@ from elastica._rotations import (
 ##################### Implementation tests start ##############################
 ###############################################################################
 
+
 # Cross products only make sense till dim = 3 (dim = 7 is an exception)
 @pytest.mark.parametrize("dim", [2, 3])
 def test_skewmap_integrity(dim):

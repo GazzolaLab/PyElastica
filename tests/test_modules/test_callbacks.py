@@ -164,7 +164,7 @@ class TestCallBacksMixin:
 
         scwc._finalize_callback()
 
-        for (x, y) in scwc._callback_list:
+        for x, y in scwc._callback_list:
             assert type(x) is int
             assert type(y) is callback_cls
 
@@ -176,6 +176,6 @@ class TestCallBacksMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwc._callback_list:
+        for x, _ in scwc._callback_list:
             assert num < x
             num = x

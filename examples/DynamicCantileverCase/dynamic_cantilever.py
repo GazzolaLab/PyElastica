@@ -50,10 +50,10 @@ def simulate_dynamic_cantilever_with(
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1
     base_radius = 0.02
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     youngs_modulus = 1e5
 
-    moment_of_inertia = np.pi / 4 * base_radius ** 4
+    moment_of_inertia = np.pi / 4 * base_radius**4
 
     dl = base_length / n_elem
     dt = dl * 0.05
