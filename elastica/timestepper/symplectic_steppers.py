@@ -6,6 +6,7 @@ from elastica.rod.data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,
 )
+from .tag import tag, SymplecticStepperTag
 
 """
 Developer Note
@@ -189,18 +190,12 @@ class SymplecticStepperMethods:
         return len(self._steps_and_prefactors)
 
 
-class SymplecticStepperTag:
-    def __init__(self):
-        pass
-
-
+@tag(SymplecticStepperTag)
 class PositionVerlet:
     """
     Position Verlet symplectic time stepper class, which
     includes methods for second-order position Verlet.
     """
-
-    Tag = SymplecticStepperTag()
 
     def _first_prefactor(self, dt):
         return 0.5 * dt
@@ -224,7 +219,7 @@ class PositionVerlet:
             System.dynamic_rates(time, dt),
         )
 
-
+@tag(SymplecticStepperTag)
 class PEFRL:
     """
     Position Extended Forest-Ruth Like Algorithm of
@@ -240,8 +235,6 @@ class PEFRL:
     # Pre-calculate other coefficients
     lambda_dash_coeff = 0.5 * (1.0 - 2.0 * λ)
     xi_chi_dash_coeff = 1.0 - 2.0 * (ξ + χ)
-
-    Tag = SymplecticStepperTag()
 
     def __init__(self):
         pass

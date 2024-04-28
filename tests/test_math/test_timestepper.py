@@ -17,7 +17,6 @@ from elastica.timestepper import integrate, extend_stepper_interface
 
 from elastica.timestepper.explicit_steppers import (
     RungeKutta4,
-    ExplicitStepperTag,
     EulerForward,
 )
 
@@ -28,8 +27,8 @@ from elastica.timestepper.explicit_steppers import (
 from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
-    SymplecticStepperTag,
 )
+from elastica.timestepper.tag import tag, SymplecticStepperTag, ExplicitStepperTag
 
 
 from elastica.utils import Tolerance
@@ -38,8 +37,8 @@ from elastica.utils import Tolerance
 class TestExtendStepperInterface:
     """TODO add documentation"""
 
+    @tag(SymplecticStepperTag)
     class MockSymplecticStepper:
-        Tag = SymplecticStepperTag()
 
         def _first_prefactor(self):
             pass
@@ -50,8 +49,8 @@ class TestExtendStepperInterface:
         def _first_dynamic_step(self):
             pass
 
+    @tag(ExplicitStepperTag)
     class MockExplicitStepper:
-        Tag = ExplicitStepperTag()
 
         def _first_stage(self):
             pass

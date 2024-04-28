@@ -2,6 +2,8 @@ __doc__ = """Explicit timesteppers  and concepts"""
 import numpy as np
 from copy import copy
 
+from .tag import tag, ExplicitStepperTag
+
 
 """
 Developer Note
@@ -151,9 +153,8 @@ class ExplicitStepperMethods:
 Classical EulerForward
 """
 
-
+# @tag(ExplicitStepperTag)
 # class EulerForward:
-#     Tag = ExplicitStepperTag()
 #
 #     def __init__(self):
 #         pass
@@ -188,19 +189,12 @@ class StatefulLinearExponentialIntegrator(_StatefulStepper):
         self.linear_operator = None
 """
 
-
-class ExplicitStepperTag:
-    def __init__(self):
-        pass
-
-
+@tag(ExplicitStepperTag)
 class RungeKutta4:
     """
     Stateless runge-kutta4. coordinates operations only, memory needs
     to be externally managed and allocated.
     """
-
-    Tag = ExplicitStepperTag()
 
     def __init__(self):
         pass
@@ -245,8 +239,8 @@ class RungeKutta4:
         return time
 
 
+@tag(ExplicitStepperTag)   
 class EulerForward:
-    Tag = ExplicitStepperTag()
 
     def __init__(self):
         super(EulerForward, self).__init__()

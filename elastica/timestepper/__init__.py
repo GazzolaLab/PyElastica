@@ -4,15 +4,14 @@ __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 import numpy as np
 from tqdm import tqdm
 from elastica.timestepper.symplectic_steppers import (
-    SymplecticStepperTag,
     PositionVerlet,
     PEFRL,
 )
 from elastica.timestepper.explicit_steppers import (
-    ExplicitStepperTag,
     RungeKutta4,
     EulerForward,
 )
+from elastica.timestepper.tag import SymplecticStepperTag, ExplicitStepperTag
 
 
 # TODO: Both extend_stepper_interface and integrate should be in separate file.
@@ -24,13 +23,13 @@ def extend_stepper_interface(Stepper, System):
     # by checking for the [] method
     is_this_system_a_collection = is_system_a_collection(System)
 
-    if type(Stepper.Tag) == SymplecticStepperTag:
+    if isinstance(Stepper.Tag, SymplecticStepperTag):
         from elastica.timestepper.symplectic_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
             SymplecticStepperMethods as StepperMethodCollector,
         )
-    elif type(Stepper.Tag) == ExplicitStepperTag:
+    elif isinstance(Stepper.Tag, ExplicitStepperTag):
         from elastica.timestepper.explicit_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
