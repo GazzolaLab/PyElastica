@@ -2,15 +2,13 @@
 name: CI
 
 # Controls when the action will run.
-on: [push, pull_request]
-# Older settings:
 # Triggers the workflow on push request events for the master branch,
 # and pull request events for all branches.
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ '**' ]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ 'update**' ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
