@@ -1,71 +1,76 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
+from typing import Tuple, List, Callable, Type
 
 import numpy as np
 from tqdm import tqdm
-from elastica.timestepper.symplectic_steppers import (
-    PositionVerlet,
-    PEFRL,
-)
-from elastica.timestepper.explicit_steppers import (
-    RungeKutta4,
-    EulerForward,
-)
-from elastica.timestepper.tag import SymplecticStepperTag, ExplicitStepperTag
+
+from elastica.typing import SystemType
+from .symplectic_steppers import PositionVerlet, PEFRL
+from .explicit_steppers import RungeKutta4, EulerForward
+from .tag import SymplecticStepperTag, ExplicitStepperTag
+from .protocol import StepperProtocol, StatefulStepperProtocol
+from .protocol import MethodCollectorProtocol
 
 
 # TODO: Both extend_stepper_interface and integrate should be in separate file.
 # __init__ is probably not an ideal place to have these scripts.
-def extend_stepper_interface(Stepper, System):
+def extend_stepper_interface(
+    Stepper: StepperProtocol, System: SystemType
+) -> Tuple[Callable, Tuple[Callable]]:
     from elastica.systems import is_system_a_collection
 
-    # Check if system is a "collection" of smaller systems
-    # by checking for the [] method
-    is_this_system_a_collection = is_system_a_collection(System)
-
+    # StepperMethodCollector: Type[MethodCollectorProtocol]
+    # SystemStepper: Type[StepperProtocol]
     if isinstance(Stepper.Tag, SymplecticStepperTag):
         from elastica.timestepper.symplectic_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
-            SymplecticStepperMethods as StepperMethodCollector,
+            SymplecticStepperMethods,
         )
-    elif isinstance(Stepper.Tag, ExplicitStepperTag):
+
+        StepperMethodCollector = SymplecticStepperMethods
+    elif isinstance(Stepper.Tag, ExplicitStepperTag):  # type: ignore[no-redef]
         from elastica.timestepper.explicit_steppers import (
             _SystemInstanceStepper,
             _SystemCollectionStepper,
-            ExplicitStepperMethods as StepperMethodCollector,
+            ExplicitStepperMethods,
         )
+
+        StepperMethodCollector = ExplicitStepperMethods
     else:
         raise NotImplementedError(
             "Only explicit and symplectic steppers are supported, given stepper is {}".format(
                 Stepper.__class__.__name__
             )
         )
+    # Check if system is a "collection" of smaller systems
+    # by checking for the [] method
+    if is_system_a_collection(System):
+        SystemStepper = _SystemCollectionStepper
+    else:
+        SystemStepper = _SystemInstanceStepper
 
-    stepper_methods = StepperMethodCollector(Stepper)
-    do_step_method = (
-        _SystemCollectionStepper.do_step
-        if is_this_system_a_collection
-        else _SystemInstanceStepper.do_step
-    )
-    return do_step_method, stepper_methods.step_methods()
+    stepper_methods: Tuple[Callable] = StepperMethodCollector(Stepper).step_methods()
+    do_step_method: Callable = SystemStepper.do_step
+    return do_step_method, stepper_methods
 
 
 def integrate(
-    StatefulStepper,
-    System,
+    StatefulStepper: StatefulStepperProtocol,
+    System: SystemType,
     final_time: float,
     n_steps: int = 1000,
     restart_time: float = 0.0,
     progress_bar: bool = True,
-):
+) -> float:
     """
 
     Parameters
     ----------
-    StatefulStepper :
+    StatefulStepper : StatefulStepperProtocol
         Stepper algorithm to use.
-    System :
+    System : SystemType
         The elastica-system to simulate.
     final_time : float
         Total simulation time. The timestep is determined by final_time / n_steps.

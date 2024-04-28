@@ -1,27 +1,45 @@
 __doc__ = "Time stepper interface"
 
-from typing import Protocol
+from typing import Protocol, Tuple, Callable, Type
 
-class TimeStepperProtocol(Protocol):
+import numpy as np
+
+
+class StepperProtocol(Protocol):
     """Protocol for all time-steppers"""
-    def do_step(self, *args, **kwargs): ...
 
-# class _StatefulStepper:
-#     """
-#     Stateful explicit, symplectic stepper wrapper.
-#     """
-#
-#     def __init__(self):
-#         pass
-#
-#     # For stateful steppes, bind memory to self
-#     def do_step(self, System, time: np.float64, dt: np.float64):
-#         return self.stepper.do_step(System, self, time, dt)
-#
-#     @property
-#     def n_stages(self):
-#         return self.stepper.n_stages
-#
+    def do_step(self, *args, **kwargs) -> float: ...
+
+    @property
+    def Tag(self) -> Type: ...
+
+
+class StatefulStepperProtocol(StepperProtocol):
+    """
+    Stateful explicit, symplectic stepper wrapper.
+    """
+
+    # For stateful steppes, bind memory to self
+    def do_step(self, System, time: np.floating, dt: np.floating) -> float:
+        """
+        Perform one time step of the simulation.
+        Return the new time.
+        """
+        ...
+
+    @property
+    def n_stages(self) -> int: ...
+
+
+class MethodCollectorProtocol(Protocol):
+    """
+    Protocol for collecting stepper methods.
+    """
+
+    def __init__(self, timestepper_instance: StepperProtocol): ...
+
+    def step_methods(self) -> Tuple[Callable]: ...
+
 
 # class _LinearExponentialIntegratorMixin:
 #     """

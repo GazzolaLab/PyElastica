@@ -1,5 +1,6 @@
 from typing import Type, List
 
+
 # TODO: Maybe move this for common utility
 def tag(Tag) -> Type:
     """
@@ -14,13 +15,17 @@ def tag(Tag) -> Type:
 
     assert isinstance(A1.tag, ATag)
     """
+
     def wrapper(cls):
         cls.Tag = Tag()
         return cls
+
     return wrapper
+
 
 class SymplecticStepperTag:
     pass
+
 
 class ExplicitStepperTag:
     pass

@@ -189,6 +189,7 @@ class StatefulLinearExponentialIntegrator(_StatefulStepper):
         self.linear_operator = None
 """
 
+
 @tag(ExplicitStepperTag)
 class RungeKutta4:
     """
@@ -239,7 +240,7 @@ class RungeKutta4:
         return time
 
 
-@tag(ExplicitStepperTag)   
+@tag(ExplicitStepperTag)
 class EulerForward:
 
     def __init__(self):

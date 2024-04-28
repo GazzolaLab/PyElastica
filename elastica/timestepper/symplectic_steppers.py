@@ -1,5 +1,7 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
+from typing import Tuple, Callable
+
 import numpy as np
 
 from elastica.rod.data_structures import (
@@ -173,7 +175,7 @@ class SymplecticStepperMethods:
         def NoOp(*args):
             pass
 
-        self._steps_and_prefactors = tuple(
+        self._steps_and_prefactors: Tuple[Callable] = tuple(
             zip_longest(
                 self._prefactors,
                 self._kinematic_steps,
@@ -182,7 +184,7 @@ class SymplecticStepperMethods:
             )
         )
 
-    def step_methods(self):
+    def step_methods(self) -> Tuple[Callable]:
         return self._steps_and_prefactors
 
     @property
@@ -218,6 +220,7 @@ class PositionVerlet:
             System.dynamic_states.rate_collection,
             System.dynamic_rates(time, dt),
         )
+
 
 @tag(SymplecticStepperTag)
 class PEFRL:
