@@ -10,16 +10,7 @@ Following example cases includes computing LWT quantities to study the bifurcati
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 
-import sys
-
-if sys.version_info.minor >= 8:
-    # typing Protocol is introduced in python 3.8
-    from typing import Protocol
-elif sys.version_info.minor < 8:
-    # Protocol is implemented in typing_extensions for previous pythons
-    from typing_extensions import Protocol
-
-from typing import Union
+from typing import Protocol, Union
 
 from numba import njit
 import numpy as np
@@ -35,20 +26,16 @@ class KnotTheoryCompatibleProtocol(Protocol):
     """
 
     @property
-    def position_collection(self) -> np.ndarray:
-        ...
+    def position_collection(self) -> np.ndarray: ...
 
     @property
-    def director_collection(self) -> np.ndarray:
-        ...
+    def director_collection(self) -> np.ndarray: ...
 
     @property
-    def radius(self) -> np.ndarray:
-        ...
+    def radius(self) -> np.ndarray: ...
 
     @property
-    def base_length(self) -> np.ndarray:
-        ...
+    def base_length(self) -> np.ndarray: ...
 
 
 class KnotTheory:

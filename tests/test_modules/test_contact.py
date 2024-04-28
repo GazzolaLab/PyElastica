@@ -263,7 +263,7 @@ class TestContactMixin:
 
         system_collection_with_contacts._finalize_contact()
 
-        for (fidx, sidx, contact) in system_collection_with_contacts._contacts:
+        for fidx, sidx, contact in system_collection_with_contacts._contacts:
             assert type(fidx) is int
             assert type(sidx) is int
             assert type(contact) is contact_cls

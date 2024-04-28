@@ -36,7 +36,7 @@ def rigid_cylinder_rotational_motion_verification(torque=0.0):
     binormal = np.cross(direction, normal)
     base_length = 1.0
     base_radius = 0.05
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     density = 1000
 
     cylinder = ea.Cylinder(start, direction, normal, base_length, base_radius, density)
@@ -105,8 +105,8 @@ def rigid_cylinder_rotational_motion_verification(torque=0.0):
     translational_energy = cylinder.compute_translational_energy()
     rotational_energy = cylinder.compute_rotational_energy()
     # compute translational and rotational energy using analytical equations
-    mass = np.pi * base_radius ** 2 * base_length * density
-    mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
+    mass = np.pi * base_radius**2 * base_length * density
+    mass_moment_of_inertia = 0.5 * mass * base_radius**2
 
     analytical_translational_energy = 0.0
     analytical_rotational_energy = (
