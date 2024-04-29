@@ -198,7 +198,7 @@ class BaseSystemCollection(MutableSequence):
         for feature in self._feature_group_constrain_rates:
             feature(time)
 
-    def apply_callbacks(self, time: np.floating, current_step: np.integer):
+    def apply_callbacks(self, time: np.floating, current_step: int):
         # Collection call _feature_group_callback
         for feature in self._feature_group_callback:
             feature(time, current_step)

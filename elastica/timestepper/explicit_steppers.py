@@ -5,7 +5,13 @@ from typing import Any, Tuple
 import numpy as np
 from copy import copy
 
-from elastica.typing import SystemCollectionType, SystemType, SteppersOperatorsType
+from elastica.typing import (
+    SystemCollectionType,
+    OperatorType,
+    ExplicitOperatorsType,
+    StateType,
+)
+from elastica.systems.protocol import ExplicitSystemProtocol
 from .tag import tag, ExplicitStepperTag
 from .protocol import StatefulStepperProtocol, MemoryProtocol
 
@@ -59,17 +65,13 @@ we "smartly" use a mixin class to define the necessary
 """
 
 
-# TODO: Modify this line and move to elastica/typing.py once system state is defined
-StateType = Any
-
-
 class _SystemInstanceStepper:
     # # noinspection PyUnresolvedReferences
     @staticmethod
     def do_step(
         TimeStepper: StatefulStepperProtocol,
-        _stages_and_updates: SteppersOperatorsType,
-        System: SystemType,
+        _stages_and_updates: ExplicitOperatorsType,
+        System: ExplicitSystemProtocol,
         Memory: MemoryProtocol,
         time: np.floating,
         dt: np.floating,
@@ -85,7 +87,7 @@ class _SystemCollectionStepper:
     @staticmethod
     def do_step(
         TimeStepper: StatefulStepperProtocol,
-        _stages_and_updates: SteppersOperatorsType,
+        _stages_and_updates: ExplicitOperatorsType,
         SystemCollection: SystemCollectionType,
         MemoryCollection: Tuple[MemoryProtocol, ...],
         time: np.floating,
@@ -111,20 +113,20 @@ class ExplicitStepperMethods:
 
     def __init__(self, timestepper_instance: StatefulStepperProtocol):
         take_methods_from = timestepper_instance
-        __stages = [
+        __stages: list[OperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("stage")
         ]
-        __updates = [
+        __updates: list[OperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("update")
         ]
 
         # Tuples are almost immutable
-        _n_stages = len(__stages)
-        _n_updates = len(__updates)
+        _n_stages: int = len(__stages)
+        _n_updates: int = len(__updates)
 
         assert (
             _n_stages == _n_updates
@@ -132,7 +134,7 @@ class ExplicitStepperMethods:
 
         self._stages_and_updates = tuple(zip(__stages, __updates))
 
-    def step_methods(self) -> SteppersOperatorsType:
+    def step_methods(self) -> ExplicitOperatorsType:
         return self._stages_and_updates
 
     @property
@@ -153,7 +155,7 @@ class EulerForward:
 
     def _first_stage(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: EulerForwardMemory,
         time: np.floating,
         dt: np.floating,
@@ -162,7 +164,7 @@ class EulerForward:
 
     def _first_update(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: EulerForwardMemory,
         time: np.floating,
         dt: np.floating,
@@ -206,77 +208,77 @@ class RungeKutta4:
     # For automatic discovery, the order of declaring stages here is very important
     def _first_stage(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> None:
         Memory.initial_state = copy(System.state)
-        Memory.k_1 = dt * System(time, dt)  # Don't update state yet
+        Memory.k_1 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
     def _first_update(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
         # prepare for next stage
-        System.state = Memory.initial_state + 0.5 * Memory.k_1
+        System.state = Memory.initial_state + 0.5 * Memory.k_1  # type: ignore[operator]
         return time + 0.5 * dt
 
     def _second_stage(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> None:
-        Memory.k_2 = dt * System(time, dt)  # Don't update state yet
+        Memory.k_2 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
     def _second_update(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
         # prepare for next stage
-        System.state = Memory.initial_state + 0.5 * Memory.k_2
+        System.state = Memory.initial_state + 0.5 * Memory.k_2  # type: ignore[operator]
         return time
 
     def _third_stage(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> None:
-        Memory.k_3 = dt * System(time, dt)  # Don't update state yet
+        Memory.k_3 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
     def _third_update(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
         # prepare for next stage
-        System.state = Memory.initial_state + Memory.k_3
+        System.state = Memory.initial_state + Memory.k_3  # type: ignore[operator]
         return time + 0.5 * dt
 
     def _fourth_stage(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
     ) -> None:
-        Memory.k_4 = dt * System(time, dt)  # Don't update state yet
+        Memory.k_4 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
     def _fourth_update(
         self,
-        System: SystemType,
+        System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
         time: np.floating,
         dt: np.floating,
@@ -284,7 +286,7 @@ class RungeKutta4:
         # prepare for next stage
         System.state = (
             Memory.initial_state
-            + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0
+            + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0  # type: ignore[operator]
         )
         return time
 

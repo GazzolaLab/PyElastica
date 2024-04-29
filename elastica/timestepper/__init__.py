@@ -1,11 +1,11 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
 from typing import Tuple, List, Callable, Type
+from elastica.typing import SystemType
 
 import numpy as np
 from tqdm import tqdm
 
-from elastica.typing import SystemType
 from elastica.systems import is_system_a_collection
 
 from .symplectic_steppers import PositionVerlet, PEFRL

@@ -2,9 +2,9 @@ __doc__ = "Time stepper interface"
 
 from typing import Protocol, Tuple, Callable, Type, Any
 
-import numpy as np
-
 from elastica.typing import SystemType
+
+import numpy as np
 
 
 class StepperProtocol(Protocol):

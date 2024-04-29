@@ -2,19 +2,21 @@ __doc__ = """Symplectic time steppers and concepts for integrating the kinematic
 
 from typing import Tuple, Callable, Any, List
 
+from elastica.typing import (
+    SystemCollectionType,
+    # StepOperatorType,
+    # PrefactorOperatorType,
+    OperatorType,
+    SteppersOperatorsType,
+)
+
 import numpy as np
 
 from elastica.rod.data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,
 )
-from elastica.typing import (
-    SystemCollectionType,
-    SystemType,
-    StepOperatorType,
-    PrefactorOperatorType,
-    SteppersOperatorsType,
-)
+from elastica.systems.protocol import SymplecticSystemProtocol
 from .protocol import StatefulStepperProtocol
 from .tag import tag, SymplecticStepperTag
 
@@ -32,7 +34,7 @@ class _SystemInstanceStepper:
     def do_step(
         TimeStepper: StatefulStepperProtocol,
         _steps_and_prefactors: SteppersOperatorsType,
-        System: SystemType,
+        System: SymplecticSystemProtocol,
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
@@ -126,14 +128,14 @@ class SymplecticStepperMethods:
         # be (2*n + 1) (for time-symmetry). What we do is collect
         # the first n + 1 entries down in _steps and _prefac below, and then
         # reverse and append it to itself.
-        self._steps: List[StepOperatorType] = [
+        self._steps: List[OperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("step")
         ]
         # Prefac here is necessary because the linear-exponential integrator
         # needs only the prefactor and not the dt.
-        self._prefactors: List[PrefactorOperatorType] = [
+        self._prefactors: List[OperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("prefactor")
@@ -162,8 +164,8 @@ class SymplecticStepperMethods:
             len(self._steps) == 2 * len(self._prefactors) - 1
         ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
 
-        self._kinematic_steps: List[StepOperatorType] = self._steps[::2]
-        self._dynamic_steps: List[StepOperatorType] = self._steps[1::2]
+        self._kinematic_steps: List[OperatorType] = self._steps[::2]
+        self._dynamic_steps: List[OperatorType] = self._steps[1::2]
 
         # Avoid this check for MockClasses
         if len(self._kinematic_steps) > 0:
@@ -204,7 +206,7 @@ class PositionVerlet:
         return 0.5 * dt
 
     def _first_kinematic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self._first_prefactor(dt)
         overload_operator_kinematic_numba(
@@ -217,7 +219,7 @@ class PositionVerlet:
         )
 
     def _first_dynamic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         overload_operator_dynamic_numba(
             System.dynamic_states.rate_collection,
@@ -246,7 +248,7 @@ class PEFRL:
         return self.ξ * dt
 
     def _first_kinematic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self._first_kinematic_prefactor(dt)
         overload_operator_kinematic_numba(
@@ -260,7 +262,7 @@ class PEFRL:
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _first_dynamic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self.lambda_dash_coeff * dt
         overload_operator_dynamic_numba(
@@ -273,7 +275,7 @@ class PEFRL:
         return self.χ * dt
 
     def _second_kinematic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self._second_kinematic_prefactor(dt)
         overload_operator_kinematic_numba(
@@ -287,7 +289,7 @@ class PEFRL:
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _second_dynamic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self.λ * dt
         overload_operator_dynamic_numba(
@@ -300,7 +302,7 @@ class PEFRL:
         return self.xi_chi_dash_coeff * dt
 
     def _third_kinematic_step(
-        self, System: SystemType, time: np.floating, dt: np.floating
+        self, System: SymplecticSystemProtocol, time: np.floating, dt: np.floating
     ) -> None:
         prefac = self._third_kinematic_prefactor(dt)
         # Need to fill in
