@@ -1,11 +1,15 @@
-from elastica.rod import RodBase, RodProtocol
+from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 from elastica.surface import SurfaceBase
 from elastica.module import BaseSystemCollection
 
-from typing import Type, Union
+from .system.protocol import SystemProtocol
 
-RodType = RodProtocol
+from typing import Type, Union
+from typing import Protocol
+
+SystemType = SystemProtocol
+
+RodType = Type[RodBase]
 SystemCollectionType = Type[BaseSystemCollection]
-SystemType = Union[RodProtocol, Type[RigidBodyBase], SystemCollectionType]
 AllowedContactType = Union[SystemType, Type[SurfaceBase]]
