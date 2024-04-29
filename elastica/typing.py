@@ -1,14 +1,23 @@
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase
-from elastica.surface import SurfaceBase
-from elastica.module import BaseSystemCollection
+from typing import TYPE_CHECKING
+from typing import Type, Union, Callable
+from typing import Protocol
 
-from .system.protocol import SystemProtocol
+from .systems.protocol import SystemProtocol
 
 import numpy as np
 
-from typing import Type, Union, Callable, tuple
-from typing import Protocol
+if TYPE_CHECKING:
+    # Used for type hinting without circular imports
+    from .rod import RodBase
+    from .rigidbody import RigidBodyBase
+    from .surface import SurfaceBase
+    from .modules import BaseSystemCollection
+else:
+    RodBase = None
+    RigidBodyBase = None
+    SurfaceBase = None
+    BaseSystemCollection = None
+
 
 SystemType = SystemProtocol
 
@@ -19,5 +28,5 @@ SteppersOperatorsType = tuple[
 ]
 
 RodType = Type[RodBase]
-SystemCollectionType = Type[BaseSystemCollection]
+SystemCollectionType = BaseSystemCollection
 AllowedContactType = Union[SystemType, Type[SurfaceBase]]

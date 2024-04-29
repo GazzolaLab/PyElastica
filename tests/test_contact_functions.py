@@ -2,7 +2,7 @@ __doc__ = """ Test specific functions used in contact in Elastica.contact_forces
 
 import numpy as np
 from numpy.testing import assert_allclose
-from elastica.typing import RodBase
+from elastica.rod import RodBase
 from elastica.rigidbody import Cylinder, Sphere
 
 from elastica._contact_functions import (

@@ -7,6 +7,8 @@ interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
 from typing import Iterable, Callable, AnyStr
 
+import numpy as np
+
 from collections.abc import MutableSequence
 
 from elastica.rod import RodBase
@@ -181,22 +183,22 @@ class BaseSystemCollection(MutableSequence):
                 self._feature_group_synchronize.pop(index)
             )
 
-    def synchronize(self, time: float):
+    def synchronize(self, time: np.floating):
         # Collection call _feature_group_synchronize
         for feature in self._feature_group_synchronize:
             feature(time)
 
-    def constrain_values(self, time: float):
+    def constrain_values(self, time: np.floating):
         # Collection call _feature_group_constrain_values
         for feature in self._feature_group_constrain_values:
             feature(time)
 
-    def constrain_rates(self, time: float):
+    def constrain_rates(self, time: np.floating):
         # Collection call _feature_group_constrain_rates
         for feature in self._feature_group_constrain_rates:
             feature(time)
 
-    def apply_callbacks(self, time: float, current_step: int):
+    def apply_callbacks(self, time: np.floating, current_step: np.integer):
         # Collection call _feature_group_callback
         for feature in self._feature_group_callback:
             feature(time, current_step)

@@ -79,7 +79,6 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.timestepper import (
     integrate,
     PositionVerlet,
