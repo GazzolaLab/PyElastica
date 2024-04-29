@@ -316,12 +316,12 @@ class GeneralConstraint(ConstraintBase):
             rotational_constraint_selector = np.array([True, True, True])
         # properly validate the user-provided constraint selectors
         assert (
-            type(translational_constraint_selector) == np.ndarray
+            isinstance(translational_constraint_selector, np.ndarray)
             and translational_constraint_selector.dtype == bool
             and translational_constraint_selector.shape == (3,)
         ), "Translational constraint selector must be a 1D boolean array of length 3."
         assert (
-            type(rotational_constraint_selector) == np.ndarray
+            isinstance(rotational_constraint_selector, np.ndarray)
             and rotational_constraint_selector.dtype == bool
             and rotational_constraint_selector.shape == (3,)
         ), "Rotational constraint selector must be a 1D boolean array of length 3."

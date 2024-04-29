@@ -4,8 +4,8 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Type, Union, Callable, Any, VarArg
-from typing import Protocol
+from typing import Type, Union, Callable, Any
+from typing import Protocol, TypeAlias
 
 import numpy as np
 
@@ -34,11 +34,11 @@ else:
     MemoryProtocol = None
 
 
-SystemType = Union[SymplecticSystemProtocol, ExplicitSystemProtocol]
+SystemType: TypeAlias = Union[SymplecticSystemProtocol, ExplicitSystemProtocol]
 
 # TODO: Modify this line and move to elastica/typing.py once system state is defined
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
-StateType = State
+StateType: TypeAlias = State
 
 # NoOpt stepper
 # Symplectic stepper
@@ -48,10 +48,10 @@ StateType = State
 # PrefactorOperatorType = Callable[
 #    [StatefulStepperProtocol, np.floating], np.floating
 # ]
-OperatorType = Callable[
-    [VarArg(Any)], np.floating | None
+OperatorType: TypeAlias = Callable[
+    Any, Any
 ]  # TODO: Maybe can be more specific. Up for discussion.
-SteppersOperatorsType = tuple[tuple[OperatorType, ...], ...]
+SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 # tuple[Union[PrefactorOperatorType, StepOperatorType, NoOpType, np.floating], ...], ...
 # Explicit stepper
 # ExplicitStageOperatorType = Callable[
@@ -74,8 +74,8 @@ SteppersOperatorsType = tuple[tuple[OperatorType, ...], ...]
 #    ],
 #    np.floating,
 # ]
-ExplicitOperatorsType = tuple[tuple[OperatorType, ...], ...]
+ExplicitOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
-RodType = Type[RodBase]
-SystemCollectionType = BaseSystemCollection
-AllowedContactType = Union[SystemType, Type[SurfaceBase]]
+RodType: TypeAlias = Type[RodBase]
+SystemCollectionType: TypeAlias = BaseSystemCollection
+AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
