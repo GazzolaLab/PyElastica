@@ -6,6 +6,8 @@ import numpy as np
 from tqdm import tqdm
 
 from elastica.typing import SystemType
+from elastica.systems import is_system_a_collection
+
 from .symplectic_steppers import PositionVerlet, PEFRL
 from .explicit_steppers import RungeKutta4, EulerForward
 from .tag import SymplecticStepperTag, ExplicitStepperTag
@@ -18,13 +20,11 @@ from .protocol import MethodCollectorProtocol
 def extend_stepper_interface(
     Stepper: StepperProtocol, System: SystemType
 ) -> Tuple[Callable, Tuple[Callable]]:
-    from elastica.systems import is_system_a_collection
 
     # StepperMethodCollector: Type[MethodCollectorProtocol]
     # SystemStepper: Type[StepperProtocol]
     if isinstance(Stepper.Tag, SymplecticStepperTag):
         from elastica.timestepper.symplectic_steppers import (
-            _SystemInstanceStepper,
             _SystemCollectionStepper,
             SymplecticStepperMethods,
         )
@@ -32,7 +32,6 @@ def extend_stepper_interface(
         StepperMethodCollector = SymplecticStepperMethods
     elif isinstance(Stepper.Tag, ExplicitStepperTag):  # type: ignore[no-redef]
         from elastica.timestepper.explicit_steppers import (
-            _SystemInstanceStepper,
             _SystemCollectionStepper,
             ExplicitStepperMethods,
         )
@@ -44,12 +43,10 @@ def extend_stepper_interface(
                 Stepper.__class__.__name__
             )
         )
+
     # Check if system is a "collection" of smaller systems
-    # by checking for the [] method
-    if is_system_a_collection(System):
-        SystemStepper = _SystemCollectionStepper
-    else:
-        SystemStepper = _SystemInstanceStepper
+    assert is_system_a_collection(System)
+    SystemStepper = _SystemCollectionStepper
 
     stepper_methods: Tuple[Callable] = StepperMethodCollector(Stepper).step_methods()
     do_step_method: Callable = SystemStepper.do_step
