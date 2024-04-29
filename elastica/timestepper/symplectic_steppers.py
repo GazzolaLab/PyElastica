@@ -8,7 +8,13 @@ from elastica.rod.data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,
 )
-from elastica.typing import SystemCollectionType as SystemType
+from elastica.typing import (
+    SystemCollectionType,
+    SystemType,
+    StepOperatorType,
+    PrefactorOperatorType,
+    SteppersOperatorsType,
+)
 from .protocol import StatefulStepperProtocol
 from .tag import tag, SymplecticStepperTag
 
@@ -25,7 +31,7 @@ class _SystemInstanceStepper:
     @staticmethod
     def do_step(
         TimeStepper: StatefulStepperProtocol,
-        _steps_and_prefactors: Tuple[Tuple[Callable, Callable, Callable], ...],
+        _steps_and_prefactors: SteppersOperatorsType,
         System: SystemType,
         time: np.floating,
         dt: np.floating,
@@ -37,7 +43,7 @@ class _SystemInstanceStepper:
             dyn_step(TimeStepper, System, time, dt)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor = _steps_and_prefactors[-1][0]
+        last_kin_prefactor: Callable[..., np.floating] = _steps_and_prefactors[-1][0]
         last_kin_step = _steps_and_prefactors[-1][1]
 
         last_kin_step(TimeStepper, System, time, dt)
@@ -52,8 +58,8 @@ class _SystemCollectionStepper:
     @staticmethod
     def do_step(
         TimeStepper: StatefulStepperProtocol,
-        _steps_and_prefactors: Tuple[Tuple[Callable, Callable, Callable], ...],
-        SystemCollection: SystemType,
+        _steps_and_prefactors: SteppersOperatorsType,
+        SystemCollection: SystemCollectionType,
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
@@ -62,7 +68,7 @@ class _SystemCollectionStepper:
 
         Parameters
         ----------
-        SystemCollection: SystemType
+        SystemCollection: SystemCollectionType
         time: float
         dt: float
 
@@ -120,28 +126,20 @@ class SymplecticStepperMethods:
         # be (2*n + 1) (for time-symmetry). What we do is collect
         # the first n + 1 entries down in _steps and _prefac below, and then
         # reverse and append it to itself.
-        self._steps: List[Callable] = [
+        self._steps: List[StepOperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("step")
         ]
         # Prefac here is necessary because the linear-exponential integrator
         # needs only the prefactor and not the dt.
-        self._prefactors: List[Callable] = [
+        self._prefactors: List[PrefactorOperatorType] = [
             v
             for (k, v) in take_methods_from.__class__.__dict__.items()
             if k.endswith("prefactor")
         ]
 
-        # # We are getting function named as _update_internal_forces_torques from dictionary,
-        # # it turns a list.
-        # self._update_internal_forces_torques = [
-        #     v
-        #     for (k, v) in take_methods_from.__class__.__dict__.items()
-        #     if k.endswith("forces_torques")
-        # ]
-
-        def mirror(in_list: List) -> None:
+        def mirror(in_list: List[Callable]) -> None:
             """Mirrors an input list ignoring the last element
             If steps = [A, B, C]
             then this call makes it [A, B, C, B, A]
@@ -164,8 +162,8 @@ class SymplecticStepperMethods:
             len(self._steps) == 2 * len(self._prefactors) - 1
         ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
 
-        self._kinematic_steps: List[Callable] = self._steps[::2]
-        self._dynamic_steps: List[Callable] = self._steps[1::2]
+        self._kinematic_steps: List[StepOperatorType] = self._steps[::2]
+        self._dynamic_steps: List[StepOperatorType] = self._steps[1::2]
 
         # Avoid this check for MockClasses
         if len(self._kinematic_steps) > 0:
@@ -178,18 +176,16 @@ class SymplecticStepperMethods:
         def NoOp(*args: Any) -> None:
             pass
 
-        self._steps_and_prefactors: Tuple[Tuple[Callable, Callable, Callable], ...] = (
-            tuple(
-                zip_longest(
-                    self._prefactors,
-                    self._kinematic_steps,
-                    self._dynamic_steps,
-                    fillvalue=NoOp,
-                )
+        self._steps_and_prefactors: SteppersOperatorsType = tuple(
+            zip_longest(
+                self._prefactors,
+                self._kinematic_steps,
+                self._dynamic_steps,
+                fillvalue=NoOp,
             )
         )
 
-    def step_methods(self) -> Tuple[Tuple[Callable, Callable, Callable], ...]:
+    def step_methods(self) -> SteppersOperatorsType:
         return self._steps_and_prefactors
 
     @property

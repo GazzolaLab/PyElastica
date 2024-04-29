@@ -1,8 +1,8 @@
-from typing import Type, List
+from typing import Type, List, Callable
 
 
 # TODO: Maybe move this for common utility
-def tag(Tag) -> Type:
+def tag(Tag: Type) -> Callable[[Type], Type]:
     """
     Tag a class with arbitrary type-class
 
@@ -16,7 +16,7 @@ def tag(Tag) -> Type:
     assert isinstance(A1.tag, ATag)
     """
 
-    def wrapper(cls):
+    def wrapper(cls: Type) -> Type:
         cls.Tag = Tag()
         return cls
 
