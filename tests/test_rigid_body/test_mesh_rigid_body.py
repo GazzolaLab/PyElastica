@@ -17,12 +17,12 @@ def initialize_cube_rigid_body():
     cube_mesh = Mesh(r"tests/cube.stl")
     center_of_mass = np.array([0.0, 0.0, 0.0])
     base_length = 2
-    volume = base_length ** 3
+    volume = base_length**3
     density = 1.0
     mass = density * volume
     # Mass second moment of inertia for cube
     mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(mass_second_moment_of_inertia, (mass * base_length ** 2) / 6)
+    np.fill_diagonal(mass_second_moment_of_inertia, (mass * base_length**2) / 6)
     cube_mesh_rigid_body = MeshRigidBody(
         cube_mesh, center_of_mass, mass_second_moment_of_inertia, density, volume
     )
@@ -80,7 +80,7 @@ def test_MeshRigidBody_initialization():
 
     # check mass and density initalization
     cube_base_length = 2
-    cube_volume = cube_base_length ** 3
+    cube_volume = cube_base_length**3
     correct_density = 1.0
     assert_allclose(
         cube_mesh_rigid_body.density, correct_density, atol=Tolerance.atol()
@@ -249,7 +249,7 @@ def test_compute_translational_energy():
     speed = np.random.randn()
     cube_mesh_rigid_body.velocity_collection[2] = speed
     assert_allclose(
-        0.5 * correct_mass * speed ** 2,
+        0.5 * correct_mass * speed**2,
         cube_mesh_rigid_body.compute_translational_energy(),
         atol=Tolerance.atol(),
     )
