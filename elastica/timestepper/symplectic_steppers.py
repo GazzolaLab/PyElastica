@@ -1,6 +1,6 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Tuple, Callable, Any, List
+from typing import Any, Callable, List
 
 from elastica.typing import (
     SystemCollectionType,

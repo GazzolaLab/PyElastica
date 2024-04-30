@@ -5,9 +5,7 @@ This module contains aliases of type-hints for elastica.
 
 from typing import TYPE_CHECKING
 from typing import Type, Union, Callable, Any
-from typing import Protocol, TypeAlias
-
-import numpy as np
+from typing import TypeAlias
 
 
 if TYPE_CHECKING:

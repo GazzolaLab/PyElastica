@@ -1,6 +1,6 @@
 __doc__ = """Base class for elastica system"""
 
-from typing import Protocol, Any
+from typing import Protocol
 
 from elastica.typing import StateType
 from elastica.rod.data_structures import _KinematicState, _DynamicState

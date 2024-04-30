@@ -1,4 +1,4 @@
-from typing import Type, List, Callable
+from typing import Callable, Type
 
 
 # TODO: Maybe move this for common utility

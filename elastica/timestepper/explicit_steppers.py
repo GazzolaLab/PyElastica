@@ -1,6 +1,6 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
 from copy import copy
