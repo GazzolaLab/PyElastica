@@ -45,7 +45,7 @@ class _SystemInstanceStepper:
             dyn_step(TimeStepper, System, time, dt)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor: Callable[..., np.floating] = _steps_and_prefactors[-1][0]
+        last_kin_prefactor: OperatorType = _steps_and_prefactors[-1][0]
         last_kin_step = _steps_and_prefactors[-1][1]
 
         last_kin_step(TimeStepper, System, time, dt)
