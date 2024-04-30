@@ -14,11 +14,9 @@ from elastica.systems.analytical import (
     ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
 )
 from elastica.timestepper import integrate, extend_stepper_interface
-from elastica.timestepper._stepper_interface import _TimeStepper
 
 from elastica.timestepper.explicit_steppers import (
     RungeKutta4,
-    ExplicitStepperTag,
     EulerForward,
 )
 
@@ -29,8 +27,8 @@ from elastica.timestepper.explicit_steppers import (
 from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
-    SymplecticStepperTag,
 )
+from elastica.timestepper.tag import tag, SymplecticStepperTag, ExplicitStepperTag
 
 
 from elastica.utils import Tolerance
@@ -39,8 +37,8 @@ from elastica.utils import Tolerance
 class TestExtendStepperInterface:
     """TODO add documentation"""
 
+    @tag(SymplecticStepperTag)
     class MockSymplecticStepper:
-        Tag = SymplecticStepperTag()
 
         def _first_prefactor(self):
             pass
@@ -51,8 +49,8 @@ class TestExtendStepperInterface:
         def _first_dynamic_step(self):
             pass
 
+    @tag(ExplicitStepperTag)
     class MockExplicitStepper:
-        Tag = ExplicitStepperTag()
 
         def _first_stage(self):
             pass
@@ -157,17 +155,6 @@ def test_integrate_throws_an_assert_for_negative_total_steps():
 # StatefulExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
 ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
-
-
-class TestStepperInterface:
-    def test_no_base_access_error(self):
-        with pytest.raises(NotImplementedError) as excinfo:
-            _TimeStepper().do_step()
-        assert "not supposed to access" in str(excinfo.value)
-
-    # @pytest.mark.parametrize("stepper", StatefulExplicitSteppers + SymplecticSteppers)
-    # def test_correct_orders(self, stepper):
-    #     assert stepper().n_stages > 0, "Explicit stepper routine has no stages!"
 
 
 """

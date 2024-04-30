@@ -1,34 +1,52 @@
 __doc__ = "Time stepper interface"
 
+from typing import Protocol, Tuple, Callable, Type, Any
 
-class _TimeStepper:
-    """Interface classes for all time-steppers"""
+from elastica.typing import SystemType
 
-    def __init__(self):
-        pass
-
-    def do_step(self, *args, **kwargs):
-        raise NotImplementedError(
-            "TimeStepper hierarchy is not supposed to access the do-step routine of the TimeStepper base class. "
-        )
+import numpy as np
 
 
-# class _StatefulStepper:
-#     """
-#     Stateful explicit, symplectic stepper wrapper.
-#     """
-#
-#     def __init__(self):
-#         pass
-#
-#     # For stateful steppes, bind memory to self
-#     def do_step(self, System, time: np.float64, dt: np.float64):
-#         return self.stepper.do_step(System, self, time, dt)
-#
-#     @property
-#     def n_stages(self):
-#         return self.stepper.n_stages
-#
+class StepperProtocol(Protocol):
+    """Protocol for all time-steppers"""
+
+    def do_step(self, *args: Any, **kwargs: Any) -> float: ...
+
+    @property
+    def Tag(self) -> Type: ...
+
+
+class StatefulStepperProtocol(StepperProtocol, Protocol):
+    """
+    Stateful explicit, symplectic stepper wrapper.
+    """
+
+    # For stateful steppes, bind memory to self
+    def do_step(self, System: SystemType, time: np.floating, dt: np.floating) -> float:
+        """
+        Perform one time step of the simulation.
+        Return the new time.
+        """
+        ...
+
+    @property
+    def n_stages(self) -> int: ...
+
+
+class MethodCollectorProtocol(Protocol):
+    """
+    Protocol for collecting stepper methods.
+    """
+
+    def __init__(self, timestepper_instance: StepperProtocol): ...
+
+    def step_methods(self) -> Tuple[Callable]: ...
+
+
+class MemoryProtocol(Protocol):
+    @property
+    def initial_state(self) -> bool: ...
+
 
 # class _LinearExponentialIntegratorMixin:
 #     """

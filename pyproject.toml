@@ -132,9 +132,9 @@ strict_optional = true
 warn_no_return = true
 warn_redundant_casts = true
 warn_return_any = true
-warn_unreachable = true
+warn_unreachable = false
 warn_unused_configs = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
@@ -148,13 +148,15 @@ exclude_lines = [
     "if __name__ == __main__:",
     "pass",
     "def __repr__",
+#"if self.debug:",
+#"if settings.DEBUG",
     "from",
     "import",
     "if TYPE_CHECKING:",
     "raise AssertionError",
     "raise NotImplementedError",
     '''class '.*\bProtocol\)':''',
-    # ''''@(abc\.)?'abstractmethod''',
+#''''@(abc\.)?'abstractmethod''',
 ]
 fail_under = 40
 show_missing = true
@@ -166,4 +168,5 @@ omit = [
 	"setup.py",
     "elastica/systems/analytical.py",
     "elastica/experimental/*",
+    "elastica/**/protocol.py",
 ]

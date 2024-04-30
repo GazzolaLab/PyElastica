@@ -12,7 +12,7 @@ from elastica.contact_forces import (
     RodPlaneContactWithAnisotropicFriction,
     CylinderPlaneContact,
 )
-from elastica.typing import RodBase
+from elastica.rod import RodBase
 from elastica.rigidbody import Cylinder, Sphere
 from elastica.surface import Plane
 import pytest

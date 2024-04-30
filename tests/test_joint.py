@@ -480,7 +480,8 @@ def test_aabbs_not_intersecting_error_message():
     assert error_info.value.args[0] == error_message
 
 
-from elastica.typing import RodBase, RigidBodyBase
+from elastica.rod import RodBase
+from elastica.rigidbody import RigidBodyBase
 from elastica.joint import (
     _prune_using_aabbs_rod_rigid_body,
     _prune_using_aabbs_rod_rod,

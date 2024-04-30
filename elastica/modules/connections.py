@@ -152,8 +152,8 @@ class _Connect:
     def set_index(self, first_idx, second_idx):
         # TODO assert range
         # First check if the types of first rod idx and second rod idx variable are same.
-        assert type(first_idx) == type(
-            second_idx
+        assert isinstance(
+            first_idx, type(second_idx)
         ), "Type of first_connect_idx :{}".format(
             type(first_idx)
         ) + " is different than second_connect_idx :{}".format(
