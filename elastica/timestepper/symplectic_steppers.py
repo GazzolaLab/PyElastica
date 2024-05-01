@@ -1,6 +1,8 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Any, Callable, List
+from typing import Callable, Any
+
+from itertools import zip_longest
 
 from elastica.typing import (
     SystemCollectionType,
@@ -17,8 +19,8 @@ from elastica.rod.data_structures import (
     overload_operator_dynamic_numba,
 )
 from elastica.systems.protocol import SymplecticSystemProtocol
-from .protocol import StatefulStepperProtocol
-from .tag import tag, SymplecticStepperTag
+from .protocol import SymplecticStepperProtocol
+from .tag import StepperTags, SymplecticStepperTag
 
 """
 Developer Note
@@ -29,38 +31,53 @@ is referred to the same section on `explicit_steppers.py`.
 """
 
 
-class _SystemInstanceStepper:
+class SymplecticStepperMixin:
+    def step_methods(self) -> SteppersOperatorsType:
+        # Let the total number of steps for the Symplectic method
+        # be (2*n + 1) (for time-symmetry). What we do is collect
+        # the first n + 1 entries down in _steps and _prefac below, and then
+        # reverse and append it to itself.
+        _steps: list[OperatorType] = self.get_steps()
+        _steps = _steps + _steps[-2::-1]
+
+        # Prefac here is necessary because the linear-exponential integrator
+        # needs only the prefactor and not the dt.
+        _prefactors: list[OperatorType] = self.get_prefactors()
+        _prefactors = _prefactors + _prefactors[-2::-1]
+        assert len(_steps) == 2 * len(_prefactors) - 1
+
+        # Separate the kinematic and dynamic steps
+        _kinematic_steps: list[OperatorType] = _steps[::2]
+        _dynamic_steps: list[OperatorType] = _steps[1::2]
+
+        def no_operation(*args: Any) -> None:
+            pass
+
+        return tuple(
+            zip_longest(
+                _prefactors,
+                _kinematic_steps,
+                _dynamic_steps,
+                fillvalue=no_operation,
+            )
+        )
+
+    @property
+    def n_stages(self) -> int:
+        return len(self.get_prefactors())
+
+    def step(
+        self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
+    ):
+        steps_and_prefactors = self.step_methods()
+        return self.do_step(self, steps_and_prefactors, SystemCollection, time, dt)
+
+    # TODO: Merge with .step method in the future.
+    # DEPRECATED: Use .step instead.
     @staticmethod
     def do_step(
-        TimeStepper: StatefulStepperProtocol,
-        _steps_and_prefactors: SteppersOperatorsType,
-        System: SymplecticSystemProtocol,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
-        for kin_prefactor, kin_step, dyn_step in _steps_and_prefactors[:-1]:
-            kin_step(TimeStepper, System, time, dt)
-            time += kin_prefactor(TimeStepper, dt)
-            System.update_internal_forces_and_torques(time)
-            dyn_step(TimeStepper, System, time, dt)
-
-        # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor: OperatorType = _steps_and_prefactors[-1][0]
-        last_kin_step = _steps_and_prefactors[-1][1]
-
-        last_kin_step(TimeStepper, System, time, dt)
-        return time + last_kin_prefactor(TimeStepper, dt)
-
-
-class _SystemCollectionStepper:
-    """
-    Symplectic stepper collection class
-    """
-
-    @staticmethod
-    def do_step(
-        TimeStepper: StatefulStepperProtocol,
-        _steps_and_prefactors: SteppersOperatorsType,
+        TimeStepper: SymplecticStepperProtocol,
+        steps_and_prefactors: SteppersOperatorsType,
         SystemCollection: SystemCollectionType,
         time: np.floating,
         dt: np.floating,
@@ -68,17 +85,13 @@ class _SystemCollectionStepper:
         """
         Function for doing symplectic stepper over the user defined rods (system).
 
-        Parameters
-        ----------
-        SystemCollection: SystemCollectionType
-        time: float
-        dt: float
-
         Returns
         -------
+        time: float
+            The time after the integration step.
 
         """
-        for kin_prefactor, kin_step, dyn_step in _steps_and_prefactors[:-1]:
+        for kin_prefactor, kin_step, dyn_step in steps_and_prefactors[:-1]:
 
             for system in SystemCollection._memory_blocks:
                 kin_step(TimeStepper, system, time, dt)
@@ -103,8 +116,8 @@ class _SystemCollectionStepper:
             SystemCollection.constrain_rates(time)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor = _steps_and_prefactors[-1][0]
-        last_kin_step = _steps_and_prefactors[-1][1]
+        last_kin_prefactor = steps_and_prefactors[-1][0]
+        last_kin_step = steps_and_prefactors[-1][1]
 
         for system in SystemCollection._memory_blocks:
             last_kin_step(TimeStepper, system, time, dt)
@@ -121,86 +134,24 @@ class _SystemCollectionStepper:
         return time
 
 
-class SymplecticStepperMethods:
-    def __init__(self, timestepper_instance: StatefulStepperProtocol):
-        take_methods_from = timestepper_instance
-        # Let the total number of steps for the Symplectic method
-        # be (2*n + 1) (for time-symmetry). What we do is collect
-        # the first n + 1 entries down in _steps and _prefac below, and then
-        # reverse and append it to itself.
-        self._steps: List[OperatorType] = [
-            v
-            for (k, v) in take_methods_from.__class__.__dict__.items()
-            if k.endswith("step")
-        ]
-        # Prefac here is necessary because the linear-exponential integrator
-        # needs only the prefactor and not the dt.
-        self._prefactors: List[OperatorType] = [
-            v
-            for (k, v) in take_methods_from.__class__.__dict__.items()
-            if k.endswith("prefactor")
-        ]
-
-        def mirror(in_list: List[Callable]) -> None:
-            """Mirrors an input list ignoring the last element
-            If steps = [A, B, C]
-            then this call makes it [A, B, C, B, A]
-
-            Parameters
-            ----------
-            in_list : input list to be mirrored, modified in-place
-
-            """
-            #  syntax is very ugly
-            if len(in_list) > 1:
-                in_list.extend(in_list[-2::-1])
-            elif in_list:
-                in_list.append(in_list[0])
-
-        mirror(self._steps)
-        mirror(self._prefactors)
-
-        assert (
-            len(self._steps) == 2 * len(self._prefactors) - 1
-        ), "Size mismatch in the number of steps and prefactors provided for a Symplectic Stepper!"
-
-        self._kinematic_steps: List[OperatorType] = self._steps[::2]
-        self._dynamic_steps: List[OperatorType] = self._steps[1::2]
-
-        # Avoid this check for MockClasses
-        if len(self._kinematic_steps) > 0:
-            assert (
-                len(self._kinematic_steps) == len(self._dynamic_steps) + 1
-            ), "Size mismatch in the number of kinematic and dynamic steps provided for a Symplectic Stepper!"
-
-        from itertools import zip_longest
-
-        def NoOp(*args: Any) -> None:
-            pass
-
-        self._steps_and_prefactors: SteppersOperatorsType = tuple(
-            zip_longest(
-                self._prefactors,
-                self._kinematic_steps,
-                self._dynamic_steps,
-                fillvalue=NoOp,
-            )
-        )
-
-    def step_methods(self) -> SteppersOperatorsType:
-        return self._steps_and_prefactors
-
-    @property
-    def n_stages(self) -> int:
-        return len(self._steps_and_prefactors)
-
-
-@tag(SymplecticStepperTag)
-class PositionVerlet:
+class PositionVerlet(SymplecticStepperMixin):
     """
     Position Verlet symplectic time stepper class, which
     includes methods for second-order position Verlet.
     """
+
+    Tag: StepperTags = SymplecticStepperTag
+
+    def get_steps(self) -> list[OperatorType]:
+        return [
+            self._first_kinematic_step,
+            self._first_dynamic_step,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._first_prefactor,
+        ]
 
     def _first_prefactor(self, dt: np.floating) -> np.floating:
         return 0.5 * dt
@@ -227,13 +178,14 @@ class PositionVerlet:
         )
 
 
-@tag(SymplecticStepperTag)
-class PEFRL:
+class PEFRL(SymplecticStepperMixin):
     """
     Position Extended Forest-Ruth Like Algorithm of
     I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
     http://arxiv.org/abs/cond-mat/0110585
     """
+
+    Tag: StepperTags = SymplecticStepperTag
 
     # xi and chi are confusing, but be careful!
     ξ: np.float64 = np.float64(0.1786178958448091e0)  # ξ
@@ -243,6 +195,22 @@ class PEFRL:
     # Pre-calculate other coefficients
     lambda_dash_coeff: np.float64 = 0.5 * (1.0 - 2.0 * λ)
     xi_chi_dash_coeff: np.float64 = 1.0 - 2.0 * (ξ + χ)
+
+    def get_steps(self) -> list[OperatorType]:
+        return [
+            self._first_kinematic_step,
+            self._first_dynamic_step,
+            self._second_kinematic_step,
+            self._second_dynamic_step,
+            self._third_kinematic_step,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._first_prefactor,
+            self._second_prefactor,
+            self._third_prefactor,
+        ]
 
     def _first_kinematic_prefactor(self, dt: np.floating) -> np.floating:
         return self.ξ * dt

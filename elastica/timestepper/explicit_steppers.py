@@ -8,12 +8,12 @@ from copy import copy
 from elastica.typing import (
     SystemCollectionType,
     OperatorType,
-    ExplicitOperatorsType,
+    SteppersOperatorsType,
     StateType,
 )
 from elastica.systems.protocol import ExplicitSystemProtocol
-from .tag import tag, ExplicitStepperTag
-from .protocol import StatefulStepperProtocol, MemoryProtocol
+from .tag import StepperTags, ExplicitStepperTag
+from .protocol import ExplicitStepperProtocol, MemoryProtocol
 
 
 """
@@ -69,8 +69,8 @@ class _SystemInstanceStepper:
     # # noinspection PyUnresolvedReferences
     @staticmethod
     def do_step(
-        TimeStepper: StatefulStepperProtocol,
-        _stages_and_updates: ExplicitOperatorsType,
+        TimeStepper: ExplicitStepperProtocol,
+        _stages_and_updates: SteppersOperatorsType,
         System: ExplicitSystemProtocol,
         Memory: MemoryProtocol,
         time: np.floating,
@@ -86,8 +86,8 @@ class _SystemCollectionStepper:
     # # noinspection PyUnresolvedReferences
     @staticmethod
     def do_step(
-        TimeStepper: StatefulStepperProtocol,
-        _stages_and_updates: ExplicitOperatorsType,
+        TimeStepper: ExplicitStepperProtocol,
+        _stages_and_updates: SteppersOperatorsType,
         SystemCollection: SystemCollectionType,
         MemoryCollection: Tuple[MemoryProtocol, ...],
         time: np.floating,
@@ -111,7 +111,7 @@ class ExplicitStepperMethods:
     Can also be used as a mixin with optional cls argument below
     """
 
-    def __init__(self, timestepper_instance: StatefulStepperProtocol):
+    def __init__(self, timestepper_instance: ExplicitStepperProtocol):
         take_methods_from = timestepper_instance
         __stages: list[OperatorType] = [
             v
@@ -134,7 +134,7 @@ class ExplicitStepperMethods:
 
         self._stages_and_updates = tuple(zip(__stages, __updates))
 
-    def step_methods(self) -> ExplicitOperatorsType:
+    def step_methods(self) -> SteppersOperatorsType:
         return self._stages_and_updates
 
     @property
@@ -147,11 +147,12 @@ class EulerForwardMemory:
         self.initial_state = initial_state
 
 
-@tag(ExplicitStepperTag)
 class EulerForward:
     """
     Classical Euler Forward stepper. Stateless, coordinates operations only.
     """
+
+    Tag: StepperTags = ExplicitStepperTag
 
     def _first_stage(
         self,
@@ -196,12 +197,13 @@ class RungeKutta4Memory:
         self.k_4 = k_4
 
 
-@tag(ExplicitStepperTag)
 class RungeKutta4:
     """
     Stateless runge-kutta4. coordinates operations only, memory needs
     to be externally managed and allocated.
     """
+
+    Tag: StepperTags = ExplicitStepperTag
 
     # These methods should be static, but because we need to enable automatic
     # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
