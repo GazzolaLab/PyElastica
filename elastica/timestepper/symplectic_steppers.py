@@ -32,7 +32,7 @@ is referred to the same section on `explicit_steppers.py`.
 
 
 class SymplecticStepperMixin:
-    def step_methods(self) -> SteppersOperatorsType:
+    def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry). What we do is collect
         # the first n + 1 entries down in _steps and _prefac below, and then
@@ -63,14 +63,17 @@ class SymplecticStepperMixin:
         )
 
     @property
-    def n_stages(self) -> int:
+    def n_stages(self: SymplecticStepperProtocol) -> int:
         return len(self.get_prefactors())
 
     def step(
-        self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
-    ):
+        self: SymplecticStepperProtocol,
+        SystemCollection: SystemCollectionType,
+        time: np.floating,
+        dt: np.floating,
+    ) -> np.floating:
         steps_and_prefactors = self.step_methods()
-        return self.do_step(self, steps_and_prefactors, SystemCollection, time, dt)
+        return SymplecticStepperMixin.do_step(self, steps_and_prefactors, SystemCollection, time, dt)  # type: ignore[attr-defined]
 
     # TODO: Merge with .step method in the future.
     # DEPRECATED: Use .step instead.
@@ -207,9 +210,9 @@ class PEFRL(SymplecticStepperMixin):
 
     def get_prefactors(self) -> list[OperatorType]:
         return [
-            self._first_prefactor,
-            self._second_prefactor,
-            self._third_prefactor,
+            self._first_kinematic_prefactor,
+            self._second_kinematic_prefactor,
+            self._third_kinematic_prefactor,
         ]
 
     def _first_kinematic_prefactor(self, dt: np.floating) -> np.floating:

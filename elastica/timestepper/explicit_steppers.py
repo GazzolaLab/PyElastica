@@ -1,6 +1,6 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 
-from typing import Tuple
+from typing import Type, Any
 
 import numpy as np
 from copy import copy
@@ -65,35 +65,78 @@ we "smartly" use a mixin class to define the necessary
 """
 
 
-class _SystemInstanceStepper:
-    # # noinspection PyUnresolvedReferences
-    @staticmethod
-    def do_step(
-        TimeStepper: ExplicitStepperProtocol,
-        _stages_and_updates: SteppersOperatorsType,
-        System: ExplicitSystemProtocol,
-        Memory: MemoryProtocol,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
-        for stage, update in _stages_and_updates:
-            stage(TimeStepper, System, Memory, time, dt)
-            time = update(TimeStepper, System, Memory, time, dt)
-        return time
+class EulerForwardMemory:
+    def __init__(self, initial_state: StateType) -> None:
+        self.initial_state = initial_state
 
 
-class _SystemCollectionStepper:
-    # # noinspection PyUnresolvedReferences
-    @staticmethod
-    def do_step(
-        TimeStepper: ExplicitStepperProtocol,
-        _stages_and_updates: SteppersOperatorsType,
+class RungeKutta4Memory:
+    """
+    Stores all states of Rk within the time-stepper. Works as long as the states
+    are all one big numpy array, made possible by carefully using views.
+
+    Convenience wrapper around Stateless that provides memory
+    """
+
+    def __init__(
+        self,
+        initial_state: StateType,
+    ) -> None:
+        self.initial_state = initial_state
+        self.k_1 = initial_state
+        self.k_2 = initial_state
+        self.k_3 = initial_state
+        self.k_4 = initial_state
+
+
+class ExplicitStepperMixin:
+    """Base class for all explicit steppers
+    Can also be used as a mixin with optional cls argument below
+    """
+
+    def step_methods(self: ExplicitStepperProtocol) -> SteppersOperatorsType:
+        stages = self.get_stages()
+        updates = self.get_updates()
+
+        assert len(stages) == len(
+            updates
+        ), "Number of stages and updates should be equal to one another"
+        return tuple(zip(stages, updates))
+
+    @property
+    def n_stages(self: ExplicitStepperProtocol) -> int:
+        return len(self.get_stages())
+
+    def step(
+        self: ExplicitStepperProtocol,
         SystemCollection: SystemCollectionType,
-        MemoryCollection: Tuple[MemoryProtocol, ...],
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
-        for stage, update in _stages_and_updates:
+        steps_and_prefactors = self.step_methods()
+        if isinstance(
+            self, EulerForward
+        ):  # TODO: Cleanup - use depedency injection instead
+            Memory = EulerForwardMemory
+        elif isinstance(self, RungeKutta4):
+            Memory = RungeKutta4Memory  # type: ignore[assignment]
+        else:
+            raise NotImplementedError(f"Memory class not defined for {self}")
+        memory_collection = tuple(
+            [Memory(initial_state=system.state) for system in SystemCollection]
+        )
+        return ExplicitStepperMixin.do_step(self, steps_and_prefactors, SystemCollection, memory_collection, time, dt)  # type: ignore[attr-defined]
+
+    @staticmethod
+    def do_step(
+        TimeStepper: ExplicitStepperProtocol,
+        stages_and_updates: SteppersOperatorsType,
+        SystemCollection: SystemCollectionType,
+        MemoryCollection: Any,  # TODO
+        time: np.floating,
+        dt: np.floating,
+    ) -> np.floating:
+        for stage, update in stages_and_updates:
             SystemCollection.synchronize(time)
             for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
                 stage(TimeStepper, system, memory, time, dt)
@@ -106,53 +149,18 @@ class _SystemCollectionStepper:
         return time
 
 
-class ExplicitStepperMethods:
-    """Base class for all explicit steppers
-    Can also be used as a mixin with optional cls argument below
-    """
-
-    def __init__(self, timestepper_instance: ExplicitStepperProtocol):
-        take_methods_from = timestepper_instance
-        __stages: list[OperatorType] = [
-            v
-            for (k, v) in take_methods_from.__class__.__dict__.items()
-            if k.endswith("stage")
-        ]
-        __updates: list[OperatorType] = [
-            v
-            for (k, v) in take_methods_from.__class__.__dict__.items()
-            if k.endswith("update")
-        ]
-
-        # Tuples are almost immutable
-        _n_stages: int = len(__stages)
-        _n_updates: int = len(__updates)
-
-        assert (
-            _n_stages == _n_updates
-        ), "Number of stages and updates should be equal to one another"
-
-        self._stages_and_updates = tuple(zip(__stages, __updates))
-
-    def step_methods(self) -> SteppersOperatorsType:
-        return self._stages_and_updates
-
-    @property
-    def n_stages(self) -> int:
-        return len(self._stages_and_updates)
-
-
-class EulerForwardMemory:
-    def __init__(self, initial_state: StateType) -> None:
-        self.initial_state = initial_state
-
-
-class EulerForward:
+class EulerForward(ExplicitStepperMixin):
     """
     Classical Euler Forward stepper. Stateless, coordinates operations only.
     """
 
     Tag: StepperTags = ExplicitStepperTag
+
+    def get_stages(self) -> list[OperatorType]:
+        return [self._first_stage]
+
+    def get_updates(self) -> list[OperatorType]:
+        return [self._first_update]
 
     def _first_stage(
         self,
@@ -174,29 +182,6 @@ class EulerForward:
         return time + dt
 
 
-class RungeKutta4Memory:
-    """
-    Stores all states of Rk within the time-stepper. Works as long as the states
-    are all one big numpy array, made possible by carefully using views.
-
-    Convenience wrapper around Stateless that provides memory
-    """
-
-    def __init__(
-        self,
-        initial_state: StateType,
-        k_1: StateType,
-        k_2: StateType,
-        k_3: StateType,
-        k_4: StateType,
-    ) -> None:
-        self.initial_state = initial_state
-        self.k_1 = k_1
-        self.k_2 = k_2
-        self.k_3 = k_3
-        self.k_4 = k_4
-
-
 class RungeKutta4:
     """
     Stateless runge-kutta4. coordinates operations only, memory needs
@@ -204,6 +189,22 @@ class RungeKutta4:
     """
 
     Tag: StepperTags = ExplicitStepperTag
+
+    def get_stages(self) -> list[OperatorType]:
+        return [
+            self._first_stage,
+            self._second_stage,
+            self._third_stage,
+            self._fourth_stage,
+        ]
+
+    def get_updates(self) -> list[OperatorType]:
+        return [
+            self._first_update,
+            self._second_update,
+            self._third_update,
+            self._fourth_update,
+        ]
 
     # These methods should be static, but because we need to enable automatic
     # discovery in ExplicitStepper, these are bound to the RungeKutta4 class

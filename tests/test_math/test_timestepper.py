@@ -18,17 +18,14 @@ from elastica.timestepper import integrate, extend_stepper_interface
 from elastica.timestepper.explicit_steppers import (
     RungeKutta4,
     EulerForward,
+    ExplicitStepperMixin,
 )
-
-# from elastica.timestepper.explicit_steppers import (
-#     StatefulRungeKutta4,
-#     StatefulEulerForward,
-# )
 from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
+    SymplecticStepperMixin,
 )
-from elastica.timestepper.tag import tag, SymplecticStepperTag, ExplicitStepperTag
+from elastica.timestepper.tag import SymplecticStepperTag, ExplicitStepperTag
 
 
 from elastica.utils import Tolerance
@@ -37,8 +34,8 @@ from elastica.utils import Tolerance
 class TestExtendStepperInterface:
     """TODO add documentation"""
 
-    @tag(SymplecticStepperTag)
-    class MockSymplecticStepper:
+    class MockSymplecticStepper(SymplecticStepperMixin):
+        Tag = SymplecticStepperTag
 
         def _first_prefactor(self):
             pass
@@ -49,28 +46,14 @@ class TestExtendStepperInterface:
         def _first_dynamic_step(self):
             pass
 
-    @tag(ExplicitStepperTag)
-    class MockExplicitStepper:
+    class MockExplicitStepper(ExplicitStepperMixin):
+        Tag = ExplicitStepperTag
 
         def _first_stage(self):
             pass
 
         def _first_update(self):
             pass
-
-    from elastica.timestepper.symplectic_steppers import (
-        _SystemInstanceStepper as symplectic_instance_stepper,
-    )
-    from elastica.timestepper.symplectic_steppers import (
-        _SystemCollectionStepper as symplectic_collection_stepper,
-    )
-
-    from elastica.timestepper.explicit_steppers import (
-        _SystemInstanceStepper as explicit_instance_stepper,
-    )
-    from elastica.timestepper.explicit_steppers import (
-        _SystemCollectionStepper as explicit_collection_stepper,
-    )
 
     # We cannot call a stepper on a system until both the stepper
     # and system "see" one another (for performance reasons, mostly)
@@ -79,16 +62,13 @@ class TestExtendStepperInterface:
     # after "seeing" the system, via extend_stepper_interface
     @pytest.mark.parametrize(
         "stepper_and_interface",
-        [
-            (MockSymplecticStepper, symplectic_instance_stepper),
-            (MockExplicitStepper, explicit_instance_stepper),
-        ],
+        [MockSymplecticStepper, MockExplicitStepper],
     )
     def test_symplectic_stepper_interface_for_simple_systems(
         self, stepper_and_interface
     ):
         system = ScalarExponentialDecaySystem()
-        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper_cls = stepper_and_interface
         stepper = stepper_cls()
 
         stepper_methods = None
@@ -100,16 +80,13 @@ class TestExtendStepperInterface:
 
     @pytest.mark.parametrize(
         "stepper_and_interface",
-        [
-            (MockSymplecticStepper, symplectic_collection_stepper),
-            (MockExplicitStepper, explicit_collection_stepper),
-        ],
+        [MockSymplecticStepper, MockExplicitStepper],
     )
     def test_symplectic_stepper_interface_for_collective_systems(
         self, stepper_and_interface
     ):
         system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()
-        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper_cls = stepper_and_interface
         stepper = stepper_cls()
 
         stepper_methods = None
@@ -122,15 +99,11 @@ class TestExtendStepperInterface:
     class MockBadStepper:
         Tag = int()  # an arbitrary tag that doesn't mean anything
 
-    @pytest.mark.parametrize(
-        "stepper_and_interface", [(MockBadStepper, symplectic_collection_stepper)]
-    )
+    @pytest.mark.parametrize("stepper_and_interface", [MockBadStepper])
     def test_symplectic_stepper_throws_for_bad_stepper(self, stepper_and_interface):
         system = ScalarExponentialDecaySystem()
-        (stepper_cls, interface_cls) = stepper_and_interface
+        stepper_cls = stepper_and_interface
         stepper = stepper_cls()
-
-        assert interface_cls not in stepper.__class__.__bases__
 
         with pytest.raises(NotImplementedError) as excinfo:
             extend_stepper_interface(stepper, system)

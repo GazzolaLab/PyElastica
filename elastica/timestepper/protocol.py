@@ -1,8 +1,13 @@
 __doc__ = "Time stepper interface"
 
-from typing import Protocol, Callable, Literal, ClassVar
+from typing import Protocol, Callable, Literal, ClassVar, Type
 
-from elastica.typing import SystemType, SteppersOperatorsType, OperatorType
+from elastica.typing import (
+    SystemType,
+    SteppersOperatorsType,
+    OperatorType,
+    SystemCollectionType,
+)
 from .tag import StepperTags
 
 import numpy as np
@@ -18,16 +23,12 @@ class StepperProtocol(Protocol):
 
     def step_methods(self) -> SteppersOperatorsType: ...
 
+    def step(
+        self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
+    ) -> np.floating: ...
+
 
 class SymplecticStepperProtocol(StepperProtocol, Protocol):
-    """symplectic stepper protocol."""
-
-    def get_steps(self) -> list[OperatorType]: ...
-
-    def get_prefactors(self) -> list[OperatorType]: ...
-
-
-class ExplicitStepperProtocol(StepperProtocol, Protocol):
     """symplectic stepper protocol."""
 
     def get_steps(self) -> list[OperatorType]: ...
@@ -38,6 +39,14 @@ class ExplicitStepperProtocol(StepperProtocol, Protocol):
 class MemoryProtocol(Protocol):
     @property
     def initial_state(self) -> bool: ...
+
+
+class ExplicitStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_stages(self) -> list[OperatorType]: ...
+
+    def get_updates(self) -> list[OperatorType]: ...
 
 
 # class _LinearExponentialIntegratorMixin:
