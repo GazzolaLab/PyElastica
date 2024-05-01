@@ -1,8 +1,9 @@
 __doc__ = "Time stepper interface"
 
-from typing import Protocol, Tuple, Callable, Type, Any
+from typing import Protocol, Callable, Literal, ClassVar
 
-from elastica.typing import SystemType
+from elastica.typing import SystemType, SteppersOperatorsType, OperatorType
+from .tag import StepperTags
 
 import numpy as np
 
@@ -10,37 +11,28 @@ import numpy as np
 class StepperProtocol(Protocol):
     """Protocol for all time-steppers"""
 
-    def do_step(self, *args: Any, **kwargs: Any) -> float: ...
-
-    @property
-    def Tag(self) -> Type: ...
-
-
-class StatefulStepperProtocol(StepperProtocol, Protocol):
-    """
-    Stateful explicit, symplectic stepper wrapper.
-    """
-
-    # For stateful steppes, bind memory to self
-    def do_step(self, System: SystemType, time: np.floating, dt: np.floating) -> float:
-        """
-        Perform one time step of the simulation.
-        Return the new time.
-        """
-        ...
+    Tag: StepperTags
 
     @property
     def n_stages(self) -> int: ...
 
+    def step_methods(self) -> SteppersOperatorsType: ...
 
-class MethodCollectorProtocol(Protocol):
-    """
-    Protocol for collecting stepper methods.
-    """
 
-    def __init__(self, timestepper_instance: StepperProtocol): ...
+class SymplecticStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
 
-    def step_methods(self) -> Tuple[Callable]: ...
+    def get_steps(self) -> list[OperatorType]: ...
+
+    def get_prefactors(self) -> list[OperatorType]: ...
+
+
+class ExplicitStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_steps(self) -> list[OperatorType]: ...
+
+    def get_prefactors(self) -> list[OperatorType]: ...
 
 
 class MemoryProtocol(Protocol):
