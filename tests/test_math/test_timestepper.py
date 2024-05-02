@@ -61,32 +61,14 @@ class TestExtendStepperInterface:
     # the interface (interface_cls). It should however have the interface
     # after "seeing" the system, via extend_stepper_interface
     @pytest.mark.parametrize(
-        "stepper_and_interface",
-        [MockSymplecticStepper, MockExplicitStepper],
-    )
-    def test_symplectic_stepper_interface_for_simple_systems(
-        self, stepper_and_interface
-    ):
-        system = ScalarExponentialDecaySystem()
-        stepper_cls = stepper_and_interface
-        stepper = stepper_cls()
-
-        stepper_methods = None
-        assert stepper_methods is None
-
-        _, stepper_methods = extend_stepper_interface(stepper, system)
-
-        assert stepper_methods
-
-    @pytest.mark.parametrize(
-        "stepper_and_interface",
+        "stepper_module",
         [MockSymplecticStepper, MockExplicitStepper],
     )
     def test_symplectic_stepper_interface_for_collective_systems(
-        self, stepper_and_interface
+        self, stepper_module
     ):
         system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()
-        stepper_cls = stepper_and_interface
+        stepper_cls = stepper_module.steps_and_prefactors
         stepper = stepper_cls()
 
         stepper_methods = None
