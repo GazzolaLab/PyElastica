@@ -133,22 +133,20 @@ class ExplicitStepperMixin:
     @staticmethod
     def do_step(
         TimeStepper: ExplicitStepperProtocol,
-        stages_and_updates: SteppersOperatorsType,
+        steps_and_prefactors: SteppersOperatorsType,
         SystemCollection: SystemCollectionType,
         MemoryCollection: Any,  # TODO
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
-        for stage, update in stages_and_updates:
+        for stage, update in steps_and_prefactors:
             SystemCollection.synchronize(time)
             for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
-                stage(TimeStepper, system, memory, time, dt)
-                _ = update(TimeStepper, system, memory, time, dt)
+                stage(system, memory, time, dt)
+                _ = update(system, memory, time, dt)
 
-            stage(TimeStepper, SystemCollection[-1], MemoryCollection[-1], time, dt)
-            time = update(
-                TimeStepper, SystemCollection[-1], MemoryCollection[-1], time, dt
-            )
+            stage(SystemCollection[-1], MemoryCollection[-1], time, dt)
+            time = update(SystemCollection[-1], MemoryCollection[-1], time, dt)
         return time
 
     def step_single_instance(
@@ -197,7 +195,7 @@ class EulerForward(ExplicitStepperMixin):
         return time + dt
 
 
-class RungeKutta4:
+class RungeKutta4(ExplicitStepperMixin):
     """
     Stateless runge-kutta4. coordinates operations only, memory needs
     to be externally managed and allocated.

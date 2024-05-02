@@ -1,6 +1,6 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
-from typing import Tuple, List, Callable, Type, Any
+from typing import Tuple, List, Callable, Type, Any, overload
 from elastica.typing import SystemType, SystemCollectionType, SteppersOperatorsType
 
 import numpy as np
@@ -26,9 +26,13 @@ def extend_stepper_interface(
     SteppersOperatorsType,
 ]:
     # Check if system is a "collection" of smaller systems
-    assert is_system_a_collection(system_collection), "Only system-collection type can be used for timestepping. Use BaseSystemCollection."
+    assert is_system_a_collection(
+        system_collection
+    ), "Only system-collection type can be used for timestepping. Use BaseSystemCollection."
     if not hasattr(stepper, "Tag") or stepper.Tag not in allowed_stepper_tags:
-        raise NotImplementedError(f"{stepper} steppers is not supported. Only {allowed_stepper_tags} steppers are supported")
+        raise NotImplementedError(
+            f"{stepper} steppers is not supported. Only {allowed_stepper_tags} steppers are supported"
+        )
 
     stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
     do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
@@ -42,7 +46,7 @@ def integrate(
     n_steps: int = 1000,
     restart_time: float = 0.0,
     progress_bar: bool = True,
-) -> np.floating:
+) -> float:
     """
 
     Parameters
@@ -68,10 +72,10 @@ def integrate(
 
     if is_system_a_collection(systems):
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
-            time = stepper.step(systems, time, dt)
+            time = stepper.step(systems, time, dt)  # type: ignore[arg-type]
     else:
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
-            time = stepper.step_single_instance(systems, time, dt)
+            time = stepper.step_single_instance(systems, time, dt)  # type: ignore[arg-type]
 
     print("Final time of simulation is : ", time)
-    return time
+    return float(time)

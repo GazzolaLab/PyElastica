@@ -17,19 +17,21 @@ class StepperProtocol(Protocol):
     """Protocol for all time-steppers"""
 
     Tag: StepperTags
+    steps_and_prefactors: SteppersOperatorsType
 
     def __init__(self) -> None: ...
 
     @property
     def n_stages(self) -> int: ...
 
-    @property
-    def steps_and_prefactors(self) -> SteppersOperatorsType: ...
-
     def step_methods(self) -> SteppersOperatorsType: ...
 
     def step(
         self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
+    ) -> np.floating: ...
+
+    def step_single_instance(
+        self, SystemCollection: SystemType, time: np.floating, dt: np.floating
     ) -> np.floating: ...
 
 

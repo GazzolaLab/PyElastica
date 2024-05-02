@@ -34,21 +34,18 @@ is referred to the same section on `explicit_steppers.py`.
 
 class SymplecticStepperMixin:
     def __init__(self: SymplecticStepperProtocol):
-        self.steps_and_prefactors: Final = self.step_methods()
+        self.steps_and_prefactors: Final[SteppersOperatorsType] = self.step_methods()
 
     def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
-        # be (2*n + 1) (for time-symmetry). What we do is collect
-        # the first n + 1 entries down in _steps and _prefac below, and then
-        # reverse and append it to itself.
+        # be (2*n + 1) (for time-symmetry).
         _steps: list[OperatorType] = self.get_steps()
-        _steps = _steps + _steps[-2::-1]
-
         # Prefac here is necessary because the linear-exponential integrator
         # needs only the prefactor and not the dt.
         _prefactors: list[OperatorType] = self.get_prefactors()
-        _prefactors = _prefactors + _prefactors[-2::-1]
-        assert len(_steps) == 2 * len(_prefactors) - 1
+        assert int(np.ceil(len(_steps) / 2)) == len(
+            _prefactors
+        ), f"{len(_steps)=}, {len(_prefactors)=}"
 
         # Separate the kinematic and dynamic steps
         _kinematic_steps: list[OperatorType] = _steps[::2]
@@ -100,9 +97,9 @@ class SymplecticStepperMixin:
         for kin_prefactor, kin_step, dyn_step in steps_and_prefactors[:-1]:
 
             for system in SystemCollection._memory_blocks:
-                kin_step(TimeStepper, system, time, dt)
+                kin_step(system, time, dt)
 
-            time += kin_prefactor(TimeStepper, dt)
+            time += kin_prefactor(dt)
 
             # Constrain only values
             SystemCollection.constrain_values(time)
@@ -116,7 +113,7 @@ class SymplecticStepperMixin:
             SystemCollection.synchronize(time)
 
             for system in SystemCollection._memory_blocks:
-                dyn_step(TimeStepper, system, time, dt)
+                dyn_step(system, time, dt)
 
             # Constrain only rates
             SystemCollection.constrain_rates(time)
@@ -126,8 +123,8 @@ class SymplecticStepperMixin:
         last_kin_step = steps_and_prefactors[-1][1]
 
         for system in SystemCollection._memory_blocks:
-            last_kin_step(TimeStepper, system, time, dt)
-        time += last_kin_prefactor(TimeStepper, dt)
+            last_kin_step(system, time, dt)
+        time += last_kin_prefactor(dt)
         SystemCollection.constrain_values(time)
 
         # Call back function, will call the user defined call back functions and store data
@@ -146,7 +143,7 @@ class SymplecticStepperMixin:
         dt: np.floating,
     ) -> np.floating:
 
-        for (kin_prefactor, kin_step, dyn_step) in self.steps_and_prefactors[:-1]:
+        for kin_prefactor, kin_step, dyn_step in self.steps_and_prefactors[:-1]:
             kin_step(System, time, dt)
             time += kin_prefactor(dt)
             System.update_internal_forces_and_torques(time)
@@ -158,6 +155,7 @@ class SymplecticStepperMixin:
 
         last_kin_step(System, time, dt)
         return time + last_kin_prefactor(dt)  # type: ignore[no-any-return]
+
 
 class PositionVerlet(SymplecticStepperMixin):
     """
@@ -171,10 +169,12 @@ class PositionVerlet(SymplecticStepperMixin):
         return [
             self._first_kinematic_step,
             self._first_dynamic_step,
+            self._first_kinematic_step,
         ]
 
     def get_prefactors(self) -> list[OperatorType]:
         return [
+            self._first_prefactor,
             self._first_prefactor,
         ]
 
@@ -222,19 +222,22 @@ class PEFRL(SymplecticStepperMixin):
     xi_chi_dash_coeff: np.float64 = 1.0 - 2.0 * (ξ + χ)
 
     def get_steps(self) -> list[OperatorType]:
-        return [
+        operators = [
             self._first_kinematic_step,
             self._first_dynamic_step,
             self._second_kinematic_step,
             self._second_dynamic_step,
             self._third_kinematic_step,
         ]
+        return operators + operators[-2::-1]
 
     def get_prefactors(self) -> list[OperatorType]:
         return [
             self._first_kinematic_prefactor,
             self._second_kinematic_prefactor,
             self._third_kinematic_prefactor,
+            self._second_kinematic_prefactor,
+            self._first_kinematic_prefactor,
         ]
 
     def _first_kinematic_prefactor(self, dt: np.floating) -> np.floating:

@@ -58,7 +58,7 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
-        self.allowed_sys_types:tuple[Type[SystemType], ...] = (RodBase, RigidBodyBase, SurfaceBase)
+        self.allowed_sys_types: tuple[Type, ...] = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
         # Flag Finalize: Finalizing twice will cause an error,
@@ -99,10 +99,10 @@ class BaseSystemCollection(MutableSequence):
     def __str__(self):
         return str(self._systems)
 
-    def extend_allowed_types(self, additional_types: list[Type[SystemType], ...]):
-        self.allowed_sys_types = tuple(list(self.allowed_sys_types)+additional_types)
+    def extend_allowed_types(self, additional_types: list[Type, ...]):
+        self.allowed_sys_types += additional_types
 
-    def override_allowed_types(self, allowed_types: list[Type[SystemType], ...]):
+    def override_allowed_types(self, allowed_types: list[Type, ...]):
         self.allowed_sys_types = tuple(allowed_types)
 
     def _get_sys_idx_if_valid(self, sys_to_be_added):
