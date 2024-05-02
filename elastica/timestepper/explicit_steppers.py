@@ -1,6 +1,6 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 
-from typing import Type, Any
+from typing import Type, Any, Final
 
 import numpy as np
 from copy import copy
@@ -94,6 +94,9 @@ class ExplicitStepperMixin:
     Can also be used as a mixin with optional cls argument below
     """
 
+    def __init__(self: ExplicitStepperProtocol):
+        self.steps_and_prefactors = self.step_methods()
+
     def step_methods(self: ExplicitStepperProtocol) -> SteppersOperatorsType:
         stages = self.get_stages()
         updates = self.get_updates()
@@ -105,7 +108,7 @@ class ExplicitStepperMixin:
 
     @property
     def n_stages(self: ExplicitStepperProtocol) -> int:
-        return len(self.get_stages())
+        return len(self.steps_and_prefactors)
 
     def step(
         self: ExplicitStepperProtocol,
@@ -113,7 +116,6 @@ class ExplicitStepperMixin:
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
-        steps_and_prefactors = self.step_methods()
         if isinstance(
             self, EulerForward
         ):  # TODO: Cleanup - use depedency injection instead
@@ -125,7 +127,7 @@ class ExplicitStepperMixin:
         memory_collection = tuple(
             [Memory(initial_state=system.state) for system in SystemCollection]
         )
-        return ExplicitStepperMixin.do_step(self, steps_and_prefactors, SystemCollection, memory_collection, time, dt)  # type: ignore[attr-defined]
+        return ExplicitStepperMixin.do_step(self, self.steps_and_prefactors, SystemCollection, memory_collection, time, dt)  # type: ignore[attr-defined]
 
     @staticmethod
     def do_step(

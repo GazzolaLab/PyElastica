@@ -18,8 +18,13 @@ class StepperProtocol(Protocol):
 
     Tag: StepperTags
 
+    def __init__(self) -> None: ...
+
     @property
     def n_stages(self) -> int: ...
+
+    @property
+    def steps_and_prefactors(self) -> SteppersOperatorsType: ...
 
     def step_methods(self) -> SteppersOperatorsType: ...
 

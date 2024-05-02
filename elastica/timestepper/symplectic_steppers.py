@@ -1,6 +1,6 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Callable, Any
+from typing import Callable, Any, Final
 
 from itertools import zip_longest
 
@@ -32,6 +32,9 @@ is referred to the same section on `explicit_steppers.py`.
 
 
 class SymplecticStepperMixin:
+    def __init__(self: SymplecticStepperProtocol):
+        self.steps_and_prefactors: Final = self.step_methods()
+
     def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry). What we do is collect
@@ -64,7 +67,7 @@ class SymplecticStepperMixin:
 
     @property
     def n_stages(self: SymplecticStepperProtocol) -> int:
-        return len(self.get_prefactors())
+        return len(self.steps_and_prefactors)
 
     def step(
         self: SymplecticStepperProtocol,
@@ -72,8 +75,7 @@ class SymplecticStepperMixin:
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
-        steps_and_prefactors = self.step_methods()
-        return SymplecticStepperMixin.do_step(self, steps_and_prefactors, SystemCollection, time, dt)  # type: ignore[attr-defined]
+        return SymplecticStepperMixin.do_step(self, self.steps_and_prefactors, SystemCollection, time, dt)  # type: ignore[attr-defined]
 
     # TODO: Merge with .step method in the future.
     # DEPRECATED: Use .step instead.
