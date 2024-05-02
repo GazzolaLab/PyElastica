@@ -5,6 +5,7 @@ from typing import Callable, Any, Final
 from itertools import zip_longest
 
 from elastica.typing import (
+    SystemType,
     SystemCollectionType,
     # StepOperatorType,
     # PrefactorOperatorType,
@@ -138,6 +139,25 @@ class SymplecticStepperMixin:
 
         return time
 
+    def step_single_instance(
+        self: SymplecticStepperProtocol,
+        System: SystemType,
+        time: np.floating,
+        dt: np.floating,
+    ) -> np.floating:
+
+        for (kin_prefactor, kin_step, dyn_step) in self.steps_and_prefactors[:-1]:
+            kin_step(System, time, dt)
+            time += kin_prefactor(dt)
+            System.update_internal_forces_and_torques(time)
+            dyn_step(System, time, dt)
+
+        # Peel the last kinematic step and prefactor alone
+        last_kin_prefactor = self.steps_and_prefactors[-1][0]
+        last_kin_step = self.steps_and_prefactors[-1][1]
+
+        last_kin_step(System, time, dt)
+        return time + last_kin_prefactor(dt)  # type: ignore[no-any-return]
 
 class PositionVerlet(SymplecticStepperMixin):
     """

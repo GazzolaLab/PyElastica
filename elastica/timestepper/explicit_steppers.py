@@ -6,6 +6,7 @@ import numpy as np
 from copy import copy
 
 from elastica.typing import (
+    SystemType,
     SystemCollectionType,
     OperatorType,
     SteppersOperatorsType,
@@ -148,6 +149,18 @@ class ExplicitStepperMixin:
             time = update(
                 TimeStepper, SystemCollection[-1], MemoryCollection[-1], time, dt
             )
+        return time
+
+    def step_single_instance(
+        self: ExplicitStepperProtocol,
+        System: SystemType,
+        Memory: MemoryProtocol,
+        time: np.floating,
+        dt: np.floating,
+    ) -> np.floating:
+        for stage, update in self.steps_and_prefactors:
+            stage(System, Memory, time, dt)
+            time = update(System, Memory, time, dt)
         return time
 
 
