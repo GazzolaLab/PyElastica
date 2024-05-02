@@ -5,7 +5,8 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Iterable, Callable, AnyStr
+from typing import Iterable, Callable, AnyStr, Type
+from elastica.typing import SystemType
 
 import numpy as np
 
@@ -57,7 +58,7 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
-        self.allowed_sys_types = (RodBase, RigidBodyBase, SurfaceBase)
+        self.allowed_sys_types:tuple[Type[SystemType], ...] = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
         # Flag Finalize: Finalizing twice will cause an error,
@@ -98,11 +99,11 @@ class BaseSystemCollection(MutableSequence):
     def __str__(self):
         return str(self._systems)
 
-    def extend_allowed_types(self, additional_types):
-        self.allowed_sys_types += additional_types
+    def extend_allowed_types(self, additional_types: list[Type[SystemType], ...]):
+        self.allowed_sys_types = tuple(list(self.allowed_sys_types)+additional_types)
 
-    def override_allowed_types(self, allowed_types):
-        self.allowed_sys_types = allowed_types
+    def override_allowed_types(self, allowed_types: list[Type[SystemType], ...]):
+        self.allowed_sys_types = tuple(allowed_types)
 
     def _get_sys_idx_if_valid(self, sys_to_be_added):
         from numpy import int_ as npint
