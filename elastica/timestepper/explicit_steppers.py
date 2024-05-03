@@ -13,7 +13,6 @@ from elastica.typing import (
     StateType,
 )
 from elastica.systems.protocol import ExplicitSystemProtocol
-from .tag import StepperTags, ExplicitStepperTag
 from .protocol import ExplicitStepperProtocol, MemoryProtocol
 
 
@@ -167,8 +166,6 @@ class EulerForward(ExplicitStepperMixin):
     Classical Euler Forward stepper. Stateless, coordinates operations only.
     """
 
-    Tag: StepperTags = ExplicitStepperTag
-
     def get_stages(self) -> list[OperatorType]:
         return [self._first_stage]
 
@@ -200,8 +197,6 @@ class RungeKutta4(ExplicitStepperMixin):
     Stateless runge-kutta4. coordinates operations only, memory needs
     to be externally managed and allocated.
     """
-
-    Tag: StepperTags = ExplicitStepperTag
 
     def get_stages(self) -> list[OperatorType]:
         return [

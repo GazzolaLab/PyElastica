@@ -25,7 +25,6 @@ from elastica.timestepper.symplectic_steppers import (
     PEFRL,
     SymplecticStepperMixin,
 )
-from elastica.timestepper.tag import SymplecticStepperTag, ExplicitStepperTag
 
 
 from elastica.utils import Tolerance
@@ -35,7 +34,6 @@ class TestExtendStepperInterface:
     """TODO add documentation"""
 
     class MockSymplecticStepper(SymplecticStepperMixin):
-        Tag = SymplecticStepperTag
 
         def get_steps(self):
             return [self._kinematic_step, self._dynamic_step, self._kinematic_step]
@@ -53,7 +51,6 @@ class TestExtendStepperInterface:
             pass
 
     class MockExplicitStepper(ExplicitStepperMixin):
-        Tag = ExplicitStepperTag
 
         def get_stages(self):
             return [self._stage]
@@ -86,7 +83,7 @@ class TestExtendStepperInterface:
         assert stepper_methods == stepper.steps_and_prefactors
 
     class MockBadStepper:
-        Tag = int()  # an arbitrary tag that doesn't mean anything
+        pass
 
     @pytest.mark.parametrize("stepper_module", [MockSymplecticStepper])
     def test_symplectic_stepper_throws_for_bad_stepper_for_simple_system(
@@ -106,7 +103,7 @@ class TestExtendStepperInterface:
 
         with pytest.raises(NotImplementedError) as excinfo:
             extend_stepper_interface(stepper, system)
-        assert "steppers are supported" in str(excinfo.value)
+        assert "stepper is not supported" in str(excinfo.value)
 
 
 def test_integrate_throws_an_assert_for_negative_final_time():

@@ -8,7 +8,6 @@ from elastica.typing import (
     OperatorType,
     SystemCollectionType,
 )
-from .tag import StepperTags
 
 import numpy as np
 
@@ -16,7 +15,6 @@ import numpy as np
 class StepperProtocol(Protocol):
     """Protocol for all time-steppers"""
 
-    Tag: StepperTags
     steps_and_prefactors: SteppersOperatorsType
 
     def __init__(self) -> None: ...

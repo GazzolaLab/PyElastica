@@ -21,7 +21,6 @@ from elastica.rod.data_structures import (
 )
 from elastica.systems.protocol import SymplecticSystemProtocol
 from .protocol import SymplecticStepperProtocol
-from .tag import StepperTags, SymplecticStepperTag
 
 """
 Developer Note
@@ -163,8 +162,6 @@ class PositionVerlet(SymplecticStepperMixin):
     includes methods for second-order position Verlet.
     """
 
-    Tag: StepperTags = SymplecticStepperTag
-
     def get_steps(self) -> list[OperatorType]:
         return [
             self._first_kinematic_step,
@@ -209,8 +206,6 @@ class PEFRL(SymplecticStepperMixin):
     I.M. Omelyan, I.M. Mryglod and R. Folk, Computer Physics Communications 146, 188 (2002),
     http://arxiv.org/abs/cond-mat/0110585
     """
-
-    Tag: StepperTags = SymplecticStepperTag
 
     # xi and chi are confusing, but be careful!
     ξ: np.float64 = np.float64(0.1786178958448091e0)  # ξ

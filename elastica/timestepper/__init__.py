@@ -11,7 +11,6 @@ from elastica.systems import is_system_a_collection
 from .symplectic_steppers import PositionVerlet, PEFRL
 from .explicit_steppers import RungeKutta4, EulerForward
 
-from .tag import SymplecticStepperTag, ExplicitStepperTag, allowed_stepper_tags
 from .protocol import StepperProtocol, SymplecticStepperProtocol
 
 
@@ -29,13 +28,12 @@ def extend_stepper_interface(
     assert is_system_a_collection(
         system_collection
     ), "Only system-collection type can be used for timestepping. Use BaseSystemCollection."
-    if not hasattr(stepper, "Tag") or stepper.Tag not in allowed_stepper_tags:
-        raise NotImplementedError(
-            f"{stepper} steppers is not supported. Only {allowed_stepper_tags} steppers are supported"
-        )
 
-    stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
-    do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
+    try:
+        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
+        do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
+    except AttributeError as e:
+        raise NotImplementedError(f"{stepper} stepper is not supported.") from e
     return do_step_method, stepper_methods
 
 
