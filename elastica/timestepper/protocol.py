@@ -1,6 +1,6 @@
 __doc__ = "Time stepper interface"
 
-from typing import Protocol, Callable, Literal, ClassVar, Type
+from typing import Protocol
 
 from elastica.typing import (
     SystemType,

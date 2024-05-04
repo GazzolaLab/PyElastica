@@ -1,6 +1,6 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Callable, Any, Final
+from typing import Any, Final
 
 from itertools import zip_longest
 
