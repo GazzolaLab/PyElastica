@@ -71,6 +71,22 @@ class TestExtendStepperInterface:
     # after "seeing" the system, via extend_stepper_interface
     @pytest.mark.parametrize(
         "stepper_module",
+        [
+            MockSymplecticStepper,
+            MockExplicitStepper,
+        ],
+    )
+    def test_symplectic_stepper_interface_for_simple_systems(self, stepper_module):
+        system = ScalarExponentialDecaySystem()
+        stepper = stepper_module()
+
+        stepper_methods = None
+        _, stepper_methods = extend_stepper_interface(stepper, system)
+
+        assert stepper_methods
+
+    @pytest.mark.parametrize(
+        "stepper_module",
         [MockSymplecticStepper, MockExplicitStepper],
     )
     def test_symplectic_stepper_interface_for_collective_systems(self, stepper_module):
@@ -84,17 +100,6 @@ class TestExtendStepperInterface:
 
     class MockBadStepper:
         pass
-
-    @pytest.mark.parametrize("stepper_module", [MockSymplecticStepper])
-    def test_symplectic_stepper_throws_for_bad_stepper_for_simple_system(
-        self, stepper_module
-    ):
-        system = ScalarExponentialDecaySystem()
-        stepper = stepper_module()
-
-        with pytest.raises(AssertionError) as excinfo:
-            extend_stepper_interface(stepper, system)
-        assert "Only system-collection type can be used" in str(excinfo.value)
 
     @pytest.mark.parametrize("stepper_module", [MockBadStepper])
     def test_symplectic_stepper_throws_for_bad_stepper(self, stepper_module):

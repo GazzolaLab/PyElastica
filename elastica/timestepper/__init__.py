@@ -10,7 +10,6 @@ from elastica.systems import is_system_a_collection
 
 from .symplectic_steppers import PositionVerlet, PEFRL
 from .explicit_steppers import RungeKutta4, EulerForward
-
 from .protocol import StepperProtocol, SymplecticStepperProtocol
 
 
@@ -24,17 +23,34 @@ def extend_stepper_interface(
     ],
     SteppersOperatorsType,
 ]:
-    # Check if system is a "collection" of smaller systems
-    assert is_system_a_collection(
-        system_collection
-    ), "Only system-collection type can be used for timestepping. Use BaseSystemCollection."
-
     try:
         stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
         do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
     except AttributeError as e:
         raise NotImplementedError(f"{stepper} stepper is not supported.") from e
     return do_step_method, stepper_methods
+
+
+@overload
+def integrate(
+    stepper: StepperProtocol,
+    systems: SystemType,
+    final_time: float,
+    n_steps: int,
+    restart_time: float,
+    progress_bar: bool,
+) -> float: ...
+
+
+@overload
+def integrate(
+    stepper: StepperProtocol,
+    systems: SystemCollectionType,
+    final_time: float,
+    n_steps: int,
+    restart_time: float,
+    progress_bar: bool,
+) -> float: ...
 
 
 def integrate(
