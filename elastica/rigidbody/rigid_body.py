@@ -37,24 +37,6 @@ class RigidBodyBase(ABC):
         self.mass_second_moment_of_inertia: f_arr_t
         self.inv_mass_second_moment_of_inertia: f_arr_t
 
-    # @abstractmethod
-    #     # def update_accelerations(self):
-    #     #     pass
-
-    # def _compute_internal_forces_and_torques(self):
-    #     """
-    #     This function here is only for integrator to work properly. We do not need
-    #     internal forces and torques at all.
-    #     Parameters
-    #     ----------
-    #     time
-    #
-    #     Returns
-    #     -------
-    #
-    #     """
-    #     pass
-
     def update_accelerations(self, time: float_t) -> None:
         np.copyto(
             self.acceleration_collection,
