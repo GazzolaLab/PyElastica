@@ -62,12 +62,12 @@ class RigidBodyBase(ABC):
         )
 
         # I apply common sub expression elimination here, as J w
-        J_omega = _batch_matvec(
+        j_omega = _batch_matvec(
             self.mass_second_moment_of_inertia, self.omega_collection
         )
 
         # (J \omega_L ) x \omega_L
-        lagrangian_transport = _batch_cross(J_omega, self.omega_collection)
+        lagrangian_transport = _batch_cross(j_omega, self.omega_collection)
 
         np.copyto(
             self.alpha_collection,
@@ -104,7 +104,7 @@ class RigidBodyBase(ABC):
         """
         Return rotational energy
         """
-        J_omega = np.einsum(
+        j_omega = np.einsum(
             "ijk,jk->ik", self.mass_second_moment_of_inertia, self.omega_collection
         )
-        return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega).sum()
+        return 0.5 * np.einsum("ik,ik->k", self.omega_collection, j_omega).sum()
