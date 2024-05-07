@@ -4,7 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Type, Union, Callable, Any
+from typing import Type, Union, Callable, Any, AnyStr
 from typing import TypeAlias
 
 
@@ -77,3 +77,10 @@ ExplicitOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 RodType: TypeAlias = Type[RodBase]
 SystemCollectionType: TypeAlias = BaseSystemCollection
 AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
+
+# Operators in elastica.modules
+SynchronizeOperator: TypeAlias = Callable[[float], None]
+ConstrainValuesOperator: TypeAlias = Callable[[float], None]
+ConstrainRatesOperator: TypeAlias = Callable[[float], None]
+CallbackOperator: TypeAlias = Callable[[float, int, AnyStr], None]
+FinalizeOperator: TypeAlias = Callable[[], None]
