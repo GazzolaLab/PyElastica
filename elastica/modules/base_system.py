@@ -9,6 +9,7 @@ from typing import Iterable, Callable, AnyStr, Type, Generator
 from typing import final
 from elastica.typing import (
     SystemType,
+    SystemIdxType,
     SynchronizeOperator,
     ConstrainValuesOperator,
     ConstrainRatesOperator,
@@ -120,7 +121,7 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = allowed_types
 
     @final
-    def _get_sys_idx_if_valid(self, sys_to_be_added):
+    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         if isinstance(sys_to_be_added, (int, np.int_)):

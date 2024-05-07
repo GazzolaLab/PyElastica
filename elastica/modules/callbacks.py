@@ -4,8 +4,10 @@ CallBacks
 
 Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
+from elastica.typing import SystemType, SystemIdxType
 
 from elastica.callback_functions import CallBackBaseClass
+from .base_system import BaseSystemCollection
 
 
 class CallBacks:
@@ -20,13 +22,13 @@ class CallBacks:
             List of call back classes defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._callback_list = []
+    def __init__(self: BaseSystemCollection):
+        self._callback_list: list[_Callback] = []
         super(CallBacks, self).__init__()
         self._feature_group_callback.append(self._callback_execution)
         self._feature_group_finalize.append(self._finalize_callback)
 
-    def collect_diagnostics(self, system):
+    def collect_diagnostics(self: BaseSystemCollection, system: SystemType):
         """
         This method calls user-defined call-back classes for a
         user-defined system or rod-like object. You need to input the
@@ -41,10 +43,10 @@ class CallBacks:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx: SystemIdxType = self._get_sys_idx_if_valid(system)
 
         # Create _Constraint object, cache it and return to user
-        _callbacks = _CallBack(sys_idx)
+        _callbacks: _Callback = _CallBack(sys_idx)
         self._callback_list.append(_callbacks)
 
         return _callbacks
@@ -92,7 +94,7 @@ class _CallBack:
             Arbitrary keyword arguments.
     """
 
-    def __init__(self, sys_idx: int):
+    def __init__(self, sys_idx: SystemIdxType):
         """
 
         Parameters

@@ -33,6 +33,7 @@ else:
 
 
 SystemType: TypeAlias = Union[SymplecticSystemProtocol, ExplicitSystemProtocol]
+SystemIdxType: TypeAlias = int
 
 # TODO: Modify this line and move to elastica/typing.py once system state is defined
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
