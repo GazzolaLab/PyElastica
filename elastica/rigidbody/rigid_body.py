@@ -3,6 +3,9 @@ __doc__ = """"""
 import numpy as np
 from abc import ABC
 from elastica._linalg import _batch_matvec, _batch_cross
+from ._typing import f_arr_t, float_t
+
+from typing import Any
 
 
 class RigidBodyBase(ABC):
@@ -17,22 +20,22 @@ class RigidBodyBase(ABC):
 
     REQUISITE_MODULES = []
 
-    def __init__(self):
+    def __init__(self) -> None:
 
-        self.position_collection = NotImplementedError
-        self.velocity_collection = NotImplementedError
-        self.acceleration_collection = NotImplementedError
-        self.omega_collection = NotImplementedError
-        self.alpha_collection = NotImplementedError
-        self.director_collection = NotImplementedError
+        self.position_collection: f_arr_t
+        self.velocity_collection: f_arr_t
+        self.acceleration_collection: f_arr_t
+        self.omega_collection: f_arr_t
+        self.alpha_collection: f_arr_t
+        self.director_collection: f_arr_t
 
-        self.external_forces = NotImplementedError
-        self.external_torques = NotImplementedError
+        self.external_forces: f_arr_t
+        self.external_torques: f_arr_t
 
-        self.mass = NotImplementedError
+        self.mass: f_arr_t
 
-        self.mass_second_moment_of_inertia = NotImplementedError
-        self.inv_mass_second_moment_of_inertia = NotImplementedError
+        self.mass_second_moment_of_inertia: f_arr_t
+        self.inv_mass_second_moment_of_inertia: f_arr_t
 
     # @abstractmethod
     #     # def update_accelerations(self):
@@ -52,7 +55,7 @@ class RigidBodyBase(ABC):
     #     """
     #     pass
 
-    def update_accelerations(self, time):
+    def update_accelerations(self, time: float_t) -> None:
         np.copyto(
             self.acceleration_collection,
             (self.external_forces) / self.mass,
@@ -74,18 +77,18 @@ class RigidBodyBase(ABC):
             ),
         )
 
-    def zeroed_out_external_forces_and_torques(self, time):
+    def zeroed_out_external_forces_and_torques(self, time: float_t) -> None:
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
 
-    def compute_position_center_of_mass(self):
+    def compute_position_center_of_mass(self) -> f_arr_t:
         """
         Return positional center of mass
         """
         return self.position_collection[..., 0].copy()
 
-    def compute_translational_energy(self):
+    def compute_translational_energy(self) -> Any:
         """
         Return translational energy
         """
@@ -97,7 +100,7 @@ class RigidBodyBase(ABC):
             )
         )
 
-    def compute_rotational_energy(self):
+    def compute_rotational_energy(self) -> Any:
         """
         Return rotational energy
         """
