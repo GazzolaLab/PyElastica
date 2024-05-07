@@ -113,12 +113,16 @@ class BaseSystemCollection(MutableSequence):
         return str(self._systems)
 
     @final
-    def extend_allowed_types(self, additional_types) -> None:
+    def extend_allowed_types(
+        self, additional_types: list[Type[SystemType], ...]
+    ) -> None:
         self.allowed_sys_types += additional_types
 
     @final
-    def override_allowed_types(self, allowed_types) -> None:
-        self.allowed_sys_types = allowed_types
+    def override_allowed_types(
+        self, allowed_types: list[Type[SystemType], ...]
+    ) -> None:
+        self.allowed_sys_types = tuple(allowed_types)
 
     @final
     def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:

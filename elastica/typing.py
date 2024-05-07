@@ -18,7 +18,11 @@ if TYPE_CHECKING:
 
     from .rod.data_structures import _State as State
     from .systems.protocol import SymplecticSystemProtocol, ExplicitSystemProtocol
-    from .timestepper.protocol import StatefulStepperProtocol, MemoryProtocol
+    from .timestepper.protocol import (
+        StepperProtocol,
+        SymplecticStepperProtocol,
+        MemoryProtocol,
+    )
 else:
     RodBase = None
     RigidBodyBase = None
@@ -28,7 +32,9 @@ else:
     State = "State"
     SymplecticSystemProtocol = None
     ExplicitSystemProtocol = None
-    StatefulStepperProtocol = None
+
+    StepperProtocol = None
+    SymplecticStepperProtocol = None
     MemoryProtocol = None
 
 
@@ -42,10 +48,10 @@ StateType: TypeAlias = State
 # NoOpt stepper
 # Symplectic stepper
 # StepOperatorType = Callable[
-#    [StatefulStepperProtocol, SymplecticSystemProtocol, np.floating, np.floating], None
+#    [SymplecticStepperProtocol, SymplecticSystemProtocol, np.floating, np.floating], None
 # ]
 # PrefactorOperatorType = Callable[
-#    [StatefulStepperProtocol, np.floating], np.floating
+#    [SymplecticStepperProtocol, np.floating], np.floating
 # ]
 OperatorType: TypeAlias = Callable[
     Any, Any
@@ -55,7 +61,7 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 # Explicit stepper
 # ExplicitStageOperatorType = Callable[
 #    [
-#        StatefulStepperProtocol,
+#        SymplecticStepperProtocol,
 #        ExplicitSystemProtocol,
 #        MemoryProtocol,
 #        np.floating,
@@ -65,7 +71,7 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 # ]
 # ExplicitUpdateOperatorType = Callable[
 #    [
-#        StatefulStepperProtocol,
+#        SymplecticStepperProtocol,
 #        ExplicitSystemProtocol,
 #        MemoryProtocol,
 #        np.floating,
@@ -73,7 +79,6 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 #    ],
 #    np.floating,
 # ]
-ExplicitOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
 RodType: TypeAlias = Type[RodBase]
 SystemCollectionType: TypeAlias = BaseSystemCollection

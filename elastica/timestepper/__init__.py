@@ -1,7 +1,7 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
-from typing import Tuple, List, Callable, Type
-from elastica.typing import SystemType
+from typing import Tuple, List, Callable, Type, Any, overload
+from elastica.typing import SystemType, SystemCollectionType, SteppersOperatorsType
 
 import numpy as np
 from tqdm import tqdm
@@ -10,57 +10,52 @@ from elastica.systems import is_system_a_collection
 
 from .symplectic_steppers import PositionVerlet, PEFRL
 from .explicit_steppers import RungeKutta4, EulerForward
-
-from .tag import SymplecticStepperTag, ExplicitStepperTag
-from .protocol import StepperProtocol, StatefulStepperProtocol
-from .protocol import MethodCollectorProtocol
+from .protocol import StepperProtocol, SymplecticStepperProtocol
 
 
-# TODO: Both extend_stepper_interface and integrate should be in separate file.
-# __init__ is probably not an ideal place to have these scripts.
+# Deprecated: Remove in the future version
+# Many script still uses this method to control timestep. Keep it for backward compatibility
 def extend_stepper_interface(
-    Stepper: StepperProtocol, System: SystemType
-) -> Tuple[Callable, Tuple[Callable]]:
-
-    # StepperMethodCollector: Type[MethodCollectorProtocol]
-    # SystemStepper: Type[StepperProtocol]
-    if isinstance(Stepper.Tag, SymplecticStepperTag):
-        from elastica.timestepper.symplectic_steppers import (
-            _SystemInstanceStepper,
-            _SystemCollectionStepper,
-            SymplecticStepperMethods,
-        )
-
-        StepperMethodCollector = SymplecticStepperMethods
-    elif isinstance(Stepper.Tag, ExplicitStepperTag):  # type: ignore[no-redef]
-        from elastica.timestepper.explicit_steppers import (
-            _SystemInstanceStepper,
-            _SystemCollectionStepper,
-            ExplicitStepperMethods,
-        )
-
-        StepperMethodCollector = ExplicitStepperMethods
-    else:
-        raise NotImplementedError(
-            "Only explicit and symplectic steppers are supported, given stepper is {}".format(
-                Stepper.__class__.__name__
-            )
-        )
-
-    # Check if system is a "collection" of smaller systems
-    if is_system_a_collection(System):
-        SystemStepper = _SystemCollectionStepper
-    else:
-        SystemStepper = _SystemInstanceStepper
-
-    stepper_methods: Tuple[Callable] = StepperMethodCollector(Stepper).step_methods()
-    do_step_method: Callable = SystemStepper.do_step
+    stepper: StepperProtocol, system_collection: SystemCollectionType
+) -> Tuple[
+    Callable[
+        [StepperProtocol, SystemCollectionType, np.floating, np.floating], np.floating
+    ],
+    SteppersOperatorsType,
+]:
+    try:
+        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
+        do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
+    except AttributeError as e:
+        raise NotImplementedError(f"{stepper} stepper is not supported.") from e
     return do_step_method, stepper_methods
 
 
+@overload
 def integrate(
-    StatefulStepper: StatefulStepperProtocol,
-    System: SystemType,
+    stepper: StepperProtocol,
+    systems: SystemType,
+    final_time: float,
+    n_steps: int,
+    restart_time: float,
+    progress_bar: bool,
+) -> float: ...
+
+
+@overload
+def integrate(
+    stepper: StepperProtocol,
+    systems: SystemCollectionType,
+    final_time: float,
+    n_steps: int,
+    restart_time: float,
+    progress_bar: bool,
+) -> float: ...
+
+
+def integrate(
+    stepper: StepperProtocol,
+    systems: SystemType | SystemCollectionType,
     final_time: float,
     n_steps: int = 1000,
     restart_time: float = 0.0,
@@ -70,9 +65,9 @@ def integrate(
 
     Parameters
     ----------
-    StatefulStepper : StatefulStepperProtocol
+    stepper : StepperProtocol
         Stepper algorithm to use.
-    System : SystemType
+    systems : SystemType | SystemCollectionType
         The elastica-system to simulate.
     final_time : float
         Total simulation time. The timestep is determined by final_time / n_steps.
@@ -86,17 +81,15 @@ def integrate(
     assert final_time > 0.0, "Final time is negative!"
     assert n_steps > 0, "Number of integration steps is negative!"
 
-    # Extend the stepper's interface after introspecting the properties
-    # of the system. If system is a collection of small systems (whose
-    # states cannot be aggregated), then stepper now loops over the system
-    # state
-    do_step, stages_and_updates = extend_stepper_interface(StatefulStepper, System)
+    dt = np.float_(float(final_time) / n_steps)
+    time = np.float_(restart_time)
 
-    dt = np.float64(float(final_time) / n_steps)
-    time = restart_time
-
-    for i in tqdm(range(n_steps), disable=(not progress_bar)):
-        time = do_step(StatefulStepper, stages_and_updates, System, time, dt)
+    if is_system_a_collection(systems):
+        for i in tqdm(range(n_steps), disable=(not progress_bar)):
+            time = stepper.step(systems, time, dt)  # type: ignore[arg-type]
+    else:
+        for i in tqdm(range(n_steps), disable=(not progress_bar)):
+            time = stepper.step_single_instance(systems, time, dt)  # type: ignore[arg-type]
 
     print("Final time of simulation is : ", time)
-    return time
+    return float(time)
