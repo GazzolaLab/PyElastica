@@ -46,6 +46,7 @@ class BaseSystemCollection(MutableSequence):
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
         self._feature_group_synchronize: Iterable[Callable[[float], None]] = []
+        self._feature_group_synchronize_contact: Iterable[Callable[[float], None]] = []
         self._feature_group_constrain_values: Iterable[Callable[[float], None]] = []
         self._feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
         self._feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = (
@@ -169,21 +170,12 @@ class BaseSystemCollection(MutableSequence):
 
         # Toggle the finalize_flag
         self._finalize_flag = True
-        # sort _feature_group_synchronize so that _call_contacts is at the end
-        _call_contacts_index = []
-        for idx, feature in enumerate(self._feature_group_synchronize):
-            if feature.__name__ == "_call_contacts":
-                _call_contacts_index.append(idx)
-
-        # Move to the _call_contacts to the end of the _feature_group_synchronize list.
-        for index in _call_contacts_index:
-            self._feature_group_synchronize.append(
-                self._feature_group_synchronize.pop(index)
-            )
 
     def synchronize(self, time: float):
         # Collection call _feature_group_synchronize
         for feature in self._feature_group_synchronize:
+            feature(time)
+        for feature in self._feature_group_synchronize_contact:
             feature(time)
 
     def constrain_values(self, time: float):

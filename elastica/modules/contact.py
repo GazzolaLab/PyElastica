@@ -23,7 +23,7 @@ class Contact:
     def __init__(self):
         self._contacts = []
         super(Contact, self).__init__()
-        self._feature_group_synchronize.append(self._call_contacts)
+        self._feature_group_synchronize_contact.append(self._call_contacts)
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
