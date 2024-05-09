@@ -5,7 +5,7 @@ Contact
 Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
-
+import functools
 from elastica.typing import SystemType, AllowedContactType
 
 
@@ -23,7 +23,6 @@ class Contact:
     def __init__(self):
         self._contacts = []
         super(Contact, self).__init__()
-        self._feature_group_synchronize.append(self._call_contacts)
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
@@ -51,6 +50,7 @@ class Contact:
         # Create _Contact object, cache it and return to user
         _contact = _Contact(*sys_idx)
         self._contacts.append(_contact)
+        self._feature_group_synchronize.append_id(_contact)
 
         return _contact
 
@@ -61,29 +61,23 @@ class Contact:
         # to apply the contacts to
         # Technically we can use another array but it its one more book-keeping
         # step. Being lazy, I put them both in the same array
-        self._contacts[:] = [(*contact.id(), contact()) for contact in self._contacts]
+        for contact in self._contacts:
+            first_sys_idx, second_sys_idx = contact.id()
+            contact_instance = contact.instantiate()
 
-        # check contact order
-        for (
-            first_sys_idx,
-            second_sys_idx,
-            contact,
-        ) in self._contacts:
-            contact._check_systems_validity(
+            contact_instance._check_systems_validity(
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )
 
-    def _call_contacts(self, time: float):
-        for (
-            first_sys_idx,
-            second_sys_idx,
-            contact,
-        ) in self._contacts:
-            contact.apply_contact(
-                self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
-            )
+            def apply_contact(time):
+                return functools.partial(
+                    contact_instance.apply_contact,
+                    system_one=self._systems[first_sys_idx],
+                    system_two=self._systems[second_sys_idx],
+                )
+
+            self._feature_group_synchronize.add_operators(contact, [apply_contact])
 
 
 class _Contact:
@@ -153,7 +147,7 @@ class _Contact:
             self.second_sys_idx,
         )
 
-    def __call__(self, *args, **kwargs):
+    def instantiate(self, *args, **kwargs):
         if not self._contact_cls:
             raise RuntimeError(
                 "No contacts provided to to establish contact between rod-like object id {0}"

@@ -5,6 +5,7 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
+import functools
 import numpy as np
 from elastica.joint import FreeJoint
 
@@ -24,7 +25,6 @@ class Connections:
     def __init__(self):
         self._connections = []
         super(Connections, self).__init__()
-        self._feature_group_synchronize.append(self._call_connections)
         self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
@@ -63,6 +63,7 @@ class Connections:
         _connector = _Connect(*sys_idx, *sys_dofs)
         _connector.set_index(first_connect_idx, second_connect_idx)
         self._connections.append(_connector)
+        self._feature_group_synchronize.append_id(_connector)
 
         return _connector
 
@@ -71,37 +72,40 @@ class Connections:
 
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)
-        # to apply the connections to
-        # Technically we can use another array but it its one more book-keeping
-        # step. Being lazy, I put them both in the same array
-        self._connections[:] = [
-            (*connection.id(), connection()) for connection in self._connections
-        ]
+        # to apply the connections to.
+
+        for connection in self._connections:
+            first_sys_idx, second_sys_idx, first_connect_idx, second_connect_idx = (
+                connection.id()
+            )
+            connect_instance = connection.instantiate()
+
+            # FIXME: lambda t is included because OperatorType takes time as an argument
+            def apply_forces(time):
+                return functools.partial(
+                    connect_instance.apply_forces,
+                    system_one=self._systems[first_sys_idx],
+                    index_one=first_connect_idx,
+                    system_two=self._systems[second_sys_idx],
+                    index_two=second_connect_idx,
+                )
+
+            def apply_torques(time):
+                return functools.partial(
+                    connect_instance.apply_torques,
+                    system_one=self._systems[first_sys_idx],
+                    index_one=first_connect_idx,
+                    system_two=self._systems[second_sys_idx],
+                    index_two=second_connect_idx,
+                )
+
+            self._feature_group_synchronize.add_operators(
+                connection, [apply_forces, apply_torques]
+            )
 
         # Need to finally solve CPP here, if we are doing things properly
         # This is to optimize the call tree for better memory accesses
         # https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/
-
-    def _call_connections(self, *args, **kwargs):
-        for (
-            first_sys_idx,
-            second_sys_idx,
-            first_connect_idx,
-            second_connect_idx,
-            connection,
-        ) in self._connections:
-            connection.apply_forces(
-                self._systems[first_sys_idx],
-                first_connect_idx,
-                self._systems[second_sys_idx],
-                second_connect_idx,
-            )
-            connection.apply_torques(
-                self._systems[first_sys_idx],
-                first_connect_idx,
-                self._systems[second_sys_idx],
-                second_connect_idx,
-            )
 
 
 class _Connect:
@@ -265,7 +269,7 @@ class _Connect:
             self.second_sys_connection_idx,
         )
 
-    def __call__(self, *args, **kwargs):
+    def instantiate(self):
         if not self._connect_cls:
             raise RuntimeError(
                 "No connections provided to link rod id {0}"
