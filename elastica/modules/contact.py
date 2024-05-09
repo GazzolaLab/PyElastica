@@ -5,7 +5,6 @@ Contact
 Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
-import functools
 from elastica.typing import SystemType, AllowedContactType
 
 
@@ -71,13 +70,15 @@ class Contact:
             )
 
             def apply_contact(time):
-                return functools.partial(
-                    contact_instance.apply_contact,
+                contact_instance.apply_contact(
                     system_one=self._systems[first_sys_idx],
                     system_two=self._systems[second_sys_idx],
                 )
 
             self._feature_group_synchronize.add_operators(contact, [apply_contact])
+
+        self._contacts = []
+        del self._contacts
 
 
 class _Contact:

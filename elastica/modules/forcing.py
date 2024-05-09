@@ -70,6 +70,9 @@ class Forcing:
                 ext_force_torque, [apply_forces, apply_torques]
             )
 
+        self._ext_forces_torques = []
+        del self._ext_forces_torques
+
 
 class _ExtForceTorque:
     """

@@ -5,7 +5,6 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
-import functools
 import numpy as np
 from elastica.joint import FreeJoint
 
@@ -60,16 +59,15 @@ class Connections:
         sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
 
         # Create _Connect object, cache it and return to user
-        _connector = _Connect(*sys_idx, *sys_dofs)
-        _connector.set_index(first_connect_idx, second_connect_idx)
-        self._connections.append(_connector)
-        self._feature_group_synchronize.append_id(_connector)
+        _connect = _Connect(*sys_idx, *sys_dofs)
+        _connect.set_index(first_connect_idx, second_connect_idx)
+        self._connections.append(_connect)
+        self._feature_group_synchronize.append_id(_connect)
 
-        return _connector
+        return _connect
 
     def _finalize_connections(self):
         # From stored _Connect objects, instantiate the joints and store it
-
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)
         # to apply the connections to.
@@ -82,8 +80,7 @@ class Connections:
 
             # FIXME: lambda t is included because OperatorType takes time as an argument
             def apply_forces(time):
-                return functools.partial(
-                    connect_instance.apply_forces,
+                connect_instance.apply_forces(
                     system_one=self._systems[first_sys_idx],
                     index_one=first_connect_idx,
                     system_two=self._systems[second_sys_idx],
@@ -91,8 +88,7 @@ class Connections:
                 )
 
             def apply_torques(time):
-                return functools.partial(
-                    connect_instance.apply_torques,
+                connect_instance.apply_torques(
                     system_one=self._systems[first_sys_idx],
                     index_one=first_connect_idx,
                     system_two=self._systems[second_sys_idx],
@@ -102,6 +98,9 @@ class Connections:
             self._feature_group_synchronize.add_operators(
                 connection, [apply_forces, apply_torques]
             )
+
+        self._connections = []
+        del self._connections
 
         # Need to finally solve CPP here, if we are doing things properly
         # This is to optimize the call tree for better memory accesses
@@ -156,7 +155,7 @@ class _Connect:
     def set_index(self, first_idx, second_idx):
         # TODO assert range
         # First check if the types of first rod idx and second rod idx variable are same.
-        assert type(first_idx) == type(
+        assert type(first_idx) is type(
             second_idx
         ), "Type of first_connect_idx :{}".format(
             type(first_idx)

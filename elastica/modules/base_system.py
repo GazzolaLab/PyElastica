@@ -32,11 +32,9 @@ class BaseSystemCollection(MutableSequence):
         _systems: list
             List of rod-like objects.
 
-    """
-
-    """
     Developer Note
     -----
+
     Note
     ----
     We can directly subclass a list for the
@@ -174,19 +172,19 @@ class BaseSystemCollection(MutableSequence):
     def synchronize(self, time: float):
         # Collection call _feature_group_synchronize
         for func in self._feature_group_synchronize:
-            func(time)
+            func(time=time)
 
     def constrain_values(self, time: float):
         # Collection call _feature_group_constrain_values
         for func in self._feature_group_constrain_values:
-            func(time)
+            func(time=time)
 
     def constrain_rates(self, time: float):
         # Collection call _feature_group_constrain_rates
         for func in self._feature_group_constrain_rates:
-            func(time)
+            func(time=time)
 
     def apply_callbacks(self, time: float, current_step: int):
         # Collection call _feature_group_callback
         for func in self._feature_group_callback:
-            func(time, current_step)
+            func(time=time, current_step=current_step)

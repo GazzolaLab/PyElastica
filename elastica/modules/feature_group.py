@@ -1,4 +1,3 @@
-from typing import Callable
 from elastica.typing import OperatorType
 
 from collections.abc import Iterable
@@ -11,10 +10,10 @@ class FeatureGroupFIFO(Iterable):
         self._operator_collection: list[list[OperatorType]] = []
         self._operator_ids: list[int] = []
 
-    def __iter__(self) -> Callable[[...], None]:
+    def __iter__(self) -> OperatorType:
         if not self._operator_collection:
             raise RuntimeError("Feature group is not instantiated.")
-        operator_chain = itertools.chain(self._operator_collection)
+        operator_chain = itertools.chain.from_iterable(self._operator_collection)
         for operator in operator_chain:
             yield operator
 
@@ -23,5 +22,5 @@ class FeatureGroupFIFO(Iterable):
         self._operator_collection.append([])
 
     def add_operators(self, feature, operators: list[OperatorType]):
-        idx = self._operator_ids.index(feature)
+        idx = self._operator_ids.index(id(feature))
         self._operator_collection[idx].extend(operators)
