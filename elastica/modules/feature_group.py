@@ -1,7 +1,7 @@
 from typing import Callable
 from elastica.typing import OperatorType
 
-from collection.abc import Iterable
+from collections.abc import Iterable
 
 import itertools
 
@@ -23,5 +23,5 @@ class FeatureGroupFIFO(Iterable):
         self._operator_collection.append([])
 
     def add_operators(self, feature, operators: list[OperatorType]):
-        idx = self._operator_idx.index(feature)
+        idx = self._operator_ids.index(feature)
         self._operator_collection[idx].extend(operators)

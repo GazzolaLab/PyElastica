@@ -6,7 +6,6 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 (external point force, muscle torques, etc).
 """
 import functools
-from elastica.interaction import AnisotropicFrictionalPlane
 
 
 class Forcing:
@@ -70,18 +69,6 @@ class Forcing:
             self._feature_group_synchronize.add_operators(
                 ext_force_torque, [apply_forces, apply_torques]
             )
-
-        # TODO: remove: we decided to let user to fully decide the order of operations
-        # Find if there are any friction plane forcing, if add them to the end of the list,
-        # since friction planes uses external forces.
-        friction_plane_index = []
-        for idx, ext_force_torque in enumerate(self._ext_forces_torques):
-            if isinstance(ext_force_torque[1], AnisotropicFrictionalPlane):
-                friction_plane_index.append(idx)
-
-        # Move to the friction forces to the end of the external force and torques list.
-        for index in friction_plane_index:
-            self._ext_forces_torques.append(self._ext_forces_torques.pop(index))
 
 
 class _ExtForceTorque:
