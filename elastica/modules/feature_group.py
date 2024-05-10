@@ -14,8 +14,8 @@ class FeatureGroupFIFO(Iterable):
     >>> feature_group = FeatureGroupFIFO()
     >>> feature_group.append_id(obj_1)
     >>> feature_group.append_id(obj_2)
-    >>> feature_group.add_operators(obj_1, [OperatorType.ADD, OperatorType.SUBTRACT])
-    >>> feature_group.add_operators(obj_2, [OperatorType.SUBTRACT, OperatorType.MULTIPLY])
+    >>> feature_group.add_operators(obj_1, [ADD, SUBTRACT])
+    >>> feature_group.add_operators(obj_2, [SUBTRACT, MULTIPLY])
     >>> list(feature_group)
     [OperatorType.ADD, OperatorType.SUBTRACT, OperatorType.SUBTRACT, OperatorType.MULTIPLY]
 
