@@ -1,6 +1,7 @@
 __doc__ = "Data structure wrapper for rod components"
 
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
+from typing import Any
 
 """
 # FIXME : Explicit Stepper doesn't work as States lose the
@@ -48,7 +49,7 @@ class _RigidRodSymplecticStepperMixin(_RodSymplecticStepperMixin):
         # dynamic rates needs to call update_accelerations and henc
         # is another function
 
-    def update_internal_forces_and_torques(self, *args, **kwargs) -> None:
+    def update_internal_forces_and_torques(self, *args: Any, **kwargs: Any) -> None:
         pass
 
 
