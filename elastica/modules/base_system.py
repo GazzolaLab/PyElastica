@@ -16,7 +16,7 @@ from elastica.surface import SurfaceBase
 from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
 from .memory_block import construct_memory_block_structures
-from .feature_group import FeatureGroupFIFO
+from .operator_group import OperatorGroupFIFO
 
 
 class BaseSystemCollection(MutableSequence):
@@ -46,7 +46,7 @@ class BaseSystemCollection(MutableSequence):
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
-        self._feature_group_synchronize: Iterable[OperatorType] = FeatureGroupFIFO()
+        self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
         self._feature_group_constrain_values: Iterable[OperatorType] = []
         self._feature_group_constrain_rates: Iterable[OperatorType] = []
         self._feature_group_callback: Iterable[OperatorCallbackType] = []

@@ -99,12 +99,17 @@ class Connections:
                 connection, [apply_forces, apply_torques]
             )
 
+            self.warnings(connection)
+
         self._connections = []
         del self._connections
 
         # Need to finally solve CPP here, if we are doing things properly
         # This is to optimize the call tree for better memory accesses
         # https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/
+
+    def warnings(self, connection):
+        pass
 
 
 class _Connect:

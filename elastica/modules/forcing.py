@@ -5,7 +5,10 @@ Forcing
 Provides the forcing interface to apply forces and torques to rod-like objects
 (external point force, muscle torques, etc).
 """
+import logging
 import functools
+
+logger = logging.getLogger(__name__)
 
 
 class Forcing:
@@ -55,9 +58,9 @@ class Forcing:
 
         # dev : the first index stores the rod index to apply the boundary condition
         # to.
-        for ext_force_torque in self._ext_forces_torques:
-            sys_id = ext_force_torque.id()
-            forcing_instance = ext_force_torque.instantiate()
+        for external_force_and_torque in self._ext_forces_torques:
+            sys_id = external_force_and_torque.id()
+            forcing_instance = external_force_and_torque.instantiate()
 
             apply_forces = functools.partial(
                 forcing_instance.apply_forces, system=self._systems[sys_id]
@@ -67,11 +70,16 @@ class Forcing:
             )
 
             self._feature_group_synchronize.add_operators(
-                ext_force_torque, [apply_forces, apply_torques]
+                external_force_and_torque, [apply_forces, apply_torques]
             )
+
+            self.warnings(external_force_and_torque)
 
         self._ext_forces_torques = []
         del self._ext_forces_torques
+
+    def warnings(self, external_force_and_torque):
+        pass
 
 
 class _ExtForceTorque:

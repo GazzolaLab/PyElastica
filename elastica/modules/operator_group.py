@@ -5,18 +5,18 @@ from collections.abc import Iterable
 import itertools
 
 
-class FeatureGroupFIFO(Iterable):
+class OperatorGroupFIFO(Iterable):
     """
     A class to store the features and their corresponding operators in a FIFO manner.
 
     Examples
     --------
-    >>> feature_group = FeatureGroupFIFO()
-    >>> feature_group.append_id(obj_1)
-    >>> feature_group.append_id(obj_2)
-    >>> feature_group.add_operators(obj_1, [ADD, SUBTRACT])
-    >>> feature_group.add_operators(obj_2, [SUBTRACT, MULTIPLY])
-    >>> list(feature_group)
+    >>> operator_group = OperatorGroupFIFO()
+    >>> operator_group.append_id(obj_1)
+    >>> operator_group.append_id(obj_2)
+    >>> operator_group.add_operators(obj_1, [ADD, SUBTRACT])
+    >>> operator_group.add_operators(obj_2, [SUBTRACT, MULTIPLY])
+    >>> list(operator_group)
     [OperatorType.ADD, OperatorType.SUBTRACT, OperatorType.SUBTRACT, OperatorType.MULTIPLY]
 
     Attributes
@@ -32,6 +32,9 @@ class FeatureGroupFIFO(Iterable):
         Appends the id of the feature to the list of ids.
     add_operators(feature, operators)
         Adds the operators to the list of operators corresponding to the feature.
+    is_last(feature)
+        Checks if the feature is the last feature in the FIFO.
+        Used to check if the specific feature is the last feature in the FIFO.
     """
 
     def __init__(self):
@@ -53,3 +56,7 @@ class FeatureGroupFIFO(Iterable):
         """Adds the operators to the list of operators corresponding to the feature."""
         idx = self._operator_ids.index(id(feature))
         self._operator_collection[idx].extend(operators)
+
+    def is_last(self, feature) -> bool:
+        """Checks if the feature is the last feature in the FIFO."""
+        return id(feature) == self._operator_ids[-1]

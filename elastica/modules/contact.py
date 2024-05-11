@@ -5,7 +5,10 @@ Contact
 Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
+import logging
 from elastica.typing import SystemType, AllowedContactType
+
+logger = logging.getLogger(__name__)
 
 
 class Contact:
@@ -77,8 +80,18 @@ class Contact:
 
             self._feature_group_synchronize.add_operators(contact, [apply_contact])
 
+            self.warnings(contact)
+
         self._contacts = []
         del self._contacts
+
+    def warnings(self, contact):
+        from elastica.contact_forces import NoContact
+
+        # Classes that should be used last
+        if not self._feature_group_synchronize.is_last(contact):
+            if isinstance(contact._contact_cls, NoContact):
+                logger.warning("Contact features should be instantiated lastly.")
 
 
 class _Contact:
