@@ -197,7 +197,18 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.add_forcing_to(rod).using(legal_forces)
         simulator_class.finalize()
         # After finalize check if the created forcing object is instance of the class we have given.
-        assert isinstance(simulator_class._ext_forces_torques[-1][-1], legal_forces)
+        assert isinstance(
+            simulator_class._feature_group_synchronize._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_forces,
+        )
+        assert isinstance(
+            simulator_class._feature_group_synchronize._operator_collection[-1][
+                -2
+            ].func.__self__,
+            legal_forces,
+        )
 
         # TODO: this is a dummy test for synchronize find a better way to test them
         simulator_class.synchronize(time=0)
