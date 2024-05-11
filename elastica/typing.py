@@ -82,3 +82,7 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 RodType: TypeAlias = Type[RodBase]
 SystemCollectionType: TypeAlias = BaseSystemCollection
 AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
+
+OperatorType: TypeAlias = Callable[[float], None]
+OperatorCallbackType: TypeAlias = Callable[[float, int], None]
+OperatorFinalizeType: TypeAlias = Callable

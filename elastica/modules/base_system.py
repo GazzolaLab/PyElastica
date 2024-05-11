@@ -5,8 +5,8 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Iterable, Callable, AnyStr, Type
-from elastica.typing import SystemType
+from typing import Iterable, AnyStr, Type
+from elastica.typing import OperatorType, OperatorCallbackType, OperatorFinalizeType
 
 import numpy as np
 
@@ -15,8 +15,10 @@ from collections.abc import MutableSequence
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 from elastica.surface import SurfaceBase
-from elastica.modules.memory_block import construct_memory_block_structures
 from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
+
+from .memory_block import construct_memory_block_structures
+from .operator_group import OperatorGroupFIFO
 
 
 class BaseSystemCollection(MutableSequence):
@@ -32,11 +34,9 @@ class BaseSystemCollection(MutableSequence):
         _systems: list
             List of rod-like objects.
 
-    """
-
-    """
     Developer Note
     -----
+
     Note
     ----
     We can directly subclass a list for the
@@ -48,13 +48,11 @@ class BaseSystemCollection(MutableSequence):
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
-        self._feature_group_synchronize: Iterable[Callable[[float], None]] = []
-        self._feature_group_constrain_values: Iterable[Callable[[float], None]] = []
-        self._feature_group_constrain_rates: Iterable[Callable[[float], None]] = []
-        self._feature_group_callback: Iterable[Callable[[float, int, AnyStr], None]] = (
-            []
-        )
-        self._feature_group_finalize: Iterable[Callable] = []
+        self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
+        self._feature_group_constrain_values: Iterable[OperatorType] = []
+        self._feature_group_constrain_rates: Iterable[OperatorType] = []
+        self._feature_group_callback: Iterable[OperatorCallbackType] = []
+        self._feature_group_finalize: Iterable[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
         super(BaseSystemCollection, self).__init__()
         # List of system types/bases that are allowed
@@ -172,34 +170,23 @@ class BaseSystemCollection(MutableSequence):
 
         # Toggle the finalize_flag
         self._finalize_flag = True
-        # sort _feature_group_synchronize so that _call_contacts is at the end
-        _call_contacts_index = []
-        for idx, feature in enumerate(self._feature_group_synchronize):
-            if feature.__name__ == "_call_contacts":
-                _call_contacts_index.append(idx)
-
-        # Move to the _call_contacts to the end of the _feature_group_synchronize list.
-        for index in _call_contacts_index:
-            self._feature_group_synchronize.append(
-                self._feature_group_synchronize.pop(index)
-            )
 
     def synchronize(self, time: np.floating):
         # Collection call _feature_group_synchronize
-        for feature in self._feature_group_synchronize:
-            feature(time)
+        for func in self._feature_group_synchronize:
+            func(time=time)
 
     def constrain_values(self, time: np.floating):
         # Collection call _feature_group_constrain_values
-        for feature in self._feature_group_constrain_values:
-            feature(time)
+        for func in self._feature_group_constrain_values:
+            func(time=time)
 
     def constrain_rates(self, time: np.floating):
         # Collection call _feature_group_constrain_rates
-        for feature in self._feature_group_constrain_rates:
-            feature(time)
+        for func in self._feature_group_constrain_rates:
+            func(time=time)
 
     def apply_callbacks(self, time: np.floating, current_step: int):
         # Collection call _feature_group_callback
-        for feature in self._feature_group_callback:
-            feature(time, current_step)
+        for func in self._feature_group_callback:
+            func(time=time, current_step=current_step)

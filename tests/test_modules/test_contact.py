@@ -48,7 +48,7 @@ class TestContact:
         contact = load_contact
 
         with pytest.raises(RuntimeError) as excinfo:
-            contact()
+            contact.instantiate()
         assert "No contacts provided to to establish contact between rod-like object id {0} and {1}, but a Contact was intended as per code. Did you forget to call the `using` method?".format(
             *contact.id()
         ) == str(
@@ -75,7 +75,7 @@ class TestContact:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = contact()
+            _ = contact.instantiate()
         assert (
             r"Unable to construct contact class.\nDid you provide all necessary contact properties?"
             == str(excinfo.value)
@@ -260,13 +260,15 @@ class TestContactMixin:
 
     def test_contact_finalize_correctness(self, load_rod_with_contacts):
         system_collection_with_contacts, contact_cls = load_rod_with_contacts
+        contact = system_collection_with_contacts._contacts[0].instantiate()
+        fidx, sidx = system_collection_with_contacts._contacts[0].id()
 
         system_collection_with_contacts._finalize_contact()
 
-        for fidx, sidx, contact in system_collection_with_contacts._contacts:
-            assert type(fidx) is int
-            assert type(sidx) is int
-            assert type(contact) is contact_cls
+        assert not hasattr(system_collection_with_contacts, "_contacts")
+        assert type(fidx) is int
+        assert type(sidx) is int
+        assert type(contact) is contact_cls
 
     @pytest.fixture
     def load_contact_objects_with_incorrect_order(self, load_system_with_contacts):
@@ -339,19 +341,18 @@ class TestContactMixin:
         return system_collection_with_rods_in_contact
 
     def test_contact_call_on_systems(self, load_system_with_rods_in_contact):
-
-        system_collection_with_rods_in_contact = load_system_with_rods_in_contact
-
-        system_collection_with_rods_in_contact._finalize_contact()
-        system_collection_with_rods_in_contact._call_contacts(time=0)
-
         from elastica.contact_forces import _calculate_contact_forces_rod_rod
 
-        for (
-            fidx,
-            sidx,
-            contact,
-        ) in system_collection_with_rods_in_contact._contacts:
+        system_collection_with_rods_in_contact = load_system_with_rods_in_contact
+        mock_contacts = [c for c in system_collection_with_rods_in_contact._contacts]
+
+        system_collection_with_rods_in_contact._finalize_contact()
+        system_collection_with_rods_in_contact.synchronize(time=0)
+
+        for _contact in mock_contacts:
+            fidx, sidx = _contact.id()
+            contact = _contact.instantiate()
+
             system_one = system_collection_with_rods_in_contact._systems[fidx]
             system_two = system_collection_with_rods_in_contact._systems[sidx]
             external_forces_system_one = np.zeros_like(system_one.external_forces)

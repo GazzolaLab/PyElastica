@@ -5,7 +5,10 @@ Forcing
 Provides the forcing interface to apply forces and torques to rod-like objects
 (external point force, muscle torques, etc).
 """
-from elastica.interaction import AnisotropicFrictionalPlane
+import logging
+import functools
+
+logger = logging.getLogger(__name__)
 
 
 class Forcing:
@@ -23,7 +26,6 @@ class Forcing:
     def __init__(self):
         self._ext_forces_torques = []
         super(Forcing, self).__init__()
-        self._feature_group_synchronize.append(self._call_ext_forces_torques)
         self._feature_group_finalize.append(self._finalize_forcing)
 
     def add_forcing_to(self, system):
@@ -46,6 +48,7 @@ class Forcing:
         # Create _Constraint object, cache it and return to user
         _ext_force_torque = _ExtForceTorque(sys_idx)
         self._ext_forces_torques.append(_ext_force_torque)
+        self._feature_group_synchronize.append_id(_ext_force_torque)
 
         return _ext_force_torque
 
@@ -54,37 +57,29 @@ class Forcing:
         # inplace : https://stackoverflow.com/a/1208792
 
         # dev : the first index stores the rod index to apply the boundary condition
-        # to. Technically we can use another array but it its one more book-keeping
-        # step. Being lazy, I put them both in the same array
-        self._ext_forces_torques[:] = [
-            (ext_force_torque.id(), ext_force_torque())
-            for ext_force_torque in self._ext_forces_torques
-        ]
+        # to.
+        for external_force_and_torque in self._ext_forces_torques:
+            sys_id = external_force_and_torque.id()
+            forcing_instance = external_force_and_torque.instantiate()
 
-        # Sort from lowest id to highest id for potentially better memory access
-        # _ext_forces_torques contains list of tuples. First element of tuple is
-        # rod number and following elements are the type of boundary condition such as
-        # [(0, NoForces, GravityForces), (1, UniformTorques), ... ]
-        # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
-        # to sort _ext_forces_torques.
-        self._ext_forces_torques.sort(key=lambda x: x[0])
+            apply_forces = functools.partial(
+                forcing_instance.apply_forces, system=self._systems[sys_id]
+            )
+            apply_torques = functools.partial(
+                forcing_instance.apply_torques, system=self._systems[sys_id]
+            )
 
-        # Find if there are any friction plane forcing, if add them to the end of the list,
-        # since friction planes uses external forces.
-        friction_plane_index = []
-        for idx, ext_force_torque in enumerate(self._ext_forces_torques):
-            if isinstance(ext_force_torque[1], AnisotropicFrictionalPlane):
-                friction_plane_index.append(idx)
+            self._feature_group_synchronize.add_operators(
+                external_force_and_torque, [apply_forces, apply_torques]
+            )
 
-        # Move to the friction forces to the end of the external force and torques list.
-        for index in friction_plane_index:
-            self._ext_forces_torques.append(self._ext_forces_torques.pop(index))
+            self.warnings(external_force_and_torque)
 
-    def _call_ext_forces_torques(self, time, *args, **kwargs):
-        for sys_id, ext_force_torque in self._ext_forces_torques:
-            ext_force_torque.apply_forces(self._systems[sys_id], time, *args, **kwargs)
-            ext_force_torque.apply_torques(self._systems[sys_id], time, *args, **kwargs)
-            # TODO Apply torque, see if necessary
+        self._ext_forces_torques = []
+        del self._ext_forces_torques
+
+    def warnings(self, external_force_and_torque):
+        pass
 
 
 class _ExtForceTorque:
@@ -146,7 +141,7 @@ class _ExtForceTorque:
     def id(self):
         return self._sys_idx
 
-    def __call__(self, *args, **kwargs):
+    def instantiate(self):
         """Constructs a constraint after checks
 
         Parameters
