@@ -25,7 +25,7 @@ class CallBackBaseClass:
         """
         pass
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, system: SystemType, time: np.floating, current_step: int):
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users

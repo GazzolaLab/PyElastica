@@ -5,14 +5,14 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Iterable, Callable, AnyStr, Type, Generator
+from typing import Iterable, AnyStr, Type, Generator
 from typing import final
 from elastica.typing import (
     SystemType,
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,
-    OperatorFinalizeType
+    OperatorFinalizeType,
 )
 
 import numpy as np
@@ -61,7 +61,7 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_callback: Iterable[OperatorCallbackType] = []
         self._feature_group_finalize: Iterable[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
-        super(BaseSystemCollection, self).__init__()
+        super().__init__()
 
         # List of system types/bases that are allowed
         self.allowed_sys_types: tuple[Type[SystemType]] = (

@@ -55,7 +55,7 @@ class TestCallBacks:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = callback()
+            _ = callback.instantiate()
         assert "Unable to construct" in str(excinfo.value)
 
 

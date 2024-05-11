@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from collections.abc import Iterable
 
@@ -6,6 +6,7 @@ import itertools
 
 T = TypeVar("T")
 F = TypeVar("F")
+
 
 class OperatorGroupFIFO(Iterable):
     """
