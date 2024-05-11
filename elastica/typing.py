@@ -85,8 +85,6 @@ SystemCollectionType: TypeAlias = BaseSystemCollection
 AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
 
 # Operators in elastica.modules
-SynchronizeOperator: TypeAlias = Callable[[float], None]
-ConstrainValuesOperator: TypeAlias = Callable[[float], None]
-ConstrainRatesOperator: TypeAlias = Callable[[float], None]
-CallbackOperator: TypeAlias = Callable[[float, int, AnyStr], None]
-FinalizeOperator: TypeAlias = Callable[[], None]
+OperatorType: TypeAlias = Callable[[float], None]
+OperatorCallbackType: TypeAlias = Callable[[float, int], None]
+OperatorFinalizeType: TypeAlias = Callable
