@@ -56,6 +56,7 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
+        self._memory_blocks = []
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
         self._finalize_flag = False
@@ -72,7 +73,10 @@ class BaseSystemCollection(MutableSequence):
                 "The allowed types are\n"
                 "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
             )
-        if not all(isinstance(self, req) for req in sys_to_be_added.REQUISITE_MODULES):
+        if not all(
+            isinstance(self, req)
+            for req in getattr(sys_to_be_added, "REQUISITE_MODULES", [])
+        ):
             raise RuntimeError(
                 f"The system {sys_to_be_added.__class__} requires the following modules:\n"
                 f"{sys_to_be_added.REQUISITE_MODULES}\n"
