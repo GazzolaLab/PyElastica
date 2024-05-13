@@ -9,8 +9,6 @@ from elastica.typing import (
     SystemType,
 )
 
-pass
-
 
 class SystemCollectionProtocol(Protocol):
     _systems: list[SystemType]

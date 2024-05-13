@@ -439,6 +439,7 @@ class CosseratRod(RodBase, KnotTheory):
         CosseratRod
 
         """
+        from elastica.modules.constraints import Constraints
 
         if nu is not None:
             raise ValueError(
@@ -497,7 +498,7 @@ class CosseratRod(RodBase, KnotTheory):
             **kwargs,
         )
 
-        return cls(
+        rod = cls(
             n_elements,
             position,
             velocities,
@@ -532,6 +533,8 @@ class CosseratRod(RodBase, KnotTheory):
             internal_couple,
             ring_rod_flag,
         )
+        rod.REQUISITE_MODULE.append(Constraints)
+        return rod
 
     def compute_internal_forces_and_torques(self, time):
         """

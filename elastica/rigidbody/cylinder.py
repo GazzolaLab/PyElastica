@@ -64,8 +64,8 @@ class Cylinder(RigidBodyBase):
 
         self.velocity_collection = np.zeros((MaxDimension.value(), 1))
         self.omega_collection = np.zeros((MaxDimension.value(), 1))
-        self.acceleration_collection = 0.0 * self.velocity_collection
-        self.alpha_collection = 0.0 * self.omega_collection
+        self.acceleration_collection = np.zeros((MaxDimension.value(), 1))
+        self.alpha_collection = np.zeros((MaxDimension.value(), 1))
 
         self.director_collection = np.zeros(
             (MaxDimension.value(), MaxDimension.value(), 1)
