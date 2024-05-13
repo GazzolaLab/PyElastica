@@ -15,6 +15,8 @@ class RigidBodyBase(ABC):
 
     """
 
+    REQUISITE_MODULES = []
+
     def __init__(self):
 
         self.position_collection = NotImplementedError
