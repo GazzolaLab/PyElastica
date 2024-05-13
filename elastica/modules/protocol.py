@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Type, Generator, Iterable
 from typing_extensions import Self  # 3.11: from typing import Self
 
 from elastica.typing import (
@@ -9,10 +9,10 @@ from elastica.typing import (
     SystemType,
 )
 
-from collections.abc import MutableSequence
+pass
 
 
-class SystemCollectionProtocol(Protocol, MutableSequence):
+class SystemCollectionProtocol(Protocol):
     _systems: list[SystemType]
 
     @property

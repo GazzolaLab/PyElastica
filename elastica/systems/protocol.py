@@ -1,8 +1,7 @@
 __doc__ = """Base class for elastica system"""
 
-from typing import Protocol
-
-from elastica.typing import StateType
+from typing import Protocol, Type
+from elastica.typing import StateType, SystemType
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 
 import numpy as np
@@ -13,6 +12,8 @@ class SystemProtocol(Protocol):
     """
     Protocol for all elastica system
     """
+
+    REQUISITE_MODULES: list[Type[SystemType]]
 
     @property
     def n_nodes(self) -> int: ...

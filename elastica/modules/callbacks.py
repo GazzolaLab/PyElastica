@@ -82,6 +82,8 @@ class CallBacks:
         self._callback_operators = [
             (callback.id(), callback.instantiate()) for callback in self._callback_list
         ]
+        self._callback_list.clear()
+        del self._callback_list
 
         # First callback execution
         time = np.float64(0.0)
@@ -91,13 +93,9 @@ class CallBacks:
         self: SystemCollectionWithCallBacksProtocol,
         time: np.floating,
         current_step: int,
-        *args: CallbackParam.args,
-        **kwargs: CallbackParam.kwargs,
     ) -> None:
         for sys_id, callback in self._callback_operators:
-            callback.make_callback(
-                self._systems[sys_id], time, current_step, *args, **kwargs
-            )
+            callback.make_callback(self._systems[sys_id], time, current_step)
 
 
 class _CallBack:

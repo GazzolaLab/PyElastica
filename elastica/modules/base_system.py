@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Iterable, AnyStr, Type, Generator
+from typing import Type, Generator, Iterable
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -51,20 +51,20 @@ class BaseSystemCollection(MutableSequence):
     https://stackoverflow.com/q/3945940
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
         self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
-        self._feature_group_constrain_values: Iterable[OperatorType] = []
-        self._feature_group_constrain_rates: Iterable[OperatorType] = []
-        self._feature_group_callback: Iterable[OperatorCallbackType] = []
-        self._feature_group_finalize: Iterable[OperatorFinalizeType] = []
+        self._feature_group_constrain_values: list[OperatorType] = []
+        self._feature_group_constrain_rates: list[OperatorType] = []
+        self._feature_group_callback: list[OperatorCallbackType] = []
+        self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
         super().__init__()
 
         # List of system types/bases that are allowed
-        self.allowed_sys_types: tuple[Type[SystemType]] = (
+        self.allowed_sys_types: tuple[Type[SystemType], ...] = (
             RodBase,
             RigidBodyBase,
             SurfaceBase,
@@ -79,8 +79,8 @@ class BaseSystemCollection(MutableSequence):
         self._finalize_flag: bool = False
 
     @final
-    def _check_type(self, sys_to_be_added: AnyStr):
-        if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
+    def _check_type(self, sys_to_be_added: SystemType) -> bool:
+        if not isinstance(sys_to_be_added, self.allowed_sys_types):
             raise TypeError(
                 "{0}\n"
                 "is not a system passing validity\n"
@@ -96,17 +96,17 @@ class BaseSystemCollection(MutableSequence):
     def __len__(self) -> int:
         return len(self._systems)
 
-    def __getitem__(self, idx: int) -> SystemType:
+    def __getitem__(self, idx: int | slice, /) -> SystemType | list[SystemType]:  # type: ignore
         return self._systems[idx]
 
-    def __delitem__(self, idx: int) -> None:
+    def __delitem__(self, idx: int | slice, /) -> None:  # type: ignore
         del self._systems[idx]
 
-    def __setitem__(self, idx: int, system: SystemType) -> None:
+    def __setitem__(self, idx: int | slice, system: SystemType | Iterable[SystemType], /) -> None:  # type: ignore
         self._check_type(system)
         self._systems[idx] = system
 
-    def insert(self, idx: int, system: SystemType) -> None:
+    def insert(self, idx: int, system: SystemType) -> None:  # type: ignore
         self._check_type(system)
         self._systems.insert(idx, system)
 
@@ -116,20 +116,21 @@ class BaseSystemCollection(MutableSequence):
 
     @final
     def extend_allowed_types(
-        self, additional_types: list[Type[SystemType], ...]
+        self, additional_types: tuple[Type[SystemType], ...]
     ) -> None:
         self.allowed_sys_types += additional_types
 
     @final
     def override_allowed_types(
-        self, allowed_types: list[Type[SystemType], ...]
+        self, allowed_types: tuple[Type[SystemType], ...]
     ) -> None:
-        self.allowed_sys_types = tuple(allowed_types)
+        self.allowed_sys_types = allowed_types
 
     @final
     def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
+        sys_idx: SystemIdxType
         if isinstance(sys_to_be_added, (int, np.int_)):
             # 1. If they are indices themselves, check range
             assert (
@@ -137,7 +138,7 @@ class BaseSystemCollection(MutableSequence):
             ), "Rod index {} exceeds number of registered rodtems".format(
                 sys_to_be_added
             )
-            sys_idx = sys_to_be_added
+            sys_idx = int(sys_to_be_added)
         elif self._check_type(sys_to_be_added):
             # 2. If they are rod objects (most likely), lookup indices
             # index might have some problems : https://stackoverflow.com/a/176921
@@ -195,7 +196,7 @@ class BaseSystemCollection(MutableSequence):
 
         # Clear the finalize feature group, just for the safety.
         self._feature_group_finalize.clear()
-        self._feature_group_finalize = None
+        del self._feature_group_finalize
 
     @final
     def synchronize(self, time: np.floating) -> None:
