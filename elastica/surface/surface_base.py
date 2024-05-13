@@ -11,6 +11,8 @@ class SurfaceBase:
 
     """
 
+    REQUISITE_MODULES = []
+
     def __init__(self):
         """
         SurfaceBase does not take any arguments.

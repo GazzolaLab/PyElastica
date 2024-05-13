@@ -15,7 +15,6 @@ from collections.abc import MutableSequence
 from elastica.rod import RodBase
 from elastica.rigidbody import RigidBodyBase
 from elastica.surface import SurfaceBase
-from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
@@ -59,6 +58,7 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types: tuple[Type, ...] = (RodBase, RigidBodyBase, SurfaceBase)
         # List of systems to be integrated
         self._systems = []
+        self._memory_blocks = []
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
         self._finalize_flag = False
@@ -74,6 +74,14 @@ class BaseSystemCollection(MutableSequence):
                 "it using BaseSystem.extend_allowed_types.\n"
                 "The allowed types are\n"
                 "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
+            )
+        if not all(
+            isinstance(self, req)
+            for req in getattr(sys_to_be_added, "REQUISITE_MODULES", [])
+        ):
+            raise RuntimeError(
+                f"The system {sys_to_be_added.__class__} requires the following modules:\n"
+                f"{sys_to_be_added.REQUISITE_MODULES}\n"
             )
         return True
 
@@ -143,22 +151,9 @@ class BaseSystemCollection(MutableSequence):
 
         # construct memory block
         self._memory_blocks = construct_memory_block_structures(self._systems)
-
-        """
-        In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
-        periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
-        constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
-        """
-        for i in range(len(self._memory_blocks)):
+        for block in self._memory_blocks:
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
-            self.append(self._memory_blocks[i])
-            if hasattr(self._memory_blocks[i], "ring_rod_flag"):
-                # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
-                # sys idx among other systems added and then apply boundary conditions.
-                memory_block_idx = self._get_sys_idx_if_valid(self._memory_blocks[i])
-                self.constrain(self._systems[memory_block_idx]).using(
-                    _ConstrainPeriodicBoundaries,
-                )
+            self.append(block)
 
         # Recurrent call finalize functions for all components.
         for finalize in self._feature_group_finalize:

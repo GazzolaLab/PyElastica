@@ -51,6 +51,23 @@ class Constraints:
         return _constraint
 
     def _finalize_constraints(self):
+        """
+        In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
+        periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
+        constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
+        """
+        from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
+
+        for block in self._memory_blocks:
+            # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
+            if hasattr(block, "ring_rod_flag"):
+                # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
+                # sys idx among other systems added and then apply boundary conditions.
+                memory_block_idx = self._get_sys_idx_if_valid(block)
+                self.constrain(self._systems[memory_block_idx]).using(
+                    _ConstrainPeriodicBoundaries,
+                )
+
         # From stored _Constraint objects, instantiate the boundary conditions
         # inplace : https://stackoverflow.com/a/1208792
 
