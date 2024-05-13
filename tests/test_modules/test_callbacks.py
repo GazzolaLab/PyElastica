@@ -164,9 +164,11 @@ class TestCallBacksMixin:
 
         scwc._finalize_callback()
 
-        for x, y in scwc._callback_list:
+        for x, y in scwc._callback_operators:
             assert type(x) is int
             assert type(y) is callback_cls
+
+        assert not hasattr(scwc, "_callback_list")
 
     @pytest.mark.xfail
     def test_callback_finalize_sorted(self, load_rod_with_callbacks):

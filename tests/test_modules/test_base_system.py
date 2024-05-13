@@ -221,7 +221,7 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.collect_diagnostics(rod).using(legal_callback)
         simulator_class.finalize()
         # After finalize check if the created callback object is instance of the class we have given.
-        assert isinstance(simulator_class._callback_list[-1][-1], legal_callback)
+        assert isinstance(simulator_class._callback_operators[-1][-1], legal_callback)
 
         # TODO: this is a dummy test for apply_callbacks find a better way to test them
         simulator_class.apply_callbacks(time=0, current_step=0)
