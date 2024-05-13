@@ -38,18 +38,14 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         """
 
         # Things in rigid bodies that are scalars
-        #           0 ("radius", float64),
-        #           1 ("length", float64),
-        #           2 ("density", float64),
-        #           3 ("volume" , float 64),
-        #           4 ("mass, float64),
+        #           0 ("density", float64),
+        #           1 ("volume" , float64),
+        #           2 ("mass, float64),
 
         map_scalar_dofs_in_rigid_bodies = {
-            "radius": 0,
-            "length": 1,
-            "density": 2,
-            "volume": 3,
-            "mass": 4,
+            "density": 0,
+            "volume": 1,
+            "mass": 2,
         }
         self.scalar_dofs_in_rigid_bodies = np.zeros(
             (len(map_scalar_dofs_in_rigid_bodies), self.n_elems)
