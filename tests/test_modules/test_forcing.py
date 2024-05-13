@@ -39,7 +39,7 @@ class TestExtForceTorque:
         forcing = load_forcing
 
         with pytest.raises(RuntimeError) as excinfo:
-            forcing(None)  # None is the rod/system parameter
+            forcing.instantiate()  # None is the rod/system parameter
         assert "No forcing" in str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_forcing):
@@ -62,7 +62,7 @@ class TestExtForceTorque:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = forcing()
+            _ = forcing.instantiate()
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -166,7 +166,7 @@ class TestForcingMixin:
 
         return scwf, MockForcing
 
-    def test_friction_plane_forcing_class_sorting(self, load_system_with_forcings):
+    def test_friction_plane_forcing_class(self, load_system_with_forcings):
 
         scwf = load_system_with_forcings
 
@@ -196,19 +196,24 @@ class TestForcingMixin:
         )
         scwf.add_forcing_to(1).using(MockForcing, 2, 42)  # index based forcing
 
+        # Now check if the Anisotropic friction and the MockForcing are in the list
+        assert scwf._ext_forces_torques[-1]._forcing_cls == MockForcing
+        assert scwf._ext_forces_torques[-2]._forcing_cls == AnisotropicFrictionalPlane
         scwf._finalize_forcing()
-
-        # Now check if the Anisotropic friction is the last forcing class
-        assert isinstance(scwf._ext_forces_torques[-1][-1], AnisotropicFrictionalPlane)
+        assert not hasattr(scwf, "_ext_forces_torques")
 
     def test_constrain_finalize_correctness(self, load_rod_with_forcings):
         scwf, forcing_cls = load_rod_with_forcings
+        forcing_features = [f for f in scwf._ext_forces_torques]
 
         scwf._finalize_forcing()
+        assert not hasattr(scwf, "_ext_forces_torques")
 
-        for x, y in scwf._ext_forces_torques:
-            assert type(x) is int
-            assert type(y) is forcing_cls
+        for _forcing in forcing_features:
+            x = _forcing.id()
+            y = _forcing.instantiate()
+            assert isinstance(x, int)
+            assert isinstance(y, forcing_cls)
 
     @pytest.mark.xfail
     def test_constrain_finalize_sorted(self, load_rod_with_forcings):
