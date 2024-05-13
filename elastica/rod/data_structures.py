@@ -43,7 +43,7 @@ from elastica._linalg import _batch_matmul
 
 
 class _RodSymplecticStepperMixin:
-    def __init__(self):
+    def __init__(self) -> None:
         self.kinematic_states = _KinematicState(
             self.position_collection, self.director_collection
         )

@@ -44,14 +44,14 @@ class _RigidRodExplicitStepperMixin:
 
 
 class _RigidRodSymplecticStepperMixin(_RodSymplecticStepperMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         super(_RigidRodSymplecticStepperMixin, self).__init__()
         # Expose rate returning functions in the interface
         # to be used by the time-stepping algorithm
         # dynamic rates needs to call update_accelerations and henc
         # is another function
 
-    def update_internal_forces_and_torques(self, *args, **kwargs):
+    def update_internal_forces_and_torques(self, *args, **kwargs) -> None:
         pass
 
 

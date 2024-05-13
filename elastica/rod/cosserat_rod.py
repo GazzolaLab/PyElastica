@@ -31,7 +31,7 @@ def _get_z_vector():
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-def _compute_sigma_kappa_for_blockstructure(memory_block):
+def _compute_sigma_kappa_for_blockstructure(memory_block) -> None:
     """
     This function is a wrapper to call functions which computes shear stretch, strain and bending twist and strain.
 
