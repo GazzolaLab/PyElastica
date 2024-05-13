@@ -1,6 +1,6 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
-from typing import Sequence, Literal, Callable
+from typing import Sequence, Literal, Callable, Type
 from elastica.memory_block.memory_block_rod_base import (
     MemoryBlockRodBase,
     make_block_memory_metadata,
@@ -31,7 +31,7 @@ class MemoryBlockCosseratRod(
     TODO: need more documentation!
     """
 
-    def __init__(self, systems: Sequence, system_idx_list):
+    def __init__(self, systems: Sequence, system_idx_list: tuple[int]) -> None:
 
         # separate straight and ring rods
         system_straight_rod = []
@@ -200,7 +200,7 @@ class MemoryBlockCosseratRod(
         # Initialize the mixin class for symplectic time-stepper.
         _RodSymplecticStepperMixin.__init__(self)
 
-    def _allocate_block_variables_in_nodes(self, systems: Sequence):
+    def _allocate_block_variables_in_nodes(self, systems: Sequence) -> None:
         """
         This function takes system collection and allocates the variables on
         node for block-structure and references allocated variables back to the
@@ -250,7 +250,7 @@ class MemoryBlockCosseratRod(
             value_type="vector",
         )
 
-    def _allocate_block_variables_in_elements(self, systems: Sequence):
+    def _allocate_block_variables_in_elements(self, systems: Sequence) -> None:
         """
         This function takes system collection and allocates the variables on
         elements for block-structure and references allocated variables back to the
@@ -341,7 +341,7 @@ class MemoryBlockCosseratRod(
             value_type="tensor",
         )
 
-    def _allocate_blocks_variables_in_voronoi(self, systems: Sequence):
+    def _allocate_blocks_variables_in_voronoi(self, systems: Sequence) -> None:
         """
         This function takes system collection and allocates the variables on
         voronoi for block-structure and references allocated variables back to the
@@ -408,7 +408,9 @@ class MemoryBlockCosseratRod(
             value_type="tensor",
         )
 
-    def _allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_blocks_variables_for_symplectic_stepper(
+        self, systems: Sequence
+    ) -> None:
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
@@ -509,8 +511,8 @@ class MemoryBlockCosseratRod(
         end_idx_list: np.ndarray
         periodic_boundary_idx: np.ndarray
         synchronize_periodic_boundary: Callable
-        domain_num: np.int64
-        view_shape: tuple
+        domain_num: int
+        view_shape: tuple[int, ...]
 
         if domain_type == "node":
             start_idx_list = self.start_idx_in_rod_nodes.view()
