@@ -1,5 +1,6 @@
 import numpy as np
 from elastica import *
+from elastica.typing import SystemType, SystemCollectionType, SymplecticStepperProtocol
 
 from post_processing import (
     plot_video,
@@ -11,7 +12,7 @@ class CatenarySimulator(BaseSystemCollection, Constraints, Forcing, Damping, Cal
     pass
 
 
-catenary_sim = CatenarySimulator()
+catenary_sim: SystemCollectionType = CatenarySimulator()
 final_time = 10
 damping_constant = 0.3
 time_step = 1e-4
@@ -37,7 +38,7 @@ E = 1e4
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
-base_rod = CosseratRod.straight_rod(
+base_rod: SystemType = CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -76,11 +77,11 @@ class CatenaryCallBack(CallBackBaseClass):
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, system: SystemType, time: float, current_step: int) -> None:
 
         if current_step % self.every == 0:
 
@@ -93,7 +94,7 @@ class CatenaryCallBack(CallBackBaseClass):
             return
 
 
-pp_list = defaultdict(list)
+pp_list: dict = defaultdict(list)
 catenary_sim.collect_diagnostics(base_rod).using(
     CatenaryCallBack, step_skip=step_skip, callback_params=pp_list
 )
@@ -102,7 +103,7 @@ catenary_sim.collect_diagnostics(base_rod).using(
 catenary_sim.finalize()
 
 
-timestepper = PositionVerlet()
+timestepper: SymplecticStepperProtocol = PositionVerlet()
 
 integrate(timestepper, catenary_sim, final_time, total_steps)
 position = np.array(pp_list["position"])

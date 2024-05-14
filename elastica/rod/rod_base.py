@@ -11,6 +11,8 @@ class RodBase:
 
     """
 
+    REQUISITE_MODULES = []
+
     def __init__(self):
         """
         RodBase does not take any arguments.

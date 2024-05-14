@@ -1,8 +1,13 @@
 __doc__ = "Time stepper interface"
 
-from typing import Protocol, Tuple, Callable, Type, Any
+from typing import Protocol
 
-from elastica.typing import SystemType
+from elastica.typing import (
+    SystemType,
+    SteppersOperatorsType,
+    OperatorType,
+    SystemCollectionType,
+)
 
 import numpy as np
 
@@ -10,42 +15,43 @@ import numpy as np
 class StepperProtocol(Protocol):
     """Protocol for all time-steppers"""
 
-    def do_step(self, *args: Any, **kwargs: Any) -> float: ...
+    steps_and_prefactors: SteppersOperatorsType
 
-    @property
-    def Tag(self) -> Type: ...
-
-
-class StatefulStepperProtocol(StepperProtocol, Protocol):
-    """
-    Stateful explicit, symplectic stepper wrapper.
-    """
-
-    # For stateful steppes, bind memory to self
-    def do_step(self, System: SystemType, time: np.floating, dt: np.floating) -> float:
-        """
-        Perform one time step of the simulation.
-        Return the new time.
-        """
-        ...
+    def __init__(self) -> None: ...
 
     @property
     def n_stages(self) -> int: ...
 
+    def step_methods(self) -> SteppersOperatorsType: ...
 
-class MethodCollectorProtocol(Protocol):
-    """
-    Protocol for collecting stepper methods.
-    """
+    def step(
+        self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
+    ) -> np.floating: ...
 
-    def __init__(self, timestepper_instance: StepperProtocol): ...
+    def step_single_instance(
+        self, SystemCollection: SystemType, time: np.floating, dt: np.floating
+    ) -> np.floating: ...
 
-    def step_methods(self) -> Tuple[Callable]: ...
+
+class SymplecticStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_steps(self) -> list[OperatorType]: ...
+
+    def get_prefactors(self) -> list[OperatorType]: ...
 
 
 class MemoryProtocol(Protocol):
     @property
     def initial_state(self) -> bool: ...
+
+
+class ExplicitStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_stages(self) -> list[OperatorType]: ...
+
+    def get_updates(self) -> list[OperatorType]: ...
 
 
 # class _LinearExponentialIntegratorMixin:

@@ -38,6 +38,8 @@ class SystemProtocol(Protocol):
     @property
     def external_torques(self) -> NDArray: ...
 
+    def update_internal_forces_and_torques(self, time: np.floating) -> None: ...
+
 
 class SymplecticSystemProtocol(SystemProtocol, Protocol):
     """
@@ -63,8 +65,6 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     def dynamic_rates(
         self, time: np.floating, prefac: np.floating
     ) -> tuple[NDArray]: ...
-
-    def update_internal_forces_and_torques(self, time: np.floating) -> None: ...
 
 
 class ExplicitSystemProtocol(SystemProtocol, Protocol):

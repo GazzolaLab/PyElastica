@@ -1,7 +1,7 @@
 #* Variables
 PYTHON := python3
 PYTHONPATH := `pwd`
-AUTOFLAKE8_ARGS := -r --exclude '__init__.py' --keep-pass-after-docstring
+AUTOFLAKE_ARGS := -r
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -47,19 +47,19 @@ flake8:
 	poetry run flake8 --version
 	poetry run flake8 elastica tests
 
-.PHONY: autoflake8-check
-autoflake8-check:
-	poetry run autoflake8 --version
-	poetry run autoflake8 $(AUTOFLAKE8_ARGS) elastica tests examples
-	poetry run autoflake8 --check $(AUTOFLAKE8_ARGS) elastica tests examples
+.PHONY: autoflake-check
+autoflake-check:
+	poetry run autoflake --version
+	poetry run autoflake $(AUTOFLAKE_ARGS) elastica tests examples
+	poetry run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
-.PHONY: autoflake8-format
-autoflake8-format:
-	poetry run autoflake8 --version
-	poetry run autoflake8 --in-place $(AUTOFLAKE8_ARGS) elastica tests examples
+.PHONY: autoflake-format
+autoflake-format:
+	poetry run autoflake --version
+	poetry run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: format-codestyle
-format-codestyle: black flake8
+format-codestyle: black autoflake-format
 
 .PHONY: mypy
 mypy:
@@ -78,7 +78,7 @@ test_coverage_xml:
 	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica --cov-report=xml
 
 .PHONY: check-codestyle
-check-codestyle: black-check flake8 autoflake8-check
+check-codestyle: black-check flake8 autoflake-check
 
 .PHONY: formatting
 formatting: format-codestyle

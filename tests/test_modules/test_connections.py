@@ -150,7 +150,7 @@ class TestConnect:
         connect = load_connect
 
         with pytest.raises(RuntimeError) as excinfo:
-            connect()
+            connect.instantiate()
         assert "No connections provided" in str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_connect):
@@ -173,7 +173,7 @@ class TestConnect:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = connect()
+            _ = connect.instantiate()
         assert (
             r"Unable to construct connection class.\nDid you provide all necessary joint properties?"
             == str(excinfo.value)
@@ -327,21 +327,18 @@ class TestConnectionsMixin:
 
     def test_connect_finalize_correctness(self, load_rod_with_connects):
         system_collection_with_connections, connect_cls = load_rod_with_connects
+        connect = system_collection_with_connections._connections[0]
+        assert connect._connect_cls == connect_cls
 
         system_collection_with_connections._finalize_connections()
+        assert (
+            system_collection_with_connections._feature_group_synchronize._operator_ids[
+                0
+            ]
+            == id(connect)
+        )
 
-        for (
-            fidx,
-            sidx,
-            fconnect,
-            sconnect,
-            connect,
-        ) in system_collection_with_connections._connections:
-            assert type(fidx) is int
-            assert type(sidx) is int
-            assert fconnect is None
-            assert sconnect is None
-            assert type(connect) is connect_cls
+        assert not hasattr(system_collection_with_connections, "_connections")
 
     @pytest.fixture
     def load_rod_with_connects_and_indices(self, load_system_with_connects):
@@ -392,17 +389,17 @@ class TestConnectionsMixin:
             system_collection_with_connections_and_indices,
             connect_cls,
         ) = load_rod_with_connects_and_indices
+        mock_connections = [
+            c for c in system_collection_with_connections_and_indices._connections
+        ]
 
         system_collection_with_connections_and_indices._finalize_connections()
-        system_collection_with_connections_and_indices._call_connections()
+        system_collection_with_connections_and_indices.synchronize(0)
 
-        for (
-            fidx,
-            sidx,
-            fconnect,
-            sconnect,
-            connect,
-        ) in system_collection_with_connections_and_indices._connections:
+        for connection in mock_connections:
+            fidx, sidx, fconnect, sconnect = connection.id()
+            connect = connection.instantiate()
+
             end_distance_vector = (
                 system_collection_with_connections_and_indices._systems[
                     sidx

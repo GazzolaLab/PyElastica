@@ -89,10 +89,8 @@ def test_memory_block_rigid_body(n_bodies):
 
     expected_attr_list = [
         "mass",
-        "radius",
         "volume",
         "density",
-        "length",
         "position_collection",
         "external_forces",
         "external_torques",
