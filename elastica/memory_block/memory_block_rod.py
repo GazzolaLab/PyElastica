@@ -31,7 +31,7 @@ class MemoryBlockCosseratRod(
     TODO: need more documentation!
     """
 
-    def __init__(self, systems: Sequence, system_idx_list: tuple[int]) -> None:
+    def __init__(self, systems: list[RodBase], system_idx_list: list[SystemIdxType]) -> None:
 
         # separate straight and ring rods
         system_straight_rod = []
