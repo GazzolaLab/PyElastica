@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .rod import RodBase
     from .rigidbody import RigidBodyBase
     from .surface import SurfaceBase
+    from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
     from .rod.data_structures import _State as State
