@@ -17,6 +17,7 @@ from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_scalar_collection,
     _synchronize_periodic_boundary_of_matrix_collection,
 )
+from elastica.typing import SystemIdxType
 
 
 class MemoryBlockCosseratRod(
