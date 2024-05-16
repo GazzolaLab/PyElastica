@@ -122,6 +122,7 @@ strict = true
 
 allow_redefinition = false
 check_untyped_defs = true
+disallow_any_unimported = true
 disallow_any_generics = false
 disallow_incomplete_defs = true
 disallow_untyped_calls = true

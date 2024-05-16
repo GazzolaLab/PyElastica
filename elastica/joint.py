@@ -42,18 +42,22 @@ class FreeJoint:
         self.nu = nu
 
     def apply_forces(
-        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
     ):
         """
         Apply joint force to the connected rod objects.
 
         Parameters
         ----------
-        system_one : object
+        system_one : SystemType
             Rod or rigid-body object
         index_one : int
             Index of first rod for joint.
-        system_two : object
+        system_two : SystemType
             Rod or rigid-body object
         index_two : int
             Index of second rod for joint.
@@ -81,7 +85,11 @@ class FreeJoint:
         return
 
     def apply_torques(
-        self, system_one: SystemType, index_one, system_two: SystemType, index_two
+        self,
+        system_one: SystemType,
+        index_one: int,
+        system_two: SystemType,
+        index_two: int,
     ):
         """
         Apply restoring joint torques to the connected rod objects.
@@ -90,11 +98,11 @@ class FreeJoint:
 
         Parameters
         ----------
-        system_one : object
+        system_one : SystemType
             Rod or rigid-body object
         index_one : int
             Index of first rod for joint.
-        system_two : object
+        system_two : SystemType
             Rod or rigid-body object
         index_two : int
             Index of second rod for joint.
