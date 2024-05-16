@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Generic, Iterator
 
 from collections.abc import Iterable
 
@@ -8,7 +8,7 @@ T = TypeVar("T")
 F = TypeVar("F")
 
 
-class OperatorGroupFIFO(Iterable):
+class OperatorGroupFIFO(Iterable, Generic[T, F]):
     """
     A class to store the features and their corresponding operators in a FIFO manner.
 
@@ -40,22 +40,22 @@ class OperatorGroupFIFO(Iterable):
         Used to check if the specific feature is the last feature in the FIFO.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._operator_collection: list[list[T]] = []
         self._operator_ids: list[int] = []
 
-    def __iter__(self) -> T:
+    def __iter__(self) -> Iterator[T]:
         """Returns an operator iterator to satisfy the Iterable protocol."""
         operator_chain = itertools.chain.from_iterable(self._operator_collection)
         for operator in operator_chain:
             yield operator
 
-    def append_id(self, feature: F):
+    def append_id(self, feature: F) -> None:
         """Appends the id of the feature to the list of ids."""
         self._operator_ids.append(id(feature))
         self._operator_collection.append([])
 
-    def add_operators(self, feature: F, operators: list[T]):
+    def add_operators(self, feature: F, operators: list[T]) -> None:
         """Adds the operators to the list of operators corresponding to the feature."""
         idx = self._operator_ids.index(id(feature))
         self._operator_collection[idx].extend(operators)
