@@ -1,6 +1,8 @@
 __doc__ = """ Quadrature and difference kernels """
+from typing import Any, Union
 import numpy as np
 from numpy import zeros, empty
+from numpy.typing import NDArray
 from numba import njit
 from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_vector_ghost,
@@ -9,15 +11,17 @@ import functools
 
 
 @functools.lru_cache(maxsize=2)
-def _get_zero_array(dim, ndim):
+def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.floating], None]:
     if ndim == 1:
         return 0.0
     if ndim == 2:
         return np.zeros((dim, 1))
 
+    return None
+
 
 @njit(cache=True)
-def _trapezoidal(array_collection):
+def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way
 
@@ -63,7 +67,9 @@ def _trapezoidal(array_collection):
 
 
 @njit(cache=True)
-def _trapezoidal_for_block_structure(array_collection, ghost_idx):
+def _trapezoidal_for_block_structure(
+    array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
+) -> NDArray[np.floating]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way. This form
     specifically for the block structure implementation and there is a reset function call, to reset
@@ -115,7 +121,9 @@ def _trapezoidal_for_block_structure(array_collection, ghost_idx):
 
 
 @njit(cache=True)
-def _two_point_difference(array_collection):
+def _two_point_difference(
+    array_collection: NDArray[np.floating],
+) -> NDArray[np.floating]:
     """
     This function does differentiation.
 
@@ -156,7 +164,9 @@ def _two_point_difference(array_collection):
 
 
 @njit(cache=True)
-def _two_point_difference_for_block_structure(array_collection, ghost_idx):
+def _two_point_difference_for_block_structure(
+    array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
+) -> NDArray[np.floating]:
     """
     This function does the differentiation, for Cosserat rod model equations. This form
     specifically for the block structure implementation and there is a reset function call, to
@@ -207,7 +217,7 @@ def _two_point_difference_for_block_structure(array_collection, ghost_idx):
 
 
 @njit(cache=True)
-def _difference(vector):
+def _difference(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes difference between elements of a batch vector.
 
@@ -238,7 +248,7 @@ def _difference(vector):
 
 
 @njit(cache=True)
-def _average(vector):
+def _average(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes the average between elements of a vector.
 
@@ -268,7 +278,9 @@ def _average(vector):
 
 
 @njit(cache=True)
-def _clip_array(input_array, vmin, vmax):
+def _clip_array(
+    input_array: NDArray[np.floating], vmin: np.floating, vmax: np.floating
+) -> NDArray[np.floating]:
     """
     This function clips an array values
     between user defined minimum and maximum
@@ -304,7 +316,7 @@ def _clip_array(input_array, vmin, vmax):
 
 
 @njit(cache=True)
-def _isnan_check(array):
+def _isnan_check(array: NDArray[Any]) -> bool:
     """
     This function checks if there is any nan inside the array.
     If there is nan, it returns True boolean.
@@ -324,7 +336,7 @@ def _isnan_check(array):
     Python version: 2.24 µs ± 96.1 ns per loop
     This version: 479 ns ± 6.49 ns per loop
     """
-    return np.isnan(array).any()
+    return bool(np.isnan(array).any())
 
 
 position_difference_kernel = _difference
