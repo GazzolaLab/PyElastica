@@ -191,7 +191,7 @@ def compute_twist(
     return total_twist, local_twist
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_twist(
     center_line: NDArray[np.floating], normal_collection: NDArray[np.floating]
 ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
@@ -322,7 +322,7 @@ def compute_writhe(
     return total_writhe
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_writhe(center_line: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     Parameters
@@ -478,7 +478,7 @@ def compute_link(
     return total_link
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_auxiliary_line(
     center_line: NDArray[np.floating],
     normal_collection: NDArray[np.floating],
@@ -537,7 +537,7 @@ def _compute_auxiliary_line(
     return auxiliary_line
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_link(
     center_line: NDArray[np.floating], auxiliary_line: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -617,7 +617,7 @@ def _compute_link(
     return total_link
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_auxiliary_line_added_segments(
     beginning_direction: NDArray[np.floating],
     end_direction: NDArray[np.floating],
@@ -663,7 +663,7 @@ def _compute_auxiliary_line_added_segments(
     return new_auxiliary_line
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_additional_segment(
     center_line: NDArray[np.floating],
     segment_length: np.floating,

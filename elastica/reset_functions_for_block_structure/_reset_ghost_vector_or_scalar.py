@@ -3,7 +3,7 @@ __doc__ = """Reset the ghost vectors or scalar variables using functions impleme
 from numba import njit
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _reset_vector_ghost(input, ghost_idx, reset_value=0.0):
     """
     This function resets the ghost of an input vector collection. Default reset value is 0.0.
@@ -39,7 +39,7 @@ def _reset_vector_ghost(input, ghost_idx, reset_value=0.0):
             input[i, k] = reset_value
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _reset_scalar_ghost(input, ghost_idx, reset_value=0.0):
     """
     This function resets the ghost of a scalar collection. Default reset value is 0.0.

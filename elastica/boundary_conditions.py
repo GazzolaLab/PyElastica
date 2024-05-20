@@ -184,7 +184,7 @@ class OneEndFixedBC(ConstraintBase):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_constrain_values(
         position_collection: NDArray[np.floating],
         fixed_position_collection: NDArray[np.floating],
@@ -213,7 +213,7 @@ class OneEndFixedBC(ConstraintBase):
         director_collection[..., 0] = fixed_directors_collection
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_constrain_rates(
         velocity_collection: NDArray[np.floating],
         omega_collection: NDArray[np.floating],
@@ -365,7 +365,7 @@ class GeneralConstraint(ConstraintBase):
             )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_translational_values(
         position_collection: NDArray[np.floating],
         fixed_position_collection: NDArray[np.floating],
@@ -403,7 +403,7 @@ class GeneralConstraint(ConstraintBase):
             ]
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_translational_rates(
         velocity_collection: NDArray[np.floating],
         indices: NDArray[np.integer],
@@ -434,7 +434,7 @@ class GeneralConstraint(ConstraintBase):
             ) * velocity_collection[..., k]
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_rotational_rates(
         director_collection: NDArray[np.floating],
         omega_collection: NDArray[np.floating],
@@ -552,7 +552,7 @@ class FixedConstraint(GeneralConstraint):
             )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constraint_rotational_values(
         director_collection: NDArray[np.floating],
         fixed_director_collection: NDArray[np.floating],
@@ -575,7 +575,7 @@ class FixedConstraint(GeneralConstraint):
             director_collection[..., k] = fixed_director_collection[..., i]
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_translational_values(
         position_collection: NDArray[np.floating],
         fixed_position_collection: NDArray[np.floating],
@@ -598,7 +598,7 @@ class FixedConstraint(GeneralConstraint):
             position_collection[..., k] = fixed_position_collection[..., i]
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_translational_rates(
         velocity_collection: NDArray[np.floating], indices: NDArray[np.integer]
     ) -> None:
@@ -620,7 +620,7 @@ class FixedConstraint(GeneralConstraint):
             velocity_collection[2, k] = 0.0
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def nb_constrain_rotational_rates(
         omega_collection: NDArray[np.floating], indices: NDArray[np.integer]
     ) -> None:

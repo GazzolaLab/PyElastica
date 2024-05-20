@@ -432,7 +432,7 @@ class _KinematicState:
         self.director_collection = director_collection_view
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def overload_operator_kinematic_numba(
     n_nodes: int,
     prefac: np.floating,
@@ -535,7 +535,7 @@ class _DynamicState:
         return prefac * self.dvdt_dwdt_collection
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def overload_operator_dynamic_numba(
     rate_collection: NDArray[np.floating],
     scaled_second_deriv_array: NDArray[np.floating],

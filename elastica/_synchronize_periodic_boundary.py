@@ -10,15 +10,15 @@ from elastica.boundary_conditions import ConstraintBase
 from elastica.typing import SystemType
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_vector_collection(
-    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a vector collection.
     Parameters
     ----------
-    input : numpy.ndarray
+    input_array : numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type. Vector that is going to be synched.
     periodic_idx : numpy.ndarray
         2D (2, n_periodic_boundary) array containing data with 'float' type. Vector containing periodic boundary
@@ -30,18 +30,18 @@ def _synchronize_periodic_boundary_of_vector_collection(
     """
     for i in range(3):
         for k in range(periodic_idx.shape[1]):
-            input[i, periodic_idx[0, k]] = input[i, periodic_idx[1, k]]
+            input_array[i, periodic_idx[0, k]] = input_array[i, periodic_idx[1, k]]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_matrix_collection(
-    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a matrix collection.
     Parameters
     ----------
-    input : numpy.ndarray
+    input_array : numpy.ndarray
         2D (dim, dim, blocksize) array containing data with 'float' type. Matrix collection that is going to be synched.
     periodic_idx : numpy.ndarray
         2D (2, n_periodic_boundary) array containing data with 'float' type. Vector containing periodic boundary
@@ -54,19 +54,21 @@ def _synchronize_periodic_boundary_of_matrix_collection(
     for i in range(3):
         for j in range(3):
             for k in range(periodic_idx.shape[1]):
-                input[i, j, periodic_idx[0, k]] = input[i, j, periodic_idx[1, k]]
+                input_array[i, j, periodic_idx[0, k]] = input_array[
+                    i, j, periodic_idx[1, k]
+                ]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_scalar_collection(
-    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a scalar collection.
 
     Parameters
     ----------
-    input : numpy.ndarray
+    input_array : numpy.ndarray
         2D (dim, dim, blocksize) array containing data with 'float' type. Scalar collection that is going to be synched.
     periodic_idx : numpy.ndarray
         2D (2, n_periodic_boundary) array containing data with 'float' type. Vector containing periodic boundary
@@ -77,7 +79,7 @@ def _synchronize_periodic_boundary_of_scalar_collection(
 
     """
     for k in range(periodic_idx.shape[1]):
-        input[periodic_idx[0, k]] = input[periodic_idx[1, k]]
+        input_array[periodic_idx[0, k]] = input_array[periodic_idx[1, k]]
 
 
 class _ConstrainPeriodicBoundaries(ConstraintBase):

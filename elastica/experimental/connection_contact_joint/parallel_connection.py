@@ -125,7 +125,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_forces(
         k,
         nu,
@@ -262,7 +262,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_torques(
         spring_force,
         rod_one_rd2,

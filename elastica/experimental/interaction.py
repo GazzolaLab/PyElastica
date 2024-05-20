@@ -66,7 +66,7 @@ class AnisotropicFrictionalPlaneRigidBody(NoForces, InteractionPlaneRigidBody):
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def anisotropic_friction_numba_rigid_body(
     plane_origin,
     plane_normal,

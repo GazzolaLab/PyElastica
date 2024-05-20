@@ -1,9 +1,10 @@
 __doc__ = """ Quadrature and difference kernels """
-from typing import Any, Union
+from typing import Union
 import numpy as np
 from numpy import zeros, empty
 from numpy.typing import NDArray
-from numba import njit
+import numba
+from numba import njit, float64
 from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_vector_ghost,
 )
@@ -20,8 +21,8 @@ def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.floating], N
     return None
 
 
-@njit(cache=True)
-def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]:
+@njit(cache=True)  # type: ignore
+def _trapezoidal(array_collection: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way
 
@@ -66,7 +67,7 @@ def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]
     return temp_collection
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _trapezoidal_for_block_structure(
     array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
 ) -> NDArray[np.floating]:
@@ -120,7 +121,7 @@ def _trapezoidal_for_block_structure(
     return temp_collection
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _two_point_difference(
     array_collection: NDArray[np.floating],
 ) -> NDArray[np.floating]:
@@ -163,7 +164,7 @@ def _two_point_difference(
     return temp_collection
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _two_point_difference_for_block_structure(
     array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
 ) -> NDArray[np.floating]:
@@ -216,7 +217,7 @@ def _two_point_difference_for_block_structure(
     return temp_collection
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _difference(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes difference between elements of a batch vector.
@@ -247,7 +248,7 @@ def _difference(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _average(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes the average between elements of a vector.
@@ -277,7 +278,7 @@ def _average(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _clip_array(
     input_array: NDArray[np.floating], vmin: np.floating, vmax: np.floating
 ) -> NDArray[np.floating]:
@@ -315,8 +316,8 @@ def _clip_array(
     return input_array
 
 
-@njit(cache=True)
-def _isnan_check(array: NDArray[Any]) -> bool:
+@njit(cache=True)  # type: ignore
+def _isnan_check(array: NDArray) -> bool:
     """
     This function checks if there is any nan inside the array.
     If there is nan, it returns True boolean.

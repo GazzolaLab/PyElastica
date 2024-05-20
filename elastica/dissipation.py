@@ -248,7 +248,7 @@ class LaplaceDissipationFilter(DamperBase):
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition_ring_rod(
     velocity_collection: NDArray[np.floating],
     velocity_filter_term: NDArray[np.floating],
@@ -286,7 +286,7 @@ def _filter_function_periodic_condition_ring_rod(
     omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition(
     velocity_collection: NDArray[np.floating],
     velocity_filter_term: NDArray[np.floating],
@@ -306,7 +306,7 @@ def _filter_function_periodic_condition(
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def nb_filter_rate(
     rate_collection: NDArray[np.floating],
     filter_term: NDArray[np.floating],
