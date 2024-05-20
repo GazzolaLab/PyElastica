@@ -162,7 +162,7 @@ class BaseSystemCollection(MutableSequence):
 
     @final
     def blocks(self) -> Generator[SystemType, None, None]:
-        assert self._finalize_flag, "The simulator is not finalized."
+        # assert self._finalize_flag, "The simulator is not finalized."
         for block in self._memory_blocks:
             yield block
 

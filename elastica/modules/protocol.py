@@ -1,4 +1,4 @@
-from typing import Protocol, Generator
+from typing import Protocol, Generator, TypeVar, Any
 from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import (
     SystemIdxType,
@@ -34,7 +34,7 @@ class SystemCollectionProtocol(Protocol):
     def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
 
 
-M = TypeVar("M", bound=ModuleProtocol)
+M = TypeVar("M", bound="ModuleProtocol")
 
 
 class ModuleProtocol(Protocol[M]):

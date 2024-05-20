@@ -178,9 +178,9 @@ class _Connect:
         self._second_sys_idx: SystemIdxType = second_sys_idx
         self._first_sys_n_lim: int = first_sys_nlim
         self._second_sys_n_lim: int = second_sys_nlim
-        self._connect_cls: Type[FreeJoint]
-        self.first_sys_connection_idx: ConnectionIndex
-        self.second_sys_connection_idx: ConnectionIndex
+        self._connect_cls: Type[FreeJoint] = None
+        self.first_sys_connection_idx: ConnectionIndex = None
+        self.second_sys_connection_idx: ConnectionIndex = None
 
     def set_index(
         self, first_idx: ConnectionIndex, second_idx: ConnectionIndex
@@ -298,7 +298,7 @@ class _Connect:
         )
 
     def instantiate(self) -> FreeJoint:
-        if not self._connect_cls:
+        if self._connect_cls is None:
             raise RuntimeError(
                 "No connections provided to link rod id {0}"
                 "(at {2}) and {1} (at {3}), but a Connection"
