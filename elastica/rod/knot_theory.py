@@ -39,7 +39,7 @@ class KnotTheoryCompatibleProtocol(Protocol):
     def base_length(self) -> np.ndarray: ...
 
 
-class KnotTheory(KnotTheoryCompatibleProtocol):
+class KnotTheory:
     """
     This mixin should be used in RodBase-derived class that satisfies KnotCompatibleProtocol.
     The theory behind this module is based on  the method from Klenin & Langowski 2000 paper.
