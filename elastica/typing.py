@@ -76,7 +76,7 @@ StateType: TypeAlias = State
 #    [SymplecticStepperProtocol, np.floating], np.floating
 # ]
 OperatorType: TypeAlias = Callable[
-    Any, Any
+    ..., Any
 ]  # TODO: Maybe can be more specific. Up for discussion.
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 # tuple[Union[PrefactorOperatorType, StepOperatorType, NoOpType, np.floating], ...], ...

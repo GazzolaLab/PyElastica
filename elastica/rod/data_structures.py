@@ -1,6 +1,9 @@
 __doc__ = "Data structure wrapper for rod components"
 
+from typing import Any, Optional
+from typing_extensions import Self
 import numpy as np
+from numpy.typing import NDArray
 from numba import njit
 from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
@@ -9,7 +12,7 @@ from elastica._linalg import _batch_matmul
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
 # class _RodExplicitStepperMixin:
-#     def __init__(self):
+#     def __init__(self) -> None:
 #         (
 #             self.state,
 #             self.__deriv_state,
@@ -43,7 +46,7 @@ from elastica._linalg import _batch_matmul
 
 
 class _RodSymplecticStepperMixin:
-    def __init__(self):
+    def __init__(self) -> None:
         self.kinematic_states = _KinematicState(
             self.position_collection, self.director_collection
         )
@@ -60,18 +63,40 @@ class _RodSymplecticStepperMixin:
         # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
-    def update_internal_forces_and_torques(self, time, *args, **kwargs):
+    def update_internal_forces_and_torques(
+        self, time: np.floating, *args: Any, **kwargs: Any
+    ) -> None:
         self.compute_internal_forces_and_torques(time)
 
-    def dynamic_rates(self, time, prefac, *args, **kwargs):
+    def dynamic_rates(
+        self, time: np.floating, prefac: np.floating, *args: Any, **kwargs: Any
+    ) -> NDArray[np.floating]:
         self.update_accelerations(time)
         return self.dynamic_states.dynamic_rates(time, prefac, *args, **kwargs)
 
-    def reset_external_forces_and_torques(self, time, *args, **kwargs):
+    def reset_external_forces_and_torques(
+        self, time: np.floating, *args: Any, **kwargs: Any
+    ) -> None:
         self.zeroed_out_external_forces_and_torques(time)
 
 
-def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_states):
+def _bootstrap_from_data(
+    stepper_type: str,
+    n_elems: int,
+    vector_states: NDArray[np.floating],
+    matrix_states: NDArray[np.floating],
+) -> Optional[
+    tuple[
+        "_State",
+        "_DerivativeState",
+        NDArray[np.floating],
+        NDArray[np.floating],
+        NDArray[np.floating],
+        NDArray[np.floating],
+        NDArray[np.floating],
+        NDArray[np.floating],
+    ]
+]:
     """Returns states wrapping numpy arrays based on the time-stepping algorithm
 
     Convenience method that takes in rod internal (raw np.ndarray) data, create views
@@ -119,7 +144,7 @@ def _bootstrap_from_data(stepper_type: str, n_elems: int, vector_states, matrix_
         # )
         raise NotImplementedError
     else:
-        return
+        return None
 
     n_velocity_end = n_nodes + n_nodes
     velocity = np.ndarray.view(vector_states[..., n_nodes:n_velocity_end])
@@ -154,10 +179,10 @@ class _State:
     def __init__(
         self,
         n_elems: int,
-        position_collection_view,
-        director_collection_view,
-        kinematic_rate_collection_view,
-    ):
+        position_collection_view: NDArray[np.floating],
+        director_collection_view: NDArray[np.floating],
+        kinematic_rate_collection_view: NDArray[np.floating],
+    ) -> None:
         """
         Parameters
         ----------
@@ -173,7 +198,7 @@ class _State:
         self.director_collection = director_collection_view
         self.kinematic_rate_collection = kinematic_rate_collection_view
 
-    def __iadd__(self, scaled_deriv_array):
+    def __iadd__(self, scaled_deriv_array: NDArray[np.floating]) -> Self:
         """overloaded += operator
 
         The add for directors is customized to reflect Rodrigues' rotation
@@ -242,7 +267,7 @@ class _State:
         ]
         return self
 
-    def __add__(self, scaled_derivative_state):
+    def __add__(self, scaled_derivative_state: NDArray[np.floating]) -> "_State":
         """overloaded + operator, useful in state.k1 = state + dt * deriv_state
 
         The add for directors is customized to reflect Rodrigues' rotation
@@ -296,7 +321,9 @@ class _DerivativeState:
     /multiplication used.
     """
 
-    def __init__(self, _unused_n_elems: int, rate_collection_view):
+    def __init__(
+        self, _unused_n_elems: int, rate_collection_view: NDArray[np.floating]
+    ) -> None:
         """
         Parameters
         ----------
@@ -307,7 +334,7 @@ class _DerivativeState:
         super(_DerivativeState, self).__init__()
         self.rate_collection = rate_collection_view
 
-    def __rmul__(self, scalar):
+    def __rmul__(self, scalar: np.floating) -> NDArray[np.floating]:
         """overloaded scalar * self,
 
         Parameters
@@ -355,7 +382,7 @@ class _DerivativeState:
         """
         return scalar * self.rate_collection
 
-    def __mul__(self, scalar):
+    def __mul__(self, scalar: np.floating) -> NDArray[np.floating]:
         """overloaded self * scalar
 
         TODO Check if this pattern (forwarding to __mul__) has
@@ -388,7 +415,11 @@ class _KinematicState:
     only these methods are provided.
     """
 
-    def __init__(self, position_collection_view, director_collection_view):
+    def __init__(
+        self,
+        position_collection_view: NDArray[np.floating],
+        director_collection_view: NDArray[np.floating],
+    ) -> None:
         """
         Parameters
         ----------
@@ -403,13 +434,13 @@ class _KinematicState:
 
 @njit(cache=True)
 def overload_operator_kinematic_numba(
-    n_nodes,
-    prefac,
-    position_collection,
-    director_collection,
-    velocity_collection,
-    omega_collection,
-):
+    n_nodes: int,
+    prefac: np.floating,
+    position_collection: NDArray[np.floating],
+    director_collection: NDArray[np.floating],
+    velocity_collection: NDArray[np.floating],
+    omega_collection: NDArray[np.floating],
+) -> None:
     """overloaded += operator
 
     The add for directors is customized to reflect Rodrigues' rotation
@@ -449,11 +480,11 @@ class _DynamicState:
 
     def __init__(
         self,
-        v_w_collection,
-        dvdt_dwdt_collection,
-        velocity_collection,
-        omega_collection,
-    ):
+        v_w_collection: NDArray[np.floating],
+        dvdt_dwdt_collection: NDArray[np.floating],
+        velocity_collection: NDArray[np.floating],
+        omega_collection: NDArray[np.floating],
+    ) -> None:
         """
         Parameters
         ----------
@@ -470,7 +501,9 @@ class _DynamicState:
         self.velocity_collection = velocity_collection
         self.omega_collection = omega_collection
 
-    def kinematic_rates(self, time, prefac):
+    def kinematic_rates(
+        self, time: np.floating, prefac: np.floating
+    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
         """Yields kinematic rates to interact with _KinematicState
 
         Returns
@@ -486,7 +519,9 @@ class _DynamicState:
         # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
         return self.velocity_collection, self.omega_collection
 
-    def dynamic_rates(self, time, prefac):
+    def dynamic_rates(
+        self, time: np.floating, prefac: np.floating
+    ) -> NDArray[np.floating]:
         """Yields dynamic rates to add to with _DynamicState
         Returns
         -------
@@ -501,7 +536,10 @@ class _DynamicState:
 
 
 @njit(cache=True)
-def overload_operator_dynamic_numba(rate_collection, scaled_second_deriv_array):
+def overload_operator_dynamic_numba(
+    rate_collection: NDArray[np.floating],
+    scaled_second_deriv_array: NDArray[np.floating],
+) -> None:
     """overloaded += operator, updating dynamic_rates
     Parameters
     ----------

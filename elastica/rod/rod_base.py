@@ -1,5 +1,9 @@
 __doc__ = """Base class for rods"""
 
+from typing import Any
+import numpy as np
+from numpy.typing import NDArray
+
 
 class RodBase:
     """
@@ -11,10 +15,15 @@ class RodBase:
 
     """
 
-    REQUISITE_MODULES = []
+    REQUISITE_MODULES: list[Any] = []
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         RodBase does not take any arguments.
         """
-        pass
+        self.position_collection: NDArray[np.floating]
+        self.omega_collection: NDArray[np.floating]
+        self.acceleration_collection: NDArray[np.floating]
+        self.alpha_collection: NDArray[np.floating]
+        self.external_forces: NDArray[np.floating]
+        self.external_torques: NDArray[np.floating]

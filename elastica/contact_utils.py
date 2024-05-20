@@ -3,37 +3,47 @@ __doc__ = """ Helper functions for contact force calculation """
 from math import sqrt
 import numba
 import numpy as np
+from numpy.typing import NDArray
 from elastica._linalg import (
     _batch_norm,
 )
+from typing import Literal, Sequence, TypeVar
 
 
 @numba.njit(cache=True)
-def _dot_product(a, b):
-    sum = 0.0
+def _dot_product(a: Sequence[np.floating], b: Sequence[np.floating]) -> np.floating:
+    sum: np.floating = 0.0
     for i in range(3):
         sum += a[i] * b[i]
     return sum
 
 
 @numba.njit(cache=True)
-def _norm(a):
+def _norm(a: Sequence[np.floating]) -> float:
     return sqrt(_dot_product(a, a))
 
 
+_SupportsCompareT = TypeVar("_SupportsCompareT")
+
+
 @numba.njit(cache=True)
-def _clip(x, low, high):
+def _clip(x: np.floating, low: np.floating, high: np.floating) -> np.floating:
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
 @numba.njit(cache=True)
-def _out_of_bounds(x, low, high):
+def _out_of_bounds(x: np.floating, low: np.floating, high: np.floating) -> bool:
     return (x < low) or (x > high)
 
 
 @numba.njit(cache=True)
-def _find_min_dist(x1, e1, x2, e2):
+def _find_min_dist(
+    x1: NDArray[np.floating],
+    e1: NDArray[np.floating],
+    x2: NDArray[np.floating],
+    e2: NDArray[np.floating],
+) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     e1e1 = _dot_product(e1, e1)
     e1e2 = _dot_product(e1, e2)
     e2e2 = _dot_product(e2, e2)
@@ -99,7 +109,9 @@ def _find_min_dist(x1, e1, x2, e2):
 
 
 @numba.njit(cache=True)
-def _aabbs_not_intersecting(aabb_one, aabb_two):
+def _aabbs_not_intersecting(
+    aabb_one: NDArray[np.floating], aabb_two: NDArray[np.floating]
+) -> Literal[1, 0]:
     """Returns true if not intersecting else false"""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
         return 1
@@ -113,14 +125,14 @@ def _aabbs_not_intersecting(aabb_one, aabb_two):
 
 @numba.njit(cache=True)
 def _prune_using_aabbs_rod_cylinder(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    cylinder_position,
-    cylinder_director,
-    cylinder_radius,
-    cylinder_length,
-):
+    rod_one_position_collection: NDArray[np.floating],
+    rod_one_radius_collection: NDArray[np.floating],
+    rod_one_length_collection: NDArray[np.floating],
+    cylinder_position: NDArray[np.floating],
+    cylinder_director: NDArray[np.floating],
+    cylinder_radius: NDArray[np.floating],
+    cylinder_length: NDArray[np.floating],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_cylinder = np.empty((3, 2))
@@ -155,13 +167,13 @@ def _prune_using_aabbs_rod_cylinder(
 
 @numba.njit(cache=True)
 def _prune_using_aabbs_rod_rod(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    rod_two_position_collection,
-    rod_two_radius_collection,
-    rod_two_length_collection,
-):
+    rod_one_position_collection: NDArray[np.floating],
+    rod_one_radius_collection: NDArray[np.floating],
+    rod_one_length_collection: NDArray[np.floating],
+    rod_two_position_collection: NDArray[np.floating],
+    rod_two_radius_collection: NDArray[np.floating],
+    rod_two_length_collection: NDArray[np.floating],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod_one = np.empty((3, 2))
     aabb_rod_two = np.empty((3, 2))
@@ -193,13 +205,13 @@ def _prune_using_aabbs_rod_rod(
 
 @numba.njit(cache=True)
 def _prune_using_aabbs_rod_sphere(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    sphere_position,
-    sphere_director,
-    sphere_radius,
-):
+    rod_one_position_collection: NDArray[np.floating],
+    rod_one_radius_collection: NDArray[np.floating],
+    rod_one_length_collection: NDArray[np.floating],
+    sphere_position: NDArray[np.floating],
+    sphere_director: NDArray[np.floating],
+    sphere_radius: NDArray[np.floating],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_sphere = np.empty((3, 2))
@@ -231,7 +243,9 @@ def _prune_using_aabbs_rod_sphere(
 
 
 @numba.njit(cache=True)
-def _find_slipping_elements(velocity_slip, velocity_threshold):
+def _find_slipping_elements(
+    velocity_slip: NDArray[np.floating], velocity_threshold: np.floating
+) -> NDArray[np.floating]:
     """
     This function takes the velocity of elements and checks if they are larger than the threshold velocity.
     If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
@@ -272,7 +286,7 @@ def _find_slipping_elements(velocity_slip, velocity_threshold):
 
 
 @numba.njit(cache=True)
-def _node_to_element_mass_or_force(input):
+def _node_to_element_mass_or_force(input: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function converts the mass/forces on rod nodes to
     elements, where special treatment is necessary at the ends.
@@ -310,7 +324,10 @@ def _node_to_element_mass_or_force(input):
 
 
 @numba.njit(cache=True)
-def _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
+def _elements_to_nodes_inplace(
+    vector_in_element_frame: NDArray[np.floating],
+    vector_in_node_frame: NDArray[np.floating],
+) -> None:
     """
     Updating nodal forces using the forces computed on elements
     Parameters
@@ -333,7 +350,9 @@ def _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
 
 
 @numba.njit(cache=True)
-def _node_to_element_position(node_position_collection):
+def _node_to_element_position(
+    node_position_collection: NDArray[np.floating],
+) -> NDArray[np.floating]:
     """
     This function computes the position of the elements
     from the nodal values.
@@ -379,7 +398,9 @@ def _node_to_element_position(node_position_collection):
 
 
 @numba.njit(cache=True)
-def _node_to_element_velocity(mass, node_velocity_collection):
+def _node_to_element_velocity(
+    mass: NDArray[np.floating], node_velocity_collection: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function computes the velocity of the elements
     from the nodal values. Uses the velocity of center of mass

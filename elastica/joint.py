@@ -1,8 +1,12 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
+
+from typing import Any, NoReturn, Optional
+
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType
 import numpy as np
 import logging
+from numpy.typing import NDArray
 
 
 class FreeJoint:
@@ -27,7 +31,7 @@ class FreeJoint:
     # pass the k and nu for the forces
     # also the necessary rods for the joint
     # indices should be 0 or -1, we will provide wrappers for users later
-    def __init__(self, k, nu):
+    def __init__(self, k: np.floating, nu: np.floating) -> None:
         """
 
         Parameters
@@ -47,7 +51,7 @@ class FreeJoint:
         index_one: int,
         system_two: SystemType,
         index_two: int,
-    ):
+    ) -> None:
         """
         Apply joint force to the connected rod objects.
 
@@ -90,7 +94,7 @@ class FreeJoint:
         index_one: int,
         system_two: SystemType,
         index_two: int,
-    ):
+    ) -> None:
         """
         Apply restoring joint torques to the connected rod objects.
 
@@ -135,7 +139,13 @@ class HingeJoint(FreeJoint):
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
-    def __init__(self, k, nu, kt, normal_direction):
+    def __init__(
+        self,
+        k: np.floating,
+        nu: np.floating,
+        kt: np.floating,
+        normal_direction: NDArray[np.floating],
+    ) -> None:
         """
 
         Parameters
@@ -162,19 +172,19 @@ class HingeJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
-    ):
+        index_two: int,
+    ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
-    ):
+        index_two: int,
+    ) -> None:
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
 
@@ -223,7 +233,14 @@ class FixedJoint(FreeJoint):
             is enforced.
     """
 
-    def __init__(self, k, nu, kt, nut=0.0, rest_rotation_matrix=None):
+    def __init__(
+        self,
+        k: np.floating,
+        nu: np.floating,
+        kt: np.floating,
+        nut: np.floating = 0.0,
+        rest_rotation_matrix: Optional[NDArray[np.floating]] = None,
+    ) -> None:
         """
 
         Parameters
@@ -262,19 +279,19 @@ class FixedJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
-    ):
+        index_two: int,
+    ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one,
+        index_one: int,
         system_two: SystemType,
-        index_two,
-    ):
+        index_two: int,
+    ) -> None:
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies
         system_one_director = system_one.director_collection[..., index_one]
@@ -319,10 +336,10 @@ class FixedJoint(FreeJoint):
 
 def get_relative_rotation_two_systems(
     system_one: SystemType,
-    index_one,
+    index_one: int,
     system_two: SystemType,
-    index_two,
-):
+    index_two: int,
+) -> NDArray[np.floating]:
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
@@ -370,7 +387,7 @@ def get_relative_rotation_two_systems(
 
 
 # everything below this comment should be removed beyond v0.4.0
-def _dot_product(a, b):
+def _dot_product(a: Any, b: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._dot_product()\n"
@@ -378,7 +395,7 @@ def _dot_product(a, b):
     )
 
 
-def _norm(a):
+def _norm(a: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._norm()\n"
@@ -386,7 +403,7 @@ def _norm(a):
     )
 
 
-def _clip(x, low, high):
+def _clip(x: Any, low: Any, high: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._clip()\n"
@@ -394,7 +411,7 @@ def _clip(x, low, high):
     )
 
 
-def _out_of_bounds(x, low, high):
+def _out_of_bounds(x: Any, low: Any, high: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._out_of_bounds()\n"
@@ -402,7 +419,7 @@ def _out_of_bounds(x, low, high):
     )
 
 
-def _find_min_dist(x1, e1, x2, e2):
+def _find_min_dist(x1: Any, e1: Any, x2: Any, e2: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._find_min_dist()\n"
@@ -411,25 +428,25 @@ def _find_min_dist(x1, e1, x2, e2):
 
 
 def _calculate_contact_forces_rod_rigid_body(
-    x_collection_rod,
-    edge_collection_rod,
-    x_cylinder_center,
-    x_cylinder_tip,
-    edge_cylinder,
-    radii_sum,
-    length_sum,
-    internal_forces_rod,
-    external_forces_rod,
-    external_forces_cylinder,
-    external_torques_cylinder,
-    cylinder_director_collection,
-    velocity_rod,
-    velocity_cylinder,
-    contact_k,
-    contact_nu,
-    velocity_damping_coefficient,
-    friction_coefficient,
-):
+    x_collection_rod: Any,
+    edge_collection_rod: Any,
+    x_cylinder_center: Any,
+    x_cylinder_tip: Any,
+    edge_cylinder: Any,
+    radii_sum: Any,
+    length_sum: Any,
+    internal_forces_rod: Any,
+    external_forces_rod: Any,
+    external_forces_cylinder: Any,
+    external_torques_cylinder: Any,
+    cylinder_director_collection: Any,
+    velocity_rod: Any,
+    velocity_cylinder: Any,
+    contact_k: Any,
+    contact_nu: Any,
+    velocity_damping_coefficient: Any,
+    friction_coefficient: Any,
+) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica._contact_functions._calculate_contact_forces_rod_cylinder()\n"
@@ -438,23 +455,23 @@ def _calculate_contact_forces_rod_rigid_body(
 
 
 def _calculate_contact_forces_rod_rod(
-    x_collection_rod_one,
-    radius_rod_one,
-    length_rod_one,
-    tangent_rod_one,
-    velocity_rod_one,
-    internal_forces_rod_one,
-    external_forces_rod_one,
-    x_collection_rod_two,
-    radius_rod_two,
-    length_rod_two,
-    tangent_rod_two,
-    velocity_rod_two,
-    internal_forces_rod_two,
-    external_forces_rod_two,
-    contact_k,
-    contact_nu,
-):
+    x_collection_rod_one: Any,
+    radius_rod_one: Any,
+    length_rod_one: Any,
+    tangent_rod_one: Any,
+    velocity_rod_one: Any,
+    internal_forces_rod_one: Any,
+    external_forces_rod_one: Any,
+    x_collection_rod_two: Any,
+    radius_rod_two: Any,
+    length_rod_two: Any,
+    tangent_rod_two: Any,
+    velocity_rod_two: Any,
+    internal_forces_rod_two: Any,
+    external_forces_rod_two: Any,
+    contact_k: Any,
+    contact_nu: Any,
+) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica._contact_functions._calculate_contact_forces_rod_rod()\n"
@@ -463,15 +480,15 @@ def _calculate_contact_forces_rod_rod(
 
 
 def _calculate_contact_forces_self_rod(
-    x_collection_rod,
-    radius_rod,
-    length_rod,
-    tangent_rod,
-    velocity_rod,
-    external_forces_rod,
-    contact_k,
-    contact_nu,
-):
+    x_collection_rod: Any,
+    radius_rod: Any,
+    length_rod: Any,
+    tangent_rod: Any,
+    velocity_rod: Any,
+    external_forces_rod: Any,
+    contact_k: Any,
+    contact_nu: Any,
+) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica._contact_functions._calculate_contact_forces_self_rod()\n"
@@ -479,7 +496,7 @@ def _calculate_contact_forces_self_rod(
     )
 
 
-def _aabbs_not_intersecting(aabb_one, aabb_two):
+def _aabbs_not_intersecting(aabb_one: Any, aabb_two: Any) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._aabbs_not_intersecting()\n"
@@ -488,14 +505,14 @@ def _aabbs_not_intersecting(aabb_one, aabb_two):
 
 
 def _prune_using_aabbs_rod_rigid_body(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    cylinder_position,
-    cylinder_director,
-    cylinder_radius,
-    cylinder_length,
-):
+    rod_one_position_collection: Any,
+    rod_one_radius_collection: Any,
+    rod_one_length_collection: Any,
+    cylinder_position: Any,
+    cylinder_director: Any,
+    cylinder_radius: Any,
+    cylinder_length: Any,
+) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._prune_using_aabbs_rod_cylinder()\n"
@@ -504,13 +521,13 @@ def _prune_using_aabbs_rod_rigid_body(
 
 
 def _prune_using_aabbs_rod_rod(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    rod_two_position_collection,
-    rod_two_radius_collection,
-    rod_two_length_collection,
-):
+    rod_one_position_collection: Any,
+    rod_one_radius_collection: Any,
+    rod_one_length_collection: Any,
+    rod_two_position_collection: Any,
+    rod_two_radius_collection: Any,
+    rod_two_length_collection: Any,
+) -> NoReturn:
     raise NotImplementedError(
         "This function is removed in v0.3.2. Please use\n"
         "elastica.contact_utils._prune_using_aabbs_rod_rod()\n"
@@ -563,7 +580,13 @@ class ExternalContact(FreeJoint):
     # potentially dangerous as it does not deal with "end" conditions
     # correctly.
 
-    def __init__(self, k, nu, velocity_damping_coefficient=0, friction_coefficient=0):
+    def __init__(
+        self,
+        k: np.floating,
+        nu: np.floating,
+        velocity_damping_coefficient: np.floating = 0,
+        friction_coefficient: np.floating = 0,
+    ) -> None:
         """
 
         Parameters
@@ -594,11 +617,11 @@ class ExternalContact(FreeJoint):
 
     def apply_forces(
         self,
-        rod_one: RodType,
-        index_one,
+        rod_one: SystemType,
+        index_one: int,
         rod_two: SystemType,
-        index_two,
-    ):
+        index_two: int,
+    ) -> None:
         # del index_one, index_two
         from elastica.contact_utils import (
             _prune_using_aabbs_rod_cylinder,
@@ -701,7 +724,7 @@ class SelfContact(FreeJoint):
 
     """
 
-    def __init__(self, k, nu):
+    def __init__(self, k: np.floating, nu: np.floating) -> None:
         super().__init__(k, nu)
         log = logging.getLogger(self.__class__.__name__)
         log.warning(
@@ -713,7 +736,9 @@ class SelfContact(FreeJoint):
             "The option to use the SelfContact joint for the rod self contact will be removed in the future (v0.3.3).\n"
         )
 
-    def apply_forces(self, rod_one: RodType, index_one, rod_two: SystemType, index_two):
+    def apply_forces(
+        self, rod_one: SystemType, index_one: int, rod_two: SystemType, index_two: int
+    ) -> None:
         # del index_one, index_two
         from elastica._contact_functions import (
             _calculate_contact_forces_self_rod,

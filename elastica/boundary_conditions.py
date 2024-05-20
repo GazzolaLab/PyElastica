@@ -1,9 +1,10 @@
 __doc__ = """ Built-in boundary condition implementationss """
 
 import warnings
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
+from numpy.typing import NDArray
 
 from abc import ABC, abstractmethod
 
@@ -34,7 +35,7 @@ class ConstraintBase(ABC):
     _constrained_position_idx: np.ndarray
     _constrained_director_idx: np.ndarray
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize boundary condition"""
         try:
             self._system = kwargs["_system"]
@@ -67,7 +68,7 @@ class ConstraintBase(ABC):
         return self._constrained_director_idx
 
     @abstractmethod
-    def constrain_values(self, system: SystemType, time: float) -> None:
+    def constrain_values(self, system: SystemType, time: np.floating) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain values (position and/or directors) of a rod object.
@@ -82,7 +83,7 @@ class ConstraintBase(ABC):
         pass
 
     @abstractmethod
-    def constrain_rates(self, system: SystemType, time: float) -> None:
+    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain rates (velocity and/or omega) of a rod object.
@@ -103,14 +104,14 @@ class FreeBC(ConstraintBase):
     Boundary condition template.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def constrain_values(self, system: SystemType, time: float) -> None:
+    def constrain_values(self, system: SystemType, time: np.floating) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
-    def constrain_rates(self, system: SystemType, time: float) -> None:
+    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
@@ -143,7 +144,12 @@ class OneEndFixedBC(ConstraintBase):
     ... )
     """
 
-    def __init__(self, fixed_position, fixed_directors, **kwargs):
+    def __init__(
+        self,
+        fixed_position: tuple[int, ...],
+        fixed_directors: tuple[int, ...],
+        **kwargs: Any,
+    ) -> None:
         """
 
         Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
@@ -159,7 +165,7 @@ class OneEndFixedBC(ConstraintBase):
         self.fixed_position_collection = np.array(fixed_position)
         self.fixed_directors_collection = np.array(fixed_directors)
 
-    def constrain_values(self, system: SystemType, time: float) -> None:
+    def constrain_values(self, system: SystemType, time: np.floating) -> None:
         # system.position_collection[..., 0] = self.fixed_position
         # system.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
@@ -169,7 +175,7 @@ class OneEndFixedBC(ConstraintBase):
             self.fixed_directors_collection,
         )
 
-    def constrain_rates(self, system: SystemType, time: float) -> None:
+    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
         # system.velocity_collection[..., 0] = 0.0
         # system.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
@@ -180,11 +186,11 @@ class OneEndFixedBC(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def compute_constrain_values(
-        position_collection,
-        fixed_position_collection,
-        director_collection,
-        fixed_directors_collection,
-    ):
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        director_collection: NDArray[np.floating],
+        fixed_directors_collection: NDArray[np.floating],
+    ) -> None:
         """
         Computes constrain values in numba njit decorator
 
@@ -208,7 +214,10 @@ class OneEndFixedBC(ConstraintBase):
 
     @staticmethod
     @njit(cache=True)
-    def compute_constrain_rates(velocity_collection, omega_collection):
+    def compute_constrain_rates(
+        velocity_collection: NDArray[np.floating],
+        omega_collection: NDArray[np.floating],
+    ) -> None:
         """
         Compute contrain rates in numba njit decorator
 
@@ -266,11 +275,11 @@ class GeneralConstraint(ConstraintBase):
 
     def __init__(
         self,
-        *fixed_data,
-        translational_constraint_selector: Optional[np.ndarray] = None,
-        rotational_constraint_selector: Optional[np.array] = None,
-        **kwargs,
-    ):
+        *fixed_data: Any,
+        translational_constraint_selector: Optional[NDArray[np.bool_]] = None,
+        rotational_constraint_selector: Optional[NDArray[np.bool_]] = None,
+        **kwargs: Any,
+    ) -> None:
         """
 
         Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
@@ -331,7 +340,7 @@ class GeneralConstraint(ConstraintBase):
         )
         self.rotational_constraint_selector = rotational_constraint_selector.astype(int)
 
-    def constrain_values(self, system: SystemType, time: float) -> None:
+    def constrain_values(self, system: SystemType, time: np.floating) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 system.position_collection,
@@ -340,7 +349,7 @@ class GeneralConstraint(ConstraintBase):
                 self.translational_constraint_selector,
             )
 
-    def constrain_rates(self, system: SystemType, time: float) -> None:
+    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 system.velocity_collection,
@@ -358,7 +367,10 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_values(
-        position_collection, fixed_position_collection, indices, constraint_selector
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -393,7 +405,9 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_rates(
-        velocity_collection, indices, constraint_selector
+        velocity_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Compute constrain rates in numba njit decorator
@@ -422,7 +436,10 @@ class GeneralConstraint(ConstraintBase):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_rotational_rates(
-        director_collection, omega_collection, indices, constraint_selector
+        director_collection: NDArray[np.floating],
+        omega_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
+        constraint_selector: NDArray[np.integer],
     ) -> None:
         """
         Compute constrain rates in numba njit decorator
@@ -489,7 +506,7 @@ class FixedConstraint(GeneralConstraint):
     GeneralConstraint: Generalized constraint with configurable DOF.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
 
         Initialization of the constraint. Any parameter passed to 'using' will be available in kwargs.
@@ -508,7 +525,7 @@ class FixedConstraint(GeneralConstraint):
             **kwargs,
         )
 
-    def constrain_values(self, system: SystemType, time: float) -> None:
+    def constrain_values(self, system: SystemType, time: np.floating) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 system.position_collection,
@@ -522,7 +539,7 @@ class FixedConstraint(GeneralConstraint):
                 self.constrained_director_idx,
             )
 
-    def constrain_rates(self, system: SystemType, time: float) -> None:
+    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 system.velocity_collection,
@@ -537,7 +554,9 @@ class FixedConstraint(GeneralConstraint):
     @staticmethod
     @njit(cache=True)
     def nb_constraint_rotational_values(
-        director_collection, fixed_director_collection, indices
+        director_collection: NDArray[np.floating],
+        fixed_director_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -558,7 +577,9 @@ class FixedConstraint(GeneralConstraint):
     @staticmethod
     @njit(cache=True)
     def nb_constrain_translational_values(
-        position_collection, fixed_position_collection, indices
+        position_collection: NDArray[np.floating],
+        fixed_position_collection: NDArray[np.floating],
+        indices: NDArray[np.integer],
     ) -> None:
         """
         Computes constrain values in numba njit decorator
@@ -578,7 +599,9 @@ class FixedConstraint(GeneralConstraint):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_translational_rates(velocity_collection, indices) -> None:
+    def nb_constrain_translational_rates(
+        velocity_collection: NDArray[np.floating], indices: NDArray[np.integer]
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
         Parameters
@@ -598,7 +621,9 @@ class FixedConstraint(GeneralConstraint):
 
     @staticmethod
     @njit(cache=True)
-    def nb_constrain_rotational_rates(omega_collection, indices) -> None:
+    def nb_constrain_rotational_rates(
+        omega_collection: NDArray[np.floating], indices: NDArray[np.integer]
+    ) -> None:
         """
         Compute constrain rates in numba njit decorator
         Parameters
@@ -654,15 +679,15 @@ class HelicalBucklingBC(ConstraintBase):
 
     def __init__(
         self,
-        position_start: np.ndarray,
-        position_end: np.ndarray,
-        director_start: np.ndarray,
-        director_end: np.ndarray,
-        twisting_time: float,
-        slack: float,
-        number_of_rotations: float,
-        **kwargs,
-    ):
+        position_start: NDArray[np.floating],
+        position_end: NDArray[np.floating],
+        director_start: NDArray[np.floating],
+        director_end: NDArray[np.floating],
+        twisting_time: np.floating,
+        slack: np.floating,
+        number_of_rotations: np.floating,
+        **kwargs: Any,
+    ) -> None:
         """
 
         Helical Buckling initializer
@@ -718,7 +743,7 @@ class HelicalBucklingBC(ConstraintBase):
             @ director_end
         )  # rotation_matrix wants vectors 3,1
 
-    def constrain_values(self, rod: RodType, time: float) -> None:
+    def constrain_values(self, rod: SystemType, time: np.floating) -> None:
         if time > self.twisting_time:
             rod.position_collection[..., 0] = self.final_start_position
             rod.position_collection[..., -1] = self.final_end_position
@@ -726,7 +751,7 @@ class HelicalBucklingBC(ConstraintBase):
             rod.director_collection[..., 0] = self.final_start_directors
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod: RodType, time: float) -> None:
+    def constrain_rates(self, rod: SystemType, time: np.floating) -> None:
         if time > self.twisting_time:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0

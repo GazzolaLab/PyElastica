@@ -14,6 +14,7 @@ from typing import Protocol, Union
 
 from numba import njit
 import numpy as np
+from numpy.typing import NDArray
 
 from elastica.rod.rod_base import RodBase
 from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
@@ -46,7 +47,7 @@ class KnotTheory:
     KnotTheory can be mixed with any rod-class based on RodBase::
 
         class MyRod(RodBase, KnotTheory):
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
         rod = MyRod(...)
 
@@ -78,7 +79,7 @@ class KnotTheory:
 
     MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
 
-    def compute_twist(self: MIXIN_PROTOCOL):
+    def compute_twist(self: MIXIN_PROTOCOL) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
         """
@@ -91,8 +92,8 @@ class KnotTheory:
     def compute_writhe(
         self: MIXIN_PROTOCOL,
         type_of_additional_segment: str = "next_tangent",
-        alpha: float = 1.0,
-    ):
+        alpha: np.floating = 1.0,
+    ) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
@@ -114,8 +115,8 @@ class KnotTheory:
     def compute_link(
         self: MIXIN_PROTOCOL,
         type_of_additional_segment: str = "next_tangent",
-        alpha: float = 1.0,
-    ):
+        alpha: np.floating = 1.0,
+    ) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
@@ -138,7 +139,9 @@ class KnotTheory:
         )[0]
 
 
-def compute_twist(center_line, normal_collection):
+def compute_twist(
+    center_line: NDArray[np.floating], normal_collection: NDArray[np.floating]
+) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
     """
     Compute the twist of a rod, using center_line and normal collection.
 
@@ -189,7 +192,9 @@ def compute_twist(center_line, normal_collection):
 
 
 @njit(cache=True)
-def _compute_twist(center_line, normal_collection):
+def _compute_twist(
+    center_line: NDArray[np.floating], normal_collection: NDArray[np.floating]
+) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
     """
     Parameters
     ----------
@@ -264,7 +269,11 @@ def _compute_twist(center_line, normal_collection):
     return total_twist, local_twist
 
 
-def compute_writhe(center_line, segment_length, type_of_additional_segment):
+def compute_writhe(
+    center_line: NDArray[np.floating],
+    segment_length: np.floating,
+    type_of_additional_segment: str,
+) -> NDArray[np.floating]:
     """
     This function computes the total writhe history of a rod.
 
@@ -314,7 +323,7 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
 
 
 @njit(cache=True)
-def _compute_writhe(center_line):
+def _compute_writhe(center_line: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     Parameters
     ----------
@@ -386,12 +395,12 @@ def _compute_writhe(center_line):
 
 
 def compute_link(
-    center_line: np.ndarray,
-    normal_collection: np.ndarray,
-    radius: np.ndarray,
-    segment_length: float,
+    center_line: NDArray[np.floating],
+    normal_collection: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    segment_length: np.floating,
     type_of_additional_segment: str,
-):
+) -> NDArray[np.floating]:
     """
     This function computes the total link history of a rod.
 
@@ -470,7 +479,11 @@ def compute_link(
 
 
 @njit(cache=True)
-def _compute_auxiliary_line(center_line, normal_collection, radius):
+def _compute_auxiliary_line(
+    center_line: NDArray[np.floating],
+    normal_collection: NDArray[np.floating],
+    radius: NDArray[np.floating],
+) -> NDArray[np.floating]:
     """
     This function computes the auxiliary line using rod center line and normal collection.
 
@@ -525,7 +538,9 @@ def _compute_auxiliary_line(center_line, normal_collection, radius):
 
 
 @njit(cache=True)
-def _compute_link(center_line, auxiliary_line):
+def _compute_link(
+    center_line: NDArray[np.floating], auxiliary_line: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
 
     Parameters
@@ -604,8 +619,11 @@ def _compute_link(center_line, auxiliary_line):
 
 @njit(cache=True)
 def _compute_auxiliary_line_added_segments(
-    beginning_direction, end_direction, auxiliary_line, segment_length
-):
+    beginning_direction: NDArray[np.floating],
+    end_direction: NDArray[np.floating],
+    auxiliary_line: NDArray[np.floating],
+    segment_length: np.floating,
+) -> NDArray[np.floating]:
     """
     This code is for computing position of added segments to the auxiliary line.
 
@@ -647,8 +665,10 @@ def _compute_auxiliary_line_added_segments(
 
 @njit(cache=True)
 def _compute_additional_segment(
-    center_line, segment_length, type_of_additional_segment
-):
+    center_line: NDArray[np.floating],
+    segment_length: np.floating,
+    type_of_additional_segment: str,
+) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     """
     This function adds two points at the end of center line. Distance from the center line is given by segment_length.
     Direction from center line to the new point locations can be computed using 3 methods, which can be selected by
