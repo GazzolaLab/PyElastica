@@ -1,5 +1,6 @@
 __doc__ = """ Convenient linear algebra kernels """
 import numpy as np
+from numpy.typing import NDArray
 from numba import njit
 from numpy import sqrt
 import functools
@@ -8,7 +9,7 @@ from elastica.utils import perm_parity
 
 
 @functools.lru_cache(maxsize=1)
-def levi_civita_tensor(dim):
+def levi_civita_tensor(dim: int) -> NDArray[np.floating]:
     """
 
     Parameters
@@ -28,7 +29,9 @@ def levi_civita_tensor(dim):
 
 
 @njit(cache=True)
-def _batch_matvec(matrix_collection, vector_collection):
+def _batch_matvec(
+    matrix_collection: NDArray[np.floating], vector_collection: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does batch matrix and batch vector product
 
@@ -59,7 +62,10 @@ def _batch_matvec(matrix_collection, vector_collection):
 
 
 @njit(cache=True)
-def _batch_matmul(first_matrix_collection, second_matrix_collection):
+def _batch_matmul(
+    first_matrix_collection: NDArray[np.floating],
+    second_matrix_collection: NDArray[np.floating],
+) -> NDArray[np.floating]:
     """
     This is batch matrix matrix multiplication function. Only batch
     of 3x3 matrices can be multiplied.
@@ -93,7 +99,10 @@ def _batch_matmul(first_matrix_collection, second_matrix_collection):
 
 
 @njit(cache=True)
-def _batch_cross(first_vector_collection, second_vector_collection):
+def _batch_cross(
+    first_vector_collection: NDArray[np.floating],
+    second_vector_collection: NDArray[np.floating],
+) -> NDArray[np.floating]:
     """
     This function does cross product between two batch vectors.
 
@@ -133,7 +142,9 @@ def _batch_cross(first_vector_collection, second_vector_collection):
 
 
 @njit(cache=True)
-def _batch_vec_oneD_vec_cross(first_vector_collection, second_vector):
+def _batch_vec_oneD_vec_cross(
+    first_vector_collection: NDArray[np.floating], second_vector: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does cross product between batch vector and a 1D vector.
     Idea of having this function is that, for friction calculations, we dont
@@ -177,7 +188,9 @@ def _batch_vec_oneD_vec_cross(first_vector_collection, second_vector):
 
 
 @njit(cache=True)
-def _batch_dot(first_vector, second_vector):
+def _batch_dot(
+    first_vector: NDArray[np.floating], second_vector: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does batch vec and batch vec dot product.
     Parameters
@@ -204,7 +217,7 @@ def _batch_dot(first_vector, second_vector):
 
 
 @njit(cache=True)
-def _batch_norm(vector):
+def _batch_norm(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes norm of a batch vector
     Parameters
@@ -233,7 +246,9 @@ def _batch_norm(vector):
 
 
 @njit(cache=True)
-def _batch_product_i_k_to_ik(vector1, vector2):
+def _batch_product_i_k_to_ik(
+    vector1: NDArray[np.floating], vector2: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does outer product following 'i,k->ik'.
     vector1 has shape of 3 and vector 2 has shape of blocksize
@@ -262,7 +277,9 @@ def _batch_product_i_k_to_ik(vector1, vector2):
 
 
 @njit(cache=True)
-def _batch_product_i_ik_to_k(vector1, vector2):
+def _batch_product_i_ik_to_k(
+    vector1: NDArray[np.floating], vector2: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does the following product 'i,ik->k'
     This function do dot product between a vector of 3 elements
@@ -293,7 +310,9 @@ def _batch_product_i_ik_to_k(vector1, vector2):
 
 
 @njit(cache=True)
-def _batch_product_k_ik_to_ik(vector1, vector2):
+def _batch_product_k_ik_to_ik(
+    vector1: NDArray[np.floating], vector2: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function does the following product 'k, ik->ik'
     Parameters
@@ -322,7 +341,9 @@ def _batch_product_k_ik_to_ik(vector1, vector2):
 
 
 @njit(cache=True)
-def _batch_vector_sum(vector1, vector2):
+def _batch_vector_sum(
+    vector1: NDArray[np.floating], vector2: NDArray[np.floating]
+) -> NDArray[np.floating]:
     """
     This function is for summing up two vectors. Although
     this function is not faster than pure python implementation
@@ -352,7 +373,7 @@ def _batch_vector_sum(vector1, vector2):
 
 
 @njit(cache=True)
-def _batch_matrix_transpose(input_matrix):
+def _batch_matrix_transpose(input_matrix: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function takes an batch input matrix and transpose it.
     Parameters

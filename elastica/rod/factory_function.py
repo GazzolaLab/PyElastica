@@ -1,30 +1,64 @@
 __doc__ = """ Factory function to allocate variables for Cosserat Rod"""
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 import logging
 import numpy as np
 from numpy.testing import assert_allclose
+from numpy.typing import NDArray
 from elastica.utils import MaxDimension, Tolerance
 from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
 
 
 def allocate(
-    n_elements,
-    direction,
-    normal,
-    base_length,
-    base_radius,
-    density,
-    youngs_modulus: float,
+    n_elements: int,
+    direction: NDArray[np.floating],
+    normal: NDArray[np.floating],
+    base_length: np.floating,
+    base_radius: np.floating,
+    density: np.floating,
+    youngs_modulus: np.floating,
     *,
     rod_origin_position: np.ndarray,
     ring_rod_flag: bool,
-    shear_modulus: Optional[float] = None,
+    shear_modulus: Optional[np.floating] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
     rest_sigma: Optional[np.ndarray] = None,
     rest_kappa: Optional[np.ndarray] = None,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> tuple[
+    int,
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+    NDArray[np.floating],
+]:
     log = logging.getLogger()
 
     if "poisson_ratio" in kwargs:
@@ -335,14 +369,16 @@ Returns
 """
 
 
-def _assert_dim(vector, max_dim: int, name: str):
+def _assert_dim(vector: np.ndarray, max_dim: int, name: str) -> None:
     assert vector.ndim < max_dim, (
         f"Input {name} dimension is not correct {vector.shape}"
         + f" It should be maximum {max_dim}D vector or single floating number."
     )
 
 
-def _assert_shape(array: np.ndarray, expected_shape: Tuple[int], name: str):
+def _assert_shape(
+    array: np.ndarray, expected_shape: Tuple[int, ...], name: str
+) -> None:
     assert array.shape == expected_shape, (
         f"Given {name} shape is not correct, it should be "
         + str(expected_shape)
@@ -351,7 +387,9 @@ def _assert_shape(array: np.ndarray, expected_shape: Tuple[int], name: str):
     )
 
 
-def _position_validity_checker(position, start, n_elements):
+def _position_validity_checker(
+    position: NDArray[np.floating], start: NDArray[np.floating], n_elements: int
+) -> None:
     """Checker on user-defined position validity"""
     _assert_shape(position, (MaxDimension.value(), n_elements + 1), "position")
 
@@ -367,7 +405,9 @@ def _position_validity_checker(position, start, n_elements):
     )
 
 
-def _directors_validity_checker(directors, tangents, n_elements):
+def _directors_validity_checker(
+    directors: NDArray[np.floating], tangents: NDArray[np.floating], n_elements: int
+) -> None:
     """Checker on user-defined directors validity"""
     _assert_shape(
         directors, (MaxDimension.value(), MaxDimension.value(), n_elements), "directors"
@@ -413,7 +453,11 @@ def _directors_validity_checker(directors, tangents, n_elements):
     )
 
 
-def _position_validity_checker_ring_rod(position, ring_center_position, n_elements):
+def _position_validity_checker_ring_rod(
+    position: NDArray[np.floating],
+    ring_center_position: NDArray[np.floating],
+    n_elements: int,
+) -> None:
     """Checker on user-defined position validity"""
     _assert_shape(position, (MaxDimension.value(), n_elements), "position")
 

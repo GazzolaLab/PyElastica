@@ -1,5 +1,6 @@
 __doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
 
+from typing import Optional
 from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.rod import RodBase
 from elastica.rigidbody import Cylinder, Sphere
@@ -19,6 +20,7 @@ from elastica._contact_functions import (
     _calculate_contact_forces_cylinder_plane,
 )
 import numpy as np
+from numpy.typing import NDArray
 
 
 class NoContact:
@@ -32,7 +34,7 @@ class NoContact:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         NoContact class does not need any input parameters.
         """
@@ -69,7 +71,7 @@ class NoContact:
         self,
         system_one: SystemType,
         system_two: AllowedContactType,
-    ) -> None:
+    ) -> Optional[tuple[NDArray[np.floating], NDArray[np.intp]]]:
         """
         Apply contact forces and torques between SystemType object and AllowedContactType object.
 
@@ -101,7 +103,7 @@ class RodRodContact(NoContact):
 
     """
 
-    def __init__(self, k: float, nu: float):
+    def __init__(self, k: np.floating, nu: np.floating) -> None:
         """
         Parameters
         ----------
@@ -225,11 +227,11 @@ class RodCylinderContact(NoContact):
 
     def __init__(
         self,
-        k: float,
-        nu: float,
-        velocity_damping_coefficient=0.0,
-        friction_coefficient=0.0,
-    ):
+        k: np.floating,
+        nu: np.floating,
+        velocity_damping_coefficient: np.floating = 0.0,
+        friction_coefficient: np.floating = 0.0,
+    ) -> None:
         """
 
         Parameters
@@ -338,7 +340,7 @@ class RodSelfContact(NoContact):
 
     """
 
-    def __init__(self, k: float, nu: float):
+    def __init__(self, k: np.floating, nu: np.floating) -> None:
         """
 
         Parameters
@@ -435,11 +437,11 @@ class RodSphereContact(NoContact):
 
     def __init__(
         self,
-        k: float,
-        nu: float,
-        velocity_damping_coefficient=0.0,
-        friction_coefficient=0.0,
-    ):
+        k: np.floating,
+        nu: np.floating,
+        velocity_damping_coefficient: np.floating = 0.0,
+        friction_coefficient: np.floating = 0.0,
+    ) -> None:
         """
         Parameters
         ----------
@@ -560,9 +562,9 @@ class RodPlaneContact(NoContact):
 
     def __init__(
         self,
-        k: float,
-        nu: float,
-    ):
+        k: np.floating,
+        nu: np.floating,
+    ) -> None:
         """
         Parameters
         ----------
@@ -652,12 +654,12 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
 
     def __init__(
         self,
-        k: float,
-        nu: float,
-        slip_velocity_tol: float,
-        static_mu_array: np.ndarray,
-        kinetic_mu_array: np.ndarray,
-    ):
+        k: np.floating,
+        nu: np.floating,
+        slip_velocity_tol: np.floating,
+        static_mu_array: NDArray[np.floating],
+        kinetic_mu_array: NDArray[np.floating],
+    ) -> None:
         """
         Parameters
         ----------
@@ -776,9 +778,9 @@ class CylinderPlaneContact(NoContact):
 
     def __init__(
         self,
-        k: float,
-        nu: float,
-    ):
+        k: np.floating,
+        nu: np.floating,
+    ) -> None:
         """
         Parameters
         ----------
@@ -818,7 +820,9 @@ class CylinderPlaneContact(NoContact):
                 )
             )
 
-    def apply_contact(self, system_one: Cylinder, system_two: SystemType):
+    def apply_contact(
+        self, system_one: Cylinder, system_two: SystemType
+    ) -> tuple[NDArray[np.floating], NDArray[np.intp]]:
         """
         This function computes the plane force response on the cylinder, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper

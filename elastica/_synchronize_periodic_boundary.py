@@ -2,12 +2,18 @@ __doc__ = (
     """These functions are used to synchronize periodic boundaries for ring rods.  """
 )
 
+from typing import Any
 from numba import njit
+import numpy as np
+from numpy.typing import NDArray
 from elastica.boundary_conditions import ConstraintBase
+from elastica.typing import SystemType
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_vector_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_vector_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+) -> None:
     """
     This function synchronizes the periodic boundaries of a vector collection.
     Parameters
@@ -28,7 +34,9 @@ def _synchronize_periodic_boundary_of_vector_collection(input, periodic_idx):
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_matrix_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_matrix_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+) -> None:
     """
     This function synchronizes the periodic boundaries of a matrix collection.
     Parameters
@@ -50,7 +58,9 @@ def _synchronize_periodic_boundary_of_matrix_collection(input, periodic_idx):
 
 
 @njit(cache=True)
-def _synchronize_periodic_boundary_of_scalar_collection(input, periodic_idx):
+def _synchronize_periodic_boundary_of_scalar_collection(
+    input: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+) -> None:
     """
     This function synchronizes the periodic boundaries of a scalar collection.
 
@@ -76,10 +86,11 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
     is to synchronize periodic boundaries of ring rod.
     """
 
-    def __init__(self, **kwargs):
+    # TODO: improve typing
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def constrain_values(self, rod, time):
+    def constrain_values(self, rod: SystemType, time: np.floating) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.position_collection, rod.periodic_boundary_nodes_idx
         )
@@ -87,7 +98,7 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
             rod.director_collection, rod.periodic_boundary_elems_idx
         )
 
-    def constrain_rates(self, rod, time):
+    def constrain_rates(self, rod: SystemType, time: np.floating) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.velocity_collection, rod.periodic_boundary_nodes_idx
         )
