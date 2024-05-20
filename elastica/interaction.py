@@ -45,7 +45,7 @@ def nodes_to_elements(input: Any) -> NoReturn:
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def elements_to_nodes_inplace(
     vector_in_element_frame: Any, vector_in_node_frame: Any
 ) -> NoReturn:
@@ -316,7 +316,7 @@ def anisotropic_friction(
 
 
 # Slender body module
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
     """
     This function sums all elements of the input array.
@@ -382,7 +382,7 @@ def node_to_element_pos_or_vel(vector_in_node_frame: Any) -> NoReturn:
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def slender_body_forces(
     tangents: NDArray[np.floating],
     velocity_collection: NDArray[np.floating],
@@ -579,7 +579,7 @@ class InteractionPlaneRigidBody:
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def apply_normal_force_numba_rigid_body(
     plane_origin: Any,
     plane_normal: Any,

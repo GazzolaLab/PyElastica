@@ -92,7 +92,7 @@ class GravityForces(NoForces):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_gravity_forces(
         acc_gravity: NDArray[np.floating],
         mass: NDArray[np.floating],
@@ -166,7 +166,7 @@ class EndpointForces(NoForces):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_end_point_forces(
         external_forces: NDArray[np.floating],
         start_force: NDArray[np.floating],
@@ -375,7 +375,7 @@ class MuscleTorques(NoForces):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_muscle_torques(
         time: np.floating,
         my_spline: NDArray[np.floating],
@@ -412,7 +412,7 @@ class MuscleTorques(NoForces):
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def inplace_addition(
     external_force_or_torque: NDArray[np.floating],
     force_or_torque: NDArray[np.floating],
@@ -438,7 +438,7 @@ def inplace_addition(
             external_force_or_torque[i, k] += force_or_torque[i, k]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def inplace_substraction(
     external_force_or_torque: NDArray[np.floating],
     force_or_torque: NDArray[np.floating],

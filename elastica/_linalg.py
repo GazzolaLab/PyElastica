@@ -28,7 +28,7 @@ def levi_civita_tensor(dim: int) -> NDArray[np.floating]:
     return epsilon
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_matvec(
     matrix_collection: NDArray[np.floating], vector_collection: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -61,7 +61,7 @@ def _batch_matvec(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_matmul(
     first_matrix_collection: NDArray[np.floating],
     second_matrix_collection: NDArray[np.floating],
@@ -98,7 +98,7 @@ def _batch_matmul(
     return output_matrix
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_cross(
     first_vector_collection: NDArray[np.floating],
     second_vector_collection: NDArray[np.floating],
@@ -141,7 +141,7 @@ def _batch_cross(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_vec_oneD_vec_cross(
     first_vector_collection: NDArray[np.floating], second_vector: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -187,7 +187,7 @@ def _batch_vec_oneD_vec_cross(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_dot(
     first_vector: NDArray[np.floating], second_vector: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -216,7 +216,7 @@ def _batch_dot(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_norm(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function computes norm of a batch vector
@@ -245,7 +245,7 @@ def _batch_norm(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_product_i_k_to_ik(
     vector1: NDArray[np.floating], vector2: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -276,7 +276,7 @@ def _batch_product_i_k_to_ik(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_product_i_ik_to_k(
     vector1: NDArray[np.floating], vector2: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -309,7 +309,7 @@ def _batch_product_i_ik_to_k(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_product_k_ik_to_ik(
     vector1: NDArray[np.floating], vector2: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -340,7 +340,7 @@ def _batch_product_k_ik_to_ik(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_vector_sum(
     vector1: NDArray[np.floating], vector2: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -372,7 +372,7 @@ def _batch_vector_sum(
     return output_vector
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _batch_matrix_transpose(input_matrix: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function takes an batch input matrix and transpose it.

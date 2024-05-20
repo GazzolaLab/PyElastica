@@ -15,7 +15,7 @@ from numba import njit
 from elastica._linalg import _batch_matmul
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _get_rotation_matrix(
     scale: np.floating, axis_collection: NDArray[np.floating]
 ) -> NDArray[np.floating]:
@@ -51,7 +51,7 @@ def _get_rotation_matrix(
     return rot_mat
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _rotate(
     director_collection: NDArray[np.floating],
     scale: np.floating,
@@ -80,7 +80,7 @@ def _rotate(
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _inv_rotate(director_collection: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     Calculated rate of change using Rodrigues' formula
