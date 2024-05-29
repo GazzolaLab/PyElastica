@@ -6,6 +6,7 @@ Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
 import numpy as np
+import functools
 from elastica.joint import FreeJoint
 
 
@@ -72,6 +73,27 @@ class Connections:
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)
         # to apply the connections to.
 
+        def apply_forces_and_torques(
+            time,
+            connect_instance,
+            system_one,
+            first_connect_idx,
+            system_two,
+            second_connect_idx,
+        ):
+            connect_instance.apply_forces(
+                system_one=system_one,
+                index_one=first_connect_idx,
+                system_two=system_two,
+                index_two=second_connect_idx,
+            )
+            connect_instance.apply_torques(
+                system_one=system_one,
+                index_one=first_connect_idx,
+                system_two=system_two,
+                index_two=second_connect_idx,
+            )
+
         for connection in self._connections:
             first_sys_idx, second_sys_idx, first_connect_idx, second_connect_idx = (
                 connection.id()
@@ -79,25 +101,16 @@ class Connections:
             connect_instance = connection.instantiate()
 
             # FIXME: lambda t is included because OperatorType takes time as an argument
-            def apply_forces(time):
-                connect_instance.apply_forces(
-                    system_one=self._systems[first_sys_idx],
-                    index_one=first_connect_idx,
-                    system_two=self._systems[second_sys_idx],
-                    index_two=second_connect_idx,
-                )
-
-            def apply_torques(time):
-                connect_instance.apply_torques(
-                    system_one=self._systems[first_sys_idx],
-                    index_one=first_connect_idx,
-                    system_two=self._systems[second_sys_idx],
-                    index_two=second_connect_idx,
-                )
-
-            self._feature_group_synchronize.add_operators(
-                connection, [apply_forces, apply_torques]
+            func = functools.partial(
+                apply_forces_and_torques,
+                connect_instance=connect_instance,
+                system_one=self._systems[first_sys_idx],
+                first_connect_idx=first_connect_idx,
+                system_two=self._systems[second_sys_idx],
+                second_connect_idx=second_connect_idx,
             )
+
+            self._feature_group_synchronize.add_operators(connection, [func])
 
             self.warnings(connection)
 
