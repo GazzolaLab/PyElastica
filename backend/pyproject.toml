@@ -20,8 +20,8 @@ classifiers = [
 "Documentation" = "https://docs.cosseratrods.org/"
 
 [build-system]
-requires = ["scikit-build-core>=0.3.3", "pybind11"]
-build-backend = "scikit_build_core.build"
+requires = ["meson-python", "pybind11"]
+build-backend = "mesonpy"
 
 # [tool.mypy]
 # files = "setup.py"
