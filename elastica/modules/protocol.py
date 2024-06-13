@@ -109,6 +109,14 @@ class SystemCollectionProtocol(Protocol):
     def _constrain_rates(self, time: np.floating) -> None:
         raise NotImplementedError
 
+    # Forcing API
+    _ext_forces_torques: list[ModuleProtocol]
+    _finalize_forcing: OperatorFinalizeType
+
+    @abstractmethod
+    def add_forcing_to(self, system: SystemType) -> ModuleProtocol:
+        raise NotImplementedError
+
     # Contact API
     _contacts: list[ModuleProtocol]
     _finalize_contact: OperatorFinalizeType

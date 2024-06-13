@@ -140,17 +140,7 @@ class _Damper:
         return self._sys_idx
 
     def instantiate(self, rod: SystemType) -> DamperBase:
-        """Constructs a Damper class object after checks
-
-        Parameters
-        ----------
-        args
-        kwargs
-
-        Returns
-        -------
-
-        """
+        """Constructs a Damper class object after checks"""
         if not hasattr(self, "_damper_cls"):
             raise RuntimeError(
                 "No damper provided to dampen rod id {0} at {1},"
