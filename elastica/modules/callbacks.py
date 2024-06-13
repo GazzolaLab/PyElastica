@@ -139,7 +139,7 @@ class _CallBack:
     def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self) -> CallBackBaseClass:
+    def instantiate(self, system: SystemType) -> CallBackBaseClass:
         """Constructs a callback functions after checks"""
         if not self._callback_cls:
             raise RuntimeError(

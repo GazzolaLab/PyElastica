@@ -82,8 +82,7 @@ class Constraints:
         # inplace : https://stackoverflow.com/a/1208792
 
         # dev : the first index stores the rod index to apply the boundary condition
-        # to. Technically we can use another array but it its one more book-keeping
-        # step. Being lazy, I put them both in the same array
+        # to.
         self._constraints_operators = [
             (constraint.id(), constraint.instantiate(self._systems[constraint.id()]))
             for constraint in self._constraints_list
@@ -190,10 +189,6 @@ class _Constraint:
                 "id {0} at {1}, but a BC was intended. Did you"
                 "forget to call the `using` method?".format(self.id(), system)
             )
-
-        director_indices = self._kwargs.get(
-            "constrained_director_idx", None
-        )  # calculate director indices as a tuple
 
         # IMPORTANT : do copy for memory-safe operations
         positions = (

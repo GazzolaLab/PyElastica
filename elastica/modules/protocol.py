@@ -7,6 +7,7 @@ from elastica.typing import (
     OperatorCallbackType,
     OperatorFinalizeType,
     SystemType,
+    AllowedContactType,
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
@@ -36,7 +37,9 @@ class SystemCollectionProtocol(Protocol):
 
     def blocks(self) -> Generator[SystemType, None, None]: ...
 
-    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
+    def _get_sys_idx_if_valid(
+        self, sys_to_be_added: SystemType | AllowedContactType
+    ) -> SystemIdxType: ...
 
     # Connection API
     _finalize_connections: OperatorFinalizeType
@@ -84,6 +87,16 @@ class SystemCollectionProtocol(Protocol):
     def _constrain_rates(self, time: np.floating) -> None:
         raise NotImplementedError
 
+    # Contact API
+    _contacts: list[ModuleProtocol]
+    _finalize_contact: OperatorFinalizeType
+
+    @abstractmethod
+    def detect_contact_between(
+        self, first_system: SystemType, second_system: AllowedContactType
+    ) -> ModuleProtocol:
+        raise NotImplementedError
+
 
 M = TypeVar("M", bound="ModuleProtocol")
 
@@ -91,6 +104,6 @@ M = TypeVar("M", bound="ModuleProtocol")
 class ModuleProtocol(Protocol[M]):
     def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
 
-    def instantiate(self, system: SystemType) -> M: ...
+    def instantiate(self, *args: Any, **kwargs: Any) -> M: ...
 
     def id(self) -> Any: ...

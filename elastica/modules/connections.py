@@ -296,7 +296,7 @@ class _Connect:
             self.second_sys_connection_idx,
         )
 
-    def instantiate(self) -> FreeJoint:
+    def instantiate(self, system: SystemType) -> FreeJoint:
         if self._connect_cls is None:
             raise RuntimeError(
                 "No connections provided to link rod id {0}"

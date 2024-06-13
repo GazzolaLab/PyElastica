@@ -13,6 +13,7 @@ from elastica.typing import (
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
+    AllowedContactType,
 )
 
 import numpy as np
@@ -134,7 +135,9 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = allowed_types
 
     @final
-    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
+    def _get_sys_idx_if_valid(
+        self, sys_to_be_added: SystemType | AllowedContactType
+    ) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType

@@ -4,7 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Type, Union, Callable, Any, ParamSpec
+from typing import Type, Callable, Any, ParamSpec
 from typing import TypeAlias
 
 
@@ -67,44 +67,14 @@ SystemIdxType: TypeAlias = int
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
 StateType: TypeAlias = State
 
-# NoOpt stepper
-# Symplectic stepper
-# StepOperatorType = Callable[
-#    [SymplecticStepperProtocol, SymplecticSystemProtocol, np.floating, np.floating], None
-# ]
-# PrefactorOperatorType = Callable[
-#    [SymplecticStepperProtocol, np.floating], np.floating
-# ]
 OperatorType: TypeAlias = Callable[
     ..., Any
 ]  # TODO: Maybe can be more specific. Up for discussion.
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
-# tuple[Union[PrefactorOperatorType, StepOperatorType, NoOpType, np.floating], ...], ...
-# Explicit stepper
-# ExplicitStageOperatorType = Callable[
-#    [
-#        SymplecticStepperProtocol,
-#        ExplicitSystemProtocol,
-#        MemoryProtocol,
-#        np.floating,
-#        np.floating,
-#    ],
-#    None,
-# ]
-# ExplicitUpdateOperatorType = Callable[
-#    [
-#        SymplecticStepperProtocol,
-#        ExplicitSystemProtocol,
-#        MemoryProtocol,
-#        np.floating,
-#        np.floating,
-#    ],
-#    np.floating,
-# ]
 
 RodType: TypeAlias = Type[RodBase]
 SystemCollectionType: TypeAlias = SystemCollectionProtocol
-AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
+AllowedContactType: TypeAlias = SystemType | Type[SurfaceBase]
 
 # Operators in elastica.modules
 OperatorParam = ParamSpec("OperatorParam")
