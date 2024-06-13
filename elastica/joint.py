@@ -1,6 +1,6 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 
-from typing import Any, NoReturn, Optional
+from typing import Optional
 
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType, ConnectionIndex
@@ -59,11 +59,11 @@ class FreeJoint:
         ----------
         system_one : SystemType
             Rod or rigid-body object
-        index_one : int | np.ndarray
+        index_one : ConnectionIndex
             Index of first rod for joint.
         system_two : SystemType
             Rod or rigid-body object
-        index_two : int | np.ndarray
+        index_two : ConnectionIndex
             Index of second rod for joint.
 
         Returns
@@ -104,11 +104,11 @@ class FreeJoint:
         ----------
         system_one : SystemType
             Rod or rigid-body object
-        index_one : int | np.ndarray
+        index_one : ConnectionIndex
             Index of first rod for joint.
         system_two : SystemType
             Rod or rigid-body object
-        index_two : int | np.ndarray
+        index_two : ConnectionIndex
             Index of second rod for joint.
 
         Returns
@@ -383,155 +383,6 @@ def get_relative_rotation_two_systems(
     return (
         system_one.director_collection[..., index_one]
         @ system_two.director_collection[..., index_two].T
-    )
-
-
-# everything below this comment should be removed beyond v0.4.0
-def _dot_product(a: Any, b: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._dot_product()\n"
-        "instead for find the dot product between a and b."
-    )
-
-
-def _norm(a: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._norm()\n"
-        "instead for finding the norm of a."
-    )
-
-
-def _clip(x: Any, low: Any, high: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._clip()\n"
-        "instead for clipping x."
-    )
-
-
-def _out_of_bounds(x: Any, low: Any, high: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._out_of_bounds()\n"
-        "instead for checking if x is out of bounds."
-    )
-
-
-def _find_min_dist(x1: Any, e1: Any, x2: Any, e2: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._find_min_dist()\n"
-        "instead for finding minimum distance between contact points."
-    )
-
-
-def _calculate_contact_forces_rod_rigid_body(
-    x_collection_rod: Any,
-    edge_collection_rod: Any,
-    x_cylinder_center: Any,
-    x_cylinder_tip: Any,
-    edge_cylinder: Any,
-    radii_sum: Any,
-    length_sum: Any,
-    internal_forces_rod: Any,
-    external_forces_rod: Any,
-    external_forces_cylinder: Any,
-    external_torques_cylinder: Any,
-    cylinder_director_collection: Any,
-    velocity_rod: Any,
-    velocity_cylinder: Any,
-    contact_k: Any,
-    contact_nu: Any,
-    velocity_damping_coefficient: Any,
-    friction_coefficient: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica._contact_functions._calculate_contact_forces_rod_cylinder()\n"
-        "instead for calculating rod cylinder contact forces."
-    )
-
-
-def _calculate_contact_forces_rod_rod(
-    x_collection_rod_one: Any,
-    radius_rod_one: Any,
-    length_rod_one: Any,
-    tangent_rod_one: Any,
-    velocity_rod_one: Any,
-    internal_forces_rod_one: Any,
-    external_forces_rod_one: Any,
-    x_collection_rod_two: Any,
-    radius_rod_two: Any,
-    length_rod_two: Any,
-    tangent_rod_two: Any,
-    velocity_rod_two: Any,
-    internal_forces_rod_two: Any,
-    external_forces_rod_two: Any,
-    contact_k: Any,
-    contact_nu: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica._contact_functions._calculate_contact_forces_rod_rod()\n"
-        "instead for calculating rod rod contact forces."
-    )
-
-
-def _calculate_contact_forces_self_rod(
-    x_collection_rod: Any,
-    radius_rod: Any,
-    length_rod: Any,
-    tangent_rod: Any,
-    velocity_rod: Any,
-    external_forces_rod: Any,
-    contact_k: Any,
-    contact_nu: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica._contact_functions._calculate_contact_forces_self_rod()\n"
-        "instead for calculating rod self-contact forces."
-    )
-
-
-def _aabbs_not_intersecting(aabb_one: Any, aabb_two: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._aabbs_not_intersecting()\n"
-        "instead for checking aabbs intersection."
-    )
-
-
-def _prune_using_aabbs_rod_rigid_body(
-    rod_one_position_collection: Any,
-    rod_one_radius_collection: Any,
-    rod_one_length_collection: Any,
-    cylinder_position: Any,
-    cylinder_director: Any,
-    cylinder_radius: Any,
-    cylinder_length: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._prune_using_aabbs_rod_cylinder()\n"
-        "instead for checking rod cylinder intersection."
-    )
-
-
-def _prune_using_aabbs_rod_rod(
-    rod_one_position_collection: Any,
-    rod_one_radius_collection: Any,
-    rod_one_length_collection: Any,
-    rod_two_position_collection: Any,
-    rod_two_radius_collection: Any,
-    rod_two_length_collection: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._prune_using_aabbs_rod_rod()\n"
-        "instead for checking rod rod intersection."
     )
 
 
