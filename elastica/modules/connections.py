@@ -5,7 +5,7 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
-from typing import Type, Protocol, TypeAlias, cast, Any
+from typing import Type, TypeAlias, cast, Any
 from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
@@ -23,20 +23,6 @@ ConnectionIndex: TypeAlias = (
 )
 
 
-class SystemCollectionWithConnectionProtocol(SystemCollectionProtocol, Protocol):
-    _connections: list[ModuleProtocol]
-
-    _finalize_connections: OperatorFinalizeType
-
-    def connect(
-        self,
-        first_rod: SystemType,
-        second_rod: SystemType,
-        first_connect_idx: ConnectionIndex,
-        second_connect_idx: ConnectionIndex,
-    ) -> ModuleProtocol: ...
-
-
 class Connections:
     """
     The Connections class is a module for connecting rod-like objects using joints selected
@@ -49,13 +35,13 @@ class Connections:
             List of joint classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionWithConnectionProtocol):
+    def __init__(self: SystemCollectionProtocol):
         self._connections: list[ModuleProtocol] = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
-        self: SystemCollectionWithConnectionProtocol,
+        self: SystemCollectionProtocol,
         first_rod: SystemType,
         second_rod: SystemType,
         first_connect_idx: ConnectionIndex = None,
@@ -98,7 +84,7 @@ class Connections:
 
         return _connect
 
-    def _finalize_connections(self: SystemCollectionWithConnectionProtocol) -> None:
+    def _finalize_connections(self: SystemCollectionProtocol) -> None:
         # From stored _Connect objects, instantiate the joints and store it
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)

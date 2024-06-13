@@ -4,7 +4,7 @@ CallBacks
 
 Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
-from typing import Type, Protocol, Any
+from typing import Type, Any
 from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import SystemType, SystemIdxType, OperatorFinalizeType
 from .protocol import ModuleProtocol
@@ -13,19 +13,6 @@ import numpy as np
 
 from elastica.callback_functions import CallBackBaseClass
 from .protocol import SystemCollectionProtocol
-
-
-class SystemCollectionWithCallBacksProtocol(SystemCollectionProtocol, Protocol):
-    _callback_list: list[ModuleProtocol]
-    _callback_operators: list[tuple[int, CallBackBaseClass]]
-
-    _finalize_callback: OperatorFinalizeType
-
-    def collect_diagnostics(self, system: SystemType) -> ModuleProtocol: ...
-
-    def _callback_execution(
-        self, time: np.floating, current_step: int, *args: Any, **kwargs: Any
-    ) -> None: ...
 
 
 class CallBacks:
@@ -40,7 +27,7 @@ class CallBacks:
             List of call back classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionWithCallBacksProtocol) -> None:
+    def __init__(self: SystemCollectionProtocol) -> None:
         self._callback_list: list[ModuleProtocol] = []
         self._callback_operators: list[tuple[int, CallBackBaseClass]] = []
         super(CallBacks, self).__init__()
@@ -48,7 +35,7 @@ class CallBacks:
         self._feature_group_finalize.append(self._finalize_callback)
 
     def collect_diagnostics(
-        self: SystemCollectionWithCallBacksProtocol, system: SystemType
+        self: SystemCollectionProtocol, system: SystemType
     ) -> ModuleProtocol:
         """
         This method calls user-defined call-back classes for a
@@ -72,7 +59,7 @@ class CallBacks:
 
         return _callbacks
 
-    def _finalize_callback(self: SystemCollectionWithCallBacksProtocol) -> None:
+    def _finalize_callback(self: SystemCollectionProtocol) -> None:
         # dev : the first index stores the rod index to collect data.
         self._callback_operators = [
             (callback.id(), callback.instantiate()) for callback in self._callback_list
@@ -85,7 +72,7 @@ class CallBacks:
         self._callback_execution(time=time, current_step=0)
 
     def _callback_execution(
-        self: SystemCollectionWithCallBacksProtocol,
+        self: SystemCollectionProtocol,
         time: np.floating,
         current_step: int,
     ) -> None:
