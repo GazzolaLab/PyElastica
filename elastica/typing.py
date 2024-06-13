@@ -56,7 +56,7 @@ else:
     FreeJoint = None
 
 
-SystemType: TypeAlias = Union[SymplecticSystemProtocol, ExplicitSystemProtocol]
+SystemType: TypeAlias = SymplecticSystemProtocol  # | ExplicitSystemProtocol
 SystemIdxType: TypeAlias = int
 
 # ModuleObjectTypes: TypeAlias = (

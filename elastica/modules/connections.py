@@ -18,6 +18,7 @@ from elastica.joint import FreeJoint
 
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
+# TODO: Maybe just use slice??
 ConnectionIndex: TypeAlias = (
     int | np.int_ | list[int] | tuple[int] | np.typing.NDArray | None
 )
@@ -35,7 +36,7 @@ class Connections:
             List of joint classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol):
+    def __init__(self: SystemCollectionProtocol) -> None:
         self._connections: list[ModuleProtocol] = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)

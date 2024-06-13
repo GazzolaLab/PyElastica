@@ -30,6 +30,9 @@ class SystemProtocol(Protocol):
     def velocity_collection(self) -> NDArray: ...
 
     @property
+    def director_collection(self) -> NDArray: ...
+
+    @property
     def acceleration_collection(self) -> NDArray: ...
 
     @property

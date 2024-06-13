@@ -10,6 +10,7 @@ from elastica.typing import (
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
+from elastica.boundary_conditions import ConstraintBase
 
 from .operator_group import OperatorGroupFIFO
 from .connection import ConnectionIndex
@@ -52,10 +53,9 @@ class SystemCollectionProtocol(Protocol):
         raise NotImplementedError
 
     # CallBack API
+    _finalize_callback: OperatorFinalizeType
     _callback_list: list[ModuleProtocol]
     _callback_operators: list[tuple[int, CallBackBaseClass]]
-
-    _finalize_callback: OperatorFinalizeType
 
     @abstractmethod
     def collect_diagnostics(self, system: SystemType) -> ModuleProtocol:
@@ -67,6 +67,23 @@ class SystemCollectionProtocol(Protocol):
     ) -> None:
         raise NotImplementedError
 
+    # Constraints API
+    _constraints_list: list[ModuleProtocol]
+    _constraints_operators: list[tuple[int, ConstraintBase]]
+    _finalize_constraints: OperatorFinalizeType
+
+    @abstractmethod
+    def constrain(self, system: SystemType) -> ModuleProtocol:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _constrain_values(self, time: np.floating) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _constrain_rates(self, time: np.floating) -> None:
+        raise NotImplementedError
+
 
 M = TypeVar("M", bound="ModuleProtocol")
 
@@ -74,6 +91,6 @@ M = TypeVar("M", bound="ModuleProtocol")
 class ModuleProtocol(Protocol[M]):
     def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
 
-    def instantiate(self) -> M: ...
+    def instantiate(self, system: SystemType) -> M: ...
 
     def id(self) -> Any: ...
