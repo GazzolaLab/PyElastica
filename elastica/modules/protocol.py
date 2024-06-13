@@ -13,6 +13,7 @@ from elastica.typing import (
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
 from elastica.boundary_conditions import ConstraintBase
+from elastica.dissipation import DamperBase
 
 import numpy as np
 
@@ -116,4 +117,17 @@ class SystemCollectionProtocol(Protocol):
     def detect_contact_between(
         self, first_system: SystemType, second_system: AllowedContactType
     ) -> ModuleProtocol:
+        raise NotImplementedError
+
+    # Damping API
+    _damping_list: list[ModuleProtocol]
+    _damping_operators: list[tuple[int, DamperBase]]
+    _finalize_dampers: OperatorFinalizeType
+
+    @abstractmethod
+    def dampen(self, system: SystemType) -> ModuleProtocol:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _dampen_rates(self, time: np.floating) -> None:
         raise NotImplementedError

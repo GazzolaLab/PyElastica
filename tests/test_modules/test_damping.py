@@ -39,7 +39,7 @@ class TestDamper:
         damper = load_damper
 
         with pytest.raises(RuntimeError) as excinfo:
-            damper(None)  # None is the rod/system parameter
+            damper.instantiate(None)  # None is the rod/system parameter
         assert "No damper" in str(excinfo.value)
 
     def test_call_with_args_and_kwargs(self, load_damper):
@@ -56,7 +56,7 @@ class TestDamper:
         damper.using(MockDamper, 3.9, 4.0, "5", k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
-        mock_damper = damper(None)  # None is Fake rod
+        mock_damper = damper.instantiate(None)  # None is Fake rod
 
         # More tests reinforcing the first
         assert mock_damper.dummy_one == 3.9
@@ -78,7 +78,7 @@ class TestDamper:
         mock_rod = self.MockRod()
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = damper(mock_rod)
+            _ = damper.instantiate(mock_rod)
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -153,7 +153,7 @@ class TestDampingMixin:
         scwd.append(mock_rod)
 
         _mock_damper = scwd.dampen(mock_rod)
-        assert _mock_damper in scwd._dampers
+        assert _mock_damper in scwd._damping_list
         assert _mock_damper.__class__ == _Damper
 
     from elastica.dissipation import DamperBase
@@ -185,7 +185,7 @@ class TestDampingMixin:
 
         scwd._finalize_dampers()
 
-        for x, y in scwd._dampers:
+        for x, y in scwd._damping_operators:
             assert type(x) is int
             assert type(y) is damper_cls
 
@@ -194,7 +194,7 @@ class TestDampingMixin:
         scwd._finalize_dampers()
 
         for i in [0, 1, -1]:
-            x, y = scwd._dampers[i]
+            x, y = scwd._damping_operators[i]
             mock_rod = scwd._systems[i]
             # Test system
             assert type(x) is int
