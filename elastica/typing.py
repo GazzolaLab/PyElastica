@@ -69,14 +69,15 @@ SystemIdxType: TypeAlias = int
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
 StateType: TypeAlias = "State"
 
-OperatorType: TypeAlias = Callable[
-    ..., Any
-]  # TODO: Maybe can be more specific. Up for discussion.
+# TODO: Maybe can be more specific. Up for discussion.
+OperatorType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
 RodType: TypeAlias = Type["RodBase"]
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
-AllowedContactType: TypeAlias = SystemType | Type["SurfaceBase"]
+AllowedContactType: TypeAlias = (
+    SystemType | Type["SurfaceBase"]
+)  # FIXME: SurfaceBase needs to be treated differently
 
 # Indexing types
 # TODO: Maybe just use slice??

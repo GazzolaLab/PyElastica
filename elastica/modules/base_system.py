@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Type, Generator, Iterable
+from typing import Type, Generator, Iterable, Any
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -41,9 +41,6 @@ class BaseSystemCollection(MutableSequence):
         _systems: list
             List of rod-like objects.
 
-    Developer Note
-    -----
-
     Note
     ----
     We can directly subclass a list for the
@@ -64,7 +61,7 @@ class BaseSystemCollection(MutableSequence):
         super().__init__()
 
         # List of system types/bases that are allowed
-        self.allowed_sys_types: tuple[Type[SystemType], ...] = (
+        self.allowed_sys_types: tuple[Type, ...] = (
             RodBase,
             RigidBodyBase,
             SurfaceBase,
@@ -79,7 +76,7 @@ class BaseSystemCollection(MutableSequence):
         self._finalize_flag: bool = False
 
     @final
-    def _check_type(self, sys_to_be_added: SystemType) -> bool:
+    def _check_type(self, sys_to_be_added: Any) -> bool:
         if not isinstance(sys_to_be_added, self.allowed_sys_types):
             raise TypeError(
                 "{0}\n"
@@ -135,9 +132,7 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = allowed_types
 
     @final
-    def _get_sys_idx_if_valid(
-        self, sys_to_be_added: SystemType | AllowedContactType
-    ) -> SystemIdxType:
+    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType

@@ -1,6 +1,6 @@
 __doc__ = "Data structure wrapper for rod components"
 
-from typing import Any, Optional
+from typing import Optional
 from typing_extensions import Self
 import numpy as np
 from numpy.typing import NDArray
@@ -63,20 +63,18 @@ class _RodSymplecticStepperMixin:
         # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
-    def update_internal_forces_and_torques(
-        self, time: np.floating, *args: Any, **kwargs: Any
-    ) -> None:
+    def update_internal_forces_and_torques(self, time: np.floating) -> None:
         self.compute_internal_forces_and_torques(time)
 
     def dynamic_rates(
-        self, time: np.floating, prefac: np.floating, *args: Any, **kwargs: Any
+        self,
+        time: np.floating,
+        prefac: np.floating,
     ) -> NDArray[np.floating]:
         self.update_accelerations(time)
-        return self.dynamic_states.dynamic_rates(time, prefac, *args, **kwargs)
+        return self.dynamic_states.dynamic_rates(time, prefac)
 
-    def reset_external_forces_and_torques(
-        self, time: np.floating, *args: Any, **kwargs: Any
-    ) -> None:
+    def reset_external_forces_and_torques(self, time: np.floating) -> None:
         self.zeroed_out_external_forces_and_torques(time)
 
 
@@ -519,9 +517,7 @@ class _DynamicState:
         # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
         return self.velocity_collection, self.omega_collection
 
-    def dynamic_rates(
-        self, time: np.floating, prefac: np.floating
-    ) -> NDArray[np.floating]:
+    def dynamic_rates(self, time: np.floating, prefac: np.floating):
         """Yields dynamic rates to add to with _DynamicState
         Returns
         -------

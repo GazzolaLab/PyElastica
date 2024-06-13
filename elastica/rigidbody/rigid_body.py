@@ -19,38 +19,19 @@ class RigidBodyBase(ABC):
 
     def __init__(self):
 
-        self.position_collection = NotImplementedError
-        self.velocity_collection = NotImplementedError
-        self.acceleration_collection = NotImplementedError
-        self.omega_collection = NotImplementedError
-        self.alpha_collection = NotImplementedError
-        self.director_collection = NotImplementedError
+        self.position_collection: NDArray[np.floating]
+        self.velocity_collection: NDArray[np.floating]
+        self.omega_collection: NDArray[np.floating]
+        self.acceleration_collection: NDArray[np.floating]
+        self.director_collection: NDArray[np.floating]
+        self.alpha_collection: NDArray[np.floating]
+        self.external_forces: NDArray[np.floating]
+        self.external_torques: NDArray[np.floating]
 
-        self.external_forces = NotImplementedError
-        self.external_torques = NotImplementedError
+        self.mass: np.floating
 
-        self.mass = NotImplementedError
-
-        self.mass_second_moment_of_inertia = NotImplementedError
-        self.inv_mass_second_moment_of_inertia = NotImplementedError
-
-    # @abstractmethod
-    #     # def update_accelerations(self):
-    #     #     pass
-
-    # def _compute_internal_forces_and_torques(self):
-    #     """
-    #     This function here is only for integrator to work properly. We do not need
-    #     internal forces and torques at all.
-    #     Parameters
-    #     ----------
-    #     time
-    #
-    #     Returns
-    #     -------
-    #
-    #     """
-    #     pass
+        self.mass_second_moment_of_inertia: NDArray[np.floating]
+        self.inv_mass_second_moment_of_inertia: NDArray[np.floating]
 
     def update_accelerations(self, time):
         np.copyto(

@@ -95,8 +95,8 @@ class Constraints:
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)
-        self._constrain_values(time=0.0)
-        self._constrain_rates(time=0.0)
+        self._constrain_values(time=np.float64(0.0))
+        self._constrain_rates(time=np.float64(0.0))
 
     def _constrain_values(self: SystemCollectionProtocol, time: np.floating) -> None:
         for sys_id, constraint in self._constraints_operators:
