@@ -104,17 +104,17 @@ class BaseSystemCollection(MutableSequence):
     def __len__(self) -> int:
         return len(self._systems)
 
-    def __getitem__(self, idx: int | slice, /) -> SystemType | list[SystemType]:  # type: ignore
+    def __getitem__(self, idx, /):  # type: ignore
         return self._systems[idx]
 
-    def __delitem__(self, idx: int | slice, /) -> None:  # type: ignore
+    def __delitem__(self, idx, /):  # type: ignore
         del self._systems[idx]
 
-    def __setitem__(self, idx: int | slice, system: SystemType | Iterable[SystemType], /) -> None:  # type: ignore
+    def __setitem__(self, idx, system, /):  # type: ignore
         self._check_type(system)
         self._systems[idx] = system
 
-    def insert(self, idx: int, system: SystemType) -> None:  # type: ignore
+    def insert(self, idx, system) -> None:  # type: ignore
         self._check_type(system)
         self._systems.insert(idx, system)
 

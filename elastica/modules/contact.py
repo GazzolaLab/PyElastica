@@ -183,7 +183,7 @@ class _Contact:
         )
 
     def instantiate(self) -> NoContact:
-        if not self._contact_cls:
+        if not hasattr(self, "_contact_cls"):
             raise RuntimeError(
                 "No contacts provided to to establish contact between rod-like object id {0}"
                 " and {1}, but a Contact"

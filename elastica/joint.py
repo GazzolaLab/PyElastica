@@ -3,8 +3,7 @@ __doc__ = """ Module containing joint classes to connect multiple rods together.
 from typing import Any, NoReturn, Optional
 
 from elastica._rotations import _inv_rotate
-from elastica.typing import SystemType, RodType
-from elastica.modules.connections import ConnectionIndex
+from elastica.typing import SystemType, RodType, ConnectionIndex
 import numpy as np
 import logging
 from numpy.typing import NDArray

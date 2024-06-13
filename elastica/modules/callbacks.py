@@ -139,9 +139,9 @@ class _CallBack:
     def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self, system: SystemType) -> CallBackBaseClass:
+    def instantiate(self) -> CallBackBaseClass:
         """Constructs a callback functions after checks"""
-        if not self._callback_cls:
+        if not hasattr(self, "_callback_cls"):
             raise RuntimeError(
                 "No callback provided to act on rod id {0}"
                 "but a callback was registered. Did you forget to call"

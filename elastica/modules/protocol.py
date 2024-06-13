@@ -8,13 +8,26 @@ from elastica.typing import (
     OperatorFinalizeType,
     SystemType,
     AllowedContactType,
+    ConnectionIndex,
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
 from elastica.boundary_conditions import ConstraintBase
 
+import numpy as np
+
 from .operator_group import OperatorGroupFIFO
-from .connection import ConnectionIndex
+
+
+M = TypeVar("M", bound="ModuleProtocol")
+
+
+class ModuleProtocol(Protocol[M]):
+    def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
+
+    def instantiate(self, *args: Any, **kwargs: Any) -> M: ...
+
+    def id(self) -> Any: ...
 
 
 class SystemCollectionProtocol(Protocol):
@@ -23,14 +36,22 @@ class SystemCollectionProtocol(Protocol):
     @property
     def _feature_group_synchronize(self) -> OperatorGroupFIFO: ...
 
+    def synchronize(self, time: np.floating) -> None: ...
+
     @property
     def _feature_group_constrain_values(self) -> list[OperatorType]: ...
+
+    def constrain_values(self, time: np.floating) -> None: ...
 
     @property
     def _feature_group_constrain_rates(self) -> list[OperatorType]: ...
 
+    def constrain_rates(self, time: np.floating) -> None: ...
+
     @property
     def _feature_group_callback(self) -> list[OperatorCallbackType]: ...
+
+    def apply_callbacks(self, time: np.floating, current_step: int) -> None: ...
 
     @property
     def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
@@ -96,14 +117,3 @@ class SystemCollectionProtocol(Protocol):
         self, first_system: SystemType, second_system: AllowedContactType
     ) -> ModuleProtocol:
         raise NotImplementedError
-
-
-M = TypeVar("M", bound="ModuleProtocol")
-
-
-class ModuleProtocol(Protocol[M]):
-    def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
-
-    def instantiate(self, *args: Any, **kwargs: Any) -> M: ...
-
-    def id(self) -> Any: ...

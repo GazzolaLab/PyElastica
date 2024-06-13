@@ -4,18 +4,15 @@ Constraints
 
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
-from typing import Any, Type, TypeAlias
+from typing import Any, Type
 from typing_extensions import Self
 
 import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
 
-from elastica.typing import SystemType, SystemIdxType
+from elastica.typing import SystemType, SystemIdxType, ConstrainingIndex
 from .protocol import SystemCollectionProtocol, ModuleProtocol
-
-# TODO: Maybe just use slice??
-ConstrainingIndex: TypeAlias = list[int] | tuple[int] | np.typing.NDArray | None
 
 
 class Constraints:
@@ -144,9 +141,9 @@ class _Constraint:
     def using(
         self,
         cls: Type[ConstraintBase],
+        *args: Any,
         constrained_position_idx: ConstrainingIndex = None,
         constrained_director_idx: ConstrainingIndex = None,
-        *args: Any,
         **kwargs: Any,
     ) -> Self:
         """
@@ -183,7 +180,7 @@ class _Constraint:
 
     def instantiate(self, system: SystemType) -> ConstraintBase:
         """Constructs a constraint after checks"""
-        if not self._bc_cls:
+        if not hasattr(self, "_bc_cls"):
             raise RuntimeError(
                 "No boundary condition provided to constrain rod"
                 "id {0} at {1}, but a BC was intended. Did you"

@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 from typing import Type, Callable, Any, ParamSpec
 from typing import TypeAlias
 
+import numpy as np
+
 
 if TYPE_CHECKING:
     # Used for type hinting without circular imports
@@ -32,31 +34,31 @@ if TYPE_CHECKING:
     from .dissipation import DamperBase
     from .external_forces import NoForces
     from .joint import FreeJoint
-else:
-    RodBase = None
-    RigidBodyBase = None
-    SurfaceBase = None
+# else:
+#     RodBase = None
+#     RigidBodyBase = None
+#     SurfaceBase = None
+#
+#     SystemCollectionProtocol = None
+#
+#     State = "State"
+#     SymplecticSystemProtocol = None
+#     ExplicitSystemProtocol = None
+#
+#     StepperProtocol = None
+#     SymplecticStepperProtocol = None
+#     MemoryProtocol = None
+#
+#     # Modules Base Classes
+#     FreeBC = None
+#     CallBackBaseClass = None
+#     NoContact = None
+#     DamperBase = None
+#     NoForces = None
+#     FreeJoint = None
 
-    SystemCollectionProtocol = None
 
-    State = "State"
-    SymplecticSystemProtocol = None
-    ExplicitSystemProtocol = None
-
-    StepperProtocol = None
-    SymplecticStepperProtocol = None
-    MemoryProtocol = None
-
-    # Modules Base Classes
-    FreeBC = None
-    CallBackBaseClass = None
-    NoContact = None
-    DamperBase = None
-    NoForces = None
-    FreeJoint = None
-
-
-SystemType: TypeAlias = SymplecticSystemProtocol  # | ExplicitSystemProtocol
+SystemType: TypeAlias = "SymplecticSystemProtocol"  # | ExplicitSystemProtocol
 SystemIdxType: TypeAlias = int
 
 # ModuleObjectTypes: TypeAlias = (
@@ -65,16 +67,23 @@ SystemIdxType: TypeAlias = int
 
 # TODO: Modify this line and move to elastica/typing.py once system state is defined
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
-StateType: TypeAlias = State
+StateType: TypeAlias = "State"
 
 OperatorType: TypeAlias = Callable[
     ..., Any
 ]  # TODO: Maybe can be more specific. Up for discussion.
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
-RodType: TypeAlias = Type[RodBase]
-SystemCollectionType: TypeAlias = SystemCollectionProtocol
-AllowedContactType: TypeAlias = SystemType | Type[SurfaceBase]
+RodType: TypeAlias = Type["RodBase"]
+SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
+AllowedContactType: TypeAlias = SystemType | Type["SurfaceBase"]
+
+# Indexing types
+# TODO: Maybe just use slice??
+ConstrainingIndex: TypeAlias = list[int] | tuple[int] | np.typing.NDArray | None
+ConnectionIndex: TypeAlias = (
+    int | np.int_ | list[int] | tuple[int] | np.typing.NDArray | None
+)
 
 # Operators in elastica.modules
 OperatorParam = ParamSpec("OperatorParam")

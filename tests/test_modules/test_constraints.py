@@ -45,7 +45,7 @@ class TestConstraint:
         constraint = load_constraint
 
         with pytest.raises(RuntimeError) as excinfo:
-            constraint(None)  # None is the rod/system parameter
+            constraint.instantiate(None)  # None is the rod/system parameter
         assert "No boundary condition" in str(excinfo.value)
 
     def test_call_without_position_director_kwargs(self, load_constraint):
@@ -60,7 +60,7 @@ class TestConstraint:
         constraint.using(MockBC, 3.9, 4.0, "5", k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
-        mock_bc = constraint(None)  # None is Fake rod
+        mock_bc = constraint.instantiate(None)  # None is Fake rod
 
         # More tests reinforcing the first
         assert mock_bc.dummy_one == 3.9
@@ -93,7 +93,7 @@ class TestConstraint:
 
         # Actual test is here, this should not throw
         mock_rod = self.MockRod()
-        mock_bc = constraint(mock_rod)
+        mock_bc = constraint.instantiate(mock_rod)
 
         # More tests reinforcing the first
         for pos_idx_in_rod, pos_idx_in_bc in zip(position_indices, range(3)):
@@ -125,7 +125,7 @@ class TestConstraint:
 
         # Actual test is here, this should not throw
         mock_rod = self.MockRod()
-        mock_bc = constraint(mock_rod)
+        mock_bc = constraint.instantiate(mock_rod)
 
         # More tests reinforcing the first
         for dir_idx_in_rod, dir_idx_in_bc in zip(director_indices, range(3)):
@@ -160,7 +160,7 @@ class TestConstraint:
 
         # Actual test is here, this should not throw
         mock_rod = self.MockRod()
-        mock_bc = constraint(mock_rod)
+        mock_bc = constraint.instantiate(mock_rod)
 
         # More tests reinforcing the first
         pos_dir_offset = len(dof_indices)
@@ -202,7 +202,7 @@ class TestConstraint:
         mock_rod = self.MockRod()
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = constraint(mock_rod)
+            _ = constraint.instantiate(mock_rod)
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -281,7 +281,7 @@ class TestConstraintsMixin:
         scwc.append(mock_rod)
 
         _mock_constraint = scwc.constrain(mock_rod)
-        assert _mock_constraint in scwc._constraints
+        assert _mock_constraint in scwc._constraints_list
         assert _mock_constraint.__class__ == _Constraint
 
     from elastica.boundary_conditions import ConstraintBase
@@ -318,7 +318,7 @@ class TestConstraintsMixin:
 
         scwc._finalize_constraints()
 
-        for x, y in scwc._constraints:
+        for x, y in scwc._constraints_operators:
             assert type(x) is int
             assert type(y) is bc_cls
 
@@ -327,7 +327,7 @@ class TestConstraintsMixin:
         scwc._finalize_constraints()
 
         for i in [0, 1, -1]:
-            x, y = scwc._constraints[i]
+            x, y = scwc._constraints_operators[i]
             mock_rod = scwc._systems[i]
             # Test system
             assert type(x) is int
@@ -346,7 +346,7 @@ class TestConstraintsMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for x, _ in scwc._constraints:
+        for x, _ in scwc._constraints_list:
             assert num < x
             num = x
 

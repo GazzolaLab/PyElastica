@@ -55,7 +55,7 @@ def integrate(
 
 def integrate(
     stepper: StepperProtocol,
-    systems: SystemType | SystemCollectionType,
+    systems: "SystemType | SystemCollectionType",
     final_time: float,
     n_steps: int = 1000,
     restart_time: float = 0.0,
