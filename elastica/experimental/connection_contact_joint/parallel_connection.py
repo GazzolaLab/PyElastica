@@ -94,7 +94,7 @@ class SurfaceJointSideBySide(FreeJoint):
         ).T
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(self, system_one, index_one, system_two, index_two):
         # TODO: documentation
 
         (
@@ -110,18 +110,18 @@ class SurfaceJointSideBySide(FreeJoint):
             self.rod_one_direction_vec_in_material_frame,
             self.rod_two_direction_vec_in_material_frame,
             self.offset_btw_rods,
-            rod_one.director_collection,
-            rod_two.director_collection,
-            rod_one.position_collection,
-            rod_two.position_collection,
-            rod_one.radius,
-            rod_two.radius,
-            rod_one.dilatation,
-            rod_two.dilatation,
-            rod_one.velocity_collection,
-            rod_two.velocity_collection,
-            rod_one.external_forces,
-            rod_two.external_forces,
+            system_one.director_collection,
+            system_two.director_collection,
+            system_one.position_collection,
+            system_two.position_collection,
+            system_one.radius,
+            system_two.radius,
+            system_one.dilatation,
+            system_two.dilatation,
+            system_one.velocity_collection,
+            system_two.velocity_collection,
+            system_one.external_forces,
+            system_two.external_forces,
         )
 
     @staticmethod
@@ -246,7 +246,7 @@ class SurfaceJointSideBySide(FreeJoint):
             spring_force,
         )
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, system_one, index_one, system_two, index_two):
         # pass
 
         self._apply_torques(
@@ -255,10 +255,10 @@ class SurfaceJointSideBySide(FreeJoint):
             self.rod_two_rd2,
             index_one,
             index_two,
-            rod_one.director_collection,
-            rod_two.director_collection,
-            rod_one.external_torques,
-            rod_two.external_torques,
+            system_one.director_collection,
+            system_two.director_collection,
+            system_one.external_torques,
+            system_two.external_torques,
         )
 
     @staticmethod
