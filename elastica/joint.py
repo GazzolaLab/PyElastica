@@ -4,6 +4,7 @@ from typing import Any, NoReturn, Optional
 
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType
+from elastica.modules.connections import ConnectionIndex
 import numpy as np
 import logging
 from numpy.typing import NDArray
@@ -48,9 +49,9 @@ class FreeJoint:
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         """
         Apply joint force to the connected rod objects.
@@ -59,11 +60,11 @@ class FreeJoint:
         ----------
         system_one : SystemType
             Rod or rigid-body object
-        index_one : int
+        index_one : int | np.ndarray
             Index of first rod for joint.
         system_two : SystemType
             Rod or rigid-body object
-        index_two : int
+        index_two : int | np.ndarray
             Index of second rod for joint.
 
         Returns
@@ -91,9 +92,9 @@ class FreeJoint:
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         """
         Apply restoring joint torques to the connected rod objects.
@@ -104,11 +105,11 @@ class FreeJoint:
         ----------
         system_one : SystemType
             Rod or rigid-body object
-        index_one : int
+        index_one : int | np.ndarray
             Index of first rod for joint.
         system_two : SystemType
             Rod or rigid-body object
-        index_two : int
+        index_two : int | np.ndarray
             Index of second rod for joint.
 
         Returns
@@ -172,18 +173,18 @@ class HingeJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
@@ -279,18 +280,18 @@ class FixedJoint(FreeJoint):
     def apply_forces(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
         system_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         system_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies
@@ -618,9 +619,9 @@ class ExternalContact(FreeJoint):
     def apply_forces(
         self,
         rod_one: SystemType,
-        index_one: int,
+        index_one: ConnectionIndex,
         rod_two: SystemType,
-        index_two: int,
+        index_two: ConnectionIndex,
     ) -> None:
         # del index_one, index_two
         from elastica.contact_utils import (
@@ -737,7 +738,11 @@ class SelfContact(FreeJoint):
         )
 
     def apply_forces(
-        self, rod_one: SystemType, index_one: int, rod_two: SystemType, index_two: int
+        self,
+        rod_one: SystemType,
+        index_one: ConnectionIndex,
+        rod_two: SystemType,
+        index_two: ConnectionIndex,
     ) -> None:
         # del index_one, index_two
         from elastica._contact_functions import (

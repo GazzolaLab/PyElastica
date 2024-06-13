@@ -97,7 +97,7 @@ class Connections:
             first_connect_idx: ConnectionIndex,
             system_two: SystemType,
             second_connect_idx: ConnectionIndex,
-        ):
+        ) -> None:
             connect_instance.apply_forces(
                 system_one=system_one,
                 index_one=first_connect_idx,
@@ -128,8 +128,6 @@ class Connections:
             )
 
             self._feature_group_synchronize.add_operators(connection, [func])
-
-            self.warnings(connection)
 
         self._connections = []
         del self._connections
