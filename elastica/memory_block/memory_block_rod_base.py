@@ -1,16 +1,17 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
 from typing import Iterable
+import numpy.typing as npt
 
 
-def make_block_memory_metadata(n_elems_in_rods: np.ndarray) -> Iterable:
+def make_block_memory_metadata(n_elems_in_rods: npt.NDArray[np.integer]) -> Iterable:
     """
     This function, takes number of elements of each rod as a numpy array and computes,
     ghost nodes, elements and voronoi element indexes and numbers and returns it.
 
     Parameters
     ----------
-    n_elems_in_rods: ndarray
+    n_elems_in_rods: npt.NDArray
         An integer array containing the number of elements in each of the n rod.
 
     Returns
@@ -20,9 +21,9 @@ def make_block_memory_metadata(n_elems_in_rods: np.ndarray) -> Iterable:
         between each pair of two rods adjacent in memory block.
     ghost_nodes_idx: ndarray
         An integer array of length n - 1 containing the indices of ghost nodes in memory block.
-    ghost_elements_idx: ndarray
+    ghost_elements_idx: npt.NDArray
         An integer array of length 2 * (n - 1) containing the indices of ghost elements in memory block.
-    ghost_voronoi_idx: ndarray
+    ghost_voronoi_idx: npt.NDArray
         An integer array of length 2 * (n - 1) containing the indices of ghost Voronoi nodes in memory block.
     """
 
@@ -52,14 +53,16 @@ def make_block_memory_metadata(n_elems_in_rods: np.ndarray) -> Iterable:
     return n_elems_with_ghosts, ghost_nodes_idx, ghost_elems_idx, ghost_voronoi_idx
 
 
-def make_block_memory_periodic_boundary_metadata(n_elems_in_rods):
+def make_block_memory_periodic_boundary_metadata(
+    n_elems_in_rods: npt.NDArray[np.integer],
+) -> Iterable:
     """
     This function, takes the number of elements of ring rods and computes the periodic boundary node,
     element and voronoi index.
 
     Parameters
     ----------
-    n_elems_in_rods : numpy.ndarray
+    n_elems_in_rods : npt.NDArray
         1D (n_ring_rods,) array containing data with 'float' type. Elements of this array contains total number of
          elements of one rod, including periodic boundary elements.
 
@@ -67,21 +70,21 @@ def make_block_memory_periodic_boundary_metadata(n_elems_in_rods):
     -------
     n_elems
 
-    periodic_boundary_node : numpy.ndarray
+    periodic_boundary_node : npt.NDArray
         2D (2, n_periodic_boundary_nodes) array containing data with 'float' type. Vector containing periodic boundary
         elements index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
-    periodic_boundary_elems_idx : numpy.ndarray
+    periodic_boundary_elems_idx : npt.NDArray
         2D (2, n_periodic_boundary_elems) array containing data with 'float' type. Vector containing periodic boundary
         nodes index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
-    periodic_boundary_voronoi_idx : numpy.ndarray
+    periodic_boundary_voronoi_idx : npt.NDArray
         2D (2, n_periodic_boundary_voronoi) array containing data with 'float' type. Vector containing periodic boundary
         voronoi index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
     """
 
-    n_elem = n_elems_in_rods.copy()
+    n_elem: npt.NDArray[np.integer] = n_elems_in_rods.copy()
     n_rods = n_elems_in_rods.shape[0]
 
     periodic_boundary_node_idx = np.zeros((2, 3 * n_rods), dtype=np.int64)
@@ -145,7 +148,7 @@ def make_block_memory_periodic_boundary_metadata(n_elems_in_rods):
     )
 
     # Increase the n_elem in rods by 2 because we are adding two periodic boundary elements
-    n_elem += 2
+    n_elem = n_elem + 2
 
     return (
         n_elem,
@@ -160,5 +163,5 @@ class MemoryBlockRodBase:
     This is the base class for memory blocks for rods.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
