@@ -108,7 +108,6 @@ AllowedContactType: TypeAlias = Union[SystemType, Type[SurfaceBase]]
 
 # Operators in elastica.modules
 OperatorParam = ParamSpec("OperatorParam")
-CallbackParam = ParamSpec("CallbackParam")
 OperatorType: TypeAlias = Callable[OperatorParam, None]
-OperatorCallbackType: TypeAlias = Callable[CallbackParam, None]
-OperatorFinalizeType: TypeAlias = Callable
+OperatorCallbackType: TypeAlias = Callable[..., None]
+OperatorFinalizeType: TypeAlias = Callable[..., None]

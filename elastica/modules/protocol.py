@@ -1,4 +1,4 @@
-from typing import Protocol, Generator, TypeVar, Any
+from typing import Protocol, Generator, TypeVar, Any, Type
 from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import (
     SystemIdxType,
@@ -7,6 +7,7 @@ from elastica.typing import (
     OperatorFinalizeType,
     SystemType,
 )
+from elastica.joint import FreeJoint
 
 from .operator_group import OperatorGroupFIFO
 
@@ -38,7 +39,7 @@ M = TypeVar("M", bound="ModuleProtocol")
 
 
 class ModuleProtocol(Protocol[M]):
-    def using(self, callback_cls, *args, **kwargs) -> Self: ...
+    def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
 
     def instantiate(self) -> M: ...
 

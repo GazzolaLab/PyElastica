@@ -4,10 +4,9 @@ CallBacks
 
 Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
-from typing import Type, Protocol
+from typing import Type, Protocol, Any
 from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import SystemType, SystemIdxType, OperatorFinalizeType
-from elastica.typing import CallbackParam
 from .protocol import ModuleProtocol
 
 import numpy as np
@@ -25,11 +24,7 @@ class SystemCollectionWithCallBacksProtocol(SystemCollectionProtocol, Protocol):
     def collect_diagnostics(self, system: SystemType) -> ModuleProtocol: ...
 
     def _callback_execution(
-        self,
-        time: np.floating,
-        current_step: int,
-        *args: CallbackParam.args,
-        **kwargs: CallbackParam.kwargs,
+        self, time: np.floating, current_step: int, *args: Any, **kwargs: Any
     ) -> None: ...
 
 
@@ -122,14 +117,14 @@ class _CallBack:
         """
         self._sys_idx: SystemIdxType = sys_idx
         self._callback_cls: Type[CallBackBaseClass]
-        self._args: CallbackParam.args
-        self._kwargs: CallbackParam.kwargs
+        self._args: Any
+        self._kwargs: Any
 
     def using(
         self,
-        callback_cls: Type[CallBackBaseClass],
-        *args: CallbackParam.args,
-        **kwargs: CallbackParam.kwargs,
+        cls: Type[CallBackBaseClass],
+        *args: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         This method is a module to set which callback class is used to collect data
@@ -137,7 +132,7 @@ class _CallBack:
 
         Parameters
         ----------
-        callback_cls: object
+        cls: object
             User defined callback class.
 
         Returns
@@ -145,11 +140,11 @@ class _CallBack:
 
         """
         assert issubclass(
-            callback_cls, CallBackBaseClass
+            cls, CallBackBaseClass
         ), "{} is not a valid call back. Did you forget to derive from CallBackClass?".format(
-            callback_cls
+            cls
         )
-        self._callback_cls = callback_cls
+        self._callback_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self

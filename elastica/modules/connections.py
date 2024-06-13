@@ -5,21 +5,21 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
-from typing import Type, Protocol, TypeAlias, cast
+from typing import Type, Protocol, TypeAlias, cast, Any
 from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
-    OperatorParam,
     OperatorFinalizeType,
     SystemType,
 )
 import numpy as np
+
 from elastica.joint import FreeJoint
 
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 ConnectionIndex: TypeAlias = (
-    int | np.int_ | list[int] | tuple[int] | np.ndarray[int] | None
+    int | np.int_ | list[int] | tuple[int] | np.typing.NDArray | None
 )
 
 
@@ -32,8 +32,8 @@ class SystemCollectionWithConnectionProtocol(SystemCollectionProtocol, Protocol)
         self,
         first_rod: SystemType,
         second_rod: SystemType,
-        first_connect_idx: int = None,
-        second_connect_idx: int = None,
+        first_connect_idx: ConnectionIndex,
+        second_connect_idx: ConnectionIndex,
     ) -> ModuleProtocol: ...
 
 
@@ -50,7 +50,7 @@ class Connections:
     """
 
     def __init__(self: SystemCollectionWithConnectionProtocol):
-        self._connections = []
+        self._connections: list[ModuleProtocol] = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)
 
@@ -81,17 +81,17 @@ class Connections:
         -------
 
         """
-        sys_idx = [None] * 2
-        for i_sys, sys in enumerate((first_rod, second_rod)):
-            sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
+        sys_idx_first = self._get_sys_idx_if_valid(first_rod)
+        sys_idx_second = self._get_sys_idx_if_valid(second_rod)
 
         # For each system identified, get max dofs
-        # FIXME: Revert back to len, it should be able to take, systems without elements!
-        # sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
-        sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
+        sys_dofs_first = self._systems[sys_idx_first].n_elems
+        sys_dofs_second = self._systems[sys_idx_second].n_elems
 
         # Create _Connect object, cache it and return to user
-        _connect: ModuleProtocol = _Connect(*sys_idx, *sys_dofs)
+        _connect: ModuleProtocol = _Connect(
+            sys_idx_first, sys_idx_second, sys_dofs_first, sys_dofs_second
+        )
         _connect.set_index(first_connect_idx, second_connect_idx)  # type: ignore[attr-defined]
         self._connections.append(_connect)
         self._feature_group_synchronize.append_id(_connect)
@@ -178,9 +178,9 @@ class _Connect:
         self._second_sys_idx: SystemIdxType = second_sys_idx
         self._first_sys_n_lim: int = first_sys_nlim
         self._second_sys_n_lim: int = second_sys_nlim
-        self._connect_cls: Type[FreeJoint] = None
-        self.first_sys_connection_idx: ConnectionIndex = None
-        self.second_sys_connection_idx: ConnectionIndex = None
+        self._connect_cls: Type[FreeJoint]
+        self.first_sys_connection_idx: ConnectionIndex
+        self.second_sys_connection_idx: ConnectionIndex
 
     def set_index(
         self, first_idx: ConnectionIndex, second_idx: ConnectionIndex
@@ -256,9 +256,9 @@ class _Connect:
 
     def using(
         self,
-        connect_cls: Type[FreeJoint],
-        *args: OperatorParam.args,
-        **kwargs: OperatorParam.kwargs,
+        cls: Type[FreeJoint],
+        *args: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         This method is a module to set which joint class is used to connect
@@ -266,8 +266,8 @@ class _Connect:
 
         Parameters
         ----------
-        connect_cls: object
-            User defined callback class.
+        cls: object
+            User defined connection class.
         *args
             Variable length argument list
         **kwargs
@@ -278,11 +278,11 @@ class _Connect:
 
         """
         assert issubclass(
-            connect_cls, FreeJoint
+            cls, FreeJoint
         ), "{} is not a valid joint class. Did you forget to derive from FreeJoint?".format(
-            connect_cls
+            cls
         )
-        self._connect_cls = connect_cls
+        self._connect_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self
