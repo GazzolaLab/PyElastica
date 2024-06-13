@@ -75,7 +75,7 @@ OperatorType: TypeAlias = Callable[
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 # tuple[Union[PrefactorOperatorType, StepOperatorType, NoOpType, np.floating], ...], ...
 # Explicit stepper
-# ExplicitStageOperatorType = Callable[
+# ExplicitStageOperatorType: TypeAlias = Callable[
 #    [
 #        SymplecticStepperProtocol,
 #        ExplicitSystemProtocol,
