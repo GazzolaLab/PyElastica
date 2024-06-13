@@ -142,6 +142,11 @@ warn_unreachable = false
 warn_unused_configs = true
 warn_unused_ignores = false
 
+exclude = [
+    "elastica/systems/analytical.py",
+    "elastica/experimental/*",
+]
+
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 exclude_lines = [
