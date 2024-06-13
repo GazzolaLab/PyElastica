@@ -45,6 +45,9 @@ def is_system_a_collection(system: object) -> bool:
     )
 
 
+# FIXME: Move memory related functions to separate module or as part of the timestepper
+
+
 # TODO: Use MemoryProtocol
 def make_memory_for_explicit_stepper(
     stepper: ExplicitStepperProtocol, system: SystemCollectionType
@@ -72,7 +75,13 @@ def make_memory_for_explicit_stepper(
 
         memory_cls = MemoryRungeKutta4
     elif EulerForward in stepper.__class__.mro():
-        raise NotImplementedError("Euler Forward not implemented")
+
+        class MemoryEulerForward:
+            def __init__(self) -> None:
+                self.initial_state = None
+                self.k = None
+
+        memory_cls = MemoryEulerForward
     else:
         raise NotImplementedError("Making memory for other types not supported")
 
@@ -103,11 +112,9 @@ class MemoryCollection(Generic[M]):
         super(MemoryCollection, self).__init__()
 
         self.__memories: list[M] = []
-        for i_slot in range(n_memory_slots - 1):
-            self.__memories[i_slot] = copy(memory)
-
-        # Save final copy
-        self.__memories[-1] = memory
+        for _ in range(n_memory_slots - 1):
+            self.__memories.append(copy(memory))
+        self.__memories.append(memory)
 
     def __getitem__(self, idx: int) -> M:
         return self.__memories[idx]
