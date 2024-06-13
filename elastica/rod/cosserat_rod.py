@@ -2,6 +2,7 @@ __doc__ = """ Rod classes and implementation details """
 
 
 import numpy as np
+from numpy.typing import NDArray
 import functools
 import numba
 from elastica.rod import RodBase
@@ -20,18 +21,21 @@ from elastica._calculus import (
     _difference,
     _average,
 )
-from typing import Optional
+from typing import Any, Optional
+from typing_extensions import Self
+
+from elastica.typing import RodType
 
 position_difference_kernel = _difference
 position_average = _average
 
 
 @functools.lru_cache(maxsize=1)
-def _get_z_vector():
+def _get_z_vector() -> NDArray[np.floating]:
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-def _compute_sigma_kappa_for_blockstructure(memory_block) -> None:
+def _compute_sigma_kappa_for_blockstructure(memory_block: RodType) -> None:
     """
     This function is a wrapper to call functions which computes shear stretch, strain and bending twist and strain.
 
@@ -147,39 +151,39 @@ class CosseratRod(RodBase, KnotTheory):
 
     def __init__(
         self,
-        n_elements,
-        position,
-        velocity,
-        omega,
-        acceleration,
-        angular_acceleration,
-        directors,
-        radius,
-        mass_second_moment_of_inertia,
-        inv_mass_second_moment_of_inertia,
-        shear_matrix,
-        bend_matrix,
-        density,
-        volume,
-        mass,
-        internal_forces,
-        internal_torques,
-        external_forces,
-        external_torques,
-        lengths,
-        rest_lengths,
-        tangents,
-        dilatation,
-        dilatation_rate,
-        voronoi_dilatation,
-        rest_voronoi_lengths,
-        sigma,
-        kappa,
-        rest_sigma,
-        rest_kappa,
-        internal_stress,
-        internal_couple,
-        ring_rod_flag,
+        n_elements: int,
+        position: NDArray[np.floating],
+        velocity: NDArray[np.floating],
+        omega: NDArray[np.floating],
+        acceleration: NDArray[np.floating],
+        angular_acceleration: NDArray[np.floating],
+        directors: NDArray[np.floating],
+        radius: NDArray[np.floating],
+        mass_second_moment_of_inertia: NDArray[np.floating],
+        inv_mass_second_moment_of_inertia: NDArray[np.floating],
+        shear_matrix: NDArray[np.floating],
+        bend_matrix: NDArray[np.floating],
+        density: NDArray[np.floating],
+        volume: NDArray[np.floating],
+        mass: NDArray[np.floating],
+        internal_forces: NDArray[np.floating],
+        internal_torques: NDArray[np.floating],
+        external_forces: NDArray[np.floating],
+        external_torques: NDArray[np.floating],
+        lengths: NDArray[np.floating],
+        rest_lengths: NDArray[np.floating],
+        tangents: NDArray[np.floating],
+        dilatation: NDArray[np.floating],
+        dilatation_rate: NDArray[np.floating],
+        voronoi_dilatation: NDArray[np.floating],
+        rest_voronoi_lengths: NDArray[np.floating],
+        sigma: NDArray[np.floating],
+        kappa: NDArray[np.floating],
+        rest_sigma: NDArray[np.floating],
+        rest_kappa: NDArray[np.floating],
+        internal_stress: NDArray[np.floating],
+        internal_couple: NDArray[np.floating],
+        ring_rod_flag: bool,
     ):
         self.n_elems = n_elements
         self.position_collection = position
@@ -242,17 +246,17 @@ class CosseratRod(RodBase, KnotTheory):
     def straight_rod(
         cls,
         n_elements: int,
-        start: np.ndarray,
-        direction: np.ndarray,
-        normal: np.ndarray,
+        start: NDArray[np.floating],
+        direction: NDArray[np.floating],
+        normal: NDArray[np.floating],
         base_length: float,
         base_radius: float,
         density: float,
         *,
         nu: Optional[float] = None,
         youngs_modulus: float,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> Self:
         """
         Cosserat rod constructor for straight-rod geometry.
 
@@ -390,17 +394,17 @@ class CosseratRod(RodBase, KnotTheory):
     def ring_rod(
         cls,
         n_elements: int,
-        ring_center_position: np.ndarray,
-        direction: np.ndarray,
-        normal: np.ndarray,
+        ring_center_position: NDArray[np.floating],
+        direction: NDArray[np.floating],
+        normal: NDArray[np.floating],
         base_length: float,
         base_radius: float,
         density: float,
         *,
         nu: Optional[float] = None,
         youngs_modulus: float,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> Self:
         """
         Cosserat rod constructor for straight-rod geometry.
 
@@ -536,7 +540,7 @@ class CosseratRod(RodBase, KnotTheory):
         rod.REQUISITE_MODULE.append(Constraints)
         return rod
 
-    def compute_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time: float) -> None:
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -591,7 +595,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self, time):
+    def update_accelerations(self, time: float) -> None:
         """
         Updates the acceleration variables
 
@@ -613,12 +617,12 @@ class CosseratRod(RodBase, KnotTheory):
             self.dilatation,
         )
 
-    def zeroed_out_external_forces_and_torques(self, time):
+    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None:
         _zeroed_out_external_forces_and_torques(
             self.external_forces, self.external_torques
         )
 
-    def compute_translational_energy(self):
+    def compute_translational_energy(self) -> NDArray[np.floating]:
         """
         Compute total translational energy of the rod at the instance.
         """
@@ -632,7 +636,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_rotational_energy(self):
+    def compute_rotational_energy(self) -> NDArray[np.floating]:
         """
         Compute total rotational energy of the rod at the instance.
         """
@@ -642,7 +646,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
 
-    def compute_velocity_center_of_mass(self):
+    def compute_velocity_center_of_mass(self) -> NDArray[np.floating]:
         """
         Compute velocity center of mass of the rod at the instance.
         """
@@ -651,7 +655,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_velocity / self.mass.sum()
 
-    def compute_position_center_of_mass(self):
+    def compute_position_center_of_mass(self) -> NDArray[np.floating]:
         """
         Compute position center of mass of the rod at the instance.
         """
@@ -660,7 +664,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_position / self.mass.sum()
 
-    def compute_bending_energy(self):
+    def compute_bending_energy(self) -> NDArray[np.floating]:
         """
         Compute total bending energy of the rod at the instance.
         """
@@ -676,7 +680,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_shear_energy(self):
+    def compute_shear_energy(self) -> NDArray[np.floating]:
         """
         Compute total shear energy of the rod at the instance.
         """
@@ -695,8 +699,12 @@ class CosseratRod(RodBase, KnotTheory):
 
 @numba.njit(cache=True)
 def _compute_geometry_from_state(
-    position_collection, volume, lengths, tangents, radius
-):
+    position_collection: NDArray[np.floating],
+    volume: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    radius: NDArray[np.floating],
+) -> None:
     """
     Update <length, tangents, and radius> given <position and volume>.
     """
@@ -719,16 +727,16 @@ def _compute_geometry_from_state(
 
 @numba.njit(cache=True)
 def _compute_all_dilatations(
-    position_collection,
-    volume,
-    lengths,
-    tangents,
-    radius,
-    dilatation,
-    rest_lengths,
-    rest_voronoi_lengths,
-    voronoi_dilatation,
-):
+    position_collection: NDArray[np.floating],
+    volume: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    voronoi_dilatation: NDArray[np.floating],
+) -> None:
     """
     Update <dilatation and voronoi_dilatation>
     """
@@ -749,8 +757,12 @@ def _compute_all_dilatations(
 
 @numba.njit(cache=True)
 def _compute_dilatation_rate(
-    position_collection, velocity_collection, lengths, rest_lengths, dilatation_rate
-):
+    position_collection: NDArray[np.floating],
+    velocity_collection: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    dilatation_rate: NDArray[np.floating],
+) -> None:
     """
     Update dilatation_rate given position, velocity, length, and rest_length
     """
@@ -776,18 +788,18 @@ def _compute_dilatation_rate(
 
 @numba.njit(cache=True)
 def _compute_shear_stretch_strains(
-    position_collection,
-    volume,
-    lengths,
-    tangents,
-    radius,
-    rest_lengths,
-    rest_voronoi_lengths,
-    dilatation,
-    voronoi_dilatation,
-    director_collection,
-    sigma,
-):
+    position_collection: NDArray[np.floating],
+    volume: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+    voronoi_dilatation: NDArray[np.floating],
+    director_collection: NDArray[np.floating],
+    sigma: NDArray[np.floating],
+) -> None:
     """
     Update <shear/stretch(sigma)> given <dilatation, director, and tangent>.
     """
@@ -811,21 +823,21 @@ def _compute_shear_stretch_strains(
 
 @numba.njit(cache=True)
 def _compute_internal_shear_stretch_stresses_from_model(
-    position_collection,
-    volume,
-    lengths,
-    tangents,
-    radius,
-    rest_lengths,
-    rest_voronoi_lengths,
-    dilatation,
-    voronoi_dilatation,
-    director_collection,
-    sigma,
-    rest_sigma,
-    shear_matrix,
-    internal_stress,
-):
+    position_collection: NDArray[np.floating],
+    volume: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+    voronoi_dilatation: NDArray[np.floating],
+    director_collection: NDArray[np.floating],
+    sigma: NDArray[np.floating],
+    rest_sigma: NDArray[np.floating],
+    shear_matrix: NDArray[np.floating],
+    internal_stress: NDArray[np.floating],
+) -> None:
     """
     Update <internal stress> given <shear matrix, sigma, and rest_sigma>.
 
@@ -850,7 +862,11 @@ def _compute_internal_shear_stretch_stresses_from_model(
 
 
 @numba.njit(cache=True)
-def _compute_bending_twist_strains(director_collection, rest_voronoi_lengths, kappa):
+def _compute_bending_twist_strains(
+    director_collection: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    kappa: NDArray[np.floating],
+) -> None:
     """
     Update <curvature/twist (kappa)> given <director and rest_voronoi_length>.
     """
@@ -864,13 +880,13 @@ def _compute_bending_twist_strains(director_collection, rest_voronoi_lengths, ka
 
 @numba.njit(cache=True)
 def _compute_internal_bending_twist_stresses_from_model(
-    director_collection,
-    rest_voronoi_lengths,
-    internal_couple,
-    bend_matrix,
-    kappa,
-    rest_kappa,
-):
+    director_collection: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    internal_couple: NDArray[np.floating],
+    bend_matrix: NDArray[np.floating],
+    kappa: NDArray[np.floating],
+    rest_kappa: NDArray[np.floating],
+) -> None:
     """
     Upate <internal couple> given <curvature(kappa) and bend_matrix>.
 
@@ -893,23 +909,23 @@ def _compute_internal_bending_twist_stresses_from_model(
 
 @numba.njit(cache=True)
 def _compute_internal_forces(
-    position_collection,
-    volume,
-    lengths,
-    tangents,
-    radius,
-    rest_lengths,
-    rest_voronoi_lengths,
-    dilatation,
-    voronoi_dilatation,
-    director_collection,
-    sigma,
-    rest_sigma,
-    shear_matrix,
-    internal_stress,
-    internal_forces,
-    ghost_elems_idx,
-):
+    position_collection: NDArray[np.floating],
+    volume: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    radius: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+    voronoi_dilatation: NDArray[np.floating],
+    director_collection: NDArray[np.floating],
+    sigma: NDArray[np.floating],
+    rest_sigma: NDArray[np.floating],
+    shear_matrix: NDArray[np.floating],
+    internal_stress: NDArray[np.floating],
+    internal_forces: NDArray[np.floating],
+    ghost_elems_idx: NDArray[np.floating],
+) -> None:
     """
     Update <internal force> given <director, internal_stress and velocity>.
     """
@@ -954,26 +970,26 @@ def _compute_internal_forces(
 
 @numba.njit(cache=True)
 def _compute_internal_torques(
-    position_collection,
-    velocity_collection,
-    tangents,
-    lengths,
-    rest_lengths,
-    director_collection,
-    rest_voronoi_lengths,
-    bend_matrix,
-    rest_kappa,
-    kappa,
-    voronoi_dilatation,
-    mass_second_moment_of_inertia,
-    omega_collection,
-    internal_stress,
-    internal_couple,
-    dilatation,
-    dilatation_rate,
-    internal_torques,
-    ghost_voronoi_idx,
-):
+    position_collection: NDArray[np.floating],
+    velocity_collection: NDArray[np.floating],
+    tangents: NDArray[np.floating],
+    lengths: NDArray[np.floating],
+    rest_lengths: NDArray[np.floating],
+    director_collection: NDArray[np.floating],
+    rest_voronoi_lengths: NDArray[np.floating],
+    bend_matrix: NDArray[np.floating],
+    rest_kappa: NDArray[np.floating],
+    kappa: NDArray[np.floating],
+    voronoi_dilatation: NDArray[np.floating],
+    mass_second_moment_of_inertia: NDArray[np.floating],
+    omega_collection: NDArray[np.floating],
+    internal_stress: NDArray[np.floating],
+    internal_couple: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+    dilatation_rate: NDArray[np.floating],
+    internal_torques: NDArray[np.floating],
+    ghost_voronoi_idx: NDArray[np.integer],
+) -> None:
     """
     Update <internal torque>.
     """
@@ -1043,16 +1059,16 @@ def _compute_internal_torques(
 
 @numba.njit(cache=True)
 def _update_accelerations(
-    acceleration_collection,
-    internal_forces,
-    external_forces,
-    mass,
-    alpha_collection,
-    inv_mass_second_moment_of_inertia,
-    internal_torques,
-    external_torques,
-    dilatation,
-):
+    acceleration_collection: NDArray[np.floating],
+    internal_forces: NDArray[np.floating],
+    external_forces: NDArray[np.floating],
+    mass: NDArray[np.floating],
+    alpha_collection: NDArray[np.floating],
+    inv_mass_second_moment_of_inertia: NDArray[np.floating],
+    internal_torques: NDArray[np.floating],
+    external_torques: NDArray[np.floating],
+    dilatation: NDArray[np.floating],
+) -> None:
     """
     Update <acceleration and angular acceleration> given <internal force/torque and external force/torque>.
     """
@@ -1077,7 +1093,9 @@ def _update_accelerations(
 
 
 @numba.njit(cache=True)
-def _zeroed_out_external_forces_and_torques(external_forces, external_torques):
+def _zeroed_out_external_forces_and_torques(
+    external_forces: NDArray[np.floating], external_torques: NDArray[np.floating]
+) -> None:
     """
     This function is to zeroed out external forces and torques.
 

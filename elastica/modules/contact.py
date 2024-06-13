@@ -6,6 +6,7 @@ Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
 import logging
+import functools
 from elastica.typing import SystemType, AllowedContactType
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,15 @@ class Contact:
         # to apply the contacts to
         # Technically we can use another array but it its one more book-keeping
         # step. Being lazy, I put them both in the same array
+
+        def apply_contact(
+            time, contact_instance, system, first_sys_idx, second_sys_idx
+        ):
+            contact_instance.apply_contact(
+                system_one=system[first_sys_idx],
+                system_two=system[second_sys_idx],
+            )
+
         for contact in self._contacts:
             first_sys_idx, second_sys_idx = contact.id()
             contact_instance = contact.instantiate()
@@ -71,14 +81,14 @@ class Contact:
                 self._systems[first_sys_idx],
                 self._systems[second_sys_idx],
             )
-
-            def apply_contact(time):
-                contact_instance.apply_contact(
-                    system_one=self._systems[first_sys_idx],
-                    system_two=self._systems[second_sys_idx],
-                )
-
-            self._feature_group_synchronize.add_operators(contact, [apply_contact])
+            func = functools.partial(
+                apply_contact,
+                contact_instance=contact_instance,
+                system=self._systems,
+                first_sys_idx=first_sys_idx,
+                second_sys_idx=second_sys_idx,
+            )
+            self._feature_group_synchronize.add_operators(contact, [func])
 
             self.warnings(contact)
 

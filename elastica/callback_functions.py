@@ -4,8 +4,11 @@ import os
 import sys
 import numpy as np
 import logging
+from typing import Any, Optional
 
 from collections import defaultdict
+
+from elastica.typing import RodType, SystemType
 
 
 class CallBackBaseClass:
@@ -19,13 +22,15 @@ class CallBackBaseClass:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         CallBackBaseClass does not need any input parameters.
         """
         pass
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: SystemType, time: np.floating, current_step: int
+    ) -> None:
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users
@@ -59,7 +64,7 @@ class MyCallBack(CallBackBaseClass):
             Collected callback data is saved in this dictionary.
     """
 
-    def __init__(self, step_skip: int, callback_params):
+    def __init__(self, step_skip: int, callback_params: dict) -> None:
         """
 
         Parameters
@@ -73,7 +78,9 @@ class MyCallBack(CallBackBaseClass):
         self.sample_every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: SystemType, time: np.floating, current_step: int
+    ) -> None:
 
         if current_step % self.sample_every == 0:
 
@@ -116,8 +123,8 @@ class ExportCallBack(CallBackBaseClass):
         directory: str,
         method: str,
         initial_file_count: int = 0,
-        file_save_interval: int = 1e8,
-    ):
+        file_save_interval: int = 100_000_000,
+    ) -> None:
         """
         Parameters
         ----------
@@ -189,7 +196,9 @@ class ExportCallBack(CallBackBaseClass):
             self._pickle = pickle
             self._ext = "pkl"
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: SystemType, time: np.floating, current_step: int
+    ) -> None:
         """
 
         Parameters
@@ -224,7 +233,7 @@ class ExportCallBack(CallBackBaseClass):
         ):
             self._dump()
 
-    def _dump(self, **kwargs):
+    def _dump(self, **kwargs: Any) -> None:
         """
         Dump dictionary buffer (self.buffer) to a file and clear
         the buffer.
@@ -247,7 +256,7 @@ class ExportCallBack(CallBackBaseClass):
         self.buffer_size = 0
         self.buffer.clear()
 
-    def get_last_saved_path(self) -> str:
+    def get_last_saved_path(self) -> Optional[str]:
         """
         Return last saved file path. If no file has been saved,
         return None
@@ -257,14 +266,14 @@ class ExportCallBack(CallBackBaseClass):
         else:
             return self.save_path.format(self.file_count - 1, self._ext)
 
-    def close(self):
+    def close(self) -> None:
         """
         Save residual buffer
         """
         if self.buffer_size:
             self._dump()
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Alias to `close`
         """
