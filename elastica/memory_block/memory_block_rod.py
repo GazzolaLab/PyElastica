@@ -13,7 +13,6 @@ from elastica.rod.cosserat_rod import (
     _compute_sigma_kappa_for_blockstructure,
 )
 from elastica.rod.rod_base import RodBase
-from elastica.rod.rod_base import RodBase
 from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_vector_collection,
     _synchronize_periodic_boundary_of_scalar_collection,
@@ -505,8 +504,8 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
         end_idx_list: np.ndarray
         periodic_boundary_idx: np.ndarray
         synchronize_periodic_boundary: Callable
-        domain_num: np.int64
-        view_shape: tuple
+        domain_num: int
+        view_shape: tuple[int, ...]
 
         if domain_type == "node":
             start_idx_list = self.start_idx_in_rod_nodes.view()
