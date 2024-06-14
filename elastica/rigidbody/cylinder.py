@@ -109,25 +109,6 @@ class Cylinder(RigidBodyBase):
             start.reshape(3, 1) + direction.reshape(3, 1) * base_length / 2
         )
 
-        self.velocity_collection = np.zeros((MaxDimension.value(), 1))
-        self.omega_collection = np.zeros((MaxDimension.value(), 1))
-        self.acceleration_collection = np.zeros((MaxDimension.value(), 1))
-        self.alpha_collection = np.zeros((MaxDimension.value(), 1))
-
-        self.director_collection = np.zeros(
-            (MaxDimension.value(), MaxDimension.value(), 1)
-        )
         self.director_collection[0, ...] = normal
         self.director_collection[1, ...] = binormal
         self.director_collection[2, ...] = tangents
-
-        self.external_forces = np.zeros((MaxDimension.value())).reshape(
-            MaxDimension.value(), 1
-        )
-        self.external_torques = np.zeros((MaxDimension.value())).reshape(
-            MaxDimension.value(), 1
-        )
-        # Assemble directors
-        self.director_collection[0, :] = normal
-        self.director_collection[1, :] = binormal
-        self.director_collection[2, :] = tangents
