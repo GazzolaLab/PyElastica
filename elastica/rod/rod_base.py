@@ -1,6 +1,6 @@
 __doc__ = """Base class for rods"""
 
-from typing import Any
+from typing import Type
 import numpy as np
 from numpy.typing import NDArray
 
@@ -15,7 +15,7 @@ class RodBase:
 
     """
 
-    REQUISITE_MODULES: list[Any] = []
+    REQUISITE_MODULES: list[Type] = []
 
     def __init__(self) -> None:
         """
@@ -29,3 +29,6 @@ class RodBase:
         self.alpha_collection: NDArray[np.floating]
         self.external_forces: NDArray[np.floating]
         self.external_torques: NDArray[np.floating]
+
+        self.ghost_voronoi_idx: NDArray[np.integer]
+        self.ghost_elems_idx: NDArray[np.integer]

@@ -2,7 +2,6 @@ __doc__ = """Base class for elastica system"""
 
 from typing import Protocol, Type
 from elastica.typing import StateType, SystemType
-from elastica.modules.protocol import ModuleProtocol
 
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 
@@ -10,12 +9,24 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-class SystemProtocol(Protocol):
+class _SystemWithEnergy(Protocol):
+    def compute_translational_energy(self) -> NDArray[np.float64]: ...
+
+    def compute_rotational_energy(self) -> NDArray[np.float64]: ...
+
+
+class _SystemWithCenterOfMass(Protocol):
+    def compute_velocity_center_of_mass(self) -> NDArray[np.float64]: ...
+
+    def compute_position_center_of_mass(self) -> NDArray[np.float64]: ...
+
+
+class SystemProtocol(_SystemWithEnergy, _SystemWithCenterOfMass, Protocol):
     """
     Protocol for all elastica system
     """
 
-    REQUISITE_MODULES: list[Type[ModuleProtocol]]
+    REQUISITE_MODULES: list[Type]
 
     @property
     def n_nodes(self) -> int: ...
@@ -23,31 +34,27 @@ class SystemProtocol(Protocol):
     @property
     def n_elems(self) -> int: ...
 
-    @property
-    def position_collection(self) -> NDArray: ...
+    position_collection: NDArray[np.floating]
 
-    @property
-    def velocity_collection(self) -> NDArray: ...
+    velocity_collection: NDArray[np.floating]
 
-    @property
-    def director_collection(self) -> NDArray: ...
+    acceleration_collection: NDArray[np.floating]
+    director_collection: NDArray[np.floating]
 
-    @property
-    def acceleration_collection(self) -> NDArray: ...
+    omega_collection: NDArray[np.floating]
+    alpha_collection: NDArray[np.floating]
 
-    @property
-    def omega_collection(self) -> NDArray: ...
+    internal_forces: NDArray[np.floating]
+    internal_torques: NDArray[np.floating]
 
-    @property
-    def alpha_collection(self) -> NDArray: ...
+    external_forces: NDArray[np.floating]
+    external_torques: NDArray[np.floating]
 
-    @property
-    def external_forces(self) -> NDArray: ...
+    def compute_internal_forces_and_torques(self, time: np.floating) -> None: ...
 
-    @property
-    def external_torques(self) -> NDArray: ...
+    def update_accelerations(self, time: np.floating) -> None: ...
 
-    def update_internal_forces_and_torques(self, time: np.floating) -> None: ...
+    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None: ...
 
 
 class SymplecticSystemProtocol(SystemProtocol, Protocol):
@@ -55,17 +62,14 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     Protocol for system with symplectic state variables
     """
 
+    v_w_collection: NDArray[np.floating]
+    dvdt_dwdt_collection: NDArray[np.floating]
+
     @property
     def kinematic_states(self) -> _KinematicState: ...
 
     @property
     def dynamic_states(self) -> _DynamicState: ...
-
-    @property
-    def rate_collection(self) -> NDArray[np.floating]: ...
-
-    @property
-    def dvdt_dwdt_collection(self) -> NDArray[np.floating]: ...
 
     def kinematic_rates(
         self, time: np.floating, prefac: np.floating
