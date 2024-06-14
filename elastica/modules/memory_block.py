@@ -5,10 +5,11 @@ Cosserat Rods, Rigid Body etc.
 
 from elastica.typing import SystemType, SystemIdxType
 
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase
-from elastica.surface import SurfaceBase
-from elastica.memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
+from elastica.rod.rod_base import RodBase
+from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.surface.surface_base import SurfaceBase
+from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
+from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 
 
 def construct_memory_block_structures(systems: list[SystemType]) -> list[SystemType]:

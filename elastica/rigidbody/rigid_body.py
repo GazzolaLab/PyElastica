@@ -1,5 +1,7 @@
 __doc__ = """"""
 
+from typing import Type
+
 import numpy as np
 from abc import ABC
 from elastica._linalg import _batch_matvec, _batch_cross
@@ -15,7 +17,7 @@ class RigidBodyBase(ABC):
 
     """
 
-    REQUISITE_MODULES = []
+    REQUISITE_MODULES: list[Type] = []
 
     def __init__(self):
 
