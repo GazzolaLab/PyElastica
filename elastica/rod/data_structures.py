@@ -1,6 +1,6 @@
 __doc__ = "Data structure wrapper for rod components"
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from typing_extensions import Self
 import numpy as np
 from numpy.typing import NDArray
@@ -8,6 +8,10 @@ from numba import njit
 from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
 
+if TYPE_CHECKING:
+    from elastica.memory_block.protocol import BlockCosseratRodProtocol
+else:
+    BlockCosseratRodProtocol = "BlockCosseratRodProtocol"
 
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
@@ -46,7 +50,7 @@ from elastica._linalg import _batch_matmul
 
 
 class _RodSymplecticStepperMixin:
-    def __init__(self) -> None:
+    def __init__(self: BlockCosseratRodProtocol) -> None:
         self.kinematic_states = _KinematicState(
             self.position_collection, self.director_collection
         )
@@ -63,18 +67,22 @@ class _RodSymplecticStepperMixin:
         # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
-    def update_internal_forces_and_torques(self, time: np.floating) -> None:
+    def update_internal_forces_and_torques(
+        self: BlockCosseratRodProtocol, time: np.floating
+    ) -> None:
         self.compute_internal_forces_and_torques(time)
 
     def dynamic_rates(
-        self,
+        self: BlockCosseratRodProtocol,
         time: np.floating,
         prefac: np.floating,
     ) -> NDArray[np.floating]:
         self.update_accelerations(time)
         return self.dynamic_states.dynamic_rates(time, prefac)
 
-    def reset_external_forces_and_torques(self, time: np.floating) -> None:
+    def reset_external_forces_and_torques(
+        self: BlockCosseratRodProtocol, time: np.floating
+    ) -> None:
         self.zeroed_out_external_forces_and_torques(time)
 
 
@@ -127,7 +135,7 @@ def _bootstrap_from_data(
     position = np.ndarray.view(vector_states[..., :n_nodes])
     directors = np.ndarray.view(matrix_states)
     v_w_dvdt_dwdt = np.ndarray.view(vector_states[..., n_nodes:])
-    output = ()
+    output: tuple = ()
     if stepper_type == "explicit":
         v_w_states = np.ndarray.view(vector_states[..., n_nodes : 3 * n_nodes - 1])
         output += (
@@ -332,7 +340,7 @@ class _DerivativeState:
         super(_DerivativeState, self).__init__()
         self.rate_collection = rate_collection_view
 
-    def __rmul__(self, scalar: np.floating) -> NDArray[np.floating]:
+    def __rmul__(self, scalar: np.floating) -> NDArray[np.floating]:  # type: ignore
         """overloaded scalar * self,
 
         Parameters
@@ -517,7 +525,9 @@ class _DynamicState:
         # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
         return self.velocity_collection, self.omega_collection
 
-    def dynamic_rates(self, time: np.floating, prefac: np.floating):
+    def dynamic_rates(
+        self, time: np.floating, prefac: np.floating
+    ) -> NDArray[np.floating]:
         """Yields dynamic rates to add to with _DynamicState
         Returns
         -------

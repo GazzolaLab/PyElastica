@@ -1,7 +1,5 @@
 from collections import defaultdict
 from elastica.rod.knot_theory import (
-    KnotTheory,
-    KnotTheoryCompatibleProtocol,
     compute_link,
     compute_twist,
     compute_writhe,

@@ -1,8 +1,13 @@
 __doc__ = """ Rod classes and implementation details """
+from typing import TYPE_CHECKING, Any, Optional, Type
+from typing_extensions import Self
 
+from elastica.typing import RodType
+from .protocol import CosseratRodProtocol
+
+from numpy.typing import NDArray
 
 import numpy as np
-from numpy.typing import NDArray
 import functools
 import numba
 from elastica.rod import RodBase
@@ -13,18 +18,14 @@ from elastica._linalg import (
     _batch_matvec,
 )
 from elastica._rotations import _inv_rotate
-from elastica.rod.factory_function import allocate
-from elastica.rod.knot_theory import KnotTheory
 from elastica._calculus import (
     quadrature_kernel_for_block_structure,
     difference_kernel_for_block_structure,
     _difference,
     _average,
 )
-from typing import Any, Optional
-from typing_extensions import Self
-
-from elastica.typing import RodType
+from .factory_function import allocate
+from .knot_theory import KnotTheory
 
 position_difference_kernel = _difference
 position_average = _average
@@ -149,8 +150,10 @@ class CosseratRod(RodBase, KnotTheory):
             Rod element dilatation rates.
     """
 
+    REQUISITE_MODULES: list[Type] = []
+
     def __init__(
-        self,
+        self: CosseratRodProtocol,
         n_elements: int,
         position: NDArray[np.floating],
         velocity: NDArray[np.floating],
@@ -163,7 +166,7 @@ class CosseratRod(RodBase, KnotTheory):
         inv_mass_second_moment_of_inertia: NDArray[np.floating],
         shear_matrix: NDArray[np.floating],
         bend_matrix: NDArray[np.floating],
-        density: NDArray[np.floating],
+        density_array: NDArray[np.floating],
         volume: NDArray[np.floating],
         mass: NDArray[np.floating],
         internal_forces: NDArray[np.floating],
@@ -184,7 +187,8 @@ class CosseratRod(RodBase, KnotTheory):
         internal_stress: NDArray[np.floating],
         internal_couple: NDArray[np.floating],
         ring_rod_flag: bool,
-    ):
+    ) -> None:
+        self.n_nodes = n_elements + 1 if ring_rod_flag else n_elements
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
@@ -197,7 +201,7 @@ class CosseratRod(RodBase, KnotTheory):
         self.inv_mass_second_moment_of_inertia = inv_mass_second_moment_of_inertia
         self.shear_matrix = shear_matrix
         self.bend_matrix = bend_matrix
-        self.density = density
+        self.density = density_array
         self.volume = volume
         self.mass = mass
         self.internal_forces = internal_forces
@@ -249,12 +253,12 @@ class CosseratRod(RodBase, KnotTheory):
         start: NDArray[np.floating],
         direction: NDArray[np.floating],
         normal: NDArray[np.floating],
-        base_length: float,
-        base_radius: float,
-        density: float,
+        base_length: np.floating,
+        base_radius: np.floating,
+        density: np.floating,
         *,
-        nu: Optional[float] = None,
-        youngs_modulus: float,
+        nu: Optional[np.floating] = None,
+        youngs_modulus: np.floating,
         **kwargs: Any,
     ) -> Self:
         """
@@ -278,15 +282,15 @@ class CosseratRod(RodBase, KnotTheory):
             Direction of the rod in 3D
         normal : NDArray[3, float]
             Normal vector of the rod in 3D
-        base_length : float
+        base_length : np.floating
             Total length of the rod
-        base_radius : float
+        base_radius : np.floating
             Uniform radius of the rod
-        density : float
+        density : np.floating
             Density of the rod
-        nu : float
+        nu : np.floating
             Damping coefficient for Rayleigh damping
-        youngs_modulus : float
+        youngs_modulus : np.floating
             Young's modulus
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
@@ -321,7 +325,7 @@ class CosseratRod(RodBase, KnotTheory):
             inv_mass_second_moment_of_inertia,
             shear_matrix,
             bend_matrix,
-            density,
+            density_array,
             volume,
             mass,
             internal_forces,
@@ -367,7 +371,7 @@ class CosseratRod(RodBase, KnotTheory):
             inv_mass_second_moment_of_inertia,
             shear_matrix,
             bend_matrix,
-            density,
+            density_array,
             volume,
             mass,
             internal_forces,
@@ -397,12 +401,12 @@ class CosseratRod(RodBase, KnotTheory):
         ring_center_position: NDArray[np.floating],
         direction: NDArray[np.floating],
         normal: NDArray[np.floating],
-        base_length: float,
-        base_radius: float,
-        density: float,
+        base_length: np.floating,
+        base_radius: np.floating,
+        density: np.floating,
         *,
-        nu: Optional[float] = None,
-        youngs_modulus: float,
+        nu: Optional[np.floating] = None,
+        youngs_modulus: np.floating,
         **kwargs: Any,
     ) -> Self:
         """
@@ -425,15 +429,15 @@ class CosseratRod(RodBase, KnotTheory):
             Direction of the rod in 3D
         normal : NDArray[3, float]
             Normal vector of the rod in 3D
-        base_length : float
+        base_length : np.floating
             Total length of the rod
-        base_radius : float
+        base_radius : np.floating
             Uniform radius of the rod
-        density : float
+        density : np.floating
             Density of the rod
-        nu : float
+        nu : np.floating
             Damping coefficient for Rayleigh damping
-        youngs_modulus : float
+        youngs_modulus : np.floating
             Young's modulus
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
@@ -537,10 +541,12 @@ class CosseratRod(RodBase, KnotTheory):
             internal_couple,
             ring_rod_flag,
         )
-        rod.REQUISITE_MODULE.append(Constraints)
+        rod.REQUISITE_MODULES.append(Constraints)
         return rod
 
-    def compute_internal_forces_and_torques(self, time: float) -> None:
+    def compute_internal_forces_and_torques(
+        self: CosseratRodProtocol, time: np.floating
+    ) -> None:
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -549,7 +555,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         Parameters
         ----------
-        time: float
+        time: np.floating
             current time
 
         """
@@ -595,13 +601,13 @@ class CosseratRod(RodBase, KnotTheory):
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self, time: float) -> None:
+    def update_accelerations(self: CosseratRodProtocol, time: np.floating) -> None:
         """
         Updates the acceleration variables
 
         Parameters
         ----------
-        time: float
+        time: np.floating
             current time
 
         """
@@ -617,12 +623,14 @@ class CosseratRod(RodBase, KnotTheory):
             self.dilatation,
         )
 
-    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None:
+    def zeroed_out_external_forces_and_torques(
+        self: CosseratRodProtocol, time: np.floating
+    ) -> None:
         _zeroed_out_external_forces_and_torques(
             self.external_forces, self.external_torques
         )
 
-    def compute_translational_energy(self) -> NDArray[np.floating]:
+    def compute_translational_energy(self: CosseratRodProtocol) -> NDArray[np.floating]:
         """
         Compute total translational energy of the rod at the instance.
         """
@@ -636,7 +644,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_rotational_energy(self) -> NDArray[np.floating]:
+    def compute_rotational_energy(self: CosseratRodProtocol) -> NDArray[np.floating]:
         """
         Compute total rotational energy of the rod at the instance.
         """
@@ -646,7 +654,9 @@ class CosseratRod(RodBase, KnotTheory):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
 
-    def compute_velocity_center_of_mass(self) -> NDArray[np.floating]:
+    def compute_velocity_center_of_mass(
+        self: CosseratRodProtocol,
+    ) -> NDArray[np.floating]:
         """
         Compute velocity center of mass of the rod at the instance.
         """
@@ -655,7 +665,9 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_velocity / self.mass.sum()
 
-    def compute_position_center_of_mass(self) -> NDArray[np.floating]:
+    def compute_position_center_of_mass(
+        self: CosseratRodProtocol,
+    ) -> NDArray[np.floating]:
         """
         Compute position center of mass of the rod at the instance.
         """
@@ -664,7 +676,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_position / self.mass.sum()
 
-    def compute_bending_energy(self) -> NDArray[np.floating]:
+    def compute_bending_energy(self: CosseratRodProtocol) -> NDArray[np.floating]:
         """
         Compute total bending energy of the rod at the instance.
         """
@@ -680,7 +692,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_shear_energy(self) -> NDArray[np.floating]:
+    def compute_shear_energy(self: CosseratRodProtocol) -> NDArray[np.floating]:
         """
         Compute total shear energy of the rod at the instance.
         """
@@ -697,7 +709,7 @@ class CosseratRod(RodBase, KnotTheory):
 # Below is the numba-implementation of Cosserat Rod equations. They don't need to be visible by users.
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_geometry_from_state(
     position_collection: NDArray[np.floating],
     volume: NDArray[np.floating],
@@ -725,7 +737,7 @@ def _compute_geometry_from_state(
         radius[k] = np.sqrt(volume[k] / lengths[k] / np.pi)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_all_dilatations(
     position_collection: NDArray[np.floating],
     volume: NDArray[np.floating],
@@ -755,7 +767,7 @@ def _compute_all_dilatations(
         voronoi_dilatation[k] = voronoi_lengths[k] / rest_voronoi_lengths[k]
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_dilatation_rate(
     position_collection: NDArray[np.floating],
     velocity_collection: NDArray[np.floating],
@@ -786,7 +798,7 @@ def _compute_dilatation_rate(
         )
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_shear_stretch_strains(
     position_collection: NDArray[np.floating],
     volume: NDArray[np.floating],
@@ -821,7 +833,7 @@ def _compute_shear_stretch_strains(
     sigma[:] = dilatation * _batch_matvec(director_collection, tangents) - z_vector
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_internal_shear_stretch_stresses_from_model(
     position_collection: NDArray[np.floating],
     volume: NDArray[np.floating],
@@ -861,7 +873,7 @@ def _compute_internal_shear_stretch_stresses_from_model(
     internal_stress[:] = _batch_matvec(shear_matrix, sigma - rest_sigma)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_bending_twist_strains(
     director_collection: NDArray[np.floating],
     rest_voronoi_lengths: NDArray[np.floating],
@@ -878,7 +890,7 @@ def _compute_bending_twist_strains(
         kappa[2, k] = temp[2, k] / rest_voronoi_lengths[k]
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_internal_bending_twist_stresses_from_model(
     director_collection: NDArray[np.floating],
     rest_voronoi_lengths: NDArray[np.floating],
@@ -907,7 +919,7 @@ def _compute_internal_bending_twist_stresses_from_model(
     internal_couple[:] = _batch_matvec(bend_matrix, temp)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_internal_forces(
     position_collection: NDArray[np.floating],
     volume: NDArray[np.floating],
@@ -968,7 +980,7 @@ def _compute_internal_forces(
     )
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _compute_internal_torques(
     position_collection: NDArray[np.floating],
     velocity_collection: NDArray[np.floating],
@@ -1057,7 +1069,7 @@ def _compute_internal_torques(
             )
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _update_accelerations(
     acceleration_collection: NDArray[np.floating],
     internal_forces: NDArray[np.floating],
@@ -1092,7 +1104,7 @@ def _update_accelerations(
                 ) * dilatation[k]
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _zeroed_out_external_forces_and_torques(
     external_forces: NDArray[np.floating], external_torques: NDArray[np.floating]
 ) -> None:
@@ -1115,3 +1127,16 @@ def _zeroed_out_external_forces_and_torques(
     for i in range(3):
         for k in range(n_elems):
             external_torques[i, k] = 0.0
+
+
+if TYPE_CHECKING:
+    _: CosseratRodProtocol = CosseratRod.straight_rod(
+        3,
+        np.zeros(3),
+        np.array([0, 1, 0]),
+        np.array([0, 0, 1]),
+        np.float64(1.0),
+        np.float64(0.1),
+        np.float64(1.0),
+        youngs_modulus=np.float64(1.0),
+    )
