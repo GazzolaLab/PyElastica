@@ -17,7 +17,7 @@ from elastica._contact_functions import (
 
 from numpy.typing import NDArray
 
-from elastica.typing import SystemType
+from elastica.typing import SystemType, RodType
 
 
 def find_slipping_elements(velocity_slip: Any, velocity_threshold: Any) -> NoReturn:
@@ -110,7 +110,7 @@ class InteractionPlane:
         self.surface_tol = 1e-4
 
     def apply_normal_force(
-        self, system: SystemType
+        self, system: RodType
     ) -> tuple[NDArray[np.floating], NDArray[np.intp]]:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
@@ -512,7 +512,7 @@ class SlenderBodyTheory(NoForces):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
 
-    def apply_forces(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_forces(self, system: RodType, time: np.floating = 0.0) -> None:
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in

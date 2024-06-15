@@ -240,9 +240,17 @@ class TestContactMixin:
             pass
 
         # in place class
-        MockContact = type(
-            "MockContact", (self.NoContact, object), {"__init__": mock_init}
-        )
+        class MockContact(self.NoContact):
+            def __init__(self, *args, **kwargs):
+                pass
+
+            @property
+            def _allowed_system_one(self):
+                return [TestContactMixin.MockRod]
+
+            @property
+            def _allowed_system_two(self):
+                return [TestContactMixin.MockRod]
 
         # Constrain any and all systems
         system_collection_with_contacts.detect_contact_between(0, 1).using(
@@ -283,9 +291,17 @@ class TestContactMixin:
             pass
 
         # in place class
-        MockContact = type(
-            "MockContact", (self.NoContact, object), {"__init__": mock_init}
-        )
+        class MockContact(self.NoContact):
+            def __init__(self, *args, **kwargs):
+                pass
+
+            @property
+            def _allowed_system_one(self):
+                return [TestContactMixin.MockRod]
+
+            @property
+            def _allowed_system_two(self):
+                return [TestContactMixin.MockRigidBody]
 
         # incorrect order contact
         system_collection_with_contacts.detect_contact_between(
@@ -302,17 +318,12 @@ class TestContactMixin:
             contact_cls,
         ) = load_contact_objects_with_incorrect_order
 
-        mock_rod = self.MockRod(2, 3, 4, 5)
-        mock_rigid_body = self.MockRigidBody(5.0, 5.0)
-
         with pytest.raises(TypeError) as excinfo:
             system_collection_with_contacts._finalize_contact()
         assert (
-            "Systems provided to the contact class have incorrect order. \n"
-            " First system is {0} and second system is {1}. \n"
-            " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
-            " If the first system is a rigid body, the second system can be a rigid body or surface."
-        ).format(mock_rigid_body.__class__, mock_rod.__class__) == str(excinfo.value)
+            "System provided (MockRigidBody) must be derived from ['MockRod']"
+            in str(excinfo.value)
+        )
 
     @pytest.fixture
     def load_system_with_rods_in_contact(self, load_system_with_contacts):
