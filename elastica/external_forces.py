@@ -1,6 +1,7 @@
 __doc__ = """ Numba implementation module for boundary condition implementations that apply
 external forces to the system."""
 
+from typing import TypeVar, Generic
 
 import numpy as np
 from numpy.typing import NDArray
@@ -13,7 +14,10 @@ from numba import njit
 from elastica._linalg import _batch_product_i_k_to_ik
 
 
-class NoForces:
+S = TypeVar("S")
+
+
+class NoForces(Generic[S]):
     """
     This is the base class for external forcing boundary conditions applied to rod-like objects.
 
@@ -30,7 +34,7 @@ class NoForces:
         """
         pass
 
-    def apply_forces(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_forces(self, system: S, time: np.floating = np.float64(0.0)) -> None:
         """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -45,7 +49,7 @@ class NoForces:
         """
         pass
 
-    def apply_torques(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_torques(self, system: S, time: np.floating = np.float64(0.0)) -> None:
         """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.

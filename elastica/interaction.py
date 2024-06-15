@@ -17,7 +17,7 @@ from elastica._contact_functions import (
 
 from numpy.typing import NDArray
 
-from elastica.typing import SystemType, RodType
+from elastica.typing import SystemType, RodType, RigidBodyType
 
 
 def find_slipping_elements(velocity_slip: Any, velocity_threshold: Any) -> NoReturn:
@@ -247,12 +247,14 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
 
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
-    def apply_forces(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_forces(
+        self, system: RodType | RigidBodyType, time: np.floating = np.float64(0)
+    ) -> None:
         """
         Call numba implementation to apply friction forces
         Parameters
         ----------
-        system
+        system : RodType | RigidBodyType
         time
 
         """
@@ -349,7 +351,7 @@ def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
     This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
     """
 
-    output: np.floating = 0.0
+    output: np.floating = np.float64(0.0)
     for i in range(input.shape[0]):
         output += input[i]
 
@@ -512,7 +514,9 @@ class SlenderBodyTheory(NoForces):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
 
-    def apply_forces(self, system: RodType, time: np.floating = 0.0) -> None:
+    def apply_forces(
+        self, system: RodType, time: np.floating = np.float64(0.0)
+    ) -> None:
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in
@@ -537,7 +541,7 @@ class SlenderBodyTheory(NoForces):
 
 # base class for interaction
 # only applies normal force no friction
-class InteractionPlaneRigidBody:
+class InteractionPlaneRigidBody(InteractionPlane):
     def __init__(
         self,
         k: np.floating,
@@ -552,7 +556,7 @@ class InteractionPlaneRigidBody:
         self.surface_tol = 1e-4
 
     def apply_normal_force(
-        self, system: SystemType
+        self, system: RigidBodyType
     ) -> tuple[NDArray[np.floating], NDArray[np.intp]]:
         """
         This function computes the plane force response on the rigid body, in the
