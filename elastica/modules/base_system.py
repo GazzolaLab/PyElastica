@@ -13,7 +13,6 @@ from elastica.typing import (
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
-    AllowedContactType,
 )
 
 import numpy as np

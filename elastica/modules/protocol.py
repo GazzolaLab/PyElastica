@@ -7,7 +7,6 @@ from elastica.typing import (
     OperatorCallbackType,
     OperatorFinalizeType,
     SystemType,
-    AllowedContactType,
     ConnectionIndex,
 )
 from elastica.joint import FreeJoint
@@ -59,9 +58,7 @@ class SystemCollectionProtocol(Protocol):
 
     def blocks(self) -> Generator[SystemType, None, None]: ...
 
-    def _get_sys_idx_if_valid(
-        self, sys_to_be_added: SystemType | AllowedContactType
-    ) -> SystemIdxType: ...
+    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
 
     # Connection API
     _finalize_connections: OperatorFinalizeType
@@ -123,7 +120,7 @@ class SystemCollectionProtocol(Protocol):
 
     @abstractmethod
     def detect_contact_between(
-        self, first_system: SystemType, second_system: AllowedContactType
+        self, first_system: SystemType, second_system: SystemType
     ) -> ModuleProtocol:
         raise NotImplementedError
 

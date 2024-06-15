@@ -11,7 +11,6 @@ from elastica.typing import (
     SystemIdxType,
     OperatorFinalizeType,
     SystemType,
-    AllowedContactType,
 )
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
@@ -48,7 +47,7 @@ class Contact:
     def detect_contact_between(
         self: SystemCollectionProtocol,
         first_system: SystemType,
-        second_system: AllowedContactType,
+        second_system: SystemType,
     ) -> ModuleProtocol:
         """
         This method adds contact detection between two objects using the selected contact class.
@@ -57,9 +56,7 @@ class Contact:
         Parameters
         ----------
         first_system : SystemType
-            Rod or rigid body object
-        second_system : AllowedContactType
-            Rod, rigid body or surface object
+        second_system : SystemType
 
         Returns
         -------

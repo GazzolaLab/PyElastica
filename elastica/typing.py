@@ -4,7 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Type, Callable, Any, ParamSpec
+from typing import Callable, Any, ParamSpec
 from typing import TypeAlias
 
 import numpy as np
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
     from .rod.protocol import CosseratRodProtocol
-    from .rigidbody import RigidBodyBase
-    from .surface import SurfaceBase
+    from .rigidbody.rigid_body import RigidBodyBase
+    from .surface.surface_base import SurfaceBase
     from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
@@ -56,10 +56,9 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
 RodType: TypeAlias = "CosseratRodProtocol"
 RigidBodyType: TypeAlias = "RigidBodyProtocol"
+SurfaceType: TypeAlias = "SurfaceBase"
+
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
-AllowedContactType: TypeAlias = (
-    SystemType | Type["SurfaceBase"]
-)  # FIXME: SurfaceBase needs to be treated differently
 BlockType: TypeAlias = "BlockCosseratRodProtocol"  # | "BlockRigidBodyProtocol"
 
 # Indexing types
