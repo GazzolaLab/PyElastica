@@ -188,7 +188,7 @@ class EulerForward(ExplicitStepperMixin):
         time: np.floating,
         dt: np.floating,
     ) -> np.floating:
-        System.state += dt * System(time, dt)
+        System.state += dt * System(time, dt)  # type: ignore[arg-type]
         return time + dt
 
 

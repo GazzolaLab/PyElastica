@@ -239,7 +239,7 @@ class FixedJoint(FreeJoint):
         k: np.floating,
         nu: np.floating,
         kt: np.floating,
-        nut: np.floating = 0.0,
+        nut: np.floating = np.float64(0.0),
         rest_rotation_matrix: Optional[NDArray[np.floating]] = None,
     ) -> None:
         """

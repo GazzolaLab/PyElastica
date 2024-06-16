@@ -178,8 +178,8 @@ def extend_instance(obj: Any, cls: Any) -> None:
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 
 
-def _bspline(
-    t_coeff: NDArray, l_centerline: np.floating = 1.0
+def _bspline(  # type: ignore[no-any-unimported]
+    t_coeff: NDArray, l_centerline: np.floating = np.float64(1.0)
 ) -> tuple[BSpline, NDArray, NDArray]:
     """Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
@@ -208,7 +208,7 @@ def _bspline(
     return __bspline_impl__(control_pts, t_coeff, degree)
 
 
-def __bspline_impl__(
+def __bspline_impl__(  # type: ignore[no-any-unimported]
     x_pts: NDArray, t_c: NDArray, degree: int
 ) -> tuple[BSpline, NDArray, NDArray]:
     """"""

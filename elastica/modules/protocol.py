@@ -11,6 +11,7 @@ from elastica.typing import (
     OperatorFinalizeType,
     SystemType,
     ConnectionIndex,
+    BlockType,
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
@@ -59,7 +60,7 @@ class SystemCollectionProtocol(MutableSequence, Protocol):
     @property
     def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
 
-    def blocks(self) -> Generator[SystemType, None, None]: ...
+    def blocks(self) -> Generator[BlockType, None, None]: ...
 
     def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
 

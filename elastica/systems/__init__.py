@@ -1,8 +1,10 @@
 from typing import Type
 
+from elastica.typing import SystemType, SystemCollectionType
+
 
 # TODO: Be more specific Type
-def is_system_a_collection(system: Type) -> bool:
+def is_system_a_collection(system: SystemType | SystemCollectionType) -> bool:
     # Check if system is a "collection" of smaller systems
     # by checking for the [] method
     """
@@ -37,6 +39,4 @@ def is_system_a_collection(system: Type) -> bool:
     from elastica.modules import BaseSystemCollection
 
     __sys_get_item = getattr(system, "__getitem__", None)
-    return issubclass(system.__class__, BaseSystemCollection) or callable(
-        __sys_get_item
-    )
+    return isinstance(system, BaseSystemCollection) or callable(__sys_get_item)

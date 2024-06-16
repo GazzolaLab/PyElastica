@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from .joint import FreeJoint
 
 
-SystemType: TypeAlias = "SymplecticSystemProtocol"  # | ExplicitSystemProtocol
+SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
 
 # ModuleObjectTypes: TypeAlias = (

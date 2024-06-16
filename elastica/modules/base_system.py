@@ -13,6 +13,7 @@ from elastica.typing import (
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
+    BlockType,
 )
 
 import numpy as np
@@ -68,7 +69,7 @@ class BaseSystemCollection(MutableSequence):
 
         # List of systems to be integrated
         self._systems: list[SystemType] = []
-        self._memory_blocks: list[SystemType] = []
+        self._memory_blocks: list[BlockType] = []
 
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
