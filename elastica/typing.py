@@ -14,13 +14,17 @@ if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
     from .rod.protocol import CosseratRodProtocol
-    from .rigidbody.rigid_body import RigidBodyBase
+    from .rigidbody.protocol import RigidBodyProtocol
     from .surface.surface_base import SurfaceBase
     from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
     from .rod.data_structures import _State as State
-    from .systems.protocol import SymplecticSystemProtocol, ExplicitSystemProtocol
+    from .systems.protocol import (
+        SystemProtocol,
+        SymplecticSystemProtocol,
+        ExplicitSystemProtocol,
+    )
     from .timestepper.protocol import (
         StepperProtocol,
         SymplecticStepperProtocol,

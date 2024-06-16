@@ -3,8 +3,6 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-pass
-
 from elastica.systems.protocol import SystemProtocol
 
 

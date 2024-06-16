@@ -10,8 +10,9 @@ from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
     OperatorFinalizeType,
-    SystemType,
     ConnectionIndex,
+    RodType,
+    RigidBodyType,
 )
 import numpy as np
 import functools
@@ -39,8 +40,8 @@ class Connections:
 
     def connect(
         self: SystemCollectionProtocol,
-        first_rod: SystemType,
-        second_rod: SystemType,
+        first_rod: "RodType | RigidBodyType",
+        second_rod: "RodType | RigidBodyType",
         first_connect_idx: ConnectionIndex = None,
         second_connect_idx: ConnectionIndex = None,
     ) -> ModuleProtocol:
@@ -51,9 +52,9 @@ class Connections:
 
         Parameters
         ----------
-        first_rod : SystemType
+        first_rod : RodType | RigidBodyType
             Rod-like object
-        second_rod : SystemType
+        second_rod : RodType | RigidBodyType
             Rod-like object
         first_connect_idx : Optional[int]
             Index of first rod for joint.
@@ -90,9 +91,9 @@ class Connections:
         def apply_forces_and_torques(
             time: np.floating,
             connect_instance: FreeJoint,
-            system_one: SystemType,
+            system_one: "RodType | RigidBodyType",
             first_connect_idx: ConnectionIndex,
-            system_two: SystemType,
+            system_two: "RodType | RigidBodyType",
             second_connect_idx: ConnectionIndex,
         ) -> None:
             connect_instance.apply_forces(

@@ -3,8 +3,8 @@ __doc__ = """ Experimental interaction implementation."""
 
 import numpy as np
 from elastica.external_forces import NoForces
+from elastica.contact_utils import _find_slipping_elements
 from elastica.interaction import (
-    find_slipping_elements,
     apply_normal_force_numba_rigid_body,
     InteractionPlaneRigidBody,
 )
@@ -122,7 +122,7 @@ def anisotropic_friction_numba_rigid_body(
         + kinetic_mu_backward * (1 - velocity_sign_along_axial_direction)
     )
     # Call slip function to check if elements slipping or not
-    slip_function_along_axial_direction = find_slipping_elements(
+    slip_function_along_axial_direction = _find_slipping_elements(
         velocity_along_axial_direction, slip_velocity_tol
     )
     kinetic_friction_force_along_axial_direction = -(
@@ -151,7 +151,7 @@ def anisotropic_friction_numba_rigid_body(
         + kinetic_mu_backward * (1 - velocity_sign_along_binormal_direction)
     )
     # Call slip function to check if elements slipping or not
-    slip_function_along_binormal_direction = find_slipping_elements(
+    slip_function_along_binormal_direction = _find_slipping_elements(
         velocity_along_binormal_direction, slip_velocity_tol
     )
     kinetic_friction_force_along_binormal_direction = -(
