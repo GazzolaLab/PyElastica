@@ -245,7 +245,7 @@ class TestSteppersAgainstCollectiveSystems:
 
         # Before stepping, let's extend the interface of the stepper
         # while providing memory slots
-        from elastica.systems import make_memory_for_explicit_stepper
+        from elastica.systems.memory import make_memory_for_explicit_stepper
 
         memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
         from elastica.timestepper import extend_stepper_interface

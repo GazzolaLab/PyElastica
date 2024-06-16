@@ -91,7 +91,7 @@ class GravityForces(NoForces):
         self.acc_gravity = acc_gravity
 
     def apply_forces(
-        self, system: RodType | RigidBodyType, time: np.floating = np.float64(0.0)
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         self.compute_gravity_forces(
             self.acc_gravity, system.mass, system.external_forces

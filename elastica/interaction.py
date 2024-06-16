@@ -248,7 +248,7 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
     def apply_forces(
-        self, system: RodType | RigidBodyType, time: np.floating = np.float64(0)
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0)
     ) -> None:
         """
         Call numba implementation to apply friction forces

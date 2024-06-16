@@ -4,10 +4,9 @@ __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_s
 from typing import Optional
 
 from elastica._rotations import _inv_rotate
-from elastica.typing import SystemType, RodType, ConnectionIndex
-import numpy as np
+from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
 
-pass
+import numpy as np
 from numpy.typing import NDArray
 
 
@@ -49,9 +48,9 @@ class FreeJoint:
 
     def apply_forces(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         """
@@ -92,9 +91,9 @@ class FreeJoint:
 
     def apply_torques(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         """
@@ -173,18 +172,18 @@ class HingeJoint(FreeJoint):
     # Apply force is same as free joint
     def apply_forces(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         # current tangent direction of the `index_two` element of system two
@@ -280,18 +279,18 @@ class FixedJoint(FreeJoint):
     # Apply force is same as free joint
     def apply_forces(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
-        system_one: RodType | RigidBodyType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: RodType | RigidBodyType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         # collect directors of systems one and two
@@ -337,9 +336,9 @@ class FixedJoint(FreeJoint):
 
 
 def get_relative_rotation_two_systems(
-    system_one: RodType | RigidBodyType,
+    system_one: "RodType | RigidBodyType",
     index_one: ConnectionIndex,
-    system_two: RodType | RigidBodyType,
+    system_two: "RodType | RigidBodyType",
     index_two: ConnectionIndex,
 ) -> NDArray[np.floating]:
     """
