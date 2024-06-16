@@ -3,8 +3,7 @@ from typing import Type
 from elastica.typing import SystemType, SystemCollectionType
 
 
-# TODO: Be more specific Type
-def is_system_a_collection(system: SystemType | SystemCollectionType) -> bool:
+def is_system_a_collection(system: "SystemType | SystemCollectionType") -> bool:
     # Check if system is a "collection" of smaller systems
     # by checking for the [] method
     """
