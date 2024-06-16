@@ -229,38 +229,6 @@ class AnisotropicFrictionalPlane(InteractionPlane, NoForces):
         )
 
 
-def anisotropic_friction(
-    plane_origin: Any,
-    plane_normal: Any,
-    surface_tol: Any,
-    slip_velocity_tol: Any,
-    k: Any,
-    nu: Any,
-    kinetic_mu_forward: Any,
-    kinetic_mu_backward: Any,
-    kinetic_mu_sideways: Any,
-    static_mu_forward: Any,
-    static_mu_backward: Any,
-    static_mu_sideways: Any,
-    radius: Any,
-    mass: Any,
-    tangents: Any,
-    position_collection: Any,
-    director_collection: Any,
-    velocity_collection: Any,
-    omega_collection: Any,
-    internal_forces: Any,
-    external_forces: Any,
-    internal_torques: Any,
-    external_torques: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For anisotropic_friction please use: \n"
-        "elastica._contact_functions._calculate_contact_forces_rod_plane_with_anisotropic_friction() \n"
-        "For detail, refer to issue #113."
-    )
-
-
 # Slender body module
 @njit(cache=True)  # type: ignore
 def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
