@@ -1,4 +1,4 @@
-from typing import Protocol, Generator, TypeVar, Any, Type, MutableSequence
+from typing import Protocol, Generator, TypeVar, Any, Type, Sized
 from typing_extensions import Self  # 3.11: from typing import Self
 
 from abc import abstractmethod
@@ -33,7 +33,7 @@ class ModuleProtocol(Protocol[M]):
     def id(self) -> Any: ...
 
 
-class SystemCollectionProtocol(MutableSequence, Protocol):
+class SystemCollectionProtocol(Sized, Protocol):
     _systems: list[SystemType]
 
     @property

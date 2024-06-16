@@ -30,9 +30,7 @@ if TYPE_CHECKING:
         SymplecticStepperProtocol,
         MemoryProtocol,
     )
-    from memory_block.protocol import (
-        BlockCosseratRodProtocol,
-    )  # , BlockRigidBodyProtocol
+    from memory_block.protocol import BlockCosseratRodProtocol, BlockRigidBodyProtocol
 
     # Modules Base Classes
     from .boundary_conditions import FreeBC
@@ -66,7 +64,7 @@ RigidBodyType: TypeAlias = "RigidBodyProtocol"
 SurfaceType: TypeAlias = "SurfaceBase"
 
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
-BlockType: TypeAlias = "BlockCosseratRodProtocol"  # | "BlockRigidBodyProtocol"
+BlockType: TypeAlias = "BlockCosseratRodProtocol | BlockRigidBodyProtocol"
 
 # Indexing types
 # TODO: Maybe just use slice??

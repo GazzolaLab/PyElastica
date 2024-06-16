@@ -4,8 +4,8 @@ __doc__ = """ Experimental interaction implementation."""
 import numpy as np
 from elastica.external_forces import NoForces
 from elastica.contact_utils import _find_slipping_elements
+from elastica._contact_functions import _calculate_contact_forces_cylinder_plane
 from elastica.interaction import (
-    apply_normal_force_numba_rigid_body,
     InteractionPlaneRigidBody,
 )
 
@@ -93,7 +93,7 @@ def anisotropic_friction_numba_rigid_body(
     (
         plane_response_force_mag,
         no_contact_point_idx,
-    ) = apply_normal_force_numba_rigid_body(
+    ) = _calculate_contact_forces_cylinder_plane(
         plane_origin,
         plane_normal,
         surface_tol,
