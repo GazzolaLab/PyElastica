@@ -20,9 +20,9 @@ import numpy as np
 
 from collections.abc import MutableSequence
 
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase
-from elastica.surface import SurfaceBase
+from elastica.rod.rod_base import RodBase
+from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.surface.surface_base import SurfaceBase
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO

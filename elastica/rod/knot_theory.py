@@ -10,7 +10,7 @@ Following example cases includes computing LWT quantities to study the bifurcati
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 
-from typing import Protocol, Union
+pass
 
 from numba import njit
 import numpy as np
@@ -19,24 +19,7 @@ from numpy.typing import NDArray
 from elastica.rod.rod_base import RodBase
 from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
 
-
-class KnotTheoryCompatibleProtocol(Protocol):
-    """KnotTheoryCompatibleProtocol
-
-    Required properties to use KnotTheory mixin
-    """
-
-    @property
-    def position_collection(self) -> np.ndarray: ...
-
-    @property
-    def director_collection(self) -> np.ndarray: ...
-
-    @property
-    def radius(self) -> np.ndarray: ...
-
-    @property
-    def base_length(self) -> np.ndarray: ...
+from .protocol import CosseratRodProtocol
 
 
 class KnotTheory:
@@ -77,9 +60,7 @@ class KnotTheory:
 
     """
 
-    MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
-
-    def compute_twist(self: MIXIN_PROTOCOL) -> NDArray[np.floating]:
+    def compute_twist(self: CosseratRodProtocol) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
         """
@@ -90,9 +71,9 @@ class KnotTheory:
         return total_twist[0]
 
     def compute_writhe(
-        self: MIXIN_PROTOCOL,
+        self: CosseratRodProtocol,
         type_of_additional_segment: str = "next_tangent",
-        alpha: np.floating = 1.0,
+        alpha: float = 1.0,
     ) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
@@ -113,9 +94,9 @@ class KnotTheory:
         )[0]
 
     def compute_link(
-        self: MIXIN_PROTOCOL,
+        self: CosseratRodProtocol,
         type_of_additional_segment: str = "next_tangent",
-        alpha: np.floating = 1.0,
+        alpha: float = 1.0,
     ) -> NDArray[np.floating]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.

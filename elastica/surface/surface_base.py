@@ -1,4 +1,5 @@
 __doc__ = """Base class for surfaces"""
+from typing import Type
 
 
 class SurfaceBase:
@@ -11,9 +12,9 @@ class SurfaceBase:
 
     """
 
-    REQUISITE_MODULES = []
+    REQUISITE_MODULES: list[Type] = []
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         SurfaceBase does not take any arguments.
         """

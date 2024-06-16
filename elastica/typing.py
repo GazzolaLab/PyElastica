@@ -13,7 +13,7 @@ import numpy as np
 if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
-    from .rod import RodBase
+    from .rod.protocol import CosseratRodProtocol
     from .rigidbody import RigidBodyBase
     from .surface import SurfaceBase
     from .modules.base_system import BaseSystemCollection
@@ -26,6 +26,9 @@ if TYPE_CHECKING:
         SymplecticStepperProtocol,
         MemoryProtocol,
     )
+    from memory_block.protocol import (
+        BlockCosseratRodProtocol,
+    )  # , BlockRigidBodyProtocol
 
     # Modules Base Classes
     from .boundary_conditions import FreeBC
@@ -34,28 +37,6 @@ if TYPE_CHECKING:
     from .dissipation import DamperBase
     from .external_forces import NoForces
     from .joint import FreeJoint
-# else:
-#     RodBase = None
-#     RigidBodyBase = None
-#     SurfaceBase = None
-#
-#     SystemCollectionProtocol = None
-#
-#     State = "State"
-#     SymplecticSystemProtocol = None
-#     ExplicitSystemProtocol = None
-#
-#     StepperProtocol = None
-#     SymplecticStepperProtocol = None
-#     MemoryProtocol = None
-#
-#     # Modules Base Classes
-#     FreeBC = None
-#     CallBackBaseClass = None
-#     NoContact = None
-#     DamperBase = None
-#     NoForces = None
-#     FreeJoint = None
 
 
 SystemType: TypeAlias = "SymplecticSystemProtocol"  # | ExplicitSystemProtocol
@@ -74,11 +55,14 @@ OperatorType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
 
-RodType: TypeAlias = Type["RodBase"]
+RodType: TypeAlias = "CosseratRodProtocol"
+RigidBodyType: TypeAlias = "RigidBodyProtocol"
+
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 AllowedContactType: TypeAlias = (
     SystemType | Type["SurfaceBase"]
 )  # FIXME: SurfaceBase needs to be treated differently
+BlockType: TypeAlias = "BlockCosseratRodProtocol"  # | "BlockRigidBodyProtocol"
 
 # Indexing types
 # TODO: Maybe just use slice??
