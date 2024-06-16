@@ -54,8 +54,10 @@ StateType: TypeAlias = "State"
 OperatorType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
 
+
 RodType: TypeAlias = "CosseratRodProtocol"
 RigidBodyType: TypeAlias = "RigidBodyProtocol"
+
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 AllowedContactType: TypeAlias = (
     SystemType | Type["SurfaceBase"]
