@@ -1,8 +1,8 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
 from typing import Literal, Callable
+from elastica.typing import SystemIdxType
 from elastica.memory_block.memory_block_rod_base import (
-    MemoryBlockRodBase,
     make_block_memory_metadata,
     make_block_memory_periodic_boundary_metadata,
 )
@@ -12,17 +12,15 @@ from elastica.rod.cosserat_rod import (
     CosseratRod,
     _compute_sigma_kappa_for_blockstructure,
 )
+from elastica.rod.rod_base import RodBase
 from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_vector_collection,
     _synchronize_periodic_boundary_of_scalar_collection,
     _synchronize_periodic_boundary_of_matrix_collection,
 )
-from elastica.typing import SystemIdxType
 
 
-class MemoryBlockCosseratRod(
-    MemoryBlockRodBase, CosseratRod, _RodSymplecticStepperMixin
-):
+class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
     """
     Memory block class for Cosserat rod equations. This class is derived from Cosserat Rod class in order to inherit
     the methods of Cosserat rod class. This class takes the cosserat rod object (systems) and creates big
@@ -33,7 +31,7 @@ class MemoryBlockCosseratRod(
     """
 
     def __init__(
-        self, systems: list[CosseratRod], system_idx_list: list[SystemIdxType]
+        self, systems: list[RodBase], system_idx_list: list[SystemIdxType]
     ) -> None:
 
         # separate straight and ring rods
@@ -203,7 +201,7 @@ class MemoryBlockCosseratRod(
         # Initialize the mixin class for symplectic time-stepper.
         _RodSymplecticStepperMixin.__init__(self)
 
-    def _allocate_block_variables_in_nodes(self, systems: list[CosseratRod]) -> None:
+    def _allocate_block_variables_in_nodes(self, systems: list[RodBase]) -> None:
         """
         This function takes system collection and allocates the variables on
         node for block-structure and references allocated variables back to the
@@ -253,7 +251,7 @@ class MemoryBlockCosseratRod(
             value_type="vector",
         )
 
-    def _allocate_block_variables_in_elements(self, systems: list[CosseratRod]) -> None:
+    def _allocate_block_variables_in_elements(self, systems: list[RodBase]) -> None:
         """
         This function takes system collection and allocates the variables on
         elements for block-structure and references allocated variables back to the
@@ -344,7 +342,7 @@ class MemoryBlockCosseratRod(
             value_type="tensor",
         )
 
-    def _allocate_blocks_variables_in_voronoi(self, systems: list[CosseratRod]) -> None:
+    def _allocate_blocks_variables_in_voronoi(self, systems: list[RodBase]) -> None:
         """
         This function takes system collection and allocates the variables on
         voronoi for block-structure and references allocated variables back to the
@@ -412,19 +410,11 @@ class MemoryBlockCosseratRod(
         )
 
     def _allocate_blocks_variables_for_symplectic_stepper(
-        self, systems: list[CosseratRod]
+        self, systems: list[RodBase]
     ) -> None:
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
-
-        Parameters
-        ----------
-        systems
-
-        Returns
-        -------
-
         """
         # These vectors are on nodes or on elements, but we stack them together for
         # better memory access. Because we use them together in time-steppers.
@@ -480,7 +470,7 @@ class MemoryBlockCosseratRod(
     def _map_system_properties_to_block_memory(
         self,
         mapping_dict: dict,
-        systems: list[CosseratRod],
+        systems: list[RodBase],
         block_memory: np.ndarray,
         domain_type: Literal["node", "element", "voronoi"],
         value_type: Literal["scalar", "vector", "tensor"],
@@ -495,7 +485,7 @@ class MemoryBlockCosseratRod(
         ----------
         mapping_dict: dict
             Dictionary with attribute names as keys and block row index as values.
-        systems: Sequence
+        systems: list[RodBase]
             A sequence containing Cosserat rod objects to map from.
         block_memory: ndarray
             Memory block that, at the end of the method execution, contains all designated

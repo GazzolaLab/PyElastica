@@ -1,10 +1,12 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
+from elastica.typing import SystemType
 
 import os
 import sys
 import numpy as np
 import logging
 from typing import Any, Optional
+
 
 from collections import defaultdict
 

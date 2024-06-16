@@ -18,6 +18,9 @@ class RigidBodyBase(ABC):
 
     """
 
+    REQUISITE_MODULES = []
+  
+  
     def __init__(self) -> None:
 
         self.position_collection: f_arr_t

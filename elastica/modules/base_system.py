@@ -5,8 +5,16 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Iterable, AnyStr, Type
-from elastica.typing import OperatorType, OperatorCallbackType, OperatorFinalizeType
+from typing import Type, Generator, Iterable, Any
+from typing import final
+from elastica.typing import (
+    SystemType,
+    SystemIdxType,
+    OperatorType,
+    OperatorCallbackType,
+    OperatorFinalizeType,
+    AllowedContactType,
+)
 
 import numpy as np
 
@@ -33,9 +41,6 @@ class BaseSystemCollection(MutableSequence):
         _systems: list
             List of rod-like objects.
 
-    Developer Note
-    -----
-
     Note
     ----
     We can directly subclass a list for the
@@ -43,28 +48,36 @@ class BaseSystemCollection(MutableSequence):
     https://stackoverflow.com/q/3945940
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
         self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
-        self._feature_group_constrain_values: Iterable[OperatorType] = []
-        self._feature_group_constrain_rates: Iterable[OperatorType] = []
-        self._feature_group_callback: Iterable[OperatorCallbackType] = []
-        self._feature_group_finalize: Iterable[OperatorFinalizeType] = []
+        self._feature_group_constrain_values: list[OperatorType] = []
+        self._feature_group_constrain_rates: list[OperatorType] = []
+        self._feature_group_callback: list[OperatorCallbackType] = []
+        self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
-        super(BaseSystemCollection, self).__init__()
+        super().__init__()
+
         # List of system types/bases that are allowed
-        self.allowed_sys_types: tuple[Type, ...] = (RodBase, RigidBodyBase, SurfaceBase)
+        self.allowed_sys_types: tuple[Type, ...] = (
+            RodBase,
+            RigidBodyBase,
+            SurfaceBase,
+        )
+
         # List of systems to be integrated
-        self._systems = []
-        self._memory_blocks = []
+        self._systems: list[SystemType] = []
+        self._memory_blocks: list[SystemType] = []
+
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
-        self._finalize_flag = False
+        self._finalize_flag: bool = False
 
-    def _check_type(self, sys_to_be_added: AnyStr):
-        if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
+    @final
+    def _check_type(self, sys_to_be_added: Any) -> bool:
+        if not isinstance(sys_to_be_added, self.allowed_sys_types):
             raise TypeError(
                 "{0}\n"
                 "is not a system passing validity\n"
@@ -85,45 +98,52 @@ class BaseSystemCollection(MutableSequence):
             )
         return True
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._systems)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, /):  # type: ignore
         return self._systems[idx]
 
-    def __delitem__(self, idx):
+    def __delitem__(self, idx, /):  # type: ignore
         del self._systems[idx]
 
-    def __setitem__(self, idx, system):
+    def __setitem__(self, idx, system, /):  # type: ignore
         self._check_type(system)
         self._systems[idx] = system
 
-    def insert(self, idx, system):
+    def insert(self, idx, system) -> None:  # type: ignore
         self._check_type(system)
         self._systems.insert(idx, system)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """To be readable"""
         return str(self._systems)
 
-    def extend_allowed_types(self, additional_types: list[Type, ...]):
+    @final
+    def extend_allowed_types(
+        self, additional_types: tuple[Type[SystemType], ...]
+    ) -> None:
         self.allowed_sys_types += additional_types
 
-    def override_allowed_types(self, allowed_types: list[Type, ...]):
-        self.allowed_sys_types = tuple(allowed_types)
+    @final
+    def override_allowed_types(
+        self, allowed_types: tuple[Type[SystemType], ...]
+    ) -> None:
+        self.allowed_sys_types = allowed_types
 
-    def _get_sys_idx_if_valid(self, sys_to_be_added):
-        from numpy import int_ as npint
+    @final
+    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
+        n_systems = len(self)  # Total number of systems from mixed-in class
 
-        n_systems = len(self._systems)  # Total number of systems from mixed-in class
-
-        if isinstance(sys_to_be_added, (int, npint)):
+        sys_idx: SystemIdxType
+        if isinstance(sys_to_be_added, (int, np.int_)):
             # 1. If they are indices themselves, check range
             assert (
                 -n_systems <= sys_to_be_added < n_systems
             ), "Rod index {} exceeds number of registered rodtems".format(
                 sys_to_be_added
             )
-            sys_idx = sys_to_be_added
+            sys_idx = int(sys_to_be_added)
         elif self._check_type(sys_to_be_added):
             # 2. If they are rod objects (most likely), lookup indices
             # index might have some problems : https://stackoverflow.com/a/176921
@@ -138,7 +158,14 @@ class BaseSystemCollection(MutableSequence):
 
         return sys_idx
 
-    def finalize(self):
+    @final
+    def blocks(self) -> Generator[SystemType, None, None]:
+        # assert self._finalize_flag, "The simulator is not finalized."
+        for block in self._memory_blocks:
+            yield block
+
+    @final
+    def finalize(self) -> None:
         """
         This method finalizes the simulator class. When it is called, it is assumed that the user has appended
         all rod-like objects to the simulator as well as all boundary conditions, callbacks, etc.,
@@ -146,12 +173,12 @@ class BaseSystemCollection(MutableSequence):
         the user cannot add new features to the simulator class.
         """
 
-        # This generates more straight-forward error.
-        assert self._finalize_flag is not True, "The finalize cannot be called twice."
+        assert not self._finalize_flag, "The finalize cannot be called twice."
+        self._finalize_flag = True
 
         # construct memory block
         self._memory_blocks = construct_memory_block_structures(self._systems)
-        for block in self._memory_blocks:
+        for block in self.blocks():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
             self.append(block)
 
@@ -161,27 +188,28 @@ class BaseSystemCollection(MutableSequence):
 
         # Clear the finalize feature group, just for the safety.
         self._feature_group_finalize.clear()
-        self._feature_group_finalize = None
+        del self._feature_group_finalize
 
-        # Toggle the finalize_flag
-        self._finalize_flag = True
-
-    def synchronize(self, time: np.floating):
+    @final
+    def synchronize(self, time: np.floating) -> None:
         # Collection call _feature_group_synchronize
         for func in self._feature_group_synchronize:
             func(time=time)
 
-    def constrain_values(self, time: np.floating):
+    @final
+    def constrain_values(self, time: np.floating) -> None:
         # Collection call _feature_group_constrain_values
         for func in self._feature_group_constrain_values:
             func(time=time)
 
-    def constrain_rates(self, time: np.floating):
+    @final
+    def constrain_rates(self, time: np.floating) -> None:
         # Collection call _feature_group_constrain_rates
         for func in self._feature_group_constrain_rates:
             func(time=time)
 
-    def apply_callbacks(self, time: np.floating, current_step: int):
+    @final
+    def apply_callbacks(self, time: np.floating, current_step: int) -> None:
         # Collection call _feature_group_callback
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)

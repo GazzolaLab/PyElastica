@@ -1,8 +1,9 @@
 __doc__ = """Base class for elastica system"""
 
-from typing import Protocol
+from typing import Protocol, Type
+from elastica.typing import StateType, SystemType
+from elastica.modules.protocol import ModuleProtocol
 
-from elastica.typing import StateType
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 
 import numpy as np
@@ -14,14 +15,22 @@ class SystemProtocol(Protocol):
     Protocol for all elastica system
     """
 
+    REQUISITE_MODULES: list[Type[ModuleProtocol]]
+
     @property
     def n_nodes(self) -> int: ...
+
+    @property
+    def n_elems(self) -> int: ...
 
     @property
     def position_collection(self) -> NDArray: ...
 
     @property
     def velocity_collection(self) -> NDArray: ...
+
+    @property
+    def director_collection(self) -> NDArray: ...
 
     @property
     def acceleration_collection(self) -> NDArray: ...
@@ -53,18 +62,18 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     def dynamic_states(self) -> _DynamicState: ...
 
     @property
-    def rate_collection(self) -> NDArray: ...
+    def rate_collection(self) -> NDArray[np.floating]: ...
 
     @property
-    def dvdt_dwdt_collection(self) -> NDArray: ...
+    def dvdt_dwdt_collection(self) -> NDArray[np.floating]: ...
 
     def kinematic_rates(
         self, time: np.floating, prefac: np.floating
-    ) -> tuple[NDArray, NDArray]: ...
+    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]: ...
 
     def dynamic_rates(
         self, time: np.floating, prefac: np.floating
-    ) -> tuple[NDArray]: ...
+    ) -> NDArray[np.floating]: ...
 
 
 class ExplicitSystemProtocol(SystemProtocol, Protocol):
@@ -75,3 +84,5 @@ class ExplicitSystemProtocol(SystemProtocol, Protocol):
     def state(self) -> StateType: ...
     @state.setter
     def state(self, state: StateType) -> None: ...
+    @property
+    def n_elems(self) -> int: ...

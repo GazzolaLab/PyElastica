@@ -22,8 +22,10 @@ class RodBase:
         RodBase does not take any arguments.
         """
         self.position_collection: NDArray[np.floating]
-        self.omega_collection: NDArray[np.floating]
+        self.velocity_collection: NDArray[np.floating]
         self.acceleration_collection: NDArray[np.floating]
+        self.director_collection: NDArray[np.floating]
+        self.omega_collection: NDArray[np.floating]
         self.alpha_collection: NDArray[np.floating]
         self.external_forces: NDArray[np.floating]
         self.external_torques: NDArray[np.floating]

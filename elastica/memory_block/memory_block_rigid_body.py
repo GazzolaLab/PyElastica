@@ -1,10 +1,10 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
-import numpy as np
 from typing import Literal
+import numpy as np
+from elastica.typing import SystemType, SystemIdxType
 
 from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
-from elastica.typing import SystemIdxType
 
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
@@ -191,8 +191,8 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         ----------
         mapping_dict: dict
             Dictionary with attribute names as keys and block row index as values.
-        systems: Sequence
-            A sequence containing Cosserat rod objects to map from.
+        systems: list[RigidBodyBase]
+            A sequence containing rigid body objects to map from.
         block_memory: ndarray
             Memory block that, at the end of the method execution, contains all designated
             attributes of all systems.

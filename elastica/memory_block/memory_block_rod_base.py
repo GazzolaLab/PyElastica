@@ -1,10 +1,16 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
-from typing import Iterable
 import numpy.typing as npt
 
 
-def make_block_memory_metadata(n_elems_in_rods: npt.NDArray[np.integer]) -> Iterable:
+def make_block_memory_metadata(
+    n_elems_in_rods: npt.NDArray[np.integer],
+) -> tuple[
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+]:
     """
     This function, takes number of elements of each rod as a numpy array and computes,
     ghost nodes, elements and voronoi element indexes and numbers and returns it.
@@ -55,7 +61,12 @@ def make_block_memory_metadata(n_elems_in_rods: npt.NDArray[np.integer]) -> Iter
 
 def make_block_memory_periodic_boundary_metadata(
     n_elems_in_rods: npt.NDArray[np.integer],
-) -> Iterable:
+) -> tuple[
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+    npt.NDArray[np.integer],
+]:
     """
     This function, takes the number of elements of ring rods and computes the periodic boundary node,
     element and voronoi index.
@@ -156,12 +167,3 @@ def make_block_memory_periodic_boundary_metadata(
         periodic_boundary_elems_idx,
         periodic_boundary_voronoi_idx,
     )
-
-
-class MemoryBlockRodBase:
-    """
-    This is the base class for memory blocks for rods.
-    """
-
-    def __init__(self) -> None:
-        pass

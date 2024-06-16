@@ -9,7 +9,14 @@ on the rods. (see `dissipation.py`).
 
 """
 
+from typing import Any, Type, List
+from typing_extensions import Self
+
+import numpy as np
+
 from elastica.dissipation import DamperBase
+from elastica.typing import SystemType, SystemIdxType
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
 class Damping:
@@ -24,13 +31,13 @@ class Damping:
             List of damper classes defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._dampers = []
-        super(Damping, self).__init__()
+    def __init__(self: SystemCollectionProtocol) -> None:
+        self._damping_list: List[ModuleProtocol] = []
+        super().__init__()
         self._feature_group_constrain_rates.append(self._dampen_rates)
         self._feature_group_finalize.append(self._finalize_dampers)
 
-    def dampen(self, system):
+    def dampen(self: SystemCollectionProtocol, system: SystemType) -> ModuleProtocol:
         """
         This method applies damping on relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -48,18 +55,18 @@ class Damping:
         sys_idx = self._get_sys_idx_if_valid(system)
 
         # Create _Damper object, cache it and return to user
-        _damper = _Damper(sys_idx)
-        self._dampers.append(_damper)
+        _damper: ModuleProtocol = _Damper(sys_idx)
+        self._damping_list.append(_damper)
 
         return _damper
 
-    def _finalize_dampers(self):
+    def _finalize_dampers(self: SystemCollectionProtocol) -> None:
         # From stored _Damping objects, instantiate the dissipation/damping
         # inplace : https://stackoverflow.com/a/1208792
 
-        self._dampers[:] = [
-            (damper.id(), damper(self._systems[damper.id()]))
-            for damper in self._dampers
+        self._damping_operators = [
+            (damper.id(), damper.instantiate(self._systems[damper.id()]))
+            for damper in self._damping_list
         ]
 
         # Sort from lowest id to highest id for potentially better memory access
@@ -67,11 +74,11 @@ class Damping:
         # following elements are the type of damping.
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort dampers.
-        self._dampers.sort(key=lambda x: x[0])
+        self._damping_operators.sort(key=lambda x: x[0])
 
-    def _dampen_rates(self, time, *args, **kwargs):
-        for sys_id, damper in self._dampers:
-            damper.dampen_rates(self._systems[sys_id], time, *args, **kwargs)
+    def _dampen_rates(self: SystemCollectionProtocol, time: np.floating) -> None:
+        for sys_id, damper in self._damping_operators:
+            damper.dampen_rates(self._systems[sys_id], time)
 
 
 class _Damper:
@@ -88,7 +95,7 @@ class _Damper:
         Arbitrary keyword arguments.
     """
 
-    def __init__(self, sys_idx: int):
+    def __init__(self, sys_idx: SystemIdxType) -> None:
         """
 
         Parameters
@@ -97,22 +104,22 @@ class _Damper:
 
         """
         self._sys_idx = sys_idx
-        self._damper_cls = None
-        self._args = ()
-        self._kwargs = {}
+        self._damper_cls: Type[DamperBase]
+        self._args: Any
+        self._kwargs: Any
 
-    def using(self, damper_cls, *args, **kwargs):
+    def using(self, cls: Type[DamperBase], *args: Any, **kwargs: Any) -> Self:
         """
         This method is a module to set which damper class is used to
         enforce damping from user defined rod-like objects.
 
         Parameters
         ----------
-        damper_cls : object
+        cls : Type[DamperBase]
             User defined damper class.
-        *args
-            Variable length argument list
-        **kwargs
+        *args: Any
+            Variable length argument list.
+        **kwargs: Any
             Arbitrary keyword arguments.
 
         Returns
@@ -120,31 +127,21 @@ class _Damper:
 
         """
         assert issubclass(
-            damper_cls, DamperBase
+            cls, DamperBase
         ), "{} is not a valid damper. Damper must be driven from DamperBase.".format(
-            damper_cls
+            cls
         )
-        self._damper_cls = damper_cls
+        self._damper_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self
 
-    def id(self):
+    def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def __call__(self, rod, *args, **kwargs):
-        """Constructs a Damper class object after checks
-
-        Parameters
-        ----------
-        args
-        kwargs
-
-        Returns
-        -------
-
-        """
-        if not self._damper_cls:
+    def instantiate(self, rod: SystemType) -> DamperBase:
+        """Constructs a Damper class object after checks"""
+        if not hasattr(self, "_damper_cls"):
             raise RuntimeError(
                 "No damper provided to dampen rod id {0} at {1},"
                 "but damping was intended. Did you"
