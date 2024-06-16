@@ -1,6 +1,9 @@
 from typing import Protocol, Generator, TypeVar, Any, Type
 from typing_extensions import Self  # 3.11: from typing import Self
+
 from abc import abstractmethod
+from collections.abc import MutableSequence
+
 from elastica.typing import (
     SystemIdxType,
     OperatorType,
@@ -30,7 +33,7 @@ class ModuleProtocol(Protocol[M]):
     def id(self) -> Any: ...
 
 
-class SystemCollectionProtocol(Protocol):
+class SystemCollectionProtocol(MutableSequence, Protocol):
     _systems: list[SystemType]
 
     @property

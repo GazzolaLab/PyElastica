@@ -72,7 +72,7 @@ class MaxDimension:
 
 class Tolerance:
     @staticmethod
-    def atol() -> float:
+    def atol() -> np.float64:
         """
         Static absolute tolerance method
 
@@ -83,7 +83,7 @@ class Tolerance:
         return finfo(float64).eps * 1e4
 
     @staticmethod
-    def rtol() -> float:
+    def rtol() -> np.float64:
         """
         Static relative tolerance method
 
