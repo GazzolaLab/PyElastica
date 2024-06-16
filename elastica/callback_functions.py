@@ -1,11 +1,11 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
+from typing import Any, Optional, TypeVar, Generic
 from elastica.typing import SystemType
 
 import os
 import sys
 import numpy as np
 import logging
-from typing import Any, Optional
 
 
 from collections import defaultdict
@@ -13,7 +13,10 @@ from collections import defaultdict
 from elastica.typing import RodType, SystemType
 
 
-class CallBackBaseClass:
+T = TypeVar("T")
+
+
+class CallBackBaseClass(Generic[T]):
     """
     This is the base class for callbacks for rod-like objects.
 
@@ -30,9 +33,7 @@ class CallBackBaseClass:
         """
         pass
 
-    def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
-    ) -> None:
+    def make_callback(self, system: T, time: np.floating, current_step: int) -> None:
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users

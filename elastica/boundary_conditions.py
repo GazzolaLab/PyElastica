@@ -1,7 +1,7 @@
 __doc__ = """ Built-in boundary condition implementationss """
 
 import warnings
-from typing import Any, Optional
+from typing import Any, Optional, TypeVar, Generic
 
 import numpy as np
 from numpy.typing import NDArray
@@ -15,7 +15,10 @@ from elastica._rotations import _get_rotation_matrix
 from elastica.typing import SystemType, RodType
 
 
-class ConstraintBase(ABC):
+S = TypeVar("S")
+
+
+class ConstraintBase(ABC, Generic[S]):
     """Base class for constraint and displacement boundary condition implementation.
 
     Notes
@@ -31,7 +34,7 @@ class ConstraintBase(ABC):
 
     """
 
-    _system: SystemType
+    _system: S
     _constrained_position_idx: np.ndarray
     _constrained_director_idx: np.ndarray
 
@@ -51,24 +54,24 @@ class ConstraintBase(ABC):
             )
 
     @property
-    def system(self) -> SystemType:
+    def system(self) -> S:
         """get system (rod or rigid body) reference"""
         return self._system
 
     @property
-    def constrained_position_idx(self) -> Optional[np.ndarray]:
+    def constrained_position_idx(self) -> np.ndarray:
         """get position-indices passed to "using" """
         # TODO: This should be immutable somehow
         return self._constrained_position_idx
 
     @property
-    def constrained_director_idx(self) -> Optional[np.ndarray]:
+    def constrained_director_idx(self) -> np.ndarray:
         """get director-indices passed to "using" """
         # TODO: This should be immutable somehow
         return self._constrained_director_idx
 
     @abstractmethod
-    def constrain_values(self, system: SystemType, time: np.floating) -> None:
+    def constrain_values(self, system: S, time: np.floating) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain values (position and/or directors) of a rod object.
@@ -83,7 +86,7 @@ class ConstraintBase(ABC):
         pass
 
     @abstractmethod
-    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
+    def constrain_rates(self, system: S, time: np.floating) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Constrain rates (velocity and/or omega) of a rod object.
