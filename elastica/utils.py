@@ -72,7 +72,7 @@ class MaxDimension:
 
 class Tolerance:
     @staticmethod
-    def atol() -> np.float64:
+    def atol() -> float:
         """
         Static absolute tolerance method
 
@@ -80,10 +80,10 @@ class Tolerance:
         -------
         atol : library-wide set absolute tolerance for kernels
         """
-        return finfo(float64).eps * 1e4
+        return float(finfo(float64).eps * 1e4)
 
     @staticmethod
-    def rtol() -> np.float64:
+    def rtol() -> float:
         """
         Static relative tolerance method
 
@@ -91,7 +91,7 @@ class Tolerance:
         -------
         tol : library-wide set relative tolerance for kernels
         """
-        return finfo(float64).eps * 1e11
+        return float(finfo(float64).eps * 1e11)
 
 
 def perm_parity(lst: list[int]) -> int:

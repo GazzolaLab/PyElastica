@@ -178,7 +178,9 @@ class ExportCallBack(CallBackBaseClass):
         self.file_save_interval = file_save_interval
 
         # Data collector
-        self.buffer = defaultdict(list)
+        self.buffer: dict[str, list[NDArray[np.floating] | np.floating | int]] = (
+            defaultdict(list)
+        )
         self.buffer_size = 0
 
         # Module

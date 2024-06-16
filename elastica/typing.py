@@ -42,6 +42,8 @@ if TYPE_CHECKING:
     from .external_forces import NoForces
     from .joint import FreeJoint
 
+    from .mesh.protocol import MeshProtocol
+
 
 SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
@@ -75,6 +77,7 @@ ConnectionIndex: TypeAlias = (
 
 # Operators in elastica.modules
 OperatorParam = ParamSpec("OperatorParam")
-OperatorType: TypeAlias = Callable[OperatorParam, None]
 OperatorCallbackType: TypeAlias = Callable[..., None]
 OperatorFinalizeType: TypeAlias = Callable[..., None]
+
+MeshType: TypeAlias = "MeshProtocol"

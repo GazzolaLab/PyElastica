@@ -7,7 +7,7 @@ Built in damper module implementations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from elastica.typing import RodType, RigidBodyType, SystemType
+from elastica.typing import RodType, SystemType
 
 from numba import njit
 
@@ -25,11 +25,11 @@ class DamperBase(ABC):
 
     Attributes
     ----------
-    system : SystemType (RodBase or RigidBodyBase)
+    system : RodBase
 
     """
 
-    _system: "RodType | RigidBodyType"
+    _system: RodType
 
     # TODO typing can be made better
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -43,7 +43,7 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self) -> "RodType | RigidBodyType":
+    def system(self) -> RodType:
         """
         get system (rod or rigid body) reference
 
@@ -55,9 +55,7 @@ class DamperBase(ABC):
         return self._system
 
     @abstractmethod
-    def dampen_rates(
-        self, system: "RodType | RigidBodyType", time: np.floating
-    ) -> None:
+    def dampen_rates(self, system: RodType, time: np.floating) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -150,7 +148,7 @@ class AnalyticalLinearDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, rod: "RodType | RigidBodyType", time: np.floating) -> None:
+    def dampen_rates(self, rod: RodType, time: np.floating) -> None:
         rod.velocity_collection[:] = (
             rod.velocity_collection * self.translational_damping_coefficient
         )
