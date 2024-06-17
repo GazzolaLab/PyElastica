@@ -40,7 +40,7 @@ class AABBCollection:
 
     @classmethod
     def make_from_aabb(
-        cls, aabb_collection: list[AABBCollection], scale_factor: int = 4
+        cls, aabb_collection: list["AABBCollection"], scale_factor: int = 4
     ) -> Self:
         # Make position collection and dimension collection arrays from aabb_collection
         # Wasted effort, but only once during construction
@@ -64,7 +64,7 @@ class AABBCollection:
 
         return cls(elemental_position_collection, dimension_collection, scale_factor)
 
-    def _update(self, aabb_collection: list[AABBCollection]) -> None:
+    def _update(self, aabb_collection: list["AABBCollection"]) -> None:
         # Updates internal state from another aabb
 
         """

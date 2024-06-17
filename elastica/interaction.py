@@ -1,7 +1,6 @@
 __doc__ = """ Numba implementation module containing interactions between a rod and its environment."""
 
 
-pass
 import numpy as np
 from elastica.external_forces import NoForces
 from numba import njit

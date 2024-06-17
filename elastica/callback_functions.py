@@ -1,6 +1,6 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
 from typing import Any, Optional, TypeVar, Generic
-from elastica.typing import SystemType
+from elastica.typing import RodType, RigidBodyType, SystemType
 
 import os
 import sys
@@ -10,8 +10,6 @@ import logging
 
 
 from collections import defaultdict
-
-from elastica.typing import RodType, RigidBodyType, SystemType
 
 
 T = TypeVar("T")

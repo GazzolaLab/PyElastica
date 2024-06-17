@@ -10,11 +10,9 @@ Following example cases includes computing LWT quantities to study the bifurcati
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 
-pass
-
-from numba import njit
 import numpy as np
 from numpy.typing import NDArray
+from numba import njit
 
 from elastica.rod.rod_base import RodBase
 from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
