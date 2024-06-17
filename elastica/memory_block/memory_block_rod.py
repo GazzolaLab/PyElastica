@@ -33,6 +33,7 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
     def __init__(
         self, systems: list[RodType], system_idx_list: list[SystemIdxType]
     ) -> None:
+        self.n_systems = len(systems)
 
         # separate straight and ring rods
         system_straight_rod = []
@@ -62,8 +63,8 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
             [x.n_elems for x in system_ring_rod], dtype=np.int64
         )
 
-        n_straight_rods = len(system_straight_rod)
-        n_ring_rods = len(system_ring_rod)
+        n_straight_rods: int = len(system_straight_rod)
+        n_ring_rods: int = len(system_ring_rod)
 
         # self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int)
         self.n_elems_in_rods = np.hstack((n_elems_straight_rods, n_elems_ring_rods + 2))
@@ -133,13 +134,13 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
                 # we place first straight rods, then ring rods.
                 # TODO: in future consider a better implementation for packing problem.
                 # +1 is because we want to start from next idx, where periodic boundary starts
-                self.periodic_boundary_nodes_idx += (
+                self.periodic_boundary_nodes_idx += (  # type: ignore
                     self.ghost_nodes_idx[n_straight_rods - 1] + 1
                 )
-                self.periodic_boundary_elems_idx += (
+                self.periodic_boundary_elems_idx += (  # type: ignore
                     self.ghost_elems_idx[1::2][n_straight_rods - 1] + 1
                 )
-                self.periodic_boundary_voronoi_idx += (
+                self.periodic_boundary_voronoi_idx += (  # type: ignore
                     self.ghost_voronoi_idx[2::3][n_straight_rods - 1] + 1
                 )
 

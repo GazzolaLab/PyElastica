@@ -37,10 +37,10 @@ class Sphere(RigidBodyBase):
 
         self.radius = base_radius
         self.density = density
-        self.length = 2 * base_radius
+        self.length = np.float64(2 * base_radius)
         # This is for a rigid body cylinder
-        self.volume = 4.0 / 3.0 * np.pi * base_radius**3
-        self.mass = np.array([self.volume * self.density], dtype=np.float64)
+        self.volume = np.float64(4.0 / 3.0 * np.pi * base_radius**3)
+        self.mass = np.float64(self.volume * self.density)
         normal = np.array([1.0, 0.0, 0.0], dtype=np.float64).reshape(dim, 1)
         tangents = np.array([0.0, 0.0, 1.0], dtype=np.float64).reshape(dim, 1)
         binormal = _batch_cross(tangents, normal)

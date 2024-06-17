@@ -9,9 +9,9 @@ from elastica._rotations import _get_rotation_matrix, _rotate
 from elastica._linalg import _batch_matmul
 
 if TYPE_CHECKING:
-    from elastica.memory_block.protocol import BlockCosseratRodProtocol
+    from elastica.systems.protocol import SymplecticSystemProtocol
 else:
-    BlockCosseratRodProtocol = "BlockCosseratRodProtocol"
+    SymplecticSystemProtocol = "SymplecticSystemProtocol"
 
 # FIXME : Explicit Stepper doesn't work as States lose the
 # views they initially had when working with a timestepper.
@@ -50,7 +50,7 @@ else:
 
 
 class _RodSymplecticStepperMixin:
-    def __init__(self: BlockCosseratRodProtocol) -> None:
+    def __init__(self: SymplecticSystemProtocol) -> None:
         self.kinematic_states = _KinematicState(
             self.position_collection, self.director_collection
         )
@@ -68,7 +68,7 @@ class _RodSymplecticStepperMixin:
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
     def dynamic_rates(
-        self: BlockCosseratRodProtocol,
+        self: SymplecticSystemProtocol,
         time: np.floating,
         prefac: np.floating,
     ) -> NDArray[np.floating]:

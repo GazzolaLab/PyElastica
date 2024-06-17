@@ -162,10 +162,10 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         current_energy = energy(self._state)
         return current_energy, anal_energy
 
-    def update_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
-    def reset_external_forces_and_torques(self, time):
+    def zeroed_out_external_forces_and_torques(self, time):
         pass
 
 

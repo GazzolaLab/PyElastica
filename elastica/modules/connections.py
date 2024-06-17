@@ -65,10 +65,9 @@ class Connections:
         -------
 
         """
+        # For each system identified, get max dofs
         sys_idx_first = self._get_sys_idx_if_valid(first_rod)
         sys_idx_second = self._get_sys_idx_if_valid(second_rod)
-
-        # For each system identified, get max dofs
         sys_dofs_first = self._systems[sys_idx_first].n_elems
         sys_dofs_second = self._systems[sys_idx_second].n_elems
 

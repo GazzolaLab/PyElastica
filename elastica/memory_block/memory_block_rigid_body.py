@@ -12,8 +12,8 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         self, systems: list[RigidBodyType], system_idx_list: list[SystemIdxType]
     ) -> None:
 
-        self.n_bodies = len(systems)
-        self.n_elems = self.n_bodies
+        self.n_systems = len(systems)
+        self.n_elems = self.n_systems
         self.n_nodes = self.n_elems
         self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
 

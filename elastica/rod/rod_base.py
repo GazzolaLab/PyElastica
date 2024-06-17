@@ -32,3 +32,7 @@ class RodBase:
 
         self.ghost_voronoi_idx: NDArray[np.integer]
         self.ghost_elems_idx: NDArray[np.integer]
+
+        self.periodic_boundary_nodes_idx: NDArray[np.integer]
+        self.periodic_boundary_elems_idx: NDArray[np.integer]
+        self.periodic_boundary_voronoi_idx: NDArray[np.integer]

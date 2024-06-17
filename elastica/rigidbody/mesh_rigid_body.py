@@ -44,7 +44,7 @@ class MeshRigidBody(RigidBodyBase):
 
         self.density = density
         self.volume = volume
-        self.mass = np.array([self.volume * self.density])
+        self.mass = np.float64(self.volume * self.density)
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia.reshape(
             MaxDimension.value(), MaxDimension.value(), 1
         )

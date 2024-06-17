@@ -6,7 +6,7 @@ import numpy.typing as npt
 def make_block_memory_metadata(
     n_elems_in_rods: npt.NDArray[np.integer],
 ) -> tuple[
-    npt.NDArray[np.integer],
+    int,
     npt.NDArray[np.integer],
     npt.NDArray[np.integer],
     npt.NDArray[np.integer],
@@ -74,7 +74,7 @@ def make_block_memory_periodic_boundary_metadata(
     Parameters
     ----------
     n_elems_in_rods : npt.NDArray
-        1D (n_ring_rods,) array containing data with 'float' type. Elements of this array contains total number of
+        1D (n_ring_rods,) array containing data with 'int' type. Elements of this array contains total number of
          elements of one rod, including periodic boundary elements.
 
     Returns
@@ -82,15 +82,15 @@ def make_block_memory_periodic_boundary_metadata(
     n_elems
 
     periodic_boundary_node : npt.NDArray
-        2D (2, n_periodic_boundary_nodes) array containing data with 'float' type. Vector containing periodic boundary
+        2D (2, n_periodic_boundary_nodes) array containing data with 'int' type. Vector containing periodic boundary
         elements index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
     periodic_boundary_elems_idx : npt.NDArray
-        2D (2, n_periodic_boundary_elems) array containing data with 'float' type. Vector containing periodic boundary
+        2D (2, n_periodic_boundary_elems) array containing data with 'int' type. Vector containing periodic boundary
         nodes index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
     periodic_boundary_voronoi_idx : npt.NDArray
-        2D (2, n_periodic_boundary_voronoi) array containing data with 'float' type. Vector containing periodic boundary
+        2D (2, n_periodic_boundary_voronoi) array containing data with 'int' type. Vector containing periodic boundary
         voronoi index. First dimension is the periodic boundary index, second dimension is the referenced cell index.
 
     """

@@ -11,7 +11,7 @@ import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
 
-from elastica.typing import SystemType, SystemIdxType, ConstrainingIndex
+from elastica.typing import SystemIdxType, ConstrainingIndex, RigidBodyType, RodType
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
@@ -34,7 +34,9 @@ class Constraints:
         self._feature_group_constrain_rates.append(self._constrain_rates)
         self._feature_group_finalize.append(self._finalize_constraints)
 
-    def constrain(self: SystemCollectionProtocol, system: SystemType) -> ModuleProtocol:
+    def constrain(
+        self: SystemCollectionProtocol, system: "RodType | RigidBodyType"
+    ) -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -178,7 +180,7 @@ class _Constraint:
     def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self, system: SystemType) -> ConstraintBase:
+    def instantiate(self, system: "RodType | RigidBodyType") -> ConstraintBase:
         """Constructs a constraint after checks"""
         if not hasattr(self, "_bc_cls"):
             raise RuntimeError(

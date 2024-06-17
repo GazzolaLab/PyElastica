@@ -3,13 +3,13 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-from elastica.systems.protocol import SystemProtocol
+from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtocol
 
 
-class RigidBodyProtocol(SystemProtocol, Protocol):
+class RigidBodyProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
 
-    mass: NDArray[np.floating]
-    volume: NDArray[np.floating]
+    mass: np.floating
+    volume: np.floating
     length: np.floating
     tangents: NDArray[np.floating]
     radius: np.floating

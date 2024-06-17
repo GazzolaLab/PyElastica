@@ -21,34 +21,12 @@ class _SystemWithCenterOfMass(Protocol):
     def compute_position_center_of_mass(self) -> NDArray[np.float64]: ...
 
 
-class SystemProtocol(_SystemWithEnergy, _SystemWithCenterOfMass, Protocol):
+class SystemProtocol(Protocol):
     """
     Protocol for all elastica system
     """
 
     REQUISITE_MODULES: list[Type]
-
-    @property
-    def n_nodes(self) -> int: ...
-
-    @property
-    def n_elems(self) -> int: ...
-
-    position_collection: NDArray[np.floating]
-
-    velocity_collection: NDArray[np.floating]
-
-    acceleration_collection: NDArray[np.floating]
-    director_collection: NDArray[np.floating]
-
-    omega_collection: NDArray[np.floating]
-    alpha_collection: NDArray[np.floating]
-
-    internal_forces: NDArray[np.floating]
-    internal_torques: NDArray[np.floating]
-
-    external_forces: NDArray[np.floating]
-    external_torques: NDArray[np.floating]
 
     def compute_internal_forces_and_torques(self, time: np.floating) -> None: ...
 
@@ -57,7 +35,29 @@ class SystemProtocol(_SystemWithEnergy, _SystemWithCenterOfMass, Protocol):
     def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None: ...
 
 
-class SymplecticSystemProtocol(SystemProtocol, Protocol):
+class SlenderBodyGeometryProtocol(Protocol):
+    @property
+    def n_nodes(self) -> int: ...
+
+    @property
+    def n_elems(self) -> int: ...
+
+    position_collection: NDArray[np.floating]
+    velocity_collection: NDArray[np.floating]
+    acceleration_collection: NDArray[np.floating]
+
+    omega_collection: NDArray[np.floating]
+    alpha_collection: NDArray[np.floating]
+    director_collection: NDArray[np.floating]
+
+    external_forces: NDArray[np.floating]
+    external_torques: NDArray[np.floating]
+
+    internal_forces: NDArray[np.floating]
+    internal_torques: NDArray[np.floating]
+
+
+class SymplecticSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
     """
     Protocol for system with symplectic state variables
     """
@@ -80,7 +80,7 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     ) -> NDArray[np.floating]: ...
 
 
-class ExplicitSystemProtocol(SystemProtocol, Protocol):
+class ExplicitSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
     # TODO: Temporarily made to handle explicit stepper.
     # Need to be refactored as the explicit stepper is further developed.
     def __call__(self, time: np.floating, dt: np.floating) -> np.floating: ...

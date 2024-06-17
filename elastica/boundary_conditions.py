@@ -12,7 +12,7 @@ from numba import njit
 
 from elastica._linalg import _batch_matvec, _batch_matrix_transpose
 from elastica._rotations import _get_rotation_matrix
-from elastica.typing import SystemType, RodType
+from elastica.typing import SystemType, RodType, RigidBodyType
 
 
 S = TypeVar("S")
@@ -110,11 +110,15 @@ class FreeBC(ConstraintBase):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def constrain_values(self, system: SystemType, time: np.floating) -> None:
+    def constrain_values(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
-    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
+    def constrain_rates(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         """In FreeBC, this routine simply passes."""
         pass
 
@@ -168,7 +172,9 @@ class OneEndFixedBC(ConstraintBase):
         self.fixed_position_collection = np.array(fixed_position)
         self.fixed_directors_collection = np.array(fixed_directors)
 
-    def constrain_values(self, system: SystemType, time: np.floating) -> None:
+    def constrain_values(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         # system.position_collection[..., 0] = self.fixed_position
         # system.director_collection[..., 0] = self.fixed_directors
         self.compute_constrain_values(
@@ -178,7 +184,9 @@ class OneEndFixedBC(ConstraintBase):
             self.fixed_directors_collection,
         )
 
-    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
+    def constrain_rates(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         # system.velocity_collection[..., 0] = 0.0
         # system.omega_collection[..., 0] = 0.0
         self.compute_constrain_rates(
@@ -343,7 +351,9 @@ class GeneralConstraint(ConstraintBase):
         )
         self.rotational_constraint_selector = rotational_constraint_selector.astype(int)
 
-    def constrain_values(self, system: SystemType, time: np.floating) -> None:
+    def constrain_values(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 system.position_collection,
@@ -352,7 +362,9 @@ class GeneralConstraint(ConstraintBase):
                 self.translational_constraint_selector,
             )
 
-    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
+    def constrain_rates(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 system.velocity_collection,
@@ -528,7 +540,9 @@ class FixedConstraint(GeneralConstraint):
             **kwargs,
         )
 
-    def constrain_values(self, system: SystemType, time: np.floating) -> None:
+    def constrain_values(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_values(
                 system.position_collection,
@@ -542,7 +556,9 @@ class FixedConstraint(GeneralConstraint):
                 self.constrained_director_idx,
             )
 
-    def constrain_rates(self, system: SystemType, time: np.floating) -> None:
+    def constrain_rates(
+        self, system: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if self.constrained_position_idx.size:
             self.nb_constrain_translational_rates(
                 system.velocity_collection,
@@ -746,7 +762,9 @@ class HelicalBucklingBC(ConstraintBase):
             @ director_end
         )  # rotation_matrix wants vectors 3,1
 
-    def constrain_values(self, rod: SystemType, time: np.floating) -> None:
+    def constrain_values(
+        self, rod: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if time > self.twisting_time:
             rod.position_collection[..., 0] = self.final_start_position
             rod.position_collection[..., -1] = self.final_end_position
@@ -754,7 +772,9 @@ class HelicalBucklingBC(ConstraintBase):
             rod.director_collection[..., 0] = self.final_start_directors
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod: SystemType, time: np.floating) -> None:
+    def constrain_rates(
+        self, rod: "RodType | RigidBodyType", time: np.floating
+    ) -> None:
         if time > self.twisting_time:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0

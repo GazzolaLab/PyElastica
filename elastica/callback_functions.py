@@ -11,7 +11,7 @@ import logging
 
 from collections import defaultdict
 
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType, RigidBodyType, SystemType
 
 
 T = TypeVar("T")
@@ -83,7 +83,7 @@ class MyCallBack(CallBackBaseClass):
         self.callback_params = callback_params
 
     def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
+        self, system: "RodType | RigidBodyType", time: np.floating, current_step: int
     ) -> None:
 
         if current_step % self.sample_every == 0:
@@ -203,7 +203,7 @@ class ExportCallBack(CallBackBaseClass):
             self._ext = "pkl"
 
     def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
+        self, system: "RodType | RigidBodyType", time: np.floating, current_step: int
     ) -> None:
         """
 

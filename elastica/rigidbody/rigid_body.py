@@ -34,7 +34,14 @@ class RigidBodyBase(ABC):
         self.external_forces: f_arr_t
         self.external_torques: f_arr_t
 
-        self.mass: f_arr_t
+        self.internal_forces: f_arr_t
+        self.internal_torques: f_arr_t
+
+        self.mass: np.floating
+        self.volume: np.floating
+        self.length: np.floating
+        self.tangents: f_arr_t
+        self.radius: np.floating
 
         self.mass_second_moment_of_inertia: f_arr_t
         self.inv_mass_second_moment_of_inertia: f_arr_t
@@ -65,6 +72,12 @@ class RigidBodyBase(ABC):
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
+
+    def compute_internal_forces_and_torques(self, time: np.floating) -> None:
+        """
+        For rigid body, there is no internal forces and torques
+        """
+        pass
 
     def compute_position_center_of_mass(self) -> f_arr_t:
         """
