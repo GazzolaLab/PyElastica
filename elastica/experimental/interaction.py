@@ -8,6 +8,8 @@ from elastica._contact_functions import _calculate_contact_forces_cylinder_plane
 from elastica.interaction import (
     InteractionPlaneRigidBody,
 )
+from elastica.contact_functions import _calculate_contact_forces_cylinder_plane
+from elastica.interaction import InteractionPlaneRigidBody
 
 from numba import njit
 from elastica._linalg import (
