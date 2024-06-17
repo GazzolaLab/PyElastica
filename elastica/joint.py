@@ -1,11 +1,12 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
+__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_systems"]
 
 from typing import Optional
 
 from elastica._rotations import _inv_rotate
-from elastica.typing import SystemType, RodType, ConnectionIndex
+from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
+
 import numpy as np
-import logging
 from numpy.typing import NDArray
 
 
@@ -47,9 +48,9 @@ class FreeJoint:
 
     def apply_forces(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         """
@@ -57,11 +58,11 @@ class FreeJoint:
 
         Parameters
         ----------
-        system_one : SystemType
+        system_one : RodType | RigidBodyType
             Rod or rigid-body object
         index_one : ConnectionIndex
             Index of first rod for joint.
-        system_two : SystemType
+        system_two : RodType | RigidBodyType
             Rod or rigid-body object
         index_two : ConnectionIndex
             Index of second rod for joint.
@@ -90,9 +91,9 @@ class FreeJoint:
 
     def apply_torques(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         """
@@ -102,11 +103,11 @@ class FreeJoint:
 
         Parameters
         ----------
-        system_one : SystemType
+        system_one : RodType | RigidBodyType
             Rod or rigid-body object
         index_one : ConnectionIndex
             Index of first rod for joint.
-        system_two : SystemType
+        system_two : RodType | RigidBodyType
             Rod or rigid-body object
         index_two : ConnectionIndex
             Index of second rod for joint.
@@ -171,18 +172,18 @@ class HingeJoint(FreeJoint):
     # Apply force is same as free joint
     def apply_forces(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         # current tangent direction of the `index_two` element of system two
@@ -238,7 +239,7 @@ class FixedJoint(FreeJoint):
         k: np.floating,
         nu: np.floating,
         kt: np.floating,
-        nut: np.floating = 0.0,
+        nut: np.floating = np.float64(0.0),
         rest_rotation_matrix: Optional[NDArray[np.floating]] = None,
     ) -> None:
         """
@@ -278,18 +279,18 @@ class FixedJoint(FreeJoint):
     # Apply force is same as free joint
     def apply_forces(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
     def apply_torques(
         self,
-        system_one: SystemType,
+        system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
-        system_two: SystemType,
+        system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
     ) -> None:
         # collect directors of systems one and two
@@ -335,10 +336,10 @@ class FixedJoint(FreeJoint):
 
 
 def get_relative_rotation_two_systems(
-    system_one: SystemType,
-    index_one: int,
-    system_two: SystemType,
-    index_two: int,
+    system_one: "RodType | RigidBodyType",
+    index_one: ConnectionIndex,
+    system_two: "RodType | RigidBodyType",
+    index_two: ConnectionIndex,
 ) -> NDArray[np.floating]:
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
@@ -366,13 +367,13 @@ def get_relative_rotation_two_systems(
 
     Parameters
     ----------
-    system_one : SystemType
+    system_one : RodType | RigidBodyType
         Rod or rigid-body object
-    index_one : int
+    index_one : ConnectionIndex
         Index of first rod for joint.
-    system_two : SystemType
+    system_two : RodType | RigidBodyType
         Rod or rigid-body object
-    index_two : int
+    index_two : ConnectionIndex
         Index of second rod for joint.
 
     Returns
@@ -384,230 +385,3 @@ def get_relative_rotation_two_systems(
         system_one.director_collection[..., index_one]
         @ system_two.director_collection[..., index_two].T
     )
-
-
-class ExternalContact(FreeJoint):
-    """
-    This class is for applying contact forces between rod-cylinder and rod-rod.
-    If you are want to apply contact forces between rod and cylinder, first system is always rod and second system
-    is always cylinder.
-    In addition to the contact forces, user can define apply friction forces between rod and cylinder that
-    are in contact. For details on friction model refer to this [1]_.
-    TODO: Currently friction force is between rod-cylinder, in future implement friction forces between rod-rod.
-
-    Notes
-    -----
-    The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
-    (static friction), while friction_coefficient corresponds to the Coulombic friction coefficient.
-
-    Examples
-    --------
-    How to define contact between rod and cylinder.
-
-    >>> simulator.connect(rod, cylinder).using(
-    ...    ExternalContact,
-    ...    k=1e4,
-    ...    nu=10,
-    ...    velocity_damping_coefficient=10,
-    ...    kinetic_friction_coefficient=10,
-    ... )
-
-    How to define contact between rod and rod.
-
-    >>> simulator.connect(rod, rod).using(
-    ...    ExternalContact,
-    ...    k=1e4,
-    ...    nu=10,
-    ... )
-
-    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
-    """
-
-    # Dev note:
-    # Most of the cylinder-cylinder contact SHOULD be implemented
-    # as given in this `paper <http://larochelle.sdsmt.edu/publications/2005-2009/Collision%20Detection%20of%20Cylindrical%20Rigid%20Bodies%20Using%20Line%20Geometry.pdf>`,
-    # but the elastica-cpp kernels are implemented.
-    # This is maybe to speed-up the kernel, but it's
-    # potentially dangerous as it does not deal with "end" conditions
-    # correctly.
-
-    def __init__(
-        self,
-        k: np.floating,
-        nu: np.floating,
-        velocity_damping_coefficient: np.floating = 0,
-        friction_coefficient: np.floating = 0,
-    ) -> None:
-        """
-
-        Parameters
-        ----------
-        k : float
-            Contact spring constant.
-        nu : float
-            Contact damping constant.
-        velocity_damping_coefficient : float
-            Velocity damping coefficient between rigid-body and rod contact is used to apply friction force in the
-            slip direction.
-        friction_coefficient : float
-            For Coulombic friction coefficient for rigid-body and rod contact.
-        """
-        super().__init__(k, nu)
-        self.velocity_damping_coefficient = velocity_damping_coefficient
-        self.friction_coefficient = friction_coefficient
-        log = logging.getLogger(self.__class__.__name__)
-        log.warning(
-            # Remove warning and add error if ExternalContact is used in v0.3.3
-            # Remove the option to use ExternalContact, beyond v0.3.3
-            "The option to use the ExternalContact joint for the rod-rod and rod-cylinder contact is now deprecated.\n"
-            "Instead, for rod-rod contact or rod-cylinder contact,use RodRodContact or RodCylinderContact from the add-on Contact mixin class.\n"
-            "For reference see the classes elastica.contact_forces.RodRodContact() and elastica.contact_forces.RodCylinderContact().\n"
-            "For usage check examples/RigidbodyCases/RodRigidBodyContact/rod_cylinder_contact.py and examples/RodContactCase/RodRodContact/rod_rod_contact_parallel_validation.py.\n"
-            " The option to use the ExternalContact joint for the rod-rod and rod-cylinder will be removed in the future (v0.3.3).\n"
-        )
-
-    def apply_forces(
-        self,
-        rod_one: SystemType,
-        index_one: ConnectionIndex,
-        rod_two: SystemType,
-        index_two: ConnectionIndex,
-    ) -> None:
-        # del index_one, index_two
-        from elastica.contact_utils import (
-            _prune_using_aabbs_rod_cylinder,
-            _prune_using_aabbs_rod_rod,
-        )
-        from elastica._contact_functions import (
-            _calculate_contact_forces_rod_cylinder,
-            _calculate_contact_forces_rod_rod,
-        )
-
-        # TODO: raise error during the initialization if rod one is rigid body.
-
-        # If rod two has one element, then it is rigid body.
-        if rod_two.n_elems == 1:
-            cylinder_two = rod_two
-            # First, check for a global AABB bounding box, and see whether that
-            # intersects
-            if _prune_using_aabbs_rod_cylinder(
-                rod_one.position_collection,
-                rod_one.radius,
-                rod_one.lengths,
-                cylinder_two.position_collection,
-                cylinder_two.director_collection,
-                cylinder_two.radius[0],
-                cylinder_two.length[0],
-            ):
-                return
-
-            x_cyl = (
-                cylinder_two.position_collection[..., 0]
-                - 0.5 * cylinder_two.length * cylinder_two.director_collection[2, :, 0]
-            )
-
-            rod_element_position = 0.5 * (
-                rod_one.position_collection[..., 1:]
-                + rod_one.position_collection[..., :-1]
-            )
-            _calculate_contact_forces_rod_cylinder(
-                rod_element_position,
-                rod_one.lengths * rod_one.tangents,
-                cylinder_two.position_collection[..., 0],
-                x_cyl,
-                cylinder_two.length * cylinder_two.director_collection[2, :, 0],
-                rod_one.radius + cylinder_two.radius,
-                rod_one.lengths + cylinder_two.length,
-                rod_one.internal_forces,
-                rod_one.external_forces,
-                cylinder_two.external_forces,
-                cylinder_two.external_torques,
-                cylinder_two.director_collection[:, :, 0],
-                rod_one.velocity_collection,
-                cylinder_two.velocity_collection,
-                self.k,
-                self.nu,
-                self.velocity_damping_coefficient,
-                self.friction_coefficient,
-            )
-
-        else:
-            # First, check for a global AABB bounding box, and see whether that
-            # intersects
-
-            if _prune_using_aabbs_rod_rod(
-                rod_one.position_collection,
-                rod_one.radius,
-                rod_one.lengths,
-                rod_two.position_collection,
-                rod_two.radius,
-                rod_two.lengths,
-            ):
-                return
-
-            _calculate_contact_forces_rod_rod(
-                rod_one.position_collection[
-                    ..., :-1
-                ],  # Discount last node, we want element start position
-                rod_one.radius,
-                rod_one.lengths,
-                rod_one.tangents,
-                rod_one.velocity_collection,
-                rod_one.internal_forces,
-                rod_one.external_forces,
-                rod_two.position_collection[
-                    ..., :-1
-                ],  # Discount last node, we want element start position
-                rod_two.radius,
-                rod_two.lengths,
-                rod_two.tangents,
-                rod_two.velocity_collection,
-                rod_two.internal_forces,
-                rod_two.external_forces,
-                self.k,
-                self.nu,
-            )
-
-
-class SelfContact(FreeJoint):
-    """
-    This class is modeling self contact of rod.
-
-    """
-
-    def __init__(self, k: np.floating, nu: np.floating) -> None:
-        super().__init__(k, nu)
-        log = logging.getLogger(self.__class__.__name__)
-        log.warning(
-            # Remove warning and add error if SelfContact is used in v0.3.3
-            # Remove the option to use SelfContact, beyond v0.3.3
-            "The option to use the SelfContact joint for the rod self contact is now deprecated.\n"
-            "Instead, for rod self contact use RodSelfContact from the add-on Contact mixin class.\n"
-            "For reference see the class elastica.contact_forces.RodSelfContact(), and for usage check examples/RodContactCase/RodSelfContact/solenoids.py.\n"
-            "The option to use the SelfContact joint for the rod self contact will be removed in the future (v0.3.3).\n"
-        )
-
-    def apply_forces(
-        self,
-        rod_one: SystemType,
-        index_one: ConnectionIndex,
-        rod_two: SystemType,
-        index_two: ConnectionIndex,
-    ) -> None:
-        # del index_one, index_two
-        from elastica._contact_functions import (
-            _calculate_contact_forces_self_rod,
-        )
-
-        _calculate_contact_forces_self_rod(
-            rod_one.position_collection[
-                ..., :-1
-            ],  # Discount last node, we want element start position
-            rod_one.radius,
-            rod_one.lengths,
-            rod_one.tangents,
-            rod_one.velocity_collection,
-            rod_one.external_forces,
-            self.k,
-            self.nu,
-        )

@@ -3,9 +3,7 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-pass
-
-from elastica.systems.protocol import SystemProtocol
+from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtocol
 
 
 class _RodEnergy(Protocol):
@@ -14,7 +12,9 @@ class _RodEnergy(Protocol):
     def compute_shear_energy(self) -> NDArray[np.float64]: ...
 
 
-class CosseratRodProtocol(SystemProtocol, _RodEnergy, Protocol):
+class CosseratRodProtocol(
+    SystemProtocol, SlenderBodyGeometryProtocol, _RodEnergy, Protocol
+):
 
     mass: NDArray[np.floating]
     volume: NDArray[np.floating]
@@ -44,3 +44,6 @@ class CosseratRodProtocol(SystemProtocol, _RodEnergy, Protocol):
     ghost_elems_idx: NDArray[np.integer]
 
     ring_rod_flag: bool
+    periodic_boundary_nodes_idx: NDArray[np.integer]
+    periodic_boundary_elems_idx: NDArray[np.integer]
+    periodic_boundary_voronoi_idx: NDArray[np.integer]

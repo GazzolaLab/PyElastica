@@ -11,7 +11,7 @@ import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
 
-from elastica.typing import SystemType, SystemIdxType, ConstrainingIndex
+from elastica.typing import SystemIdxType, ConstrainingIndex, RigidBodyType, RodType
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
@@ -34,7 +34,9 @@ class Constraints:
         self._feature_group_constrain_rates.append(self._constrain_rates)
         self._feature_group_finalize.append(self._finalize_constraints)
 
-    def constrain(self: SystemCollectionProtocol, system: SystemType) -> ModuleProtocol:
+    def constrain(
+        self: SystemCollectionProtocol, system: "RodType | RigidBodyType"
+    ) -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -65,7 +67,7 @@ class Constraints:
         """
         from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
-        for block in self.blocks():
+        for block in self.systems():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
             if hasattr(block, "ring_rod_flag"):
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
@@ -178,7 +180,7 @@ class _Constraint:
     def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self, system: SystemType) -> ConstraintBase:
+    def instantiate(self, system: "RodType | RigidBodyType") -> ConstraintBase:
         """Constructs a constraint after checks"""
         if not hasattr(self, "_bc_cls"):
             raise RuntimeError(

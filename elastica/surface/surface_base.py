@@ -1,6 +1,9 @@
 __doc__ = """Base class for surfaces"""
 from typing import Type
 
+import numpy as np
+from numpy.typing import NDArray
+
 
 class SurfaceBase:
     """
@@ -18,4 +21,5 @@ class SurfaceBase:
         """
         SurfaceBase does not take any arguments.
         """
-        pass
+        self.normal: NDArray[np.floating]  # (3,)
+        self.origin: NDArray[np.floating]  # (3, 1)

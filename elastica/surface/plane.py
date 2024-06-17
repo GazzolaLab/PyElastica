@@ -23,7 +23,7 @@ class Plane(SurfaceBase):
         assert np.allclose(
             np.linalg.norm(plane_normal),
             1,
-            atol=Tolerance.atol(),
+            atol=float(Tolerance.atol()),
         ), "plane normal is not a unit vector"
         self.normal = np.asarray(plane_normal).reshape(3)
         self.origin = np.asarray(plane_origin).reshape(3, 1)

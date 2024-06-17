@@ -1,7 +1,6 @@
 __doc__ = """ Numba implementation module containing interactions between a rod and its environment."""
 
 
-from typing import Any, NoReturn
 import numpy as np
 from elastica.external_forces import NoForces
 from numba import njit
@@ -17,48 +16,12 @@ from elastica._contact_functions import (
 
 from numpy.typing import NDArray
 
-from elastica.typing import SystemType
-
-
-def find_slipping_elements(velocity_slip: Any, velocity_threshold: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._find_slipping_elements()\n"
-        "instead for finding slipping elements."
-    )
-
-
-def node_to_element_mass_or_force(input: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._node_to_element_mass_or_force()\n"
-        "instead for converting the mass/forces on rod nodes to elements."
-    )
-
-
-def nodes_to_elements(input: Any) -> NoReturn:
-    # Remove the function beyond v0.4.0
-    raise NotImplementedError(
-        "This function is removed in v0.3.1. Please use\n"
-        "elastica.interaction.node_to_element_mass_or_force()\n"
-        "instead for node-to-element interpolation of mass/forces."
-    )
-
-
-@njit(cache=True)  # type: ignore
-def elements_to_nodes_inplace(
-    vector_in_element_frame: Any, vector_in_node_frame: Any
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. Please use\n"
-        "elastica.contact_utils._elements_to_nodes_inplace()\n"
-        "instead for updating nodal forces using the forces computed on elements."
-    )
+from elastica.typing import SystemType, RodType, RigidBodyType
 
 
 # base class for interaction
 # only applies normal force no friction
-class InteractionPlane:
+class InteractionPlane(NoForces):
     """
     The interaction plane class computes the plane reaction
     force on a rod-like object.  For more details regarding the contact module refer to
@@ -109,9 +72,7 @@ class InteractionPlane:
         self.plane_normal = plane_normal.reshape(3)
         self.surface_tol = 1e-4
 
-    def apply_normal_force(
-        self, system: SystemType
-    ) -> tuple[NDArray[np.floating], NDArray[np.intp]]:
+    def apply_forces(self, system: RodType, time: float = 0.0) -> None:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 
@@ -144,33 +105,13 @@ class InteractionPlane:
         )
 
 
-def apply_normal_force_numba(
-    plane_origin: Any,
-    plane_normal: Any,
-    surface_tol: Any,
-    k: Any,
-    nu: Any,
-    radius: Any,
-    mass: Any,
-    position_collection: Any,
-    velocity_collection: Any,
-    internal_forces: Any,
-    external_forces: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For rod plane contact please use: \n"
-        "elastica._contact_functions._calculate_contact_forces_rod_plane() \n"
-        "For detail, refer to issue #113."
-    )
-
-
 # class for anisotropic frictional plane
 # NOTE: friction coefficients are passed as arrays in the order
 # mu_forward : mu_backward : mu_sideways
 # head is at x[0] and forward means head to tail
 # same convention for kinetic and static
 # mu named as to which direction it opposes
-class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
+class AnisotropicFrictionalPlane(InteractionPlane):
     """
     This anisotropic friction plane class is for computing
     anisotropic friction forces on rods.
@@ -247,12 +188,14 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
 
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
-    def apply_forces(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_forces(
+        self, system: "RodType | RigidBodyType", time: float = 0.0
+    ) -> None:
         """
         Call numba implementation to apply friction forces
         Parameters
         ----------
-        system
+        system : RodType | RigidBodyType
         time
 
         """
@@ -281,38 +224,6 @@ class AnisotropicFrictionalPlane(NoForces, InteractionPlane):
             system.internal_torques,
             system.external_torques,
         )
-
-
-def anisotropic_friction(
-    plane_origin: Any,
-    plane_normal: Any,
-    surface_tol: Any,
-    slip_velocity_tol: Any,
-    k: Any,
-    nu: Any,
-    kinetic_mu_forward: Any,
-    kinetic_mu_backward: Any,
-    kinetic_mu_sideways: Any,
-    static_mu_forward: Any,
-    static_mu_backward: Any,
-    static_mu_sideways: Any,
-    radius: Any,
-    mass: Any,
-    tangents: Any,
-    position_collection: Any,
-    director_collection: Any,
-    velocity_collection: Any,
-    omega_collection: Any,
-    internal_forces: Any,
-    external_forces: Any,
-    internal_torques: Any,
-    external_torques: Any,
-) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For anisotropic_friction please use: \n"
-        "elastica._contact_functions._calculate_contact_forces_rod_plane_with_anisotropic_friction() \n"
-        "For detail, refer to issue #113."
-    )
 
 
 # Slender body module
@@ -349,37 +260,11 @@ def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
     This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
     """
 
-    output: np.floating = 0.0
+    output: np.floating = np.float64(0.0)
     for i in range(input.shape[0]):
         output += input[i]
 
     return output
-
-
-def node_to_element_position(node_position_collection: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For node-to-element_position() interpolation please use: \n"
-        "elastica.contact_utils._node_to_element_position() for rod position \n"
-        "For detail, refer to issue #113."
-    )
-
-
-def node_to_element_velocity(mass: Any, node_velocity_collection: Any) -> NoReturn:
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For node-to-element_velocity() interpolation please use: \n"
-        "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
-        "For detail, refer to issue #113."
-    )
-
-
-def node_to_element_pos_or_vel(vector_in_node_frame: Any) -> NoReturn:
-    # Remove the function beyond v0.4.0
-    raise NotImplementedError(
-        "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
-        "elastica.contact_utils._node_to_element_position() for rod position \n"
-        "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
-        "For detail, refer to issue #80."
-    )
 
 
 @njit(cache=True)  # type: ignore
@@ -512,7 +397,7 @@ class SlenderBodyTheory(NoForces):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = dynamic_viscosity
 
-    def apply_forces(self, system: SystemType, time: np.floating = 0.0) -> None:
+    def apply_forces(self, system: RodType, time: float = 0.0) -> None:
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in
@@ -537,7 +422,7 @@ class SlenderBodyTheory(NoForces):
 
 # base class for interaction
 # only applies normal force no friction
-class InteractionPlaneRigidBody:
+class InteractionPlaneRigidBody(NoForces):
     def __init__(
         self,
         k: np.floating,
@@ -551,9 +436,7 @@ class InteractionPlaneRigidBody:
         self.plane_normal = plane_normal.reshape(3)
         self.surface_tol = 1e-4
 
-    def apply_normal_force(
-        self, system: SystemType
-    ) -> tuple[NDArray[np.floating], NDArray[np.intp]]:
+    def apply_forces(self, system: RigidBodyType, time: float = 0.0) -> None:
         """
         This function computes the plane force response on the rigid body, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
@@ -566,7 +449,7 @@ class InteractionPlaneRigidBody:
         -------
         magnitude of the plane response
         """
-        return _calculate_contact_forces_cylinder_plane(
+        _calculate_contact_forces_cylinder_plane(
             self.plane_origin,
             self.plane_normal,
             self.surface_tol,
@@ -577,23 +460,3 @@ class InteractionPlaneRigidBody:
             system.velocity_collection,
             system.external_forces,
         )
-
-
-@njit(cache=True)  # type: ignore
-def apply_normal_force_numba_rigid_body(
-    plane_origin: Any,
-    plane_normal: Any,
-    surface_tol: Any,
-    k: Any,
-    nu: Any,
-    length: Any,
-    position_collection: Any,
-    velocity_collection: Any,
-    external_forces: Any,
-) -> NoReturn:
-
-    raise NotImplementedError(
-        "This function is removed in v0.3.2. For cylinder plane contact please use: \n"
-        "elastica._contact_functions._calculate_contact_forces_cylinder_plane() \n"
-        "For detail, refer to issue #113."
-    )

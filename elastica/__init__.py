@@ -36,10 +36,8 @@ from elastica.interaction import (
 )
 from elastica.joint import (
     FreeJoint,
-    ExternalContact,
     FixedJoint,
     HingeJoint,
-    SelfContact,
 )
 from elastica.contact_forces import (
     NoContact,

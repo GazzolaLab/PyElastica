@@ -7,37 +7,34 @@ from numpy.typing import NDArray
 from elastica._linalg import (
     _batch_norm,
 )
-from typing import Literal, Sequence, TypeVar
+from typing import Literal, Sequence
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _dot_product(a: Sequence[np.floating], b: Sequence[np.floating]) -> np.floating:
-    sum: np.floating = 0.0
+    total: np.float64 = np.float64(0.0)
     for i in range(3):
-        sum += a[i] * b[i]
-    return sum
+        total += a[i] * b[i]
+    return total
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _norm(a: Sequence[np.floating]) -> float:
     return sqrt(_dot_product(a, a))
 
 
-_SupportsCompareT = TypeVar("_SupportsCompareT")
-
-
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _clip(x: np.floating, low: np.floating, high: np.floating) -> np.floating:
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _out_of_bounds(x: np.floating, low: np.floating, high: np.floating) -> bool:
     return (x < low) or (x > high)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _find_min_dist(
     x1: NDArray[np.floating],
     e1: NDArray[np.floating],
@@ -108,7 +105,7 @@ def _find_min_dist(
     return x2 + s * e2 - x1 - t * e1, x2 + s * e2, x1 - t * e1
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _aabbs_not_intersecting(
     aabb_one: NDArray[np.floating], aabb_two: NDArray[np.floating]
 ) -> Literal[1, 0]:
@@ -123,7 +120,7 @@ def _aabbs_not_intersecting(
     return 0
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_cylinder(
     rod_one_position_collection: NDArray[np.floating],
     rod_one_radius_collection: NDArray[np.floating],
@@ -165,7 +162,7 @@ def _prune_using_aabbs_rod_cylinder(
     return _aabbs_not_intersecting(aabb_cylinder, aabb_rod)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_rod(
     rod_one_position_collection: NDArray[np.floating],
     rod_one_radius_collection: NDArray[np.floating],
@@ -203,7 +200,7 @@ def _prune_using_aabbs_rod_rod(
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_sphere(
     rod_one_position_collection: NDArray[np.floating],
     rod_one_radius_collection: NDArray[np.floating],
@@ -242,7 +239,7 @@ def _prune_using_aabbs_rod_sphere(
     return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _find_slipping_elements(
     velocity_slip: NDArray[np.floating], velocity_threshold: np.floating
 ) -> NDArray[np.floating]:
@@ -285,7 +282,7 @@ def _find_slipping_elements(
     return slip_function
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _node_to_element_mass_or_force(input: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function converts the mass/forces on rod nodes to
@@ -323,7 +320,7 @@ def _node_to_element_mass_or_force(input: NDArray[np.floating]) -> NDArray[np.fl
     return output
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _elements_to_nodes_inplace(
     vector_in_element_frame: NDArray[np.floating],
     vector_in_node_frame: NDArray[np.floating],
@@ -349,7 +346,7 @@ def _elements_to_nodes_inplace(
             vector_in_node_frame[i, k + 1] += 0.5 * vector_in_element_frame[i, k]
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _node_to_element_position(
     node_position_collection: NDArray[np.floating],
 ) -> NDArray[np.floating]:
@@ -397,7 +394,7 @@ def _node_to_element_position(
     return element_position_collection
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _node_to_element_velocity(
     mass: NDArray[np.floating], node_velocity_collection: NDArray[np.floating]
 ) -> NDArray[np.floating]:

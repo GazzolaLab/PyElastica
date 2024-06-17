@@ -22,10 +22,11 @@ from elastica.contact_utils import (
     _node_to_element_mass_or_force,
 )
 from numba import njit
-from elastica.rod import RodBase
+from elastica.rod.rod_base import RodBase
 from elastica.surface import Plane
+from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_forces import NoContact
-from elastica.typing import RodType, SystemType, AllowedContactType
+from elastica.typing import RodType, SystemType
 
 
 @njit(cache=True)
@@ -286,31 +287,10 @@ class SnakeRodPlaneContact(NoContact):
             self.kinetic_mu_sideways,
         ) = kinetic_mu_array
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodSphereContact class first_system should be a rod and second_system should be a plane.
-        Parameters
-        ----------
-        system_one
-                SystemType
-        system_two
-                AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, Plane
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a rod, second should be a plane".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        # Modify this list to include the allowed system types for contact
+        return [SurfaceBase]
 
     def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
         """

@@ -162,10 +162,10 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         current_energy = energy(self._state)
         return current_energy, anal_energy
 
-    def update_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
-    def reset_external_forces_and_torques(self, time):
+    def zeroed_out_external_forces_and_torques(self, time):
         pass
 
 
@@ -300,7 +300,9 @@ class CollectiveSystem:
 
     def __init__(self):
         self._memory_blocks = []
-        self.systems = self._memory_blocks
+
+    def systems(self):
+        return self._memory_blocks
 
     def __getitem__(self, idx):
         return self._memory_blocks[idx]
@@ -344,8 +346,8 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         super(
             ScalarExponentialDampedHarmonicOscillatorCollectiveSystem, self
         ).__init__()
-        self.systems.append(ScalarExponentialDecaySystem())
-        self.systems.append(DampedSimpleHarmonicOscillatorSystem())
+        self._memory_blocks.append(ScalarExponentialDecaySystem())
+        self._memory_blocks.append(DampedSimpleHarmonicOscillatorSystem())
 
 
 def make_simple_system_with_positions_directors(

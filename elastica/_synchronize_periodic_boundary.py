@@ -7,7 +7,7 @@ from numba import njit
 import numpy as np
 from numpy.typing import NDArray
 from elastica.boundary_conditions import ConstraintBase
-from elastica.typing import SystemType
+from elastica.typing import RodType
 
 
 @njit(cache=True)  # type: ignore
@@ -92,7 +92,7 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def constrain_values(self, rod: SystemType, time: np.floating) -> None:
+    def constrain_values(self, rod: RodType, time: np.floating) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.position_collection, rod.periodic_boundary_nodes_idx
         )
@@ -100,7 +100,7 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
             rod.director_collection, rod.periodic_boundary_elems_idx
         )
 
-    def constrain_rates(self, rod: SystemType, time: np.floating) -> None:
+    def constrain_rates(self, rod: RodType, time: np.floating) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.velocity_collection, rod.periodic_boundary_nodes_idx
         )

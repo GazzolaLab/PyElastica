@@ -1,14 +1,16 @@
-from typing import Protocol, Generator, TypeVar, Any, Type
+from typing import Protocol, Generator, TypeVar, Any, Type, overload
 from typing_extensions import Self  # 3.11: from typing import Self
+
 from abc import abstractmethod
+
 from elastica.typing import (
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
     SystemType,
-    AllowedContactType,
     ConnectionIndex,
+    BlockType,
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
@@ -34,6 +36,14 @@ class ModuleProtocol(Protocol[M]):
 class SystemCollectionProtocol(Protocol):
     _systems: list[SystemType]
 
+    def __len__(self) -> int: ...
+
+    @overload
+    def __getitem__(self, i: slice) -> list[SystemType]: ...
+    @overload
+    def __getitem__(self, i: int) -> SystemType: ...
+    def __getitem__(self, i: slice | int) -> "list[SystemType] | SystemType": ...
+
     @property
     def _feature_group_synchronize(self) -> OperatorGroupFIFO: ...
 
@@ -57,11 +67,9 @@ class SystemCollectionProtocol(Protocol):
     @property
     def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
 
-    def blocks(self) -> Generator[SystemType, None, None]: ...
+    def systems(self) -> Generator[SystemType, None, None]: ...
 
-    def _get_sys_idx_if_valid(
-        self, sys_to_be_added: SystemType | AllowedContactType
-    ) -> SystemIdxType: ...
+    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
 
     # Connection API
     _finalize_connections: OperatorFinalizeType
@@ -123,7 +131,7 @@ class SystemCollectionProtocol(Protocol):
 
     @abstractmethod
     def detect_contact_between(
-        self, first_system: SystemType, second_system: AllowedContactType
+        self, first_system: SystemType, second_system: SystemType
     ) -> ModuleProtocol:
         raise NotImplementedError
 

@@ -1,19 +1,21 @@
 __doc__ = """ Module contains callback classes to save simulation data for rod-like objects """
-from elastica.typing import SystemType
+from typing import Any, Optional, TypeVar, Generic
+from elastica.typing import RodType, RigidBodyType, SystemType
 
 import os
 import sys
 import numpy as np
+from numpy.typing import NDArray
 import logging
-from typing import Any, Optional
 
 
 from collections import defaultdict
 
-from elastica.typing import RodType, SystemType
+
+T = TypeVar("T")
 
 
-class CallBackBaseClass:
+class CallBackBaseClass(Generic[T]):
     """
     This is the base class for callbacks for rod-like objects.
 
@@ -30,9 +32,7 @@ class CallBackBaseClass:
         """
         pass
 
-    def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
-    ) -> None:
+    def make_callback(self, system: T, time: np.floating, current_step: int) -> None:
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users
@@ -81,7 +81,7 @@ class MyCallBack(CallBackBaseClass):
         self.callback_params = callback_params
 
     def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
+        self, system: "RodType | RigidBodyType", time: np.floating, current_step: int
     ) -> None:
 
         if current_step % self.sample_every == 0:
@@ -176,7 +176,9 @@ class ExportCallBack(CallBackBaseClass):
         self.file_save_interval = file_save_interval
 
         # Data collector
-        self.buffer = defaultdict(list)
+        self.buffer: dict[str, list[NDArray[np.floating] | np.floating | int]] = (
+            defaultdict(list)
+        )
         self.buffer_size = 0
 
         # Module
@@ -199,7 +201,7 @@ class ExportCallBack(CallBackBaseClass):
             self._ext = "pkl"
 
     def make_callback(
-        self, system: SystemType, time: np.floating, current_step: int
+        self, system: "RodType | RigidBodyType", time: np.floating, current_step: int
     ) -> None:
         """
 

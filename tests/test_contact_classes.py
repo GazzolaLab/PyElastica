@@ -52,8 +52,8 @@ def mock_cylinder_init(self):
     self.director_collection = np.array(
         [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
     )
-    self.radius = np.array([1.0])
-    self.length = np.array([2.0])
+    self.radius = 1.0
+    self.length = 2.0
     self.external_forces = np.array([[0.0], [0.0], [0.0]])
     self.external_torques = np.array([[0.0], [0.0], [0.0]])
     self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
@@ -69,7 +69,7 @@ def mock_sphere_init(self):
     self.director_collection = np.array(
         [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
     )
-    self.radius = np.array([1.0])
+    self.radius = 1.0
     self.velocity_collection = np.array([[0.0], [0.0], [0.0]])
     self.external_forces = np.array([[0.0], [0.0], [0.0]])
     self.external_torques = np.array([[0.0], [0.0], [0.0]])
@@ -104,43 +104,41 @@ class TestRodCylinderContact:
         "Testing Rod Cylinder Contact wrapper with incorrect type for second argument"
         with pytest.raises(TypeError) as excinfo:
             rod_cylinder_contact._check_systems_validity(mock_rod, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a cylinder"
-        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['Cylinder']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Cylinder Contact wrapper with incorrect type for first argument"
         with pytest.raises(TypeError) as excinfo:
             rod_cylinder_contact._check_systems_validity(mock_list, mock_rod)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a cylinder"
-        ).format(mock_list.__class__, mock_rod.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Cylinder Contact wrapper with incorrect order"
         with pytest.raises(TypeError) as excinfo:
             rod_cylinder_contact._check_systems_validity(mock_cylinder, mock_rod)
-            print(excinfo.value)
         assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a cylinder"
-        ).format(mock_cylinder.__class__, mock_rod.__class__) == str(excinfo.value)
+            "System provided (MockCylinder) must be derived from ['RodBase']."
+            == str(excinfo.value)
+        )
+
+        with pytest.raises(TypeError) as excinfo:
+            rod_cylinder_contact._check_systems_validity(mock_list, mock_cylinder)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
     def test_contact_rod_cylinder_with_collision_with_k_without_nu_and_friction(
         self,
     ):
 
-        "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
+        # Testing Rod Cylinder Contact wrapper with Collision with analytical verified values
 
         mock_rod = MockRod()
         mock_cylinder = MockCylinder()
         rod_cylinder_contact = RodCylinderContact(k=1.0, nu=0.0)
         rod_cylinder_contact.apply_contact(mock_rod, mock_cylinder)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'"""
+        # Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_cylinder()'
         assert_allclose(
             mock_rod.external_forces,
             np.array([[0.166666, 0.333333, 0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]),
@@ -293,32 +291,27 @@ class TestRodRodContact:
         mock_list = [1, 2, 3]
         rod_rod_contact = RodRodContact(k=1.0, nu=0.0)
 
-        "Testing Rod Rod Contact wrapper with incorrect type for second argument"
+        # Testing Rod Rod Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_rod_contact._check_systems_validity(mock_rod_one, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order. \n"
-            " First system is {0} and second system is {1}. \n"
-            " Both systems must be distinct rods"
-        ).format(mock_rod_one.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Rod Contact wrapper with incorrect type for first argument"
+        # Testing Rod Rod Contact wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             rod_rod_contact._check_systems_validity(mock_list, mock_rod_one)
-        assert (
-            "Systems provided to the contact class have incorrect order. \n"
-            " First system is {0} and second system is {1}. \n"
-            " Both systems must be distinct rods"
-        ).format(mock_list.__class__, mock_rod_one.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Rod Contact wrapper with same rod for both arguments"
+        # Testing Rod Rod Contact wrapper with same rod for both arguments
         with pytest.raises(TypeError) as excinfo:
             rod_rod_contact._check_systems_validity(mock_rod_one, mock_rod_one)
         assert (
-            "First rod is identical to second rod. \n"
-            "Rods must be distinct for RodRodConact. \n"
-            "If you want self contact, use RodSelfContact instead"
-        ) == str(excinfo.value)
+            "First system is identical to second system. Systems must be distinct for contact."
+            == str(excinfo.value)
+        )
 
     def test_contact_with_two_rods_with_collision_with_k_without_nu(self):
 
@@ -439,35 +432,26 @@ class TestRodSelfContact:
         mock_list = [1, 2, 3]
         self_contact = RodSelfContact(k=1.0, nu=0.0)
 
-        "Testing Self Contact wrapper with incorrect type for second argument"
+        # Testing Self Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             self_contact._check_systems_validity(mock_rod_one, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system and second system should be the same rod \n"
-            " If you want rod rod contact, use RodRodContact instead"
-        ).format(mock_rod_one.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Self Contact wrapper with incorrect type for first argument"
+        # Testing Self Contact wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             self_contact._check_systems_validity(mock_list, mock_rod_one)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system and second system should be the same rod \n"
-            " If you want rod rod contact, use RodRodContact instead"
-        ).format(mock_list.__class__, mock_rod_one.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Self Contact wrapper with different rods"
+        # Testing Self Contact wrapper with different rods
         with pytest.raises(TypeError) as excinfo:
             self_contact._check_systems_validity(mock_rod_one, mock_rod_two)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system and second system should be the same rod \n"
-            " If you want rod rod contact, use RodRodContact instead"
-        ).format(mock_rod_one.__class__, mock_rod_two.__class__) == str(excinfo.value)
+        assert "First system must be identical to the second system." == str(
+            excinfo.value
+        )
 
     def test_self_contact_with_rod_self_collision(self):
 
@@ -530,46 +514,39 @@ class TestRodSphereContact:
         mock_sphere = MockSphere()
         rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
 
-        "Testing Rod Sphere Contact wrapper with incorrect type for second argument"
+        # Testing Rod Sphere Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_sphere_contact._check_systems_validity(mock_rod, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a sphere"
-        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['Sphere']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Sphere Contact wrapper with incorrect type for first argument"
+        # Testing Rod Sphere Contact wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             rod_sphere_contact._check_systems_validity(mock_list, mock_rod)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a sphere"
-        ).format(mock_list.__class__, mock_rod.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Sphere Contact wrapper with incorrect order"
+        # Testing Rod Sphere Contact wrapper with incorrect order
         with pytest.raises(TypeError) as excinfo:
             rod_sphere_contact._check_systems_validity(mock_sphere, mock_rod)
-            print(excinfo.value)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a sphere"
-        ).format(mock_sphere.__class__, mock_rod.__class__) == str(excinfo.value)
+        assert "System provided (MockSphere) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
     def test_contact_rod_sphere_with_collision_with_k_without_nu_and_friction(
         self,
     ):
 
-        "Testing Rod Sphere Contact wrapper with Collision with analytical verified values"
+        # "Testing Rod Sphere Contact wrapper with Collision with analytical verified values
 
         mock_rod = MockRod()
         mock_sphere = MockSphere()
         rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
         rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
 
-        """Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_sphere_with_k_without_nu_and_friction()'"""
+        # Details and reasoning about the values are given in 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_sphere_with_k_without_nu_and_friction()'
         assert_allclose(
             mock_sphere.external_forces, np.array([[-0.5], [0], [0]]), atol=1e-6
         )
@@ -630,23 +607,19 @@ class TestRodPlaneContact:
         mock_list = [1, 2, 3]
         rod_plane_contact = RodPlaneContact(k=1.0, nu=0.0)
 
-        "Testing Rod Plane Contact wrapper with incorrect type for second argument"
+        # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a plane"
-        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Plane Contact wrapper with incorrect type for first argument"
+        # Testing Rod Plane Contact wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_list, mock_plane)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a plane"
-        ).format(mock_list.__class__, mock_plane.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
     def test_rod_plane_contact_without_contact(self):
         """
@@ -905,23 +878,19 @@ class TestRodPlaneWithAnisotropicFriction:
             np.array([0.0, 0.0, 0.0]),  # forward, backward, sideways
         )
 
-        "Testing Rod Plane Contact wrapper with incorrect type for second argument"
+        # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a plane"
-        ).format(mock_rod.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Rod Plane wrapper with incorrect type for first argument"
+        # Testing Rod Plane wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_list, mock_plane)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a rod, second should be a plane"
-        ).format(mock_list.__class__, mock_plane.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['RodBase']." == str(
+            excinfo.value
+        )
 
     @pytest.mark.parametrize("velocity", [-1.0, -3.0, 1.0, 5.0, 2.0])
     def test_axial_kinetic_friction(self, velocity):
@@ -1212,7 +1181,7 @@ class TestCylinderPlaneContact:
 
         # create plane
         plane = MockPlane()
-        plane.origin = np.array([0.0, -cylinder.radius[0] + shift, 0.0]).reshape(3, 1)
+        plane.origin = np.array([0.0, -cylinder.radius + shift, 0.0]).reshape(3, 1)
         plane.normal = plane_normal.reshape(
             3,
         )
@@ -1232,23 +1201,19 @@ class TestCylinderPlaneContact:
         mock_list = [1, 2, 3]
         cylinder_plane_contact = CylinderPlaneContact(k=1.0, nu=0.0)
 
-        "Testing Cylinder Plane Contact wrapper with incorrect type for second argument"
+        # Testing Cylinder Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             cylinder_plane_contact._check_systems_validity(mock_cylinder, mock_list)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a cylinder, second should be a plane"
-        ).format(mock_cylinder.__class__, mock_list.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+            excinfo.value
+        )
 
-        "Testing Cylinder Plane wrapper with incorrect type for first argument"
+        # Testing Cylinder Plane wrapper with incorrect type for first argument
         with pytest.raises(TypeError) as excinfo:
             cylinder_plane_contact._check_systems_validity(mock_list, mock_plane)
-        assert (
-            "Systems provided to the contact class have incorrect order/type. \n"
-            " First system is {0} and second system is {1}. \n"
-            " First system should be a cylinder, second should be a plane"
-        ).format(mock_list.__class__, mock_plane.__class__) == str(excinfo.value)
+        assert "System provided (list) must be derived from ['Cylinder']." == str(
+            excinfo.value
+        )
 
     def test_cylinder_plane_contact_without_contact(self):
         """

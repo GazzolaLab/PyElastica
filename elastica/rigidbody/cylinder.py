@@ -72,8 +72,8 @@ class Cylinder(RigidBodyBase):
         dim: int_t = MaxDimension.value()
 
         # This is for a rigid body cylinder
-        self.volume = np.pi * base_radius * base_radius * base_length
-        self.mass = np.array([self.volume * self.density], dtype=np.float64)
+        self.volume = np.float64(np.pi * base_radius * base_radius * base_length)
+        self.mass = np.float64(self.volume * self.density)
 
         # Second moment of inertia
         area = np.pi * base_radius * base_radius

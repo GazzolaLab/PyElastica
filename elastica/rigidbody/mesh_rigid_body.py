@@ -1,5 +1,8 @@
 __doc__ = """rigid body class based on mesh"""
 
+from numpy.typing import NDArray
+from elastica.typing import MeshType
+
 import numpy as np
 import numba
 from elastica._linalg import _batch_cross, _batch_norm
@@ -10,12 +13,12 @@ from elastica.rigidbody.rigid_body import RigidBodyBase
 class MeshRigidBody(RigidBodyBase):
     def __init__(
         self,
-        mesh,
-        center_of_mass,
-        mass_second_moment_of_inertia,
-        density,
-        volume,
-    ):
+        mesh: MeshType,
+        center_of_mass: NDArray[np.floating],
+        mass_second_moment_of_inertia: NDArray[np.floating],
+        density: np.floating,
+        volume: np.floating,
+    ) -> None:
         """
         Mesh rigid body initializer.
 
@@ -37,11 +40,11 @@ class MeshRigidBody(RigidBodyBase):
         """
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
-        self.n_elems = 1  # center_mass
+        self.n_elems: int = 1  # center_mass
 
         self.density = density
         self.volume = volume
-        self.mass = np.array([self.volume * self.density])
+        self.mass = np.float64(self.volume * self.density)
         self.mass_second_moment_of_inertia = mass_second_moment_of_inertia.reshape(
             MaxDimension.value(), MaxDimension.value(), 1
         )
@@ -112,7 +115,7 @@ class MeshRigidBody(RigidBodyBase):
             MaxDimension.value(), 1
         )
 
-    def update_faces(self):
+    def update_faces(self) -> None:
         _update_faces(
             self.director_collection,
             self.face_centers,
@@ -128,7 +131,7 @@ class MeshRigidBody(RigidBodyBase):
         )
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _update_faces(
     director_collection,
     face_centers,

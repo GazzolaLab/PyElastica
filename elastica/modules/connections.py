@@ -10,8 +10,9 @@ from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
     OperatorFinalizeType,
-    SystemType,
     ConnectionIndex,
+    RodType,
+    RigidBodyType,
 )
 import numpy as np
 import functools
@@ -39,8 +40,8 @@ class Connections:
 
     def connect(
         self: SystemCollectionProtocol,
-        first_rod: SystemType,
-        second_rod: SystemType,
+        first_rod: "RodType | RigidBodyType",
+        second_rod: "RodType | RigidBodyType",
         first_connect_idx: ConnectionIndex = None,
         second_connect_idx: ConnectionIndex = None,
     ) -> ModuleProtocol:
@@ -51,9 +52,9 @@ class Connections:
 
         Parameters
         ----------
-        first_rod : SystemType
+        first_rod : RodType | RigidBodyType
             Rod-like object
-        second_rod : SystemType
+        second_rod : RodType | RigidBodyType
             Rod-like object
         first_connect_idx : Optional[int]
             Index of first rod for joint.
@@ -64,12 +65,11 @@ class Connections:
         -------
 
         """
+        # For each system identified, get max dofs
         sys_idx_first = self._get_sys_idx_if_valid(first_rod)
         sys_idx_second = self._get_sys_idx_if_valid(second_rod)
-
-        # For each system identified, get max dofs
-        sys_dofs_first = self._systems[sys_idx_first].n_elems
-        sys_dofs_second = self._systems[sys_idx_second].n_elems
+        sys_dofs_first = first_rod.n_elems
+        sys_dofs_second = second_rod.n_elems
 
         # Create _Connect object, cache it and return to user
         _connect: ModuleProtocol = _Connect(
@@ -90,9 +90,9 @@ class Connections:
         def apply_forces_and_torques(
             time: np.floating,
             connect_instance: FreeJoint,
-            system_one: SystemType,
+            system_one: "RodType | RigidBodyType",
             first_connect_idx: ConnectionIndex,
-            system_two: SystemType,
+            system_two: "RodType | RigidBodyType",
             second_connect_idx: ConnectionIndex,
         ) -> None:
             connect_instance.apply_forces(

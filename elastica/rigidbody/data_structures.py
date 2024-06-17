@@ -1,7 +1,8 @@
 __doc__ = "Data structure wrapper for rod components"
 
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
-from typing import Any
+
+pass
 
 """
 # FIXME : Explicit Stepper doesn't work as States lose the
@@ -40,14 +41,5 @@ class _RigidRodExplicitStepperMixin:
         return self.__deriv_state
 """
 
-
-class _RigidRodSymplecticStepperMixin(_RodSymplecticStepperMixin):
-    def __init__(self) -> None:
-        super(_RigidRodSymplecticStepperMixin, self).__init__()
-        # Expose rate returning functions in the interface
-        # to be used by the time-stepping algorithm
-        # dynamic rates needs to call update_accelerations and henc
-        # is another function
-
-    def update_internal_forces_and_torques(self, *args: Any, **kwargs: Any) -> None:
-        pass
+# TODO: Temporary solution as the structure for RigidBody is similar to Rod
+_RigidRodSymplecticStepperMixin = _RodSymplecticStepperMixin

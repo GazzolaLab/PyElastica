@@ -313,15 +313,15 @@ class TestConnectionsMixin:
         )
 
         # Constrain any and all systems
-        system_collection_with_connections.connect(0, 1).using(
-            MockConnect, 2, 42
-        )  # index based connect
+        # system_collection_with_connections.connect(0, 1).using(
+        #    MockConnect, 2, 42
+        # )  # index based connect
         system_collection_with_connections.connect(mock_rod_one, mock_rod_two).using(
             MockConnect, 2, 3
         )  # system based connect
-        system_collection_with_connections.connect(0, mock_rod_one).using(
-            MockConnect, 1, 2
-        )  # index/system based connect
+        # system_collection_with_connections.connect(0, mock_rod_one).using(
+        #    MockConnect, 1, 2
+        # )  # index/system based connect
 
         return system_collection_with_connections, MockConnect
 

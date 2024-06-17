@@ -104,14 +104,14 @@ class TestMyCallBackClass:
 
 class TestExportCallBackClass:
     @pytest.mark.parametrize("method", ["0", 1, "numba", "test", "some string", None])
-    def test_export_call_back_unavailable_save_methods(self, method):
+    def test_export_call_back_unavailable_save_methods(self, tmp_path, method):
         with pytest.raises(AssertionError) as excinfo:
-            callback = ExportCallBack(1, "rod", "tempdir", method)
+            callback = ExportCallBack(1, "rod", tmp_path.as_posix(), method)
 
     @pytest.mark.parametrize("method", ExportCallBack.AVAILABLE_METHOD)
-    def test_export_call_back_available_save_methods(self, method):
+    def test_export_call_back_available_save_methods(self, tmp_path, method):
         try:
-            callback = ExportCallBack(1, "rod", "tempdir", method)
+            callback = ExportCallBack(1, "rod", tmp_path.as_posix(), method)
         except Error:
             pytest.fail(
                 f"Could not create callback module with available method {method}"
@@ -236,7 +236,7 @@ class TestExportCallBackClass:
             assert os.path.exists(saved_path_name), "File is not saved."
 
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
-    def test_export_call_back_class_tempfile_option(self, n_elems):
+    def test_export_call_back_class_tempfile_option(self, tmp_path, n_elems):
         """
         This test case is for testing ExportCallBack function, saving into temporary files.
         """
@@ -256,7 +256,7 @@ class TestExportCallBackClass:
         }
 
         callback = ExportCallBack(
-            step_skip, "rod", "tempdir", "tempfile", file_save_interval=10
+            step_skip, "rod", tmp_path.as_posix(), "tempfile", file_save_interval=10
         )
         for i in range(10):
             callback.make_callback(mock_rod, time[i], current_step[i])
