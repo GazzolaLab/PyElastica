@@ -100,7 +100,7 @@ class TestInteractionPlane:
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
         correct_forces = external_forces  # since no contact
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -122,7 +122,7 @@ class TestInteractionPlane:
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem)
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
@@ -153,7 +153,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -189,7 +189,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -219,7 +219,7 @@ class TestInteractionPlane:
             n_elem, shift=offset_of_plane_with_respect_to_rod, plane_normal=plane_normal
         )
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
         correct_forces = np.zeros((3, n_elem + 1))
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -264,7 +264,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -312,7 +312,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 

@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Type, Generator, Iterable, Any
+from typing import Type, Generator, Iterable, Any, overload
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -69,7 +69,7 @@ class BaseSystemCollection(MutableSequence):
 
         # List of systems to be integrated
         self._systems: list[SystemType] = []
-        self._memory_blocks: list[BlockType] = []
+        self.__final_systems: list[SystemType] = []
 
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
@@ -100,6 +100,12 @@ class BaseSystemCollection(MutableSequence):
 
     def __len__(self) -> int:
         return len(self._systems)
+
+    @overload
+    def __getitem__(self, idx: int, /) -> SystemType: ...
+
+    @overload
+    def __getitem__(self, idx: slice, /) -> list[SystemType]: ...
 
     def __getitem__(self, idx, /):  # type: ignore
         return self._systems[idx]
@@ -159,9 +165,9 @@ class BaseSystemCollection(MutableSequence):
         return sys_idx
 
     @final
-    def blocks(self) -> Generator[SystemType, None, None]:
+    def systems(self) -> Generator[SystemType, None, None]:
         # assert self._finalize_flag, "The simulator is not finalized."
-        for block in self._memory_blocks:
+        for block in self.__final_systems:
             yield block
 
     @final
@@ -177,10 +183,10 @@ class BaseSystemCollection(MutableSequence):
         self._finalize_flag = True
 
         # construct memory block
-        self._memory_blocks = construct_memory_block_structures(self._systems)
-        for block in self.blocks():
-            # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
-            self.append(block)
+        self.__final_systems = construct_memory_block_structures(self._systems)
+        # TODO: try to remove the _systems list for memory optimization
+        # self._systems.clear()
+        # del self._systems
 
         # Recurrent call finalize functions for all components.
         for finalize in self._feature_group_finalize:

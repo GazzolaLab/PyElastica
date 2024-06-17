@@ -1,7 +1,7 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
 from typing import Literal
 import numpy as np
-from elastica.typing import SystemType, SystemIdxType
+from elastica.typing import SystemIdxType, RigidBodyType
 
 from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
@@ -9,7 +9,7 @@ from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
     def __init__(
-        self, systems: list[RigidBodyBase], system_idx_list: list[SystemIdxType]
+        self, systems: list[RigidBodyType], system_idx_list: list[SystemIdxType]
     ) -> None:
 
         self.n_bodies = len(systems)
@@ -26,7 +26,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         # Initialize the mixin class for symplectic time-stepper.
         _RigidRodSymplecticStepperMixin.__init__(self)
 
-    def _allocate_block_variables_scalars(self, systems: list[RigidBodyBase]) -> None:
+    def _allocate_block_variables_scalars(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the variables for
         block-structure and references allocated variables back to the systems.
@@ -61,7 +61,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             value_type="scalar",
         )
 
-    def _allocate_block_variables_vectors(self, systems: list[RigidBodyBase]) -> None:
+    def _allocate_block_variables_vectors(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the vector variables for
         block-structure and references allocated vector variables back to the systems.
@@ -97,7 +97,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             value_type="vector",
         )
 
-    def _allocate_block_variables_matrix(self, systems: list[RigidBodyBase]) -> None:
+    def _allocate_block_variables_matrix(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the matrix variables for
         block-structure and references allocated matrix variables back to the systems.
@@ -134,7 +134,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         )
 
     def _allocate_block_variables_for_symplectic_stepper(
-        self, systems: list[RigidBodyBase]
+        self, systems: list[RigidBodyType]
     ) -> None:
         """
         This function takes system collection and allocates the variables used by symplectic
@@ -181,7 +181,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
     def _map_system_properties_to_block_memory(
         self,
         mapping_dict: dict,
-        systems: list[RigidBodyBase],
+        systems: list[RigidBodyType],
         block_memory: np.ndarray,
         value_type: Literal["scalar", "vector", "tensor"],
     ) -> None:
@@ -191,7 +191,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         ----------
         mapping_dict: dict
             Dictionary with attribute names as keys and block row index as values.
-        systems: list[RigidBodyBase]
+        systems: list[RigidBodyType]
             A sequence containing rigid body objects to map from.
         block_memory: ndarray
             Memory block that, at the end of the method execution, contains all designated

@@ -2,8 +2,7 @@ __doc__ = """
 This function is a module to construct memory blocks for different types of systems, such as
 Cosserat Rods, Rigid Body etc.
 """
-
-from elastica.typing import SystemType, SystemIdxType
+from elastica.typing import RodType, RigidBodyType, SystemType, SystemIdxType
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.rigid_body import RigidBodyBase
@@ -22,9 +21,9 @@ def construct_memory_block_structures(systems: list[SystemType]) -> list[SystemT
     -------
 
     """
-    _memory_blocks: list[SystemType] = []
-    temp_list_for_cosserat_rod_systems: list[RodBase] = []
-    temp_list_for_rigid_body_systems: list[RigidBodyBase] = []
+    _memory_blocks: list[BlockSystemType] = []
+    temp_list_for_cosserat_rod_systems: list[SystemType] = []
+    temp_list_for_rigid_body_systems: list[SystemType] = []
     temp_list_for_cosserat_rod_systems_idx: list[SystemIdxType] = []
     temp_list_for_rigid_body_systems_idx: list[SystemIdxType] = []
 

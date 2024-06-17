@@ -300,9 +300,8 @@ class CollectiveSystem:
 
     def __init__(self):
         self._memory_blocks = []
-        self.systems = self._memory_blocks
 
-    def blocks(self):
+    def systems(self):
         return self._memory_blocks
 
     def __getitem__(self, idx):
@@ -347,8 +346,8 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         super(
             ScalarExponentialDampedHarmonicOscillatorCollectiveSystem, self
         ).__init__()
-        self.systems.append(ScalarExponentialDecaySystem())
-        self.systems.append(DampedSimpleHarmonicOscillatorSystem())
+        self._memory_blocks.append(ScalarExponentialDecaySystem())
+        self._memory_blocks.append(DampedSimpleHarmonicOscillatorSystem())
 
 
 def make_simple_system_with_positions_directors(
