@@ -12,11 +12,3 @@ class BlockSystemProtocol(SystemProtocol, Protocol):
     @property
     def n_systems(self) -> int:
         """Number of systems in the block."""
-
-
-class BlockCosseratRodProtocol(CosseratRodProtocol, SymplecticSystemProtocol, Protocol):
-    pass
-
-
-class BlockRigidBodyProtocol(RigidBodyProtocol, SymplecticSystemProtocol, Protocol):
-    pass

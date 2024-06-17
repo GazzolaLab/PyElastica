@@ -8,9 +8,9 @@ from elastica.typing import (
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
+    StaticSystemType,
     SystemType,
     ConnectionIndex,
-    BlockType,
 )
 from elastica.joint import FreeJoint
 from elastica.callback_functions import CallBackBaseClass
@@ -34,7 +34,7 @@ class ModuleProtocol(Protocol[M]):
 
 
 class SystemCollectionProtocol(Protocol):
-    _systems: list[SystemType]
+    _systems: list[StaticSystemType]
 
     def __len__(self) -> int: ...
 
@@ -69,7 +69,9 @@ class SystemCollectionProtocol(Protocol):
 
     def systems(self) -> Generator[SystemType, None, None]: ...
 
-    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType: ...
+    def _get_sys_idx_if_valid(
+        self, sys_to_be_added: "SystemType | StaticSystemType"
+    ) -> SystemIdxType: ...
 
     # Connection API
     _finalize_connections: OperatorFinalizeType

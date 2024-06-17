@@ -10,6 +10,7 @@ from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
     OperatorFinalizeType,
+    StaticSystemType,
     SystemType,
 )
 from .protocol import SystemCollectionProtocol, ModuleProtocol
@@ -47,7 +48,7 @@ class Contact:
     def detect_contact_between(
         self: SystemCollectionProtocol,
         first_system: SystemType,
-        second_system: SystemType,
+        second_system: "SystemType | StaticSystemType",
     ) -> ModuleProtocol:
         """
         This method adds contact detection between two objects using the selected contact class.
@@ -56,7 +57,7 @@ class Contact:
         Parameters
         ----------
         first_system : SystemType
-        second_system : SystemType
+        second_system : SystemType | StaticSystemType
 
         Returns
         -------

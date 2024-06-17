@@ -9,24 +9,14 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-class _SystemWithEnergy(Protocol):
-    def compute_translational_energy(self) -> NDArray[np.float64]: ...
-
-    def compute_rotational_energy(self) -> NDArray[np.float64]: ...
-
-
-class _SystemWithCenterOfMass(Protocol):
-    def compute_velocity_center_of_mass(self) -> NDArray[np.float64]: ...
-
-    def compute_position_center_of_mass(self) -> NDArray[np.float64]: ...
-
-
-class SystemProtocol(Protocol):
-    """
-    Protocol for all elastica system
-    """
-
+class StaticSystemProtocol(Protocol):
     REQUISITE_MODULES: list[Type]
+
+
+class SystemProtocol(StaticSystemProtocol, Protocol):
+    """
+    Protocol for all dynamic elastica system
+    """
 
     def compute_internal_forces_and_torques(self, time: np.floating) -> None: ...
 

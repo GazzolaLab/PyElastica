@@ -4,14 +4,20 @@ Constraints
 
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
-from typing import Any, Type
+from typing import Any, Type, cast
 from typing_extensions import Self
 
 import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
 
-from elastica.typing import SystemIdxType, ConstrainingIndex, RigidBodyType, RodType
+from elastica.typing import (
+    SystemIdxType,
+    ConstrainingIndex,
+    RigidBodyType,
+    RodType,
+    BlockSystemType,
+)
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
@@ -73,7 +79,8 @@ class Constraints:
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
                 memory_block_idx = self._get_sys_idx_if_valid(block)
-                self.constrain(self._systems[memory_block_idx]).using(
+                block_system = cast(BlockSystemType, self._systems[memory_block_idx])
+                self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )
 

@@ -6,6 +6,8 @@ from typing import cast
 from elastica.typing import (
     RodType,
     RigidBodyType,
+    SurfaceType,
+    StaticSystemType,
     SystemType,
     SystemIdxType,
     BlockSystemType,
@@ -18,7 +20,9 @@ from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
 from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 
 
-def construct_memory_block_structures(systems: list[SystemType]) -> list[SystemType]:
+def construct_memory_block_structures(
+    systems: list[StaticSystemType],
+) -> list[SystemType]:
     """
     This function takes the systems (rod or rigid body) appended to the simulator class and
     separates them into lists depending on if system is Cosserat rod or rigid body. Then using
@@ -47,9 +51,11 @@ def construct_memory_block_structures(systems: list[SystemType]) -> list[SystemT
             temp_list_for_rigid_body_systems_idx.append(system_idx)
 
         elif isinstance(sys_to_be_added, SurfaceBase):
-            raise NotImplementedError(
-                "Surfaces are not yet implemented in memory block construction."
-            )
+            pass
+            # surface_system = cast(SurfaceType, sys_to_be_added)
+            # raise NotImplementedError(
+            #     "Surfaces are not yet implemented in memory block construction."
+            # )
 
         else:
             raise TypeError(

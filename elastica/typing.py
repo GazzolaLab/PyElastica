@@ -4,8 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Callable, Any, ParamSpec
-from typing import TypeAlias
+from typing import Callable, Any, ParamSpec, TypeAlias
 
 import numpy as np
 
@@ -22,6 +21,7 @@ if TYPE_CHECKING:
     from .rod.data_structures import _State as State
     from .systems.protocol import (
         SystemProtocol,
+        StaticSystemProtocol,
         SymplecticSystemProtocol,
         ExplicitSystemProtocol,
     )
@@ -30,32 +30,18 @@ if TYPE_CHECKING:
         SymplecticStepperProtocol,
         MemoryProtocol,
     )
-    from .memory_block.protocol import (
-        BlockCosseratRodProtocol,
-        BlockRigidBodyProtocol,
-        BlockSystemProtocol,
-    )
-
-    # Modules Base Classes
-    from .boundary_conditions import FreeBC
-    from .callback_functions import CallBackBaseClass
-    from .contact_forces import NoContact
-    from .dissipation import DamperBase
-    from .external_forces import NoForces
-    from .joint import FreeJoint
+    from .memory_block.protocol import BlockSystemProtocol
 
     from .mesh.protocol import MeshProtocol
 
 
+StaticSystemType: TypeAlias = "StaticSystemProtocol"
 SystemType: TypeAlias = "SystemProtocol"
-BlockSystemType: TypeAlias = "BlockSystemProtocol"
 SystemIdxType: TypeAlias = int
+BlockSystemType: TypeAlias = "BlockSystemProtocol"
 
-# ModuleObjectTypes: TypeAlias = (
-#     NoForces | NoContact | FreeJoint | FreeBC | DamperBase | CallBackBaseClass
-# )
+#    NoForces | NoContact | FreeJoint | FreeBC | DamperBase | CallBackBaseClass
 
-# TODO: Modify this line and move to elastica/typing.py once system state is defined
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
 StateType: TypeAlias = "State"
 
@@ -69,7 +55,6 @@ RigidBodyType: TypeAlias = "RigidBodyProtocol"
 SurfaceType: TypeAlias = "SurfaceBase"
 
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
-BlockType: TypeAlias = "BlockCosseratRodProtocol | BlockRigidBodyProtocol"
 
 # Indexing types
 # TODO: Maybe just use slice??

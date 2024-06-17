@@ -8,12 +8,12 @@ interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 from typing import Type, Generator, Iterable, Any, overload
 from typing import final
 from elastica.typing import (
+    StaticSystemType,
     SystemType,
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,
     OperatorFinalizeType,
-    BlockType,
 )
 
 import numpy as np
@@ -68,7 +68,7 @@ class BaseSystemCollection(MutableSequence):
         )
 
         # List of systems to be integrated
-        self._systems: list[SystemType] = []
+        self._systems: list[StaticSystemType] = []
         self.__final_systems: list[SystemType] = []
 
         # Flag Finalize: Finalizing twice will cause an error,
@@ -138,7 +138,9 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = allowed_types
 
     @final
-    def _get_sys_idx_if_valid(self, sys_to_be_added: SystemType) -> SystemIdxType:
+    def _get_sys_idx_if_valid(
+        self, sys_to_be_added: "SystemType | StaticSystemType"
+    ) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType

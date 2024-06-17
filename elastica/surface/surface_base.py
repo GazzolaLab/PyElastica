@@ -1,5 +1,5 @@
 __doc__ = """Base class for surfaces"""
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
 import numpy as np
 from numpy.typing import NDArray
@@ -23,3 +23,9 @@ class SurfaceBase:
         """
         self.normal: NDArray[np.floating]  # (3,)
         self.origin: NDArray[np.floating]  # (3, 1)
+
+
+if TYPE_CHECKING:
+    from elastica.systems.protocol import StaticSystemProtocol
+
+    _: StaticSystemProtocol = SurfaceBase()
