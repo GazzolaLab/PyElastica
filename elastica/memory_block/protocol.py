@@ -14,20 +14,9 @@ class BlockSystemProtocol(SystemType, Protocol):
         """Number of systems in the block."""
 
 
-class BlockOperatorsProtocol(Protocol):
-
-    def update_internal_forces_and_torques(self, time: np.floating) -> None: ...
-
-    def reset_external_forces_and_torques(self, time: np.floating) -> None: ...
-
-
-class BlockCosseratRodProtocol(
-    CosseratRodProtocol, SymplecticSystemProtocol, BlockOperatorsProtocol, Protocol
-):
+class BlockCosseratRodProtocol(CosseratRodProtocol, SymplecticSystemProtocol, Protocol):
     pass
 
 
-class BlockRigidBodyProtocol(
-    RigidBodyProtocol, SymplecticSystemProtocol, BlockOperatorsProtocol, Protocol
-):
+class BlockRigidBodyProtocol(RigidBodyProtocol, SymplecticSystemProtocol, Protocol):
     pass

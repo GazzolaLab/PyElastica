@@ -2,10 +2,6 @@ __doc__ = """Create block-structure class for collection of Cosserat rod systems
 import numpy as np
 from typing import Literal, Callable
 from elastica.typing import SystemIdxType, RodType
-from elastica.memory_block.memory_block_rod_base import (
-    make_block_memory_metadata,
-    make_block_memory_periodic_boundary_metadata,
-)
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 from elastica.reset_functions_for_block_structure import _reset_scalar_ghost
 from elastica.rod.cosserat_rod import (
@@ -16,6 +12,11 @@ from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_vector_collection,
     _synchronize_periodic_boundary_of_scalar_collection,
     _synchronize_periodic_boundary_of_matrix_collection,
+)
+
+from .utils import (
+    make_block_memory_metadata,
+    make_block_memory_periodic_boundary_metadata,
 )
 
 

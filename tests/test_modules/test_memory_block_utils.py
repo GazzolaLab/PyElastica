@@ -3,7 +3,7 @@ __doc__ = """ Test make_block_memory_metadata and make_block_memory_periodic_bou
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
-from elastica.memory_block.memory_block_rod_base import (
+from elastica.memory_block.utils import (
     make_block_memory_metadata,
     make_block_memory_periodic_boundary_metadata,
 )

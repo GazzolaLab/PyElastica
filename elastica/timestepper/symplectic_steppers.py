@@ -105,7 +105,7 @@ class SymplecticStepperMixin:
 
             # We need internal forces and torques because they are used by interaction module.
             for system in SystemCollection.systems():
-                system.update_internal_forces_and_torques(time)
+                system.compute_internal_forces_and_torques(time)
                 # system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
@@ -131,7 +131,7 @@ class SymplecticStepperMixin:
 
         # Zero out the external forces and torques
         for system in SystemCollection.systems():
-            system.reset_external_forces_and_torques(time)
+            system.zeroed_out_external_forces_and_torques(time)
 
         return time
 

@@ -67,11 +67,6 @@ class _RodSymplecticStepperMixin:
         # is another function
         self.kinematic_rates = self.dynamic_states.kinematic_rates
 
-    def update_internal_forces_and_torques(
-        self: BlockCosseratRodProtocol, time: np.floating
-    ) -> None:
-        self.compute_internal_forces_and_torques(time)
-
     def dynamic_rates(
         self: BlockCosseratRodProtocol,
         time: np.floating,
@@ -79,11 +74,6 @@ class _RodSymplecticStepperMixin:
     ) -> NDArray[np.floating]:
         self.update_accelerations(time)
         return self.dynamic_states.dynamic_rates(time, prefac)
-
-    def reset_external_forces_and_torques(
-        self: BlockCosseratRodProtocol, time: np.floating
-    ) -> None:
-        self.zeroed_out_external_forces_and_torques(time)
 
 
 def _bootstrap_from_data(
