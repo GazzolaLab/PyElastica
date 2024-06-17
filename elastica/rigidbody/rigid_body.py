@@ -2,12 +2,11 @@ __doc__ = """"""
 
 from typing import Type
 
-import numpy as np
 from abc import ABC
-from elastica._linalg import _batch_matvec, _batch_cross
-from ._typing import f_arr_t, float_t
 
-from typing import Any
+import numpy as np
+from numpy.typing import NDArray
+from elastica._linalg import _batch_matvec, _batch_cross
 
 
 class RigidBodyBase(ABC):
@@ -24,29 +23,29 @@ class RigidBodyBase(ABC):
 
     def __init__(self) -> None:
 
-        self.position_collection: f_arr_t
-        self.velocity_collection: f_arr_t
-        self.acceleration_collection: f_arr_t
-        self.omega_collection: f_arr_t
-        self.alpha_collection: f_arr_t
-        self.director_collection: f_arr_t
+        self.position_collection: NDArray[np.floating]
+        self.velocity_collection: NDArray[np.floating]
+        self.acceleration_collection: NDArray[np.floating]
+        self.omega_collection: NDArray[np.floating]
+        self.alpha_collection: NDArray[np.floating]
+        self.director_collection: NDArray[np.floating]
 
-        self.external_forces: f_arr_t
-        self.external_torques: f_arr_t
+        self.external_forces: NDArray[np.floating]
+        self.external_torques: NDArray[np.floating]
 
-        self.internal_forces: f_arr_t
-        self.internal_torques: f_arr_t
+        self.internal_forces: NDArray[np.floating]
+        self.internal_torques: NDArray[np.floating]
 
         self.mass: np.floating
         self.volume: np.floating
         self.length: np.floating
-        self.tangents: f_arr_t
+        self.tangents: NDArray[np.floating]
         self.radius: np.floating
 
-        self.mass_second_moment_of_inertia: f_arr_t
-        self.inv_mass_second_moment_of_inertia: f_arr_t
+        self.mass_second_moment_of_inertia: NDArray[np.floating]
+        self.inv_mass_second_moment_of_inertia: NDArray[np.floating]
 
-    def update_accelerations(self, time: float_t) -> None:
+    def update_accelerations(self, time: np.floating) -> None:
         np.copyto(
             self.acceleration_collection,
             (self.external_forces) / self.mass,
@@ -68,7 +67,7 @@ class RigidBodyBase(ABC):
             ),
         )
 
-    def zeroed_out_external_forces_and_torques(self, time: float_t) -> None:
+    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None:
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
@@ -79,13 +78,13 @@ class RigidBodyBase(ABC):
         """
         pass
 
-    def compute_position_center_of_mass(self) -> f_arr_t:
+    def compute_position_center_of_mass(self) -> NDArray[np.floating]:
         """
         Return positional center of mass
         """
         return self.position_collection[..., 0].copy()
 
-    def compute_translational_energy(self) -> Any:
+    def compute_translational_energy(self) -> NDArray[np.floating]:
         """
         Return translational energy
         """
@@ -97,7 +96,7 @@ class RigidBodyBase(ABC):
             )
         )
 
-    def compute_rotational_energy(self) -> Any:
+    def compute_rotational_energy(self) -> NDArray[np.floating]:
         """
         Return rotational energy
         """

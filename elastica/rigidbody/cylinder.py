@@ -1,23 +1,24 @@
-__doc__ = """"""
+__doc__ = """
+Implementation of a rigid body cylinder.
+"""
 
 import numpy as np
+from numpy.typing import NDArray
 
 from elastica._linalg import _batch_cross
 from elastica.utils import MaxDimension
 from elastica.rigidbody.rigid_body import RigidBodyBase
 
-from ._typing import f_arr_t, float_t, int_t
-
 
 class Cylinder(RigidBodyBase):
     def __init__(
         self,
-        start: f_arr_t,
-        direction: f_arr_t,
-        normal: f_arr_t,
-        base_length: float_t,
-        base_radius: float_t,
-        density: float_t,
+        start: NDArray[np.floating],
+        direction: NDArray[np.floating],
+        normal: NDArray[np.floating],
+        base_length: np.floating,
+        base_radius: np.floating,
+        density: np.floating,
     ) -> None:
         """
         Rigid body cylinder initializer.
@@ -33,7 +34,7 @@ class Cylinder(RigidBodyBase):
         """
 
         def _check_array_size(
-            to_check: f_arr_t, name: str, expected: int_t = 3
+            to_check: NDArray[np.floating], name: str, expected: int = 3
         ) -> None:
             array_size = to_check.size
             assert array_size == expected, (
@@ -42,7 +43,7 @@ class Cylinder(RigidBodyBase):
             )
 
         def _check_lower_bound(
-            to_check: float_t, name: str, lower_bound: float_t = np.float64(0.0)
+            to_check: np.floating, name: str, lower_bound: np.floating = np.float64(0.0)
         ) -> None:
             assert (
                 to_check > lower_bound
@@ -60,7 +61,7 @@ class Cylinder(RigidBodyBase):
 
         # rigid body does not have elements it only has one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be define
-        self.n_elem: int_t = 1
+        self.n_elem: int = 1
 
         normal = normal.reshape((3, 1))
         tangents = direction.reshape((3, 1))
@@ -69,7 +70,7 @@ class Cylinder(RigidBodyBase):
         self.length = base_length
         self.density = density
 
-        dim: int_t = MaxDimension.value()
+        dim: int = MaxDimension.value()
 
         # This is for a rigid body cylinder
         self.volume = np.float64(np.pi * base_radius * base_radius * base_length)

@@ -1,16 +1,22 @@
-__doc__ = """"""
+__doc__ = """
+Implementation of a sphere rigid body.
+"""
 
 import numpy as np
+from numpy.typing import NDArray
 
 from elastica._linalg import _batch_cross
 from elastica.utils import MaxDimension
 from elastica.rigidbody.rigid_body import RigidBodyBase
 
-from ._typing import float_t, f_arr_t, int_t
-
 
 class Sphere(RigidBodyBase):
-    def __init__(self, center: f_arr_t, base_radius: float_t, density: float_t) -> None:
+    def __init__(
+        self,
+        center: NDArray[np.floating],
+        base_radius: np.floating,
+        density: np.floating,
+    ) -> None:
         """
         Rigid body sphere initializer.
 
@@ -25,9 +31,9 @@ class Sphere(RigidBodyBase):
 
         # rigid body does not have elements it only have one node. We are setting n_elems to
         # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
-        self.n_elems: int_t = 1
+        self.n_elems: int = 1
 
-        dim: int_t = MaxDimension.value()
+        dim: int = MaxDimension.value()
 
         assert (
             center.size == dim
