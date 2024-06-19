@@ -145,7 +145,10 @@ warn_unused_ignores = false
 exclude = [
     "elastica/systems/analytical.py",
     "elastica/experimental/*",
-    "elastica/mesh/mesh_initializer.py",
+]
+
+untyped_calls_exclude = [
+    "pyvista",
 ]
 
 [tool.coverage.report]
