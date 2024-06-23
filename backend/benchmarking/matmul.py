@@ -1,4 +1,4 @@
-from elasticapp._linalg import batch_matmul_naive, batch_matmul_blaze
+from elasticapp._linalg import batch_matmul_naive, batch_matmul_blaze, batch_matmul
 from elastica._linalg import _batch_matmul
 import numpy
 import time
@@ -29,14 +29,16 @@ def benchmark_batchsize(funcs: list, batches: list[int], num_iterations: int = 1
 
 
 results = benchmark_batchsize(
-    [batch_matmul_naive, batch_matmul_blaze, _batch_matmul], [2**i for i in range(14)]
+    [batch_matmul_naive, batch_matmul_blaze, batch_matmul, _batch_matmul], [2**i for i in range(14)]
 )
 for size, data in results.items():
     pyelastica = data["_batch_matmul"]
     elasticapp = data["batch_matmul_naive"]
     elasticapp_blaze = data["batch_matmul_blaze"]
+    elasticapp_blaze_v2 = data["batch_matmul"]
     print(f"{size = }")
     print(f"{pyelastica = }")
     print(f"{elasticapp = }, ratio: {elasticapp / pyelastica}")
     print(f"{elasticapp_blaze = }, ratio: {elasticapp_blaze / pyelastica}")
+    print(f"{elasticapp_blaze_v2 = }, ratio: {elasticapp_blaze_v2 / pyelastica}")
     print()

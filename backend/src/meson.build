@@ -10,7 +10,7 @@ example_1 = py.extension_module(
 _linalg = py.extension_module(
     '_linalg',
     sources: ['_linalg.cpp'],
-    dependencies: [py_dep, pybind11_dep, blaze_dep],
+    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
     link_language: 'cpp',
     install: true,
     subdir: package,
