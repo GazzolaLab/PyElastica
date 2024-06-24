@@ -11,16 +11,31 @@ F = TypeVar("F")
 class OperatorGroupFIFO(Iterable, Generic[T, F]):
     """
     A class to store the features and their corresponding operators in a FIFO manner.
+    Feature can be any user-defined object to label the operators, and operators are
+    callable functions.
+
+    This data structure is used to organize elastica operators, such as forcing,
+    constraints, boundary condition, etc.
 
     Examples
     --------
+    >>> class FeatureObj:
+    ...     ADD: Callable
+    ...     SUBTRACT: Callable
+    ...     MULTIPLY: Callable
+
+    >>> obj_1 = FeatureObj()
+    >>> obj_2 = FeatureObj()
+    >>>
     >>> operator_group = OperatorGroupFIFO()
     >>> operator_group.append_id(obj_1)
     >>> operator_group.append_id(obj_2)
-    >>> operator_group.add_operators(obj_1, [ADD, SUBTRACT])
-    >>> operator_group.add_operators(obj_2, [SUBTRACT, MULTIPLY])
-    >>> list(operator_group)
-    [ADD, SUBTRACT, SUBTRACT, MULTIPLY]
+    >>> operator_group.add_operators(obj_1, [obj_1.ADD, obj_1.SUBTRACT])
+    >>> operator_group.add_operators(obj_2, [obj_2.SUBTRACT, obj_2.MULTIPLY])
+    >>> list(iter(operator_group))
+    [obj_1.ADD, obj_1.SUBTRACT, obj_2.SUBTRACT, obj_2.MULTIPLY]
+    >>> for operator in operator_group:  # call operator in the group
+    ...     operator()
 
     Attributes
     ----------
