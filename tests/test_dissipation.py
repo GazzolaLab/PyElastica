@@ -151,7 +151,7 @@ def test_laplace_dissipation_filter_for_constant_field(filter_order):
     )
     test_rod.velocity_collection[...] = 2.0
     test_rod.omega_collection[...] = 3.0
-    filter_damper.dampen_rates(rod=test_rod, time=0)
+    filter_damper.dampen_rates(system=test_rod, time=0)
     # filter should keep a spatially invariant field unaffected
     post_damping_velocity_collection = 2.0 * np.ones_like(test_rod.velocity_collection)
     post_damping_omega_collection = 3.0 * np.ones_like(test_rod.omega_collection)
@@ -178,7 +178,7 @@ def test_laplace_dissipation_filter_for_flip_flop_field():
     test_rod.omega_collection[..., 1::2] = 3.0
     pre_damping_velocity_collection = test_rod.velocity_collection.copy()
     pre_damping_omega_collection = test_rod.omega_collection.copy()
-    filter_damper.dampen_rates(rod=test_rod, time=0)
+    filter_damper.dampen_rates(system=test_rod, time=0)
     post_damping_velocity_collection = np.zeros_like(test_rod.velocity_collection)
     post_damping_omega_collection = np.zeros_like(test_rod.omega_collection)
     # filter should remove the flip-flop mode th give the average constant mode
@@ -243,7 +243,7 @@ def test_laplace_dissipation_filter_for_constant_field_for_ring_rod(filter_order
     )
     test_rod.velocity_collection[...] = 2.0
     test_rod.omega_collection[...] = 3.0
-    filter_damper.dampen_rates(rod=test_rod, time=0)
+    filter_damper.dampen_rates(system=test_rod, time=0)
     # filter should keep a spatially invariant field unaffected
     post_damping_velocity_collection = 2.0 * np.ones_like(test_rod.velocity_collection)
     post_damping_omega_collection = 3.0 * np.ones_like(test_rod.omega_collection)
@@ -270,7 +270,7 @@ def test_laplace_dissipation_filter_for_flip_flop_field_for_ring_rod():
     test_rod.omega_collection[..., 1::2] = 3.0
     pre_damping_velocity_collection = test_rod.velocity_collection.copy()
     pre_damping_omega_collection = test_rod.omega_collection.copy()
-    filter_damper.dampen_rates(rod=test_rod, time=0)
+    filter_damper.dampen_rates(system=test_rod, time=0)
     post_damping_velocity_collection = np.zeros_like(test_rod.velocity_collection)
     post_damping_omega_collection = np.zeros_like(test_rod.omega_collection)
     # filter should remove the flip-flop mode th give the average constant mode

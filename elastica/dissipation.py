@@ -151,13 +151,13 @@ class AnalyticalLinearDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, rod: RodType, time: np.floating) -> None:
-        rod.velocity_collection[:] = (
-            rod.velocity_collection * self.translational_damping_coefficient
+    def dampen_rates(self, system: RodType, time: np.floating) -> None:
+        system.velocity_collection[:] = (
+            system.velocity_collection * self.translational_damping_coefficient
         )
 
-        rod.omega_collection[:] = rod.omega_collection * np.power(
-            self.rotational_damping_coefficient, rod.dilatation
+        system.omega_collection[:] = system.omega_collection * np.power(
+            self.rotational_damping_coefficient, system.dilatation
         )
 
 
@@ -240,12 +240,12 @@ class LaplaceDissipationFilter(DamperBase):
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
             self.filter_function = _filter_function_periodic_condition
 
-    def dampen_rates(self, rod: RodType, time: np.floating) -> None:
+    def dampen_rates(self, system: RodType, time: np.floating) -> None:
 
         self.filter_function(
-            rod.velocity_collection,
+            system.velocity_collection,
             self.velocity_filter_term,
-            rod.omega_collection,
+            system.omega_collection,
             self.omega_filter_term,
             self.filter_order,
         )

@@ -274,15 +274,15 @@ class UniformForces(NoForces):
         self.force = (force * direction).reshape(3, 1)
 
     def apply_forces(
-        self, rod: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
-        force_on_one_element = self.force / rod.n_elems
+        force_on_one_element = self.force / system.n_elems
 
-        rod.external_forces += force_on_one_element
+        system.external_forces += force_on_one_element
 
         # Because mass of first and last node is half
-        rod.external_forces[..., 0] -= 0.5 * force_on_one_element[:, 0]
-        rod.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]
+        system.external_forces[..., 0] -= 0.5 * force_on_one_element[:, 0]
+        system.external_forces[..., -1] -= 0.5 * force_on_one_element[:, 0]
 
 
 class MuscleTorques(NoForces):
@@ -373,7 +373,7 @@ class MuscleTorques(NoForces):
             self.my_spline = np.full_like(self.s, fill_value=1.0)
 
     def apply_torques(
-        self, rod: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         self.compute_muscle_torques(
             time,
@@ -384,8 +384,8 @@ class MuscleTorques(NoForces):
             self.phase_shift,
             self.ramp_up_time,
             self.direction,
-            rod.director_collection,
-            rod.external_torques,
+            system.director_collection,
+            system.external_torques,
         )
 
     @staticmethod

@@ -88,7 +88,7 @@ class ConstraintBase(ABC, Generic[S]):
         time : float
             The time of simulation.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def constrain_rates(self, system: S, time: np.floating) -> None:
@@ -104,7 +104,7 @@ class ConstraintBase(ABC, Generic[S]):
             The time of simulation.
 
         """
-        pass
+        raise NotImplementedError
 
 
 class FreeBC(ConstraintBase):
@@ -750,28 +750,28 @@ class HelicalBucklingBC(ConstraintBase):
         )  # rotation_matrix wants vectors 3,1
 
     def constrain_values(
-        self, rod: "RodType | RigidBodyType", time: np.floating
+        self, system: "RodType | RigidBodyType", time: np.floating
     ) -> None:
         if time > self.twisting_time:
-            rod.position_collection[..., 0] = self.final_start_position
-            rod.position_collection[..., -1] = self.final_end_position
+            system.position_collection[..., 0] = self.final_start_position
+            system.position_collection[..., -1] = self.final_end_position
 
-            rod.director_collection[..., 0] = self.final_start_directors
-            rod.director_collection[..., -1] = self.final_end_directors
+            system.director_collection[..., 0] = self.final_start_directors
+            system.director_collection[..., -1] = self.final_end_directors
 
     def constrain_rates(
-        self, rod: "RodType | RigidBodyType", time: np.floating
+        self, system: "RodType | RigidBodyType", time: np.floating
     ) -> None:
         if time > self.twisting_time:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
-            rod.velocity_collection[..., -1] = 0.0
-            rod.omega_collection[..., -1] = 0.0
+            system.velocity_collection[..., -1] = 0.0
+            system.omega_collection[..., -1] = 0.0
 
         else:
-            rod.velocity_collection[..., 0] = self.shrink_vel
-            rod.omega_collection[..., 0] = self.ang_vel
+            system.velocity_collection[..., 0] = self.shrink_vel
+            system.omega_collection[..., 0] = self.ang_vel
 
-            rod.velocity_collection[..., -1] = -self.shrink_vel
-            rod.omega_collection[..., -1] = -self.ang_vel
+            system.velocity_collection[..., -1] = -self.shrink_vel
+            system.omega_collection[..., -1] = -self.ang_vel
