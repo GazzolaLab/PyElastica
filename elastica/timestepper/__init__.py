@@ -1,6 +1,6 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
-from typing import Tuple, List, Callable, Type, Any, overload
+from typing import Tuple, List, Callable, Type, Any, overload, cast
 from elastica.typing import SystemType, SystemCollectionType, SteppersOperatorsType
 
 import numpy as np
@@ -81,15 +81,17 @@ def integrate(
     assert final_time > 0.0, "Final time is negative!"
     assert n_steps > 0, "Number of integration steps is negative!"
 
-    dt = np.float_(float(final_time) / n_steps)
-    time = np.float_(restart_time)
+    dt = np.float64(float(final_time) / n_steps)
+    time = np.float64(restart_time)
 
     if is_system_a_collection(systems):
+        systems = cast(SystemCollectionType, systems)
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
-            time = stepper.step(systems, time, dt)  # type: ignore[arg-type]
+            time = stepper.step(systems, time, dt)
     else:
+        systems = cast(SystemType, systems)
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
-            time = stepper.step_single_instance(systems, time, dt)  # type: ignore[arg-type]
+            time = stepper.step_single_instance(systems, time, dt)
 
     print("Final time of simulation is : ", time)
     return float(time)
