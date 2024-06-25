@@ -290,45 +290,43 @@ for idx, rod_two in enumerate(muscle_rod_list):
             offset_btw_rods.copy(),
         ]
     )
-    for k in range(rod_two.n_elems):
-        rod_one_index = k + muscle_start_connection_index[idx]
-        rod_two_index = k
-        k_conn = (
-            rod_one.radius[rod_one_index]
-            * rod_two.radius[rod_two_index]
-            / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
-            * body_elem_length
-            * E
-            / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
-        )
 
-        if k < 12 or k >= 27:
-            scale = 1 * 2
-            scale_contact = 20
-        else:
-            scale = 0.01 * 5
-            scale_contact = 20
+    ks = np.arange(rod_two.n_elems)
+    scale = np.ones(rod_two.n_elems) * 1 * 2
+    scale[12:27] = 0.01 * 5
+    scale_contact = np.ones(rod_two.n_elems) * 20
+    scale_contact[12:27] = 20
+    rod_one_index = ks + muscle_start_connection_index[idx]
+    rod_two_index = ks
+    k_conn = (
+        rod_one.radius[rod_one_index]
+        * rod_two.radius[rod_two_index]
+        / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
+        * body_elem_length
+        * E
+        / (rod_one.radius[rod_one_index] + rod_two.radius[rod_two_index])
+    )
 
-        muscular_snake_simulator.connect(
-            first_rod=rod_one,
-            second_rod=rod_two,
-            first_connect_idx=rod_one_index,
-            second_connect_idx=rod_two_index,
-        ).using(
-            SurfaceJointSideBySide,
-            k=k_conn * scale,
-            nu=1e-4,
-            k_repulsive=k_conn * scale_contact,
-            rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
-                ..., k
-            ],
-            rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame[
-                ..., k
-            ],
-            offset_btw_rods=offset_btw_rods[k],
-            post_processing_dict=straight_straight_rod_connection_post_processing_dict,
-            step_skip=step_skip,
-        )
+    muscular_snake_simulator.connect(
+        first_rod=rod_one,
+        second_rod=rod_two,
+        first_connect_idx=rod_one_index,
+        second_connect_idx=rod_two_index,
+    ).using(
+        SurfaceJointSideBySide,
+        k=k_conn * scale,
+        nu=1e-4,
+        k_repulsive=k_conn * scale_contact,
+        rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
+            ..., ks
+        ],
+        rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame[
+            ..., ks
+        ],
+        offset_btw_rods=offset_btw_rods[ks],
+        post_processing_dict=straight_straight_rod_connection_post_processing_dict,
+        step_skip=step_skip,
+    )
 
 # Friction forces
 # Only apply to the snake body.
