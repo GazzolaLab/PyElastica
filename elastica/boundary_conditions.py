@@ -123,15 +123,6 @@ class FreeBC(ConstraintBase):
         pass
 
 
-class FreeRod(FreeBC):
-    # Please clear this part beyond version 0.3.0
-    """Deprecated 0.2.1: Same implementation as FreeBC"""
-    warnings.warn(
-        "FreeRod is deprecated and renamed to FreeBC. The deprecated name will be removed in the future.",
-        DeprecationWarning,
-    )
-
-
 class OneEndFixedBC(ConstraintBase):
     """
     This boundary condition class fixes one end of the rod. Currently,
@@ -702,9 +693,9 @@ class HelicalBucklingBC(ConstraintBase):
         position_end: NDArray[np.floating],
         director_start: NDArray[np.floating],
         director_end: NDArray[np.floating],
-        twisting_time: np.floating,
-        slack: np.floating,
-        number_of_rotations: np.floating,
+        twisting_time: float,
+        slack: float,
+        number_of_rotations: float,
         **kwargs: Any,
     ) -> None:
         """
@@ -734,12 +725,12 @@ class HelicalBucklingBC(ConstraintBase):
             Number of rotations applied to rod.
         """
         super().__init__(**kwargs)
-        self.twisting_time = twisting_time
+        self.twisting_time = np.float64(twisting_time)
 
-        angel_vel_scalar = (
-            2.0 * number_of_rotations * np.pi / self.twisting_time
-        ) / 2.0
-        shrink_vel_scalar = slack / (self.twisting_time * 2.0)
+        angel_vel_scalar = np.float64(
+            (2.0 * number_of_rotations * np.pi / self.twisting_time) / 2.0
+        )
+        shrink_vel_scalar = np.float64(slack / (self.twisting_time * 2.0))
 
         direction = (position_end - position_start) / np.linalg.norm(
             position_end - position_start
@@ -751,7 +742,7 @@ class HelicalBucklingBC(ConstraintBase):
         self.ang_vel = angel_vel_scalar * direction
         self.shrink_vel = shrink_vel_scalar * direction
 
-        theta = number_of_rotations * np.pi
+        theta = np.float64(number_of_rotations * np.pi)
 
         self.final_start_directors = (
             _get_rotation_matrix(theta, direction.reshape(3, 1)).reshape(3, 3)

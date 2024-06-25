@@ -34,7 +34,7 @@ class NoForces(Generic[S]):
         """
         pass
 
-    def apply_forces(self, system: S, time: float = 0.0) -> None:
+    def apply_forces(self, system: S, time: np.floating = np.float64(0.0)) -> None:
         """Apply forces to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -49,7 +49,7 @@ class NoForces(Generic[S]):
         """
         pass
 
-    def apply_torques(self, system: S, time: float = 0.0) -> None:
+    def apply_torques(self, system: S, time: np.floating = np.float64(0.0)) -> None:
         """Apply torques to a rod-like object.
 
         In NoForces class, this routine simply passes.
@@ -91,7 +91,7 @@ class GravityForces(NoForces):
         self.acc_gravity = acc_gravity
 
     def apply_forces(
-        self, system: "RodType | RigidBodyType", time: float = 0.0
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         self.compute_gravity_forces(
             self.acc_gravity, system.mass, system.external_forces
@@ -160,10 +160,10 @@ class EndpointForces(NoForces):
         self.start_force = start_force
         self.end_force = end_force
         assert ramp_up_time > 0.0
-        self.ramp_up_time = ramp_up_time
+        self.ramp_up_time = np.float64(ramp_up_time)
 
     def apply_forces(
-        self, system: "RodType | RigidBodyType", time: float = 0.0
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         self.compute_end_point_forces(
             system.external_forces,
@@ -179,7 +179,7 @@ class EndpointForces(NoForces):
         external_forces: NDArray[np.floating],
         start_force: NDArray[np.floating],
         end_force: NDArray[np.floating],
-        time: float,
+        time: np.floating,
         ramp_up_time: np.floating,
     ) -> None:
         """
@@ -234,7 +234,7 @@ class UniformTorques(NoForces):
         self.torque = torque * direction
 
     def apply_torques(
-        self, system: "RodType | RigidBodyType", time: float = 0.0
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         n_elems = system.n_elems
         torque_on_one_element = (
@@ -273,7 +273,9 @@ class UniformForces(NoForces):
         super(UniformForces, self).__init__()
         self.force = (force * direction).reshape(3, 1)
 
-    def apply_forces(self, rod: "RodType | RigidBodyType", time: float = 0.0) -> None:
+    def apply_forces(
+        self, rod: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
+    ) -> None:
         force_on_one_element = self.force / rod.n_elems
 
         rod.external_forces += force_on_one_element
@@ -310,14 +312,14 @@ class MuscleTorques(NoForces):
 
     def __init__(
         self,
-        base_length: np.floating,
+        base_length: float,  # TODO: Is this necessary?
         b_coeff: NDArray[np.floating],
-        period: np.floating,
-        wave_number: np.floating,
-        phase_shift: np.floating,
+        period: float,
+        wave_number: float,
+        phase_shift: float,
         direction: NDArray[np.floating],
         rest_lengths: NDArray[np.floating],
-        ramp_up_time: np.floating,
+        ramp_up_time: float,
         with_spline: bool = False,
     ) -> None:
         """
@@ -346,12 +348,12 @@ class MuscleTorques(NoForces):
         super(MuscleTorques, self).__init__()
 
         self.direction = direction  # Direction torque applied
-        self.angular_frequency = 2.0 * np.pi / period
-        self.wave_number = wave_number
-        self.phase_shift = phase_shift
+        self.angular_frequency = np.float64(2.0 * np.pi / period)
+        self.wave_number = np.float64(wave_number)
+        self.phase_shift = np.float64(phase_shift)
 
         assert ramp_up_time > 0.0
-        self.ramp_up_time = ramp_up_time
+        self.ramp_up_time = np.float64(ramp_up_time)
 
         # s is the position of nodes on the rod, we go from node=1 to node=nelem-1, because there is no
         # torques applied by first and last node on elements. Reason is that we cannot apply torque in an
@@ -370,7 +372,9 @@ class MuscleTorques(NoForces):
         else:
             self.my_spline = np.full_like(self.s, fill_value=1.0)
 
-    def apply_torques(self, rod: "RodType | RigidBodyType", time: float = 0.0) -> None:
+    def apply_torques(
+        self, rod: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
+    ) -> None:
         self.compute_muscle_torques(
             time,
             self.my_spline,
@@ -501,8 +505,8 @@ class EndpointForcesSinusoidal(NoForces):
 
     def __init__(
         self,
-        start_force_mag: np.floating,
-        end_force_mag: np.floating,
+        start_force_mag: float,
+        end_force_mag: float,
         ramp_up_time: float = 0.0,
         tangent_direction: NDArray[np.floating] = np.array([0, 0, 1]),
         normal_direction: NDArray[np.floating] = np.array([0, 1, 0]),
@@ -526,18 +530,18 @@ class EndpointForcesSinusoidal(NoForces):
         """
         super(EndpointForcesSinusoidal, self).__init__()
         # Start force
-        self.start_force_mag = start_force_mag
-        self.end_force_mag = end_force_mag
+        self.start_force_mag = np.float64(start_force_mag)
+        self.end_force_mag = np.float64(end_force_mag)
 
         # Applied force directions
         self.normal_direction = normal_direction
         self.roll_direction = np.cross(normal_direction, tangent_direction)
 
         assert ramp_up_time >= 0.0
-        self.ramp_up_time = ramp_up_time
+        self.ramp_up_time = np.float64(ramp_up_time)
 
     def apply_forces(
-        self, system: "RodType | RigidBodyType", time: float = 0.0
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
 
         if time < self.ramp_up_time:

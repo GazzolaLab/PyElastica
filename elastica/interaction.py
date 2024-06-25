@@ -46,8 +46,8 @@ class InteractionPlane(NoForces):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
         plane_origin: NDArray[np.floating],
         plane_normal: NDArray[np.floating],
     ) -> None:
@@ -66,13 +66,15 @@ class InteractionPlane(NoForces):
             2D (dim, 1) array containing data with 'float' type.
             The normal vector of the plane.
         """
-        self.k = k
-        self.nu = nu
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1e-4)
         self.plane_origin = plane_origin.reshape(3, 1)
         self.plane_normal = plane_normal.reshape(3)
-        self.surface_tol = 1e-4
 
-    def apply_forces(self, system: RodType, time: float = 0.0) -> None:
+    def apply_forces(
+        self, system: RodType, time: np.floating = np.float64(0.0)
+    ) -> None:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 
@@ -142,11 +144,11 @@ class AnisotropicFrictionalPlane(InteractionPlane):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
         plane_origin: NDArray[np.floating],
         plane_normal: NDArray[np.floating],
-        slip_velocity_tol: np.floating,
+        slip_velocity_tol: float,
         static_mu_array: NDArray[np.floating],
         kinetic_mu_array: NDArray[np.floating],
     ) -> None:
@@ -174,7 +176,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
             [forward, backward, sideways] kinetic friction coefficients.
         """
         InteractionPlane.__init__(self, k, nu, plane_origin, plane_normal)
-        self.slip_velocity_tol = slip_velocity_tol
+        self.slip_velocity_tol = np.float64(slip_velocity_tol)
         (
             self.static_mu_forward,
             self.static_mu_backward,
@@ -189,7 +191,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
     def apply_forces(
-        self, system: "RodType | RigidBodyType", time: float = 0.0
+        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
     ) -> None:
         """
         Call numba implementation to apply friction forces
@@ -386,7 +388,7 @@ class SlenderBodyTheory(NoForces):
 
     """
 
-    def __init__(self, dynamic_viscosity: np.floating) -> None:
+    def __init__(self, dynamic_viscosity: float) -> None:
         """
 
         Parameters
@@ -395,9 +397,11 @@ class SlenderBodyTheory(NoForces):
             Dynamic viscosity of the fluid.
         """
         super(SlenderBodyTheory, self).__init__()
-        self.dynamic_viscosity = dynamic_viscosity
+        self.dynamic_viscosity = np.float64(dynamic_viscosity)
 
-    def apply_forces(self, system: RodType, time: float = 0.0) -> None:
+    def apply_forces(
+        self, system: RodType, time: np.floating = np.float64(0.0)
+    ) -> None:
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in
@@ -425,18 +429,20 @@ class SlenderBodyTheory(NoForces):
 class InteractionPlaneRigidBody(NoForces):
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
         plane_origin: NDArray[np.floating],
         plane_normal: NDArray[np.floating],
     ) -> None:
-        self.k = k
-        self.nu = nu
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1e-4)
         self.plane_origin = plane_origin.reshape(3, 1)
         self.plane_normal = plane_normal.reshape(3)
-        self.surface_tol = 1e-4
 
-    def apply_forces(self, system: RigidBodyType, time: float = 0.0) -> None:
+    def apply_forces(
+        self, system: RigidBodyType, time: np.floating = np.float64(0.0)
+    ) -> None:
         """
         This function computes the plane force response on the rigid body, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper

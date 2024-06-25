@@ -1,7 +1,7 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_systems"]
 
-from typing import Optional
+pass
 
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
@@ -32,7 +32,7 @@ class FreeJoint:
     # pass the k and nu for the forces
     # also the necessary rods for the joint
     # indices should be 0 or -1, we will provide wrappers for users later
-    def __init__(self, k: np.floating, nu: np.floating) -> None:
+    def __init__(self, k: float, nu: float) -> None:
         """
 
         Parameters
@@ -43,8 +43,8 @@ class FreeJoint:
            Damping coefficient of the joint.
 
         """
-        self.k = k
-        self.nu = nu
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
 
     def apply_forces(
         self,
@@ -142,9 +142,9 @@ class HingeJoint(FreeJoint):
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
-        kt: np.floating,
+        k: float,
+        nu: float,
+        kt: float,
         normal_direction: NDArray[np.floating],
     ) -> None:
         """
@@ -167,7 +167,7 @@ class HingeJoint(FreeJoint):
         self.normal_direction = normal_direction / np.linalg.norm(normal_direction)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
-        self.kt = kt
+        self.kt = np.float64(kt)
 
     # Apply force is same as free joint
     def apply_forces(
@@ -236,11 +236,11 @@ class FixedJoint(FreeJoint):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
-        kt: np.floating,
-        nut: np.floating = np.float64(0.0),
-        rest_rotation_matrix: Optional[NDArray[np.floating]] = None,
+        k: float,
+        nu: float,
+        kt: float,
+        nut: float = 0.0,
+        rest_rotation_matrix: NDArray[np.floating] | None = None,
     ) -> None:
         """
 
@@ -254,7 +254,7 @@ class FixedJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         nut: float = 0.
             Rotational damping coefficient of the joint.
-        rest_rotation_matrix: np.array
+        rest_rotation_matrix: np.array | None
             2D (3,3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
@@ -265,8 +265,8 @@ class FixedJoint(FreeJoint):
         super().__init__(k, nu)
         # additional in-plane constraint through restoring torque
         # stiffness of the restoring constraint -- tuned empirically
-        self.kt = kt
-        self.nut = nut
+        self.kt = np.float64(kt)
+        self.nut = np.float64(nut)
 
         # TODO: compute the rest rotation matrix directly during initialization
         #  as soon as systems (e.g. `rod_one` and `rod_two`) and indices (e.g. `index_one` and `index_two`)

@@ -196,8 +196,8 @@ class RodCylinderContact(NoContact):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
         velocity_damping_coefficient: float = 0.0,
         friction_coefficient: float = 0.0,
     ) -> None:
@@ -216,10 +216,10 @@ class RodCylinderContact(NoContact):
             For Coulombic friction coefficient for rigid-body and rod contact.
         """
         super(RodCylinderContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.velocity_damping_coefficient = velocity_damping_coefficient
-        self.friction_coefficient = friction_coefficient
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.velocity_damping_coefficient = np.float64(velocity_damping_coefficient)
+        self.friction_coefficient = np.float64(friction_coefficient)
 
     @property
     def _allowed_system_two(self) -> list[Type]:
@@ -287,7 +287,7 @@ class RodSelfContact(NoContact):
 
     """
 
-    def __init__(self, k: np.floating, nu: np.floating) -> None:
+    def __init__(self, k: float, nu: float) -> None:
         """
 
         Parameters
@@ -298,8 +298,8 @@ class RodSelfContact(NoContact):
             Contact damping constant.
         """
         super(RodSelfContact, self).__init__()
-        self.k = k
-        self.nu = nu
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
 
     def _check_systems_validity(
         self,
@@ -364,8 +364,8 @@ class RodSphereContact(NoContact):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
         velocity_damping_coefficient: float = 0.0,
         friction_coefficient: float = 0.0,
     ) -> None:
@@ -383,9 +383,9 @@ class RodSphereContact(NoContact):
             For Coulombic friction coefficient for rigid-body and rod contact.
         """
         super(RodSphereContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.velocity_damping_coefficient = velocity_damping_coefficient
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.velocity_damping_coefficient = np.float64(velocity_damping_coefficient)
         self.friction_coefficient = np.float64(friction_coefficient)
 
     @property
@@ -465,8 +465,8 @@ class RodPlaneContact(NoContact):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
     ) -> None:
         """
         Parameters
@@ -477,9 +477,9 @@ class RodPlaneContact(NoContact):
             Contact damping constant.
         """
         super(RodPlaneContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
 
     @property
     def _allowed_system_two(self) -> list[Type]:
@@ -535,9 +535,9 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
-        slip_velocity_tol: np.floating,
+        k: float,
+        nu: float,
+        slip_velocity_tol: float,
         static_mu_array: NDArray[np.floating],
         kinetic_mu_array: NDArray[np.floating],
     ) -> None:
@@ -558,9 +558,9 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
             [forward, backward, sideways] kinetic friction coefficients.
         """
         super(RodPlaneContactWithAnisotropicFriction, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
         self.slip_velocity_tol = slip_velocity_tol
         (
             self.static_mu_forward,
@@ -635,8 +635,8 @@ class CylinderPlaneContact(NoContact):
 
     def __init__(
         self,
-        k: np.floating,
-        nu: np.floating,
+        k: float,
+        nu: float,
     ) -> None:
         """
         Parameters
@@ -647,9 +647,9 @@ class CylinderPlaneContact(NoContact):
             Contact damping constant.
         """
         super(CylinderPlaneContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
 
     @property
     def _allowed_system_one(self) -> list[Type]:

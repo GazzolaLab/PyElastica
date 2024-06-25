@@ -120,7 +120,7 @@ class AnalyticalLinearDamper(DamperBase):
     """
 
     def __init__(
-        self, damping_constant: np.floating, time_step: np.floating, **kwargs: Any
+        self, damping_constant: float, time_step: float, **kwargs: Any
     ) -> None:
         """
         Analytical linear damper initializer

@@ -4,7 +4,7 @@ import numpy as np
 from numpy import zeros, empty
 from numpy.typing import NDArray
 import numba
-from numba import njit, float64
+from numba import njit
 from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_vector_ghost,
 )
@@ -22,7 +22,7 @@ def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.floating], N
 
 
 @njit(cache=True)  # type: ignore
-def _trapezoidal(array_collection: NDArray[np.float64]) -> NDArray[np.float64]:
+def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way
 
