@@ -1,18 +1,24 @@
 __doc__ = """Reset the ghost vectors or scalar variables using functions implemented in Numba"""
 
+import numpy
+from numpy.typing import NDArray
 from numba import njit
 
 
 @njit(cache=True)  # type: ignore
-def _reset_vector_ghost(input, ghost_idx, reset_value=0.0):
+def _reset_vector_ghost(
+    input: NDArray[np.floating],
+    ghost_idx: NDArray[np.integer],
+    reset_value: np.floating = np.float64(0.0),
+):
     """
     This function resets the ghost of an input vector collection. Default reset value is 0.0.
 
     Parameters
     ----------
-    input
-    ghost_idx
-    reset_value
+    input : NDArray[np.floating]
+    ghost_idx : NDArray[np.integer]
+    reset_value : np.floating
 
     Returns
     -------
@@ -40,15 +46,19 @@ def _reset_vector_ghost(input, ghost_idx, reset_value=0.0):
 
 
 @njit(cache=True)  # type: ignore
-def _reset_scalar_ghost(input, ghost_idx, reset_value=0.0):
+def _reset_scalar_ghost(
+    input: NDArray[np.floating],
+    ghost_idx: NDArray[np.integer],
+    reset_value: np.floating = np.float64(0.0),
+):
     """
     This function resets the ghost of a scalar collection. Default reset value is 0.0.
 
     Parameters
     ----------
-    input
-    ghost_idx
-    reset_value
+    input : NDArray[np.floating]
+    ghost_idx : NDArray[np.integer]
+    reset_value : np.floating
 
     Returns
     -------
