@@ -58,7 +58,7 @@ SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 
 # Indexing types
 # TODO: Maybe just use slice??
-ConstrainingIndex: TypeAlias = list[int] | tuple[int] | np.typing.NDArray | None
+ConstrainingIndex: TypeAlias = list[int] | tuple[int, ...] | np.typing.NDArray
 ConnectionIndex: TypeAlias = (
     int | np.int_ | list[int] | tuple[int] | np.typing.NDArray | None
 )

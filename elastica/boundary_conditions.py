@@ -40,8 +40,8 @@ class ConstraintBase(ABC, Generic[S]):
     def __init__(
         self,
         *args: Any,
-        constrained_position_idx: ConstrainingIndex,
-        constrained_director_idx: ConstrainingIndex,
+        constrained_position_idx: ConstrainingIndex = (),
+        constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
     ) -> None:
         """Initialize boundary condition"""

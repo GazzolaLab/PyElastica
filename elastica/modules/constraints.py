@@ -151,8 +151,8 @@ class _Constraint:
         self,
         cls: Type[ConstraintBase],
         *args: Any,
-        constrained_position_idx: ConstrainingIndex = None,
-        constrained_director_idx: ConstrainingIndex = None,
+        constrained_position_idx: ConstrainingIndex = (),
+        constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
     ) -> Self:
         """
