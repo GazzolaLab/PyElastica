@@ -215,7 +215,13 @@ class _Constraint:
         )
         try:
             bc = self._bc_cls(
-                *positions, *directors, *self._args, _system=system, **self._kwargs
+                *positions,
+                *directors,
+                *self._args,
+                _system=system,
+                constrained_position_idx=self.constrained_position_idx,
+                constrained_director_idx=self.constrained_director_idx,
+                **self._kwargs,
             )
             return bc
         except (TypeError, IndexError):

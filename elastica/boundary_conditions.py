@@ -11,7 +11,7 @@ from numba import njit
 
 from elastica._linalg import _batch_matvec, _batch_matrix_transpose
 from elastica._rotations import _get_rotation_matrix
-from elastica.typing import SystemType, RodType, RigidBodyType
+from elastica.typing import SystemType, RodType, RigidBodyType, ConstrainingIndex
 
 
 S = TypeVar("S")
@@ -34,18 +34,24 @@ class ConstraintBase(ABC, Generic[S]):
     """
 
     _system: S
-    _constrained_position_idx: np.ndarray
-    _constrained_director_idx: np.ndarray
+    _constrained_position_idx: NDArray[np.integer]
+    _constrained_director_idx: NDArray[np.integer]
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        constrained_position_idx: ConstrainingIndex,
+        constrained_director_idx: ConstrainingIndex,
+        **kwargs: Any,
+    ) -> None:
         """Initialize boundary condition"""
         try:
             self._system = kwargs["_system"]
             self._constrained_position_idx = np.array(
-                kwargs.get("constrained_position_idx", []), dtype=int
+                constrained_position_idx, dtype=np.int_
             )
             self._constrained_director_idx = np.array(
-                kwargs.get("constrained_director_idx", []), dtype=int
+                constrained_director_idx, dtype=np.int_
             )
         except KeyError:
             raise KeyError(
