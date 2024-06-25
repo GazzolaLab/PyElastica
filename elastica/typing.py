@@ -40,7 +40,6 @@ SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"
 
-#    NoForces | NoContact | FreeJoint | FreeBC | DamperBase | CallBackBaseClass
 
 # Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
 StateType: TypeAlias = "State"
