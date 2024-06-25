@@ -14,17 +14,17 @@ class Sphere(RigidBodyBase):
     def __init__(
         self,
         center: NDArray[np.floating],
-        base_radius: np.floating,
-        density: np.floating,
+        base_radius: float,
+        density: float,
     ) -> None:
         """
         Rigid body sphere initializer.
 
         Parameters
         ----------
-        center
-        base_radius
-        density
+        center : NDArray[np.floating]
+        base_radius : float
+        density : float
         """
 
         super().__init__()
@@ -41,8 +41,8 @@ class Sphere(RigidBodyBase):
         assert base_radius > 0.0, "base_radius must be positive"
         assert density > 0.0, "density must be positive"
 
-        self.radius = base_radius
-        self.density = density
+        self.radius = np.float64(base_radiu)
+        self.density = np.float64(density)
         self.length = np.float64(2 * base_radius)
         # This is for a rigid body cylinder
         self.volume = np.float64(4.0 / 3.0 * np.pi * base_radius**3)

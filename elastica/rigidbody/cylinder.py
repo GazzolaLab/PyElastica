@@ -16,21 +16,21 @@ class Cylinder(RigidBodyBase):
         start: NDArray[np.floating],
         direction: NDArray[np.floating],
         normal: NDArray[np.floating],
-        base_length: np.floating,
-        base_radius: np.floating,
-        density: np.floating,
+        base_length: float,
+        base_radius: float,
+        density: float,
     ) -> None:
         """
         Rigid body cylinder initializer.
 
         Parameters
         ----------
-        start
-        direction
-        normal
-        base_length
-        base_radius
-        density
+        start : NDArray[np.floating]
+        direction : NDArray[np.floating]
+        normal : NDArray[np.floating]
+        base_length : float
+        base_radius : float
+        density : float
         """
 
         def _check_array_size(
@@ -66,9 +66,9 @@ class Cylinder(RigidBodyBase):
         normal = normal.reshape((3, 1))
         tangents = direction.reshape((3, 1))
         binormal = _batch_cross(tangents, normal)
-        self.radius = base_radius
-        self.length = base_length
-        self.density = density
+        self.radius = np.float64(base_radius)
+        self.length = np.float64(base_length)
+        self.density = np.float64(density)
 
         dim: int = MaxDimension.value()
 

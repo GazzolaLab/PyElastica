@@ -79,73 +79,73 @@ class CosseratRod(RodBase, KnotTheory):
         ----------
         n_elems: int
             The number of elements of the rod.
-        position_collection: numpy.ndarray
+        position_collection: NDArray[np.floating]
             2D (dim, n_nodes) array containing data with 'float' type.
             Array containing node position vectors.
-        velocity_collection: numpy.ndarray
+        velocity_collection: NDArray[np.floating]
             2D (dim, n_nodes) array containing data with 'float' type.
             Array containing node velocity vectors.
-        acceleration_collection: numpy.ndarray
+        acceleration_collection: NDArray[np.floating]
             2D (dim, n_nodes) array containing data with 'float' type.
             Array containing node acceleration vectors.
-        omega_collection: numpy.ndarray
+        omega_collection: NDArray[np.floating]
             2D (dim, n_elems) array containing data with 'float' type.
             Array containing element angular velocity vectors.
-        alpha_collection: numpy.ndarray
+        alpha_collection: NDArray[np.floating]
             2D (dim, n_elems) array containing data with 'float' type.
             Array contining element angular acceleration vectors.
-        director_collection: numpy.ndarray
+        director_collection: NDArray[np.floating]
             3D (dim, dim, n_elems) array containing data with 'float' type.
             Array containing element director matrices.
-        rest_lengths: numpy.ndarray
+        rest_lengths: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element lengths at rest configuration.
-        density: numpy.ndarray
+        density: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod elements densities.
-        volume: numpy.ndarray
+        volume: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element volumes.
-        mass: numpy.ndarray
+        mass: NDArray[np.floating]
             1D (n_nodes) array containing data with 'float' type.
             Rod node masses. Note that masses are stored on the nodes, not on elements.
-        mass_second_moment_of_inertia: numpy.ndarray
+        mass_second_moment_of_inertia: NDArray[np.floating]
             3D (dim, dim, n_elems) array containing data with 'float' type.
             Rod element mass second moment of interia.
-        inv_mass_second_moment_of_inertia: numpy.ndarray
+        inv_mass_second_moment_of_inertia: NDArray[np.floating]
             3D (dim, dim, n_elems) array containing data with 'float' type.
             Rod element inverse mass moment of inertia.
-        rest_voronoi_lengths: numpy.ndarray
+        rest_voronoi_lengths: NDArray[np.floating]
             1D (n_voronoi) array containing data with 'float' type.
             Rod lengths on the voronoi domain at the rest configuration.
-        internal_forces: numpy.ndarray
+        internal_forces: NDArray[np.floating]
             2D (dim, n_nodes) array containing data with 'float' type.
             Rod node internal forces. Note that internal forces are stored on the node, not on elements.
-        internal_torques: numpy.ndarray
+        internal_torques: NDArray[np.floating]
             2D (dim, n_elems) array containing data with 'float' type.
             Rod element internal torques.
-        external_forces: numpy.ndarray
+        external_forces: NDArray[np.floating]
             2D (dim, n_nodes) array containing data with 'float' type.
             External forces acting on rod nodes.
-        external_torques: numpy.ndarray
+        external_torques: NDArray[np.floating]
             2D (dim, n_elems) array containing data with 'float' type.
             External torques acting on rod elements.
-        lengths: numpy.ndarray
+        lengths: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element lengths.
-        tangents: numpy.ndarray
+        tangents: NDArray[np.floating]
             2D (dim, n_elems) array containing data with 'float' type.
             Rod element tangent vectors.
-        radius: numpy.ndarray
+        radius: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element radius.
-        dilatation: numpy.ndarray
+        dilatation: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element dilatation.
-        voronoi_dilatation: numpy.ndarray
+        voronoi_dilatation: NDArray[np.floating]
             1D (n_voronoi) array containing data with 'float' type.
             Rod dilatation on voronoi domain.
-        dilatation_rate: numpy.ndarray
+        dilatation_rate: NDArray[np.floating]
             1D (n_elems) array containing data with 'float' type.
             Rod element dilatation rates.
     """
@@ -253,12 +253,12 @@ class CosseratRod(RodBase, KnotTheory):
         start: NDArray[np.floating],
         direction: NDArray[np.floating],
         normal: NDArray[np.floating],
-        base_length: np.floating,
-        base_radius: np.floating,
-        density: np.floating,
+        base_length: float,
+        base_radius: float,
+        density: float,
         *,
         nu: Optional[np.floating] = None,
-        youngs_modulus: np.floating,
+        youngs_modulus: float,
         **kwargs: Any,
     ) -> Self:
         """
@@ -276,21 +276,21 @@ class CosseratRod(RodBase, KnotTheory):
         n_elements : int
             Number of element. Must be greater than 3.
             Generally recommended to start with 40-50, and adjust the resolution.
-        start : NDArray[3, float]
+        start : NDArray[np.floating]
             Starting coordinate in 3D
-        direction : NDArray[3, float]
+        direction : NDArray[np.floating]
             Direction of the rod in 3D
-        normal : NDArray[3, float]
+        normal : NDArray[np.floating]
             Normal vector of the rod in 3D
-        base_length : np.floating
+        base_length : float
             Total length of the rod
-        base_radius : np.floating
+        base_radius : float
             Uniform radius of the rod
-        density : np.floating
+        density : float
             Density of the rod
-        nu : np.floating
+        nu : float
             Damping coefficient for Rayleigh damping
-        youngs_modulus : np.floating
+        youngs_modulus : float
             Young's modulus
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
@@ -349,10 +349,10 @@ class CosseratRod(RodBase, KnotTheory):
             n_elements,
             direction,
             normal,
-            base_length,
-            base_radius,
-            density,
-            youngs_modulus,
+            np.float64(base_length),
+            np.float64(base_radius),
+            np.float64(density),
+            np.float64(youngs_modulus),
             rod_origin_position=start,
             ring_rod_flag=ring_rod_flag,
             **kwargs,
@@ -401,12 +401,12 @@ class CosseratRod(RodBase, KnotTheory):
         ring_center_position: NDArray[np.floating],
         direction: NDArray[np.floating],
         normal: NDArray[np.floating],
-        base_length: np.floating,
-        base_radius: np.floating,
-        density: np.floating,
+        base_length: float,
+        base_radius: float,
+        density: float,
         *,
-        nu: Optional[np.floating] = None,
-        youngs_modulus: np.floating,
+        nu: Optional[float] = None,
+        youngs_modulus: float,
         **kwargs: Any,
     ) -> Self:
         """
@@ -423,21 +423,21 @@ class CosseratRod(RodBase, KnotTheory):
         ----------
         n_elements : int
             Number of element. Must be greater than 3. Generarally recommended to start with 40-50, and adjust the resolution.
-        ring_center_position : NDArray[3, float]
+        ring_center_position : NDArray[np.floating]
             Center coordinate for ring rod in 3D
-        direction : NDArray[3, float]
+        direction : NDArray[np.floating]
             Direction of the rod in 3D
-        normal : NDArray[3, float]
+        normal : NDArray[np.floating]
             Normal vector of the rod in 3D
-        base_length : np.floating
+        base_length : float
             Total length of the rod
-        base_radius : np.floating
+        base_radius : float
             Uniform radius of the rod
-        density : np.floating
+        density : float
             Density of the rod
-        nu : np.floating
+        nu : float | None
             Damping coefficient for Rayleigh damping
-        youngs_modulus : np.floating
+        youngs_modulus : float
             Young's modulus
         **kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
@@ -497,10 +497,10 @@ class CosseratRod(RodBase, KnotTheory):
             n_elements,
             direction,
             normal,
-            base_length,
-            base_radius,
-            density,
-            youngs_modulus,
+            np.float64(base_length),
+            np.float64(base_radius),
+            np.float64(density),
+            np.float64(youngs_modulus),
             rod_origin_position=ring_center_position,
             ring_rod_flag=ring_rod_flag,
             **kwargs,

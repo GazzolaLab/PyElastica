@@ -2,11 +2,14 @@ __doc__ = """"""
 
 from elastica.surface.surface_base import SurfaceBase
 import numpy as np
+from numpy.typing import NDArray
 from elastica.utils import Tolerance
 
 
 class Plane(SurfaceBase):
-    def __init__(self, plane_origin: np.ndarray, plane_normal: np.ndarray):
+    def __init__(
+        self, plane_origin: NDArray[np.floating], plane_normal: NDArray[np.floating]
+    ):
         """
         Plane surface initializer.
 
