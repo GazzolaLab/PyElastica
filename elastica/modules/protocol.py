@@ -1,5 +1,5 @@
 from typing import Protocol, Generator, TypeVar, Any, Type, overload
-from typing_extensions import Self  # 3.11: from typing import Self
+from typing_extensions import Self  # python 3.11: from typing import Self
 
 from abc import abstractmethod
 
