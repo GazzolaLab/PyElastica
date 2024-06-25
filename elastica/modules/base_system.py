@@ -186,6 +186,10 @@ class BaseSystemCollection(MutableSequence):
 
         # construct memory block
         self.__final_systems = construct_memory_block_structures(self._systems)
+        self._systems.extend(
+            self.__final_systems
+        )  # FIXME: We need this to make ring-rod working.
+        # But probably need to be refactored
         # TODO: try to remove the _systems list for memory optimization
         # self._systems.clear()
         # del self._systems

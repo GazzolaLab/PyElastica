@@ -376,6 +376,8 @@ def _batch_vector_sum(
 def _batch_matrix_transpose(input_matrix: NDArray[np.floating]) -> NDArray[np.floating]:
     """
     This function takes an batch input matrix and transpose it.
+    [i,j,k] -> [j,i,k]
+
     Parameters
     ----------
     input_matrix

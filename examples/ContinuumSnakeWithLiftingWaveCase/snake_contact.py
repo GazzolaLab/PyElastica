@@ -1,4 +1,5 @@
 __doc__ = """Rod plane contact with anistropic friction (no static friction)"""
+from typing import Type
 
 import numpy as np
 from elastica._linalg import (

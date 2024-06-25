@@ -66,18 +66,15 @@ class ConstraintBase(ABC, Generic[S]):
     @property
     def constrained_position_idx(self) -> np.ndarray:
         """get position-indices passed to "using" """
-        # TODO: This should be immutable somehow
         return self._constrained_position_idx
 
     @property
     def constrained_director_idx(self) -> np.ndarray:
         """get director-indices passed to "using" """
-        # TODO: This should be immutable somehow
         return self._constrained_director_idx
 
     @abstractmethod
     def constrain_values(self, system: S, time: np.floating) -> None:
-        # TODO: In the future, we can remove rod and use self.system
         """
         Constrain values (position and/or directors) of a rod object.
 
@@ -88,11 +85,10 @@ class ConstraintBase(ABC, Generic[S]):
         time : float
             The time of simulation.
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def constrain_rates(self, system: S, time: np.floating) -> None:
-        # TODO: In the future, we can remove rod and use self.system
         """
         Constrain rates (velocity and/or omega) of a rod object.
 
@@ -104,7 +100,7 @@ class ConstraintBase(ABC, Generic[S]):
             The time of simulation.
 
         """
-        raise NotImplementedError
+        pass
 
 
 class FreeBC(ConstraintBase):
