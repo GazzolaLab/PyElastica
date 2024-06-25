@@ -1,6 +1,7 @@
 __doc__ = """
 Implementation of a rigid body cylinder.
 """
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
@@ -33,7 +34,8 @@ class Cylinder(RigidBodyBase):
         density : float
         """
 
-        def _check_array_size(
+        # FIXME: Refactor
+        def assert_check_array_size(
             to_check: NDArray[np.floating], name: str, expected: int = 3
         ) -> None:
             array_size = to_check.size
@@ -42,26 +44,23 @@ class Cylinder(RigidBodyBase):
                 f"Expected: {expected}, but got: {array_size}"
             )
 
-        def _check_lower_bound(
-            to_check: np.floating, name: str, lower_bound: np.floating = np.float64(0.0)
+        # FIXME: Refactor
+        def assert_check_lower_bound(
+            to_check: float, name: str, lower_bound: float = 0.0
         ) -> None:
             assert (
                 to_check > lower_bound
             ), f"Value for '{name}' ({to_check}) must be at lease {lower_bound}. "
 
-        _check_array_size(start, "start")
-        _check_array_size(direction, "direction")
-        _check_array_size(normal, "normal")
+        assert_check_array_size(start, "start")
+        assert_check_array_size(direction, "direction")
+        assert_check_array_size(normal, "normal")
 
-        _check_lower_bound(base_length, "base_length")
-        _check_lower_bound(base_radius, "base_radius")
-        _check_lower_bound(density, "density")
+        assert_check_lower_bound(base_length, "base_length")
+        assert_check_lower_bound(base_radius, "base_radius")
+        assert_check_lower_bound(density, "density")
 
         super().__init__()
-
-        # rigid body does not have elements it only has one node. We are setting n_elems to
-        # zero for only make code to work. _bootstrap_from_data requires n_elems to be define
-        self.n_elem: int = 1
 
         normal = normal.reshape((3, 1))
         tangents = direction.reshape((3, 1))
@@ -113,3 +112,16 @@ class Cylinder(RigidBodyBase):
         self.director_collection[0, ...] = normal
         self.director_collection[1, ...] = binormal
         self.director_collection[2, ...] = tangents
+
+
+if TYPE_CHECKING:
+    from .protocol import RigidBodyProtocol
+
+    _: RigidBodyProtocol = Cylinder(
+        start=np.zeros(3),
+        direction=np.ones(3),
+        normal=np.ones(3),
+        base_length=1.0,
+        base_radius=1.0,
+        density=1.0,
+    )

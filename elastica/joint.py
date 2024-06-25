@@ -1,8 +1,6 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_systems"]
 
-pass
-
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
 

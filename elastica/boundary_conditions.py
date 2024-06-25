@@ -1,6 +1,5 @@
 __doc__ = """ Built-in boundary condition implementationss """
 
-import warnings
 from typing import Any, Optional, TypeVar, Generic
 
 import numpy as np
@@ -236,15 +235,6 @@ class OneEndFixedBC(ConstraintBase):
         """
         velocity_collection[..., 0] = 0.0
         omega_collection[..., 0] = 0.0
-
-
-class OneEndFixedRod(OneEndFixedBC):
-    # Please clear this part beyond version 0.3.0
-    """Deprecated 0.2.1: Same implementation as OneEndFixedBC"""
-    warnings.warn(
-        "OneEndFixedRod is deprecated and renamed to OneEndFixedBC. The deprecated name will be removed in the future.",
-        DeprecationWarning,
-    )
 
 
 class GeneralConstraint(ConstraintBase):

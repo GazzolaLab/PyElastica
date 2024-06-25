@@ -17,8 +17,6 @@ from elastica.boundary_conditions import (
     GeneralConstraint,
     FixedConstraint,
     HelicalBucklingBC,
-    FreeRod,
-    OneEndFixedRod,
 )
 from elastica.external_forces import (
     NoForces,

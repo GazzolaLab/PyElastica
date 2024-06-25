@@ -1,6 +1,7 @@
 __doc__ = """
 Implementation of a sphere rigid body.
 """
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
@@ -29,10 +30,6 @@ class Sphere(RigidBodyBase):
 
         super().__init__()
 
-        # rigid body does not have elements it only have one node. We are setting n_elems to
-        # zero for only make code to work. _bootstrap_from_data requires n_elems to be defined
-        self.n_elems: int = 1
-
         dim: int = MaxDimension.value()
 
         assert (
@@ -41,7 +38,7 @@ class Sphere(RigidBodyBase):
         assert base_radius > 0.0, "base_radius must be positive"
         assert density > 0.0, "density must be positive"
 
-        self.radius = np.float64(base_radiu)
+        self.radius = np.float64(base_radius)
         self.density = np.float64(density)
         self.length = np.float64(2 * base_radius)
         # This is for a rigid body cylinder
@@ -82,3 +79,13 @@ class Sphere(RigidBodyBase):
         self.director_collection[0, ...] = normal
         self.director_collection[1, ...] = binormal
         self.director_collection[2, ...] = tangents
+
+
+if TYPE_CHECKING:
+    from .protocol import RigidBodyProtocol
+
+    _: RigidBodyProtocol = Sphere(
+        center=np.zeros(3),
+        base_radius=1.0,
+        density=1.0,
+    )

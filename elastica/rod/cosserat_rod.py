@@ -1135,8 +1135,8 @@ if TYPE_CHECKING:
         np.zeros(3),
         np.array([0, 1, 0]),
         np.array([0, 0, 1]),
-        np.float64(1.0),
-        np.float64(0.1),
-        np.float64(1.0),
-        youngs_modulus=np.float64(1.0),
+        1.0,
+        0.1,
+        1.0,
+        youngs_modulus=1.0,
     )

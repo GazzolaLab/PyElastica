@@ -1,6 +1,6 @@
 __doc__ = """Reset the ghost vectors or scalar variables using functions implemented in Numba"""
 
-import numpy
+import numpy as np
 from numpy.typing import NDArray
 from numba import njit
 
