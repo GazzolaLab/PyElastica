@@ -508,8 +508,8 @@ class EndpointForcesSinusoidal(NoForces):
         start_force_mag: float,
         end_force_mag: float,
         ramp_up_time: float = 0.0,
-        tangent_direction: NDArray[np.floating] = np.array([0, 0, 1]),
-        normal_direction: NDArray[np.floating] = np.array([0, 1, 0]),
+        tangent_direction: NDArray[np.floating] = np.array([0., 0., 1.]),
+        normal_direction: NDArray[np.floating] = np.array([0., 1., 0.]),
     ) -> None:
         """
 
