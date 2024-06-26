@@ -1140,3 +1140,13 @@ if TYPE_CHECKING:
         1.0,
         youngs_modulus=1.0,
     )
+    _: CosseratRodProtocol = CosseratRod.ring_rod(  # type: ignore[no-redef]
+        3,
+        np.zeros(3),
+        np.array([0, 1, 0]),
+        np.array([0, 0, 1]),
+        1.0,
+        0.1,
+        1.0,
+        youngs_modulus=1.0,
+    )
