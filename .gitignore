@@ -236,3 +236,6 @@ outcmaes/*
 
 # csv files
 *.csv
+
+# ./backend dependencies
+deps
