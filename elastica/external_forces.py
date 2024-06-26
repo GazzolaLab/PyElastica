@@ -77,7 +77,10 @@ class GravityForces(NoForces):
     """
 
     def __init__(
-        self, acc_gravity: NDArray[np.float64] = np.array([0.0, -9.80665, 0.0])
+        self,
+        acc_gravity: NDArray[np.float64] = np.array(
+            [0.0, -9.80665, 0.0]
+        ),  # FIXME: avoid mutable default
     ) -> None:
         """
 
@@ -199,9 +202,9 @@ class EndpointForces(NoForces):
             Applied forces are ramped up until ramp up time.
 
         """
-        factor = min(1.0, time / ramp_up_time)
-        external_forces[..., 0] += start_force * factor  # type: ignore[operator]
-        external_forces[..., -1] += end_force * factor  # type: ignore[operator]
+        factor = min(np.float64(1.0), time / ramp_up_time)
+        external_forces[..., 0] += start_force * factor
+        external_forces[..., -1] += end_force * factor
 
 
 class UniformTorques(NoForces):
@@ -218,7 +221,9 @@ class UniformTorques(NoForces):
     def __init__(
         self,
         torque: np.float64,
-        direction: NDArray[np.float64] = np.array([0.0, 0.0, 0.0]),
+        direction: NDArray[np.float64] = np.array(
+            [0.0, 0.0, 0.0]
+        ),  # FIXME: avoid mutable default
     ) -> None:
         """
 
@@ -258,7 +263,9 @@ class UniformForces(NoForces):
     def __init__(
         self,
         force: np.float64,
-        direction: NDArray[np.float64] = np.array([0.0, 0.0, 0.0]),
+        direction: NDArray[np.float64] = np.array(
+            [0.0, 0.0, 0.0]
+        ),  # FIXME: avoid mutable default
     ) -> None:
         """
 

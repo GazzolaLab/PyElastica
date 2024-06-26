@@ -134,13 +134,13 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
                 # we place first straight rods, then ring rods.
                 # TODO: in future consider a better implementation for packing problem.
                 # +1 is because we want to start from next idx, where periodic boundary starts
-                self.periodic_boundary_nodes_idx += (  # type: ignore
+                self.periodic_boundary_nodes_idx += (
                     self.ghost_nodes_idx[n_straight_rods - 1] + 1
                 )
-                self.periodic_boundary_elems_idx += (  # type: ignore
+                self.periodic_boundary_elems_idx += (
                     self.ghost_elems_idx[1::2][n_straight_rods - 1] + 1
                 )
-                self.periodic_boundary_voronoi_idx += (  # type: ignore
+                self.periodic_boundary_voronoi_idx += (
                     self.ghost_voronoi_idx[2::3][n_straight_rods - 1] + 1
                 )
 

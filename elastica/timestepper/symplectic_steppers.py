@@ -72,7 +72,9 @@ class SymplecticStepperMixin:
         time: np.float64,
         dt: np.float64,
     ) -> np.float64:
-        return SymplecticStepperMixin.do_step(self, self.steps_and_prefactors, SystemCollection, time, dt)  # type: ignore[attr-defined]
+        return SymplecticStepperMixin.do_step(
+            self, self.steps_and_prefactors, SystemCollection, time, dt
+        )
 
     # TODO: Merge with .step method in the future.
     # DEPRECATED: Use .step instead.
@@ -153,7 +155,7 @@ class SymplecticStepperMixin:
         last_kin_step = self.steps_and_prefactors[-1][1]
 
         last_kin_step(System, time, dt)
-        return time + last_kin_prefactor(dt)  # type: ignore[no-any-return]
+        return time + last_kin_prefactor(dt)
 
 
 class PositionVerlet(SymplecticStepperMixin):
