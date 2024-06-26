@@ -304,6 +304,9 @@ class CollectiveSystem:
     def systems(self):
         return self._memory_blocks
 
+    def block_systems(self):
+        return self._memory_blocks
+
     def __getitem__(self, idx):
         return self._memory_blocks[idx]
 

@@ -66,8 +66,8 @@ class Connections:
 
         """
         # For each system identified, get max dofs
-        sys_idx_first = self._get_sys_idx_if_valid(first_rod)
-        sys_idx_second = self._get_sys_idx_if_valid(second_rod)
+        sys_idx_first = self.get_system_index(first_rod)
+        sys_idx_second = self.get_system_index(second_rod)
         sys_dofs_first = first_rod.n_elems
         sys_dofs_second = second_rod.n_elems
 
@@ -118,9 +118,9 @@ class Connections:
             func = functools.partial(
                 apply_forces_and_torques,
                 connect_instance=connect_instance,
-                system_one=self._systems[first_sys_idx],
+                system_one=self[first_sys_idx],
                 first_connect_idx=first_connect_idx,
-                system_two=self._systems[second_sys_idx],
+                system_two=self[second_sys_idx],
                 second_connect_idx=second_connect_idx,
             )
 

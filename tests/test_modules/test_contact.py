@@ -125,7 +125,7 @@ class TestContactMixin:
             sys_coll_with_contacts.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_contacts
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Contacts require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -364,8 +364,8 @@ class TestContactMixin:
             fidx, sidx = _contact.id()
             contact = _contact.instantiate()
 
-            system_one = system_collection_with_rods_in_contact._systems[fidx]
-            system_two = system_collection_with_rods_in_contact._systems[sidx]
+            system_one = system_collection_with_rods_in_contact[fidx]
+            system_two = system_collection_with_rods_in_contact[sidx]
             external_forces_system_one = np.zeros_like(system_one.external_forces)
             external_forces_system_two = np.zeros_like(system_two.external_forces)
 
@@ -393,12 +393,12 @@ class TestContactMixin:
             )
 
             assert_allclose(
-                system_collection_with_rods_in_contact._systems[fidx].external_forces,
+                system_collection_with_rods_in_contact[fidx].external_forces,
                 external_forces_system_one,
                 atol=Tolerance.atol(),
             )
             assert_allclose(
-                system_collection_with_rods_in_contact._systems[sidx].external_forces,
+                system_collection_with_rods_in_contact[sidx].external_forces,
                 external_forces_system_two,
                 atol=Tolerance.atol(),
             )

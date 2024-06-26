@@ -25,11 +25,12 @@ class TestBaseSystemCollection:
     @pytest.fixture(scope="class")
     def load_collection(self):
         bsc = BaseSystemCollection()
+        bsc.extend_allowed_types((int, float, str, np.ndarray))
         # Bypass check, but its fine for testing
-        bsc._systems.append(3)
-        bsc._systems.append(5.0)
-        bsc._systems.append("a")
-        bsc._systems.append(np.random.randn(3, 5))
+        bsc.append(3)
+        bsc.append(5.0)
+        bsc.append("a")
+        bsc.append(np.random.randn(3, 5))
         return bsc
 
     def test_len(self, load_collection):
@@ -70,12 +71,12 @@ class TestBaseSystemCollection:
 
     def test_extend_allowed_types(self, load_collection):
         bsc = load_collection
-        bsc.extend_allowed_types((int, float, str))
 
         from elastica.rod import RodBase
         from elastica.rigidbody import RigidBodyBase
         from elastica.surface import SurfaceBase
 
+        # Types are extended in the fixture
         assert bsc.allowed_sys_types == (
             RodBase,
             RigidBodyBase,
@@ -83,6 +84,7 @@ class TestBaseSystemCollection:
             int,
             float,
             str,
+            np.ndarray,
         )
 
     def test_extend_correctness(self, load_collection):
@@ -121,11 +123,11 @@ class TestBaseSystemCollection:
         bsc = load_collection
         bsc.override_allowed_types((RodBase,))
         with pytest.raises(AssertionError) as excinfo:
-            bsc._get_sys_idx_if_valid(100)
+            bsc.get_system_index(100)
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            load_collection._get_sys_idx_if_valid(np.int_(100))
+            load_collection.get_system_index(np.int_(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_unregistered_system_in_get_sys_index_throws(
@@ -135,11 +137,11 @@ class TestBaseSystemCollection:
         my_mock_rod = mock_rod
 
         with pytest.raises(ValueError) as excinfo:
-            load_collection._get_sys_idx_if_valid(my_mock_rod)
+            load_collection.get_system_index(my_mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
     def test_get_sys_index_returns_correct_idx(self, load_collection):
-        assert load_collection._get_sys_idx_if_valid(1) == 1
+        assert load_collection.get_system_index(1) == 1
 
     @pytest.mark.xfail
     def test_delitem(self, load_collection):
@@ -171,7 +173,7 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
             youngs_modulus=1,
         )
         # Bypass check, but its fine for testing
-        sc._systems.append(rod)
+        sc.append(rod)
 
         return sc, rod
 

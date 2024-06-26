@@ -87,7 +87,7 @@ class TestForcingMixin:
             sys_coll_with_forcings.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_forcings
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.

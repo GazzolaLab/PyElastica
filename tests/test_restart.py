@@ -41,7 +41,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 youngs_modulus=1,
             )
             # Bypass check, but its fine for testing
-            sc._systems.append(rod)
+            sc.append(rod)
 
             # Also add rods to a separate list
             rod_list.append(rod)
@@ -100,7 +100,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 youngs_modulus=1,
             )
             # Bypass check, but its fine for testing
-            simulator_class._systems.append(rod)
+            simulator_class.append(rod)
 
             # Also add rods to a separate list
             rod_list.append(rod)
@@ -199,7 +199,7 @@ class TestRestartFunctionsWithFeaturesUsingRigidBodies:
                 density=1,
             )
             # Bypass check, but its fine for testing
-            sc._systems.append(cylinder)
+            sc.append(cylinder)
 
             # Also add rods to a separate list
             cylinder_list.append(cylinder)

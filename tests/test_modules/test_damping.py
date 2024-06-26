@@ -103,7 +103,7 @@ class TestDampingMixin:
             sys_coll_with_dampers.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_dampers
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -195,11 +195,11 @@ class TestDampingMixin:
 
         for i in [0, 1, -1]:
             x, y = scwd._damping_operators[i]
-            mock_rod = scwd._systems[i]
+            mock_rod = scwd[i]
             # Test system
             assert type(x) is int
             assert type(y.system) is type(mock_rod)
-            assert y.system is mock_rod, f"{len(scwd._systems)}"
+            assert y.system is mock_rod, f"{len(scwd)}"
 
     @pytest.mark.xfail
     def test_dampers_finalize_sorted(self, load_rod_with_dampers):

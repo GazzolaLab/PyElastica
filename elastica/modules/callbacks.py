@@ -51,7 +51,7 @@ class CallBacks:
         -------
 
         """
-        sys_idx: SystemIdxType = self._get_sys_idx_if_valid(system)
+        sys_idx: SystemIdxType = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
         _callbacks: ModuleProtocol = _CallBack(sys_idx)
@@ -77,7 +77,7 @@ class CallBacks:
         current_step: int,
     ) -> None:
         for sys_id, callback in self._callback_operators:
-            callback.make_callback(self._systems[sys_id], time, current_step)
+            callback.make_callback(self[sys_id], time, current_step)
 
 
 class _CallBack:

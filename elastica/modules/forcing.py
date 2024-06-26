@@ -53,7 +53,7 @@ class Forcing:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
         _ext_force_torque = _ExtForceTorque(sys_idx)
@@ -73,10 +73,10 @@ class Forcing:
             forcing_instance = external_force_and_torque.instantiate()
 
             apply_forces = functools.partial(
-                forcing_instance.apply_forces, system=self._systems[sys_id]
+                forcing_instance.apply_forces, system=self[sys_id]
             )
             apply_torques = functools.partial(
-                forcing_instance.apply_torques, system=self._systems[sys_id]
+                forcing_instance.apply_torques, system=self[sys_id]
             )
 
             self._feature_group_synchronize.add_operators(

@@ -57,7 +57,7 @@ class Constraints:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
         _constraint: ModuleProtocol = _Constraint(sys_idx)
@@ -73,13 +73,13 @@ class Constraints:
         """
         from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
-        for block in self.systems():
+        for block in self.block_systems():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
             if hasattr(block, "ring_rod_flag"):
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
-                memory_block_idx = self._get_sys_idx_if_valid(block)
-                block_system = cast(BlockSystemType, self._systems[memory_block_idx])
+                memory_block_idx = self.get_system_index(block)
+                block_system = cast(BlockSystemType, self[memory_block_idx])
                 self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )
@@ -90,7 +90,7 @@ class Constraints:
         # dev : the first index stores the rod index to apply the boundary condition
         # to.
         self._constraints_operators = [
-            (constraint.id(), constraint.instantiate(self._systems[constraint.id()]))
+            (constraint.id(), constraint.instantiate(self[constraint.id()]))
             for constraint in self._constraints_list
         ]
 
@@ -109,11 +109,11 @@ class Constraints:
 
     def _constrain_values(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, constraint in self._constraints_operators:
-            constraint.constrain_values(self._systems[sys_id], time)
+            constraint.constrain_values(self[sys_id], time)
 
     def _constrain_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, constraint in self._constraints_operators:
-            constraint.constrain_rates(self._systems[sys_id], time)
+            constraint.constrain_rates(self[sys_id], time)
 
 
 class _Constraint:

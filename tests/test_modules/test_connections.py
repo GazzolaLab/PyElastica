@@ -201,7 +201,7 @@ class TestConnectionsMixin:
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -401,20 +401,20 @@ class TestConnectionsMixin:
             connect = connection.instantiate()
 
             end_distance_vector = (
-                system_collection_with_connections_and_indices._systems[
+                system_collection_with_connections_and_indices[
                     sidx
                 ].position_collection[..., sconnect]
-                - system_collection_with_connections_and_indices._systems[
+                - system_collection_with_connections_and_indices[
                     fidx
                 ].position_collection[..., fconnect]
             )
             elastic_force = connect.k * end_distance_vector
 
             relative_velocity = (
-                system_collection_with_connections_and_indices._systems[
+                system_collection_with_connections_and_indices[
                     sidx
                 ].velocity_collection[..., sconnect]
-                - system_collection_with_connections_and_indices._systems[
+                - system_collection_with_connections_and_indices[
                     fidx
                 ].velocity_collection[..., fconnect]
             )
@@ -423,16 +423,16 @@ class TestConnectionsMixin:
             contact_force = elastic_force + damping_force
 
             assert_allclose(
-                system_collection_with_connections_and_indices._systems[
-                    fidx
-                ].external_forces[..., fconnect],
+                system_collection_with_connections_and_indices[fidx].external_forces[
+                    ..., fconnect
+                ],
                 contact_force,
                 atol=Tolerance.atol(),
             )
             assert_allclose(
-                system_collection_with_connections_and_indices._systems[
-                    sidx
-                ].external_forces[..., sconnect],
+                system_collection_with_connections_and_indices[sidx].external_forces[
+                    ..., sconnect
+                ],
                 -1 * contact_force,
                 atol=Tolerance.atol(),
             )

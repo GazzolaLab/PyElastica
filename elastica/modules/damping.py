@@ -52,7 +52,7 @@ class Damping:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx = self.get_system_index(system)
 
         # Create _Damper object, cache it and return to user
         _damper: ModuleProtocol = _Damper(sys_idx)
@@ -65,7 +65,7 @@ class Damping:
         # inplace : https://stackoverflow.com/a/1208792
 
         self._damping_operators = [
-            (damper.id(), damper.instantiate(self._systems[damper.id()]))
+            (damper.id(), damper.instantiate(self[damper.id()]))
             for damper in self._damping_list
         ]
 
@@ -78,7 +78,7 @@ class Damping:
 
     def _dampen_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, damper in self._damping_operators:
-            damper.dampen_rates(self._systems[sys_id], time)
+            damper.dampen_rates(self[sys_id], time)
 
 
 class _Damper:

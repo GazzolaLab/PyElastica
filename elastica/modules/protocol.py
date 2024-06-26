@@ -10,6 +10,7 @@ from elastica.typing import (
     OperatorFinalizeType,
     StaticSystemType,
     SystemType,
+    BlockSystemType,
     ConnectionIndex,
 )
 from elastica.joint import FreeJoint
@@ -34,9 +35,11 @@ class ModuleProtocol(Protocol[M]):
 
 
 class SystemCollectionProtocol(Protocol):
-    _systems: list[StaticSystemType]
-
     def __len__(self) -> int: ...
+
+    def systems(self) -> Generator[StaticSystemType, None, None]: ...
+
+    def block_systems(self) -> Generator[BlockSystemType, None, None]: ...
 
     @overload
     def __getitem__(self, i: slice) -> list[SystemType]: ...
@@ -67,9 +70,7 @@ class SystemCollectionProtocol(Protocol):
     @property
     def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
 
-    def systems(self) -> Generator[SystemType, None, None]: ...
-
-    def _get_sys_idx_if_valid(
+    def get_system_index(
         self, sys_to_be_added: "SystemType | StaticSystemType"
     ) -> SystemIdxType: ...
 

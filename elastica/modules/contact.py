@@ -63,8 +63,8 @@ class Contact:
         -------
 
         """
-        sys_idx_first = self._get_sys_idx_if_valid(first_system)
-        sys_idx_second = self._get_sys_idx_if_valid(second_system)
+        sys_idx_first = self.get_system_index(first_system)
+        sys_idx_second = self.get_system_index(second_system)
 
         # Create _Contact object, cache it and return to user
         _contact = _Contact(sys_idx_first, sys_idx_second)
@@ -86,8 +86,8 @@ class Contact:
             second_sys_idx: SystemIdxType,
         ) -> None:
             contact_instance.apply_contact(
-                system_one=self._systems[first_sys_idx],
-                system_two=self._systems[second_sys_idx],
+                system_one=self[first_sys_idx],
+                system_two=self[second_sys_idx],
             )
 
         for contact in self._contacts:
@@ -95,8 +95,8 @@ class Contact:
             contact_instance = contact.instantiate()
 
             contact_instance._check_systems_validity(
-                self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
+                self[first_sys_idx],
+                self[second_sys_idx],
             )
             func = functools.partial(
                 apply_contact,

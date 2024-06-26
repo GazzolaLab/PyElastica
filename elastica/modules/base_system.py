@@ -8,8 +8,9 @@ interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 from typing import Type, Generator, Iterable, Any, overload
 from typing import final
 from elastica.typing import (
-    StaticSystemType,
     SystemType,
+    StaticSystemType,
+    BlockSystemType,
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,
@@ -38,8 +39,10 @@ class BaseSystemCollection(MutableSequence):
         ----------
         allowed_sys_types: tuple
             Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
-        _systems: list
-            List of rod-like objects.
+        systems: Callabke
+            Returns all system objects. Once finalize, block objects are also included.
+        blocks: Callable
+            Returns block objects. Should be called after finalize.
 
     Note
     ----
@@ -68,8 +71,8 @@ class BaseSystemCollection(MutableSequence):
         )
 
         # List of systems to be integrated
-        self._systems: list[StaticSystemType] = []
-        self.__final_systems: list[SystemType] = []
+        self.__systems: list[StaticSystemType] = []
+        self.__final_blocks: list[BlockSystemType] = []
 
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
@@ -99,7 +102,7 @@ class BaseSystemCollection(MutableSequence):
         return True
 
     def __len__(self) -> int:
-        return len(self._systems)
+        return len(self.__systems)
 
     @overload
     def __getitem__(self, idx: int, /) -> SystemType: ...
@@ -108,22 +111,22 @@ class BaseSystemCollection(MutableSequence):
     def __getitem__(self, idx: slice, /) -> list[SystemType]: ...
 
     def __getitem__(self, idx, /):  # type: ignore
-        return self._systems[idx]
+        return self.__systems[idx]
 
     def __delitem__(self, idx, /):  # type: ignore
-        del self._systems[idx]
+        del self.__systems[idx]
 
     def __setitem__(self, idx, system, /):  # type: ignore
         self._check_type(system)
-        self._systems[idx] = system
+        self.__systems[idx] = system
 
     def insert(self, idx, system) -> None:  # type: ignore
         self._check_type(system)
-        self._systems.insert(idx, system)
+        self.__systems.insert(idx, system)
 
     def __str__(self) -> str:
         """To be readable"""
-        return str(self._systems)
+        return str(self.__systems)
 
     @final
     def extend_allowed_types(
@@ -138,38 +141,43 @@ class BaseSystemCollection(MutableSequence):
         self.allowed_sys_types = allowed_types
 
     @final
-    def _get_sys_idx_if_valid(
-        self, sys_to_be_added: "SystemType | StaticSystemType"
+    def get_system_index(
+        self, system: "SystemType | StaticSystemType"
     ) -> SystemIdxType:
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType
-        if isinstance(sys_to_be_added, (int, np.int_)):
+        if isinstance(system, (int, np.int_)):
             # 1. If they are indices themselves, check range
+            # This is only used for testing purposes
             assert (
-                -n_systems <= sys_to_be_added < n_systems
-            ), "Rod index {} exceeds number of registered rodtems".format(
-                sys_to_be_added
-            )
-            sys_idx = int(sys_to_be_added)
-        elif self._check_type(sys_to_be_added):
-            # 2. If they are rod objects (most likely), lookup indices
+                -n_systems <= system < n_systems
+            ), "System index {} exceeds number of registered rodtems".format(system)
+            sys_idx = int(system)
+        elif self._check_type(system):
+            # 2. If they are system object (most likely), lookup indices
             # index might have some problems : https://stackoverflow.com/a/176921
             try:
-                sys_idx = self._systems.index(sys_to_be_added)
+                sys_idx = self.__systems.index(system)
             except ValueError:
                 raise ValueError(
-                    "Rod {} was not found, did you append it to the system?".format(
-                        sys_to_be_added
+                    "System {} was not found, did you append it to the system?".format(
+                        system
                     )
                 )
 
         return sys_idx
 
     @final
-    def systems(self) -> Generator[SystemType, None, None]:
+    def systems(self) -> Generator[StaticSystemType, None, None]:
         # assert self._finalize_flag, "The simulator is not finalized."
-        for block in self.__final_systems:
+        for system in self.__systems:
+            yield system
+
+    @final
+    def block_systems(self) -> Generator[BlockSystemType, None, None]:
+        # assert self._finalize_flag, "The simulator is not finalized."
+        for block in self.__final_blocks:
             yield block
 
     @final
@@ -184,15 +192,11 @@ class BaseSystemCollection(MutableSequence):
         assert not self._finalize_flag, "The finalize cannot be called twice."
         self._finalize_flag = True
 
-        # construct memory block
-        self.__final_systems = construct_memory_block_structures(self._systems)
-        self._systems.extend(
-            self.__final_systems
-        )  # FIXME: We need this to make ring-rod working.
+        # Construct memory block
+        self.__final_blocks = construct_memory_block_structures(self.__systems)
+        # FIXME: We need this to make ring-rod working.
         # But probably need to be refactored
-        # TODO: try to remove the _systems list for memory optimization
-        # self._systems.clear()
-        # del self._systems
+        self.__systems.extend(self.__final_blocks)
 
         # Recurrent call finalize functions for all components.
         for finalize in self._feature_group_finalize:

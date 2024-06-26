@@ -8,7 +8,6 @@ from elastica.typing import (
     RigidBodyType,
     SurfaceType,
     StaticSystemType,
-    SystemType,
     SystemIdxType,
     BlockSystemType,
 )
@@ -22,7 +21,7 @@ from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 
 def construct_memory_block_structures(
     systems: list[StaticSystemType],
-) -> list[SystemType]:
+) -> list[BlockSystemType]:
     """
     This function takes the systems (rod or rigid body) appended to the simulator class and
     separates them into lists depending on if system is Cosserat rod or rigid body. Then using
