@@ -42,8 +42,8 @@ class Connections:
         self: SystemCollectionProtocol,
         first_rod: "RodType | RigidBodyType",
         second_rod: "RodType | RigidBodyType",
-        first_connect_idx: ConnectionIndex = None,
-        second_connect_idx: ConnectionIndex = None,
+        first_connect_idx: ConnectionIndex = (),
+        second_connect_idx: ConnectionIndex = (),
     ) -> ModuleProtocol:
         """
         This method connects two rod-like objects using the selected joint class.
@@ -56,9 +56,9 @@ class Connections:
             Rod-like object
         second_rod : RodType | RigidBodyType
             Rod-like object
-        first_connect_idx : Optional[int]
+        first_connect_idx : ConnectionIndex
             Index of first rod for joint.
-        second_connect_idx : Optional[int]
+        second_connect_idx : ConnectionIndex
             Index of second rod for joint.
 
         Returns
@@ -173,8 +173,8 @@ class _Connect:
         self._second_sys_idx: SystemIdxType = second_sys_idx
         self._first_sys_n_lim: int = first_sys_nlim
         self._second_sys_n_lim: int = second_sys_nlim
-        self.first_sys_connection_idx: ConnectionIndex = None
-        self.second_sys_connection_idx: ConnectionIndex = None
+        self.first_sys_connection_idx: ConnectionIndex = ()
+        self.second_sys_connection_idx: ConnectionIndex = ()
         self._connect_cls: Type[FreeJoint]
 
     def set_index(
@@ -188,7 +188,7 @@ class _Connect:
         ), f"Type of first_connect_idx :{first_type} is different than second_connect_idx :{second_type}"
 
         # Check if the type of idx variables are correct.
-        allow_types = (int, np.int_, list, tuple, np.ndarray, type(None))
+        allow_types = (int, np.int_, list, tuple, np.ndarray)
         assert isinstance(
             first_idx, allow_types
         ), f"Connection index type is not supported :{first_type}, please try one of the following :{allow_types}"
@@ -227,10 +227,7 @@ class _Connect:
                 ), "Connection index of second rod exceeds its dof : {}".format(
                     self._second_sys_n_lim
                 )
-        elif first_idx is None:
-            # Do nothing if idx are None
-            pass
-        else:
+        elif isinstance(first_idx, (int, np.int_)):
             # The addition of +1 and and <= check on the RHS is because
             # connections can be made to the node indices as well
             first_idx__ = cast(int, first_idx)
@@ -244,6 +241,10 @@ class _Connect:
                 -(self._second_sys_n_lim + 1) <= second_idx__ <= self._second_sys_n_lim
             ), "Connection index of second rod exceeds its dof : {}".format(
                 self._second_sys_n_lim
+            )
+        else:
+            raise TypeError(
+                "Connection index type is not supported :{}".format(first_type)
             )
 
         self.first_sys_connection_idx = first_idx

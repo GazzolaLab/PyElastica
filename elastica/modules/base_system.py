@@ -144,6 +144,24 @@ class BaseSystemCollection(MutableSequence):
     def get_system_index(
         self, system: "SystemType | StaticSystemType"
     ) -> SystemIdxType:
+        """
+        Get the index of the system object in the system list.
+        System list is private, so this is the only way to get the index of the system object.
+
+        Example
+        -------
+        >>> system_collection: SystemCollectionProtocol
+        >>> system: SystemType
+        ...
+        >>> system_idx = system_collection.get_system_index(system)  # save idx
+        ...
+        >>> system = system_collection[system_idx]  # just need idx to retrieve
+
+        Parameters
+        ----------
+        system: SystemType
+            System object to be found in the system list.
+        """
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType
@@ -170,13 +188,18 @@ class BaseSystemCollection(MutableSequence):
 
     @final
     def systems(self) -> Generator[StaticSystemType, None, None]:
-        # assert self._finalize_flag, "The simulator is not finalized."
+        """
+        Iterate over all systems in the system collection.
+        If the system collection is finalized, block objects are also included.
+        """
         for system in self.__systems:
             yield system
 
     @final
     def block_systems(self) -> Generator[BlockSystemType, None, None]:
-        # assert self._finalize_flag, "The simulator is not finalized."
+        """
+        Iterate over all block systems in the system collection.
+        """
         for block in self.__final_blocks:
             yield block
 
@@ -208,24 +231,36 @@ class BaseSystemCollection(MutableSequence):
 
     @final
     def synchronize(self, time: np.float64) -> None:
-        # Collection call _feature_group_synchronize
+        """
+        Call synchronize functions for all features.
+        Features are registered in _feature_group_synchronize.
+        """
         for func in self._feature_group_synchronize:
             func(time=time)
 
     @final
     def constrain_values(self, time: np.float64) -> None:
-        # Collection call _feature_group_constrain_values
+        """
+        Call constrain values functions for all features.
+        Features are registered in _feature_group_constrain_values.
+        """
         for func in self._feature_group_constrain_values:
             func(time=time)
 
     @final
     def constrain_rates(self, time: np.float64) -> None:
-        # Collection call _feature_group_constrain_rates
+        """
+        Call constrain rates functions for all features.
+        Features are registered in _feature_group_constrain_rates.
+        """
         for func in self._feature_group_constrain_rates:
             func(time=time)
 
     @final
     def apply_callbacks(self, time: np.float64, current_step: int) -> None:
-        # Collection call _feature_group_callback
+        """
+        Call callback functions for all features.
+        Features are registered in _feature_group_callback.
+        """
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)

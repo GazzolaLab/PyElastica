@@ -108,7 +108,7 @@ class TestConnect:
 
     # Below test is to increase code coverage. If we pass nothing or idx=None, then do nothing.
     def test_set_index_no_input(self, load_connect):
-        load_connect.set_index(first_idx=None, second_idx=None)
+        load_connect.set_index(first_idx=(), second_idx=())
 
     @pytest.mark.parametrize(
         "legal_idx", [(80, 80), (0, 50), (50, 0), (-20, -20), (-20, 50), (-50, -20)]
@@ -291,7 +291,8 @@ class TestConnectionsMixin:
         assert _mock_connect in system_collection_with_connections._connections
         assert _mock_connect.__class__ == _Connect
         # check sane defaults provided for connection indices
-        assert _mock_connect.id()[2] is None and _mock_connect.id()[3] is None
+        assert _mock_connect.id()[2] == ()
+        assert _mock_connect.id()[3] == ()
 
     from elastica.joint import FreeJoint
 

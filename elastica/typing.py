@@ -57,12 +57,13 @@ SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 
 # Indexing types
 # TODO: Maybe just use slice??
-ConstrainingIndex: TypeAlias = list[int] | tuple[int, ...] | np.typing.NDArray
+ConstrainingIndex: TypeAlias = tuple[int, ...]
 ConnectionIndex: TypeAlias = (
-    int | np.int_ | list[int] | tuple[int] | np.typing.NDArray | None
+    int | np.int_ | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
 )
 
 # Operators in elastica.modules
+# TODO: can be more specific.
 OperatorParam = ParamSpec("OperatorParam")
 OperatorCallbackType: TypeAlias = Callable[..., None]
 OperatorFinalizeType: TypeAlias = Callable[..., None]
