@@ -188,7 +188,7 @@ class CosseratRod(RodBase, KnotTheory):
         internal_couple: NDArray[np.float64],
         ring_rod_flag: bool,
     ) -> None:
-        self.n_nodes = n_elements + 1 if ring_rod_flag else n_elements
+        self.n_nodes = n_elements + 1 if not ring_rod_flag else n_elements
         self.n_elems = n_elements
         self.position_collection = position
         self.velocity_collection = velocity
