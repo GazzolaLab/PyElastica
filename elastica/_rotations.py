@@ -17,8 +17,8 @@ from elastica._linalg import _batch_matmul
 
 @njit(cache=True)  # type: ignore
 def _get_rotation_matrix(
-    scale: np.floating, axis_collection: NDArray[np.floating]
-) -> NDArray[np.floating]:
+    scale: np.float64, axis_collection: NDArray[np.float64]
+) -> NDArray[np.float64]:
     blocksize = axis_collection.shape[1]
     rot_mat = np.empty((3, 3, blocksize))
 
@@ -53,10 +53,10 @@ def _get_rotation_matrix(
 
 @njit(cache=True)  # type: ignore
 def _rotate(
-    director_collection: NDArray[np.floating],
-    scale: np.floating,
-    axis_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    director_collection: NDArray[np.float64],
+    scale: np.float64,
+    axis_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Does alibi rotations
     https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
@@ -81,7 +81,7 @@ def _rotate(
 
 
 @njit(cache=True)  # type: ignore
-def _inv_rotate(director_collection: NDArray[np.floating]) -> NDArray[np.floating]:
+def _inv_rotate(director_collection: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Calculated rate of change using Rodrigues' formula
 
@@ -244,7 +244,7 @@ def _get_diag_map(dim: int) -> tuple[int, ...]:
     return tuple([dim_iter * (dim + 1) for dim_iter in range(dim)])
 
 
-def _skew_symmetrize(vector: NDArray[np.floating]) -> NDArray[np.floating]:
+def _skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
 
     Parameters
@@ -279,7 +279,7 @@ def _skew_symmetrize(vector: NDArray[np.floating]) -> NDArray[np.floating]:
 
 # This is purely for testing and optimization sake
 # While calculating u^2, use u with einsum instead, as it is tad bit faster
-def _skew_symmetrize_sq(vector: NDArray[np.floating]) -> NDArray[np.floating]:
+def _skew_symmetrize_sq(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Generate the square of an orthogonal matrix from vector elements
 
@@ -305,7 +305,7 @@ def _skew_symmetrize_sq(vector: NDArray[np.floating]) -> NDArray[np.floating]:
     # First generate array of [x^2, xy, xz, yx, y^2, yz, zx, zy, z^2]
     # across blocksize
     # This is slightly faster than doing v[np.newaxis,:,:] * v[:,np.newaxis,:]
-    products_xy: NDArray[np.floating] = np.einsum("ik,jk->ijk", vector, vector)
+    products_xy: NDArray[np.float64] = np.einsum("ik,jk->ijk", vector, vector)
 
     # No copy made here, as we do not change memory layout
     # products_xy = products_xy.reshape((dim * dim, -1))
@@ -338,8 +338,8 @@ def _skew_symmetrize_sq(vector: NDArray[np.floating]) -> NDArray[np.floating]:
 
 
 def _get_skew_symmetric_pair(
-    vector_collection: NDArray[np.floating],
-) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
+    vector_collection: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
 
     Parameters
@@ -355,7 +355,7 @@ def _get_skew_symmetric_pair(
     return u, u_sq
 
 
-def _inv_skew_symmetrize(matrix: NDArray[np.floating]) -> NDArray[np.floating]:
+def _inv_skew_symmetrize(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Return the vector elements from a skew-symmetric matrix M
 

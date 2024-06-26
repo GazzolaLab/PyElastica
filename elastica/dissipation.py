@@ -58,7 +58,7 @@ class DamperBase(Generic[T], ABC):
         return self._system
 
     @abstractmethod
-    def dampen_rates(self, system: T, time: np.floating) -> None:
+    def dampen_rates(self, system: T, time: np.float64) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -151,7 +151,7 @@ class AnalyticalLinearDamper(DamperBase):
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, system: RodType, time: np.floating) -> None:
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
         system.velocity_collection[:] = (
             system.velocity_collection * self.translational_damping_coefficient
         )
@@ -240,7 +240,7 @@ class LaplaceDissipationFilter(DamperBase):
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
             self.filter_function = _filter_function_periodic_condition
 
-    def dampen_rates(self, system: RodType, time: np.floating) -> None:
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
 
         self.filter_function(
             system.velocity_collection,
@@ -253,10 +253,10 @@ class LaplaceDissipationFilter(DamperBase):
 
 @njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition_ring_rod(
-    velocity_collection: NDArray[np.floating],
-    velocity_filter_term: NDArray[np.floating],
-    omega_collection: NDArray[np.floating],
-    omega_filter_term: NDArray[np.floating],
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
     filter_order: int,
 ) -> None:
     blocksize = velocity_filter_term.shape[1]
@@ -291,10 +291,10 @@ def _filter_function_periodic_condition_ring_rod(
 
 @njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition(
-    velocity_collection: NDArray[np.floating],
-    velocity_filter_term: NDArray[np.floating],
-    omega_collection: NDArray[np.floating],
-    omega_filter_term: NDArray[np.floating],
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
     filter_order: int,
 ) -> None:
     nb_filter_rate(
@@ -311,8 +311,8 @@ def _filter_function_periodic_condition(
 
 @njit(cache=True)  # type: ignore
 def nb_filter_rate(
-    rate_collection: NDArray[np.floating],
-    filter_term: NDArray[np.floating],
+    rate_collection: NDArray[np.float64],
+    filter_term: NDArray[np.float64],
     filter_order: int,
 ) -> None:
     """

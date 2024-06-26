@@ -8,7 +8,7 @@ from elastica.utils import Tolerance
 
 class Plane(SurfaceBase):
     def __init__(
-        self, plane_origin: NDArray[np.floating], plane_normal: NDArray[np.floating]
+        self, plane_origin: NDArray[np.float64], plane_normal: NDArray[np.float64]
     ):
         """
         Plane surface initializer.

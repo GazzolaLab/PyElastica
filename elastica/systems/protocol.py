@@ -18,11 +18,11 @@ class SystemProtocol(StaticSystemProtocol, Protocol):
     Protocol for all dynamic elastica system
     """
 
-    def compute_internal_forces_and_torques(self, time: np.floating) -> None: ...
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None: ...
 
-    def update_accelerations(self, time: np.floating) -> None: ...
+    def update_accelerations(self, time: np.float64) -> None: ...
 
-    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None: ...
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None: ...
 
 
 class SlenderBodyGeometryProtocol(Protocol):
@@ -32,19 +32,19 @@ class SlenderBodyGeometryProtocol(Protocol):
     @property
     def n_elems(self) -> int: ...
 
-    position_collection: NDArray[np.floating]
-    velocity_collection: NDArray[np.floating]
-    acceleration_collection: NDArray[np.floating]
+    position_collection: NDArray[np.float64]
+    velocity_collection: NDArray[np.float64]
+    acceleration_collection: NDArray[np.float64]
 
-    omega_collection: NDArray[np.floating]
-    alpha_collection: NDArray[np.floating]
-    director_collection: NDArray[np.floating]
+    omega_collection: NDArray[np.float64]
+    alpha_collection: NDArray[np.float64]
+    director_collection: NDArray[np.float64]
 
-    external_forces: NDArray[np.floating]
-    external_torques: NDArray[np.floating]
+    external_forces: NDArray[np.float64]
+    external_torques: NDArray[np.float64]
 
-    internal_forces: NDArray[np.floating]
-    internal_torques: NDArray[np.floating]
+    internal_forces: NDArray[np.float64]
+    internal_torques: NDArray[np.float64]
 
 
 class SymplecticSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
@@ -52,8 +52,8 @@ class SymplecticSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Prot
     Protocol for system with symplectic state variables
     """
 
-    v_w_collection: NDArray[np.floating]
-    dvdt_dwdt_collection: NDArray[np.floating]
+    v_w_collection: NDArray[np.float64]
+    dvdt_dwdt_collection: NDArray[np.float64]
 
     @property
     def kinematic_states(self) -> _KinematicState: ...
@@ -62,18 +62,18 @@ class SymplecticSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Prot
     def dynamic_states(self) -> _DynamicState: ...
 
     def kinematic_rates(
-        self, time: np.floating, prefac: np.floating
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]: ...
+        self, time: np.float64, prefac: np.float64
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
 
     def dynamic_rates(
-        self, time: np.floating, prefac: np.floating
-    ) -> NDArray[np.floating]: ...
+        self, time: np.float64, prefac: np.float64
+    ) -> NDArray[np.float64]: ...
 
 
 class ExplicitSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
     # TODO: Temporarily made to handle explicit stepper.
     # Need to be refactored as the explicit stepper is further developed.
-    def __call__(self, time: np.floating, dt: np.floating) -> np.floating: ...
+    def __call__(self, time: np.float64, dt: np.float64) -> np.float64: ...
     @property
     def state(self) -> StateType: ...
     @state.setter

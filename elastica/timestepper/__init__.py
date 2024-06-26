@@ -19,7 +19,7 @@ def extend_stepper_interface(
     stepper: StepperProtocol, system_collection: SystemCollectionType
 ) -> Tuple[
     Callable[
-        [StepperProtocol, SystemCollectionType, np.floating, np.floating], np.floating
+        [StepperProtocol, SystemCollectionType, np.float64, np.float64], np.float64
     ],
     SteppersOperatorsType,
 ]:

@@ -14,10 +14,10 @@ class MeshRigidBody(RigidBodyBase):
     def __init__(
         self,
         mesh: MeshType,
-        center_of_mass: NDArray[np.floating],
-        mass_second_moment_of_inertia: NDArray[np.floating],
-        density: np.floating,
-        volume: np.floating,
+        center_of_mass: NDArray[np.float64],
+        mass_second_moment_of_inertia: NDArray[np.float64],
+        density: np.float64,
+        volume: np.float64,
     ) -> None:
         """
         Mesh rigid body initializer.

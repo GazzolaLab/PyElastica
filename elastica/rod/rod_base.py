@@ -21,18 +21,18 @@ class RodBase:
         """
         RodBase does not take any arguments.
         """
-        self.position_collection: NDArray[np.floating]
-        self.velocity_collection: NDArray[np.floating]
-        self.acceleration_collection: NDArray[np.floating]
-        self.director_collection: NDArray[np.floating]
-        self.omega_collection: NDArray[np.floating]
-        self.alpha_collection: NDArray[np.floating]
-        self.external_forces: NDArray[np.floating]
-        self.external_torques: NDArray[np.floating]
+        self.position_collection: NDArray[np.float64]
+        self.velocity_collection: NDArray[np.float64]
+        self.acceleration_collection: NDArray[np.float64]
+        self.director_collection: NDArray[np.float64]
+        self.omega_collection: NDArray[np.float64]
+        self.alpha_collection: NDArray[np.float64]
+        self.external_forces: NDArray[np.float64]
+        self.external_torques: NDArray[np.float64]
 
-        self.ghost_voronoi_idx: NDArray[np.integer]
-        self.ghost_elems_idx: NDArray[np.integer]
+        self.ghost_voronoi_idx: NDArray[np.int32]
+        self.ghost_elems_idx: NDArray[np.int32]
 
-        self.periodic_boundary_nodes_idx: NDArray[np.integer]
-        self.periodic_boundary_elems_idx: NDArray[np.integer]
-        self.periodic_boundary_voronoi_idx: NDArray[np.integer]
+        self.periodic_boundary_nodes_idx: NDArray[np.int32]
+        self.periodic_boundary_elems_idx: NDArray[np.int32]
+        self.periodic_boundary_voronoi_idx: NDArray[np.int32]

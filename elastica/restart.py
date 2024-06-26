@@ -30,7 +30,7 @@ def all_equal(iterable: Iterable[Any]) -> bool:
 def save_state(
     simulator: Iterable,
     directory: str = "",
-    time: np.floating = np.float64(0.0),
+    time: np.float64 = np.float64(0.0),
     verbose: bool = False,
 ) -> None:
     """

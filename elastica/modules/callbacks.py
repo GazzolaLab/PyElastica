@@ -73,7 +73,7 @@ class CallBacks:
 
     def _callback_execution(
         self: SystemCollectionProtocol,
-        time: np.floating,
+        time: np.float64,
         current_step: int,
     ) -> None:
         for sys_id, callback in self._callback_operators:

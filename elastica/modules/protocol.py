@@ -47,22 +47,22 @@ class SystemCollectionProtocol(Protocol):
     @property
     def _feature_group_synchronize(self) -> OperatorGroupFIFO: ...
 
-    def synchronize(self, time: np.floating) -> None: ...
+    def synchronize(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_constrain_values(self) -> list[OperatorType]: ...
 
-    def constrain_values(self, time: np.floating) -> None: ...
+    def constrain_values(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_constrain_rates(self) -> list[OperatorType]: ...
 
-    def constrain_rates(self, time: np.floating) -> None: ...
+    def constrain_rates(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_callback(self) -> list[OperatorCallbackType]: ...
 
-    def apply_callbacks(self, time: np.floating, current_step: int) -> None: ...
+    def apply_callbacks(self, time: np.float64, current_step: int) -> None: ...
 
     @property
     def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
@@ -98,7 +98,7 @@ class SystemCollectionProtocol(Protocol):
 
     @abstractmethod
     def _callback_execution(
-        self, time: np.floating, current_step: int, *args: Any, **kwargs: Any
+        self, time: np.float64, current_step: int, *args: Any, **kwargs: Any
     ) -> None:
         raise NotImplementedError
 
@@ -112,11 +112,11 @@ class SystemCollectionProtocol(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def _constrain_values(self, time: np.floating) -> None:
+    def _constrain_values(self, time: np.float64) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def _constrain_rates(self, time: np.floating) -> None:
+    def _constrain_rates(self, time: np.float64) -> None:
         raise NotImplementedError
 
     # Forcing API
@@ -147,5 +147,5 @@ class SystemCollectionProtocol(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def _dampen_rates(self, time: np.floating) -> None:
+    def _dampen_rates(self, time: np.float64) -> None:
         raise NotImplementedError

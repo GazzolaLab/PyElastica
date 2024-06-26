@@ -48,8 +48,8 @@ class InteractionPlane(NoForces):
         self,
         k: float,
         nu: float,
-        plane_origin: NDArray[np.floating],
-        plane_normal: NDArray[np.floating],
+        plane_origin: NDArray[np.float64],
+        plane_normal: NDArray[np.float64],
     ) -> None:
         """
 
@@ -72,9 +72,7 @@ class InteractionPlane(NoForces):
         self.plane_origin = plane_origin.reshape(3, 1)
         self.plane_normal = plane_normal.reshape(3)
 
-    def apply_forces(
-        self, system: RodType, time: np.floating = np.float64(0.0)
-    ) -> None:
+    def apply_forces(self, system: RodType, time: np.float64 = np.float64(0.0)) -> None:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 
@@ -146,11 +144,11 @@ class AnisotropicFrictionalPlane(InteractionPlane):
         self,
         k: float,
         nu: float,
-        plane_origin: NDArray[np.floating],
-        plane_normal: NDArray[np.floating],
+        plane_origin: NDArray[np.float64],
+        plane_normal: NDArray[np.float64],
         slip_velocity_tol: float,
-        static_mu_array: NDArray[np.floating],
-        kinetic_mu_array: NDArray[np.floating],
+        static_mu_array: NDArray[np.float64],
+        kinetic_mu_array: NDArray[np.float64],
     ) -> None:
         """
 
@@ -191,7 +189,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
     # kinetic and static friction should separate functions
     # for now putting them together to figure out common variables
     def apply_forces(
-        self, system: "RodType | RigidBodyType", time: np.floating = np.float64(0.0)
+        self, system: "RodType | RigidBodyType", time: np.float64 = np.float64(0.0)
     ) -> None:
         """
         Call numba implementation to apply friction forces
@@ -230,7 +228,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
 
 # Slender body module
 @njit(cache=True)  # type: ignore
-def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
+def sum_over_elements(input: NDArray[np.float64]) -> np.float64:
     """
     This function sums all elements of the input array.
     Using a Numba njit decorator shows better performance
@@ -262,7 +260,7 @@ def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
     This version: 513 ns ± 24.6 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
     """
 
-    output: np.floating = np.float64(0.0)
+    output: np.float64 = np.float64(0.0)
     for i in range(input.shape[0]):
         output += input[i]
 
@@ -271,13 +269,13 @@ def sum_over_elements(input: NDArray[np.floating]) -> np.floating:
 
 @njit(cache=True)  # type: ignore
 def slender_body_forces(
-    tangents: NDArray[np.floating],
-    velocity_collection: NDArray[np.floating],
-    dynamic_viscosity: np.floating,
-    lengths: NDArray[np.floating],
-    radius: NDArray[np.floating],
-    mass: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    tangents: NDArray[np.float64],
+    velocity_collection: NDArray[np.float64],
+    dynamic_viscosity: np.float64,
+    lengths: NDArray[np.float64],
+    radius: NDArray[np.float64],
+    mass: NDArray[np.float64],
+) -> NDArray[np.float64]:
     r"""
     This function computes hydrodynamic forces on a body using slender body theory.
     The below implementation is from Eq. 4.13 in Gazzola et al. RSoS. (2018).
@@ -399,9 +397,7 @@ class SlenderBodyTheory(NoForces):
         super(SlenderBodyTheory, self).__init__()
         self.dynamic_viscosity = np.float64(dynamic_viscosity)
 
-    def apply_forces(
-        self, system: RodType, time: np.floating = np.float64(0.0)
-    ) -> None:
+    def apply_forces(self, system: RodType, time: np.float64 = np.float64(0.0)) -> None:
         """
         This function applies hydrodynamic forces on body
         using the slender body theory given in
@@ -431,8 +427,8 @@ class InteractionPlaneRigidBody(NoForces):
         self,
         k: float,
         nu: float,
-        plane_origin: NDArray[np.floating],
-        plane_normal: NDArray[np.floating],
+        plane_origin: NDArray[np.float64],
+        plane_normal: NDArray[np.float64],
     ) -> None:
         self.k = np.float64(k)
         self.nu = np.float64(nu)
@@ -441,7 +437,7 @@ class InteractionPlaneRigidBody(NoForces):
         self.plane_normal = plane_normal.reshape(3)
 
     def apply_forces(
-        self, system: RigidBodyType, time: np.floating = np.float64(0.0)
+        self, system: RigidBodyType, time: np.float64 = np.float64(0.0)
     ) -> None:
         """
         This function computes the plane force response on the rigid body, in the

@@ -69,9 +69,9 @@ class _RodSymplecticStepperMixin:
 
     def dynamic_rates(
         self: SymplecticSystemProtocol,
-        time: np.floating,
-        prefac: np.floating,
-    ) -> NDArray[np.floating]:
+        time: np.float64,
+        prefac: np.float64,
+    ) -> NDArray[np.float64]:
         self.update_accelerations(time)
         return self.dynamic_states.dynamic_rates(time, prefac)
 
@@ -79,18 +79,18 @@ class _RodSymplecticStepperMixin:
 def _bootstrap_from_data(
     stepper_type: str,
     n_elems: int,
-    vector_states: NDArray[np.floating],
-    matrix_states: NDArray[np.floating],
+    vector_states: NDArray[np.float64],
+    matrix_states: NDArray[np.float64],
 ) -> Optional[
     tuple[
         "_State",
         "_DerivativeState",
-        NDArray[np.floating],
-        NDArray[np.floating],
-        NDArray[np.floating],
-        NDArray[np.floating],
-        NDArray[np.floating],
-        NDArray[np.floating],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
     ]
 ]:
     """Returns states wrapping numpy arrays based on the time-stepping algorithm
@@ -175,9 +175,9 @@ class _State:
     def __init__(
         self,
         n_elems: int,
-        position_collection_view: NDArray[np.floating],
-        director_collection_view: NDArray[np.floating],
-        kinematic_rate_collection_view: NDArray[np.floating],
+        position_collection_view: NDArray[np.float64],
+        director_collection_view: NDArray[np.float64],
+        kinematic_rate_collection_view: NDArray[np.float64],
     ) -> None:
         """
         Parameters
@@ -194,7 +194,7 @@ class _State:
         self.director_collection = director_collection_view
         self.kinematic_rate_collection = kinematic_rate_collection_view
 
-    def __iadd__(self, scaled_deriv_array: NDArray[np.floating]) -> Self:
+    def __iadd__(self, scaled_deriv_array: NDArray[np.float64]) -> Self:
         """overloaded += operator
 
         The add for directors is customized to reflect Rodrigues' rotation
@@ -263,7 +263,7 @@ class _State:
         ]
         return self
 
-    def __add__(self, scaled_derivative_state: NDArray[np.floating]) -> "_State":
+    def __add__(self, scaled_derivative_state: NDArray[np.float64]) -> "_State":
         """overloaded + operator, useful in state.k1 = state + dt * deriv_state
 
         The add for directors is customized to reflect Rodrigues' rotation
@@ -318,7 +318,7 @@ class _DerivativeState:
     """
 
     def __init__(
-        self, _unused_n_elems: int, rate_collection_view: NDArray[np.floating]
+        self, _unused_n_elems: int, rate_collection_view: NDArray[np.float64]
     ) -> None:
         """
         Parameters
@@ -330,7 +330,7 @@ class _DerivativeState:
         super(_DerivativeState, self).__init__()
         self.rate_collection = rate_collection_view
 
-    def __rmul__(self, scalar: np.floating) -> NDArray[np.floating]:  # type: ignore
+    def __rmul__(self, scalar: np.float64) -> NDArray[np.float64]:  # type: ignore
         """overloaded scalar * self,
 
         Parameters
@@ -378,7 +378,7 @@ class _DerivativeState:
         """
         return scalar * self.rate_collection
 
-    def __mul__(self, scalar: np.floating) -> NDArray[np.floating]:
+    def __mul__(self, scalar: np.float64) -> NDArray[np.float64]:
         """overloaded self * scalar
 
         TODO Check if this pattern (forwarding to __mul__) has
@@ -413,8 +413,8 @@ class _KinematicState:
 
     def __init__(
         self,
-        position_collection_view: NDArray[np.floating],
-        director_collection_view: NDArray[np.floating],
+        position_collection_view: NDArray[np.float64],
+        director_collection_view: NDArray[np.float64],
     ) -> None:
         """
         Parameters
@@ -431,11 +431,11 @@ class _KinematicState:
 @njit(cache=True)  # type: ignore
 def overload_operator_kinematic_numba(
     n_nodes: int,
-    prefac: np.floating,
-    position_collection: NDArray[np.floating],
-    director_collection: NDArray[np.floating],
-    velocity_collection: NDArray[np.floating],
-    omega_collection: NDArray[np.floating],
+    prefac: np.float64,
+    position_collection: NDArray[np.float64],
+    director_collection: NDArray[np.float64],
+    velocity_collection: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
 ) -> None:
     """overloaded += operator
 
@@ -476,10 +476,10 @@ class _DynamicState:
 
     def __init__(
         self,
-        v_w_collection: NDArray[np.floating],
-        dvdt_dwdt_collection: NDArray[np.floating],
-        velocity_collection: NDArray[np.floating],
-        omega_collection: NDArray[np.floating],
+        v_w_collection: NDArray[np.float64],
+        dvdt_dwdt_collection: NDArray[np.float64],
+        velocity_collection: NDArray[np.float64],
+        omega_collection: NDArray[np.float64],
     ) -> None:
         """
         Parameters
@@ -498,8 +498,8 @@ class _DynamicState:
         self.omega_collection = omega_collection
 
     def kinematic_rates(
-        self, time: np.floating, prefac: np.floating
-    ) -> tuple[NDArray[np.floating], NDArray[np.floating]]:
+        self, time: np.float64, prefac: np.float64
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Yields kinematic rates to interact with _KinematicState
 
         Returns
@@ -516,8 +516,8 @@ class _DynamicState:
         return self.velocity_collection, self.omega_collection
 
     def dynamic_rates(
-        self, time: np.floating, prefac: np.floating
-    ) -> NDArray[np.floating]:
+        self, time: np.float64, prefac: np.float64
+    ) -> NDArray[np.float64]:
         """Yields dynamic rates to add to with _DynamicState
         Returns
         -------
@@ -533,8 +533,8 @@ class _DynamicState:
 
 @njit(cache=True)  # type: ignore
 def overload_operator_dynamic_numba(
-    rate_collection: NDArray[np.floating],
-    scaled_second_deriv_array: NDArray[np.floating],
+    rate_collection: NDArray[np.float64],
+    scaled_second_deriv_array: NDArray[np.float64],
 ) -> None:
     """overloaded += operator, updating dynamic_rates
     Parameters

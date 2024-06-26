@@ -76,7 +76,7 @@ class Damping:
         # to sort dampers.
         self._damping_operators.sort(key=lambda x: x[0])
 
-    def _dampen_rates(self: SystemCollectionProtocol, time: np.floating) -> None:
+    def _dampen_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, damper in self._damping_operators:
             damper.dampen_rates(self._systems[sys_id], time)
 

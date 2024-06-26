@@ -12,7 +12,7 @@ import functools
 
 
 @functools.lru_cache(maxsize=2)
-def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.floating], None]:
+def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.float64], None]:
     if ndim == 1:
         return 0.0
     if ndim == 2:
@@ -22,7 +22,7 @@ def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.floating], N
 
 
 @njit(cache=True)  # type: ignore
-def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]:
+def _trapezoidal(array_collection: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way
 
@@ -69,8 +69,8 @@ def _trapezoidal(array_collection: NDArray[np.floating]) -> NDArray[np.floating]
 
 @njit(cache=True)  # type: ignore
 def _trapezoidal_for_block_structure(
-    array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
-) -> NDArray[np.floating]:
+    array_collection: NDArray[np.float64], ghost_idx: NDArray[np.int32]
+) -> NDArray[np.float64]:
     """
     Simple trapezoidal quadrature rule with zero at end-points, in a dimension agnostic way. This form
     specifically for the block structure implementation and there is a reset function call, to reset
@@ -123,8 +123,8 @@ def _trapezoidal_for_block_structure(
 
 @njit(cache=True)  # type: ignore
 def _two_point_difference(
-    array_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    array_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     This function does differentiation.
 
@@ -166,8 +166,8 @@ def _two_point_difference(
 
 @njit(cache=True)  # type: ignore
 def _two_point_difference_for_block_structure(
-    array_collection: NDArray[np.floating], ghost_idx: NDArray[np.integer]
-) -> NDArray[np.floating]:
+    array_collection: NDArray[np.float64], ghost_idx: NDArray[np.int32]
+) -> NDArray[np.float64]:
     """
     This function does the differentiation, for Cosserat rod model equations. This form
     specifically for the block structure implementation and there is a reset function call, to
@@ -218,7 +218,7 @@ def _two_point_difference_for_block_structure(
 
 
 @njit(cache=True)  # type: ignore
-def _difference(vector: NDArray[np.floating]) -> NDArray[np.floating]:
+def _difference(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     This function computes difference between elements of a batch vector.
 
@@ -249,7 +249,7 @@ def _difference(vector: NDArray[np.floating]) -> NDArray[np.floating]:
 
 
 @njit(cache=True)  # type: ignore
-def _average(vector: NDArray[np.floating]) -> NDArray[np.floating]:
+def _average(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     This function computes the average between elements of a vector.
 
@@ -280,8 +280,8 @@ def _average(vector: NDArray[np.floating]) -> NDArray[np.floating]:
 
 @njit(cache=True)  # type: ignore
 def _clip_array(
-    input_array: NDArray[np.floating], vmin: np.floating, vmax: np.floating
-) -> NDArray[np.floating]:
+    input_array: NDArray[np.float64], vmin: np.float64, vmax: np.float64
+) -> NDArray[np.float64]:
     """
     This function clips an array values
     between user defined minimum and maximum

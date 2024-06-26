@@ -21,8 +21,8 @@ class SurfaceBase:
         """
         SurfaceBase does not take any arguments.
         """
-        self.normal: NDArray[np.floating]  # (3,)
-        self.origin: NDArray[np.floating]  # (3, 1)
+        self.normal: NDArray[np.float64]  # (3,)
+        self.origin: NDArray[np.float64]  # (3, 1)
 
 
 if TYPE_CHECKING:

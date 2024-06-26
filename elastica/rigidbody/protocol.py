@@ -8,11 +8,11 @@ from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtoco
 
 class RigidBodyProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
 
-    mass: np.floating
-    volume: np.floating
-    length: np.floating
-    tangents: NDArray[np.floating]
-    radius: np.floating
+    mass: np.float64
+    volume: np.float64
+    length: np.float64
+    tangents: NDArray[np.float64]
+    radius: np.float64
 
-    mass_second_moment_of_inertia: NDArray[np.floating]
-    inv_mass_second_moment_of_inertia: NDArray[np.floating]
+    mass_second_moment_of_inertia: NDArray[np.float64]
+    inv_mass_second_moment_of_inertia: NDArray[np.float64]

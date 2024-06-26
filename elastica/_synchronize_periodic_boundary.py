@@ -12,7 +12,7 @@ from elastica.typing import RodType
 
 @njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_vector_collection(
-    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.float64], periodic_idx: NDArray[np.float64]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a vector collection.
@@ -35,7 +35,7 @@ def _synchronize_periodic_boundary_of_vector_collection(
 
 @njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_matrix_collection(
-    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.float64], periodic_idx: NDArray[np.float64]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a matrix collection.
@@ -61,7 +61,7 @@ def _synchronize_periodic_boundary_of_matrix_collection(
 
 @njit(cache=True)  # type: ignore
 def _synchronize_periodic_boundary_of_scalar_collection(
-    input_array: NDArray[np.floating], periodic_idx: NDArray[np.floating]
+    input_array: NDArray[np.float64], periodic_idx: NDArray[np.float64]
 ) -> None:
     """
     This function synchronizes the periodic boundaries of a scalar collection.
@@ -92,7 +92,7 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def constrain_values(self, rod: RodType, time: np.floating) -> None:
+    def constrain_values(self, rod: RodType, time: np.float64) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.position_collection, rod.periodic_boundary_nodes_idx
         )
@@ -100,7 +100,7 @@ class _ConstrainPeriodicBoundaries(ConstraintBase):
             rod.director_collection, rod.periodic_boundary_elems_idx
         )
 
-    def constrain_rates(self, rod: RodType, time: np.floating) -> None:
+    def constrain_rates(self, rod: RodType, time: np.float64) -> None:
         _synchronize_periodic_boundary_of_vector_collection(
             rod.velocity_collection, rod.periodic_boundary_nodes_idx
         )

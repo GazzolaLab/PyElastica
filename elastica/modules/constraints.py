@@ -107,11 +107,11 @@ class Constraints:
         self._constrain_values(time=np.float64(0.0))
         self._constrain_rates(time=np.float64(0.0))
 
-    def _constrain_values(self: SystemCollectionProtocol, time: np.floating) -> None:
+    def _constrain_values(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, constraint in self._constraints_operators:
             constraint.constrain_values(self._systems[sys_id], time)
 
-    def _constrain_rates(self: SystemCollectionProtocol, time: np.floating) -> None:
+    def _constrain_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
         for sys_id, constraint in self._constraints_operators:
             constraint.constrain_rates(self._systems[sys_id], time)
 

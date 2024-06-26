@@ -203,25 +203,25 @@ class BaseSystemCollection(MutableSequence):
         del self._feature_group_finalize
 
     @final
-    def synchronize(self, time: np.floating) -> None:
+    def synchronize(self, time: np.float64) -> None:
         # Collection call _feature_group_synchronize
         for func in self._feature_group_synchronize:
             func(time=time)
 
     @final
-    def constrain_values(self, time: np.floating) -> None:
+    def constrain_values(self, time: np.float64) -> None:
         # Collection call _feature_group_constrain_values
         for func in self._feature_group_constrain_values:
             func(time=time)
 
     @final
-    def constrain_rates(self, time: np.floating) -> None:
+    def constrain_rates(self, time: np.float64) -> None:
         # Collection call _feature_group_constrain_rates
         for func in self._feature_group_constrain_rates:
             func(time=time)
 
     @final
-    def apply_callbacks(self, time: np.floating, current_step: int) -> None:
+    def apply_callbacks(self, time: np.float64, current_step: int) -> None:
         # Collection call _feature_group_callback
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)

@@ -151,8 +151,8 @@ for i in range(int(n_muscle_fibers / 2)):
     muscle_glue_connection_index.append(
         np.hstack(
             (
-                np.arange(0, 4 * 3, 1, dtype=np.int64),
-                np.arange(9 * 3, n_elem_muscle_group_one_to_three, 1, dtype=np.int64),
+                np.arange(0, 4 * 3, 1, dtype=np.int32),
+                np.arange(9 * 3, n_elem_muscle_group_one_to_three, 1, dtype=np.int32),
             )
         )
     )
@@ -213,11 +213,11 @@ for i in range(int(n_muscle_fibers / 2), n_muscle_fibers):
     muscle_rod_list.append(muscle_rod)
     muscle_end_connection_index.append(index + n_elem_muscle_group_two_to_four)
     muscle_glue_connection_index.append(
-        # np.array([0,1, 2, 3, 9, 10 ], dtype=np.int)
+        # np.array([0,1, 2, 3, 9, 10 ], dtype=np.int32)
         np.hstack(
             (
-                np.arange(0, 4 * 3, 1, dtype=np.int64),
-                np.arange(9 * 3, n_elem_muscle_group_two_to_four, 1, dtype=np.int64),
+                np.arange(0, 4 * 3, 1, dtype=np.int32),
+                np.arange(9 * 3, n_elem_muscle_group_two_to_four, 1, dtype=np.int32),
             )
         )
     )

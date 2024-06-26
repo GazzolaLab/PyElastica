@@ -14,9 +14,9 @@ from elastica.rigidbody.rigid_body import RigidBodyBase
 class Cylinder(RigidBodyBase):
     def __init__(
         self,
-        start: NDArray[np.floating],
-        direction: NDArray[np.floating],
-        normal: NDArray[np.floating],
+        start: NDArray[np.float64],
+        direction: NDArray[np.float64],
+        normal: NDArray[np.float64],
         base_length: float,
         base_radius: float,
         density: float,
@@ -26,9 +26,9 @@ class Cylinder(RigidBodyBase):
 
         Parameters
         ----------
-        start : NDArray[np.floating]
-        direction : NDArray[np.floating]
-        normal : NDArray[np.floating]
+        start : NDArray[np.float64]
+        direction : NDArray[np.float64]
+        normal : NDArray[np.float64]
         base_length : float
         base_radius : float
         density : float
@@ -36,7 +36,7 @@ class Cylinder(RigidBodyBase):
 
         # FIXME: Refactor
         def assert_check_array_size(
-            to_check: NDArray[np.floating], name: str, expected: int = 3
+            to_check: NDArray[np.float64], name: str, expected: int = 3
         ) -> None:
             array_size = to_check.size
             assert array_size == expected, (

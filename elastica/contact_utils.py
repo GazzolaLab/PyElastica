@@ -11,7 +11,7 @@ from typing import Literal, Sequence
 
 
 @numba.njit(cache=True)  # type: ignore
-def _dot_product(a: Sequence[np.floating], b: Sequence[np.floating]) -> np.floating:
+def _dot_product(a: Sequence[np.float64], b: Sequence[np.float64]) -> np.float64:
     total: np.float64 = np.float64(0.0)
     for i in range(3):
         total += a[i] * b[i]
@@ -19,28 +19,28 @@ def _dot_product(a: Sequence[np.floating], b: Sequence[np.floating]) -> np.float
 
 
 @numba.njit(cache=True)  # type: ignore
-def _norm(a: Sequence[np.floating]) -> float:
+def _norm(a: Sequence[np.float64]) -> float:
     return sqrt(_dot_product(a, a))
 
 
 @numba.njit(cache=True)  # type: ignore
-def _clip(x: np.floating, low: np.floating, high: np.floating) -> np.floating:
+def _clip(x: np.float64, low: np.float64, high: np.float64) -> np.float64:
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
 @numba.njit(cache=True)  # type: ignore
-def _out_of_bounds(x: np.floating, low: np.floating, high: np.floating) -> bool:
-    return (x < low) or (x > high)
+def _out_of_bounds(x: np.float64, low: np.float64, high: np.float64) -> bool:
+    return bool((x < low) or (x > high))
 
 
 @numba.njit(cache=True)  # type: ignore
 def _find_min_dist(
-    x1: NDArray[np.floating],
-    e1: NDArray[np.floating],
-    x2: NDArray[np.floating],
-    e2: NDArray[np.floating],
-) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
+    x1: NDArray[np.float64],
+    e1: NDArray[np.float64],
+    x2: NDArray[np.float64],
+    e2: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     e1e1 = _dot_product(e1, e1)
     e1e2 = _dot_product(e1, e2)
     e2e2 = _dot_product(e2, e2)
@@ -107,7 +107,7 @@ def _find_min_dist(
 
 @numba.njit(cache=True)  # type: ignore
 def _aabbs_not_intersecting(
-    aabb_one: NDArray[np.floating], aabb_two: NDArray[np.floating]
+    aabb_one: NDArray[np.float64], aabb_two: NDArray[np.float64]
 ) -> Literal[1, 0]:
     """Returns true if not intersecting else false"""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
@@ -122,13 +122,13 @@ def _aabbs_not_intersecting(
 
 @numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_cylinder(
-    rod_one_position_collection: NDArray[np.floating],
-    rod_one_radius_collection: NDArray[np.floating],
-    rod_one_length_collection: NDArray[np.floating],
-    cylinder_position: NDArray[np.floating],
-    cylinder_director: NDArray[np.floating],
-    cylinder_radius: NDArray[np.floating],
-    cylinder_length: NDArray[np.floating],
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    cylinder_position: NDArray[np.float64],
+    cylinder_director: NDArray[np.float64],
+    cylinder_radius: NDArray[np.float64],
+    cylinder_length: NDArray[np.float64],
 ) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
@@ -164,12 +164,12 @@ def _prune_using_aabbs_rod_cylinder(
 
 @numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_rod(
-    rod_one_position_collection: NDArray[np.floating],
-    rod_one_radius_collection: NDArray[np.floating],
-    rod_one_length_collection: NDArray[np.floating],
-    rod_two_position_collection: NDArray[np.floating],
-    rod_two_radius_collection: NDArray[np.floating],
-    rod_two_length_collection: NDArray[np.floating],
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    rod_two_position_collection: NDArray[np.float64],
+    rod_two_radius_collection: NDArray[np.float64],
+    rod_two_length_collection: NDArray[np.float64],
 ) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod_one = np.empty((3, 2))
@@ -202,12 +202,12 @@ def _prune_using_aabbs_rod_rod(
 
 @numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_sphere(
-    rod_one_position_collection: NDArray[np.floating],
-    rod_one_radius_collection: NDArray[np.floating],
-    rod_one_length_collection: NDArray[np.floating],
-    sphere_position: NDArray[np.floating],
-    sphere_director: NDArray[np.floating],
-    sphere_radius: NDArray[np.floating],
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    sphere_position: NDArray[np.float64],
+    sphere_director: NDArray[np.float64],
+    sphere_radius: NDArray[np.float64],
 ) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
@@ -241,8 +241,8 @@ def _prune_using_aabbs_rod_sphere(
 
 @numba.njit(cache=True)  # type: ignore
 def _find_slipping_elements(
-    velocity_slip: NDArray[np.floating], velocity_threshold: np.floating
-) -> NDArray[np.floating]:
+    velocity_slip: NDArray[np.float64], velocity_threshold: np.float64
+) -> NDArray[np.float64]:
     """
     This function takes the velocity of elements and checks if they are larger than the threshold velocity.
     If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
@@ -283,7 +283,7 @@ def _find_slipping_elements(
 
 
 @numba.njit(cache=True)  # type: ignore
-def _node_to_element_mass_or_force(input: NDArray[np.floating]) -> NDArray[np.floating]:
+def _node_to_element_mass_or_force(input: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     This function converts the mass/forces on rod nodes to
     elements, where special treatment is necessary at the ends.
@@ -322,8 +322,8 @@ def _node_to_element_mass_or_force(input: NDArray[np.floating]) -> NDArray[np.fl
 
 @numba.njit(cache=True)  # type: ignore
 def _elements_to_nodes_inplace(
-    vector_in_element_frame: NDArray[np.floating],
-    vector_in_node_frame: NDArray[np.floating],
+    vector_in_element_frame: NDArray[np.float64],
+    vector_in_node_frame: NDArray[np.float64],
 ) -> None:
     """
     Updating nodal forces using the forces computed on elements
@@ -348,8 +348,8 @@ def _elements_to_nodes_inplace(
 
 @numba.njit(cache=True)  # type: ignore
 def _node_to_element_position(
-    node_position_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    node_position_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     This function computes the position of the elements
     from the nodal values.
@@ -396,8 +396,8 @@ def _node_to_element_position(
 
 @numba.njit(cache=True)  # type: ignore
 def _node_to_element_velocity(
-    mass: NDArray[np.floating], node_velocity_collection: NDArray[np.floating]
-) -> NDArray[np.floating]:
+    mass: NDArray[np.float64], node_velocity_collection: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
     This function computes the velocity of the elements
     from the nodal values. Uses the velocity of center of mass

@@ -11,8 +11,8 @@ from elastica.utils import MaxDimension
 class AABBCollection:
     def __init__(
         self,
-        elemental_position_collection: NDArray[np.floating],
-        dimension_collection: NDArray[np.floating],
+        elemental_position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
         elements_per_aabb: int,
     ) -> None:
         """
@@ -85,8 +85,8 @@ class AABBCollection:
 
     def update(
         self,
-        elemental_position_collection: NDArray[np.floating],
-        dimension_collection: NDArray[np.floating],
+        elemental_position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
     ) -> None:
         # Initialize the boxes
         for i in range(self.n_aabb):
@@ -111,8 +111,8 @@ class AABBHierarchy:
 
     def __init__(
         self,
-        position_collection: NDArray[np.floating],
-        dimension_collection: NDArray[np.floating],
+        position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
         avg_n_dofs_in_final_level: int,
     ) -> None:
         """
@@ -232,8 +232,8 @@ class AABBHierarchy:
 
     def update(
         self,
-        position_collection: NDArray[np.floating],
-        dimension_collection: NDArray[np.floating],
+        position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
     ) -> None:
         # Update bottom level first, the first level entries
         n_aabbs_in_final_level = self.n_aabbs_at_level(self.n_levels - 1)
@@ -278,7 +278,7 @@ class AABBHierarchy:
 
 
 def are_aabb_intersecting(
-    first_aabb_collection: NDArray[np.floating],
-    second_aabb_collection: NDArray[np.floating],
+    first_aabb_collection: NDArray[np.float64],
+    second_aabb_collection: NDArray[np.float64],
 ) -> bool:
     return True

@@ -25,12 +25,12 @@ class StepperProtocol(Protocol):
     def step_methods(self) -> SteppersOperatorsType: ...
 
     def step(
-        self, SystemCollection: SystemCollectionType, time: np.floating, dt: np.floating
-    ) -> np.floating: ...
+        self, SystemCollection: SystemCollectionType, time: np.float64, dt: np.float64
+    ) -> np.float64: ...
 
     def step_single_instance(
-        self, SystemCollection: SystemType, time: np.floating, dt: np.floating
-    ) -> np.floating: ...
+        self, SystemCollection: SystemType, time: np.float64, dt: np.float64
+    ) -> np.float64: ...
 
 
 class SymplecticStepperProtocol(StepperProtocol, Protocol):

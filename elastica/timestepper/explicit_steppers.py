@@ -113,9 +113,9 @@ class ExplicitStepperMixin:
     def step(
         self: ExplicitStepperProtocol,
         SystemCollection: SystemCollectionType,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         if isinstance(
             self, EulerForward
         ):  # TODO: Cleanup - use depedency injection instead
@@ -135,9 +135,9 @@ class ExplicitStepperMixin:
         steps_and_prefactors: SteppersOperatorsType,
         SystemCollection: SystemCollectionType,
         MemoryCollection: Any,  # TODO
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         for stage, update in steps_and_prefactors:
             SystemCollection.synchronize(time)
             for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
@@ -152,9 +152,9 @@ class ExplicitStepperMixin:
         self: ExplicitStepperProtocol,
         System: SystemType,
         Memory: MemoryProtocol,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         for stage, update in self.steps_and_prefactors:
             stage(System, Memory, time, dt)
             time = update(System, Memory, time, dt)
@@ -176,8 +176,8 @@ class EulerForward(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: EulerForwardMemory,
-        time: np.floating,
-        dt: np.floating,
+        time: np.float64,
+        dt: np.float64,
     ) -> None:
         pass
 
@@ -185,9 +185,9 @@ class EulerForward(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: EulerForwardMemory,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         System.state += dt * System(time, dt)  # type: ignore[arg-type]
         return time + dt
 
@@ -221,8 +221,8 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
+        time: np.float64,
+        dt: np.float64,
     ) -> None:
         Memory.initial_state = copy(System.state)
         Memory.k_1 = dt * System(time, dt)  # type: ignore[operator, assignment]
@@ -231,9 +231,9 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         # prepare for next stage
         System.state = Memory.initial_state + 0.5 * Memory.k_1  # type: ignore[operator]
         return time + 0.5 * dt
@@ -242,8 +242,8 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
+        time: np.float64,
+        dt: np.float64,
     ) -> None:
         Memory.k_2 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
@@ -251,9 +251,9 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         # prepare for next stage
         System.state = Memory.initial_state + 0.5 * Memory.k_2  # type: ignore[operator]
         return time
@@ -262,8 +262,8 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
+        time: np.float64,
+        dt: np.float64,
     ) -> None:
         Memory.k_3 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
@@ -271,9 +271,9 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         # prepare for next stage
         System.state = Memory.initial_state + Memory.k_3  # type: ignore[operator]
         return time + 0.5 * dt
@@ -282,8 +282,8 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
+        time: np.float64,
+        dt: np.float64,
     ) -> None:
         Memory.k_4 = dt * System(time, dt)  # type: ignore[operator, assignment]
 
@@ -291,9 +291,9 @@ class RungeKutta4(ExplicitStepperMixin):
         self,
         System: ExplicitSystemProtocol,
         Memory: RungeKutta4Memory,
-        time: np.floating,
-        dt: np.floating,
-    ) -> np.floating:
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:
         # prepare for next stage
         System.state = (
             Memory.initial_state

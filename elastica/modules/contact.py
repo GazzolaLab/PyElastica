@@ -80,7 +80,7 @@ class Contact:
         # to apply the contacts to
 
         def apply_contact(
-            time: np.floating,
+            time: np.float64,
             contact_instance: NoContact,
             first_sys_idx: SystemIdxType,
             second_sys_idx: SystemIdxType,

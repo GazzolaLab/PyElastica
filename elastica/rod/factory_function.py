@@ -10,16 +10,16 @@ from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
 
 def allocate(
     n_elements: int,
-    direction: NDArray[np.floating],
-    normal: NDArray[np.floating],
-    base_length: np.floating,
-    base_radius: np.floating,
-    density: np.floating,
-    youngs_modulus: np.floating,
+    direction: NDArray[np.float64],
+    normal: NDArray[np.float64],
+    base_length: np.float64,
+    base_radius: np.float64,
+    density: np.float64,
+    youngs_modulus: np.float64,
     *,
     rod_origin_position: np.ndarray,
     ring_rod_flag: bool,
-    shear_modulus: Optional[np.floating] = None,
+    shear_modulus: Optional[np.float64] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
     rest_sigma: Optional[np.ndarray] = None,
@@ -27,37 +27,37 @@ def allocate(
     **kwargs: Any,
 ) -> tuple[
     int,
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
-    NDArray[np.floating],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
 ]:
     log = logging.getLogger()
 
@@ -388,7 +388,7 @@ def _assert_shape(
 
 
 def _position_validity_checker(
-    position: NDArray[np.floating], start: NDArray[np.floating], n_elements: int
+    position: NDArray[np.float64], start: NDArray[np.float64], n_elements: int
 ) -> None:
     """Checker on user-defined position validity"""
     _assert_shape(position, (MaxDimension.value(), n_elements + 1), "position")
@@ -406,7 +406,7 @@ def _position_validity_checker(
 
 
 def _directors_validity_checker(
-    directors: NDArray[np.floating], tangents: NDArray[np.floating], n_elements: int
+    directors: NDArray[np.float64], tangents: NDArray[np.float64], n_elements: int
 ) -> None:
     """Checker on user-defined directors validity"""
     _assert_shape(
@@ -454,8 +454,8 @@ def _directors_validity_checker(
 
 
 def _position_validity_checker_ring_rod(
-    position: NDArray[np.floating],
-    ring_center_position: NDArray[np.floating],
+    position: NDArray[np.float64],
+    ring_center_position: NDArray[np.float64],
     n_elements: int,
 ) -> None:
     """Checker on user-defined position validity"""

@@ -143,7 +143,7 @@ class HingeJoint(FreeJoint):
         k: float,
         nu: float,
         kt: float,
-        normal_direction: NDArray[np.floating],
+        normal_direction: NDArray[np.float64],
     ) -> None:
         """
 
@@ -238,7 +238,7 @@ class FixedJoint(FreeJoint):
         nu: float,
         kt: float,
         nut: float = 0.0,
-        rest_rotation_matrix: NDArray[np.floating] | None = None,
+        rest_rotation_matrix: NDArray[np.float64] | None = None,
     ) -> None:
         """
 
@@ -338,7 +338,7 @@ def get_relative_rotation_two_systems(
     index_one: ConnectionIndex,
     system_two: "RodType | RigidBodyType",
     index_two: ConnectionIndex,
-) -> NDArray[np.floating]:
+) -> NDArray[np.float64]:
     """
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 

@@ -5,6 +5,6 @@ from numpy.typing import NDArray
 
 
 class MeshProtocol(Protocol):
-    faces: NDArray[np.floating]
-    face_centers: NDArray[np.floating]
-    face_normals: NDArray[np.floating]
+    faces: NDArray[np.float64]
+    face_centers: NDArray[np.float64]
+    face_normals: NDArray[np.float64]

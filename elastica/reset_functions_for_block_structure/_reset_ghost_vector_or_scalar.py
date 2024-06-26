@@ -7,18 +7,18 @@ from numba import njit
 
 @njit(cache=True)  # type: ignore
 def _reset_vector_ghost(
-    input: NDArray[np.floating],
-    ghost_idx: NDArray[np.integer],
-    reset_value: np.floating = np.float64(0.0),
+    input: NDArray[np.float64],
+    ghost_idx: NDArray[np.int32],
+    reset_value: np.float64 = np.float64(0.0),
 ):
     """
     This function resets the ghost of an input vector collection. Default reset value is 0.0.
 
     Parameters
     ----------
-    input : NDArray[np.floating]
-    ghost_idx : NDArray[np.integer]
-    reset_value : np.floating
+    input : NDArray[np.float64]
+    ghost_idx : NDArray[np.int32]
+    reset_value : np.float64
 
     Returns
     -------
@@ -47,18 +47,18 @@ def _reset_vector_ghost(
 
 @njit(cache=True)  # type: ignore
 def _reset_scalar_ghost(
-    input: NDArray[np.floating],
-    ghost_idx: NDArray[np.integer],
-    reset_value: np.floating = np.float64(0.0),
+    input: NDArray[np.float64],
+    ghost_idx: NDArray[np.int32],
+    reset_value: np.float64 = np.float64(0.0),
 ):
     """
     This function resets the ghost of a scalar collection. Default reset value is 0.0.
 
     Parameters
     ----------
-    input : NDArray[np.floating]
-    ghost_idx : NDArray[np.integer]
-    reset_value : np.floating
+    input : NDArray[np.float64]
+    ghost_idx : NDArray[np.int32]
+    reset_value : np.float64
 
     Returns
     -------

@@ -16,8 +16,8 @@ from numpy.typing import NDArray
 
 
 def format_vector_shape(
-    vector_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    vector_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Function for formatting vector shapes into correct format
 
@@ -63,8 +63,8 @@ def format_vector_shape(
 
 
 def format_matrix_shape(
-    matrix_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    matrix_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Formats input matrix into correct format
 
@@ -141,14 +141,14 @@ def format_matrix_shape(
     return matrix_collection
 
 
-def skew_symmetrize(vector: NDArray[np.floating]) -> NDArray[np.floating]:
+def skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = format_vector_shape(vector)
     return _skew_symmetrize(vector)
 
 
 def inv_skew_symmetrize(
-    matrix_collection: NDArray[np.floating],
-) -> NDArray[np.floating]:
+    matrix_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Safe wrapper around inv_skew_symmetrize that does checking
     and formatting on type of matrix_collection using format_matrix_shape
@@ -175,8 +175,8 @@ def inv_skew_symmetrize(
 
 
 def rotate(
-    matrix: NDArray[np.floating], scale: np.floating, axis: NDArray[np.floating]
-) -> NDArray[np.floating]:
+    matrix: NDArray[np.float64], scale: np.float64, axis: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
     This function takes single or multiple frames as matrix. Then rotates these frames
     around a single axis for all frames, or can rotate each frame around its own

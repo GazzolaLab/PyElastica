@@ -53,20 +53,20 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
         # Sorted systems
         systems = system_straight_rod + system_ring_rod
         self.system_idx_list = np.array(
-            system_idx_list_straight_rod + system_idx_list_ring_rod, dtype=np.int64
+            system_idx_list_straight_rod + system_idx_list_ring_rod, dtype=np.int32
         )
 
         n_elems_straight_rods = np.array(
-            [x.n_elems for x in system_straight_rod], dtype=np.int64
+            [x.n_elems for x in system_straight_rod], dtype=np.int32
         )
         n_elems_ring_rods = np.array(
-            [x.n_elems for x in system_ring_rod], dtype=np.int64
+            [x.n_elems for x in system_ring_rod], dtype=np.int32
         )
 
         n_straight_rods: int = len(system_straight_rod)
         n_ring_rods: int = len(system_ring_rod)
 
-        # self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int)
+        # self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int32)
         self.n_elems_in_rods = np.hstack((n_elems_straight_rods, n_elems_ring_rods + 2))
         self.n_rods = len(systems)
         (

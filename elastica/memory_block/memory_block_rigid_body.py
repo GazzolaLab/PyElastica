@@ -15,7 +15,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         self.n_systems = len(systems)
         self.n_elems = self.n_systems
         self.n_nodes = self.n_elems
-        self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
+        self.system_idx_list = np.array(system_idx_list, dtype=np.int32)
 
         # Allocate block structure using system collection.
         self._allocate_block_variables_scalars(systems)

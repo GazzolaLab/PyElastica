@@ -107,7 +107,7 @@ class RodRodContact(NoContact):
 
     """
 
-    def __init__(self, k: np.floating, nu: np.floating) -> None:
+    def __init__(self, k: np.float64, nu: np.float64) -> None:
         """
         Parameters
         ----------
@@ -538,8 +538,8 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
         k: float,
         nu: float,
         slip_velocity_tol: float,
-        static_mu_array: NDArray[np.floating],
-        kinetic_mu_array: NDArray[np.floating],
+        static_mu_array: NDArray[np.float64],
+        kinetic_mu_array: NDArray[np.float64],
     ) -> None:
         """
         Parameters

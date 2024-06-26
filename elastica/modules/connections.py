@@ -88,7 +88,7 @@ class Connections:
         # to apply the connections to.
 
         def apply_forces_and_torques(
-            time: np.floating,
+            time: np.float64,
             connect_instance: FreeJoint,
             system_one: "RodType | RigidBodyType",
             first_connect_idx: ConnectionIndex,

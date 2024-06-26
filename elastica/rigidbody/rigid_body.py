@@ -27,29 +27,29 @@ class RigidBodyBase(ABC):
         self.n_elems: int = 1
         self.n_nodes: int = 1
 
-        self.position_collection: NDArray[np.floating]
-        self.velocity_collection: NDArray[np.floating]
-        self.acceleration_collection: NDArray[np.floating]
-        self.omega_collection: NDArray[np.floating]
-        self.alpha_collection: NDArray[np.floating]
-        self.director_collection: NDArray[np.floating]
+        self.position_collection: NDArray[np.float64]
+        self.velocity_collection: NDArray[np.float64]
+        self.acceleration_collection: NDArray[np.float64]
+        self.omega_collection: NDArray[np.float64]
+        self.alpha_collection: NDArray[np.float64]
+        self.director_collection: NDArray[np.float64]
 
-        self.external_forces: NDArray[np.floating]
-        self.external_torques: NDArray[np.floating]
+        self.external_forces: NDArray[np.float64]
+        self.external_torques: NDArray[np.float64]
 
-        self.internal_forces: NDArray[np.floating]
-        self.internal_torques: NDArray[np.floating]
+        self.internal_forces: NDArray[np.float64]
+        self.internal_torques: NDArray[np.float64]
 
-        self.mass: np.floating
-        self.volume: np.floating
-        self.length: np.floating
-        self.tangents: NDArray[np.floating]
-        self.radius: np.floating
+        self.mass: np.float64
+        self.volume: np.float64
+        self.length: np.float64
+        self.tangents: NDArray[np.float64]
+        self.radius: np.float64
 
-        self.mass_second_moment_of_inertia: NDArray[np.floating]
-        self.inv_mass_second_moment_of_inertia: NDArray[np.floating]
+        self.mass_second_moment_of_inertia: NDArray[np.float64]
+        self.inv_mass_second_moment_of_inertia: NDArray[np.float64]
 
-    def update_accelerations(self, time: np.floating) -> None:
+    def update_accelerations(self, time: np.float64) -> None:
         np.copyto(
             self.acceleration_collection,
             (self.external_forces) / self.mass,
@@ -71,24 +71,24 @@ class RigidBodyBase(ABC):
             ),
         )
 
-    def zeroed_out_external_forces_and_torques(self, time: np.floating) -> None:
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:
         # Reset forces and torques
         self.external_forces *= 0.0
         self.external_torques *= 0.0
 
-    def compute_internal_forces_and_torques(self, time: np.floating) -> None:
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None:
         """
         For rigid body, there is no internal forces and torques
         """
         pass
 
-    def compute_position_center_of_mass(self) -> NDArray[np.floating]:
+    def compute_position_center_of_mass(self) -> NDArray[np.float64]:
         """
         Return positional center of mass
         """
         return self.position_collection[..., 0].copy()
 
-    def compute_translational_energy(self) -> NDArray[np.floating]:
+    def compute_translational_energy(self) -> NDArray[np.float64]:
         """
         Return translational energy
         """
@@ -100,7 +100,7 @@ class RigidBodyBase(ABC):
             )
         )
 
-    def compute_rotational_energy(self) -> NDArray[np.floating]:
+    def compute_rotational_energy(self) -> NDArray[np.float64]:
         """
         Return rotational energy
         """
