@@ -1,5 +1,4 @@
 __doc__ = """ Quadrature and difference kernels """
-from typing import Union
 import numpy as np
 from numpy import zeros, empty
 from numpy.typing import NDArray
@@ -8,17 +7,6 @@ from numba import njit
 from elastica.reset_functions_for_block_structure._reset_ghost_vector_or_scalar import (
     _reset_vector_ghost,
 )
-import functools
-
-
-@functools.lru_cache(maxsize=2)
-def _get_zero_array(dim: int, ndim: int) -> Union[float, NDArray[np.float64], None]:
-    if ndim == 1:
-        return 0.0
-    if ndim == 2:
-        return np.zeros((dim, 1))
-
-    return None
 
 
 @njit(cache=True)  # type: ignore
