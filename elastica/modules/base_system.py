@@ -37,9 +37,9 @@ class BaseSystemCollection(MutableSequence):
 
         Attributes
         ----------
-        allowed_sys_types: tuple
+        allowed_sys_types: tuple[Type]
             Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
-        systems: Callabke
+        systems: Callable
             Returns all system objects. Once finalize, block objects are also included.
         blocks: Callable
             Returns block objects. Should be called after finalize.
