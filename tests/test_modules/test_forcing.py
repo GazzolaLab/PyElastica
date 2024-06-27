@@ -103,7 +103,7 @@ class TestForcingMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwf.add_forcing_to(np.int_(100))
+            scwf.add_forcing_to(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_constrain_with_unregistered_system_throws(self, load_system_with_forcings):

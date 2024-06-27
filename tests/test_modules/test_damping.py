@@ -119,7 +119,7 @@ class TestDampingMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwd.dampen(np.int_(100))
+            scwd.dampen(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_dampen_with_unregistered_system_throws(self, load_system_with_dampers):

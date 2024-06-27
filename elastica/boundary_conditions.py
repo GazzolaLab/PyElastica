@@ -48,10 +48,10 @@ class ConstraintBase(ABC, Generic[S]):
         try:
             self._system = kwargs["_system"]
             self._constrained_position_idx = np.array(
-                constrained_position_idx, dtype=np.int_
+                constrained_position_idx, dtype=np.int32
             )
             self._constrained_director_idx = np.array(
-                constrained_director_idx, dtype=np.int_
+                constrained_director_idx, dtype=np.int32
             )
         except KeyError:
             raise KeyError(
@@ -64,12 +64,12 @@ class ConstraintBase(ABC, Generic[S]):
         return self._system
 
     @property
-    def constrained_position_idx(self) -> np.ndarray:
+    def constrained_position_idx(self) -> NDArray[np.int32]:
         """get position-indices passed to "using" """
         return self._constrained_position_idx
 
     @property
-    def constrained_director_idx(self) -> np.ndarray:
+    def constrained_director_idx(self) -> NDArray[np.int32]:
         """get director-indices passed to "using" """
         return self._constrained_director_idx
 

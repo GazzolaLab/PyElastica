@@ -59,7 +59,7 @@ SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 # TODO: Maybe just use slice??
 ConstrainingIndex: TypeAlias = tuple[int, ...]
 ConnectionIndex: TypeAlias = (
-    int | np.int_ | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
+    int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
 )
 
 # Operators in elastica.modules

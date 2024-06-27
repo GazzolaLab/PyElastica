@@ -127,7 +127,7 @@ class TestBaseSystemCollection:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            load_collection.get_system_index(np.int_(100))
+            load_collection.get_system_index(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_unregistered_system_in_get_sys_index_throws(

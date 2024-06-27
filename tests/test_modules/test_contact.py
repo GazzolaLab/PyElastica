@@ -157,7 +157,7 @@ class TestContactMixin:
 
         with pytest.raises(AssertionError) as excinfo:
             system_collection_with_contacts.detect_contact_between(
-                *[np.int_(x) for x in sys_idx]
+                *[np.int32(x) for x in sys_idx]
             )
         assert "exceeds number of" in str(excinfo.value)
 

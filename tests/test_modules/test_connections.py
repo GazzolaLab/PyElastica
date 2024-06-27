@@ -232,7 +232,7 @@ class TestConnectionsMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            system_collection_with_connections.connect(*[np.int_(x) for x in sys_idx])
+            system_collection_with_connections.connect(*[np.int32(x) for x in sys_idx])
         assert "exceeds number of" in str(excinfo.value)
 
     def test_connect_with_unregistered_system_throws(self, load_system_with_connects):

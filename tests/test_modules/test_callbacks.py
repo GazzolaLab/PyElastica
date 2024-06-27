@@ -96,7 +96,7 @@ class TestCallBacksMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.collect_diagnostics(np.int_(100))
+            scwc.collect_diagnostics(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_callback_with_unregistered_system_throws(self, load_system_with_callbacks):

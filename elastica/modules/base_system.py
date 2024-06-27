@@ -165,7 +165,9 @@ class BaseSystemCollection(MutableSequence):
         n_systems = len(self)  # Total number of systems from mixed-in class
 
         sys_idx: SystemIdxType
-        if isinstance(system, (int, np.int_)):
+        if isinstance(
+            system, (int, np.integer)
+        ):  # np.integer includes both int32 and int64
             # 1. If they are indices themselves, check range
             # This is only used for testing purposes
             assert (

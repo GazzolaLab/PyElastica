@@ -188,7 +188,13 @@ class _Connect:
         ), f"Type of first_connect_idx :{first_type} is different than second_connect_idx :{second_type}"
 
         # Check if the type of idx variables are correct.
-        allow_types = (int, np.int_, list, tuple, np.ndarray)
+        allow_types = (
+            int,
+            np.integer,
+            list,
+            tuple,
+            np.ndarray,
+        )  # np.integer is for both int32 and int64
         assert isinstance(
             first_idx, allow_types
         ), f"Connection index type is not supported :{first_type}, please try one of the following :{allow_types}"
@@ -198,13 +204,13 @@ class _Connect:
             first_idx_ = cast(list[int], first_idx)
             second_idx_ = cast(list[int], second_idx)
             for i in range(len(first_idx_)):
-                assert isinstance(first_idx_[i], (int, np.int_)), (
+                assert isinstance(first_idx_[i], (int, np.integer)), (
                     "Connection index of first rod is not integer :{}".format(
                         first_idx_[i]
                     )
                     + " It should be : integer. Check your input!"
                 )
-                assert isinstance(second_idx_[i], (int, np.int_)), (
+                assert isinstance(second_idx_[i], (int, np.integer)), (
                     "Connection index of second rod is not integer :{}".format(
                         second_idx_[i]
                     )
@@ -227,7 +233,7 @@ class _Connect:
                 ), "Connection index of second rod exceeds its dof : {}".format(
                     self._second_sys_n_lim
                 )
-        elif isinstance(first_idx, (int, np.int_)):
+        elif isinstance(first_idx, (int, np.integer)):
             # The addition of +1 and and <= check on the RHS is because
             # connections can be made to the node indices as well
             first_idx__ = cast(int, first_idx)
