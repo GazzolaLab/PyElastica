@@ -5,11 +5,28 @@ Contact
 Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
+from typing import Type, Any
+from typing_extensions import Self
+from elastica.typing import (
+    SystemIdxType,
+    OperatorFinalizeType,
+    StaticSystemType,
+    SystemType,
+)
+from .protocol import SystemCollectionProtocol, ModuleProtocol
+
 import logging
 import functools
-from elastica.typing import SystemType, AllowedContactType
+
+import numpy as np
+
+from elastica.contact_forces import NoContact
 
 logger = logging.getLogger(__name__)
+
+
+def warnings() -> None:
+    logger.warning("Contact features should be instantiated lastly.")
 
 
 class Contact:
@@ -23,14 +40,16 @@ class Contact:
             List of contact classes defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._contacts = []
+    def __init__(self: SystemCollectionProtocol) -> None:
+        self._contacts: list[ModuleProtocol] = []
         super(Contact, self).__init__()
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
-        self, first_system: SystemType, second_system: AllowedContactType
-    ):
+        self: SystemCollectionProtocol,
+        first_system: SystemType,
+        second_system: "SystemType | StaticSystemType",
+    ) -> ModuleProtocol:
         """
         This method adds contact detection between two objects using the selected contact class.
         You need to input the two objects that are to be connected.
@@ -38,39 +57,37 @@ class Contact:
         Parameters
         ----------
         first_system : SystemType
-            Rod or rigid body object
-        second_system : AllowedContactType
-            Rod, rigid body or surface object
+        second_system : SystemType | StaticSystemType
 
         Returns
         -------
 
         """
-        sys_idx = [None] * 2
-        for i_sys, sys in enumerate((first_system, second_system)):
-            sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
+        sys_idx_first = self.get_system_index(first_system)
+        sys_idx_second = self.get_system_index(second_system)
 
         # Create _Contact object, cache it and return to user
-        _contact = _Contact(*sys_idx)
+        _contact = _Contact(sys_idx_first, sys_idx_second)
         self._contacts.append(_contact)
         self._feature_group_synchronize.append_id(_contact)
 
         return _contact
 
-    def _finalize_contact(self) -> None:
+    def _finalize_contact(self: SystemCollectionProtocol) -> None:
 
         # dev : the first indices stores the
         # (first_rod_idx, second_rod_idx)
         # to apply the contacts to
-        # Technically we can use another array but it its one more book-keeping
-        # step. Being lazy, I put them both in the same array
 
         def apply_contact(
-            time, contact_instance, system, first_sys_idx, second_sys_idx
-        ):
+            time: np.float64,
+            contact_instance: NoContact,
+            first_sys_idx: SystemIdxType,
+            second_sys_idx: SystemIdxType,
+        ) -> None:
             contact_instance.apply_contact(
-                system_one=system[first_sys_idx],
-                system_two=system[second_sys_idx],
+                system_one=self[first_sys_idx],
+                system_two=self[second_sys_idx],
             )
 
         for contact in self._contacts:
@@ -78,30 +95,22 @@ class Contact:
             contact_instance = contact.instantiate()
 
             contact_instance._check_systems_validity(
-                self._systems[first_sys_idx],
-                self._systems[second_sys_idx],
+                self[first_sys_idx],
+                self[second_sys_idx],
             )
             func = functools.partial(
                 apply_contact,
                 contact_instance=contact_instance,
-                system=self._systems,
                 first_sys_idx=first_sys_idx,
                 second_sys_idx=second_sys_idx,
             )
             self._feature_group_synchronize.add_operators(contact, [func])
 
-            self.warnings(contact)
+            if not self._feature_group_synchronize.is_last(contact):
+                warnings()
 
         self._contacts = []
         del self._contacts
-
-    def warnings(self, contact):
-        from elastica.contact_forces import NoContact
-
-        # Classes that should be used last
-        if not self._feature_group_synchronize.is_last(contact):
-            if isinstance(contact._contact_cls, NoContact):
-                logger.warning("Contact features should be instantiated lastly.")
 
 
 class _Contact:
@@ -110,9 +119,9 @@ class _Contact:
 
     Attributes
     ----------
-    _first_sys_idx: int
-    _second_sys_idx: int
-    _contact_cls: list
+    _first_sys_idx: SystemIdxType
+    _second_sys_idx: SystemIdxType
+    _contact_cls: Type[NoContact]
     *args
         Variable length argument list.
     **kwargs
@@ -121,8 +130,8 @@ class _Contact:
 
     def __init__(
         self,
-        first_sys_idx: int,
-        second_sys_idx: int,
+        first_sys_idx: SystemIdxType,
+        second_sys_idx: SystemIdxType,
     ) -> None:
         """
 
@@ -133,16 +142,18 @@ class _Contact:
         """
         self.first_sys_idx = first_sys_idx
         self.second_sys_idx = second_sys_idx
-        self._contact_cls = None
+        self._contact_cls: Type[NoContact]
+        self._args: Any
+        self._kwargs: Any
 
-    def using(self, contact_cls: object, *args, **kwargs):
+    def using(self, cls: Type[NoContact], *args: Any, **kwargs: Any) -> Self:
         """
         This method is a module to set which contact class is used to apply contact
         between user defined rod-like objects.
 
         Parameters
         ----------
-        contact_cls: object
+        cls: Type[NoContact]
             User defined contact class.
         *args
             Variable length argument list
@@ -153,26 +164,24 @@ class _Contact:
         -------
 
         """
-        from elastica.contact_forces import NoContact
-
         assert issubclass(
-            contact_cls, NoContact
+            cls, NoContact
         ), "{} is not a valid contact class. Did you forget to derive from NoContact?".format(
-            contact_cls
+            cls
         )
-        self._contact_cls = contact_cls
+        self._contact_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self
 
-    def id(self):
+    def id(self) -> Any:
         return (
             self.first_sys_idx,
             self.second_sys_idx,
         )
 
-    def instantiate(self, *args, **kwargs):
-        if not self._contact_cls:
+    def instantiate(self) -> NoContact:
+        if not hasattr(self, "_contact_cls"):
             raise RuntimeError(
                 "No contacts provided to to establish contact between rod-like object id {0}"
                 " and {1}, but a Contact"

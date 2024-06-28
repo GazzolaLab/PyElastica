@@ -1,7 +1,8 @@
 __doc__ = """ Mesh Initializer using Pyvista """
 
-import pyvista as pv
+import pyvista as pv  # type: ignore
 import numpy as np
+from numpy.typing import NDArray
 
 
 class Mesh:
@@ -100,8 +101,8 @@ class Mesh:
         )
 
     def face_calculation(
-        self, pvfaces: np.ndarray, meshpoints: np.ndarray, n_faces: int
-    ) -> np.ndarray:
+        self, pvfaces: NDArray, meshpoints: NDArray, n_faces: int
+    ) -> NDArray:
         """
         This function converts the faces from pyvista to pyelastica geometry
 
@@ -142,7 +143,7 @@ class Mesh:
 
         return faces
 
-    def face_normal_calculation(self, pyvista_face_normals: np.ndarray) -> np.ndarray:
+    def face_normal_calculation(self, pyvista_face_normals: NDArray) -> NDArray:
         """
         This function converts the face normals from pyvista to pyelastica geometry,
         in pyelastica the face are stored in the format of (n_faces, 3 spatial coordinates),
@@ -152,7 +153,7 @@ class Mesh:
 
         return face_normals
 
-    def face_center_calculation(self, faces: np.ndarray, n_faces: int) -> np.ndarray:
+    def face_center_calculation(self, faces: NDArray, n_faces: int) -> NDArray:
         """
         This function calculates the position vector of each face of the mesh
         simply by averaging all the vertices of every face/cell.
@@ -167,7 +168,7 @@ class Mesh:
 
         return face_centers
 
-    def mesh_scale_calculation(self, bounds: np.ndarray) -> np.ndarray:
+    def mesh_scale_calculation(self, bounds: NDArray) -> NDArray:
         """
         This function calculates scale of the mesh,
         for that it calculates the maximum distance between mesh's farthest verticies in each axis.
@@ -180,7 +181,7 @@ class Mesh:
 
         return scale
 
-    def orientation_calculation(self, cube_face_normals: np.ndarray) -> np.ndarray:
+    def orientation_calculation(self, cube_face_normals: NDArray) -> NDArray:
         """
         This function calculates the orientation of the mesh
         by using a dummy cube utility from pyvista.
@@ -209,7 +210,7 @@ class Mesh:
         pyvista_plotter.add_mesh(self.mesh)
         pyvista_plotter.show()
 
-    def translate(self, target_center: np.ndarray) -> None:
+    def translate(self, target_center: NDArray) -> None:
         """
         Parameters: {numpy.ndarray-(3 spatial coordinates)}
         ex : mesh.translate(np.array([1,1,1]))
@@ -220,7 +221,7 @@ class Mesh:
         self.mesh = self.mesh.translate(target_center)
         self.mesh_update()
 
-    def scale(self, factor: np.ndarray) -> None:
+    def scale(self, factor: NDArray) -> None:
         """
         Parameters: {numpy.ndarray-(3 spatial constants)}
         ex : mesh.scale(np.array([1,1,1]))
@@ -230,7 +231,7 @@ class Mesh:
         self.mesh = self.mesh.scale(factor)
         self.mesh_update()
 
-    def rotate(self, axis: np.ndarray, angle: float) -> None:
+    def rotate(self, axis: NDArray, angle: float) -> None:
         """
         Parameters: {rotation_axis: unit vector[numpy.ndarray-(3 spatial coordinates)], angle: in degrees[float]}
         ex : mesh.rotate(np.array([1,0,0]), 90)

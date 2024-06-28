@@ -3,10 +3,8 @@ __doc__ = """ Experimental interaction implementation."""
 
 import numpy as np
 from elastica.external_forces import NoForces
-from elastica.contact_utils import (
-    _find_slipping_elements,
-)
-from elastica.contact_functions import _calculate_contact_forces_cylinder_plane
+from elastica.contact_utils import _find_slipping_elements
+from elastica._contact_functions import _calculate_contact_forces_cylinder_plane
 from elastica.interaction import InteractionPlaneRigidBody
 
 from numba import njit

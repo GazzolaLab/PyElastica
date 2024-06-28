@@ -5,14 +5,25 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import AnyStr, Iterable
-from elastica.typing import OperatorType, OperatorCallbackType, OperatorFinalizeType
+from typing import Type, Generator, Iterable, Any, overload
+from typing import final
+from elastica.typing import (
+    SystemType,
+    StaticSystemType,
+    BlockSystemType,
+    SystemIdxType,
+    OperatorType,
+    OperatorCallbackType,
+    OperatorFinalizeType,
+)
+
+import numpy as np
 
 from collections.abc import MutableSequence
 
-from elastica.rod import RodBase
-from elastica.rigidbody import RigidBodyBase
-from elastica.surface import SurfaceBase
+from elastica.rod.rod_base import RodBase
+from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.surface.surface_base import SurfaceBase
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
@@ -26,13 +37,12 @@ class BaseSystemCollection(MutableSequence):
 
         Attributes
         ----------
-        allowed_sys_types: tuple
+        allowed_sys_types: tuple[Type]
             Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
-        _systems: list
-            List of rod-like objects.
-
-    Developer Note
-    -----
+        systems: Callable
+            Returns all system objects. Once finalize, block objects are also included.
+        blocks: Callable
+            Returns block objects. Should be called after finalize.
 
     Note
     ----
@@ -41,28 +51,36 @@ class BaseSystemCollection(MutableSequence):
     https://stackoverflow.com/q/3945940
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
         self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
-        self._feature_group_constrain_values: Iterable[OperatorType] = []
-        self._feature_group_constrain_rates: Iterable[OperatorType] = []
-        self._feature_group_callback: Iterable[OperatorCallbackType] = []
-        self._feature_group_finalize: Iterable[OperatorFinalizeType] = []
+        self._feature_group_constrain_values: list[OperatorType] = []
+        self._feature_group_constrain_rates: list[OperatorType] = []
+        self._feature_group_callback: list[OperatorCallbackType] = []
+        self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
-        super(BaseSystemCollection, self).__init__()
+        super().__init__()
+
         # List of system types/bases that are allowed
-        self.allowed_sys_types = (RodBase, RigidBodyBase, SurfaceBase)
+        self.allowed_sys_types: tuple[Type, ...] = (
+            RodBase,
+            RigidBodyBase,
+            SurfaceBase,
+        )
+
         # List of systems to be integrated
-        self._systems = []
-        self._memory_blocks = []
+        self.__systems: list[StaticSystemType] = []
+        self.__final_blocks: list[BlockSystemType] = []
+
         # Flag Finalize: Finalizing twice will cause an error,
         # but the error message is very misleading
-        self._finalize_flag = False
+        self._finalize_flag: bool = False
 
-    def _check_type(self, sys_to_be_added: AnyStr):
-        if not issubclass(sys_to_be_added.__class__, self.allowed_sys_types):
+    @final
+    def _check_type(self, sys_to_be_added: Any) -> bool:
+        if not isinstance(sys_to_be_added, self.allowed_sys_types):
             raise TypeError(
                 "{0}\n"
                 "is not a system passing validity\n"
@@ -83,60 +101,112 @@ class BaseSystemCollection(MutableSequence):
             )
         return True
 
-    def __len__(self):
-        return len(self._systems)
+    def __len__(self) -> int:
+        return len(self.__systems)
 
-    def __getitem__(self, idx):
-        return self._systems[idx]
+    @overload
+    def __getitem__(self, idx: int, /) -> SystemType: ...
 
-    def __delitem__(self, idx):
-        del self._systems[idx]
+    @overload
+    def __getitem__(self, idx: slice, /) -> list[SystemType]: ...
 
-    def __setitem__(self, idx, system):
+    def __getitem__(self, idx, /):  # type: ignore
+        return self.__systems[idx]
+
+    def __delitem__(self, idx, /):  # type: ignore
+        del self.__systems[idx]
+
+    def __setitem__(self, idx, system, /):  # type: ignore
         self._check_type(system)
-        self._systems[idx] = system
+        self.__systems[idx] = system
 
-    def insert(self, idx, system):
+    def insert(self, idx, system) -> None:  # type: ignore
         self._check_type(system)
-        self._systems.insert(idx, system)
+        self.__systems.insert(idx, system)
 
-    def __str__(self):
-        return str(self._systems)
+    def __str__(self) -> str:
+        """To be readable"""
+        return str(self.__systems)
 
-    def extend_allowed_types(self, additional_types):
+    @final
+    def extend_allowed_types(
+        self, additional_types: tuple[Type[SystemType], ...]
+    ) -> None:
         self.allowed_sys_types += additional_types
 
-    def override_allowed_types(self, allowed_types):
+    @final
+    def override_allowed_types(
+        self, allowed_types: tuple[Type[SystemType], ...]
+    ) -> None:
         self.allowed_sys_types = allowed_types
 
-    def _get_sys_idx_if_valid(self, sys_to_be_added):
-        from numpy import int_ as npint
+    @final
+    def get_system_index(
+        self, system: "SystemType | StaticSystemType"
+    ) -> SystemIdxType:
+        """
+        Get the index of the system object in the system list.
+        System list is private, so this is the only way to get the index of the system object.
 
-        n_systems = len(self._systems)  # Total number of systems from mixed-in class
+        Example
+        -------
+        >>> system_collection: SystemCollectionProtocol
+        >>> system: SystemType
+        ...
+        >>> system_idx = system_collection.get_system_index(system)  # save idx
+        ...
+        >>> system = system_collection[system_idx]  # just need idx to retrieve
 
-        if isinstance(sys_to_be_added, (int, npint)):
+        Parameters
+        ----------
+        system: SystemType
+            System object to be found in the system list.
+        """
+        n_systems = len(self)  # Total number of systems from mixed-in class
+
+        sys_idx: SystemIdxType
+        if isinstance(
+            system, (int, np.integer)
+        ):  # np.integer includes both int32 and int64
             # 1. If they are indices themselves, check range
+            # This is only used for testing purposes
             assert (
-                -n_systems <= sys_to_be_added < n_systems
-            ), "Rod index {} exceeds number of registered rodtems".format(
-                sys_to_be_added
-            )
-            sys_idx = sys_to_be_added
-        elif self._check_type(sys_to_be_added):
-            # 2. If they are rod objects (most likely), lookup indices
+                -n_systems <= system < n_systems
+            ), "System index {} exceeds number of registered rodtems".format(system)
+            sys_idx = int(system)
+        elif self._check_type(system):
+            # 2. If they are system object (most likely), lookup indices
             # index might have some problems : https://stackoverflow.com/a/176921
             try:
-                sys_idx = self._systems.index(sys_to_be_added)
+                sys_idx = self.__systems.index(system)
             except ValueError:
                 raise ValueError(
-                    "Rod {} was not found, did you append it to the system?".format(
-                        sys_to_be_added
+                    "System {} was not found, did you append it to the system?".format(
+                        system
                     )
                 )
 
         return sys_idx
 
-    def finalize(self):
+    @final
+    def systems(self) -> Generator[StaticSystemType, None, None]:
+        """
+        Iterate over all systems in the system collection.
+        If the system collection is finalized, block objects are also included.
+        """
+        for system in self.__systems:
+            yield system
+
+    @final
+    def block_systems(self) -> Generator[BlockSystemType, None, None]:
+        """
+        Iterate over all block systems in the system collection.
+        """
+        for block in self.__final_blocks:
+            yield block
+
+    @final
+    def finalize(self) -> None:
         """
         This method finalizes the simulator class. When it is called, it is assumed that the user has appended
         all rod-like objects to the simulator as well as all boundary conditions, callbacks, etc.,
@@ -144,14 +214,14 @@ class BaseSystemCollection(MutableSequence):
         the user cannot add new features to the simulator class.
         """
 
-        # This generates more straight-forward error.
-        assert self._finalize_flag is not True, "The finalize cannot be called twice."
+        assert not self._finalize_flag, "The finalize cannot be called twice."
+        self._finalize_flag = True
 
-        # construct memory block
-        self._memory_blocks = construct_memory_block_structures(self._systems)
-        for block in self._memory_blocks:
-            # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
-            self.append(block)
+        # Construct memory block
+        self.__final_blocks = construct_memory_block_structures(self.__systems)
+        # FIXME: We need this to make ring-rod working.
+        # But probably need to be refactored
+        self.__systems.extend(self.__final_blocks)
 
         # Recurrent call finalize functions for all components.
         for finalize in self._feature_group_finalize:
@@ -159,27 +229,40 @@ class BaseSystemCollection(MutableSequence):
 
         # Clear the finalize feature group, just for the safety.
         self._feature_group_finalize.clear()
-        self._feature_group_finalize = None
+        del self._feature_group_finalize
 
-        # Toggle the finalize_flag
-        self._finalize_flag = True
-
-    def synchronize(self, time: float):
-        # Collection call _feature_group_synchronize
+    @final
+    def synchronize(self, time: np.float64) -> None:
+        """
+        Call synchronize functions for all features.
+        Features are registered in _feature_group_synchronize.
+        """
         for func in self._feature_group_synchronize:
             func(time=time)
 
-    def constrain_values(self, time: float):
-        # Collection call _feature_group_constrain_values
+    @final
+    def constrain_values(self, time: np.float64) -> None:
+        """
+        Call constrain values functions for all features.
+        Features are registered in _feature_group_constrain_values.
+        """
         for func in self._feature_group_constrain_values:
             func(time=time)
 
-    def constrain_rates(self, time: float):
-        # Collection call _feature_group_constrain_rates
+    @final
+    def constrain_rates(self, time: np.float64) -> None:
+        """
+        Call constrain rates functions for all features.
+        Features are registered in _feature_group_constrain_rates.
+        """
         for func in self._feature_group_constrain_rates:
             func(time=time)
 
-    def apply_callbacks(self, time: float, current_step: int):
-        # Collection call _feature_group_callback
+    @final
+    def apply_callbacks(self, time: np.float64, current_step: int) -> None:
+        """
+        Call callback functions for all features.
+        Features are registered in _feature_group_callback.
+        """
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)

@@ -5,9 +5,20 @@ Connect
 Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
+from typing import Type, cast, Any
+from typing_extensions import Self
+from elastica.typing import (
+    SystemIdxType,
+    OperatorFinalizeType,
+    ConnectionIndex,
+    RodType,
+    RigidBodyType,
+)
 import numpy as np
 import functools
 from elastica.joint import FreeJoint
+
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
 class Connections:
@@ -22,14 +33,18 @@ class Connections:
             List of joint classes defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._connections = []
+    def __init__(self: SystemCollectionProtocol) -> None:
+        self._connections: list[ModuleProtocol] = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
-        self, first_rod, second_rod, first_connect_idx=None, second_connect_idx=None
-    ):
+        self: SystemCollectionProtocol,
+        first_rod: "RodType | RigidBodyType",
+        second_rod: "RodType | RigidBodyType",
+        first_connect_idx: ConnectionIndex = (),
+        second_connect_idx: ConnectionIndex = (),
+    ) -> ModuleProtocol:
         """
         This method connects two rod-like objects using the selected joint class.
         You need to input the two rod-like objects that are to be connected as well
@@ -37,50 +52,49 @@ class Connections:
 
         Parameters
         ----------
-        first_rod : object
+        first_rod : RodType | RigidBodyType
             Rod-like object
-        second_rod : object
+        second_rod : RodType | RigidBodyType
             Rod-like object
-        first_connect_idx : int
+        first_connect_idx : ConnectionIndex
             Index of first rod for joint.
-        second_connect_idx : int
+        second_connect_idx : ConnectionIndex
             Index of second rod for joint.
 
         Returns
         -------
 
         """
-        sys_idx = [None] * 2
-        for i_sys, sys in enumerate((first_rod, second_rod)):
-            sys_idx[i_sys] = self._get_sys_idx_if_valid(sys)
-
         # For each system identified, get max dofs
-        # FIXME: Revert back to len, it should be able to take, systems without elements!
-        # sys_dofs = [len(self._systems[idx]) for idx in sys_idx]
-        sys_dofs = [self._systems[idx].n_elems for idx in sys_idx]
+        sys_idx_first = self.get_system_index(first_rod)
+        sys_idx_second = self.get_system_index(second_rod)
+        sys_dofs_first = first_rod.n_elems
+        sys_dofs_second = second_rod.n_elems
 
         # Create _Connect object, cache it and return to user
-        _connect = _Connect(*sys_idx, *sys_dofs)
-        _connect.set_index(first_connect_idx, second_connect_idx)
+        _connect: ModuleProtocol = _Connect(
+            sys_idx_first, sys_idx_second, sys_dofs_first, sys_dofs_second
+        )
+        _connect.set_index(first_connect_idx, second_connect_idx)  # type: ignore[attr-defined]
         self._connections.append(_connect)
         self._feature_group_synchronize.append_id(_connect)
 
         return _connect
 
-    def _finalize_connections(self):
+    def _finalize_connections(self: SystemCollectionProtocol) -> None:
         # From stored _Connect objects, instantiate the joints and store it
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)
         # to apply the connections to.
 
         def apply_forces_and_torques(
-            time,
-            connect_instance,
-            system_one,
-            first_connect_idx,
-            system_two,
-            second_connect_idx,
-        ):
+            time: np.float64,
+            connect_instance: FreeJoint,
+            system_one: "RodType | RigidBodyType",
+            first_connect_idx: ConnectionIndex,
+            system_two: "RodType | RigidBodyType",
+            second_connect_idx: ConnectionIndex,
+        ) -> None:
             connect_instance.apply_forces(
                 system_one=system_one,
                 index_one=first_connect_idx,
@@ -98,21 +112,19 @@ class Connections:
             first_sys_idx, second_sys_idx, first_connect_idx, second_connect_idx = (
                 connection.id()
             )
-            connect_instance = connection.instantiate()
+            connect_instance: FreeJoint = connection.instantiate()
 
             # FIXME: lambda t is included because OperatorType takes time as an argument
             func = functools.partial(
                 apply_forces_and_torques,
                 connect_instance=connect_instance,
-                system_one=self._systems[first_sys_idx],
+                system_one=self[first_sys_idx],
                 first_connect_idx=first_connect_idx,
-                system_two=self._systems[second_sys_idx],
+                system_two=self[second_sys_idx],
                 second_connect_idx=second_connect_idx,
             )
 
             self._feature_group_synchronize.add_operators(connection, [func])
-
-            self.warnings(connection)
 
         self._connections = []
         del self._connections
@@ -121,9 +133,6 @@ class Connections:
         # This is to optimize the call tree for better memory accesses
         # https://brooksandrew.github.io/simpleblog/articles/intro-to-graph-optimization-solving-cpp/
 
-    def warnings(self, connection):
-        pass
-
 
 class _Connect:
     """
@@ -131,13 +140,13 @@ class _Connect:
 
     Attributes
     ----------
-    _first_sys_idx: int
-    _second_sys_idx: int
+    _first_sys_idx: SystemIdxType
+    _second_sys_idx: SystemIdxType
     _first_sys_n_lim: int
     _second_sys_n_lim: int
     _connect_class: list
-    first_sys_connection_idx: int
-    second_sys_connection_idx: int
+    first_sys_connection_idx: ConnectionIndex
+    second_sys_connection_idx: ConnectionIndex
     *args
         Variable length argument list.
     **kwargs
@@ -146,8 +155,8 @@ class _Connect:
 
     def __init__(
         self,
-        first_sys_idx: int,
-        second_sys_idx: int,
+        first_sys_idx: SystemIdxType,
+        second_sys_idx: SystemIdxType,
         first_sys_nlim: int,
         second_sys_nlim: int,
     ):
@@ -160,105 +169,107 @@ class _Connect:
         first_sys_nlim: int
         second_sys_nlim: int
         """
-        self._first_sys_idx = first_sys_idx
-        self._second_sys_idx = second_sys_idx
-        self._first_sys_n_lim = first_sys_nlim
-        self._second_sys_n_lim = second_sys_nlim
-        self._connect_cls = None
-        self._args = ()
-        self._kwargs = {}
-        self.first_sys_connection_idx = None
-        self.second_sys_connection_idx = None
+        self._first_sys_idx: SystemIdxType = first_sys_idx
+        self._second_sys_idx: SystemIdxType = second_sys_idx
+        self._first_sys_n_lim: int = first_sys_nlim
+        self._second_sys_n_lim: int = second_sys_nlim
+        self.first_sys_connection_idx: ConnectionIndex = ()
+        self.second_sys_connection_idx: ConnectionIndex = ()
+        self._connect_cls: Type[FreeJoint]
 
-    def set_index(self, first_idx, second_idx):
-        # TODO assert range
-        # First check if the types of first rod idx and second rod idx variable are same.
-        assert type(first_idx) is type(
-            second_idx
-        ), "Type of first_connect_idx :{}".format(
-            type(first_idx)
-        ) + " is different than second_connect_idx :{}".format(
-            type(second_idx)
-        )
+    def set_index(
+        self, first_idx: ConnectionIndex, second_idx: ConnectionIndex
+    ) -> None:
+        first_type = type(first_idx)
+        second_type = type(second_idx)
+        # Check if the types of first rod idx and second rod idx variable are same.
+        assert (
+            first_type == second_type
+        ), f"Type of first_connect_idx :{first_type} is different than second_connect_idx :{second_type}"
 
         # Check if the type of idx variables are correct.
+        allow_types = (
+            int,
+            np.integer,
+            list,
+            tuple,
+            np.ndarray,
+        )  # np.integer is for both int32 and int64
         assert isinstance(
-            first_idx, (int, np.int_, list, tuple, np.ndarray, type(None))
-        ), "Connection index type is not supported :{}".format(
-            type(first_idx)
-        ) + ", please try one of the following :{}".format(
-            (int, np.int_, list, tuple, np.ndarray)
-        )
+            first_idx, allow_types
+        ), f"Connection index type is not supported :{first_type}, please try one of the following :{allow_types}"
 
         # If type of idx variables are tuple or list or np.ndarray, check validity of each entry.
-        if (
-            isinstance(first_idx, tuple)
-            or isinstance(first_idx, list)
-            or isinstance(first_idx, np.ndarray)
-        ):
-
-            for i in range(len(first_idx)):
-                assert isinstance(first_idx[i], (int, np.int_)), (
+        if isinstance(first_idx, (tuple, list, np.ndarray)):
+            first_idx_ = cast(list[int], first_idx)
+            second_idx_ = cast(list[int], second_idx)
+            for i in range(len(first_idx_)):
+                assert isinstance(first_idx_[i], (int, np.integer)), (
                     "Connection index of first rod is not integer :{}".format(
-                        first_idx[i]
+                        first_idx_[i]
                     )
-                    + " It should be :{}".format((int, np.int_))
-                    + " Check your input!"
+                    + " It should be : integer. Check your input!"
                 )
-                assert isinstance(second_idx[i], (int, np.int_)), (
+                assert isinstance(second_idx_[i], (int, np.integer)), (
                     "Connection index of second rod is not integer :{}".format(
-                        second_idx[i]
+                        second_idx_[i]
                     )
-                    + " It should be :{}".format((int, np.int_))
-                    + " Check your input!"
+                    + " It should be : integer. Check your input!"
                 )
 
                 # The addition of +1 and and <= check on the RHS is because
                 # connections can be made to the node indices as well
                 assert (
                     -(self._first_sys_n_lim + 1)
-                    <= first_idx[i]
+                    <= first_idx_[i]
                     <= self._first_sys_n_lim
                 ), "Connection index of first rod exceeds its dof : {}".format(
                     self._first_sys_n_lim
                 )
                 assert (
                     -(self._second_sys_n_lim + 1)
-                    <= second_idx[i]
+                    <= second_idx_[i]
                     <= self._second_sys_n_lim
                 ), "Connection index of second rod exceeds its dof : {}".format(
                     self._second_sys_n_lim
                 )
-        elif first_idx is None:
-            # Do nothing if idx are None
-            pass
-        else:
-
+        elif isinstance(first_idx, (int, np.integer)):
             # The addition of +1 and and <= check on the RHS is because
             # connections can be made to the node indices as well
+            first_idx__ = cast(int, first_idx)
+            second_idx__ = cast(int, second_idx)
             assert (
-                -(self._first_sys_n_lim + 1) <= first_idx <= self._first_sys_n_lim
+                -(self._first_sys_n_lim + 1) <= first_idx__ <= self._first_sys_n_lim
             ), "Connection index of first rod exceeds its dof : {}".format(
                 self._first_sys_n_lim
             )
             assert (
-                -(self._second_sys_n_lim + 1) <= second_idx <= self._second_sys_n_lim
+                -(self._second_sys_n_lim + 1) <= second_idx__ <= self._second_sys_n_lim
             ), "Connection index of second rod exceeds its dof : {}".format(
                 self._second_sys_n_lim
+            )
+        else:
+            raise TypeError(
+                "Connection index type is not supported :{}".format(first_type)
             )
 
         self.first_sys_connection_idx = first_idx
         self.second_sys_connection_idx = second_idx
 
-    def using(self, connect_cls, *args, **kwargs):
+    def using(
+        self,
+        cls: Type[FreeJoint],
+        *args: Any,
+        **kwargs: Any,
+    ) -> Self:
         """
         This method is a module to set which joint class is used to connect
         user defined rod-like objects.
 
         Parameters
         ----------
-        connect_cls: object
-            User defined callback class.
+        cls: object
+            User defined connection class.
         *args
             Variable length argument list
         **kwargs
@@ -269,16 +280,18 @@ class _Connect:
 
         """
         assert issubclass(
-            connect_cls, FreeJoint
+            cls, FreeJoint
         ), "{} is not a valid joint class. Did you forget to derive from FreeJoint?".format(
-            connect_cls
+            cls
         )
-        self._connect_cls = connect_cls
+        self._connect_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self
 
-    def id(self):
+    def id(
+        self,
+    ) -> tuple[SystemIdxType, SystemIdxType, ConnectionIndex, ConnectionIndex]:
         return (
             self._first_sys_idx,
             self._second_sys_idx,
@@ -286,8 +299,8 @@ class _Connect:
             self.second_sys_connection_idx,
         )
 
-    def instantiate(self):
-        if not self._connect_cls:
+    def instantiate(self) -> FreeJoint:
+        if not hasattr(self, "_connect_cls"):
             raise RuntimeError(
                 "No connections provided to link rod id {0}"
                 "(at {2}) and {1} (at {3}), but a Connection"

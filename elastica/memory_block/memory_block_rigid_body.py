@@ -1,18 +1,21 @@
 __doc__ = """Create block-structure class for collection of rigid body systems."""
+from typing import Literal
 import numpy as np
-from typing import Sequence, Literal
+from elastica.typing import SystemIdxType, RigidBodyType
 
 from elastica.rigidbody import RigidBodyBase
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 
 
 class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
-    def __init__(self, systems: Sequence, system_idx_list: Sequence[np.int64]):
+    def __init__(
+        self, systems: list[RigidBodyType], system_idx_list: list[SystemIdxType]
+    ) -> None:
 
-        self.n_bodies = len(systems)
-        self.n_elems = self.n_bodies
+        self.n_systems = len(systems)
+        self.n_elems = self.n_systems
         self.n_nodes = self.n_elems
-        self.system_idx_list = np.array(system_idx_list, dtype=np.int64)
+        self.system_idx_list = np.array(system_idx_list, dtype=np.int32)
 
         # Allocate block structure using system collection.
         self._allocate_block_variables_scalars(systems)
@@ -23,7 +26,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         # Initialize the mixin class for symplectic time-stepper.
         _RigidRodSymplecticStepperMixin.__init__(self)
 
-    def _allocate_block_variables_scalars(self, systems: Sequence):
+    def _allocate_block_variables_scalars(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the variables for
         block-structure and references allocated variables back to the systems.
@@ -58,7 +61,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             value_type="scalar",
         )
 
-    def _allocate_block_variables_vectors(self, systems: Sequence):
+    def _allocate_block_variables_vectors(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the vector variables for
         block-structure and references allocated vector variables back to the systems.
@@ -94,7 +97,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             value_type="vector",
         )
 
-    def _allocate_block_variables_matrix(self, systems: Sequence):
+    def _allocate_block_variables_matrix(self, systems: list[RigidBodyType]) -> None:
         """
         This function takes system collection and allocates the matrix variables for
         block-structure and references allocated matrix variables back to the systems.
@@ -130,7 +133,9 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
             value_type="tensor",
         )
 
-    def _allocate_block_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_block_variables_for_symplectic_stepper(
+        self, systems: list[RigidBodyType]
+    ) -> None:
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
@@ -176,7 +181,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
     def _map_system_properties_to_block_memory(
         self,
         mapping_dict: dict,
-        systems: Sequence,
+        systems: list[RigidBodyType],
         block_memory: np.ndarray,
         value_type: Literal["scalar", "vector", "tensor"],
     ) -> None:
@@ -186,8 +191,8 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
         ----------
         mapping_dict: dict
             Dictionary with attribute names as keys and block row index as values.
-        systems: Sequence
-            A sequence containing Cosserat rod objects to map from.
+        systems: list[RigidBodyType]
+            A sequence containing rigid body objects to map from.
         block_memory: ndarray
             Memory block that, at the end of the method execution, contains all designated
             attributes of all systems.
@@ -197,7 +202,7 @@ class MemoryBlockRigidBody(RigidBodyBase, _RigidRodSymplecticStepperMixin):
 
         """
         if value_type == "scalar":
-            view_shape = (self.n_elems,)
+            view_shape: tuple[int, ...] = (self.n_elems,)
 
         elif value_type == "vector":
             view_shape = (3, self.n_elems)

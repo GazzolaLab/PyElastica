@@ -87,7 +87,7 @@ class TestForcingMixin:
             sys_coll_with_forcings.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_forcings
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -103,7 +103,7 @@ class TestForcingMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwf.add_forcing_to(np.int_(100))
+            scwf.add_forcing_to(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_constrain_with_unregistered_system_throws(self, load_system_with_forcings):

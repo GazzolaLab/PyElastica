@@ -66,6 +66,10 @@ jobs:
       - name: Run tests
         run: |
           make test
+      - name: Typechecking
+        if: ${{ startsWith(runner.os, 'macOS') }}
+        run: |
+          make mypy
   report-coverage:  # Report coverage from python 3.10 and mac-os. May change later
     runs-on: ${{ matrix.os }}
     strategy:

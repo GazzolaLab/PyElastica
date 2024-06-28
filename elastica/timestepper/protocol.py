@@ -1,34 +1,58 @@
 __doc__ = "Time stepper interface"
 
+from typing import Protocol
 
-class _TimeStepper:
-    """Interface classes for all time-steppers"""
+from elastica.typing import (
+    SystemType,
+    SteppersOperatorsType,
+    OperatorType,
+    SystemCollectionType,
+)
 
-    def __init__(self):
-        pass
-
-    def do_step(self, *args, **kwargs):
-        raise NotImplementedError(
-            "TimeStepper hierarchy is not supposed to access the do-step routine of the TimeStepper base class. "
-        )
+import numpy as np
 
 
-# class _StatefulStepper:
-#     """
-#     Stateful explicit, symplectic stepper wrapper.
-#     """
-#
-#     def __init__(self):
-#         pass
-#
-#     # For stateful steppes, bind memory to self
-#     def do_step(self, System, time: np.float64, dt: np.float64):
-#         return self.stepper.do_step(System, self, time, dt)
-#
-#     @property
-#     def n_stages(self):
-#         return self.stepper.n_stages
-#
+class StepperProtocol(Protocol):
+    """Protocol for all time-steppers"""
+
+    steps_and_prefactors: SteppersOperatorsType
+
+    def __init__(self) -> None: ...
+
+    @property
+    def n_stages(self) -> int: ...
+
+    def step_methods(self) -> SteppersOperatorsType: ...
+
+    def step(
+        self, SystemCollection: SystemCollectionType, time: np.float64, dt: np.float64
+    ) -> np.float64: ...
+
+    def step_single_instance(
+        self, SystemCollection: SystemType, time: np.float64, dt: np.float64
+    ) -> np.float64: ...
+
+
+class SymplecticStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_steps(self) -> list[OperatorType]: ...
+
+    def get_prefactors(self) -> list[OperatorType]: ...
+
+
+class MemoryProtocol(Protocol):
+    @property
+    def initial_state(self) -> bool: ...
+
+
+class ExplicitStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_stages(self) -> list[OperatorType]: ...
+
+    def get_updates(self) -> list[OperatorType]: ...
+
 
 # class _LinearExponentialIntegratorMixin:
 #     """

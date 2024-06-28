@@ -43,7 +43,7 @@ def rigid_sphere_rolling_verification(torque=0.0):
             super(PointCoupleToCenter, self).__init__()
             self.torque = (torque * direction).reshape(3, 1)
 
-        def apply_forces(self, system, time: np.float = 0.0):
+        def apply_forces(self, system, time: np.float64 = np.float64(0.0)):
             system.external_torques += np.einsum(
                 "ijk, jk->ik", system.director_collection, self.torque
             )

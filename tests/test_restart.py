@@ -41,20 +41,20 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 youngs_modulus=1,
             )
             # Bypass check, but its fine for testing
-            sc._systems.append(rod)
+            sc.append(rod)
 
             # Also add rods to a separate list
             rod_list.append(rod)
 
         return sc, rod_list
 
-    def test_restart_save_load(self, load_collection):
+    def test_restart_save_load(self, tmp_path, load_collection):
         simulator_class, rod_list = load_collection
 
         # Finalize simulator
         simulator_class.finalize()
 
-        directory = "restart_test_data/"
+        directory = (tmp_path / "restart_test_data").as_posix()
         time = np.random.rand()
 
         # save state
@@ -79,7 +79,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
 
                 assert_allclose(test_value, correct_value)
 
-    def run_sim(self, final_time, load_from_restart, save_data_restart):
+    def run_sim(self, final_time, load_from_restart, save_data_restart, tmp_path):
         class BaseSimulatorClass(
             BaseSystemCollection, Constraints, Forcing, Connections, CallBacks
         ):
@@ -100,7 +100,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
                 youngs_modulus=1,
             )
             # Bypass check, but its fine for testing
-            simulator_class._systems.append(rod)
+            simulator_class.append(rod)
 
             # Also add rods to a separate list
             rod_list.append(rod)
@@ -118,7 +118,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
         # Finalize simulator
         simulator_class.finalize()
 
-        directory = "restart_test_data/"
+        directory = (tmp_path / "restart_test_data").as_posix()
 
         time_step = 1e-4
         total_steps = int(final_time / time_step)
@@ -149,22 +149,31 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
         return recorded_list
 
     @pytest.mark.parametrize("final_time", [0.2, 1.0])
-    def test_save_restart_run_sim(self, final_time):
+    def test_save_restart_run_sim(self, tmp_path, final_time):
 
         # First half of simulation
         _ = self.run_sim(
-            final_time / 2, load_from_restart=False, save_data_restart=True
+            final_time / 2,
+            load_from_restart=False,
+            save_data_restart=True,
+            tmp_path=tmp_path,
         )
 
         # Second half of simulation
         recorded_list = self.run_sim(
-            final_time / 2, load_from_restart=True, save_data_restart=False
+            final_time / 2,
+            load_from_restart=True,
+            save_data_restart=False,
+            tmp_path=tmp_path,
         )
         recorded_list_second_half = recorded_list.copy()
 
         # Full simulation
         recorded_list = self.run_sim(
-            final_time, load_from_restart=False, save_data_restart=False
+            final_time,
+            load_from_restart=False,
+            save_data_restart=False,
+            tmp_path=tmp_path,
         )
         recorded_list_full_sim = recorded_list.copy()
 
@@ -190,20 +199,20 @@ class TestRestartFunctionsWithFeaturesUsingRigidBodies:
                 density=1,
             )
             # Bypass check, but its fine for testing
-            sc._systems.append(cylinder)
+            sc.append(cylinder)
 
             # Also add rods to a separate list
             cylinder_list.append(cylinder)
 
         return sc, cylinder_list
 
-    def test_restart_save_load(self, load_collection):
+    def test_restart_save_load(self, tmp_path, load_collection):
         simulator_class, cylinder_list = load_collection
 
         # Finalize simulator
         simulator_class.finalize()
 
-        directory = "restart_test_data/"
+        directory = (tmp_path / "restart_test_data").as_posix()
         time = np.random.rand()
 
         # save state

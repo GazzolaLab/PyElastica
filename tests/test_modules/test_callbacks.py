@@ -55,7 +55,7 @@ class TestCallBacks:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = callback()
+            _ = callback.instantiate()
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -80,7 +80,7 @@ class TestCallBacksMixin:
             sys_coll_with_callbacks.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_callbacks
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Callbacks require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -96,7 +96,7 @@ class TestCallBacksMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.collect_diagnostics(np.int_(100))
+            scwc.collect_diagnostics(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_callback_with_unregistered_system_throws(self, load_system_with_callbacks):
@@ -164,9 +164,11 @@ class TestCallBacksMixin:
 
         scwc._finalize_callback()
 
-        for x, y in scwc._callback_list:
+        for x, y in scwc._callback_operators:
             assert type(x) is int
             assert type(y) is callback_cls
+
+        assert not hasattr(scwc, "_callback_list")
 
     @pytest.mark.xfail
     def test_callback_finalize_sorted(self, load_rod_with_callbacks):
