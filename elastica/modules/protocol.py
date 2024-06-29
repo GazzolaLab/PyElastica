@@ -74,7 +74,9 @@ class SystemCollectionProtocol(Protocol):
     def constrain_rates(self, time: np.float64) -> None: ...
 
     @property
-    def _feature_group_callback(self) -> list[OperatorCallbackType]: ...
+    def _feature_group_callback(
+        self,
+    ) -> OperatorGroupFIFO[OperatorCallbackType, ModuleProtocol]: ...
 
     def apply_callbacks(self, time: np.float64, current_step: int) -> None: ...
 
@@ -102,16 +104,9 @@ class SystemCollectionProtocol(Protocol):
     # CallBack API
     _finalize_callback: OperatorFinalizeType
     _callback_list: list[ModuleProtocol]
-    _callback_operators: list[tuple[int, CallBackBaseClass]]
 
     @abstractmethod
     def collect_diagnostics(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _callback_execution(
-        self, time: np.float64, current_step: int, *args: Any, **kwargs: Any
-    ) -> None:
         raise NotImplementedError
 
     # Constraints API
