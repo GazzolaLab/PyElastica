@@ -23,7 +23,12 @@ import numpy as np
 from .operator_group import OperatorGroupFIFO
 
 
-M = TypeVar("M", bound="ModuleProtocol")
+class MixinProtocol(Protocol):
+    # def finalize(self) -> None: ...
+    ...
+
+
+M = TypeVar("M", bound=MixinProtocol)
 
 
 class ModuleProtocol(Protocol[M]):
@@ -48,17 +53,23 @@ class SystemCollectionProtocol(Protocol):
     def __getitem__(self, i: slice | int) -> "list[SystemType] | SystemType": ...
 
     @property
-    def _feature_group_synchronize(self) -> OperatorGroupFIFO: ...
+    def _feature_group_synchronize(
+        self,
+    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
 
     def synchronize(self, time: np.float64) -> None: ...
 
     @property
-    def _feature_group_constrain_values(self) -> list[OperatorType]: ...
+    def _feature_group_constrain_values(
+        self,
+    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
 
     def constrain_values(self, time: np.float64) -> None: ...
 
     @property
-    def _feature_group_constrain_rates(self) -> list[OperatorType]: ...
+    def _feature_group_constrain_rates(
+        self,
+    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
 
     def constrain_rates(self, time: np.float64) -> None: ...
 
@@ -105,19 +116,10 @@ class SystemCollectionProtocol(Protocol):
 
     # Constraints API
     _constraints_list: list[ModuleProtocol]
-    _constraints_operators: list[tuple[int, ConstraintBase]]
     _finalize_constraints: OperatorFinalizeType
 
     @abstractmethod
     def constrain(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _constrain_values(self, time: np.float64) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _constrain_rates(self, time: np.float64) -> None:
         raise NotImplementedError
 
     # Forcing API
@@ -140,13 +142,8 @@ class SystemCollectionProtocol(Protocol):
 
     # Damping API
     _damping_list: list[ModuleProtocol]
-    _damping_operators: list[tuple[int, DamperBase]]
     _finalize_dampers: OperatorFinalizeType
 
     @abstractmethod
     def dampen(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _dampen_rates(self, time: np.float64) -> None:
         raise NotImplementedError

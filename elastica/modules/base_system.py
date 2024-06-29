@@ -59,8 +59,12 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_synchronize: OperatorGroupFIFO[
             OperatorType, ModuleProtocol
         ] = OperatorGroupFIFO()
-        self._feature_group_constrain_values: list[OperatorType] = []
-        self._feature_group_constrain_rates: list[OperatorType] = []
+        self._feature_group_constrain_values: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
+        self._feature_group_constrain_rates: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
         self._feature_group_callback: list[OperatorCallbackType] = []
         self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
