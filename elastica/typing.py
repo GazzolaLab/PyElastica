@@ -4,7 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Callable, Any, ParamSpec, TypeAlias
+from typing import Callable, Any, TypeAlias, Protocol
 
 import numpy as np
 
@@ -62,10 +62,16 @@ ConnectionIndex: TypeAlias = (
     int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
 )
 
+
 # Operators in elastica.modules
-OperatorParam = ParamSpec("OperatorParam")
-OperatorType: TypeAlias = Callable[[np.float64], None]  # args: time
-OperatorCallbackType: TypeAlias = Callable[[np.float64, int], None]  # args: time, step
+class OperatorType(Protocol):
+    def __call__(self, time: np.float64) -> None: ...
+
+
+class OperatorCallbackType(Protocol):
+    def __call__(self, time: np.float64, current_step: int) -> None: ...
+
+
 OperatorFinalizeType: TypeAlias = Callable[[], None]
 
 MeshType: TypeAlias = "MeshProtocol"
