@@ -1,4 +1,5 @@
 from typing import Protocol, Generator, TypeVar, Any, Type, overload
+from typing import TYPE_CHECKING
 from typing_extensions import Self  # python 3.11: from typing import Self
 
 from abc import abstractmethod
@@ -20,7 +21,8 @@ from elastica.dissipation import DamperBase
 
 import numpy as np
 
-from .operator_group import OperatorGroupFIFO
+if TYPE_CHECKING:
+    from .operator_group import OperatorGroupFIFO
 
 
 class MixinProtocol(Protocol):
@@ -55,28 +57,28 @@ class SystemCollectionProtocol(Protocol):
     @property
     def _feature_group_synchronize(
         self,
-    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
+    ) -> "OperatorGroupFIFO[OperatorType, ModuleProtocol]": ...
 
     def synchronize(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_constrain_values(
         self,
-    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
+    ) -> "OperatorGroupFIFO[OperatorType, ModuleProtocol]": ...
 
     def constrain_values(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_constrain_rates(
         self,
-    ) -> OperatorGroupFIFO[OperatorType, ModuleProtocol]: ...
+    ) -> "OperatorGroupFIFO[OperatorType, ModuleProtocol]": ...
 
     def constrain_rates(self, time: np.float64) -> None: ...
 
     @property
     def _feature_group_callback(
         self,
-    ) -> OperatorGroupFIFO[OperatorCallbackType, ModuleProtocol]: ...
+    ) -> "OperatorGroupFIFO[OperatorCallbackType, ModuleProtocol]": ...
 
     def apply_callbacks(self, time: np.float64, current_step: int) -> None: ...
 

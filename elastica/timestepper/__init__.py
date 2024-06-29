@@ -9,7 +9,6 @@ from tqdm import tqdm
 from elastica.systems import is_system_a_collection
 
 from .symplectic_steppers import PositionVerlet, PEFRL
-from .explicit_steppers import RungeKutta4, EulerForward
 from .protocol import StepperProtocol, SymplecticStepperProtocol
 
 

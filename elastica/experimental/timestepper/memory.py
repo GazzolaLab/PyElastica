@@ -1,6 +1,11 @@
 from typing import Iterator, TypeVar, Generic, Type
 from elastica.timestepper.protocol import ExplicitStepperProtocol
 from elastica.typing import SystemCollectionType
+from elastica.experimental.timestepper.explicit_steppers import (
+    RungeKutta4,
+    EulerForward,
+)
+
 
 from copy import copy
 
@@ -11,11 +16,6 @@ def make_memory_for_explicit_stepper(
     stepper: ExplicitStepperProtocol, system: SystemCollectionType
 ) -> "MemoryCollection":
     # TODO Automated logic (class creation, memory management logic) agnostic of stepper details (RK, AB etc.)
-
-    from elastica.timestepper.explicit_steppers import (
-        RungeKutta4,
-        EulerForward,
-    )
 
     # is_this_system_a_collection = is_system_a_collection(system)
 

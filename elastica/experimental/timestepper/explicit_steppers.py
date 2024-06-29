@@ -13,7 +13,7 @@ from elastica.typing import (
     StateType,
 )
 from elastica.systems.protocol import ExplicitSystemProtocol
-from .protocol import ExplicitStepperProtocol, MemoryProtocol
+from elastica.timestepper.protocol import ExplicitStepperProtocol, MemoryProtocol
 
 
 """

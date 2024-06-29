@@ -6,8 +6,6 @@ from elastica.utils import Tolerance
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 from elastica._rotations import _rotate
 from elastica.timestepper import (
-    RungeKutta4,
-    EulerForward,
     PEFRL,
     PositionVerlet,
     integrate,
@@ -92,7 +90,6 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         return analytical_solution
 
 
-ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
 
 

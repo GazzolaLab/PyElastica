@@ -15,7 +15,7 @@ from elastica.systems.analytical import (
 )
 from elastica.timestepper import integrate, extend_stepper_interface
 
-from elastica.timestepper.explicit_steppers import (
+from elastica.experimental.timestepper.explicit_steppers import (
     RungeKutta4,
     EulerForward,
     ExplicitStepperMixin,
@@ -245,7 +245,9 @@ class TestSteppersAgainstCollectiveSystems:
 
         # Before stepping, let's extend the interface of the stepper
         # while providing memory slots
-        from elastica.systems.memory import make_memory_for_explicit_stepper
+        from elastica.experimental.timestepper.memory import (
+            make_memory_for_explicit_stepper,
+        )
 
         memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
         from elastica.timestepper import extend_stepper_interface
