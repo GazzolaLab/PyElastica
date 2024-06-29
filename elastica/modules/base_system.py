@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Type, Generator, Iterable, Any, overload
+from typing import Type, Generator, Any, overload
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -27,6 +27,7 @@ from elastica.surface.surface_base import SurfaceBase
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
+from .protocol import ModuleProtocol
 
 
 class BaseSystemCollection(MutableSequence):
@@ -55,7 +56,9 @@ class BaseSystemCollection(MutableSequence):
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
-        self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
+        self._feature_group_synchronize: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
         self._feature_group_constrain_values: list[OperatorType] = []
         self._feature_group_constrain_rates: list[OperatorType] = []
         self._feature_group_callback: list[OperatorCallbackType] = []
@@ -238,7 +241,7 @@ class BaseSystemCollection(MutableSequence):
         Features are registered in _feature_group_synchronize.
         """
         for func in self._feature_group_synchronize:
-            func(time=time)
+            func(time)
 
     @final
     def constrain_values(self, time: np.float64) -> None:
@@ -247,7 +250,7 @@ class BaseSystemCollection(MutableSequence):
         Features are registered in _feature_group_constrain_values.
         """
         for func in self._feature_group_constrain_values:
-            func(time=time)
+            func(time)
 
     @final
     def constrain_rates(self, time: np.float64) -> None:
@@ -256,7 +259,7 @@ class BaseSystemCollection(MutableSequence):
         Features are registered in _feature_group_constrain_rates.
         """
         for func in self._feature_group_constrain_rates:
-            func(time=time)
+            func(time)
 
     @final
     def apply_callbacks(self, time: np.float64, current_step: int) -> None:
@@ -265,4 +268,4 @@ class BaseSystemCollection(MutableSequence):
         Features are registered in _feature_group_callback.
         """
         for func in self._feature_group_callback:
-            func(time=time, current_step=current_step)
+            func(time, current_step)

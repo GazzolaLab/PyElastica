@@ -45,8 +45,8 @@ BlockSystemType: TypeAlias = "BlockSystemProtocol"
 StateType: TypeAlias = "State"
 
 # TODO: Maybe can be more specific. Up for discussion.
-OperatorType: TypeAlias = Callable[..., Any]
-SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
+StepType: TypeAlias = Callable[..., Any]
+SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
 
 RodType: TypeAlias = "CosseratRodProtocol"
@@ -63,9 +63,9 @@ ConnectionIndex: TypeAlias = (
 )
 
 # Operators in elastica.modules
-# TODO: can be more specific.
 OperatorParam = ParamSpec("OperatorParam")
-OperatorCallbackType: TypeAlias = Callable[..., None]
-OperatorFinalizeType: TypeAlias = Callable[..., None]
+OperatorType: TypeAlias = Callable[[np.float64], None]  # args: time
+OperatorCallbackType: TypeAlias = Callable[[np.float64, int], None]  # args: time, step
+OperatorFinalizeType: TypeAlias = Callable[[], None]
 
 MeshType: TypeAlias = "MeshProtocol"

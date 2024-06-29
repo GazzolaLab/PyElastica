@@ -1,11 +1,13 @@
-from typing import TypeVar, Generic, Iterator
+from typing import TypeVar, Generic, Iterator, Callable
 
 from collections.abc import Iterable
 
 import itertools
 
-T = TypeVar("T")
-F = TypeVar("F")
+from .protocol import ModuleProtocol
+
+T = TypeVar("T", bound=Callable)
+F = TypeVar("F", bound=ModuleProtocol)
 
 
 class OperatorGroupFIFO(Iterable, Generic[T, F]):
