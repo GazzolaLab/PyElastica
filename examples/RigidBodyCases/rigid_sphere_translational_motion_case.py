@@ -44,7 +44,7 @@ def rigid_sphere_translational_motion_verification(force=0.0):
             super(PointForceToCenter, self).__init__()
             self.force = (force * direction).reshape(3, 1)
 
-        def apply_forces(self, system, time: np.float = 0.0):
+        def apply_forces(self, system, time: np.float64 = np.float64(0.0)):
             system.external_forces += self.force
 
     # Add point force on the rod

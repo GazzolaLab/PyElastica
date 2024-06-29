@@ -5,15 +5,20 @@ Built in damper module implementations
 """
 
 from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 
 from elastica.typing import RodType, SystemType
 
 from numba import njit
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-class DamperBase(ABC):
+T = TypeVar("T")
+
+
+class DamperBase(Generic[T], ABC):
     """Base class for damping module implementations.
 
     Notes
@@ -23,13 +28,14 @@ class DamperBase(ABC):
 
     Attributes
     ----------
-    system : SystemType (RodBase or RigidBodyBase)
+    system : RodBase
 
     """
 
-    _system: SystemType
+    _system: T
 
-    def __init__(self, *args, **kwargs):
+    # TODO typing can be made better
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize damping module"""
         try:
             self._system = kwargs["_system"]
@@ -40,7 +46,7 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self):  # -> SystemType: (Return type is not parsed with sphinx book.)
+    def system(self) -> T:
         """
         get system (rod or rigid body) reference
 
@@ -52,7 +58,7 @@ class DamperBase(ABC):
         return self._system
 
     @abstractmethod
-    def dampen_rates(self, system: SystemType, time: float):
+    def dampen_rates(self, system: T, time: np.float64) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -115,7 +121,9 @@ class AnalyticalLinearDamper(DamperBase):
         Damping coefficient acting on rotational velocity.
     """
 
-    def __init__(self, damping_constant, time_step, **kwargs):
+    def __init__(
+        self, damping_constant: float, time_step: float, **kwargs: Any
+    ) -> None:
         """
         Analytical linear damper initializer
 
@@ -130,7 +138,7 @@ class AnalyticalLinearDamper(DamperBase):
         # Compute proper scaling for the exponential damping coefficient
         self.damping_coefficient = np.exp(-damping_constant * time_step)
 
-    def dampen_rates(self, rod: RodType, time: float):
+    def dampen_rates(self, rod: RodType, time: np.float64) -> None:
         np_dampen_rates(
             rod.velocity_collection,
             rod.omega_collection,
@@ -140,7 +148,12 @@ class AnalyticalLinearDamper(DamperBase):
 
 
 @njit(cache=True)
-def np_dampen_rates(velocity, omega, damping_coefficient, dilatation):
+def np_dampen_rates(
+    velocity: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    damping_coefficient: np.float64,
+    dilatation: NDArray[np.float64]
+) -> None:
     """
     Dampen rates (velocity and omega) of a rod object in numba njit decorator
     """
@@ -203,7 +216,7 @@ class LaplaceDissipationFilter(DamperBase):
         Filter term that modifies rod rotational velocity.
     """
 
-    def __init__(self, filter_order: int, **kwargs):
+    def __init__(self, filter_order: int, **kwargs: Any) -> None:
         """
         Filter damper initializer
 
@@ -233,25 +246,25 @@ class LaplaceDissipationFilter(DamperBase):
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
             self.filter_function = _filter_function_periodic_condition
 
-    def dampen_rates(self, rod: RodType, time: float) -> None:
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
 
         self.filter_function(
-            rod.velocity_collection,
+            system.velocity_collection,
             self.velocity_filter_term,
-            rod.omega_collection,
+            system.omega_collection,
             self.omega_filter_term,
             self.filter_order,
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition_ring_rod(
-    velocity_collection,
-    velocity_filter_term,
-    omega_collection,
-    omega_filter_term,
-    filter_order,
-):
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
+    filter_order: int,
+) -> None:
     blocksize = velocity_filter_term.shape[1]
 
     # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
@@ -282,14 +295,14 @@ def _filter_function_periodic_condition_ring_rod(
     omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition(
-    velocity_collection,
-    velocity_filter_term,
-    omega_collection,
-    omega_filter_term,
-    filter_order,
-):
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
+    filter_order: int,
+) -> None:
     nb_filter_rate(
         rate_collection=velocity_collection,
         filter_term=velocity_filter_term,
@@ -302,9 +315,11 @@ def _filter_function_periodic_condition(
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def nb_filter_rate(
-    rate_collection: np.ndarray, filter_term: np.ndarray, filter_order: int
+    rate_collection: NDArray[np.float64],
+    filter_term: NDArray[np.float64],
+    filter_order: int,
 ) -> None:
     """
     Filters the rod rates (velocities) in numba njit decorator

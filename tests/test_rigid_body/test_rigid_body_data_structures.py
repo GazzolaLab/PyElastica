@@ -64,7 +64,7 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         # Givees position, director etc.
         super(SimpleSystemWithPositionsDirectors, self).__init__()
 
-    def _compute_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
     def update_accelerations(self, time):

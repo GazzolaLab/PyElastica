@@ -1,7 +1,5 @@
 from collections import defaultdict
 from elastica.rod.knot_theory import (
-    KnotTheory,
-    KnotTheoryCompatibleProtocol,
     compute_link,
     compute_twist,
     compute_writhe,
@@ -19,8 +17,6 @@ from elastica.boundary_conditions import (
     GeneralConstraint,
     FixedConstraint,
     HelicalBucklingBC,
-    FreeRod,
-    OneEndFixedRod,
 )
 from elastica.external_forces import (
     NoForces,
@@ -38,10 +34,8 @@ from elastica.interaction import (
 )
 from elastica.joint import (
     FreeJoint,
-    ExternalContact,
     FixedJoint,
     HingeJoint,
-    SelfContact,
 )
 from elastica.contact_forces import (
     NoContact,
@@ -79,7 +73,6 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.typing import RodType, SystemType, AllowedContactType
 from elastica.timestepper import (
     integrate,
     PositionVerlet,

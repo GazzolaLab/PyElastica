@@ -39,7 +39,7 @@ class TestDamper:
         damper = load_damper
 
         with pytest.raises(RuntimeError) as excinfo:
-            damper(None)  # None is the rod/system parameter
+            damper.instantiate(None)  # None is the rod/system parameter
         assert "No damper" in str(excinfo.value)
 
     def test_call_with_args_and_kwargs(self, load_damper):
@@ -56,7 +56,7 @@ class TestDamper:
         damper.using(MockDamper, 3.9, 4.0, "5", k=1, l_var="2", j=3.0)
 
         # Actual test is here, this should not throw
-        mock_damper = damper(None)  # None is Fake rod
+        mock_damper = damper.instantiate(None)  # None is Fake rod
 
         # More tests reinforcing the first
         assert mock_damper.dummy_one == 3.9
@@ -78,7 +78,7 @@ class TestDamper:
         mock_rod = self.MockRod()
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = damper(mock_rod)
+            _ = damper.instantiate(mock_rod)
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -103,7 +103,7 @@ class TestDampingMixin:
             sys_coll_with_dampers.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_dampers
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -119,7 +119,7 @@ class TestDampingMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwd.dampen(np.int_(100))
+            scwd.dampen(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_dampen_with_unregistered_system_throws(self, load_system_with_dampers):
@@ -153,7 +153,7 @@ class TestDampingMixin:
         scwd.append(mock_rod)
 
         _mock_damper = scwd.dampen(mock_rod)
-        assert _mock_damper in scwd._dampers
+        assert _mock_damper in scwd._damping_list
         assert _mock_damper.__class__ == _Damper
 
     from elastica.dissipation import DamperBase
@@ -185,7 +185,7 @@ class TestDampingMixin:
 
         scwd._finalize_dampers()
 
-        for x, y in scwd._dampers:
+        for x, y in scwd._damping_operators:
             assert type(x) is int
             assert type(y) is damper_cls
 
@@ -194,12 +194,12 @@ class TestDampingMixin:
         scwd._finalize_dampers()
 
         for i in [0, 1, -1]:
-            x, y = scwd._dampers[i]
-            mock_rod = scwd._systems[i]
+            x, y = scwd._damping_operators[i]
+            mock_rod = scwd[i]
             # Test system
             assert type(x) is int
             assert type(y.system) is type(mock_rod)
-            assert y.system is mock_rod, f"{len(scwd._systems)}"
+            assert y.system is mock_rod, f"{len(scwd)}"
 
     @pytest.mark.xfail
     def test_dampers_finalize_sorted(self, load_rod_with_dampers):

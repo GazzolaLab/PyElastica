@@ -10,11 +10,14 @@ from elastica._rotations import (
 
 from .utils import MaxDimension, isqrt
 
+from numpy.typing import NDArray
 
 # TODO Complete, but nicer interface, evolve it eventually
 
 
-def format_vector_shape(vector_collection):
+def format_vector_shape(
+    vector_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Function for formatting vector shapes into correct format
 
@@ -59,7 +62,9 @@ def format_vector_shape(vector_collection):
     return vector_collection
 
 
-def format_matrix_shape(matrix_collection):
+def format_matrix_shape(
+    matrix_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Formats input matrix into correct format
 
@@ -77,7 +82,7 @@ def format_matrix_shape(matrix_collection):
     # check first two dimensions are same and matrix is square
     # other possibility is one dimension is dim**2 and other is blocksize,
     # we need to convert the matrix in that case.
-    def assert_proper_square(num1):
+    def assert_proper_square(num1: int) -> int:
         sqrt_num = isqrt(num1)
         assert sqrt_num**2 == num1, "Matrix dimension passed is not a perfect square"
         return sqrt_num
@@ -136,12 +141,14 @@ def format_matrix_shape(matrix_collection):
     return matrix_collection
 
 
-def skew_symmetrize(vector):
+def skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = format_vector_shape(vector)
     return _skew_symmetrize(vector)
 
 
-def inv_skew_symmetrize(matrix_collection):
+def inv_skew_symmetrize(
+    matrix_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Safe wrapper around inv_skew_symmetrize that does checking
     and formatting on type of matrix_collection using format_matrix_shape
@@ -167,7 +174,9 @@ def inv_skew_symmetrize(matrix_collection):
         raise ValueError("matrix_collection passed is not skew-symmetric")
 
 
-def rotate(matrix, scale, axis):
+def rotate(
+    matrix: NDArray[np.float64], scale: np.float64, axis: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
     This function takes single or multiple frames as matrix. Then rotates these frames
     around a single axis for all frames, or can rotate each frame around its own

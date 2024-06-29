@@ -90,10 +90,10 @@ class SurfaceJointSideBySide(FreeJoint):
 
         self.rod_one_direction_vec_in_material_frame = np.array(
             rod_one_direction_vec_in_material_frame
-        ).T
+        )
         self.rod_two_direction_vec_in_material_frame = np.array(
             rod_two_direction_vec_in_material_frame
-        ).T
+        )
 
     # Apply force is same as free joint
     def apply_forces(self, system_one, index_one, system_two, index_two):
@@ -127,7 +127,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_forces(
         k,
         nu,
@@ -150,7 +150,6 @@ class SurfaceJointSideBySide(FreeJoint):
         rod_one_external_forces,
         rod_two_external_forces,
     ):
-
         rod_one_to_rod_two_connection_vec = _batch_matvec(
             _batch_matrix_transpose(rod_one_director_collection[:, :, index_one]),
             rod_one_direction_vec_in_material_frame,
@@ -273,7 +272,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_torques(
         spring_force,
         rod_one_rd2,
@@ -286,8 +285,8 @@ class SurfaceJointSideBySide(FreeJoint):
         rod_two_external_torques,
     ):
         # Compute torques due to the connection forces
-        torque_on_rod_one = np.cross(rod_one_rd2, spring_force)
-        torque_on_rod_two = np.cross(rod_two_rd2, -spring_force)
+        torque_on_rod_one = _batch_cross(rod_one_rd2, spring_force)
+        torque_on_rod_two = _batch_cross(rod_two_rd2, -spring_force)
 
         torque_on_rod_one_material_frame = _batch_matvec(
             rod_one_director_collection[:, :, index_one], torque_on_rod_one

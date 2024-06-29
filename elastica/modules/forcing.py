@@ -7,6 +7,14 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 """
 import logging
 import functools
+from typing import Any, Type, List
+from typing_extensions import Self
+
+import numpy as np
+
+from elastica.external_forces import NoForces
+from elastica.typing import SystemType, SystemIdxType
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +31,14 @@ class Forcing:
             List of forcing class defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._ext_forces_torques = []
-        super(Forcing, self).__init__()
+    def __init__(self: SystemCollectionProtocol) -> None:
+        self._ext_forces_torques: List[ModuleProtocol] = []
+        super().__init__()
         self._feature_group_finalize.append(self._finalize_forcing)
 
-    def add_forcing_to(self, system):
+    def add_forcing_to(
+        self: SystemCollectionProtocol, system: SystemType
+    ) -> ModuleProtocol:
         """
         This method applies external forces and torques on the relevant
         user-defined system or rod-like object. You must input the system
@@ -43,7 +53,7 @@ class Forcing:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
         _ext_force_torque = _ExtForceTorque(sys_idx)
@@ -52,7 +62,7 @@ class Forcing:
 
         return _ext_force_torque
 
-    def _finalize_forcing(self):
+    def _finalize_forcing(self: SystemCollectionProtocol) -> None:
         # From stored _ExtForceTorque objects, and instantiate a Force
         # inplace : https://stackoverflow.com/a/1208792
 
@@ -63,23 +73,18 @@ class Forcing:
             forcing_instance = external_force_and_torque.instantiate()
 
             apply_forces = functools.partial(
-                forcing_instance.apply_forces, system=self._systems[sys_id]
+                forcing_instance.apply_forces, system=self[sys_id]
             )
             apply_torques = functools.partial(
-                forcing_instance.apply_torques, system=self._systems[sys_id]
+                forcing_instance.apply_torques, system=self[sys_id]
             )
 
             self._feature_group_synchronize.add_operators(
                 external_force_and_torque, [apply_forces, apply_torques]
             )
 
-            self.warnings(external_force_and_torque)
-
         self._ext_forces_torques = []
         del self._ext_forces_torques
-
-    def warnings(self, external_force_and_torque):
-        pass
 
 
 class _ExtForceTorque:
@@ -89,73 +94,58 @@ class _ExtForceTorque:
     Attributes
     ----------
     _sys_idx: int
-    _forcing_cls: list
-    *args
+    _forcing_cls: Type[NoForces]
+    *args: Any
         Variable length argument list.
-    **kwargs
+    **kwargs: Any
         Arbitrary keyword arguments.
     """
 
-    def __init__(self, sys_idx: int):
+    def __init__(self, sys_idx: SystemIdxType) -> None:
         """
-
         Parameters
         ----------
         sys_idx: int
         """
         self._sys_idx = sys_idx
-        self._forcing_cls = None
-        self._args = ()
-        self._kwargs = {}
+        self._forcing_cls: Type[NoForces]
+        self._args: Any
+        self._kwargs: Any
 
-    def using(self, forcing_cls, *args, **kwargs):
+    def using(self, cls: Type[NoForces], *args: Any, **kwargs: Any) -> Self:
         """
-        This method is a module to set which forcing class is used to apply forcing
+        This method sets which forcing class is used to apply forcing
         to user defined rod-like objects.
 
         Parameters
         ----------
-        forcing_cls: object
+        cls: Type[Any]
             User defined forcing class.
-        *args
-            Variable length argument list
-        **kwargs
+        *args: Any
+            Variable length argument list.
+        **kwargs: Any
             Arbitrary keyword arguments.
 
         Returns
         -------
 
         """
-        from elastica.external_forces import NoForces
-
         assert issubclass(
-            forcing_cls, NoForces
+            cls, NoForces
         ), "{} is not a valid forcing. Did you forget to derive from NoForces?".format(
-            forcing_cls
+            cls
         )
-        self._forcing_cls = forcing_cls
+        self._forcing_cls = cls
         self._args = args
         self._kwargs = kwargs
         return self
 
-    def id(self):
+    def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self):
-        """Constructs a constraint after checks
-
-        Parameters
-        ----------
-        *args
-            Variable length argument list.
-        **kwargs
-            Arbitrary keyword arguments.
-
-        Returns
-        -------
-
-        """
-        if not self._forcing_cls:
+    def instantiate(self) -> NoForces:
+        """Constructs a constraint after checks"""
+        if not hasattr(self, "_forcing_cls"):
             raise RuntimeError(
                 "No forcing provided to act on rod id {0}"
                 "but a force was registered. Did you forget to call"

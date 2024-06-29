@@ -28,7 +28,7 @@ def test_synchronize_periodic_boundary_vector(n_elems):
 
     input_vector = np.random.random((3, n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
@@ -63,7 +63,7 @@ def test_synchronize_periodic_boundary_matrix(n_elems):
 
     input_matrix = np.random.random((3, 3, n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
@@ -98,7 +98,7 @@ def test_synchronize_periodic_boundary_scalar(n_elems):
 
     input_matrix = np.random.random((n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
