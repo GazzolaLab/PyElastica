@@ -33,7 +33,7 @@ is referred to the same section on `explicit_steppers.py`.
 
 class SymplecticStepperMixin:
     def __init__(self: SymplecticStepperProtocol):
-        self.steps_and_prefactors: Final[SteppersOperatorsType] = self.step_methods()
+        self.steps_and_prefactors: SteppersOperatorsType = self.step_methods()
 
     def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
