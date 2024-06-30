@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Type, Generator, Iterable, Any, overload
+from typing import TYPE_CHECKING, Type, Generator, Any, overload
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -104,11 +104,11 @@ class BaseSystemCollection(MutableSequence):
     def __len__(self) -> int:
         return len(self.__systems)
 
-    @overload
-    def __getitem__(self, idx: int, /) -> SystemType: ...
+    @overload  # type: ignore
+    def __getitem__(self, idx: slice, /) -> list[SystemType]: ...  # type: ignore
 
-    @overload
-    def __getitem__(self, idx: slice, /) -> list[SystemType]: ...
+    @overload  # type: ignore
+    def __getitem__(self, idx: int, /) -> SystemType: ...  # type: ignore
 
     def __getitem__(self, idx, /):  # type: ignore
         return self.__systems[idx]
@@ -266,3 +266,40 @@ class BaseSystemCollection(MutableSequence):
         """
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)
+
+
+if TYPE_CHECKING:
+    from .protocol import SystemCollectionProtocol
+    from .constraints import Constraints
+    from .forcing import Forcing
+    from .connections import Connections
+    from .contact import Contact
+    from .damping import Damping
+    from .callbacks import CallBacks
+
+    class BaseFeature(BaseSystemCollection):
+        pass
+
+    class PartialFeatureA(
+        BaseSystemCollection, Constraints, Forcing, Damping, CallBacks
+    ):
+        pass
+
+    class PartialFeatureB(BaseSystemCollection, Contact, Connections):
+        pass
+
+    class FullFeature(
+        BaseSystemCollection,
+        Constraints,
+        Contact,
+        Connections,
+        Forcing,
+        Damping,
+        CallBacks,
+    ):
+        pass
+
+    _: SystemCollectionProtocol = FullFeature()
+    _: SystemCollectionProtocol = PartialFeatureA()  # type: ignore[no-redef]
+    _: SystemCollectionProtocol = PartialFeatureB()  # type: ignore[no-redef]
+    _: SystemCollectionProtocol = BaseFeature()  # type: ignore[no-redef]

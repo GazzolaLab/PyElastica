@@ -1,6 +1,6 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any
 
 from itertools import zip_longest
 
@@ -308,3 +308,10 @@ class PEFRL(SymplecticStepperMixin):
             System.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+
+if TYPE_CHECKING:
+    from .protocol import StepperProtocol
+
+    _: StepperProtocol = PositionVerlet()
+    _: StepperProtocol = PEFRL()  # type: ignore [no-redef]
