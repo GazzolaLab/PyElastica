@@ -16,7 +16,7 @@ import numpy as np
 
 from elastica.dissipation import DamperBase
 from elastica.typing import RodType, SystemType, SystemIdxType
-from .protocol import SystemCollectionProtocol, ModuleProtocol
+from .protocol import DampenedSystemCollectionProtocol, ModuleProtocol
 
 
 class Damping:
@@ -31,13 +31,15 @@ class Damping:
             List of damper classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: DampenedSystemCollectionProtocol) -> None:
         self._damping_list: List[ModuleProtocol] = []
         super().__init__()
         self._feature_group_constrain_rates.append(self._dampen_rates)
         self._feature_group_finalize.append(self._finalize_dampers)
 
-    def dampen(self: SystemCollectionProtocol, system: RodType) -> ModuleProtocol:
+    def dampen(
+        self: DampenedSystemCollectionProtocol, system: RodType
+    ) -> ModuleProtocol:
         """
         This method applies damping on relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -60,7 +62,7 @@ class Damping:
 
         return _damper
 
-    def _finalize_dampers(self: SystemCollectionProtocol) -> None:
+    def _finalize_dampers(self: DampenedSystemCollectionProtocol) -> None:
         # From stored _Damping objects, instantiate the dissipation/damping
         # inplace : https://stackoverflow.com/a/1208792
 

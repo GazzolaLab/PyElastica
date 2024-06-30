@@ -12,7 +12,7 @@ from .protocol import ModuleProtocol
 import numpy as np
 
 from elastica.callback_functions import CallBackBaseClass
-from .protocol import SystemCollectionProtocol
+from .protocol import SystemCollectionWithCallbackProtocol
 
 
 class CallBacks:
@@ -27,7 +27,7 @@ class CallBacks:
             List of call back classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: SystemCollectionWithCallbackProtocol) -> None:
         self._callback_list: list[ModuleProtocol] = []
         self._callback_operators: list[tuple[int, CallBackBaseClass]] = []
         super(CallBacks, self).__init__()
@@ -35,7 +35,7 @@ class CallBacks:
         self._feature_group_finalize.append(self._finalize_callback)
 
     def collect_diagnostics(
-        self: SystemCollectionProtocol, system: SystemType
+        self: SystemCollectionWithCallbackProtocol, system: SystemType
     ) -> ModuleProtocol:
         """
         This method calls user-defined call-back classes for a
@@ -59,7 +59,7 @@ class CallBacks:
 
         return _callbacks
 
-    def _finalize_callback(self: SystemCollectionProtocol) -> None:
+    def _finalize_callback(self: SystemCollectionWithCallbackProtocol) -> None:
         # dev : the first index stores the rod index to collect data.
         self._callback_operators = [
             (callback.id(), callback.instantiate()) for callback in self._callback_list
