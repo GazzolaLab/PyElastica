@@ -5,11 +5,11 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 from elastica._rotations import _rotate
-from elastica.timestepper import (
+from elastica.timestepper.symplectic_steppers import (
     PEFRL,
     PositionVerlet,
-    integrate,
 )
+from elastica.timestepper import integrate
 
 
 def make_simple_system_with_positions_directors(start_position, start_director):

@@ -1,14 +1,11 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Any, Final
+from typing import Any
 
 from itertools import zip_longest
 
 from elastica.typing import (
-    SystemType,
     SystemCollectionType,
-    # StepOperatorType,
-    # PrefactorOperatorType,
     StepType,
     SteppersOperatorsType,
 )

@@ -3,18 +3,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.systems.analytical import (
-    ScalarExponentialDecaySystem,
-    # UndampedSimpleHarmonicOscillatorSystem,
-    SymplecticUndampedSimpleHarmonicOscillatorSystem,
-    # DampedSimpleHarmonicOscillatorSystem,
-    # MultipleFrameRotationSystem,
-    # SecondOrderHybridSystem,
-    SymplecticUndampedHarmonicOscillatorCollectiveSystem,
-    ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
-)
 from elastica.timestepper import integrate, extend_stepper_interface
-
 from elastica.experimental.timestepper.explicit_steppers import (
     RungeKutta4,
     EulerForward,
@@ -25,9 +14,19 @@ from elastica.timestepper.symplectic_steppers import (
     PEFRL,
     SymplecticStepperMixin,
 )
-
-
 from elastica.utils import Tolerance
+
+from tests.analytical import (
+    ScalarExponentialDecaySystem,
+    # UndampedSimpleHarmonicOscillatorSystem,
+    SymplecticUndampedSimpleHarmonicOscillatorSystem,
+    # DampedSimpleHarmonicOscillatorSystem,
+    # MultipleFrameRotationSystem,
+    # SecondOrderHybridSystem,
+    SymplecticUndampedHarmonicOscillatorCollectiveSystem,
+    ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
+    make_simple_system_with_positions_directors,
+)
 
 
 class TestExtendStepperInterface:
@@ -309,9 +308,6 @@ class TestSteppersAgainstRodLikeSystems:
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
-        from elastica.systems.analytical import (
-            make_simple_system_with_positions_directors,
-        )
 
         random_start_position = np.random.randn(3, 1)
         random_end_position = np.random.randn(3, 1)
