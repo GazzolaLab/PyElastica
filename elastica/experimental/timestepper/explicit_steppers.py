@@ -12,8 +12,11 @@ from elastica.typing import (
     SteppersOperatorsType,
     StateType,
 )
-from elastica.systems.protocol import ExplicitSystemProtocol
-from elastica.timestepper.protocol import ExplicitStepperProtocol, MemoryProtocol
+from elastica.experimental.timestepper.protocol import (
+    ExplicitSystemProtocol,
+    ExplicitStepperProtocol,
+    MemoryProtocol,
+)
 
 
 """

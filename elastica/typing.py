@@ -23,12 +23,10 @@ if TYPE_CHECKING:
         SystemProtocol,
         StaticSystemProtocol,
         SymplecticSystemProtocol,
-        ExplicitSystemProtocol,
     )
     from .timestepper.protocol import (
         StepperProtocol,
         SymplecticStepperProtocol,
-        MemoryProtocol,
     )
     from .memory_block.protocol import BlockSystemProtocol
 

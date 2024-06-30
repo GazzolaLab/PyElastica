@@ -1,11 +1,10 @@
 from typing import Iterator, TypeVar, Generic, Type
-from elastica.timestepper.protocol import ExplicitStepperProtocol
 from elastica.typing import SystemCollectionType
 from elastica.experimental.timestepper.explicit_steppers import (
     RungeKutta4,
     EulerForward,
 )
-
+from elastica.experimental.timestepper.protocol import ExplicitStepperProtocol
 
 from copy import copy
 
