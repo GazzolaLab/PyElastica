@@ -1,4 +1,5 @@
 from typing import Protocol, Generator, TypeVar, Any, Type, overload
+from typing import TYPE_CHECKING
 from typing_extensions import Self  # python 3.11: from typing import Self
 
 from elastica.typing import (
@@ -20,10 +21,16 @@ from elastica.dissipation import DamperBase
 
 import numpy as np
 
-from .operator_group import OperatorGroupFIFO
+if TYPE_CHECKING:
+    from .operator_group import OperatorGroupFIFO
 
 
-M = TypeVar("M", bound="ModuleProtocol")
+class MixinProtocol(Protocol):
+    # def finalize(self) -> None: ...
+    ...
+
+
+M = TypeVar("M", bound=MixinProtocol)
 
 
 class ModuleProtocol(Protocol[M]):
