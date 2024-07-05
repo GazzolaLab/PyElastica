@@ -90,9 +90,9 @@ namespace py_bindings {
               return array_slice(t, std::move(slice));
             })
         // Need __str__ for converting to string/printing
-        .def(
-            "__str__",
-            +[](const type& self) { return std::string(MakeString{} << self); })
+        // .def(
+        //     "__str__",
+        //     +[](const type& self) { return std::string(MakeString{} << self); })
         .def(
             "__setitem__",
             +[](type& self, const std::tuple<std::size_t, std::size_t>& x,

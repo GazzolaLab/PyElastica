@@ -2,7 +2,7 @@ project(
     'elasticapp',
     ['cpp'],
     version: '0.0.3',
-    default_options: ['cpp_std=c++17'],
+    default_options: ['cpp_std=c++14'],
 )
 
 package = 'elasticapp'

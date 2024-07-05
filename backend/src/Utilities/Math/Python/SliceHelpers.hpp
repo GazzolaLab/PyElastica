@@ -40,7 +40,7 @@ namespace py_bindings {
       throw pybind11::error_already_set();
     if (step != 1)
       throw std::runtime_error(std::string(
-          "step !=1 unsupported along axis " << Axis));
+          "step !=1 unsupported along axis ") + std::to_string(Axis));
 
     return SliceInfo{start, slicelength};
   }

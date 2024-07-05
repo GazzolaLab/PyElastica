@@ -112,11 +112,11 @@ namespace py_bindings {
 
     // Need __str__ for converting to string
     py_vector
-        .def("__str__")
+        // .def("__str__")
         // repr allows you to output the object in an interactive python
         // terminal using obj to get the "string REPResenting the object".
-        .def("__repr__")
-        .def(py::self += py::self)
+        // .def("__repr__")
+        // .def(py::self += py::self)
         // Need to do math explicitly converting to DataVector because we don't
         // want to represent all the possible expression template types
         .def(

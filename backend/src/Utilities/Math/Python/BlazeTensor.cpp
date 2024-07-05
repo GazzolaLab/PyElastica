@@ -83,7 +83,7 @@ namespace py_bindings {
             +[](const type& self,
                 const std::tuple<std::size_t, std::size_t, std::size_t>& x) {
               // tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
-                                  std::get<2>(x));
+              //                  std::get<2>(x));
               return self(std::get<0>(x), std::get<1>(x), std::get<2>(x));
             })
         .def(
@@ -97,14 +97,14 @@ namespace py_bindings {
                 const std::tuple<std::size_t, std::size_t, std::size_t>& x,
                 const Real val) {
               // tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
-                                  std::get<2>(x));
+              //                   std::get<2>(x));
               self(std::get<0>(x), std::get<1>(x), std::get<2>(x)) = val;
-            })
-        // Need __str__ for converting to string/printing
-        .def(
-            "__str__", +[](const type& self) {
-              return std::string(MakeString{} << self);
             });
+        // Need __str__ for converting to string/printing
+        // .def(
+        //     "__str__", +[](const type& self) {
+        //       return std::string(MakeString{} << self);
+        //     });
   }
   //****************************************************************************
 

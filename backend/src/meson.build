@@ -15,3 +15,17 @@ _linalg = py.extension_module(
     install: true,
     subdir: package,
 )
+
+_PyArrays = py.extension_module(
+    '_PyArrays',
+    sources: [
+        'Utilities/Math/Python/Bindings.cpp',
+        'Utilities/Math/Python/BlazeVector.cpp',
+        'Utilities/Math/Python/BlazeMatrix.cpp',
+        'Utilities/Math/Python/BlazeTensor.cpp',
+    ],
+    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
+    link_language: 'cpp',
+    install: true,
+    subdir: package,
+)
