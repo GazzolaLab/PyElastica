@@ -16,6 +16,15 @@ _linalg = py.extension_module(
     subdir: package,
 )
 
+_linalg_numpy = py.extension_module(
+    '_linalg_numpy',
+    sources: ['_linalg_numpy.cpp'],
+    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
+    link_language: 'cpp',
+    install: true,
+    subdir: package,
+)
+
 _PyArrays = py.extension_module(
     '_PyArrays',
     sources: [

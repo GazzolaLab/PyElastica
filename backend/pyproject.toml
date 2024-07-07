@@ -23,6 +23,9 @@ classifiers = [
 requires = ["meson-python", "pybind11"]
 build-backend = "mesonpy"
 
+[tool.meson-python.args]
+setup = ['-Doptimization=3']
+
 # [tool.mypy]
 # files = "setup.py"
 # python_version = "3.7"
