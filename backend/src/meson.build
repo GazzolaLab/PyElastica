@@ -10,7 +10,7 @@ example_1 = py.extension_module(
 _linalg = py.extension_module(
     '_linalg',
     sources: ['_linalg.cpp'],
-    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
+    dependencies: [py_dep, pybind11_dep] + blaze_deps,
     link_language: 'cpp',
     install: true,
     subdir: package,
@@ -19,7 +19,7 @@ _linalg = py.extension_module(
 _linalg_numpy = py.extension_module(
     '_linalg_numpy',
     sources: ['_linalg_numpy.cpp'],
-    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
+    dependencies: [py_dep, pybind11_dep] + blaze_deps,
     link_language: 'cpp',
     install: true,
     subdir: package,
@@ -33,7 +33,7 @@ _PyArrays = py.extension_module(
         'Utilities/Math/Python/BlazeMatrix.cpp',
         'Utilities/Math/Python/BlazeTensor.cpp',
     ],
-    dependencies: [py_dep, pybind11_dep, blaze_dep, blaze_tensor_dep],
+    dependencies: [py_dep, pybind11_dep] + blaze_deps,
     link_language: 'cpp',
     install: true,
     subdir: package,
