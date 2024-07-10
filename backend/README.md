@@ -10,6 +10,8 @@ In the root of the PyElastica source tree, run the following command
 pip install ./backend
 ```
 
+> Make sure you install the package from _PyElastica source tree_.
+
 This command will take care of installation of all build-time dependencies, compilation of C++ source files and install the a python package called `elasticapp`.
 
 ## Testing
