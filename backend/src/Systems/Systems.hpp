@@ -4,10 +4,10 @@
 // Includes
 //******************************************************************************
 //
+#include "Systems/Tags.hpp"
 #include "Systems/Types.hpp"
 //
 #include "Systems/Protocols.hpp"
-#include "Systems/Tags.hpp"
 //
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods.hpp"
