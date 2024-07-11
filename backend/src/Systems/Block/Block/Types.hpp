@@ -4,7 +4,6 @@
 // Includes
 //******************************************************************************
 
-// #include "Systems/Block/Block/Block.hpp"  // only declaration, so ok to include.
 #include "Systems/Block/Block/Concepts/Types.hpp"
 
 namespace blocks {
@@ -17,6 +16,9 @@ namespace blocks {
 
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
+  template <typename /* Plugin */>
+  class Block;
+
   template <typename /* Plugin */>
   class BlockSlice;
 
