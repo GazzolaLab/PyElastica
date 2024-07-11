@@ -6,7 +6,7 @@
 // #include "PythonBindings/BoundChecks.hpp"
 //
 #include "Utilities/DefineTypes.h"
-// #include "Utilities/MakeString.hpp"
+#include "Utilities/MakeString.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
 //
@@ -99,12 +99,12 @@ namespace py_bindings {
               // tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
               //                   std::get<2>(x));
               self(std::get<0>(x), std::get<1>(x), std::get<2>(x)) = val;
-            });
+            })
         // Need __str__ for converting to string/printing
-        // .def(
-        //     "__str__", +[](const type& self) {
-        //       return std::string(MakeString{} << self);
-        //     });
+        .def(
+            "__str__", +[](const type& self) {
+              return std::string(MakeString{} << self);
+            });
   }
   //****************************************************************************
 

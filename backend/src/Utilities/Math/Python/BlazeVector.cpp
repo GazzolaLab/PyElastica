@@ -5,6 +5,8 @@
 // #include "PythonBindings/BoundChecks.hpp"
 //
 #include "Utilities/DefineTypes.h"
+// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrintHelpers.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
 //
@@ -96,7 +98,7 @@ namespace py_bindings {
             .def(
                 "__getitem__",
                 +[](const type& t, const size_t i) {
-                //   bounds_check(t, i);
+                  bounds_check(t, i);
                   return t[i];
                 })
             .def(
@@ -106,17 +108,25 @@ namespace py_bindings {
                 })
             .def(
                 "__setitem__", +[](type& t, const size_t i, const Real v) {
-                //   bounds_check(t, i);
+                  bounds_check(t, i);
                   t[i] = v;
                 });
 
+    static const auto printer = [](type const &t) {
+        // Blaze's default printing adds extra lines and spaces which is
+        // not what we want
+        std::ostringstream os;
+        sequence_print_helper(os, t.begin(), t.end());
+        return os.str();
+    };
+
     // Need __str__ for converting to string
     py_vector
-        // .def("__str__")
+        .def("__str__", +printer)
         // repr allows you to output the object in an interactive python
         // terminal using obj to get the "string REPResenting the object".
-        // .def("__repr__")
-        // .def(py::self += py::self)
+        .def("__repr__", +printer)
+        .def(py::self += py::self)
         // Need to do math explicitly converting to DataVector because we don't
         // want to represent all the possible expression template types
         .def(

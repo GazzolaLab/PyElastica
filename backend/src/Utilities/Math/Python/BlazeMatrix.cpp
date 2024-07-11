@@ -6,7 +6,7 @@
 // #include "PythonBindings/BoundChecks.hpp"
 //
 #include "Utilities/DefineTypes.h"
-// #include "Utilities/MakeString.hpp"
+#include "Utilities/MakeString.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
 //
@@ -81,7 +81,7 @@ namespace py_bindings {
             "__getitem__",
             +[](const type& self,
                 const std::tuple<std::size_t, std::size_t>& x) {
-              // matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
+              matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
               return self(std::get<0>(x), std::get<1>(x));
             })
         .def(
@@ -90,16 +90,16 @@ namespace py_bindings {
               return array_slice(t, std::move(slice));
             })
         // Need __str__ for converting to string/printing
-        // .def(
-        //     "__str__",
-        //     +[](const type& self) { return std::string(MakeString{} << self); })
+        .def(
+            "__str__",
+            +[](const type& self) { return std::string(MakeString{} << self); })
         .def(
             "__setitem__",
             +[](type& self, const std::tuple<std::size_t, std::size_t>& x,
                 const Real val) {
-              // matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
+              matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
               self(std::get<0>(x), std::get<1>(x)) = val;
-            });
+        });
   }
   //****************************************************************************
 
