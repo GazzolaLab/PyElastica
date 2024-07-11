@@ -33,3 +33,12 @@ For benchmarking various `matmul` implementations, run
 ```
 python3 backend/benchmarking/matmul.py
 ```
+
+## Contributed By
+
+- Tejaswin Parthasarathy (Teja)
+- [Seung Hyun Kim](https://github.com/skim0119)
+- Ankith Pai
+- [Yashraj Bhosale](https://github.com/bhosale2)
+- Arman Tekinalp
+- Songyuan Cui

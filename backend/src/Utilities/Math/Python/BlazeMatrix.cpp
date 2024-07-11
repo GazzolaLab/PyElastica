@@ -2,13 +2,11 @@
 // Includes
 //******************************************************************************
 
-//
-// #include "PythonBindings/BoundChecks.hpp"
-//
 #include "Utilities/DefineTypes.h"
 #include "Utilities/MakeString.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
+#include "Utilities/Math/Python/BoundChecks.hpp"
 //
 #include <array>
 #include <cstddef>
@@ -99,7 +97,7 @@ namespace py_bindings {
                 const Real val) {
               matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
               self(std::get<0>(x), std::get<1>(x)) = val;
-        });
+            });
   }
   //****************************************************************************
 

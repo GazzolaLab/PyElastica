@@ -2,13 +2,12 @@
 // Includes
 //******************************************************************************
 
-// #include "PythonBindings/BoundChecks.hpp"
 //
 #include "Utilities/DefineTypes.h"
-// #include "Utilities/PrettyType.hpp"
 #include "Utilities/PrintHelpers.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
+#include "Utilities/Math/Python/BoundChecks.hpp"
 //
 #include <algorithm>
 #include <memory>

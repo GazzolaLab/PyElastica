@@ -3,12 +3,11 @@
 //******************************************************************************
 
 
-// #include "PythonBindings/BoundChecks.hpp"
-//
 #include "Utilities/DefineTypes.h"
 #include "Utilities/MakeString.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
+#include "Utilities/Math/Python/BoundChecks.hpp"
 //
 #include <array>
 #include <cstddef>
@@ -82,8 +81,8 @@ namespace py_bindings {
             "__getitem__",
             +[](const type& self,
                 const std::tuple<std::size_t, std::size_t, std::size_t>& x) {
-              // tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
-              //                  std::get<2>(x));
+              tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
+                               std::get<2>(x));
               return self(std::get<0>(x), std::get<1>(x), std::get<2>(x));
             })
         .def(
@@ -96,8 +95,8 @@ namespace py_bindings {
             +[](type& self,
                 const std::tuple<std::size_t, std::size_t, std::size_t>& x,
                 const Real val) {
-              // tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
-              //                   std::get<2>(x));
+              tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
+                                std::get<2>(x));
               self(std::get<0>(x), std::get<1>(x), std::get<2>(x)) = val;
             })
         // Need __str__ for converting to string/printing
