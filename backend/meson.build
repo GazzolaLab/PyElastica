@@ -5,6 +5,9 @@ project(
     default_options: ['cpp_std=c++14'],
 )
 
+add_global_arguments(['-Wno-unused'],
+                     language: 'cpp')
+
 package = 'elasticapp'
 
 cc = meson.get_compiler('cpp')
@@ -75,7 +78,7 @@ deps_lib_dirs = [deps_installed / 'lib']
 # The strategy for the below required dependencies are as follows
 # - First, meson tries to resolve the dependency by searching on the system
 # - if it doesn't find it, it fallbacks to the subproject wrap system or the
-#   ones installed in ./buildscripts 
+#   ones installed in ./buildscripts
 
 blaze_dep = dependency('blaze')
 blaze_tensor_dep = dependency('BlazeTensor')

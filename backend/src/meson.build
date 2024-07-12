@@ -38,3 +38,15 @@ _PyArrays = py.extension_module(
     install: true,
     subdir: package,
 )
+
+_PyTags = py.extension_module(
+    '_PyTags',
+    sources: [
+        'Systems/Python/Bindings.cpp',
+        'Systems/Python/BindTags.cpp',
+    ],
+    dependencies: [py_dep, pybind11_dep] + blaze_deps,
+    link_language: 'cpp',
+    install: true,
+    subdir: package,
+)
