@@ -25,6 +25,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install PyElastica
+        run: pip install . -v
+
       - name: Install elasticapp backend
         run: pip install ./backend -v
 
