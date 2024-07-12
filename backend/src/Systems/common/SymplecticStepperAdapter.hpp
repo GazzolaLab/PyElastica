@@ -8,7 +8,7 @@
 #include "Systems/common/Tags.hpp"
 #include "Systems/common/Types.hpp"
 //
-#include "Time/SimulationTime.hpp"
+// #include "Time/SimulationTime.hpp"
 //
 #include "Utilities/TMPL.hpp"
 
@@ -329,7 +329,8 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Access to kinematic rates
      */
-    inline auto kinematic_rates(::elastica::Time /*time_v*/) const noexcept
+    // inline auto kinematic_rates(::elastica::Time /*time_v*/) const noexcept
+    inline auto kinematic_rates(double /*time_v*/) const noexcept
         -> DynamicState const& {
       return dynamic_states();
     }
@@ -354,7 +355,8 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Access to dynamic rates
      */
-    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept(
+    // inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept(
+    inline auto dynamic_rates(double /*time_v*/) /*const*/ noexcept(
         noexcept(update_acceleration(self()))) -> DynamicRate const& {
       /* To be truly lazy, one should only compute acceleration
        * data and internal dynamics here.
