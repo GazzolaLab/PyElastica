@@ -1,0 +1,126 @@
+* Concepts
+
+** Block allocator for a Cosserat Rod
+
+    - The idea is to have an easier to use/maintain/debug interface for the
+    block allocation for entities such as a cosserat rod, with something like
+    the following
+
+    template <typename T>
+    Block;
+
+    template <>
+    Block<CosseratRod>;
+
+    - Block should do two things:
+        1. For the cosserat rods it contains, it should provide an allocator
+        for memory that the individual cosserat rods can use/reuse. This
+        allocator should be data-structure aware, i.e. must know what all
+        elements there are inside the template type T.
+        2. Should ensure that additional any elements added to the memory
+        should result in a no-op from the point of view of simulation.
+
+
+    - Memory allocation
+
+
+** Generator expressions for blocks
+
+    - Input into the simulation are all generator expressions, that tell how
+    a block should be created but don't create the blocks themselves
+    - The simulator tool returns a Block iterator thats a temporary handle to
+    the generator expression itself.
+    - Once `finalize` is called, we can create views into the appropriate matrices
+    needed, and the iterator is then changed (not invalidated)
+    - How to automate all this?
+
+    struct VoronoiTag{
+        std::size_t size(n_elems){
+           logic()
+        };
+    };
+
+    // can be in traits class
+    template <typename TagType>
+    struct MatrixTag{
+        // To prevent cross operations
+        using type = blaze::matrix<...., Tag>;
+        using TagType::size();
+    };
+
+    template <typename TagType>
+    struct MatrixSliceTag{
+        using type = blaze::submatrix<..., Tag>;
+    };
+
+    struct PositionTag : MatrixTag<NodeTag>{
+        // initialization requirements
+        using InitializationSliceType = PositionSliceTag;
+        template <Func>
+        using InitializerType = PositionInitializer<Func>;
+    };
+
+
+    template <Block>
+    CR : Geometry, Kinematics, Growth{
+        using Parents = tmpl::list<Geometry, Kinematics, Growth>;
+        using Members = tmpl::list<Parents::Members, X, Y, Z....>
+
+        protected:
+        // empty default constructred
+        CR() : Parents()...{
+        };
+
+        inline self(){
+
+        };
+
+        protected:
+        void initialize(std::size_t n_elems,
+        TaggedTuple<...> sliced_list,
+        std::tuple<...> set_of_initializers)
+            : Geometry(pass it on), Kinematics(pass it on), Growth(pass it on)
+        {
+
+            // Only initialize whats necessary here
+            for (std::size_t i = 0; i < Tag::size(n_elems); ++i){
+              member = corresponding_initializer(i); // or s
+            };
+
+            Parents::initialize()...;
+        };
+
+        // logic
+        void voronoi_from(){
+
+        self().members_<PositionTag> = ;
+        };
+    };
+
+    template <template <typename, typename ...> class T, class ... Policies>
+    class Block;
+
+    template<>
+    Block<CR> : CR<Block<CR>>{
+        using Members = CR::Members;
+        Members members_;
+
+        public:
+        Block(std::vector<std::size_t> elems_array, ){
+            n_rods = elems_array.size();
+            n_elems = reduce(elems_array);
+            n_voronoi = logic();
+            n_nodes = logic();
+
+            // Allocate memory for all members by marching
+            // through the members list
+
+            CR::initialize(tagged_tuple_of_slices()..., initialier_list);
+
+        };
+
+    };
+
+
+    - Questions :
+        - how to pass slices into the initializer()?
