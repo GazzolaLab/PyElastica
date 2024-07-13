@@ -59,6 +59,9 @@ pybind11_dep = declare_dependency(
     ).stdout().strip(),
 )
 
+# python and pybind deps are used together
+py_deps = [py_dep, pybind11_dep]
+
 fs = import('fs')
 
 message('Running buildscripts/build-all.sh (might take a while)')
@@ -93,7 +96,11 @@ endif
 # blaze and deps commonly used together
 blaze_deps = [blaze_dep, blaze_tensor_dep, sleef_dep]
 
-brigand_dep = dependency('brigand', fallback : 'brigand')
+brigand_dep = dependency('brigand', required: false)
+if not brigand_dep.found()
+    brigand_dep = declare_dependency(include_directories: deps_inc_dirs)
+endif
+
 cxxopts_dep = dependency('cxxopts', fallback : 'cxxopts')
 
 # meson-python: error: Could not map installation path to an equivalent wheel directory:

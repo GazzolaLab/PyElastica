@@ -67,4 +67,16 @@ if [ ! -d sleef ]; then
     cd ..
 fi
 
+# brigand
+if [ ! -d brigand ]; then
+    git clone --depth 1 https://github.com/edouarda/brigand.git && cd brigand
+
+    mkdir build
+    cmake -B build $ELASTICA_BASE_CMAKE_FLAGS \
+        -S .
+    cmake --build build --parallel $(nproc)
+    cmake --install build
+    cd ..
+fi
+
 cd $OLD_CWD
