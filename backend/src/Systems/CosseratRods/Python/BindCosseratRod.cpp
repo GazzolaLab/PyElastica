@@ -8,13 +8,14 @@
 //
 #include <pybind11/pybind11.h>
 //
-#include "PythonBindings/BoundChecks.hpp"
+
 //
 #include "Systems/Block/Block.hpp"  // slice()
 #include "Systems/CosseratRods/CosseratRods.hpp"
 //
 #include "Systems/CosseratRods/Python/Generators/BindEnergyMethods.hpp"
 #include "Systems/CosseratRods/Python/Generators/BindMemberAccess.hpp"
+#include "Systems/CosseratRods/Python/Generators/BoundChecks.hpp"
 #include "Systems/CosseratRods/Python/Generators/BindPyElasticaInterface.hpp"
 #include "Systems/common/Python/Generators/BindVariableLocator.hpp"
 //
