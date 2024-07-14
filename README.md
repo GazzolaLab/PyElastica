@@ -77,7 +77,7 @@ We ask that any publications which use Elastica cite as following:
 <details>
   <summary><h4>References</h4></summary>
 
-- Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628](https://doi.org/10.1098/rsos.171628)
+- Gazzola, Dudte, McCormick, Mahadevan, <strong>Forward and inverse problems in the mechanics of soft filaments</strong>, Royal Society Open Science, 2018. doi: [10.1098/rsos.171628] (https://doi.org/10.1098/rsos.171628)
 - Zhang, Chan, Parthasarathy, Gazzola, <strong>Modeling and simulation of complex dynamic musculoskeletal architectures</strong>, Nature Communications, 2019. doi: [10.1038/s41467-019-12759-5](https://doi.org/10.1038/s41467-019-12759-5)
 
 </details>
@@ -104,7 +104,7 @@ We have created several Jupyter notebooks and Python scripts to help users get s
 
 We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/Visualization`](examples/Visualization)).
 
-## Contribution
+## Contributions
 
 If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md)
 
