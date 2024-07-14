@@ -25,6 +25,15 @@ _linalg_numpy = py.extension_module(
     subdir: package,
 )
 
+_rotations = py.extension_module(
+    '_rotations',
+    sources: ['_rotations.cpp'],
+    dependencies: py_deps + blaze_deps,
+    link_language: 'cpp',
+    install: true,
+    subdir: package,
+)
+
 _PyArrays = py.extension_module(
     '_PyArrays',
     sources: [
