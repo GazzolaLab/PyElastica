@@ -6,8 +6,49 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from elasticapp._PyArrays import Tensor
-from elasticapp._rotations import inv_rotate, inv_rotate_scalar
+from elasticapp._PyArrays import Tensor, Matrix
+from elasticapp._rotations import rotate, rotate_scalar, inv_rotate, inv_rotate_scalar
+
+
+@pytest.mark.parametrize("rotate_func", [rotate, rotate_scalar])
+def test_rotate_correctness(rotate_func):
+    blocksize = 16
+
+    def get_aligned_director_collection(theta_collection):
+        sins = np.sin(theta_collection)
+        coss = np.cos(theta_collection)
+        # Get basic director out, then modify it as you like
+        dir = np.tile(np.eye(3).reshape(3, 3, 1), blocksize)
+        dir[0, 0, ...] = coss
+        # Flip signs on [0,1] and [1,0] to go from our row-wise
+        # representation to the more commonly used
+        # columnwise representation, for similar reasons metioned
+        # before
+        dir[0, 1, ...] = sins
+        dir[1, 0, ...] = -sins
+        dir[1, 1, ...] = coss
+
+        return dir
+
+    base_angle = np.deg2rad(np.linspace(0.0, 90.0, blocksize))
+    rotated_by = np.deg2rad(15.0) + 0.0 * base_angle
+    rotated_about = np.array([0.0, 0.0, 1.0]).reshape(-1, 1)
+
+    director_collection = Tensor(get_aligned_director_collection(base_angle))
+    axis_collection = np.tile(rotated_about, blocksize)
+    axis_collection *= rotated_by
+
+    rotate_func(director_collection, Matrix(axis_collection))
+    test_rotated_director_collection = np.asarray(director_collection)
+    correct_rotation = rotated_by + 1.0 * base_angle
+    correct_rotated_director_collection = get_aligned_director_collection(
+        correct_rotation
+    )
+
+    assert test_rotated_director_collection.shape == (3, 3, blocksize)
+    assert_allclose(
+        test_rotated_director_collection, correct_rotated_director_collection
+    )
 
 
 @pytest.mark.parametrize("inv_rotate_func", [inv_rotate, inv_rotate_scalar])
