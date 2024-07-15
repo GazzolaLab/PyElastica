@@ -263,3 +263,50 @@ def test_knot_theory_compute_additional_segment_none_case(
     assert_allclose(new_center_line.shape, [timesteps, 3, n_elem])
     assert_allclose(beginning_direction.shape[0], timesteps)
     assert_allclose(end_direction.shape[0], timesteps)
+
+
+@pytest.mark.parametrize("n_elem", [1, 2, 10, 50, 100])
+@pytest.mark.parametrize(
+    "diff_angle",
+    [
+        0.0,
+        np.pi * 0.1,
+        np.pi * 0.5,
+        np.pi * 0.9,
+        np.pi * 0.999,
+        -np.pi * 0.1,
+        -np.pi * 0.5,
+        -np.pi * 0.9,
+        -np.pi * 0.999,
+    ],
+)
+def test_knot_theory_compute_pure_twist(n_elem, diff_angle):
+    angle = np.arange(n_elem) * diff_angle
+
+    # setting up test params
+    normal = np.array([0.0, 1.0, 0.0])
+    base_length = 1.0
+
+    position_collection = np.zeros((3, n_elem + 1))
+    position_collection[2, :] = np.linspace(0, base_length, n_elem + 1)
+    normal_collection = np.zeros((3, n_elem))
+
+    for i in range(n_elem):
+        alpha = angle[i]
+        rot_matrix = np.array(
+            [
+                [np.cos(alpha), -np.sin(alpha), 0.0],
+                [np.sin(alpha), np.cos(alpha), 0.0],
+                [0.0, 0.0, 1.0],
+            ]
+        )
+        normal_temp = rot_matrix @ normal
+        normal_temp /= np.linalg.norm(normal_temp)
+
+        normal_collection[:, i] = normal_temp
+
+    total_twist, local_twist = compute_twist(
+        position_collection[None, ...], normal_collection[None, ...]
+    )
+    np.testing.assert_allclose(local_twist[0], np.diff(angle / (2 * np.pi)))
+    np.testing.assert_allclose(total_twist[0], angle[-1] / (2 * np.pi))
