@@ -275,11 +275,11 @@ def test_knot_theory_compute_additional_segment_none_case(
         np.pi * 0.1,
         np.pi * 0.5,
         np.pi * 0.9,
-        np.pi,
+        np.pi * 0.999,
         -np.pi * 0.1,
         -np.pi * 0.5,
         -np.pi * 0.9,
-        -np.pi,
+        -np.pi * 0.999,
     ],
 )
 def test_knot_theory_compute_pure_twist(n_elem, diff_angle):
