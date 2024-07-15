@@ -259,14 +259,20 @@ def _compute_twist(center_line, normal_collection):
 
         # Check if there is any Nan. Nan's appear when rod tangents are parallel to each other.
         idx = np.where(np.isnan(twist_temp))[0]
+        # Check if there is any Nan. Nan's appear when rod tangents are parallel to each other.
+        idx = np.where(np.isnan(twist_temp))[0]
         for i in idx:
             # compute angle between two vectors
-            angle = np.arccos(
-                (normal_collection[k, 0, i] * normal_collection[k, 0, i + 1]) +
-                (normal_collection[k, 1, i] * normal_collection[k, 1, i + 1]) +
-                (normal_collection[k, 2, i] * normal_collection[k, 2, i + 1])
-            )
+            dot_product = np.dot(projection_of_normal_collection[:, i],  projection_of_normal_collection[:, i+1])
+            angle = np.arccos(dot_product)
             twist_temp[i] = angle / (2 * np.pi)
+
+        # Make sure twist is between (-1/2 to 1/2) as defined in pg 313 Klenin & Langowski 2000
+        idx = np.where(twist_temp > 0.5)[0]
+        twist_temp[idx] -= 1
+        idx = np.where(twist_temp < -0.5)[0]
+        twist_temp[idx] += 1
+
 
         local_twist[k, :] = twist_temp
         total_twist[k] = np.sum(twist_temp)
