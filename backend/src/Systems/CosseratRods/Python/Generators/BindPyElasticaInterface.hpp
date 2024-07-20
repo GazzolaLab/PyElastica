@@ -12,7 +12,7 @@
 //
 #include "Utilities/ConvertCase/ConvertCase.hpp"
 #include "Utilities/Overloader.hpp"
-#include "Utilities/PrettyType.hpp"
+// #include "Utilities/PrettyType.hpp"
 //
 #include <pybind11/pybind11.h>
 //
@@ -74,7 +74,7 @@ namespace py_bindings {
           // fallback for other tags that are not defined in PyElastica
           [](auto tag) -> std::string {
             namespace cc = convert_case;
-            return cc::convert(pretty_type::short_name<decltype(tag)>(),
+            return cc::convert(typeid(tag).name(), //pretty_type::short_name<decltype(tag)>(),
                                cc::FromPascalCase{}, cc::ToSnakeCase{});
           });
 #undef MAP
@@ -84,7 +84,7 @@ namespace py_bindings {
         using Variable = tmpl::type_from<decltype(v)>;
         using VariableTag = ::blocks::parameter_t<Variable>;
         std::string help_str =
-            "Refer to documentation of " + pretty_type::get_name<VariableTag>();
+            "Refer to documentation of " + typeid(v).name();
         context.def_property(
             tag_to_method_map(VariableTag{}).c_str(),
             +[](type& self) { return ::blocks::get<VariableTag>(self); },

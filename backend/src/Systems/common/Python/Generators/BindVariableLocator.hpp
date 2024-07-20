@@ -9,7 +9,7 @@
 #include "Systems/common/Python/Generators/VariableFilter.hpp"
 #include "Systems/common/Python/Generators/VariableLocator.hpp"
 //
-#include "Utilities/PrettyType.hpp"
+// #include "Utilities/PrettyType.hpp"
 //
 #include <pybind11/pybind11.h>
 //
@@ -41,7 +41,7 @@ namespace py_bindings {
       // the tags are registered globally in the systems.tags module
       auto register_property = [](auto& bound_class_, auto tag) {
         using VariableTag = decltype(tag);
-        std::string tag_name = pretty_type::short_name<VariableTag>();
+        std::string tag_name = typeid(tag).name(); // pretty_type::short_name<VariableTag>();
         bound_class_.def_property_readonly_static(
             tag_name.c_str(),
             [](py::object /* self */) { return VariableTag{}; });

@@ -17,7 +17,7 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Overloader.hpp"
-#include "Utilities/PrettyType.hpp"
+// #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 //
 #include <pybind11/pybind11.h>
@@ -59,9 +59,9 @@ namespace py_bindings {
         // Rank in case of a CosseratRod is Vector, Matrix, or Tensor, each of
         // which has a rank type-def, which we query
 
-        std::string variable_name = pretty_type::short_name<Variable>();
+        std::string variable_name = typeid(v).name(); //pretty_type::short_name<Variable>();
         // cam use
-        std::string tag_name = pretty_type::get_name<VariableTag>();
+        std::string tag_name = ""; // FIXME: pretty_type::get_name<VariableTag>();
         std::string method_prefix = "get_";
         std::string method_name =
             method_prefix +
@@ -82,8 +82,8 @@ namespace py_bindings {
                           // clang-format off
                               << " (" << dim_doc_generator(typename VariableRank::rank{}) << ") "
                           // clang-format on
-                          << "array containing data of "
-                          << pretty_type::short_name<::elastica::real_t>()
+                          << "array containing data of real_t"
+                          // << pretty_type::short_name<::elastica::real_t>()
                           << " type. See documentation of " << tag_name
                           << " for more details.");
 

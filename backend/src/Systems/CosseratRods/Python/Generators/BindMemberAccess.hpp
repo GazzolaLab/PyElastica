@@ -7,7 +7,7 @@
 #include "Systems/Block/TypeTraits.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/common/Traits/DataType/Rank.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTraits/PlacementTraits.hpp"
 //
 #include "Systems/CosseratRods/Python/Generators/BoundChecks.hpp"
@@ -17,7 +17,7 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Overloader.hpp"
-#include "Utilities/PrettyType.hpp"
+// #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 //
 #include <pybind11/pybind11.h>
@@ -66,9 +66,9 @@ namespace py_bindings {
         // Rank in case of a CosseratRod is Vector, Matrix, or Tensor, each of
         // which has a rank type-def, which we query
 
-        std::string variable_name = pretty_type::short_name<Variable>();
+        std::string variable_name = typeid(v).name(); // pretty_type::short_name<Variable>();
         // cam use
-        std::string tag_name = pretty_type::get_name<VariableTag>();
+        std::string tag_name = ""; // FIXME: pretty_type::get_name<VariableTag>();
         std::string method_prefix = "get_";
         std::string method_name =
             method_prefix +
@@ -93,8 +93,8 @@ namespace py_bindings {
                           // clang-format on
                           << "array containing data of "
                           // TODO: Refactor : this relies on blaze interface
-                          << pretty_type::short_name<
-                                 typename VariableRank::type::ElementType>()
+                          // << pretty_type::short_name<
+                          //        typename VariableRank::type::ElementType>()
                           << " type. See documentation of " << tag_name
                           << " for more details.");
 
@@ -119,8 +119,8 @@ namespace py_bindings {
              // clang-format on
              << "slice containing data of "
              // TODO: Refactor : this relies on blaze interface
-             << pretty_type::short_name<
-                    typename VariableRank::type::ElementType>()
+             // << pretty_type::short_name<
+             //        typename VariableRank::type::ElementType>()
              << " type. See documentation of " << tag_name
              << " for more details.");
 

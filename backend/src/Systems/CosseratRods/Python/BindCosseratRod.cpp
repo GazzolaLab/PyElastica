@@ -13,7 +13,7 @@
 #include "Systems/Block/Block.hpp"  // slice()
 #include "Systems/CosseratRods/CosseratRods.hpp"
 //
-#include "Systems/CosseratRods/Python/Generators/BindEnergyMethods.hpp"
+// #include "Systems/CosseratRods/Python/Generators/BindEnergyMethods.hpp"
 #include "Systems/CosseratRods/Python/Generators/BindMemberAccess.hpp"
 #include "Systems/CosseratRods/Python/Generators/BoundChecks.hpp"
 #include "Systems/CosseratRods/Python/Generators/BindPyElasticaInterface.hpp"
@@ -51,7 +51,7 @@ namespace py_bindings {
       bind_member_access<UnwantedVariableTags>(py_cosserat_rod);
       bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
       bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
-      bind_energy_methods(py_cosserat_rod);
+      // bind_energy_methods(py_cosserat_rod);
     }
     {
       using type = ::elastica::cosserat_rod::detail::CosseratRodBlockView;
