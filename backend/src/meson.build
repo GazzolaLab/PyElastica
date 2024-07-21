@@ -59,3 +59,15 @@ _PyTags = py.extension_module(
     install: true,
     subdir: package,
 )
+
+_PyCosseratRods = py.extension_module(
+    '_PyCosseratRods',
+    sources: [
+        'Systems/CosseratRods/Python/BindCosseratRod.cpp',
+        'Systems/CosseratRods/Python/Bindings.cpp',
+    ],
+    dependencies: py_deps + blaze_deps + brigand_dep,
+    link_language: 'cpp',
+    install: true,
+    subdir: package,
+)

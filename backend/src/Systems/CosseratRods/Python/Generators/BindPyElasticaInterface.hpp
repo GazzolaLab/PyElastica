@@ -84,7 +84,7 @@ namespace py_bindings {
         using Variable = tmpl::type_from<decltype(v)>;
         using VariableTag = ::blocks::parameter_t<Variable>;
         std::string help_str =
-            "Refer to documentation of " + typeid(v).name();
+            std::string("Refer to documentation of ") + typeid(v).name();
         context.def_property(
             tag_to_method_map(VariableTag{}).c_str(),
             +[](type& self) { return ::blocks::get<VariableTag>(self); },
