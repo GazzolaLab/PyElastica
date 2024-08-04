@@ -1,3 +1,9 @@
+# first bundle all pure-python files
+python_sources = files(
+    '__init__.py',
+)
+py.install_sources(python_sources, subdir: package)
+
 example_1 = py.extension_module(
     'example_1',
     sources: ['example_1.cpp'],
