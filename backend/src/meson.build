@@ -65,6 +65,7 @@ _PyCosseratRods = py.extension_module(
     sources: [
         'Systems/CosseratRods/Python/BindCosseratRod.cpp',
         'Systems/CosseratRods/Python/Bindings.cpp',
+        'Utilities/ConvertCase/ConvertCase.cpp',
     ],
     dependencies: py_deps + blaze_deps + brigand_dep,
     link_language: 'cpp',

@@ -16,9 +16,9 @@ PYBIND11_MODULE(_PyCosseratRods, m) {  // NOLINT
     Bindings for Elastica++ CosseratRod types
     )pbdoc";
   // Experimental : what are the drawbacks
-  py::module::import("elasticapp.Arrays");
-  py::module::import("elasticapp.Systems.Tags");
+  py::module::import("elasticapp._PyArrays");
+  py::module::import("elasticapp._PyTags");
   //
   py_bindings::bind_cosserat_rod(m);
-  py_bindings::bind_cosserat_rod_without_damping(m);
+  // py_bindings::bind_cosserat_rod_without_damping(m);
 }

@@ -81,6 +81,7 @@ namespace py_bindings {
       bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
       bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
     }
+    /*
     {
       using type = ::elastica::cosserat_rod::detail::CosseratRodBlock;
       using Plugin = ::elastica::cosserat_rod::CosseratRod;
@@ -117,7 +118,7 @@ namespace py_bindings {
               .def("__len__", [](const type& t) { return cpp17::size(t); })
               .def(
                   "__str__",
-                  +[](const type& /*meta*/) {
+                  +[](const type& meta) {
                     return std::string("CosseratRodBlock");
                   })
               .def(
@@ -136,6 +137,7 @@ namespace py_bindings {
       bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
       bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
     }
+    */
   }
   //****************************************************************************
 
