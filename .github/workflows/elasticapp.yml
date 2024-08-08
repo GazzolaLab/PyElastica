@@ -1,0 +1,37 @@
+name: elasticapp (Elastica++ based backend) tests
+
+# trigger run only on changes to the backend folder.
+on:
+  push:
+    paths:
+      - backend/**
+  pull_request:
+    paths:
+      - backend/**
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"] #, "3.12"]
+        os: [ubuntu-latest] # , macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install PyElastica
+        run: pip install . -v
+
+      - name: Install elasticapp backend
+        run: pip install ./backend -v
+
+      - name: Run elasticapp tests
+        run: |
+          python -m pip install pytest
+          pytest backend/tests
