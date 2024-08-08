@@ -21,7 +21,7 @@ namespace elastica {
       using CosseratRodComponents = ::elastica::SymplecticPolicy<
           T, B, ::elastica::cosserat_rod::component::WithCircularCosseratRod,
           ::elastica::cosserat_rod::component::
-              WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+              WithDiagonalLinearHyperElasticModel,
           ::elastica::cosserat_rod::component::WithRodKinematics,
           ::elastica::cosserat_rod::component::CosseratRodNameAdapted>;
 

@@ -6,7 +6,7 @@
 //
 #include "Systems/Block/TypeTraits.hpp"
 //
-// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrettyType.hpp"
 //
 #include <pybind11/pybind11.h>
 //
@@ -36,8 +36,7 @@ namespace py_bindings {
       using Tag = tmpl::type_from<decltype(v)>;
 
       // FIXME: avoiding pretty_type for now.
-      // std::string tag_name = pretty_type::short_name<Tag>();
-      std::string tag_name = typeid(v).name();
+      std::string tag_name = pretty_type::short_name<Tag>();
       py::class_<Tag>(m, ("_" + tag_name).c_str(),
                       ("Symbol corresponding to C++ tag " + tag_name).c_str());
     });

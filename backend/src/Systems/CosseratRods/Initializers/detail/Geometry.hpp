@@ -8,6 +8,7 @@
 ///
 #include "Systems/common/Warnings/UserWarnings.hpp"
 ///
+#include "Systems/CosseratRods/Initializers/Parameter.hpp"
 #include "Systems/CosseratRods/Tags.hpp"
 ///
 #include "Utilities/DefineTypes.h"
@@ -30,62 +31,42 @@ namespace elastica {
 
       namespace option_tags {
 
-        // struct Radius : Options::Parameter<real_t> {
-        //   using P = Options::Parameter<real_t>;
-        //   using P::P;
-
-        //   static constexpr Options::String help = {
-        //       "Constant radius of the cosserat rod"};
-        struct Radius {
-          using type = real_t;
+        struct Radius : public elastica::Parameter<elastica::real_t> {
+          using elastica::Parameter<elastica::real_t>::Parameter;
+          using type = elastica::real_t;
           static type lower_bound() noexcept { return 0.0; }
           using TagType = ::elastica::tags::ElementDimension;
+          // static constexpr Options::String help = {
+          //     "Constant radius of the cosserat rod"};
         };
 
-        // struct Length : Options::Parameter<real_t> {
-        //   using P = Options::Parameter<real_t>;
-        //   using P::P;
-        //   static constexpr Options::String help = {
-        //       "Length of the cosserat rod"};
-        struct Length {
-          using type = real_t;
+        struct Length : public elastica::Parameter<elastica::real_t> {
+          using elastica::Parameter<elastica::real_t>::Parameter;
+          using type = elastica::real_t;
           static type lower_bound() noexcept { return 0.0; }
+          // static constexpr Options::String help = {
+          //     "Length of the cosserat rod"};
         };
 
-        // struct Origin : Options::Parameter<Vec3> {
-        //   using P = Options::Parameter<Vec3>;
-        //   using P::P;
-        //   static constexpr Options::String help = {
-        //       "Position of first node of the cosserat rod"};
-        struct Origin {
+        struct Origin : public elastica::Parameter<Vec3> {
+          using elastica::Parameter<Vec3>::Parameter;
           using type = Vec3;
+          // static constexpr Options::String help = {
+          //     "Position of first node of the cosserat rod"};
         };
 
-        // struct Direction : Options::Parameter<Vec3> {
-        //   using P = Options::Parameter<Vec3>;
-        //   using P::P;
-        //   static constexpr Options::String help = {
-        //       "Direction from start to end of the cosserat rod"};
-        struct Direction {
+        struct Direction : public elastica::Parameter<Vec3> {
+          using elastica::Parameter<Vec3>::Parameter;
           using type = Vec3;
+          // static constexpr Options::String help = {
+          //     "Direction from start to end of the cosserat rod"};
         };
 
-        // struct Normal : Options::Parameter<Vec3> {
-        //   using P = Options::Parameter<Vec3>;
-        //   using P::P;
-        //   static constexpr Options::String help = {
-        //       "Common normal of all elements of the cosserat rod"};
-        struct Normal {
+        struct Normal : public elastica::Parameter<Vec3> {
+          using elastica::Parameter<Vec3>::Parameter;
           using type = Vec3;
-        };
-
-        // struct TotalTwist : Options::Parameter<real_t> {
-        //   using P = Options::Parameter<real_t>;
-        //   using P::P;
-        //   static constexpr Options::String help = {
-        //       "(Total) Twist for the cosserat rod"};
-        struct TotalTwist {
-          using type = real_t;
+          // static constexpr Options::String help = {
+          //     "Common normal of all elements of the cosserat rod"};
         };
 
       }  // namespace option_tags
@@ -144,7 +125,8 @@ namespace elastica {
             using Variable = tmpl::type_from<decltype(v)>;
             const Vec3 input = (std::get<Variable>(options_cache).value());
             if (::elastica::is_zero(input)) {
-              throw std::logic_error(std::string(Variable::help) + " is zero!");
+              throw std::logic_error(std::string(typeid(Variable).name()) +
+                                     " is zero!");
             }
             return input;
           };
@@ -196,101 +178,25 @@ are:
                     << std::get<option_tags::NElement>(options_cache).value();
               });
 
-          return std::tuple_cat(
-              // for things that don't need to be processed, pass as wrapped
-              pass_as_wrapped(options_cache, tmpl::list<Radius>{}),
-              // for things that do need processing, process them here and put
-              // into a tuple
-              std::make_tuple(
-                  blocks::initialize<tags::Position>(
-                      [lg = ::elastica::linspace_generator(
-                           origin, rod_end,
-                           // this is not ideal, as we take in information
-                           // from a cosserat rod
-                           n_elements + 1UL)](std::size_t index) -> Vec3 {
-                        return lg(index);
-                      }),
-                  blocks::initialize<tags::Director>(
-                      [dir = ::elastica::
-                           make_orthogonal_bases_from_normal_and_tangent(
-                               normal, direction)](std::size_t) -> Rot3 {
-                        return dir;
-                      }))
-              // std::make_tuple()
-          );
-        }
-      };
-
-      class StraightRodWithTwist : public StraightRod {
-       public:
-        using TotalTwist = option_tags::TotalTwist;
-        using RequiredParameters =
-            tmpl::push_back<typename StraightRod::RequiredParameters,
-                            TotalTwist>;
-        // todo get_required_parameters
-      };
-
-      template <typename ProfileFunc>
-      class PositionProfile {
-       public:
-        // this is not an "option" per se, but okay
-        // struct Position : Options::Parameter<ProfileFunc> {
-        //   using P = Options::Parameter<ProfileFunc>;
-        //   using P::P;
-
-        //   static constexpr Options::String help = {
-        //       "Position of the cosserat rod as a profile function"};
-        struct Position {
-          using TagType = ::elastica::tags::Position;
-        };
-      };
-
-      template <typename ProfileFunc>
-      class DirectorProfile {
-       public:
-        // this is not an "option" per se, but okay
-        // struct Director : Options::Parameter<ProfileFunc> {
-        //   using P = Options::Parameter<ProfileFunc>;
-        //   using P::P;
-
-        //   static constexpr Options::String help = {
-        //       "Director of the cosserat rod as a profile function"};
-        struct Director {
-          using TagType = ::elastica::tags::Director;
-        };
-      };
-
-      template <typename PositionFunc, typename DirectorFunc>
-      class UserDefinedRod : public PositionProfile<PositionFunc>,
-                             public DirectorProfile<DirectorFunc> {
-       public:
-        using Radius = option_tags::Radius;
-        using typename PositionProfile<PositionFunc>::Position;
-        using typename DirectorProfile<DirectorFunc>::Director;
-
-        using RequiredParameters = tmpl::list<Position, Director, Radius>;
-        using DefaultParameters =
-            tmpl::list<ReferenceCurvatureDefaultParameter,
-                       ReferenceShearStretchStrainDefaultParameter,
-                       DilatationDefaultParameter>;
-
-       protected:
-        template <typename OptionsTuple>
-        decltype(auto) get_required_parameters(
-            OptionsTuple const& options_cache) const /*noexcept*/ {
-          return std::tuple_cat(
-              // for things that don't need to be processed, pass as wrapped
-              pass_as_wrapped(options_cache, tmpl::list<Radius>{}),
-              // can be abstracted
-              std::make_tuple(
-                  blocks::initialize<tags::Position>(
-                      [prof = std::get<Position>(options_cache).value()](
-                          std::size_t index) -> Vec3 { return prof(index); }),
-                  blocks::initialize<tags::Director>(
-                      [prof = std::get<Director>(options_cache).value()](
-                          std::size_t index) -> Rot3 { return prof(index); }))
-              //
-          );
+          return std::make_tuple(
+              blocks::initialize<typename Radius::TagType>(
+                  // do a copy here of tuple of initializers
+                  [value = (std::get<Radius>(options_cache).value())](...) ->
+                  typename Radius::type { return value; }),
+              blocks::initialize<tags::Position>(
+                  [lg = ::elastica::linspace_generator(
+                       origin, rod_end,
+                       // this is not ideal, as we take in information
+                       // from a cosserat rod
+                       n_elements + 1UL)](std::size_t index) -> Vec3 {
+                    return lg(index);
+                  }),
+              blocks::initialize<tags::Director>(
+                  [dir = ::elastica::
+                       make_orthogonal_bases_from_normal_and_tangent(
+                           normal, direction)](std::size_t) -> Rot3 {
+                    return dir;
+                  }));
         }
       };
 
@@ -298,9 +204,9 @@ are:
 
     struct GeometryInitializers {
       using StraightRod = detail::StraightRod;
-      using StraightRodWithTwist = detail::StraightRodWithTwist;
-      template <typename P, typename D>
-      using UserDefinedRod = detail::UserDefinedRod<P, D>;
+      // using StraightRodWithTwist = detail::StraightRodWithTwist;
+      // template <typename P, typename D>
+      // using UserDefinedRod = detail::UserDefinedRod<P, D>;
     };
 
   }  // namespace cosserat_rod

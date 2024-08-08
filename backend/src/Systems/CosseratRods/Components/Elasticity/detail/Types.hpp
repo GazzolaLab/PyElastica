@@ -31,20 +31,6 @@ namespace elastica {
         template <typename /* Rod Traits */, typename /*Block*/>
         class LinearHyperElasticityFacade;
 
-        template <typename /* Rod Traits */, typename /* Block */,
-                  class /*ElasticityModelWithBlock*/,
-                  template <typename /* Rod Traits */> class /*VariableInfo*/
-                  >
-        class ExplicitDampingAdapterFacade;
-
-        template <typename /* Rod Traits */, typename /*Block*/,
-                  class /*ElasticityModel*/>
-        class ExplicitDampingAdapter;
-
-        template <typename /* Rod Traits */, typename /*Block*/,
-                  class /*ElasticityModel*/>
-        class ExplicitDampingAdapterPerRod;
-
         /*! \endcond */
         //**********************************************************************
 
@@ -80,21 +66,6 @@ namespace elastica {
                                                ElasticityModel>& block_like)
         COSSERATROD_LIB_NOEXCEPT;
 
-    template <typename CRT, typename ComputationalBlock,
-              class ElasticityModelWithBlock,
-              template <typename /* CRT */> class VariableInfo>
-    void compute_internal_modeled_loads_impl(
-        component::detail::ExplicitDampingAdapterFacade<
-            CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) COSSERATROD_LIB_NOEXCEPT;
-
-    template <typename CRT, typename ComputationalBlock,
-              class ElasticityModelWithBlock,
-              template <typename /* CRT */> class VariableInfo>
-    void compute_internal_modeled_torques_impl(
-        component::detail::ExplicitDampingAdapterFacade<
-            CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) COSSERATROD_LIB_NOEXCEPT;
     /*! \endcond */
     //**************************************************************************
 

@@ -40,14 +40,6 @@ namespace elastica {
       /*! \cond ELASTICA_INTERNAL */
       template <typename /* Cosserat Rod Traits */, typename /* Block */>
       class WithDiagonalLinearHyperElasticModel;
-
-      using detail::ExplicitDampingAdapter;
-
-      using detail::ExplicitDampingAdapterPerRod;
-
-      template <typename /* Cosserat Rod Traits */, typename /* Block */>
-      class WithExplicitlyDampedDiagonalLinearHyperElasticModel;
-      /*! \endcond */
       //************************************************************************
 
     }  // namespace component

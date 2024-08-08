@@ -6,7 +6,7 @@
 #include <cstdint>  // for size_t
 #include <utility>  // for move
 
-#include "Simulator/Materials.hpp"
+// #include "Simulator/Materials.hpp"
 //
 #include "Systems/Block.hpp"
 //
@@ -108,13 +108,28 @@ namespace elastica {
           //********************************************************************
           /*!\brief Variable marking material
            */
-          struct Material
-              : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::Material,  //
-                    typename Traits::DataType::Index,
-                    typename Traits::Place::OnElement> {
+          // struct Material
+          //     : public Traits::template CosseratRodInitializedVariable<
+          //           ::elastica::tags::Material,  //
+          //           typename Traits::DataType::Index,
+          //           typename Traits::Place::OnElement> {
             // Doesnt need ghosting logic, 0 == iron is fine
-          };
+          //};
+          struct Density
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::Density,  //
+                    typename Traits::DataType::Index,
+                    typename Traits::Place::OnElement> {};
+          struct Youngs
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::Youngs,  //
+                    typename Traits::DataType::Index,
+                    typename Traits::Place::OnElement> {};
+          struct ShearModulus 
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::ShearModulus,  //
+                    typename Traits::DataType::Index,
+                    typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -213,7 +228,13 @@ namespace elastica {
                          InvMassSecondMomentOfInertia>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<Material, Velocity, AngularVelocity, Acceleration,
+              tmpl::list<// Material,
+                         Density,
+                         Youngs,
+                         ShearModulus,
+                         Velocity,
+                         AngularVelocity,
+                         Acceleration,
                          AngularAcceleration>;
           //! List of all variables
           using Variables =
@@ -307,7 +328,10 @@ namespace elastica {
         using typename VariableDefinitions::InvMassSecondMomentOfInertia;
         using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::MassSecondMomentOfInertia;
-        using typename VariableDefinitions::Material;
+        // using typename VariableDefinitions::Material;
+        using typename VariableDefinitions::Density;
+        using typename VariableDefinitions::Youngs;
+        using typename VariableDefinitions::ShearModulus;
         using typename VariableDefinitions::Velocity;
         //**********************************************************************
 
@@ -335,7 +359,8 @@ namespace elastica {
             auto&& variable(blocks::get<Tag>(this_component.self()));
 
             // already initialized
-            auto&& material(blocks::get<tags::Material>(this_component.self()));
+            // auto&& material(blocks::get<tags::Material>(this_component.self()));
+            auto&& density(blocks::get<tags::Density>(this_component.self()));
             auto&& reference_lengths(blocks::get<tags::ReferenceElementLength>(
                 this_component.self()));
 
@@ -345,8 +370,7 @@ namespace elastica {
               Variable::slice(variable, idx) = real_type(0.0);
               const Vec3 I_idx =
                   this_component.self().get_second_moment_of_area(idx) *
-                  ::elastica::Material::get_density(
-                      Traits::DataType::Index::slice(material, idx)) *
+                  Traits::DataType::Index::slice(density, idx) *
                   Traits::DataType::Scalar::slice(reference_lengths, idx);
               Variable::diagonal_assign(variable, idx, I_idx);
             }
@@ -358,7 +382,8 @@ namespace elastica {
             using Tag = blocks::parameter_t<Variable>;
 
             auto&& variable(blocks::get<Tag>(this_component.self()));
-            auto&& material(blocks::get<tags::Material>(this_component.self()));
+            // auto&& material(blocks::get<tags::Material>(this_component.self()));
+            auto&& density(blocks::get<tags::Density>(this_component.self()));
             auto&& reference_lengths(blocks::get<tags::ReferenceElementLength>(
                 this_component.self()));
 
@@ -368,8 +393,7 @@ namespace elastica {
               const Vec3 I_idx =
                   real_type(1.0) /
                   (this_component.self().get_second_moment_of_area(idx) *
-                   ::elastica::Material::get_density(
-                       Traits::DataType::Index::slice(material, idx)) *
+                   Traits::DataType::Index::slice(density, idx) *
                    Traits::DataType::Scalar::slice(reference_lengths, idx));
               Variable::slice(variable, idx) = I_idx;
               // Variable::diagonal_assign(variable, idx, I_idx);
@@ -386,8 +410,7 @@ namespace elastica {
             mass = 0.0;  // clear
             for (std::size_t idx = 0UL; idx < n_elem; ++idx) {
               typename Traits::real_type mass_on_element =
-                  ::elastica::Material::get_density(
-                      this_component.self().get_material(idx)) *
+                  this_component.self().get_density(idx) *
                   this_component.self().get_element_volume(idx);
               Mass::slice(mass, idx) += 0.5 * mass_on_element;
               Mass::slice(mass, idx + 1UL) += 0.5 * mass_on_element;
@@ -490,7 +513,10 @@ namespace elastica {
         //@{
         /*!\brief Gets material of the current rod
          */
-        STAMP_GETTERS(Material, get_material)
+        // STAMP_GETTERS(Material, get_material)
+        STAMP_GETTERS(Density, get_density)
+        STAMP_GETTERS(Youngs, get_youngs_modulus)
+        STAMP_GETTERS(ShearModulus, get_shear_modulus)
         //@}
         //**********************************************************************
 

@@ -10,4 +10,3 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Components.hpp"
 ///
 #include "Systems/CosseratRods/Components/Elasticity/WithDiagonalLinearHyperElasticModel.hpp"
-#include "Systems/CosseratRods/Components/Elasticity/WithExplicitlyDampedDiagonalLinearHyperElasticModel.hpp"

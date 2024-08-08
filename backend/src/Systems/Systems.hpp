@@ -34,9 +34,10 @@ namespace elastica {
   /*!\brief All implemented CosseratRod plugins in \elastica
    * \ingroup systems
    */
-  using CosseratRodPlugins =
-      tmpl::list<::elastica::cosserat_rod::CosseratRod,
-                 ::elastica::cosserat_rod::CosseratRodWithoutDamping>;
+  using CosseratRodPlugins = tmpl::list<
+      ::elastica::cosserat_rod::
+          CosseratRod>;  //,
+                         //  ::elastica::cosserat_rod::CosseratRodWithoutDamping>;
   //****************************************************************************
 
   //****************************************************************************
@@ -52,9 +53,8 @@ namespace elastica {
    *
    * \see elastica::CosseratRodPlugins, elastica::RigidBodyPlugins
    */
-  using PhysicalSystemPlugins =
-      tmpl::append<CosseratRodPlugins>;
-      // tmpl::append<CosseratRodPlugins, RigidBodyPlugins>;
+  using PhysicalSystemPlugins = tmpl::append<CosseratRodPlugins>;
+  // tmpl::append<CosseratRodPlugins, RigidBodyPlugins>;
   //****************************************************************************
 
 }  // namespace elastica

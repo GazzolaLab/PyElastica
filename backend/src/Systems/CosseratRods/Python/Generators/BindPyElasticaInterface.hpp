@@ -49,18 +49,21 @@ namespace py_bindings {
           MAP(elastica::tags::AngularAcceleration, "alpha_collection"),
           MAP(elastica::tags::Director, "director_collection"),
           MAP(elastica::tags::ReferenceElementLength, "rest_lengths"),
-          MAP(elastica::tags::Material,
-              "material"),  // pyelastica has density instead
+          //   MAP(elastica::tags::Material,
+          //       "material"),  // pyelastica has density instead
+          MAP(elastica::tags::Density, "density"),
+          MAP(elastica::tags::Youngs, "youngs_modulus"),
+          MAP(elastica::tags::ShearModulus, "shear_modulus"),
           MAP(elastica::tags::ElementVolume, "volume"),
           MAP(elastica::tags::Mass, "mass"),
           MAP(elastica::tags::MassSecondMomentOfInertia,
               "mass_second_moment_of_inertia"),
           MAP(elastica::tags::InvMassSecondMomentOfInertia,
               "inv_mass_second_moment_of_inertia"),
-          MAP(elastica::tags::ForceDampingRate,
-              "dissipation_constant_for_forces"),
-          MAP(elastica::tags::TorqueDampingRate,
-              "dissipation_constant_for_torques"),
+          // MAP(elastica::tags::ForceDampingRate,
+          //     "dissipation_constant_for_forces"),
+          // MAP(elastica::tags::TorqueDampingRate,
+          //     "dissipation_constant_for_torques"),
           MAP(elastica::tags::ReferenceVoronoiLength, "rest_voronoi_lengths"),
           MAP(elastica::tags::InternalLoads, "internal_forces"),
           MAP(elastica::tags::InternalTorques, "internal_torques"),
@@ -74,7 +77,7 @@ namespace py_bindings {
           // fallback for other tags that are not defined in PyElastica
           [](auto tag) -> std::string {
             namespace cc = convert_case;
-            return cc::convert(typeid(tag).name(), //pretty_type::short_name<decltype(tag)>(),
+            return cc::convert(pretty_type::short_name<decltype(tag)>(),
                                cc::FromPascalCase{}, cc::ToSnakeCase{});
           });
 #undef MAP
@@ -84,7 +87,7 @@ namespace py_bindings {
         using Variable = tmpl::type_from<decltype(v)>;
         using VariableTag = ::blocks::parameter_t<Variable>;
         std::string help_str =
-            std::string("Refer to documentation of ") + typeid(v).name();
+            "Refer to documentation of " + pretty_type::get_name<VariableTag>();
         context.def_property(
             tag_to_method_map(VariableTag{}).c_str(),
             +[](type& self) { return ::blocks::get<VariableTag>(self); },

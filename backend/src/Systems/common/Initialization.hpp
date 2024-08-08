@@ -41,7 +41,8 @@ namespace elastica {
       // We may not need a ref here as it will be moved, but keep it for
       // symmetry.
       auto&& variable_initializer(blocks::get<Tag>(std::move(cap.value)));
-      Variable::slice(variable, UnitCardinality::index()) = variable_initializer();
+      Variable::slice(variable, UnitCardinality::index()) =
+          variable_initializer();
     });
   }
   //****************************************************************************

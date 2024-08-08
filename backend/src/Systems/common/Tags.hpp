@@ -63,7 +63,28 @@ namespace elastica {
      * elastica::Material
      * \ingroup system_tags
      */
-    struct Material {};
+    // struct Material {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating density of a physical system
+     * \ingroup system_tags
+     */
+    struct Density {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating Young's modulus of a physical system
+     * \ingroup system_tags
+     */
+    struct Youngs{};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating shear modulus of a physical system
+     * \ingroup system_tags
+     */
+    struct ShearModulus {};
     //**************************************************************************
 
     //**************************************************************************

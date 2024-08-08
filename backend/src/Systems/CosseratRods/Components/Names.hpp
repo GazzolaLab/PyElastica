@@ -7,4 +7,3 @@
 #include "Systems/CosseratRods/Components/Names/Types.hpp"
 ///
 #include "Systems/CosseratRods/Components/Names/CosseratRod.hpp"
-#include "Systems/CosseratRods/Components/Names/CosseratRodWithoutDamping.hpp"

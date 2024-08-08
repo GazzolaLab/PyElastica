@@ -20,16 +20,11 @@ namespace elastica {
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       struct CosseratRodName;
-      struct CosseratRodWithoutDampingName;
 
       template <typename Traits, typename Block>
       using CosseratRodNameAdapted =
           ::elastica::detail::NameAdapter<Traits, Block, CosseratRodName>;
 
-      template <typename Traits, typename Block>
-      using CosseratRodWithoutDampingNameAdapted =
-          ::elastica::detail::NameAdapter<Traits, Block,
-                                          CosseratRodWithoutDampingName>;
       /*! \endcond */
       //************************************************************************
 
