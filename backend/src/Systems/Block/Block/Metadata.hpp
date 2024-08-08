@@ -5,7 +5,7 @@
 //******************************************************************************
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/Block/BlockVariables/Types.hpp"
-// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdVectorHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -13,9 +13,9 @@
 //
 #include <ostream>
 #include <string>
-#include <algorithm> // transform
-#include <iterator> // move iterator
-#include <utility>  // move, pair
+#include <algorithm>  // transform
+#include <iterator>   // move iterator
+#include <utility>    // move, pair
 #include <vector>
 
 namespace blocks {
@@ -112,15 +112,15 @@ namespace blocks {
     auto collect_attributes(tmpl::type_<Var>) {
       typename VariableMetadata::VariableAttributes attributes{};
 
-      attributes.emplace_back("Name", Var::name()); //pretty_type::name<Var>());
-      // attributes.emplace_back("Parameter",
-      //                         pretty_type::get_name<parameter_t<Var>>());
-      // attributes.emplace_back(
-      //     "Initialized",
-      //     tt::is_detected_v<initializer_t, Var> ? "true" : "false");
-      // attributes.emplace_back("Rank", pretty_type::get_name<rank_t<Var>>());
-      // attributes.emplace_back("Type",
-      //                         pretty_type::get_name<typename Var::type>());
+      attributes.emplace_back("Name", pretty_type::name<Var>());
+      attributes.emplace_back("Parameter",
+                              pretty_type::get_name<parameter_t<Var>>());
+      attributes.emplace_back(
+          "Initialized",
+          tt::is_detected_v<initializer_t, Var> ? "true" : "false");
+      attributes.emplace_back("Rank", pretty_type::get_name<rank_t<Var>>());
+      attributes.emplace_back("Type",
+                              pretty_type::get_name<typename Var::type>());
       return attributes;
     }
 
@@ -216,8 +216,7 @@ namespace blocks {
   template <typename Plugin>
   auto metadata() -> PluginMetadata {
     auto raw_metadata = detail::collect_attributes<Plugin>();
-    // PluginMetadata metadata{pretty_type::name<Plugin>(), {}};
-    PluginMetadata metadata{Plugin::name(), {}};
+    PluginMetadata metadata{pretty_type::name<Plugin>(), {}};
     metadata.data.reserve(raw_metadata.size());
 
     // Convert vec<vec<attributes>> -> vec<VariableMetadata>

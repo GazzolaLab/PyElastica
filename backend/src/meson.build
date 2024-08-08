@@ -66,15 +66,31 @@ _PyTags = py.extension_module(
     subdir: package,
 )
 
-_PyCosseratRods = py.extension_module(
-    '_PyCosseratRods',
+_PyExamples = py.extension_module(
+    '_PyExamples',
     sources: [
-        'Systems/CosseratRods/Python/BindCosseratRod.cpp',
-        'Systems/CosseratRods/Python/Bindings.cpp',
+        'BindExamples/Bindings.cpp',
+        'Utilities/Math/Orthogonal.cpp',
         'Utilities/ConvertCase/ConvertCase.cpp',
+        'Utilities/PrettyType.cpp',
+        'Utilities/Demangle.cpp',
     ],
     dependencies: py_deps + blaze_deps + brigand_dep,
     link_language: 'cpp',
     install: true,
     subdir: package,
 )
+
+
+# _PyCosseratRods = py.extension_module(
+#     '_PyCosseratRods',
+#     sources: [
+#         'Systems/CosseratRods/Python/BindCosseratRod.cpp',
+#         'Systems/CosseratRods/Python/Bindings.cpp',
+#         'Utilities/ConvertCase/ConvertCase.cpp',
+#     ],
+#     dependencies: py_deps + blaze_deps + brigand_dep,
+#     link_language: 'cpp',
+#     install: true,
+#     subdir: package,
+# )

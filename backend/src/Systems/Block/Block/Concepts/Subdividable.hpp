@@ -8,7 +8,7 @@
 //
 #include "Utilities/CRTP.hpp"
 #include "Utilities/End.hpp"
-// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrettyType.hpp"
 //
 #include <cstddef>  // size_t
 #include <stdexcept>
@@ -89,8 +89,7 @@ namespace blocks {
     } else {
       throw std::out_of_range(
           "Index to be sliced exceeds the number of units inside a " +
-          BlockLike::name());
-          //pretty_type::name<BlockLike>());
+          pretty_type::name<BlockLike>());
     }
   }
 
@@ -107,8 +106,7 @@ namespace blocks {
     } else {
       throw std::out_of_range(
           "Index to be sliced exceeds the number of units inside a " +
-          BlockLike::name());
-          // pretty_type::name<BlockLike>());
+          pretty_type::name<BlockLike>());
     }
   }
   // @}

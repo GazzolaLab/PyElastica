@@ -13,7 +13,7 @@
 #include "Systems/Block/BlockVariables/Protocols.hpp"
 #include "Systems/Block/BlockVariables/TypeTraits.hpp"
 //
-// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace blocks {
@@ -107,8 +107,7 @@ namespace blocks {
 
     //**************************************************************************
     //! Name of variable
-    // static std::string name() { return pretty_type::name<ParameterTag>(); }
-    static std::string name() { return ParameterTag::name(); }
+    static std::string name() { return pretty_type::name<ParameterTag>(); }
     //**************************************************************************
   };
   //****************************************************************************

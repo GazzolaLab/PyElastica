@@ -7,7 +7,7 @@
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/Block/BlockVariables/Aliases.hpp"
 //
-// #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace blocks {
@@ -150,8 +150,7 @@ namespace blocks {
      *
      * \note This is intended to work with pretty_type::name<>
      */
-    // static std::string name() { return pretty_type::name<BlockLike>(); }
-    static std::string name() { return BlockLike::name(); }
+    static std::string name() { return pretty_type::name<BlockLike>(); }
     //**************************************************************************
 
     //**Member variables********************************************************

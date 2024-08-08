@@ -41,14 +41,12 @@ namespace elastica {
           if (std::get<ApplyTag>(cache).value() <= ApplyTag::lower_bound()) {
             throw std::domain_error(std::string(
                 MakeString{}
-                // << pretty_type::name<ApplyTag>() << " requested is too
-                // small!"
-                // << ApplyTag::name() << " requested is too small!"
-                // << "\n"
+                << pretty_type::name<ApplyTag>() << " requested is too small!"
+                << "\n"
                 // need to stringify apply help here, else
                 // constexpr symbols are not found when launching
                 // case-studies from python
-                // << "Help : " << std::string(ApplyTag::help) << "\n"
+                << "Help : TODO\n"  // << std::string(ApplyTag::help) << "\n"
                 << "Variable not in range.\n"
                 << "\n"));
           }

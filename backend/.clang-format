@@ -15,4 +15,3 @@ IncludeCategories:
     Priority: 2
 NamespaceIndentation: All
 SortIncludes: false
-ColumnLimit: 120
