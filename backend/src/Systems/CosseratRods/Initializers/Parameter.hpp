@@ -48,7 +48,7 @@ namespace elastica {
     // Clang-Tidy: Single-argument constructors must be marked explicit to avoid
     // unintentional implicit conversions
     Parameter() = delete;
-    /*explicit*/ Parameter(type t) : t_(std::move(t)){}; /* NOLINT */
+    /*explicit*/ Parameter(type t) : t_(std::move(t)) {}; /* NOLINT */
     // /*explicit*/ Parameter(type&& t) : t_(std::move(t)){}; /* NOLINT */
     ~Parameter() = default;
     // Parameter(Parameter&& other) noexcept : t_(std::move(other.t_)) {}
@@ -81,4 +81,4 @@ namespace elastica {
   };
   //****************************************************************************
 
-}  // namespace Options
+}  // namespace elastica
