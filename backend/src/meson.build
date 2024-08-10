@@ -59,6 +59,8 @@ _PyTags = py.extension_module(
     sources: [
         'Systems/Python/Bindings.cpp',
         'Systems/Python/BindTags.cpp',
+        'Utilities/PrettyType.cpp',
+        'Utilities/Demangle.cpp',
     ],
     dependencies: py_deps + blaze_deps + brigand_dep,
     link_language: 'cpp',
