@@ -1,3 +1,6 @@
+/*
+Implements a few basic math functions, intended to be equivalent to elastica._linalg
+*/
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <blaze/Math.h>

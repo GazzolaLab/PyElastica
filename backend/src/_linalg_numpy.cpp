@@ -1,3 +1,9 @@
+/*
+This file is similar to _linalg.cpp except it uses more naive and slower strategies.
+
+This module was only implemented for experimental/benchmarking purposes and is probably
+not suitable to use in practice.
+*/
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <blaze/Math.h>

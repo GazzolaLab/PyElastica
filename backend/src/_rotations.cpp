@@ -1,3 +1,6 @@
+/*
+Implements a few basic rotate functions, intended to be equivalent to elastica._rotations
+*/
 #include <pybind11/pybind11.h>
 #include <blaze/Math.h>
 

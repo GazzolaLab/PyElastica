@@ -83,6 +83,7 @@ deps_lib_dirs = [deps_installed / 'lib']
 # - if it doesn't find it, it fallbacks to the subproject wrap system or the
 #   ones installed in ./buildscripts
 
+# these three are picked up due to the installation script in ./buildscripts
 blaze_dep = dependency('blaze')
 blaze_tensor_dep = dependency('BlazeTensor')
 sleef_dep = dependency('sleef', required: false)
@@ -96,11 +97,13 @@ endif
 # blaze and deps commonly used together
 blaze_deps = [blaze_dep, blaze_tensor_dep, sleef_dep]
 
+# this is picked up due to the installation script in ./buildscripts
 brigand_dep = dependency('brigand', required: false)
 if not brigand_dep.found()
     brigand_dep = declare_dependency(include_directories: deps_inc_dirs)
 endif
 
+# this is picked up from ./subprojects
 cxxopts_dep = dependency('cxxopts', fallback : 'cxxopts')
 
 # meson-python: error: Could not map installation path to an equivalent wheel directory:
