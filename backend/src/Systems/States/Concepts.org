@@ -1,0 +1,8 @@
+* Concepts
+
+    * Basic Expression templates modeled after the Blaze library.
+    * No need to make it too "smart" : Blaze handles that load
+    * Need to make it variadic to handle many number of disjointly
+    evolving "states" : any dependence should come from the kernels
+    * LICENSE : BSD, from blaze
+    * TODO : Make it official (include blaze's headers etc.) in every file.

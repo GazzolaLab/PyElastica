@@ -1,0 +1,7 @@
+[wrap-git]
+url = https://github.com/STEllAR-GROUP/blaze_tensor.git
+revision = head
+method = cmake
+
+[provide]
+BlazeTensor = BlazeTensor_dep
