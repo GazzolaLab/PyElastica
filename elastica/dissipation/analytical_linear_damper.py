@@ -18,17 +18,44 @@ class AnalyticalLinearDamper(DamperBase):
 
     .. math::
 
-        \\mathbf{v}^{n+1} = \\mathbf{v}^n \\exp \\left( -  \\nu~dt  \\right)
+        m \\frac{\\partial \\mathbf{v}}{\\partial t} = -\\gamma_t \\mathbf{v}
 
-        \\pmb{\\omega}^{n+1} = \\pmb{\\omega}^n \\exp \\left( - \\frac{{\\nu}~m~dt } { \\mathbf{J}} \\right)
+        \\frac{\\mathbf{J}}{e} \\frac{\\partial \\pmb{\\omega}}{\\partial t} = -\\gamma_r \\pmb{\\omega}
 
     Examples
     --------
-    How to set analytical linear damper for rod or rigid body:
+    The current AnalyticalLinearDamper class supports three types of protocols:
+
+    1.  Uniform damping constant: the user provides the keyword argument `uniform_damping_constant`
+        of dimension (1/T). This leads to an exponential damping constant that is used for both
+        translation and rotational velocities.
 
     >>> simulator.dampen(rod).using(
     ...     AnalyticalLinearDamper,
-    ...     damping_constant=0.1,
+    ...     uniform_damping_constant=0.1,
+    ...     time_step = 1E-4,   # Simulation time-step
+    ... )
+
+    2.  Physical damping constant: separate exponential coefficients are computed for the
+        translational and rotational velocities, based on user-defined
+        `translational_damping_constant` and `rotational_damping_constant`.
+
+    >>> simulator.dampen(rod).using(
+    ...     AnalyticalLinearDamper,
+    ...     translational_damping_constant=0.1,
+    ...     rotational_damping_constant=0.05,
+    ...     time_step = 1E-4,   # Simulation time-step
+    ... )
+
+    3.  Damping constant: this protocol follows the original algorithm where the damping
+        constants for translational and rotational velocities are assumed to be numerically
+        identical. This leads to dimensional inconsistencies (see
+        https://github.com/GazzolaLab/PyElastica/issues/354). Hence, this option will be deprecated
+        in version 0.4.0.
+
+    >>> simulator.dampen(rod).using(
+    ...     AnalyticalLinearDamper,
+    ...     damping_constant=0.1,   # To be deprecated in 0.4.0
     ...     time_step = 1E-4,   # Simulation time-step
     ... )
 
@@ -44,15 +71,6 @@ class AnalyticalLinearDamper(DamperBase):
     1. Set a high value for `damping_constant` to first acheive a stable simulation.
     2. If you feel the simulation is overdamped, reduce `damping_constant` until you
        feel the simulation is underdamped, and expected dynamics are recovered.
-
-    Attributes
-    ----------
-    translational_damping_coefficient: numpy.ndarray
-        1D array containing data with 'float' type.
-        Damping coefficient acting on translational velocity.
-    rotational_damping_coefficient : numpy.ndarray
-        1D array containing data with 'float' type.
-        Damping coefficient acting on rotational velocity.
     """
 
     def __init__(self, time_step: np.float64, **kwargs: Any) -> None:
