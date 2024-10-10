@@ -104,7 +104,7 @@ class AnalyticalLinearDamper(DamperBase):
             )
 
         else:
-            raise ValueError(
+            message = (
                 "AnalyticalLinearDamper usage:\n"
                 "\tsimulator.dampen(rod).using(\n"
                 "\t\tAnalyticalLinearDamper,\n"
@@ -125,6 +125,7 @@ class AnalyticalLinearDamper(DamperBase):
                 "\t\ttime_step=...,\n"
                 "\t)\n"
             )
+            raise ValueError(message)
 
     def _deprecated_damping_protocol(
         self, damping_constant: np.float64, time_step: np.float64
