@@ -1,3 +1,4 @@
+__doc__ = """Laplacian dissipation filter implementation"""
 from typing import Any
 
 import numpy as np

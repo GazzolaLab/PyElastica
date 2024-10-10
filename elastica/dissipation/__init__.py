@@ -1,7 +1,7 @@
 __doc__ = """
-(added in version 0.3.0)
+(added in version 0.3.3)
 
-Built in damper module implementations
+Built-in damper module implementations
 """
 
 from .damper_base import DamperBase

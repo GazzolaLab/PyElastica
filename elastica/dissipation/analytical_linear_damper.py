@@ -1,3 +1,4 @@
+__doc__ = """Analytical linear damper implementation"""
 import logging
 from typing import Any, Callable, TypeAlias
 

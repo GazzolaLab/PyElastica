@@ -1,3 +1,4 @@
+__doc__ = """Abstract base class for all damper/dissipation modules"""
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 import numpy as np
