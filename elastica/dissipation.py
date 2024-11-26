@@ -259,7 +259,7 @@ class AnalyticalLinearDamper(DamperBase):
         rotational_damping_constant: np.float64,
         time_step: np.float64,
     ) -> DampenType:
-        nodal_mass = self._system.mass.view()
+        nodal_mass = self._system.mass
         self._translational_damping_coefficient = np.exp(
             -translational_damping_constant / nodal_mass * time_step
         )
