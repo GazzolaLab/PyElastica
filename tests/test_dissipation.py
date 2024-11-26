@@ -1,4 +1,4 @@
-__doc__ = """ Test implementation of the damper base class """
+__doc__ = """ Test implementation of the dissipation implementation """
 
 from itertools import combinations
 
