@@ -8,7 +8,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, TypeAlias, Callable
 
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType
 
 from numba import njit
 
