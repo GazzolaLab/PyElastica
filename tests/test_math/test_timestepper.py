@@ -3,19 +3,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from elastica.systems.analytical import (
-    ScalarExponentialDecaySystem,
-    # UndampedSimpleHarmonicOscillatorSystem,
-    SymplecticUndampedSimpleHarmonicOscillatorSystem,
-    # DampedSimpleHarmonicOscillatorSystem,
-    # MultipleFrameRotationSystem,
-    # SecondOrderHybridSystem,
-    SymplecticUndampedHarmonicOscillatorCollectiveSystem,
-    ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
-)
 from elastica.timestepper import integrate, extend_stepper_interface
-
-from elastica.timestepper.explicit_steppers import (
+from elastica.experimental.timestepper.explicit_steppers import (
     RungeKutta4,
     EulerForward,
     ExplicitStepperMixin,
@@ -25,9 +14,19 @@ from elastica.timestepper.symplectic_steppers import (
     PEFRL,
     SymplecticStepperMixin,
 )
-
-
 from elastica.utils import Tolerance
+
+from tests.analytical import (
+    ScalarExponentialDecaySystem,
+    # UndampedSimpleHarmonicOscillatorSystem,
+    SymplecticUndampedSimpleHarmonicOscillatorSystem,
+    # DampedSimpleHarmonicOscillatorSystem,
+    # MultipleFrameRotationSystem,
+    # SecondOrderHybridSystem,
+    SymplecticUndampedHarmonicOscillatorCollectiveSystem,
+    ScalarExponentialDampedHarmonicOscillatorCollectiveSystem,
+    make_simple_system_with_positions_directors,
+)
 
 
 class TestExtendStepperInterface:
@@ -245,7 +244,9 @@ class TestSteppersAgainstCollectiveSystems:
 
         # Before stepping, let's extend the interface of the stepper
         # while providing memory slots
-        from elastica.systems.memory import make_memory_for_explicit_stepper
+        from elastica.experimental.timestepper.memory import (
+            make_memory_for_explicit_stepper,
+        )
 
         memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
         from elastica.timestepper import extend_stepper_interface
@@ -307,9 +308,6 @@ class TestSteppersAgainstRodLikeSystems:
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
     def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
-        from elastica.systems.analytical import (
-            make_simple_system_with_positions_directors,
-        )
 
         random_start_position = np.random.randn(3, 1)
         random_end_position = np.random.randn(3, 1)

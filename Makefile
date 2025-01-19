@@ -50,7 +50,6 @@ flake8:
 .PHONY: autoflake-check
 autoflake-check:
 	poetry run autoflake --version
-	poetry run autoflake $(AUTOFLAKE_ARGS) elastica tests examples
 	poetry run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: autoflake-format

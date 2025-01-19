@@ -145,7 +145,6 @@ warn_unused_configs = true
 warn_unused_ignores = false
 
 exclude = [
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
 ]
 
@@ -183,7 +182,6 @@ branch = true
 omit = [
     "*/.local/*",
 	"setup.py",
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
     "elastica/**/protocol.py",
 ]

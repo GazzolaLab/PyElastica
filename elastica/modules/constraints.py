@@ -7,6 +7,8 @@ Provides the constraints interface to enforce displacement boundary conditions (
 from typing import Any, Type, cast
 from typing_extensions import Self
 
+import functools
+
 import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
@@ -16,9 +18,9 @@ from elastica.typing import (
     ConstrainingIndex,
     RigidBodyType,
     RodType,
-    BlockSystemType,
 )
-from .protocol import SystemCollectionProtocol, ModuleProtocol
+from elastica.memory_block.protocol import BlockRodProtocol
+from .protocol import ConstrainedSystemCollectionProtocol, ModuleProtocol
 
 
 class Constraints:
@@ -33,15 +35,13 @@ class Constraints:
             List of boundary condition classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: ConstrainedSystemCollectionProtocol) -> None:
         self._constraints_list: list[ModuleProtocol] = []
         super(Constraints, self).__init__()
-        self._feature_group_constrain_values.append(self._constrain_values)
-        self._feature_group_constrain_rates.append(self._constrain_rates)
         self._feature_group_finalize.append(self._finalize_constraints)
 
     def constrain(
-        self: SystemCollectionProtocol, system: "RodType | RigidBodyType"
+        self: ConstrainedSystemCollectionProtocol, system: "RodType | RigidBodyType"
     ) -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
@@ -62,24 +62,29 @@ class Constraints:
         # Create _Constraint object, cache it and return to user
         _constraint: ModuleProtocol = _Constraint(sys_idx)
         self._constraints_list.append(_constraint)
+        self._feature_group_constrain_values.append_id(_constraint)
+        self._feature_group_constrain_rates.append_id(_constraint)
 
         return _constraint
 
-    def _finalize_constraints(self: SystemCollectionProtocol) -> None:
+    def _finalize_constraints(self: ConstrainedSystemCollectionProtocol) -> None:
         """
         In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
         periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
         constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
         """
-        from elastica._synchronize_periodic_boundary import _ConstrainPeriodicBoundaries
 
         for block in self.block_systems():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
             if hasattr(block, "ring_rod_flag"):
+                from elastica._synchronize_periodic_boundary import (
+                    _ConstrainPeriodicBoundaries,
+                )
+
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
                 memory_block_idx = self.get_system_index(block)
-                block_system = cast(BlockSystemType, self[memory_block_idx])
+                block_system = cast(BlockRodProtocol, self[memory_block_idx])
                 self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )
@@ -89,31 +94,38 @@ class Constraints:
 
         # dev : the first index stores the rod index to apply the boundary condition
         # to.
-        self._constraints_operators = [
-            (constraint.id(), constraint.instantiate(self[constraint.id()]))
-            for constraint in self._constraints_list
-        ]
-
         # Sort from lowest id to highest id for potentially better memory access
         # _constraints contains list of tuples. First element of tuple is rod number and
         # following elements are the type of boundary condition such as
         # [(0, ConstraintBase, OneEndFixedBC), (1, HelicalBucklingBC), ... ]
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort constraints.
-        self._constraints_operators.sort(key=lambda x: x[0])
+        self._constraints_list.sort(key=lambda x: x.id())
+        for constraint in self._constraints_list:
+            sys_id = constraint.id()
+            constraint_instance = constraint.instantiate(self[sys_id])
+
+            constrain_values = functools.partial(
+                constraint_instance.constrain_values, system=self[sys_id]
+            )
+            constrain_rates = functools.partial(
+                constraint_instance.constrain_rates, system=self[sys_id]
+            )
+
+            self._feature_group_constrain_values.add_operators(
+                constraint, [constrain_values]
+            )
+            self._feature_group_constrain_rates.add_operators(
+                constraint, [constrain_rates]
+            )
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)
-        self._constrain_values(time=np.float64(0.0))
-        self._constrain_rates(time=np.float64(0.0))
+        self.constrain_values(time=np.float64(0.0))
+        self.constrain_rates(time=np.float64(0.0))
 
-    def _constrain_values(self: SystemCollectionProtocol, time: np.float64) -> None:
-        for sys_id, constraint in self._constraints_operators:
-            constraint.constrain_values(self[sys_id], time)
-
-    def _constrain_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
-        for sys_id, constraint in self._constraints_operators:
-            constraint.constrain_rates(self[sys_id], time)
+        self._constraints_list = []
+        del self._constraints_list
 
 
 class _Constraint:

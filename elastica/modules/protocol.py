@@ -1,7 +1,6 @@
 from typing import Protocol, Generator, TypeVar, Any, Type, overload
+from typing import TYPE_CHECKING
 from typing_extensions import Self  # python 3.11: from typing import Self
-
-from abc import abstractmethod
 
 from elastica.typing import (
     SystemIdxType,
@@ -10,6 +9,8 @@ from elastica.typing import (
     OperatorFinalizeType,
     StaticSystemType,
     SystemType,
+    RodType,
+    RigidBodyType,
     BlockSystemType,
     ConnectionIndex,
 )
@@ -20,10 +21,16 @@ from elastica.dissipation import DamperBase
 
 import numpy as np
 
-from .operator_group import OperatorGroupFIFO
+if TYPE_CHECKING:
+    from .operator_group import OperatorGroupFIFO
 
 
-M = TypeVar("M", bound="ModuleProtocol")
+class MixinProtocol(Protocol):
+    # def finalize(self) -> None: ...
+    ...
+
+
+M = TypeVar("M", bound=MixinProtocol)
 
 
 class ModuleProtocol(Protocol[M]):
@@ -47,106 +54,89 @@ class SystemCollectionProtocol(Protocol):
     def __getitem__(self, i: int) -> SystemType: ...
     def __getitem__(self, i: slice | int) -> "list[SystemType] | SystemType": ...
 
-    @property
-    def _feature_group_synchronize(self) -> OperatorGroupFIFO: ...
-
-    def synchronize(self, time: np.float64) -> None: ...
-
-    @property
-    def _feature_group_constrain_values(self) -> list[OperatorType]: ...
-
-    def constrain_values(self, time: np.float64) -> None: ...
-
-    @property
-    def _feature_group_constrain_rates(self) -> list[OperatorType]: ...
-
-    def constrain_rates(self, time: np.float64) -> None: ...
-
-    @property
-    def _feature_group_callback(self) -> list[OperatorCallbackType]: ...
-
-    def apply_callbacks(self, time: np.float64, current_step: int) -> None: ...
-
-    @property
-    def _feature_group_finalize(self) -> list[OperatorFinalizeType]: ...
+    def __delitem__(self, i: slice | int) -> None: ...
+    def __setitem__(self, i: slice | int, value: SystemType) -> None: ...
+    def insert(self, i: int, value: SystemType) -> None: ...
 
     def get_system_index(
         self, sys_to_be_added: "SystemType | StaticSystemType"
     ) -> SystemIdxType: ...
 
+    # Operator Group
+    _feature_group_synchronize: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
+    _feature_group_constrain_values: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
+    _feature_group_constrain_rates: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
+    _feature_group_callback: "OperatorGroupFIFO[OperatorCallbackType, ModuleProtocol]"
+
+    def synchronize(self, time: np.float64) -> None: ...
+    def constrain_values(self, time: np.float64) -> None: ...
+    def constrain_rates(self, time: np.float64) -> None: ...
+    def apply_callbacks(self, time: np.float64, current_step: int) -> None: ...
+
+    # Finalize Operations
+    _feature_group_finalize: list[OperatorFinalizeType]
+
+    def finalize(self) -> None: ...
+
+
+# Mixin Protocols (Used to type Self)
+class ConnectedSystemCollectionProtocol(SystemCollectionProtocol, Protocol):
     # Connection API
-    _finalize_connections: OperatorFinalizeType
     _connections: list[ModuleProtocol]
 
-    @abstractmethod
+    def _finalize_connections(self) -> None: ...
+
     def connect(
         self,
-        first_rod: SystemType,
-        second_rod: SystemType,
+        first_rod: "RodType | RigidBodyType",
+        second_rod: "RodType | RigidBodyType",
         first_connect_idx: ConnectionIndex,
         second_connect_idx: ConnectionIndex,
-    ) -> ModuleProtocol:
-        raise NotImplementedError
+    ) -> ModuleProtocol: ...
 
-    # CallBack API
-    _finalize_callback: OperatorFinalizeType
-    _callback_list: list[ModuleProtocol]
-    _callback_operators: list[tuple[int, CallBackBaseClass]]
 
-    @abstractmethod
-    def collect_diagnostics(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _callback_execution(
-        self, time: np.float64, current_step: int, *args: Any, **kwargs: Any
-    ) -> None:
-        raise NotImplementedError
-
-    # Constraints API
-    _constraints_list: list[ModuleProtocol]
-    _constraints_operators: list[tuple[int, ConstraintBase]]
-    _finalize_constraints: OperatorFinalizeType
-
-    @abstractmethod
-    def constrain(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _constrain_values(self, time: np.float64) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def _constrain_rates(self, time: np.float64) -> None:
-        raise NotImplementedError
-
+class ForcedSystemCollectionProtocol(SystemCollectionProtocol, Protocol):
     # Forcing API
     _ext_forces_torques: list[ModuleProtocol]
-    _finalize_forcing: OperatorFinalizeType
 
-    @abstractmethod
-    def add_forcing_to(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
+    def _finalize_forcing(self) -> None: ...
 
+    def add_forcing_to(self, system: SystemType) -> ModuleProtocol: ...
+
+
+class ContactedSystemCollectionProtocol(SystemCollectionProtocol, Protocol):
     # Contact API
     _contacts: list[ModuleProtocol]
-    _finalize_contact: OperatorFinalizeType
 
-    @abstractmethod
+    def _finalize_contact(self) -> None: ...
+
     def detect_contact_between(
         self, first_system: SystemType, second_system: SystemType
-    ) -> ModuleProtocol:
-        raise NotImplementedError
+    ) -> ModuleProtocol: ...
 
+
+class ConstrainedSystemCollectionProtocol(SystemCollectionProtocol, Protocol):
+    # Constraints API
+    _constraints_list: list[ModuleProtocol]
+
+    def _finalize_constraints(self) -> None: ...
+
+    def constrain(self, system: "RodType | RigidBodyType") -> ModuleProtocol: ...
+
+
+class SystemCollectionWithCallbackProtocol(SystemCollectionProtocol, Protocol):
+    # CallBack API
+    _callback_list: list[ModuleProtocol]
+
+    def _finalize_callback(self) -> None: ...
+
+    def collect_diagnostics(self, system: SystemType) -> ModuleProtocol: ...
+
+
+class DampenedSystemCollectionProtocol(SystemCollectionProtocol, Protocol):
     # Damping API
     _damping_list: list[ModuleProtocol]
-    _damping_operators: list[tuple[int, DamperBase]]
-    _finalize_dampers: OperatorFinalizeType
 
-    @abstractmethod
-    def dampen(self, system: SystemType) -> ModuleProtocol:
-        raise NotImplementedError
+    def _finalize_dampers(self) -> None: ...
 
-    @abstractmethod
-    def _dampen_rates(self, time: np.float64) -> None:
-        raise NotImplementedError
+    def dampen(self, system: RodType) -> ModuleProtocol: ...

@@ -1,15 +1,12 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any
 
 from itertools import zip_longest
 
 from elastica.typing import (
-    SystemType,
     SystemCollectionType,
-    # StepOperatorType,
-    # PrefactorOperatorType,
-    OperatorType,
+    StepType,
     SteppersOperatorsType,
 )
 
@@ -33,22 +30,22 @@ is referred to the same section on `explicit_steppers.py`.
 
 class SymplecticStepperMixin:
     def __init__(self: SymplecticStepperProtocol):
-        self.steps_and_prefactors: Final[SteppersOperatorsType] = self.step_methods()
+        self.steps_and_prefactors: SteppersOperatorsType = self.step_methods()
 
     def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry).
-        _steps: list[OperatorType] = self.get_steps()
+        _steps: list[StepType] = self.get_steps()
         # Prefac here is necessary because the linear-exponential integrator
         # needs only the prefactor and not the dt.
-        _prefactors: list[OperatorType] = self.get_prefactors()
+        _prefactors: list[StepType] = self.get_prefactors()
         assert int(np.ceil(len(_steps) / 2)) == len(
             _prefactors
         ), f"{len(_steps)=}, {len(_prefactors)=}"
 
         # Separate the kinematic and dynamic steps
-        _kinematic_steps: list[OperatorType] = _steps[::2]
-        _dynamic_steps: list[OperatorType] = _steps[1::2]
+        _kinematic_steps: list[StepType] = _steps[::2]
+        _dynamic_steps: list[StepType] = _steps[1::2]
 
         def no_operation(*args: Any) -> None:
             pass
@@ -164,14 +161,14 @@ class PositionVerlet(SymplecticStepperMixin):
     includes methods for second-order position Verlet.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         return [
             self._first_kinematic_step,
             self._first_dynamic_step,
             self._first_kinematic_step,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_prefactor,
             self._first_prefactor,
@@ -218,7 +215,7 @@ class PEFRL(SymplecticStepperMixin):
     lambda_dash_coeff: np.float64 = 0.5 * (1.0 - 2.0 * λ)
     xi_chi_dash_coeff: np.float64 = 1.0 - 2.0 * (ξ + χ)
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         operators = [
             self._first_kinematic_step,
             self._first_dynamic_step,
@@ -228,7 +225,7 @@ class PEFRL(SymplecticStepperMixin):
         ]
         return operators + operators[-2::-1]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_kinematic_prefactor,
             self._second_kinematic_prefactor,
@@ -308,3 +305,10 @@ class PEFRL(SymplecticStepperMixin):
             System.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
+
+
+if TYPE_CHECKING:
+    from .protocol import StepperProtocol
+
+    _: StepperProtocol = PositionVerlet()
+    _: StepperProtocol = PEFRL()  # type: ignore [no-redef]

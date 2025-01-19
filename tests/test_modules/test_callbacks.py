@@ -161,10 +161,13 @@ class TestCallBacksMixin:
 
     def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
 
         scwc._finalize_callback()
 
-        for x, y in scwc._callback_operators:
+        for _callback in callback_features:
+            x = _callback.id()
+            y = _callback.instantiate()
             assert type(x) is int
             assert type(y) is callback_cls
 

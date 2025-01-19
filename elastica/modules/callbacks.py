@@ -9,10 +9,12 @@ from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import SystemType, SystemIdxType, OperatorFinalizeType
 from .protocol import ModuleProtocol
 
+import functools
+
 import numpy as np
 
 from elastica.callback_functions import CallBackBaseClass
-from .protocol import SystemCollectionProtocol
+from .protocol import SystemCollectionWithCallbackProtocol
 
 
 class CallBacks:
@@ -27,15 +29,13 @@ class CallBacks:
             List of call back classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: SystemCollectionWithCallbackProtocol) -> None:
         self._callback_list: list[ModuleProtocol] = []
-        self._callback_operators: list[tuple[int, CallBackBaseClass]] = []
         super(CallBacks, self).__init__()
-        self._feature_group_callback.append(self._callback_execution)
         self._feature_group_finalize.append(self._finalize_callback)
 
     def collect_diagnostics(
-        self: SystemCollectionProtocol, system: SystemType
+        self: SystemCollectionWithCallbackProtocol, system: SystemType
     ) -> ModuleProtocol:
         """
         This method calls user-defined call-back classes for a
@@ -54,30 +54,25 @@ class CallBacks:
         sys_idx: SystemIdxType = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
-        _callbacks: ModuleProtocol = _CallBack(sys_idx)
-        self._callback_list.append(_callbacks)
+        _callback: ModuleProtocol = _CallBack(sys_idx)
+        self._callback_list.append(_callback)
+        self._feature_group_callback.append_id(_callback)
 
-        return _callbacks
+        return _callback
 
-    def _finalize_callback(self: SystemCollectionProtocol) -> None:
+    def _finalize_callback(self: SystemCollectionWithCallbackProtocol) -> None:
         # dev : the first index stores the rod index to collect data.
-        self._callback_operators = [
-            (callback.id(), callback.instantiate()) for callback in self._callback_list
-        ]
+        for callback in self._callback_list:
+            sys_id = callback.id()
+            callback_instance = callback.instantiate()
+
+            callback_operator = functools.partial(
+                callback_instance.make_callback, system=self[sys_id]
+            )
+            self._feature_group_callback.add_operators(callback, [callback_operator])
+
         self._callback_list.clear()
         del self._callback_list
-
-        # First callback execution
-        time = np.float64(0.0)
-        self._callback_execution(time=time, current_step=0)
-
-    def _callback_execution(
-        self: SystemCollectionProtocol,
-        time: np.float64,
-        current_step: int,
-    ) -> None:
-        for sys_id, callback in self._callback_operators:
-            callback.make_callback(self[sys_id], time, current_step)
 
 
 class _CallBack:

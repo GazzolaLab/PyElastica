@@ -4,7 +4,7 @@ This module contains aliases of type-hints for elastica.
 """
 
 from typing import TYPE_CHECKING
-from typing import Callable, Any, ParamSpec, TypeAlias
+from typing import Callable, Any, TypeAlias, Protocol
 
 import numpy as np
 
@@ -23,12 +23,10 @@ if TYPE_CHECKING:
         SystemProtocol,
         StaticSystemProtocol,
         SymplecticSystemProtocol,
-        ExplicitSystemProtocol,
     )
     from .timestepper.protocol import (
         StepperProtocol,
         SymplecticStepperProtocol,
-        MemoryProtocol,
     )
     from .memory_block.protocol import BlockSystemProtocol
 
@@ -45,8 +43,8 @@ BlockSystemType: TypeAlias = "BlockSystemProtocol"
 StateType: TypeAlias = "State"
 
 # TODO: Maybe can be more specific. Up for discussion.
-OperatorType: TypeAlias = Callable[..., Any]
-SteppersOperatorsType: TypeAlias = tuple[tuple[OperatorType, ...], ...]
+StepType: TypeAlias = Callable[..., Any]
+SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
 
 RodType: TypeAlias = "CosseratRodProtocol"
@@ -62,10 +60,16 @@ ConnectionIndex: TypeAlias = (
     int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
 )
 
+
 # Operators in elastica.modules
-# TODO: can be more specific.
-OperatorParam = ParamSpec("OperatorParam")
-OperatorCallbackType: TypeAlias = Callable[..., None]
-OperatorFinalizeType: TypeAlias = Callable[..., None]
+class OperatorType(Protocol):
+    def __call__(self, time: np.float64) -> None: ...
+
+
+class OperatorCallbackType(Protocol):
+    def __call__(self, time: np.float64, current_step: int) -> None: ...
+
+
+OperatorFinalizeType: TypeAlias = Callable[[], None]
 
 MeshType: TypeAlias = "MeshProtocol"
