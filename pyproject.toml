@@ -64,6 +64,7 @@ coverage = "^6.3.3"
 pre-commit = "^2.19.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
+pytest-mock = "^3.14.0"
 codecov = "2.1.13"
 click = "8.0.0"
 autoflake = "^2.3.1"
@@ -145,7 +146,6 @@ warn_unused_configs = true
 warn_unused_ignores = false
 
 exclude = [
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
 ]
 
@@ -183,7 +183,6 @@ branch = true
 omit = [
     "*/.local/*",
 	"setup.py",
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
     "elastica/**/protocol.py",
 ]

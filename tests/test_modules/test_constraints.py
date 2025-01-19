@@ -315,24 +315,20 @@ class TestConstraintsMixin:
 
     def test_constrain_finalize_correctness(self, load_rod_with_constraints):
         scwc, bc_cls = load_rod_with_constraints
+        bc_features = [bc for bc in scwc._constraints_list]
 
         scwc._finalize_constraints()
+        assert not hasattr(scwc, "_constraints_list")
 
-        for x, y in scwc._constraints_operators:
-            assert type(x) is int
-            assert type(y) is bc_cls
+        for _constraint in bc_features:
+            x = _constraint.id()
+            y = _constraint.instantiate(scwc[x])
+            assert isinstance(x, int)
+            assert isinstance(y, bc_cls)
 
-    def test_constraint_properties(self, load_rod_with_constraints):
-        scwc, _ = load_rod_with_constraints
-        scwc._finalize_constraints()
-
-        for i in [0, 1, -1]:
-            x, y = scwc._constraints_operators[i]
-            mock_rod = scwc[i]
             # Test system
-            assert type(x) is int
-            assert type(y.system) is type(mock_rod)
-            assert y.system is mock_rod, f"{len(scwc)}"
+            assert type(y.system) is type(scwc[x])
+            assert y.system is scwc[x], f"{len(scwc)}"
             # Test node indices
             assert y.constrained_position_idx.size == 0
             # Test element indices. TODO: maybe add more generalized test

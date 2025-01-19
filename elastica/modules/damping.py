@@ -12,6 +12,8 @@ on the rods. (see `dissipation.py`).
 from typing import Any, Type, List
 from typing_extensions import Self
 
+import functools
+
 import numpy as np
 
 from elastica.dissipation import DamperBase
@@ -34,7 +36,6 @@ class Damping:
     def __init__(self: SystemCollectionProtocol) -> None:
         self._damping_list: List[ModuleProtocol] = []
         super().__init__()
-        self._feature_group_constrain_rates.append(self._dampen_rates)
         self._feature_group_finalize.append(self._finalize_dampers)
 
     def dampen(self: SystemCollectionProtocol, system: RodType) -> ModuleProtocol:
@@ -57,6 +58,7 @@ class Damping:
         # Create _Damper object, cache it and return to user
         _damper: ModuleProtocol = _Damper(sys_idx)
         self._damping_list.append(_damper)
+        self._feature_group_constrain_rates.append_id(_damper)
 
         return _damper
 
@@ -64,21 +66,21 @@ class Damping:
         # From stored _Damping objects, instantiate the dissipation/damping
         # inplace : https://stackoverflow.com/a/1208792
 
-        self._damping_operators = [
-            (damper.id(), damper.instantiate(self[damper.id()]))
-            for damper in self._damping_list
-        ]
-
         # Sort from lowest id to highest id for potentially better memory access
         # _dampers contains list of tuples. First element of tuple is rod number and
         # following elements are the type of damping.
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort dampers.
-        self._damping_operators.sort(key=lambda x: x[0])
+        self._damping_list.sort(key=lambda x: x.id())
+        for damping in self._damping_list:
+            sys_id = damping.id()
+            damping_instance = damping.instantiate(self[sys_id])
 
-    def _dampen_rates(self: SystemCollectionProtocol, time: np.float64) -> None:
-        for sys_id, damper in self._damping_operators:
-            damper.dampen_rates(self[sys_id], time)
+            dampen_rate = functools.partial(damping_instance.dampen_rates, self[sys_id])
+            self._feature_group_constrain_rates.add_operators(damping, [dampen_rate])
+
+        self._damping_list = []
+        del self._damping_list
 
 
 class _Damper:
