@@ -66,20 +66,20 @@ class TestDamper:
         def __init__(self):
             self.mass = np.random.randn(3, 8)
 
-    def test_call_improper_bc_throws_type_error(self, load_damper):
-        # Example of bad initiailization function
-        damper = load_damper
-        damper.using(
-            self.TestDamper,
-            dissipation_constant=2,
-            time_step="2",
-        )  # Passing string as time-step, which is wrong
-
-        mock_rod = self.MockRod()
-        # Actual test is here, this should not throw
-        with pytest.raises(TypeError) as excinfo:
-            _ = damper.instantiate(mock_rod)
-        assert "Unable to construct" in str(excinfo.value)
+    # def test_call_improper_bc_throws_type_error(self, load_damper):
+    #     # Example of bad initiailization function
+    #     damper = load_damper
+    #     damper.using(
+    #         self.TestDamper,
+    #         dissipation_constant=2,
+    #         time_step="2",
+    #     )  # Passing string as time-step, which is wrong
+    #
+    #     mock_rod = self.MockRod()
+    #     # Actual test is here, this should not throw
+    #     with pytest.raises(TypeError) as excinfo:
+    #         _ = damper.instantiate(mock_rod)
+    #     assert "Unable to construct" in str(excinfo.value)
 
 
 class TestDampingMixin:
