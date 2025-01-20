@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-
+from tqdm import tqdm
 
 import elastica as ea
 from elastica.utils import MaxDimension
@@ -118,12 +118,19 @@ butterfly_sim.collect_diagnostics(butterfly_rod).using(
 
 butterfly_sim.finalize()
 timestepper = ea.PositionVerlet()
-# timestepper = PEFRL()
+# timestepper = ea.SemiImplicitEuler()
+# timestepper = ea.VelocityVerlet()
+# timestepper = ea.ThirdOrderSymplectic()
+# timestepper = ea.FourthOrderSymplectic()
+# timestepper = ea.PEFRL()
+# timestepper = ea.EulerForward()
+# timestepper = ea.RungeKutta4()
 
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
-print("Total steps", total_steps)
-ea.integrate(timestepper, butterfly_sim, final_time, total_steps)
+time = 0.0
+for step in tqdm(range(total_steps)):
+    time = timestepper.step(butterfly_sim, time, dt)
 
 if PLOT_FIGURE:
     # Plot the histories
