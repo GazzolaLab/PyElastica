@@ -1,9 +1,7 @@
 __doc__ = """Explicit timesteppers  and concepts"""
 
-from typing import Any
-
 import numpy as np
-from copy import copy, deepcopy
+from copy import deepcopy
 
 from elastica.typing import (
     SystemType,
@@ -116,6 +114,10 @@ class RungeKutta4(ExplicitStepperMixin):
         """
         In-place update of system states with Runge-Kutta 4 integration
         """
+
+        # TODO: Try to avoid deepcopying the whole system collection
+        # Related to #33: save/restart module
+        # Maybe search for low-storage RK scheme
         k1_system = SystemCollection  # Alias
         k2_system = deepcopy(SystemCollection)
         k3_system = deepcopy(SystemCollection)
