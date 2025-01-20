@@ -3,7 +3,7 @@ __doc__ = """Explicit timesteppers  and concepts"""
 from typing import Any
 
 import numpy as np
-from copy import copy
+from copy import copy, deepcopy
 
 from elastica.typing import (
     SystemType,
@@ -13,80 +13,11 @@ from elastica.typing import (
     StateType,
 )
 from elastica.systems.protocol import ExplicitSystemProtocol
-from .protocol import ExplicitStepperProtocol, MemoryProtocol
-
-
-"""
-Developer Note
---------------
-## Motivation for choosing _Mixin classes below
-
-The constraint/problem is that we do not know what
-`System` we are integrating apriori. For a single
-standalone `System` (which defines a `__call__`
-operator and has its own states), we should just
-step it like a single system.
-
-Instead if we get a `SystemCollection` made up of
-bunch of smaller systems (like Cosserat Rods), we now
-need to loop over all these smaller systems and perform
-state updates there. Not only that we may also need
-to communicate between such smaller systems.
-
-One way to solve this issue is to give the integrator
-two methods:
-
-- `do_step`, which does the time-stepping for only a
-`System`
-- `do_system_step` which does the time-stepping for
-a `SystemCollection`
-
-The problem with this approach is that
-1. We have more methods than we actually use
-(indeed we can only integrate either a `System` or
-a `SystemCollection` but not both)
-2. From an interface point of view, its ugly and not
-graceful (at least IMO).
-
-The second approach is what I have chosen here,
-which is to create two mixin classes : one for
-integrating `System` and one for integrating
-`SystemCollection`. And then depending upon the runtime
-type of the object to be integrated, we can dynamically
-mixin the required class.
-
-This approach overcomes the disadvantages of the
-previous approach (as there's only one `do_step` method
-associated with a Stepper at any given point of time),
-at the expense of being a tad bit harder to understand
-(which this documentation will hopefully fix). In essence,
-we "smartly" use a mixin class to define the necessary
-`do_step` method, which the `integrate` function then uses.
-"""
-
-
-class EulerForwardMemory:
-    def __init__(self, initial_state: StateType) -> None:
-        self.initial_state = initial_state
-
-
-class RungeKutta4Memory:
-    """
-    Stores all states of Rk within the time-stepper. Works as long as the states
-    are all one big numpy array, made possible by carefully using views.
-
-    Convenience wrapper around Stateless that provides memory
-    """
-
-    def __init__(
-        self,
-        initial_state: StateType,
-    ) -> None:
-        self.initial_state = initial_state
-        self.k_1 = initial_state
-        self.k_2 = initial_state
-        self.k_3 = initial_state
-        self.k_4 = initial_state
+from elastica.rod.data_structures import (
+    overload_operator_kinematic_numba,
+    overload_operator_dynamic_numba,
+)
+from .protocol import ExplicitStepperProtocol
 
 
 class ExplicitStepperMixin:
@@ -94,21 +25,45 @@ class ExplicitStepperMixin:
     Can also be used as a mixin with optional cls argument below
     """
 
-    def __init__(self: ExplicitStepperProtocol):
-        self.steps_and_prefactors = self.step_methods()
+    def system_inplace_update(
+        self: ExplicitStepperProtocol,
+        system1: ExplicitSystemProtocol,
+        system2: ExplicitSystemProtocol,
+        time: np.float64,
+        dt: np.float64,
+    ):
+        """
+        y_n+1 = y_n + prefac * f(y_n, t_n)
+        """
+        overload_operator_kinematic_numba(
+            system1.n_nodes,
+            dt,
+            system1.kinematic_states.position_collection,
+            system1.kinematic_states.director_collection,
+            system2.velocity_collection,
+            system2.omega_collection,
+        )
 
-    def step_methods(self: ExplicitStepperProtocol) -> SteppersOperatorsType:
-        stages = self.get_stages()
-        updates = self.get_updates()
+        overload_operator_dynamic_numba(
+            system1.dynamic_states.rate_collection,
+            system2.dynamic_rates(time, dt),
+        )
 
-        assert len(stages) == len(
-            updates
-        ), "Number of stages and updates should be equal to one another"
-        return tuple(zip(stages, updates))
+    def system_rate_update(
+        self, SystemCollection: SystemCollectionType, time: np.float64
+    ):
+        # Constrain
+        SystemCollection.constrain_values(time)
 
-    @property
-    def n_stages(self: ExplicitStepperProtocol) -> int:
-        return len(self.steps_and_prefactors)
+        # We need internal forces and torques because they are used by interaction module.
+        for system in SystemCollection.block_systems():
+            system.compute_internal_forces_and_torques(time)
+
+        # Add external forces, controls etc.
+        SystemCollection.synchronize(time)
+
+        # Constrain only rates
+        SystemCollection.constrain_rates(time)
 
     def step(
         self: ExplicitStepperProtocol,
@@ -116,49 +71,19 @@ class ExplicitStepperMixin:
         time: np.float64,
         dt: np.float64,
     ) -> np.float64:
-        if isinstance(
-            self, EulerForward
-        ):  # TODO: Cleanup - use depedency injection instead
-            Memory = EulerForwardMemory
-        elif isinstance(self, RungeKutta4):
-            Memory = RungeKutta4Memory  # type: ignore[assignment]
-        else:
-            raise NotImplementedError(f"Memory class not defined for {self}")
-        memory_collection = tuple(
-            [Memory(initial_state=system.state) for system in SystemCollection]
-        )
-        return ExplicitStepperMixin.do_step(self, self.steps_and_prefactors, SystemCollection, memory_collection, time, dt)  # type: ignore[attr-defined]
+        self.stage(SystemCollection, time, dt)
 
-    @staticmethod
-    def do_step(
-        TimeStepper: ExplicitStepperProtocol,
-        steps_and_prefactors: SteppersOperatorsType,
-        SystemCollection: SystemCollectionType,
-        MemoryCollection: Any,  # TODO
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        for stage, update in steps_and_prefactors:
-            SystemCollection.synchronize(time)
-            for system, memory in zip(SystemCollection[:-1], MemoryCollection[:-1]):
-                stage(system, memory, time, dt)
-                _ = update(system, memory, time, dt)
+        # Timestep update
+        next_time = time + dt
 
-            stage(SystemCollection[-1], MemoryCollection[-1], time, dt)
-            time = update(SystemCollection[-1], MemoryCollection[-1], time, dt)
-        return time
+        # Call back function, will call the user defined call back functions and store data
+        SystemCollection.apply_callbacks(next_time, round(next_time / dt))
 
-    def step_single_instance(
-        self: ExplicitStepperProtocol,
-        System: SystemType,
-        Memory: MemoryProtocol,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        for stage, update in self.steps_and_prefactors:
-            stage(System, Memory, time, dt)
-            time = update(System, Memory, time, dt)
-        return time
+        # Zero out the external forces and torques
+        for system in SystemCollection.block_systems():
+            system.zeroed_out_external_forces_and_torques(next_time)
+
+        return next_time
 
 
 class EulerForward(ExplicitStepperMixin):
@@ -166,152 +91,97 @@ class EulerForward(ExplicitStepperMixin):
     Classical Euler Forward stepper. Stateless, coordinates operations only.
     """
 
-    def get_stages(self) -> list[OperatorType]:
-        return [self._first_stage]
-
-    def get_updates(self) -> list[OperatorType]:
-        return [self._first_update]
-
-    def _first_stage(
+    def stage(
         self,
-        System: ExplicitSystemProtocol,
-        Memory: EulerForwardMemory,
+        SystemCollection: SystemCollectionType,
         time: np.float64,
         dt: np.float64,
     ) -> None:
-        pass
-
-    def _first_update(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: EulerForwardMemory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        System.state += dt * System(time, dt)  # type: ignore[arg-type]
-        return time + dt
+        self.system_rate_update(SystemCollection, time)
+        for system in SystemCollection.block_systems():
+            self.system_inplace_update(system, system, time, dt)
 
 
 class RungeKutta4(ExplicitStepperMixin):
     """
-    Stateless runge-kutta4. coordinates operations only, memory needs
-    to be externally managed and allocated.
+    Stateless runge-kutta4. coordinates operations only.
     """
 
-    def get_stages(self) -> list[OperatorType]:
-        return [
-            self._first_stage,
-            self._second_stage,
-            self._third_stage,
-            self._fourth_stage,
-        ]
-
-    def get_updates(self) -> list[OperatorType]:
-        return [
-            self._first_update,
-            self._second_update,
-            self._third_update,
-            self._fourth_update,
-        ]
-
-    # These methods should be static, but because we need to enable automatic
-    # discovery in ExplicitStepper, these are bound to the RungeKutta4 class
-    # For automatic discovery, the order of declaring stages here is very important
-    def _first_stage(
+    def stage(
         self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
+        SystemCollection: SystemCollectionType,
         time: np.float64,
         dt: np.float64,
     ) -> None:
-        Memory.initial_state = copy(System.state)
-        Memory.k_1 = dt * System(time, dt)  # type: ignore[operator, assignment]
+        """
+        In-place update of system states with Runge-Kutta 4 integration
+        """
+        k1_system = SystemCollection  # Alias
+        k2_system = deepcopy(SystemCollection)
+        k3_system = deepcopy(SystemCollection)
+        k4_system = deepcopy(SystemCollection)
 
-    def _first_update(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        # prepare for next stage
-        System.state = Memory.initial_state + 0.5 * Memory.k_1  # type: ignore[operator]
-        return time + 0.5 * dt
+        # First stage
+        self.system_rate_update(k1_system, time)
 
-    def _second_stage(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> None:
-        Memory.k_2 = dt * System(time, dt)  # type: ignore[operator, assignment]
+        # Second stage
+        for system1, system2 in zip(
+            k2_system.block_systems(), k1_system.block_systems()
+        ):
+            self.system_inplace_update(system1, system2, time, dt / 2.0)
+        self.system_rate_update(k2_system, time + dt / 2.0)
 
-    def _second_update(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        # prepare for next stage
-        System.state = Memory.initial_state + 0.5 * Memory.k_2  # type: ignore[operator]
-        return time
+        # Third stage
+        for system1, system2 in zip(
+            k3_system.block_systems(), k2_system.block_systems()
+        ):
+            self.system_inplace_update(system1, system2, time, dt / 2.0)
+        self.system_rate_update(k3_system, time + dt / 2.0)
 
-    def _third_stage(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> None:
-        Memory.k_3 = dt * System(time, dt)  # type: ignore[operator, assignment]
+        # Fourth stage
+        for system1, system2 in zip(
+            k4_system.block_systems(), k3_system.block_systems()
+        ):
+            self.system_inplace_update(system1, system2, time, dt)
+        self.system_rate_update(k3_system, time + dt)
 
-    def _third_update(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        # prepare for next stage
-        System.state = Memory.initial_state + Memory.k_3  # type: ignore[operator]
-        return time + 0.5 * dt
+        # Combine stages
+        for system1, k1, k2, k3, k4 in zip(
+            SystemCollection.block_systems(),
+            k1_system.block_systems(),
+            k2_system.block_systems(),
+            k3_system.block_systems(),
+            k4_system.block_systems(),
+        ):
+            velocity_update = (
+                k1.velocity_collection
+                + 2 * k2.velocity_collection
+                + 2 * k3.velocity_collection
+                + k4.velocity_collection
+            ) / 6
+            omega_update = (
+                k1.omega_collection
+                + 2 * k2.omega_collection
+                + 2 * k3.omega_collection
+                + k4.omega_collection
+            ) / 6
+            dynamic_rates_update = (
+                k1.dynamic_rates(time, dt / 6.0)
+                + k2.dynamic_rates(time, dt / 3.0)
+                + k3.dynamic_rates(time, dt / 3.0)
+                + k4.dynamic_rates(time, dt / 6.0)
+            )  # Time is dummy.
 
-    def _fourth_stage(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> None:
-        Memory.k_4 = dt * System(time, dt)  # type: ignore[operator, assignment]
+            overload_operator_kinematic_numba(
+                system1.n_nodes,
+                dt,
+                system1.kinematic_states.position_collection,
+                system1.kinematic_states.director_collection,
+                velocity_update,
+                omega_update,
+            )
 
-    def _fourth_update(
-        self,
-        System: ExplicitSystemProtocol,
-        Memory: RungeKutta4Memory,
-        time: np.float64,
-        dt: np.float64,
-    ) -> np.float64:
-        # prepare for next stage
-        System.state = (
-            Memory.initial_state
-            + (Memory.k_1 + 2.0 * Memory.k_2 + 2.0 * Memory.k_3 + Memory.k_4) / 6.0  # type: ignore[operator]
-        )
-        return time
-
-
-# class ExplicitLinearExponentialIntegrator(
-#     _LinearExponentialIntegratorMixin, ExplicitStepper
-# ):
-#     def __init__(self):
-#         _LinearExponentialIntegratorMixin.__init__(self)
-#         ExplicitStepper.__init__(self, _LinearExponentialIntegratorMixin)
-#
-#
-# class StatefulLinearExponentialIntegrator(_StatefulStepper):
-#     def __init__(self):
-#         super(StatefulLinearExponentialIntegrator, self).__init__()
-#         self.stepper = ExplicitLinearExponentialIntegrator()
-#         self.linear_operator = None
+            overload_operator_dynamic_numba(
+                system1.dynamic_states.rate_collection,
+                dynamic_rates_update,
+            )
