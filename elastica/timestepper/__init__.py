@@ -8,7 +8,14 @@ from tqdm import tqdm
 
 from elastica.systems import is_system_a_collection
 
-from .symplectic_steppers import PositionVerlet, PEFRL
+from .symplectic_steppers import (
+    PositionVerlet,
+    SemiImplicitEuler,
+    VelocityVerlet,
+    ThirdOrderSymplectic,
+    FourthOrderSymplectic,
+    PEFRL,
+)
 from .explicit_steppers import RungeKutta4, EulerForward
 from .protocol import StepperProtocol, SymplecticStepperProtocol
 
@@ -16,7 +23,7 @@ from .protocol import StepperProtocol, SymplecticStepperProtocol
 # Deprecated: Remove in the future version
 # Many script still uses this method to control timestep. Keep it for backward compatibility
 def extend_stepper_interface(
-    stepper: StepperProtocol, system_collection: SystemCollectionType
+    stepper: SymplecticStepperProtocol, system_collection: SystemCollectionType
 ) -> Tuple[
     Callable[
         [StepperProtocol, SystemCollectionType, np.float64, np.float64], np.float64

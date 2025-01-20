@@ -33,9 +33,11 @@ is referred to the same section on `explicit_steppers.py`.
 
 class SymplecticStepperMixin:
     def __init__(self: SymplecticStepperProtocol):
-        self.steps_and_prefactors: Final[SteppersOperatorsType] = self.step_methods()
+        self.steps_and_prefactors: Final[SteppersOperatorsType] = (
+            self.build_step_methods()
+        )
 
-    def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
+    def build_step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry).
         _steps: list[OperatorType] = self.get_steps()
@@ -61,10 +63,6 @@ class SymplecticStepperMixin:
                 fillvalue=no_operation,
             )
         )
-
-    @property
-    def n_stages(self: SymplecticStepperProtocol) -> int:
-        return len(self.steps_and_prefactors)
 
     def step(
         self: SymplecticStepperProtocol,
@@ -200,6 +198,247 @@ class PositionVerlet(SymplecticStepperMixin):
             System.dynamic_states.rate_collection,
             System.dynamic_rates(time, dt),
         )
+
+
+class VelocityVerlet(SymplecticStepperMixin):
+    """
+    Velocity Verlet symplectic time stepper class.
+    """
+
+    def get_steps(self) -> list[OperatorType]:
+        return [
+            self._no_operation,
+            self._first_dynamic_step,
+            self._first_kinematic_step,
+            self._second_dynamic_step,
+            self._no_operation,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._first_prefactor,
+            self._second_prefactor,
+            self._third_prefactor,
+        ]
+
+    def _no_operation(*args: Any) -> None:
+        pass
+
+    def _first_prefactor(self, dt: np.float64) -> np.float64:
+        return 0.0
+
+    def _second_prefactor(self, dt: np.float64) -> np.float64:
+        return 0.0
+
+    def _third_prefactor(self, dt: np.float64) -> np.float64:
+        return 1.0 * dt
+
+    def _first_kinematic_step(
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+    ) -> None:
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            dt,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+
+    def _first_dynamic_step(
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+    ) -> None:
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, dt / 2.0),
+        )
+
+    def _second_dynamic_step(
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+    ) -> None:
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, dt / 2.0),
+        )
+
+
+class SemiImplicitEuler(SymplecticStepperMixin):
+    """
+    Semi-Implicit (Explicit) symplectic time stepper class.
+    Slightly (30%) faster than the Position Verlet with reduced
+    convergence.
+    First order symplectic euler method.
+    """
+
+    def get_steps(self) -> list[OperatorType]:
+        return [
+            self._no_operation,
+            self._dynamic_step,
+            self._kinematic_step,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._first_prefactor,
+            self._second_prefactor,
+        ]
+
+    def _no_operation(*args: Any) -> None:
+        pass
+
+    def _first_prefactor(self, dt: np.float64) -> np.float64:
+        return 0.0
+
+    def _second_prefactor(self, dt: np.float64) -> np.float64:
+        return 1.0 * dt
+
+    def _kinematic_step(
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+    ) -> None:
+        overload_operator_kinematic_numba(
+            System.n_nodes,
+            dt,
+            System.kinematic_states.position_collection,
+            System.kinematic_states.director_collection,
+            System.velocity_collection,
+            System.omega_collection,
+        )
+
+    def _dynamic_step(
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+    ) -> None:
+        overload_operator_dynamic_numba(
+            System.dynamic_states.rate_collection,
+            System.dynamic_rates(time, dt),
+        )
+
+
+class ThirdOrderSymplectic(SymplecticStepperMixin):
+    """
+    Third order symplectic time stepper class based on Ruth 1983.
+    """
+
+    def get_steps(self) -> list[OperatorType]:
+        return [
+            self._kinematic_step_with_prefactor(2.0 / 3.0),
+            self._dynamic_step_with_prefactor(7.0 / 24.0),
+            self._kinematic_step_with_prefactor(-2.0 / 3.0),
+            self._dynamic_step_with_prefactor(3.0 / 4.0),
+            self._kinematic_step_with_prefactor(1.0),
+            self._dynamic_step_with_prefactor(-1.0 / 24.0),
+            self._no_operation,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._prefactor(0.0),
+            self._prefactor(0.0),
+            self._prefactor(0.0),
+            self._prefactor(1.0),
+        ]
+
+    def _no_operation(*args: Any) -> None:
+        pass
+
+    def _prefactor(self, factor: np.float64) -> np.float64:
+        def func(dt: np.float64) -> np.float64:
+            return dt * factor
+
+        return func
+
+    def _kinematic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+        def func(
+            System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+        ) -> None:
+            overload_operator_kinematic_numba(
+                System.n_nodes,
+                factor * dt,
+                System.kinematic_states.position_collection,
+                System.kinematic_states.director_collection,
+                System.velocity_collection,
+                System.omega_collection,
+            )
+
+        return func
+
+    def _dynamic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+        def func(
+            System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+        ) -> None:
+            overload_operator_dynamic_numba(
+                System.dynamic_states.rate_collection,
+                System.dynamic_rates(time, factor * dt),
+            )
+
+        return func
+
+
+class FourthOrderSymplectic(SymplecticStepperMixin):
+    """
+    Fourth order symplectic time stepper class based on Ruth 1983.
+    """
+
+    def get_steps(self) -> list[OperatorType]:
+        c1 = c4 = 1.0 / (2.0 * (2.0 - 2.0 ** (1.0 / 3.0)))
+        c2 = c3 = (1.0 - 2.0 ** (1.0 / 3.0)) / (2.0 * (2.0 - 2.0 ** (1.0 / 3.0)))
+        d1 = d3 = 1.0 / (2.0 - 2.0 ** (1.0 / 3.0))
+        d2 = -(2.0 ** (1.0 / 3.0)) / (2.0 - 2.0 ** (1.0 / 3.0))
+        d4 = 0.0
+        return [
+            self._kinematic_step_with_prefactor(c4),
+            self._dynamic_step_with_prefactor(d4),
+            self._kinematic_step_with_prefactor(c3),
+            self._dynamic_step_with_prefactor(d3),
+            self._kinematic_step_with_prefactor(c2),
+            self._dynamic_step_with_prefactor(d2),
+            self._kinematic_step_with_prefactor(c1),
+            self._dynamic_step_with_prefactor(d1),
+            self._no_operation,
+        ]
+
+    def get_prefactors(self) -> list[OperatorType]:
+        return [
+            self._prefactor(0.0),
+            self._prefactor(0.0),
+            self._prefactor(0.0),
+            self._prefactor(0.0),
+            self._prefactor(1.0),
+        ]
+
+    def _no_operation(*args: Any) -> None:
+        pass
+
+    def _prefactor(self, factor: np.float64) -> np.float64:
+        def func(dt: np.float64) -> np.float64:
+            return dt * factor
+
+        return func
+
+    def _kinematic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+        def func(
+            System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+        ) -> None:
+            overload_operator_kinematic_numba(
+                System.n_nodes,
+                factor * dt,
+                System.kinematic_states.position_collection,
+                System.kinematic_states.director_collection,
+                System.velocity_collection,
+                System.omega_collection,
+            )
+
+        return func
+
+    def _dynamic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+        def func(
+            System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
+        ) -> None:
+            overload_operator_dynamic_numba(
+                System.dynamic_states.rate_collection,
+                System.dynamic_rates(time, factor * dt),
+            )
+
+        return func
 
 
 class PEFRL(SymplecticStepperMixin):

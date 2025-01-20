@@ -19,10 +19,7 @@ class StepperProtocol(Protocol):
 
     def __init__(self) -> None: ...
 
-    @property
-    def n_stages(self) -> int: ...
-
-    def step_methods(self) -> SteppersOperatorsType: ...
+    def build_step_methods(self) -> SteppersOperatorsType: ...
 
     def step(
         self, SystemCollection: SystemCollectionType, time: np.float64, dt: np.float64
@@ -34,16 +31,20 @@ class StepperProtocol(Protocol):
 
 
 class SymplecticStepperProtocol(StepperProtocol, Protocol):
-    """symplectic stepper protocol."""
+    """Symplectic stepper protocol."""
 
     def get_steps(self) -> list[OperatorType]: ...
 
     def get_prefactors(self) -> list[OperatorType]: ...
 
-
-class MemoryProtocol(Protocol):
-    @property
-    def initial_state(self) -> bool: ...
+    @staticmethod
+    def do_step(
+        TimeStepper: "StepperProtocol",
+        steps_and_prefactors: SteppersOperatorsType,
+        SystemCollection: SystemCollectionType,
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64: ...
 
 
 class ExplicitStepperProtocol(StepperProtocol, Protocol):
