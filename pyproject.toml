@@ -35,13 +35,14 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-numba = "^0.57.0"
+python = ">=3.10,<3.13"
+numba = "^0.61.0"
 numpy = "^1.19.2"
 scipy = "^1.5.2"
 tqdm = "^4.61.1"
 matplotlib = "^3.3.2"
 pyvista = "^0.39.1"
+vtk = "9.3.1"  # TODO: remove fixing version in the future
 # A list of all of the optional dependencies, some of which are included in the
 # below `extras`. They can be opted into by apps.
 Sphinx = {version = "^6.1", optional = true}
