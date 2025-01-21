@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyelastica"
-version = "0.3.2"
+version = "0.3.3"
 description = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
 readme = "README.md"
 authors = ["GazzolaLab <armant2@illinois.edu>"]
@@ -35,13 +35,14 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-numba = "^0.57.0"
+python = ">=3.10,<3.13"
+numba = "^0.61.0"
 numpy = "^1.19.2"
 scipy = "^1.5.2"
 tqdm = "^4.61.1"
 matplotlib = "^3.3.2"
 pyvista = "^0.39.1"
+vtk = "9.3.1"  # TODO: remove fixing version in the future
 # A list of all of the optional dependencies, some of which are included in the
 # below `extras`. They can be opted into by apps.
 Sphinx = {version = "^6.1", optional = true}
@@ -64,6 +65,7 @@ coverage = "^6.3.3"
 pre-commit = "^2.19.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
+pytest-mock = "^3.14.0"
 codecov = "2.1.13"
 click = "8.0.0"
 autoflake = "^2.3.1"
@@ -145,7 +147,6 @@ warn_unused_configs = true
 warn_unused_ignores = false
 
 exclude = [
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
 ]
 
@@ -183,7 +184,6 @@ branch = true
 omit = [
     "*/.local/*",
 	"setup.py",
-    "elastica/systems/analytical.py",
     "elastica/experimental/*",
     "elastica/**/protocol.py",
 ]

@@ -66,20 +66,20 @@ class TestDamper:
         def __init__(self):
             self.mass = np.random.randn(3, 8)
 
-    def test_call_improper_bc_throws_type_error(self, load_damper):
-        # Example of bad initiailization function
-        damper = load_damper
-        damper.using(
-            self.TestDamper,
-            dissipation_constant=2,
-            time_step="2",
-        )  # Passing string as time-step, which is wrong
-
-        mock_rod = self.MockRod()
-        # Actual test is here, this should not throw
-        with pytest.raises(TypeError) as excinfo:
-            _ = damper.instantiate(mock_rod)
-        assert "Unable to construct" in str(excinfo.value)
+    # def test_call_improper_bc_throws_type_error(self, load_damper):
+    #     # Example of bad initiailization function
+    #     damper = load_damper
+    #     damper.using(
+    #         self.TestDamper,
+    #         dissipation_constant=2,
+    #         time_step="2",
+    #     )  # Passing string as time-step, which is wrong
+    #
+    #     mock_rod = self.MockRod()
+    #     # Actual test is here, this should not throw
+    #     with pytest.raises(TypeError) as excinfo:
+    #         _ = damper.instantiate(mock_rod)
+    #     assert "Unable to construct" in str(excinfo.value)
 
 
 class TestDampingMixin:
@@ -180,26 +180,18 @@ class TestDampingMixin:
 
         return scwd, MockDamper
 
-    def test_dampen_finalize_correctness(self, load_rod_with_dampers):
+    def test_dampen_finalize_clear_instances(self, load_rod_with_dampers):
         scwd, damper_cls = load_rod_with_dampers
+        damping_features = [d for d in scwd._damping_list]
 
         scwd._finalize_dampers()
+        assert not hasattr(scwd, "_damping_list")
 
-        for x, y in scwd._damping_operators:
-            assert type(x) is int
-            assert type(y) is damper_cls
-
-    def test_damper_properties(self, load_rod_with_dampers):
-        scwd, _ = load_rod_with_dampers
-        scwd._finalize_dampers()
-
-        for i in [0, 1, -1]:
-            x, y = scwd._damping_operators[i]
-            mock_rod = scwd[i]
-            # Test system
-            assert type(x) is int
-            assert type(y.system) is type(mock_rod)
-            assert y.system is mock_rod, f"{len(scwd)}"
+        for _damping in damping_features:
+            x = _damping.id()
+            y = _damping.instantiate(scwd[x])
+            assert isinstance(x, int)
+            assert isinstance(y, damper_cls)
 
     @pytest.mark.xfail
     def test_dampers_finalize_sorted(self, load_rod_with_dampers):

@@ -1,7 +1,7 @@
 __doc__ = """Timestepping utilities to be used with Rod and RigidBody classes"""
 
-from typing import Tuple, List, Callable, Type, Any, overload, cast
-from elastica.typing import SystemType, SystemCollectionType, SteppersOperatorsType
+from typing import Callable
+from elastica.typing import SystemCollectionType, SteppersOperatorsType
 
 import numpy as np
 from tqdm import tqdm
@@ -16,7 +16,6 @@ from .symplectic_steppers import (
     FourthOrderSymplectic,
     PEFRL,
 )
-from .explicit_steppers import RungeKutta4, EulerForward
 from .protocol import StepperProtocol, SymplecticStepperProtocol
 
 
@@ -24,7 +23,7 @@ from .protocol import StepperProtocol, SymplecticStepperProtocol
 # Many script still uses this method to control timestep. Keep it for backward compatibility
 def extend_stepper_interface(
     stepper: SymplecticStepperProtocol, system_collection: SystemCollectionType
-) -> Tuple[
+) -> tuple[
     Callable[
         [StepperProtocol, SystemCollectionType, np.float64, np.float64], np.float64
     ],
@@ -38,31 +37,9 @@ def extend_stepper_interface(
     return do_step_method, stepper_methods
 
 
-@overload
-def integrate(
-    stepper: StepperProtocol,
-    systems: SystemType,
-    final_time: float,
-    n_steps: int,
-    restart_time: float,
-    progress_bar: bool,
-) -> float: ...
-
-
-@overload
 def integrate(
     stepper: StepperProtocol,
     systems: SystemCollectionType,
-    final_time: float,
-    n_steps: int,
-    restart_time: float,
-    progress_bar: bool,
-) -> float: ...
-
-
-def integrate(
-    stepper: StepperProtocol,
-    systems: "SystemType | SystemCollectionType",
     final_time: float,
     n_steps: int = 1000,
     restart_time: float = 0.0,
@@ -74,7 +51,7 @@ def integrate(
     ----------
     stepper : StepperProtocol
         Stepper algorithm to use.
-    systems : SystemType | SystemCollectionType
+    systems : SystemCollectionType
         The elastica-system to simulate.
     final_time : float
         Total simulation time. The timestep is determined by final_time / n_steps.
@@ -92,13 +69,12 @@ def integrate(
     time = np.float64(restart_time)
 
     if is_system_a_collection(systems):
-        systems = cast(SystemCollectionType, systems)
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
             time = stepper.step(systems, time, dt)
     else:
-        systems = cast(SystemType, systems)
+        # Typing is ignored since this part only exist for unit-testing
         for i in tqdm(range(n_steps), disable=(not progress_bar)):
-            time = stepper.step_single_instance(systems, time, dt)
+            time = stepper.step_single_instance(systems, time, dt)  # type: ignore[arg-type]
 
     print("Final time of simulation is : ", time)
     return float(time)

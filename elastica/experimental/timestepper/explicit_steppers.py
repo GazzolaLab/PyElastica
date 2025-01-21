@@ -6,16 +6,15 @@ from copy import deepcopy
 from elastica.typing import (
     SystemType,
     SystemCollectionType,
-    OperatorType,
+    StepType,
     SteppersOperatorsType,
     StateType,
 )
-from elastica.systems.protocol import ExplicitSystemProtocol
 from elastica.rod.data_structures import (
     overload_operator_kinematic_numba,
     overload_operator_dynamic_numba,
 )
-from .protocol import ExplicitStepperProtocol
+from .protocol import ExplicitStepperProtocol, ExplicitSystemProtocol
 
 
 class ExplicitStepperMixin:

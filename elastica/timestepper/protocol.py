@@ -3,11 +3,11 @@ __doc__ = "Time stepper interface"
 from typing import Protocol
 
 from elastica.typing import (
-    SystemType,
     SteppersOperatorsType,
-    OperatorType,
+    StepType,
     SystemCollectionType,
 )
+from elastica.systems.protocol import SymplecticSystemProtocol
 
 import numpy as np
 
@@ -26,16 +26,16 @@ class StepperProtocol(Protocol):
     ) -> np.float64: ...
 
     def step_single_instance(
-        self, SystemCollection: SystemType, time: np.float64, dt: np.float64
+        self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> np.float64: ...
 
 
 class SymplecticStepperProtocol(StepperProtocol, Protocol):
     """Symplectic stepper protocol."""
 
-    def get_steps(self) -> list[OperatorType]: ...
+    def get_steps(self) -> list[StepType]: ...
 
-    def get_prefactors(self) -> list[OperatorType]: ...
+    def get_prefactors(self) -> list[StepType]: ...
 
     @staticmethod
     def do_step(
@@ -44,12 +44,4 @@ class SymplecticStepperProtocol(StepperProtocol, Protocol):
         SystemCollection: SystemCollectionType,
         time: np.float64,
         dt: np.float64,
-    ) -> np.float64: ...
-
-
-class ExplicitStepperProtocol(StepperProtocol, Protocol):
-    """Explicit stepper protocol."""
-
-    def stage(
-        self, System: SystemType, time: np.float64, dt: np.float64
     ) -> np.float64: ...

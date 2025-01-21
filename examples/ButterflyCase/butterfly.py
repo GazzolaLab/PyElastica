@@ -3,7 +3,13 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 from tqdm import tqdm
 
+from collections import defaultdict
+
 import elastica as ea
+from elastica.experimental.timestepper.explicit_steppers import (
+    EulerForward,
+    RungeKutta4,
+)
 from elastica.utils import MaxDimension
 
 
@@ -102,7 +108,7 @@ class VelocityCallBack(ea.CallBackBaseClass):
             return
 
 
-recorded_history = ea.defaultdict(list)
+recorded_history = defaultdict(list)
 # initially record history
 recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
@@ -123,8 +129,8 @@ timestepper = ea.PositionVerlet()
 # timestepper = ea.ThirdOrderSymplectic()
 # timestepper = ea.FourthOrderSymplectic()
 # timestepper = ea.PEFRL()
-# timestepper = ea.EulerForward()
-# timestepper = ea.RungeKutta4()
+timestepper = EulerForward()
+# timestepper = RungeKutta4()
 
 dt = 0.01 * dl
 total_steps = int(final_time / dt)

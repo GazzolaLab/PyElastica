@@ -1,15 +1,12 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import Any, Final
+from typing import Any
 
 from itertools import zip_longest
 
 from elastica.typing import (
-    SystemType,
     SystemCollectionType,
-    # StepOperatorType,
-    # PrefactorOperatorType,
-    OperatorType,
+    StepType,
     SteppersOperatorsType,
 )
 
@@ -40,17 +37,17 @@ class SymplecticStepperMixin:
     def build_step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry).
-        _steps: list[OperatorType] = self.get_steps()
+        _steps: list[StepType] = self.get_steps()
         # Prefac here is necessary because the linear-exponential integrator
         # needs only the prefactor and not the dt.
-        _prefactors: list[OperatorType] = self.get_prefactors()
+        _prefactors: list[StepType] = self.get_prefactors()
         assert int(np.ceil(len(_steps) / 2)) == len(
             _prefactors
         ), f"{len(_steps)=}, {len(_prefactors)=}"
 
         # Separate the kinematic and dynamic steps
-        _kinematic_steps: list[OperatorType] = _steps[::2]
-        _dynamic_steps: list[OperatorType] = _steps[1::2]
+        _kinematic_steps: list[StepType] = _steps[::2]
+        _dynamic_steps: list[StepType] = _steps[1::2]
 
         def no_operation(*args: Any) -> None:
             pass
@@ -162,14 +159,14 @@ class PositionVerlet(SymplecticStepperMixin):
     includes methods for second-order position Verlet.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         return [
             self._first_kinematic_step,
             self._first_dynamic_step,
             self._first_kinematic_step,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_prefactor,
             self._first_prefactor,
@@ -205,7 +202,7 @@ class VelocityVerlet(SymplecticStepperMixin):
     Velocity Verlet symplectic time stepper class.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         return [
             self._no_operation,
             self._first_dynamic_step,
@@ -214,7 +211,7 @@ class VelocityVerlet(SymplecticStepperMixin):
             self._no_operation,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_prefactor,
             self._second_prefactor,
@@ -270,14 +267,14 @@ class SemiImplicitEuler(SymplecticStepperMixin):
     First order symplectic euler method.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         return [
             self._no_operation,
             self._dynamic_step,
             self._kinematic_step,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_prefactor,
             self._second_prefactor,
@@ -318,7 +315,7 @@ class ThirdOrderSymplectic(SymplecticStepperMixin):
     Third order symplectic time stepper class based on Ruth 1983.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         return [
             self._kinematic_step_with_prefactor(2.0 / 3.0),
             self._dynamic_step_with_prefactor(7.0 / 24.0),
@@ -329,7 +326,7 @@ class ThirdOrderSymplectic(SymplecticStepperMixin):
             self._no_operation,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._prefactor(0.0),
             self._prefactor(0.0),
@@ -346,7 +343,7 @@ class ThirdOrderSymplectic(SymplecticStepperMixin):
 
         return func
 
-    def _kinematic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+    def _kinematic_step_with_prefactor(self, factor: np.float64) -> StepType:
         def func(
             System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
         ) -> None:
@@ -361,7 +358,7 @@ class ThirdOrderSymplectic(SymplecticStepperMixin):
 
         return func
 
-    def _dynamic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+    def _dynamic_step_with_prefactor(self, factor: np.float64) -> StepType:
         def func(
             System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
         ) -> None:
@@ -378,7 +375,7 @@ class FourthOrderSymplectic(SymplecticStepperMixin):
     Fourth order symplectic time stepper class based on Ruth 1983.
     """
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         c1 = c4 = 1.0 / (2.0 * (2.0 - 2.0 ** (1.0 / 3.0)))
         c2 = c3 = (1.0 - 2.0 ** (1.0 / 3.0)) / (2.0 * (2.0 - 2.0 ** (1.0 / 3.0)))
         d1 = d3 = 1.0 / (2.0 - 2.0 ** (1.0 / 3.0))
@@ -396,7 +393,7 @@ class FourthOrderSymplectic(SymplecticStepperMixin):
             self._no_operation,
         ]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._prefactor(0.0),
             self._prefactor(0.0),
@@ -414,7 +411,7 @@ class FourthOrderSymplectic(SymplecticStepperMixin):
 
         return func
 
-    def _kinematic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+    def _kinematic_step_with_prefactor(self, factor: np.float64) -> StepType:
         def func(
             System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
         ) -> None:
@@ -429,7 +426,7 @@ class FourthOrderSymplectic(SymplecticStepperMixin):
 
         return func
 
-    def _dynamic_step_with_prefactor(self, factor: np.float64) -> OperatorType:
+    def _dynamic_step_with_prefactor(self, factor: np.float64) -> StepType:
         def func(
             System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
         ) -> None:
@@ -457,7 +454,7 @@ class PEFRL(SymplecticStepperMixin):
     lambda_dash_coeff: np.float64 = 0.5 * (1.0 - 2.0 * λ)
     xi_chi_dash_coeff: np.float64 = 1.0 - 2.0 * (ξ + χ)
 
-    def get_steps(self) -> list[OperatorType]:
+    def get_steps(self) -> list[StepType]:
         operators = [
             self._first_kinematic_step,
             self._first_dynamic_step,
@@ -467,7 +464,7 @@ class PEFRL(SymplecticStepperMixin):
         ]
         return operators + operators[-2::-1]
 
-    def get_prefactors(self) -> list[OperatorType]:
+    def get_prefactors(self) -> list[StepType]:
         return [
             self._first_kinematic_prefactor,
             self._second_kinematic_prefactor,

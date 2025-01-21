@@ -73,17 +73,14 @@ from elastica._calculus import (
 )
 from elastica._linalg import levi_civita_tensor
 from elastica.utils import isqrt
-from elastica.timestepper import (
-    integrate,
-    extend_stepper_interface,
+from elastica.timestepper import integrate, extend_stepper_interface
+from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     VelocityVerlet,
     ThirdOrderSymplectic,
     FourthOrderSymplectic,
     SemiImplicitEuler,
     PEFRL,
-    EulerForward,
-    RungeKutta4,
 )
 from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod

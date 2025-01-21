@@ -1,4 +1,5 @@
 from elastica.modules.operator_group import OperatorGroupFIFO
+import functools
 
 
 def test_add_ids():
@@ -65,3 +66,77 @@ def test_is_last():
 
     assert group.is_last(1) == False
     assert group.is_last(2) == True
+
+
+class TestOperatorGroupingWithCallableModules:
+    class OperatorTypeA:
+        def __init__(self):
+            self.value = 0
+
+        def apply(self) -> None:
+            self.value += 1
+
+    class OperatorTypeB:
+        def __init__(self):
+            self.value2 = 0
+
+        def apply(self) -> None:
+            self.value2 -= 1
+
+    # def test_lambda(self):
+    #     feature_group = OperatorGroupFIFO()
+
+    #     op_a = self.OperatorTypeA()
+    #     feature_group.append_id(op_a)
+    #     op_b = self.OperatorTypeB()
+    #     feature_group.append_id(op_b)
+
+    #     for op in [op_a, op_b]:
+    #         func = functools.partial(lambda t: op.apply())
+    #         feature_group.add_operators(op, [func])
+
+    #     for operator in feature_group:
+    #         operator(t=0)
+
+    #     assert op_a.value == 1
+    #     assert op_b.value2 == -1
+
+    # def test_def(self):
+    #     feature_group = OperatorGroupFIFO()
+
+    #     op_a = self.OperatorTypeA()
+    #     feature_group.append_id(op_a)
+    #     op_b = self.OperatorTypeB()
+    #     feature_group.append_id(op_b)
+
+    #     for op in [op_a, op_b]:
+    #         def func(t):
+    #             op.apply()
+    #         feature_group.add_operators(op, [func])
+
+    #     for operator in feature_group:
+    #         operator(t=0)
+
+    #     assert op_a.value == 1
+    #     assert op_b.value2 == -1
+
+    def test_partial(self):
+        feature_group = OperatorGroupFIFO()
+
+        op_a = self.OperatorTypeA()
+        feature_group.append_id(op_a)
+        op_b = self.OperatorTypeB()
+        feature_group.append_id(op_b)
+
+        def _func(t, op):
+            op.apply()
+
+        for op in [op_a, op_b]:
+            func = functools.partial(_func, op=op)
+            feature_group.add_operators(op, [func])
+
+        for operator in feature_group:
+            operator(t=0)
+
+        assert op_a.value == 1
+        assert op_b.value2 == -1
