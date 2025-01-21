@@ -8,12 +8,15 @@ from copy import copy
 from elastica.typing import (
     SystemType,
     SystemCollectionType,
-    OperatorType,
+    StepType,
     SteppersOperatorsType,
     StateType,
 )
-from elastica.systems.protocol import ExplicitSystemProtocol
-from .protocol import ExplicitStepperProtocol, MemoryProtocol
+from elastica.experimental.timestepper.protocol import (
+    ExplicitSystemProtocol,
+    ExplicitStepperProtocol,
+    MemoryProtocol,
+)
 
 
 """
@@ -166,10 +169,10 @@ class EulerForward(ExplicitStepperMixin):
     Classical Euler Forward stepper. Stateless, coordinates operations only.
     """
 
-    def get_stages(self) -> list[OperatorType]:
+    def get_stages(self) -> list[StepType]:
         return [self._first_stage]
 
-    def get_updates(self) -> list[OperatorType]:
+    def get_updates(self) -> list[StepType]:
         return [self._first_update]
 
     def _first_stage(
@@ -198,7 +201,7 @@ class RungeKutta4(ExplicitStepperMixin):
     to be externally managed and allocated.
     """
 
-    def get_stages(self) -> list[OperatorType]:
+    def get_stages(self) -> list[StepType]:
         return [
             self._first_stage,
             self._second_stage,
@@ -206,7 +209,7 @@ class RungeKutta4(ExplicitStepperMixin):
             self._fourth_stage,
         ]
 
-    def get_updates(self) -> list[OperatorType]:
+    def get_updates(self) -> list[StepType]:
         return [
             self._first_update,
             self._second_update,

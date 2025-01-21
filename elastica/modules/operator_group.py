@@ -1,11 +1,12 @@
-from typing import TypeVar, Generic, Iterator
-
-from collections.abc import Iterable
+from typing import TYPE_CHECKING, TypeVar, Generic, Callable, Any
+from collections.abc import Iterable, Iterator
 
 import itertools
 
-T = TypeVar("T")
-F = TypeVar("F")
+from .protocol import ModuleProtocol
+
+T = TypeVar("T", bound=Callable)
+F = TypeVar("F", bound=ModuleProtocol)
 
 
 class OperatorGroupFIFO(Iterable, Generic[T, F]):
@@ -78,3 +79,9 @@ class OperatorGroupFIFO(Iterable, Generic[T, F]):
     def is_last(self, feature: F) -> bool:
         """Checks if the feature is the last feature in the FIFO."""
         return id(feature) == self._operator_ids[-1]
+
+
+if TYPE_CHECKING:
+    from elastica.typing import OperatorType
+
+    _: Iterable[OperatorType] = OperatorGroupFIFO[OperatorType, Any]()

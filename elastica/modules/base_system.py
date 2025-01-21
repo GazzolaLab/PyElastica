@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import Type, Generator, Iterable, Any, overload
+from typing import Type, Generator, Any, overload
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -27,6 +27,7 @@ from elastica.surface.surface_base import SurfaceBase
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
+from .protocol import ModuleProtocol
 
 
 class BaseSystemCollection(MutableSequence):
@@ -55,10 +56,18 @@ class BaseSystemCollection(MutableSequence):
         # Collection of functions. Each group is executed as a collection at the different steps.
         # Each component (Forcing, Connection, etc.) registers the executable (callable) function
         # in the group that that needs to be executed. These should be initialized before mixin.
-        self._feature_group_synchronize: Iterable[OperatorType] = OperatorGroupFIFO()
-        self._feature_group_constrain_values: list[OperatorType] = []
-        self._feature_group_constrain_rates: list[OperatorType] = []
-        self._feature_group_callback: list[OperatorCallbackType] = []
+        self._feature_group_synchronize: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
+        self._feature_group_constrain_values: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
+        self._feature_group_constrain_rates: OperatorGroupFIFO[
+            OperatorType, ModuleProtocol
+        ] = OperatorGroupFIFO()
+        self._feature_group_callback: OperatorGroupFIFO[
+            OperatorCallbackType, ModuleProtocol
+        ] = OperatorGroupFIFO()
         self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
         super().__init__()

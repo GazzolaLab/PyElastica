@@ -161,10 +161,13 @@ class TestCallBacksMixin:
 
     def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
 
         scwc._finalize_callback()
 
-        for x, y in scwc._callback_operators:
+        for _callback in callback_features:
+            x = _callback.id()
+            y = _callback.instantiate()
             assert type(x) is int
             assert type(y) is callback_cls
 
@@ -181,3 +184,18 @@ class TestCallBacksMixin:
         for x, _ in scwc._callback_list:
             assert num < x
             num = x
+
+    def test_first_call_callback_during_finalize(self, mocker, load_rod_with_callbacks):
+        """
+        This test is to check if the callback is called during the finalize.
+        If this test fails, check if `apply_callbacks` is called during the finalization step.
+        """
+        scwc, callback_cls = load_rod_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
+
+        spy = mocker.spy(scwc, "apply_callbacks")
+        scwc._finalize_callback()
+
+        assert spy.call_count == 1
+        assert spy.call_args[1]["time"] == np.float64(0.0)
+        assert spy.call_args[1]["current_step"] == 0

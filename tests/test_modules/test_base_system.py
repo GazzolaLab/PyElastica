@@ -186,7 +186,16 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.finalize()
         # After finalize check if the created constrain object is instance of the class we have given.
         assert isinstance(
-            simulator_class._constraints_operators[-1][-1], legal_constraint
+            simulator_class._feature_group_constrain_values._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_constraint,
+        )
+        assert isinstance(
+            simulator_class._feature_group_constrain_rates._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_constraint,
         )
 
         # TODO: this is a dummy test for constrain values and rates find a better way to test them
@@ -225,7 +234,12 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.collect_diagnostics(rod).using(legal_callback)
         simulator_class.finalize()
         # After finalize check if the created callback object is instance of the class we have given.
-        assert isinstance(simulator_class._callback_operators[-1][-1], legal_callback)
+        assert isinstance(
+            simulator_class._feature_group_callback._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_callback,
+        )
 
         # TODO: this is a dummy test for apply_callbacks find a better way to test them
         simulator_class.apply_callbacks(time=0, current_step=0)
