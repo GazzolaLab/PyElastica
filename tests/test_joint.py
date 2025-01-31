@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
+
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
 
@@ -372,3 +373,41 @@ def test_fixedjoint(rest_euler_angle):
     assert_allclose(
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
+
+
+from elastica.rod import RodBase
+from elastica.rigidbody import RigidBodyBase
+
+
+def mock_rod_init(self):
+
+    "Initializing Rod"
+    "Details of initialization are given in test_contact_specific_functions.py"
+
+    self.n_elems = 2
+    self.position_collection = np.array([[1, 2, 3], [0, 0, 0], [0, 0, 0]])
+    self.radius = np.array([1, 1])
+    self.lengths = np.array([1, 1])
+    self.tangents = np.array([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
+    self.internal_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    self.external_forces = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    self.velocity_collection = np.array(
+        [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    )
+
+
+def mock_rigid_body_init(self):
+
+    "Initializing Rigid Body"
+    "Details of initialization are given in test_contact_specific_functions.py"
+
+    self.n_elems = 1
+    self.position_collection = np.array([[0], [0], [0]])
+    self.director_collection = np.array(
+        [[[1.0], [0.0], [0.0]], [[0.0], [1.0], [0.0]], [[0.0], [0.0], [1.0]]]
+    )
+    self.radius = np.array([1.0])
+    self.length = np.array([2.0])
+    self.external_forces = np.array([[0.0], [0.0], [0.0]])
+    self.external_torques = np.array([[0.0], [0.0], [0.0]])
+    self.velocity_collection = np.array([[0.0], [0.0], [0.0]])

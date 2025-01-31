@@ -24,13 +24,13 @@ def test_sphere_initialization():
     normal = np.array([1.0, 0.0, 0.0]).reshape(3, 1)
     binormal = np.cross(direction[..., 0], normal[..., 0]).reshape(3, 1)
     base_radius = np.random.uniform(1, 10)
-    volume = 4.0 / 3.0 * np.pi * base_radius ** 3
+    volume = 4.0 / 3.0 * np.pi * base_radius**3
     density = np.random.uniform(1, 10)
     mass = density * volume
 
     # Mass second moment of inertia for disk cross-section
     mass_second_moment_of_inertia = np.zeros((3, 3), np.float64)
-    np.fill_diagonal(mass_second_moment_of_inertia, 2.0 / 5.0 * mass * base_radius ** 2)
+    np.fill_diagonal(mass_second_moment_of_inertia, 2.0 / 5.0 * mass * base_radius**2)
     # Inverse mass second of inertia
     inv_mass_second_moment_of_inertia = np.linalg.inv(mass_second_moment_of_inertia)
 
@@ -78,7 +78,7 @@ def test_sphere_initialization():
     )
 
 
-def test_cylinder_update_accelerations():
+def test_sphere_update_accelerations():
     """
     This test is testing the update acceleration method of Sphere class.
 
@@ -89,7 +89,7 @@ def test_cylinder_update_accelerations():
 
     start = np.random.rand(3)
     base_radius = np.random.uniform(1, 10)
-    volume = 4.0 / 3.0 * np.pi * base_radius ** 3
+    volume = 4.0 / 3.0 * np.pi * base_radius**3
     density = np.random.uniform(1, 10)
     mass = density * volume
     test_sphere = Sphere(start, base_radius, density)
@@ -147,7 +147,7 @@ def test_compute_translational_energy():
     """
     start = np.random.rand(3)
     base_radius = np.random.uniform(1, 10)
-    volume = 4.0 / 3.0 * np.pi * base_radius ** 3
+    volume = 4.0 / 3.0 * np.pi * base_radius**3
     density = np.random.uniform(1, 10)
     mass = density * volume
     test_sphere = Sphere(start, base_radius, density)
@@ -155,7 +155,7 @@ def test_compute_translational_energy():
     speed = np.random.randn()
     test_sphere.velocity_collection[2] = speed
 
-    correct_energy = 0.5 * mass * speed ** 2
+    correct_energy = 0.5 * mass * speed**2
     test_energy = test_sphere.compute_translational_energy()
 
     assert_allclose(correct_energy, test_energy, atol=Tolerance.atol())

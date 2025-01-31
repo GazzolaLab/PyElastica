@@ -9,7 +9,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 
 
 class RollingFrictionTorqueSimulator(
-    ea.BaseSystemCollection, ea.Constraints, ea.Forcing
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Contact
 ):
     pass
 
@@ -31,7 +31,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     E = 1e9
@@ -78,12 +78,15 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     static_mu_array = np.array([0.4, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
 
-    rolling_friction_torque_sim.add_forcing_to(shearable_rod).using(
-        ea.AnisotropicFrictionalPlane,
+    friction_plane = ea.Plane(plane_origin=origin_plane, plane_normal=normal_plane)
+    rolling_friction_torque_sim.append(friction_plane)
+
+    rolling_friction_torque_sim.detect_contact_between(
+        shearable_rod, friction_plane
+    ).using(
+        ea.RodPlaneContactWithAnisotropicFriction,
         k=10.0,
         nu=1e-4,
-        plane_origin=origin_plane,
-        plane_normal=normal_plane,
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
@@ -106,7 +109,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     force_slip = static_mu_array[2] * mass * gravitational_acc
     force_noslip = 2.0 * C_s / (3.0 * base_radius)
 
-    mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
+    mass_moment_of_inertia = 0.5 * mass * base_radius**2
 
     if np.abs(force_noslip) <= np.abs(force_slip):
         analytical_translational_energy = (
@@ -115,7 +118,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
         analytical_rotational_energy = (
             2.0
             * mass_moment_of_inertia
-            * (final_time * C_s / (3.0 * base_radius ** 2 * mass)) ** 2
+            * (final_time * C_s / (3.0 * base_radius**2 * mass)) ** 2
         )
     else:
         analytical_translational_energy = (
@@ -124,7 +127,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
         analytical_rotational_energy = (
             (C_s - kinetic_mu_array[2] * mass * np.abs(gravitational_acc) * base_radius)
             ** 2
-            * final_time ** 2
+            * final_time**2
             / (2.0 * mass_moment_of_inertia)
         )
 

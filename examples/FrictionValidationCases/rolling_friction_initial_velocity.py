@@ -9,7 +9,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 
 
 class RollingFrictionInitialVelocitySimulator(
-    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.Contact
 ):
     pass
 
@@ -31,7 +31,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     nu = 1e-6 / 2
@@ -88,13 +88,15 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     slip_velocity_tol = 1e-6
     static_mu_array = np.array([0.4, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
+    friction_plane = ea.Plane(plane_origin=origin_plane, plane_normal=normal_plane)
+    rolling_friction_initial_velocity_sim.append(friction_plane)
 
-    rolling_friction_initial_velocity_sim.add_forcing_to(shearable_rod).using(
-        ea.AnisotropicFrictionalPlane,
+    rolling_friction_initial_velocity_sim.detect_contact_between(
+        shearable_rod, friction_plane
+    ).using(
+        ea.RodPlaneContactWithAnisotropicFriction,
         k=10.0,
         nu=1e-4,
-        plane_origin=origin_plane,
-        plane_normal=normal_plane,
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
@@ -115,9 +117,9 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     rotational_energy = shearable_rod.compute_rotational_energy()
 
     # compute translational and rotational energy using analytical equations
-    analytical_translational_energy = 0.5 * mass * Vs ** 2 / (1.0 + IFactor / 2) ** 2
+    analytical_translational_energy = 0.5 * mass * Vs**2 / (1.0 + IFactor / 2) ** 2
     analytical_rotational_energy = (
-        0.5 * mass * Vs ** 2 * (IFactor / 2.0) / (1.0 + IFactor / 2) ** 2
+        0.5 * mass * Vs**2 * (IFactor / 2.0) / (1.0 + IFactor / 2) ** 2
     )
 
     return {

@@ -7,6 +7,8 @@ from elastica.joint import FreeJoint
 from elastica._linalg import (
     _batch_norm,
     _batch_matvec,
+    _batch_cross,
+    _batch_matrix_transpose,
 )
 
 
@@ -88,16 +90,20 @@ class SurfaceJointSideBySide(FreeJoint):
 
         self.rod_one_direction_vec_in_material_frame = np.array(
             rod_one_direction_vec_in_material_frame
-        ).T
+        )
         self.rod_two_direction_vec_in_material_frame = np.array(
             rod_two_direction_vec_in_material_frame
-        ).T
+        )
 
     # Apply force is same as free joint
-    def apply_forces(self, rod_one, index_one, rod_two, index_two):
+    def apply_forces(self, system_one, index_one, system_two, index_two):
         # TODO: documentation
 
-        (self.rod_one_rd2, self.rod_two_rd2, self.spring_force,) = self._apply_forces(
+        (
+            self.rod_one_rd2,
+            self.rod_two_rd2,
+            self.spring_force,
+        ) = self._apply_forces(
             self.k,
             self.nu,
             self.k_repulsive,
@@ -106,22 +112,22 @@ class SurfaceJointSideBySide(FreeJoint):
             self.rod_one_direction_vec_in_material_frame,
             self.rod_two_direction_vec_in_material_frame,
             self.offset_btw_rods,
-            rod_one.director_collection,
-            rod_two.director_collection,
-            rod_one.position_collection,
-            rod_two.position_collection,
-            rod_one.radius,
-            rod_two.radius,
-            rod_one.dilatation,
-            rod_two.dilatation,
-            rod_one.velocity_collection,
-            rod_two.velocity_collection,
-            rod_one.external_forces,
-            rod_two.external_forces,
+            system_one.director_collection,
+            system_two.director_collection,
+            system_one.position_collection,
+            system_two.position_collection,
+            system_one.radius,
+            system_two.radius,
+            system_one.dilatation,
+            system_two.dilatation,
+            system_one.velocity_collection,
+            system_two.velocity_collection,
+            system_one.external_forces,
+            system_two.external_forces,
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_forces(
         k,
         nu,
@@ -144,14 +150,13 @@ class SurfaceJointSideBySide(FreeJoint):
         rod_one_external_forces,
         rod_two_external_forces,
     ):
-
-        rod_one_to_rod_two_connection_vec = (
-            rod_one_director_collection[:, :, index_one].T
-            @ rod_one_direction_vec_in_material_frame
+        rod_one_to_rod_two_connection_vec = _batch_matvec(
+            _batch_matrix_transpose(rod_one_director_collection[:, :, index_one]),
+            rod_one_direction_vec_in_material_frame,
         )
-        rod_two_to_rod_one_connection_vec = (
-            rod_two_director_collection[:, :, index_two].T
-            @ rod_two_direction_vec_in_material_frame
+        rod_two_to_rod_one_connection_vec = _batch_matvec(
+            _batch_matrix_transpose(rod_two_director_collection[:, :, index_two]),
+            rod_two_direction_vec_in_material_frame,
         )
 
         # Compute element positions
@@ -208,33 +213,42 @@ class SurfaceJointSideBySide(FreeJoint):
         # we apply a repulsive force.
         center_distance = rod_two_element_position - rod_one_element_position
         center_distance_unit_vec = center_distance / np.linalg.norm(center_distance)
-        penetration = np.linalg.norm(center_distance) - (
+        penetration_strain = np.linalg.norm(center_distance) - (
             rod_one_radius[index_one]
             + offset_rod_one
             + rod_two_radius[index_two]
             + offset_rod_two
         )
 
-        round(penetration, 12)
+        np.round_(penetration_strain, 12, penetration_strain)
         # Contact present only if rods penetrate to each other
-        if penetration < 0:
-            # Hertzian contact
-            contact_force = (
-                -k_repulsive * np.abs(penetration) ** (1.5) * center_distance_unit_vec
-            )
-        else:
-            contact_force = np.zeros(
-                3,
-            )
+        idx_penetrate = np.where(penetration_strain < 0)[0]
+        k_contact = np.zeros(index_one.shape[0])
+        k_contact_temp = -k_repulsive * np.abs(penetration_strain) ** (1.5)
+        k_contact[idx_penetrate] += k_contact_temp[idx_penetrate]
+        contact_force = k_contact * center_distance_unit_vec
 
         # Add contact forces
         total_force += contact_force
 
         # Re-distribute forces from elements to nodes.
-        rod_one_external_forces[..., index_one] += 0.5 * total_force
-        rod_one_external_forces[..., index_one + 1] += 0.5 * total_force
-        rod_two_external_forces[..., index_two] -= 0.5 * total_force
-        rod_two_external_forces[..., index_two + 1] -= 0.5 * total_force
+        block_size = index_one.shape[0]
+        for k in range(block_size):
+            rod_one_external_forces[0, index_one[k]] += 0.5 * total_force[0, k]
+            rod_one_external_forces[1, index_one[k]] += 0.5 * total_force[1, k]
+            rod_one_external_forces[2, index_one[k]] += 0.5 * total_force[2, k]
+
+            rod_one_external_forces[0, index_one[k] + 1] += 0.5 * total_force[0, k]
+            rod_one_external_forces[1, index_one[k] + 1] += 0.5 * total_force[1, k]
+            rod_one_external_forces[2, index_one[k] + 1] += 0.5 * total_force[2, k]
+
+            rod_two_external_forces[0, index_two[k]] -= 0.5 * total_force[0, k]
+            rod_two_external_forces[1, index_two[k]] -= 0.5 * total_force[1, k]
+            rod_two_external_forces[2, index_two[k]] -= 0.5 * total_force[2, k]
+
+            rod_two_external_forces[0, index_two[k] + 1] -= 0.5 * total_force[0, k]
+            rod_two_external_forces[1, index_two[k] + 1] -= 0.5 * total_force[1, k]
+            rod_two_external_forces[2, index_two[k] + 1] -= 0.5 * total_force[2, k]
 
         return (
             rod_one_rd2,
@@ -242,7 +256,7 @@ class SurfaceJointSideBySide(FreeJoint):
             spring_force,
         )
 
-    def apply_torques(self, rod_one, index_one, rod_two, index_two):
+    def apply_torques(self, system_one, index_one, system_two, index_two):
         # pass
 
         self._apply_torques(
@@ -251,14 +265,14 @@ class SurfaceJointSideBySide(FreeJoint):
             self.rod_two_rd2,
             index_one,
             index_two,
-            rod_one.director_collection,
-            rod_two.director_collection,
-            rod_one.external_torques,
-            rod_two.external_torques,
+            system_one.director_collection,
+            system_two.director_collection,
+            system_one.external_torques,
+            system_two.external_torques,
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def _apply_torques(
         spring_force,
         rod_one_rd2,
@@ -271,15 +285,34 @@ class SurfaceJointSideBySide(FreeJoint):
         rod_two_external_torques,
     ):
         # Compute torques due to the connection forces
-        torque_on_rod_one = np.cross(rod_one_rd2, spring_force)
-        torque_on_rod_two = np.cross(rod_two_rd2, -spring_force)
+        torque_on_rod_one = _batch_cross(rod_one_rd2, spring_force)
+        torque_on_rod_two = _batch_cross(rod_two_rd2, -spring_force)
 
-        torque_on_rod_one_material_frame = (
-            rod_one_director_collection[:, :, index_one] @ torque_on_rod_one
+        torque_on_rod_one_material_frame = _batch_matvec(
+            rod_one_director_collection[:, :, index_one], torque_on_rod_one
         )
-        torque_on_rod_two_material_frame = (
-            rod_two_director_collection[:, :, index_two] @ torque_on_rod_two
+        torque_on_rod_two_material_frame = _batch_matvec(
+            rod_two_director_collection[:, :, index_two], torque_on_rod_two
         )
 
-        rod_one_external_torques[..., index_one] += torque_on_rod_one_material_frame
-        rod_two_external_torques[..., index_two] += torque_on_rod_two_material_frame
+        blocksize = index_one.shape[0]
+        for k in range(blocksize):
+            rod_one_external_torques[
+                0, index_one[k]
+            ] += torque_on_rod_one_material_frame[0, k]
+            rod_one_external_torques[
+                1, index_one[k]
+            ] += torque_on_rod_one_material_frame[1, k]
+            rod_one_external_torques[
+                2, index_one[k]
+            ] += torque_on_rod_one_material_frame[2, k]
+
+            rod_two_external_torques[
+                0, index_two[k]
+            ] += torque_on_rod_two_material_frame[0, k]
+            rod_two_external_torques[
+                1, index_two[k]
+            ] += torque_on_rod_two_material_frame[1, k]
+            rod_two_external_torques[
+                2, index_two[k]
+            ] += torque_on_rod_two_material_frame[2, k]

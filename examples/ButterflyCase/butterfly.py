@@ -38,7 +38,7 @@ normal = np.array([0.0, 1.0, 0.0])
 
 total_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 5000
 youngs_modulus = 1e4
 poisson_ratio = 0.5
@@ -74,6 +74,7 @@ butterfly_rod = ea.CosseratRod.straight_rod(
 )
 
 butterfly_sim.append(butterfly_rod)
+
 
 # Add call backs
 class VelocityCallBack(ea.CallBackBaseClass):

@@ -5,13 +5,11 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 from elastica._rotations import _rotate
-from elastica.timestepper import (
-    RungeKutta4,
-    EulerForward,
+from elastica.timestepper.symplectic_steppers import (
     PEFRL,
     PositionVerlet,
-    integrate,
 )
+from elastica.timestepper import integrate
 
 
 def make_simple_system_with_positions_directors(start_position, start_director):
@@ -64,7 +62,7 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         # Givees position, director etc.
         super(SimpleSystemWithPositionsDirectors, self).__init__()
 
-    def _compute_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
     def update_accelerations(self, time):
@@ -74,14 +72,14 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
     def analytical_solution(self, type, time):
         if type == "Positions":
             analytical_solution = (
-                np.hstack((self.init_pos)) + np.sin(np.pi * time) / np.pi ** 2
+                np.hstack((self.init_pos)) + np.sin(np.pi * time) / np.pi**2
             )
         elif type == "Velocity":
             analytical_solution = (
                 0.0 * np.hstack((self.init_pos)) + np.cos(np.pi * time) / np.pi
             )
         elif type == "Directors":
-            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
+            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time**2
             axis = np.array([0.0, 0.0, 1.0]).reshape(3, 1)  # There is only one director
             # Reshaping done to prevent numba equivalent to complain
             # While we can prevent it here, its' done to make the front end testing scripts "look"
@@ -92,7 +90,6 @@ class SimpleSystemWithPositionsDirectors(_RigidRodSymplecticStepperMixin):
         return analytical_solution
 
 
-ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
 
 

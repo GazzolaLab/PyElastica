@@ -9,7 +9,7 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 
 
 class RollingFrictionOnInclinedPlaneSimulator(
-    ea.BaseSystemCollection, ea.Constraints, ea.Forcing
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Contact
 ):
     pass
 
@@ -31,7 +31,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     E = 1e9
@@ -74,13 +74,15 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     slip_velocity_tol = 1e-4
     static_mu_array = np.array([0.4, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.2, 0.2, 0.2])  # [forward, backward, sideways]
+    friction_plane = ea.Plane(plane_origin=origin_plane, plane_normal=normal_plane)
+    rolling_friction_on_inclined_plane_sim.append(friction_plane)
 
-    rolling_friction_on_inclined_plane_sim.add_forcing_to(shearable_rod).using(
-        ea.AnisotropicFrictionalPlane,
+    rolling_friction_on_inclined_plane_sim.detect_contact_between(
+        shearable_rod, friction_plane
+    ).using(
+        ea.RodPlaneContactWithAnisotropicFriction,
         k=10.0,
         nu=1e-4,
-        plane_origin=origin_plane,
-        plane_normal=normal_plane,
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
@@ -105,7 +107,7 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     force_slip = static_mu_array[0] * mass * gravitational_acc * np.cos(alpha)
     force_noslip = -mass * gravitational_acc * np.sin(alpha) / 3.0
 
-    mass_moment_of_inertia = 0.5 * mass * base_radius ** 2
+    mass_moment_of_inertia = 0.5 * mass * base_radius**2
 
     if np.abs(force_noslip) <= np.abs(force_slip):
         analytical_translational_energy = (

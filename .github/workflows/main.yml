@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest] #, windows-latest] # Run macos tests if really required, since they charge 10 times more for macos
         include:
           - os: ubuntu-latest
@@ -66,11 +66,15 @@ jobs:
       - name: Run tests
         run: |
           make test
-  report-coverage:  # Report coverage from python 3.8 and mac-os. May change later
+      - name: Typechecking
+        if: ${{ startsWith(runner.os, 'macOS') }}
+        run: |
+          make mypy
+  report-coverage:  # Report coverage from python 3.10 and mac-os. May change later
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.8"]
+        python-version: ["3.10"]
         os: [macos-latest]
         include:
           - os: macos-latest

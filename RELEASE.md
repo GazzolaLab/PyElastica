@@ -1,3 +1,38 @@
+# Release 0.3.2
+
+## New Features
+
+* Rod sphere contact by @Rahul-JOON in https://github.com/GazzolaLab/PyElastica/pull/298 and @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/301
+* Importing mesh capability is implemented @Rahul-JOON in https://github.com/GazzolaLab/PyElastica/pull/275, https://github.com/GazzolaLab/PyElastica/pull/277, https://github.com/GazzolaLab/PyElastica/pull/283
+
+## What's Changed
+
+* Contact unit tests were implemented @Rahul-JOON in https://github.com/GazzolaLab/PyElastica/pull/257, https://github.com/GazzolaLab/PyElastica/pull/258, https://github.com/GazzolaLab/PyElastica/pull/260, https://github.com/GazzolaLab/PyElastica/pull/261, https://github.com/GazzolaLab/PyElastica/pull/262, https://github.com/GazzolaLab/PyElastica/pull/267, https://github.com/GazzolaLab/PyElastica/pull/269, https://github.com/GazzolaLab/PyElastica/pull/274
+* Contact functions refactored and moved to a standalone contact module @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/281, https://github.com/GazzolaLab/PyElastica/pull/291, https://github.com/GazzolaLab/PyElastica/pull/293, https://github.com/GazzolaLab/PyElastica/pull/314, https://github.com/GazzolaLab/PyElastica/pull/316, https://github.com/GazzolaLab/PyElastica/pull/317, https://github.com/GazzolaLab/PyElastica/pull/328
+* Memory block refactor by @sy-cui in https://github.com/GazzolaLab/PyElastica/pull/296
+* New example Continuum Snake With Lifting Wave added by @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/317
+* Catenary curve validation  by @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/335
+
+## Minor Fixes
+
+* Fix links in README.md by @tokoro10g in https://github.com/GazzolaLab/PyElastica/pull/256
+* Fix knot theory functionalities import by @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/268
+* Binder snake example bug fix by @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/330
+* Binder environment setup fix  by @Ali-7800 in https://github.com/GazzolaLab/PyElastica/pull/340
+
+## Repository Update
+
+* Python 3.11 support by @bhosale2 in https://github.com/GazzolaLab/PyElastica/pull/307
+
+
+## New Contributors
+
+* @tokoro10g made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/256
+* @Ali-7800 made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/268
+
+**Full Changelog**: https://github.com/GazzolaLab/PyElastica/compare/v0.3.1...v0.3.2
+
+
 # Release 0.3.1
 
 ## New Features

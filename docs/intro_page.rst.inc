@@ -48,7 +48,7 @@ Details can be found `here <https://github.com/armantekinalp/MagnetoPyElastica>`
 
 Elastica++
 ==========
-Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2023 Q4.
+Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2024 Q4.
 
 .. _project website: https://cosseratrods.org
 .. _GitHub repo: https://github.com/GazzolaLab/PyElastica

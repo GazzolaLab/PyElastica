@@ -1,7 +1,7 @@
 #* Variables
 PYTHON := python3
 PYTHONPATH := `pwd`
-AUTOFLAKE8_ARGS := -r --exclude '__init__.py' --keep-pass-after-docstring
+AUTOFLAKE_ARGS := -r
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
@@ -35,7 +35,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	poetry run black --version
-	poetry run black --config pyproject.toml --required-version 21.12b0 elastica tests examples
+	poetry run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
 
 .PHONY: black-check
 black-check:
@@ -47,19 +47,22 @@ flake8:
 	poetry run flake8 --version
 	poetry run flake8 elastica tests
 
-.PHONY: autoflake8-check
-autoflake8-check:
-	poetry run autoflake8 --version
-	poetry run autoflake8 $(AUTOFLAKE8_ARGS) elastica tests examples
-	poetry run autoflake8 --check $(AUTOFLAKE8_ARGS) elastica tests examples
+.PHONY: autoflake-check
+autoflake-check:
+	poetry run autoflake --version
+	poetry run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
-.PHONY: autoflake8-format
-autoflake8-format:
-	poetry run autoflake8 --version
-	poetry run autoflake8 --in-place $(AUTOFLAKE8_ARGS) elastica tests examples
+.PHONY: autoflake-format
+autoflake-format:
+	poetry run autoflake --version
+	poetry run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: format-codestyle
-format-codestyle: black flake8
+format-codestyle: black autoflake-format
+
+.PHONY: mypy
+mypy:
+	poetry run mypy --config-file pyproject.toml elastica
 
 .PHONY: test
 test:
@@ -74,14 +77,14 @@ test_coverage_xml:
 	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica --cov-report=xml
 
 .PHONY: check-codestyle
-check-codestyle: black-check flake8 autoflake8-check
+check-codestyle: black-check flake8 autoflake-check
 
 .PHONY: formatting
 formatting: format-codestyle
 
 .PHONY: update-dev-deps
 update-dev-deps:
-	poetry add -D pytest@latest coverage@latest pytest-html@latest pytest-cov@latest black@latest
+	poetry add -D mypy@latest pytest@latest coverage@latest pytest-html@latest pytest-cov@latest black@latest
 
 #* Cleaning
 .PHONY: pycache-remove
@@ -91,6 +94,10 @@ pycache-remove:
 .PHONY: dsstore-remove
 dsstore-remove:
 	find . | grep -E ".DS_Store" | xargs rm -rf
+
+.PHONY: mypycache-remove
+mypycache-remove:
+	find . | grep -E ".mypy_cache" | xargs rm -rf
 
 .PHONY: ipynbcheckpoints-remove
 ipynbcheckpoints-remove:
@@ -105,7 +112,7 @@ build-remove:
 	rm -rf build/
 
 .PHONY: cleanup
-cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove
+cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove
 
 all: format-codestyle cleanup test
 

@@ -9,7 +9,7 @@ from examples.RodContactCase.post_processing import (
 class InclinedRodRodContact(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
+    ea.Contact,
     ea.Forcing,
     ea.Damping,
     ea.CallBacks,
@@ -30,7 +30,7 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 # Rod parameters
 base_length = 0.5
 base_radius = 0.01
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1750
 nu = 0.0
 E = 3e5
@@ -89,8 +89,8 @@ rod_two = ea.CosseratRod.straight_rod(
 inclined_rod_rod_contact_sim.append(rod_two)
 
 # Contact between two rods
-inclined_rod_rod_contact_sim.connect(rod_one, rod_two).using(
-    ea.ExternalContact, k=1e3, nu=0.0
+inclined_rod_rod_contact_sim.detect_contact_between(rod_one, rod_two).using(
+    ea.RodRodContact, k=1e3, nu=0.0
 )
 
 # add damping
@@ -105,6 +105,7 @@ inclined_rod_rod_contact_sim.dampen(rod_two).using(
     damping_constant=damping_constant,
     time_step=dt,
 )
+
 
 # Add call backs
 class RodCallBack(ea.CallBackBaseClass):

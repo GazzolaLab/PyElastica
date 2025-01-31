@@ -25,11 +25,12 @@ class TestBaseSystemCollection:
     @pytest.fixture(scope="class")
     def load_collection(self):
         bsc = BaseSystemCollection()
+        bsc.extend_allowed_types((int, float, str, np.ndarray))
         # Bypass check, but its fine for testing
-        bsc._systems.append(3)
-        bsc._systems.append(5.0)
-        bsc._systems.append("a")
-        bsc._systems.append(np.random.randn(3, 5))
+        bsc.append(3)
+        bsc.append(5.0)
+        bsc.append("a")
+        bsc.append(np.random.randn(3, 5))
         return bsc
 
     def test_len(self, load_collection):
@@ -70,12 +71,21 @@ class TestBaseSystemCollection:
 
     def test_extend_allowed_types(self, load_collection):
         bsc = load_collection
-        bsc.extend_allowed_types((int, float, str))
 
         from elastica.rod import RodBase
         from elastica.rigidbody import RigidBodyBase
+        from elastica.surface import SurfaceBase
 
-        assert bsc.allowed_sys_types == (RodBase, RigidBodyBase, int, float, str)
+        # Types are extended in the fixture
+        assert bsc.allowed_sys_types == (
+            RodBase,
+            RigidBodyBase,
+            SurfaceBase,
+            int,
+            float,
+            str,
+            np.ndarray,
+        )
 
     def test_extend_correctness(self, load_collection):
         """
@@ -113,11 +123,11 @@ class TestBaseSystemCollection:
         bsc = load_collection
         bsc.override_allowed_types((RodBase,))
         with pytest.raises(AssertionError) as excinfo:
-            bsc._get_sys_idx_if_valid(100)
+            bsc.get_system_index(100)
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            load_collection._get_sys_idx_if_valid(np.int_(100))
+            load_collection.get_system_index(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_unregistered_system_in_get_sys_index_throws(
@@ -127,11 +137,11 @@ class TestBaseSystemCollection:
         my_mock_rod = mock_rod
 
         with pytest.raises(ValueError) as excinfo:
-            load_collection._get_sys_idx_if_valid(my_mock_rod)
+            load_collection.get_system_index(my_mock_rod)
         assert "was not found, did you" in str(excinfo.value)
 
     def test_get_sys_index_returns_correct_idx(self, load_collection):
-        assert load_collection._get_sys_idx_if_valid(1) == 1
+        assert load_collection.get_system_index(1) == 1
 
     @pytest.mark.xfail
     def test_delitem(self, load_collection):
@@ -163,7 +173,7 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
             youngs_modulus=1,
         )
         # Bypass check, but its fine for testing
-        sc._systems.append(rod)
+        sc.append(rod)
 
         return sc, rod
 
@@ -175,7 +185,18 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.constrain(rod).using(legal_constraint)
         simulator_class.finalize()
         # After finalize check if the created constrain object is instance of the class we have given.
-        assert isinstance(simulator_class._constraints[-1][-1], legal_constraint)
+        assert isinstance(
+            simulator_class._feature_group_constrain_values._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_constraint,
+        )
+        assert isinstance(
+            simulator_class._feature_group_constrain_rates._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_constraint,
+        )
 
         # TODO: this is a dummy test for constrain values and rates find a better way to test them
         simulator_class.constrain_values(time=0)
@@ -189,7 +210,18 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.add_forcing_to(rod).using(legal_forces)
         simulator_class.finalize()
         # After finalize check if the created forcing object is instance of the class we have given.
-        assert isinstance(simulator_class._ext_forces_torques[-1][-1], legal_forces)
+        assert isinstance(
+            simulator_class._feature_group_synchronize._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_forces,
+        )
+        assert isinstance(
+            simulator_class._feature_group_synchronize._operator_collection[-1][
+                -2
+            ].func.__self__,
+            legal_forces,
+        )
 
         # TODO: this is a dummy test for synchronize find a better way to test them
         simulator_class.synchronize(time=0)
@@ -202,7 +234,12 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
         simulator_class.collect_diagnostics(rod).using(legal_callback)
         simulator_class.finalize()
         # After finalize check if the created callback object is instance of the class we have given.
-        assert isinstance(simulator_class._callback_list[-1][-1], legal_callback)
+        assert isinstance(
+            simulator_class._feature_group_callback._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_callback,
+        )
 
         # TODO: this is a dummy test for apply_callbacks find a better way to test them
         simulator_class.apply_callbacks(time=0, current_step=0)

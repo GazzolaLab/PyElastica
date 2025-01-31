@@ -44,12 +44,12 @@ First **create the fork repository and clone** to your local machine.
 
 2. Virtual python workspace: `conda`, `pyenv`, or `venv`.
 
-We recommend using python version above 3.8.0.
+We recommend using python version above 3.10.0.
 
 ```bash
 conda create --name pyelastica-dev
 conda activate pyelastica-dev
-conda install python==3.8
+conda install python==3.10
 ```
 
 3. Setup [`poetry`](https://python-poetry.org) and `dependencies`!
@@ -61,7 +61,7 @@ make pre-commit-install
 ```
 
 If you are planning to contribute to the examples,
-extra dependencies can be installed using `poetry install -E examples`.
+extra dependencies can be installed using `make install_examples_dependencies`.
 
 If you are planning to contribute on documentation, extra dependencies can be installed
 using `poetry install -E docs`.

@@ -9,7 +9,7 @@ from examples.RodContactCase.post_processing import (
 class SolenoidCase(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
+    ea.Contact,
     ea.Forcing,
     ea.CallBacks,
     ea.Damping,
@@ -37,8 +37,8 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 
 # Rest of the rod parameters and construct rod
 base_radius = 0.025
-base_area = np.pi * base_radius ** 2
-I = np.pi / 4 * base_radius ** 4
+base_area = np.pi * base_radius**2
+I = np.pi / 4 * base_radius**4
 volume = base_area * base_length
 mass = 1.0
 density = mass / volume
@@ -176,7 +176,10 @@ solenoid_sim.add_forcing_to(sherable_rod).using(
 )
 
 # Add self contact to prevent penetration
-solenoid_sim.connect(sherable_rod, sherable_rod).using(ea.SelfContact, k=1e4, nu=10)
+solenoid_sim.detect_contact_between(sherable_rod, sherable_rod).using(
+    ea.RodSelfContact, k=1e4, nu=10
+)
+
 
 # Add callback functions for plotting position of the rod later on
 class RodCallBack(ea.CallBackBaseClass):

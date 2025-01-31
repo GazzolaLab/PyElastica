@@ -22,7 +22,7 @@ from elastica.version import VERSION
 # -- Project information -----------------------------------------------------
 
 project = 'PyElastica'
-copyright = '2023, Gazzola Lab'
+copyright = '2024, Gazzola Lab'
 author = 'Gazzola Lab'
 
 # The full version, including alpha/beta/rc tags
@@ -41,6 +41,7 @@ extensions = [
     #'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
+    "sphinxcontrib.mermaid",
     'numpydoc',
     'myst_parser',
 ]
@@ -98,3 +99,6 @@ autodoc_member_order = 'bysource'
 
 # -- Options for numpydoc ---------------------------------------------------
 numpydoc_show_class_members = False
+
+# -- Mermaid configuration ---------------------------------------------------
+mermaid_params = ['--theme', 'neutral']

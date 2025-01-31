@@ -7,7 +7,9 @@ from examples.FrictionValidationCases.friction_validation_postprocessing import 
 )
 
 
-class AxialFrictionSimulator(ea.BaseSystemCollection, ea.Constraints, ea.Forcing):
+class AxialFrictionSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Contact
+):
     pass
 
 
@@ -28,7 +30,7 @@ def simulate_axial_friction_with(force=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     E = 1e5
@@ -74,13 +76,13 @@ def simulate_axial_friction_with(force=0.0):
     slip_velocity_tol = 1e-4
     static_mu_array = np.array([0.8, 0.4, 0.4])  # [forward, backward, sideways]
     kinetic_mu_array = np.array([0.4, 0.2, 0.2])  # [forward, backward, sideways]
+    friction_plane = ea.Plane(plane_origin=origin_plane, plane_normal=normal_plane)
+    axial_friction_sim.append(friction_plane)
 
-    axial_friction_sim.add_forcing_to(shearable_rod).using(
-        ea.AnisotropicFrictionalPlane,
+    axial_friction_sim.detect_contact_between(shearable_rod, friction_plane).using(
+        ea.RodPlaneContactWithAnisotropicFriction,
         k=10.0,
         nu=1e-4,
-        plane_origin=origin_plane,
-        plane_normal=normal_plane,
         slip_velocity_tol=slip_velocity_tol,
         static_mu_array=static_mu_array,
         kinetic_mu_array=kinetic_mu_array,
@@ -106,7 +108,7 @@ def simulate_axial_friction_with(force=0.0):
             analytical_translational_energy = 0.0
         else:
             analytical_translational_energy = (
-                final_time ** 2
+                final_time**2
                 / (2.0 * mass)
                 * (
                     np.abs(force)
@@ -120,7 +122,7 @@ def simulate_axial_friction_with(force=0.0):
             analytical_translational_energy = 0.0
         else:
             analytical_translational_energy = (
-                final_time ** 2
+                final_time**2
                 / (2.0 * mass)
                 * (
                     np.abs(force)

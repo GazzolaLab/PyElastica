@@ -10,7 +10,7 @@ build:
       - pip install poetry
       - poetry config virtualenvs.create false
     post_install:
-      - poetry install --all-extras
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --all-extras
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:

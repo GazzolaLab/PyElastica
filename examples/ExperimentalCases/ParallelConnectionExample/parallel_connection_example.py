@@ -7,6 +7,12 @@ from elastica.experimental.connection_contact_joint.parallel_connection import (
     SurfaceJointSideBySide,
 )
 from elastica._calculus import difference_kernel
+import sys
+
+sys.path.append("../")
+sys.path.append("../../")
+sys.path.append("../../../")
+
 from examples.JointCases.joint_cases_postprocessing import (
     plot_position,
     plot_video,
@@ -35,7 +41,7 @@ normal = np.array([0.0, 1.0, 0.0])
 binormal = np.cross(direction, normal)
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1750
 E = 3e4
 poisson_ratio = 0.5
@@ -80,6 +86,7 @@ parallel_connection_sim.constrain(rod_one).using(
 parallel_connection_sim.constrain(rod_two).using(
     ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
+
 
 # Apply a contraction force on rod one.
 class ContractionForce(ea.NoForces):
