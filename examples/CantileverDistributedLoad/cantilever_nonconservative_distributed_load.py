@@ -1,11 +1,11 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import elastica as ea
-
+import json
 
 from cantilever_distrubuted_load_postprecessing import (
     plot_video_with_surface,
-    Find_Tip_Position,
+    find_tip_position,
     adjust_square_cross_section,
 )
 
@@ -129,7 +129,6 @@ def cantilever_subjected_to_a_nonconservative_load(
 
     stretch_sim.finalize()
     timestepper = ea.PositionVerlet()
-    # timestepper = PEFRL()
 
     total_steps = int(final_time / dt)
     print(stretch_sim)
@@ -169,7 +168,7 @@ def cantilever_subjected_to_a_nonconservative_load(
 
     pos = stretchable_rod.position_collection.view()
 
-    tip_position = Find_Tip_Position(stretchable_rod, n_elem)
+    tip_position = find_tip_position(stretchable_rod, n_elem)
     relative_tip_position = np.zeros((2,))
 
     relative_tip_position[0] = tip_position[0] / base_length
@@ -201,38 +200,15 @@ cantilever_subjected_to_a_nonconservative_load(
     n_elem, base_length, base_radius, youngs_modulus, -15, True, False
 )
 
-x_tip_paper = [
-    0.9910,
-    0.9213,
-    0.7935,
-    0.6265,
-    0.4422,
-    0.2596,
-    0.0705,
-    -0.0585,
-    -0.1677,
-    -0.2585,
-    -0.3258,
-    -0.3731,
-    -0.4042,
-]
-y_tip_paper = [
-    0.1251,
-    0.3622,
-    0.5628,
-    0.7121,
-    0.8049,
-    0.8451,
-    0.8420,
-    0.8071,
-    0.7513,
-    0.6840,
-    0.6123,
-    0.5411,
-    0.4734,
-]
+
+with open("cantilever_distributed_load_data.json", "r") as file:
+    tip_position_paper = json.load(file)
+    tip_position_paper = tip_position_paper["non_conservative"]
 x_tip_experiment = []
 y_tip_experiment = []
+x_tip_paper = tip_position_paper["x_tip_position"]
+y_tip_paper = tip_position_paper["y_tip_position"]
+
 load_on_rod = np.arange(1, 26, 2)
 for i in load_on_rod:
     x_tip_experiment.append(

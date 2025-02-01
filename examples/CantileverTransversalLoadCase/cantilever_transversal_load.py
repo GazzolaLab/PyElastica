@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from elastica.boundary_conditions import OneEndFixedRod
+from elastica.boundary_conditions import OneEndFixedBC
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
@@ -8,7 +8,7 @@ import elastica as ea
 from cantilever_transversal_load_postprocessing import (
     plot_video_with_surface,
     adjust_square_cross_section,
-    Find_Tip_Position,
+    find_tip_position,
 )
 
 
@@ -79,7 +79,6 @@ def cantilever_subjected_to_a_transversal_load(
         position=tmp,
         directors=dir,
     )
-
     # Adjust the Cross Section
     adjust_section = adjust_square_cross_section(
         n_elem,
@@ -104,7 +103,7 @@ def cantilever_subjected_to_a_transversal_load(
     step_skip = int(1.0 / (rendering_fps * dt))
 
     stretch_sim.constrain(rod).using(
-        OneEndFixedRod, constrained_position_idx=(0,), constrained_director_idx=(0,)
+        OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     print("One end of the rod is now fixed in place")
@@ -125,7 +124,7 @@ def cantilever_subjected_to_a_transversal_load(
     )
     print("Forces added to the rod")
 
-    class AxialStretchingCallBack(ea.CallBackBaseClass):
+    class CantileverTransversalLoadCallBack(ea.CallBackBaseClass):
         """
         Tracks the velocity norms of the rod
         """
@@ -168,7 +167,9 @@ def cantilever_subjected_to_a_transversal_load(
     recorded_history = ea.defaultdict(list)
 
     stretch_sim.collect_diagnostics(rod).using(
-        AxialStretchingCallBack, step_skip=step_skip, callback_params=recorded_history
+        CantileverTransversalLoadCallBack,
+        step_skip=step_skip,
+        callback_params=recorded_history,
     )
     # Finalization and Run the Project
     final_time = 10
@@ -195,7 +196,6 @@ def cantilever_subjected_to_a_transversal_load(
         plt.show()
 
     if PLOT_FIGURE_Reach_Equilibrium:
-        #   plt.plot(recorded_history["time"], recorded_history["position"], lw=2.0,label="position")
         plt.plot(
             recorded_history["time"],
             recorded_history["velocity_magnitude"],
@@ -213,7 +213,7 @@ def cantilever_subjected_to_a_transversal_load(
         "N_elem=",
         n_elem,
         "Tip Position at Equilibrim is",
-        Find_Tip_Position(rod, n_elem),
+        find_tip_position(rod, n_elem),
     )
 
     plot_video_with_surface(

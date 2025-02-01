@@ -2,14 +2,15 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import elastica as ea
+import json
 from cantilever_distrubuted_load_postprecessing import (
     plot_video_with_surface,
-    Find_Tip_Position,
+    find_tip_position,
     adjust_square_cross_section,
 )
 
 
-def Conservative_Force_Simulator(load, Animation=False):
+def conservative_force_simulator(load, Animation=False):
     class StretchingBeamSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
@@ -18,10 +19,6 @@ def Conservative_Force_Simulator(load, Animation=False):
     stretch_sim = StretchingBeamSimulator()
     final_time = 10
 
-    # Options
-    PLOT_FIGURE = True
-    SAVE_FIGURE = False
-    SAVE_RESULTS = False
     # setting up test params
     n_elem = 100
     start = np.zeros((3,))
@@ -78,10 +75,10 @@ def Conservative_Force_Simulator(load, Animation=False):
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
-    Conservative_Load = np.array([0.0, -end_force_x, 0.0])
+    conservative_load = np.array([0.0, -end_force_x, 0.0])
 
     stretch_sim.add_forcing_to(stretchable_rod).using(
-        ea.GravityForces, acc_gravity=Conservative_Load
+        ea.GravityForces, acc_gravity=conservative_load
     )
 
     # add damping
@@ -95,7 +92,7 @@ def Conservative_Force_Simulator(load, Animation=False):
     )
 
     # Add call backs
-    class AxialStretchingCallBack(ea.CallBackBaseClass):
+    class CantileverDistributedLoadCallBack(ea.CallBackBaseClass):
         def __init__(self, step_skip: int, callback_params: dict):
             ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
@@ -133,7 +130,9 @@ def Conservative_Force_Simulator(load, Animation=False):
 
     recorded_history = ea.defaultdict(list)
     stretch_sim.collect_diagnostics(stretchable_rod).using(
-        AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
+        CantileverDistributedLoadCallBack,
+        step_skip=200,
+        callback_params=recorded_history,
     )
 
     stretch_sim.finalize()
@@ -141,21 +140,17 @@ def Conservative_Force_Simulator(load, Animation=False):
     # timestepper = PEFRL()
 
     total_steps = int(final_time / dt)
-    print(stretch_sim)
-    print("Total steps", total_steps)
     ea.integrate(timestepper, stretch_sim, final_time, total_steps)
 
     relative_tip_position = np.zeros(
         2,
     )
     relative_tip_position[0] = (
-        Find_Tip_Position(stretchable_rod, n_elem)[0] / base_length
+        find_tip_position(stretchable_rod, n_elem)[0] / base_length
     )
     relative_tip_position[1] = (
-        -Find_Tip_Position(stretchable_rod, n_elem)[1] / base_length
+        -find_tip_position(stretchable_rod, n_elem)[1] / base_length
     )
-
-    print(relative_tip_position)
 
     if Animation:
         plot_video_with_surface(
@@ -176,55 +171,32 @@ def Conservative_Force_Simulator(load, Animation=False):
         2,
     )
     relative_tip_position[0] = (
-        Find_Tip_Position(stretchable_rod, n_elem)[0] / base_length
+        find_tip_position(stretchable_rod, n_elem)[0] / base_length
     )
     relative_tip_position[1] = (
-        -Find_Tip_Position(stretchable_rod, n_elem)[1] / base_length
+        -find_tip_position(stretchable_rod, n_elem)[1] / base_length
     )
 
     print(relative_tip_position)
     return relative_tip_position
 
 
-Conservative_Force_Simulator(15, Animation=True)
+# conservative_force_simulator(15, Animation=True)
+
+with open("cantilever_distributed_load_data.json", "r") as file:
+    tip_position_paper = json.load(file)
+    tip_position_paper = tip_position_paper["conservative"]
 
 x_tip_experiment = []
 y_tip_experiment = []
-x_tip_paper = [
-    0.9912,
-    0.9309,
-    0.8455,
-    0.7613,
-    0.6874,
-    0.6249,
-    0.5724,
-    0.5281,
-    0.4906,
-    0.4584,
-    0.4306,
-    0.4064,
-    0.3851,
-]
-y_tip_paper = [
-    0.1241,
-    0.3411,
-    0.4976,
-    0.6031,
-    0.6745,
-    0.7243,
-    0.7603,
-    0.7871,
-    0.8077,
-    0.8239,
-    0.8370,
-    0.8478,
-    0.8568,
-]
-load_on_rod = np.arange(1, 26, 2)
-for i in load_on_rod:
-    x_tip_experiment.append(Conservative_Force_Simulator(i)[0])
-    y_tip_experiment.append(Conservative_Force_Simulator(i)[1])
+x_tip_paper = tip_position_paper["x_tip_position"]
+y_tip_paper = tip_position_paper["y_tip_position"]
 
+load_on_rod = np.arange(1, 26, 2)
+for load in load_on_rod:
+    tip_displacement = conservative_force_simulator(load)
+    x_tip_experiment.append(tip_displacement[0])
+    y_tip_experiment.append(tip_displacement[1])
 
 plt.plot(
     load_on_rod,

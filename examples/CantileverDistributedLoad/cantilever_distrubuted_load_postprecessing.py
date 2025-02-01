@@ -16,7 +16,7 @@ from elastica.rod.factory_function import (
 )
 
 
-def Find_Tip_Position(rod, n_elem):
+def find_tip_position(rod, n_elem):
     x_tip = rod.position_collection[0][n_elem]
     y_tip = rod.position_collection[1][n_elem]
     z_tip = rod.position_collection[2][n_elem]
@@ -24,22 +24,20 @@ def Find_Tip_Position(rod, n_elem):
     return x_tip, y_tip, z_tip
 
 
-def adjust_square_cross_section(
-    n_elements,
-    direction,
-    normal,
-    base_length,
-    base_radius,
-    density,
-    youngs_modulus: float,
-    *,
-    rod_origin_position: np.ndarray,
-    ring_rod_flag: bool,
-    shear_modulus: Optional[float] = None,
-    position: Optional[np.ndarray] = None,
-    directors: Optional[np.ndarray] = None,
-    **kwargs,
-):
+def adjust_square_cross_section(rod, **kwargs):
+    n_elements = (rod.n_elems,)
+    direction = (rod.direction,)
+    normal = (rod.normal,)
+    base_length = (rod.base_length,)
+    base_radius = (rod.base_radius,)
+    density = (rod.density,)
+    youngs_modulus = (rod.youngs_modulus,)
+    rod_origin_position = rod = rod.position_collection
+    ring_rod_flag = False
+    shear_modulus: Optional[float] = (None,)
+    position = rod.position_collection
+    directors = rod.directors
+
     log = logging.getLogger()
 
     if "poisson_ratio" in kwargs:

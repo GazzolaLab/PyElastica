@@ -197,8 +197,6 @@ def adjust_parameter(
     shear_modulus: Optional[float] = None,
     position: Optional[np.ndarray] = None,
     directors: Optional[np.ndarray] = None,
-    rest_sigma: Optional[np.ndarray] = None,
-    rest_kappa: Optional[np.ndarray] = None,
     **kwargs,
 ):
     log = logging.getLogger()

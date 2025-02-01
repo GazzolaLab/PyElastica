@@ -15,6 +15,7 @@ from Tumbling_Unconstrained_Rod_postprocessing import (
     lamda_t_function,
 )
 from matplotlib import pyplot as plt
+import json
 
 n_elem = 256
 start = np.array([0.0, 0.0, 8.0])
@@ -53,6 +54,7 @@ rod = ea.CosseratRod.straight_rod(
     density,
     youngs_modulus=youngs_modulus,
 )
+print(rod)
 
 adjust_section = adjust_parameter(
     n_elem,
@@ -111,7 +113,7 @@ rendering_fps = 30
 step_skip = int(1.0 / (rendering_fps * dt))
 
 
-class AxialStretchingCallBack(ea.CallBackBaseClass):
+class TumblingUnconstrainedRodCallBack(ea.CallBackBaseClass):
     def __init__(self, step_skip: int, callback_params: dict):
         ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
@@ -134,7 +136,9 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
 
 recorded_history = ea.defaultdict(list)
 sim.collect_diagnostics(rod).using(
-    AxialStretchingCallBack, step_skip=step_skip, callback_params=recorded_history
+    TumblingUnconstrainedRodCallBack,
+    step_skip=step_skip,
+    callback_params=recorded_history,
 )
 
 sim.finalize()
@@ -144,24 +148,12 @@ print("System finalized")
 timestepper = PositionVerlet()
 integrate(timestepper, sim, final_time, total_steps)
 
-time_analytic = [0.0, 2.0, 3.0, 3.8, 4.4, 5.0, 5.5, 5.8, 6.1, 6.5, 7.0]
-mass_center_analytic = [
-    [
-        3.0,
-        4.0667,
-        6.5667,
-        9.7304,
-        12.5288,
-        15.500,
-        18.000,
-        19.500,
-        21.00,
-        23.00,
-        25.500,
-    ],
-    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-]
+with open("TumblingUnconstrainedRod.json", "r") as file:
+    analytic_data = json.load(file)
+
+time_analytic = analytic_data["time_analytic"]
+mass_center_analytic = analytic_data["mass_center_analytic"]
+
 plt.plot(
     time_analytic,
     mass_center_analytic[0],
