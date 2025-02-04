@@ -153,12 +153,16 @@ def _inv_rotate(director_collection: NDArray[np.float64]) -> NDArray[np.float64]
             )
         )
 
-        # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
-        theta = arccos(0.5 * trace - 0.5 - 1e-10)
+        # Clip the trace to between -1 and 3.
+        # Any deviation beyond this is numerical error
+        trace = min(trace, 3.0)
+        trace = max(trace, -1.0)
+        theta = arccos(0.5 * trace - 0.5) + 1e-14
+        magnitude = -0.5 * theta / sin(theta)
 
-        vector_collection[0, k] *= -0.5 * (theta + 1e-14) / sin(theta + 1e-14)
-        vector_collection[1, k] *= -0.5 * (theta + 1e-14) / sin(theta + 1e-14)
-        vector_collection[2, k] *= -0.5 * (theta + 1e-14) / sin(theta + 1e-14)
+        vector_collection[0, k] *= magnitude
+        vector_collection[1, k] *= magnitude
+        vector_collection[2, k] *= magnitude
 
     return vector_collection
 
