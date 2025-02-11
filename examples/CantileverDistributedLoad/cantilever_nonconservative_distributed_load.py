@@ -7,12 +7,14 @@ from cantilever_distrubuted_load_postprecessing import (
     plot_video_with_surface,
     find_tip_position,
     adjust_square_cross_section,
+    NonconserativeForce,
 )
 
 
 def cantilever_subjected_to_a_nonconservative_load(
     n_elem,
     base_length,
+    side_length,
     base_radius,
     youngs_modulus,
     dimentionless_varible,
@@ -38,22 +40,7 @@ def cantilever_subjected_to_a_nonconservative_load(
         shear_modulus=shear_modulus,
     )
 
-    adjust_section = adjust_square_cross_section(
-        n_elem,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        youngs_modulus=youngs_modulus,
-        shear_modulus=shear_modulus,
-        rod_origin_position=start,
-        ring_rod_flag=False,
-    )
-
-    stretchable_rod.mass_second_moment_of_inertia = adjust_section[0]
-    stretchable_rod.inv_mass_second_moment_of_inertia = adjust_section[1]
-    stretchable_rod.bend_matrix = adjust_section[2]
+    adjust_square_cross_section(stretchable_rod, youngs_modulus, side_length)
 
     stretch_sim.append(stretchable_rod)
 
@@ -65,9 +52,7 @@ def cantilever_subjected_to_a_nonconservative_load(
         density * base_area * (base_length**3)
     )
 
-    stretch_sim.add_forcing_to(stretchable_rod).using(
-        ea.external_forces.NonconserativeForce, load
-    )
+    stretch_sim.add_forcing_to(stretchable_rod).using(NonconserativeForce, load)
 
     # add damping
     dl = base_length / n_elem
@@ -185,6 +170,7 @@ start = np.zeros((3,))
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 0.5
+side_length = 0.01
 base_radius = 0.01 / (np.pi ** (1 / 2))
 base_area = np.pi * base_radius**2
 density = 1000
@@ -197,7 +183,7 @@ I = (0.01**4) / 12
 
 
 cantilever_subjected_to_a_nonconservative_load(
-    n_elem, base_length, base_radius, youngs_modulus, -15, True, False
+    n_elem, base_length, side_length, base_radius, youngs_modulus, -15, True, False
 )
 
 

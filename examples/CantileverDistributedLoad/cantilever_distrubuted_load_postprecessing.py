@@ -3,17 +3,35 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from tqdm import tqdm
 from typing import Dict, Sequence
-from typing import Optional
 import logging
-from numpy.testing import assert_allclose
 from elastica.utils import MaxDimension, Tolerance
-from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
-from elastica.rod.factory_function import (
-    _assert_dim,
-    _position_validity_checker,
-    _directors_validity_checker,
-    _position_validity_checker_ring_rod,
-)
+from elastica.external_forces import NoForces, inplace_addition, SystemType
+
+
+class NonconserativeForce(NoForces):
+    def __init__(self, load=1):
+        super(NonconserativeForce, self).__init__()
+        self.load = load
+
+        # print(self.direction)
+
+    def apply_forces(self, system: SystemType, time=0.0):
+        self.compute_nonconserative_forces(
+            self.load, system.mass, system.director_collection, system.external_forces
+        )
+
+    def compute_nonconserative_forces(self, load, mass, direction, external_forces):
+        NCforce_direction = direction[0]
+        NCforce_direction = NCforce_direction / np.linalg.norm(
+            NCforce_direction, axis=0
+        )
+        NCforce = NCforce_direction * self.load
+        for i in range(len(mass) - 1):
+            NCforce[0, i] = NCforce[0, i] * mass[i]
+            NCforce[1, i] = NCforce[1, i] * mass[i]
+            NCforce[2, i] = NCforce[2, i] * mass[i]
+
+        inplace_addition(external_forces, NCforce)
 
 
 def find_tip_position(rod, n_elem):
@@ -24,185 +42,63 @@ def find_tip_position(rod, n_elem):
     return x_tip, y_tip, z_tip
 
 
-def adjust_square_cross_section(rod, **kwargs):
-    n_elements = (rod.n_elems,)
-    direction = (rod.direction,)
-    normal = (rod.normal,)
-    base_length = (rod.base_length,)
-    base_radius = (rod.base_radius,)
-    density = (rod.density,)
-    youngs_modulus = (rod.youngs_modulus,)
-    rod_origin_position = rod = rod.position_collection
-    ring_rod_flag = False
-    shear_modulus: Optional[float] = (None,)
-    position = rod.position_collection
-    directors = rod.directors
+def adjust_square_cross_section(
+    rod, youngs_modulus: float, length: float, ring_rod_flag: bool = False
+):
+    n_elements = rod.n_elems
+    n_voronoi_elements = n_elements if ring_rod_flag else n_elements - 1
 
     log = logging.getLogger()
 
-    if "poisson_ratio" in kwargs:
-        # Deprecation warning for poission_ratio
-        raise NameError(
-            "Poisson's ratio is deprecated for Cosserat Rod for clarity. Please provide shear_modulus instead."
-        )
-
-    # sanity checks here
-    assert n_elements > 2 if ring_rod_flag else n_elements > 1
-    assert base_length > Tolerance.atol()
-    assert np.sqrt(np.dot(normal, normal)) > Tolerance.atol()
-    assert np.sqrt(np.dot(direction, direction)) > Tolerance.atol()
-
-    # define the number of nodes and voronoi elements based on if rod is
-    # straight and open or closed and ring shaped
-    n_nodes = n_elements if ring_rod_flag else n_elements + 1
-    n_voronoi_elements = n_elements if ring_rod_flag else n_elements - 1
-
-    # check if position is given.
-    if position is None:  # Generate straight and uniform rod
-        # Set the position array
-        position = np.zeros((MaxDimension.value(), n_nodes))
-        if not ring_rod_flag:  # i.e. a straight open rod
-
-            start = rod_origin_position
-            end = start + direction * base_length
-
-            for i in range(0, 3):
-                position[i, ...] = np.linspace(start[i], end[i], n_elements + 1)
-
-            _position_validity_checker(position, start, n_elements)
-        else:  # i.e a closed ring rod
-            ring_center_position = rod_origin_position
-            binormal = np.cross(direction, normal)
-            for i in range(n_elements):
-                position[..., i] = (
-                    base_length
-                    / (2 * np.pi)
-                    * (
-                        np.cos(2 * np.pi / n_elements * i) * binormal
-                        + np.sin(2 * np.pi / n_elements * i) * direction
-                    )
-                ) + ring_center_position
-            _position_validity_checker_ring_rod(
-                position, ring_center_position, n_elements
-            )
-
-    # Compute rest lengths and tangents
-    position_for_difference = (
-        np.hstack((position, position[..., 0].reshape(3, 1)))
-        if ring_rod_flag
-        else position
-    )
-    position_diff = position_for_difference[..., 1:] - position_for_difference[..., :-1]
-    rest_lengths = _batch_norm(position_diff)
-    tangents = position_diff / rest_lengths
-    normal /= np.linalg.norm(normal)
-
-    if directors is None:  # Generate straight uniform rod
-        print("Directors not specified")
-        # Set the directors matrix
-        directors = np.zeros((MaxDimension.value(), MaxDimension.value(), n_elements))
-        # Construct directors using tangents and normal
-        normal_collection = np.repeat(normal[:, np.newaxis], n_elements, axis=1)
-        # Check if rod normal and rod tangent are perpendicular to each other otherwise
-        # directors will be wrong!!
-        assert_allclose(
-            _batch_dot(normal_collection, tangents),
-            0,
-            atol=Tolerance.atol(),
-            err_msg=(" Rod normal and tangent are not perpendicular to each other!"),
-        )
-        directors[0, ...] = normal_collection
-        directors[1, ...] = _batch_cross(tangents, normal_collection)
-        directors[2, ...] = tangents
-    _directors_validity_checker(directors, tangents, n_elements)
-
-    # Set radius array
-    radius = np.zeros((n_elements))
-    # Check if the user input radius is valid
-    radius_temp = np.array(base_radius)
-    _assert_dim(radius_temp, 2, "radius")
-    radius[:] = radius_temp
-    # Check if the elements of radius are greater than tolerance
-    assert np.all(radius > Tolerance.atol()), " Radius has to be greater than 0."
-
-    # Set density array
-    density_array = np.zeros((n_elements))
-    # Check if the user input density is valid
-    density_temp = np.array(density)
-    _assert_dim(density_temp, 2, "density")
-    density_array[:] = density_temp
-    # Check if the elements of density are greater than tolerance
-    assert np.all(
-        density_array > Tolerance.atol()
-    ), " Density has to be greater than 0."
-
-    # Second moment of inertia
-
     side_length = np.zeros(n_elements)
-    side_length.fill(0.01)
+    side_length.fill(length)
 
-    A0 = np.pi * radius * radius
+    new_area = np.pi * rod.radius * rod.radius
 
-    I0_1 = (side_length**4) / 12
-    I0_2 = (side_length**4) / 12
-    I0_3 = I0_2 * 2
+    new_moi_1 = (side_length**4) / 12
+    new_moi_2 = (side_length**4) / 12
+    new_moi_3 = new_moi_2 * 2
 
-    I0 = np.array([I0_1, I0_2, I0_3]).transpose()
-
-    # Mass second moment of inertia for disk cross-section
-    mass_second_moment_of_inertia = np.zeros(
-        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
-    )
+    new_moi = np.array([new_moi_1, new_moi_2, new_moi_3]).transpose()
 
     mass_second_moment_of_inertia_temp = np.einsum(
-        "ij,i->ij", I0, density * rest_lengths
+        "ij,i->ij", new_moi, rod.density * rod.rest_lengths
     )
 
     for i in range(n_elements):
         np.fill_diagonal(
-            mass_second_moment_of_inertia[..., i],
+            rod.mass_second_moment_of_inertia[..., i],
             mass_second_moment_of_inertia_temp[i, :],
         )
     # sanity check of mass second moment of inertia
-    if (mass_second_moment_of_inertia < Tolerance.atol()).all():
+    if (rod.mass_second_moment_of_inertia < Tolerance.atol()).all():
         message = "Mass moment of inertia matrix smaller than tolerance, please check provided radius, density and length."
         log.warning(message)
 
-    # Inverse of second moment of inertia
-    inv_mass_second_moment_of_inertia = np.zeros(
-        (MaxDimension.value(), MaxDimension.value(), n_elements)
-    )
     for i in range(n_elements):
         # Check rank of mass moment of inertia matrix to see if it is invertible
         assert (
-            np.linalg.matrix_rank(mass_second_moment_of_inertia[..., i])
+            np.linalg.matrix_rank(rod.mass_second_moment_of_inertia[..., i])
             == MaxDimension.value()
         )
-        inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
-            mass_second_moment_of_inertia[..., i]
+        rod.inv_mass_second_moment_of_inertia[..., i] = np.linalg.inv(
+            rod.mass_second_moment_of_inertia[..., i]
         )
 
     # Shear/Stretch matrix
-    if not shear_modulus:
-        log.info(
-            """Shear modulus is not explicitly given.\n
-            In such case, we compute shear_modulus assuming poisson's ratio of 0.5"""
-        )
-        shear_modulus = youngs_modulus / (2.0 * (1.0 + 0.5))
+    shear_modulus = youngs_modulus / (2.0 * (1.0 + 0.5))
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from
     # "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
     alpha_c = 27.0 / 28.0
-    shear_matrix = np.zeros(
-        (MaxDimension.value(), MaxDimension.value(), n_elements), np.float64
-    )
+    rod.shear_matrix *= 0.0
     for i in range(n_elements):
         np.fill_diagonal(
-            shear_matrix[..., i],
+            rod.shear_matrix[..., i],
             [
-                alpha_c * shear_modulus * A0[i],
-                alpha_c * shear_modulus * A0[i],
-                youngs_modulus * A0[i],
+                alpha_c * shear_modulus * new_area[i],
+                alpha_c * shear_modulus * new_area[i],
+                youngs_modulus * new_area[i],
             ],
         )
 
@@ -214,9 +110,9 @@ def adjust_square_cross_section(rod, **kwargs):
         np.fill_diagonal(
             bend_matrix[..., i],
             [
-                youngs_modulus * I0_1[i],
-                youngs_modulus * I0_2[i],
-                shear_modulus * I0_3[i],
+                youngs_modulus * new_moi_1[i],
+                youngs_modulus * new_moi_2[i],
+                shear_modulus * new_moi_3[i],
             ],
         )
     if ring_rod_flag:  # wrap around the value in the last element
@@ -228,18 +124,14 @@ def adjust_square_cross_section(rod, **kwargs):
 
     # Compute bend matrix in Voronoi Domain
     rest_lengths_temp_for_voronoi = (
-        np.hstack((rest_lengths, rest_lengths[0])) if ring_rod_flag else rest_lengths
+        np.hstack((rod.rest_lengths, rod.rest_lengths[0]))
+        if ring_rod_flag
+        else rod.rest_lengths
     )
-    bend_matrix = (
+    rod.bend_matrix = (
         bend_matrix[..., 1:] * rest_lengths_temp_for_voronoi[1:]
         + bend_matrix[..., :-1] * rest_lengths_temp_for_voronoi[0:-1]
     ) / (rest_lengths_temp_for_voronoi[1:] + rest_lengths_temp_for_voronoi[:-1])
-
-    return (
-        mass_second_moment_of_inertia,
-        inv_mass_second_moment_of_inertia,
-        bend_matrix,
-    )
 
 
 def plot_video_with_surface(

@@ -25,6 +25,7 @@ def conservative_force_simulator(load, Animation=False):
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 0.5
+    side_length = 0.01
     base_radius = 0.01 / (
         np.pi ** (1 / 2)
     )  # The Cross-sectional area is 1e-4(we assume its equivalent to a square cross-sectional surface with same area)
@@ -53,22 +54,7 @@ def conservative_force_simulator(load, Animation=False):
         shear_modulus=shear_modulus,
     )
 
-    adjust_section = adjust_square_cross_section(
-        n_elem,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        youngs_modulus=youngs_modulus,
-        shear_modulus=shear_modulus,
-        rod_origin_position=start,
-        ring_rod_flag=False,
-    )
-
-    stretchable_rod.mass_second_moment_of_inertia = adjust_section[0]
-    stretchable_rod.inv_mass_second_moment_of_inertia = adjust_section[1]
-    stretchable_rod.bend_matrix = adjust_section[2]
+    adjust_square_cross_section(stretchable_rod, youngs_modulus, side_length)
 
     stretch_sim.append(stretchable_rod)
     stretch_sim.constrain(stretchable_rod).using(
@@ -180,8 +166,6 @@ def conservative_force_simulator(load, Animation=False):
     print(relative_tip_position)
     return relative_tip_position
 
-
-# conservative_force_simulator(15, Animation=True)
 
 with open("cantilever_distributed_load_data.json", "r") as file:
     tip_position_paper = json.load(file)

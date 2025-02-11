@@ -3,7 +3,7 @@ import elastica as ea
 import numpy as np
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
-from elastica.external_forces import (
+from Tumbling_Unconstrained_Rod_postprocessing import (
     EndPointTorque,
     EndpointForces_with_time_factor,
     EndPointTorque_with_time_factor,
@@ -11,7 +11,7 @@ from elastica.external_forces import (
 from elastica.external_forces import UniformTorques
 from Tumbling_Unconstrained_Rod_postprocessing import (
     plot_video_with_surface,
-    adjust_parameter,
+    adjust_square_cross_section,
     lamda_t_function,
 )
 from matplotlib import pyplot as plt
@@ -54,24 +54,10 @@ rod = ea.CosseratRod.straight_rod(
     density,
     youngs_modulus=youngs_modulus,
 )
-print(rod)
 
-adjust_section = adjust_parameter(
-    n_elem,
-    direction,
-    normal,
-    base_length,
-    side_length,
-    base_radius,
-    density,
-    youngs_modulus=youngs_modulus,
-    rod_origin_position=start,
-    ring_rod_flag=False,
-)
 
-rod.mass_second_moment_of_inertia = adjust_section[0]
-rod.inv_mass_second_moment_of_inertia = adjust_section[1]
-rod.bend_matrix = adjust_section[2]
+adjust_square_cross_section(rod, youngs_modulus, side_length)
+
 
 print("mass_second_moment_of_inertia=", rod.mass_second_moment_of_inertia)
 print("bend_matrix=", rod.bend_matrix)

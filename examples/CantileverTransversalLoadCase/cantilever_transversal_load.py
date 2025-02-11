@@ -55,16 +55,16 @@ def cantilever_subjected_to_a_transversal_load(
     tmp[0, :] = -radius * np.cos(t) + 1
     tmp[1, :] = radius * np.sin(t)
     tmp[2, :] *= 0.0
-    dir = np.zeros((3, 3, n_elem), dtype=np.float64)
+    direction = np.zeros((3, 3, n_elem), dtype=np.float64)
     tan = tmp[:, 1:] - tmp[:, :-1]
     tan = tan / np.linalg.norm(tan, axis=0)
 
     d1 = np.array([0.0, 0.0, 1.0]).reshape((3, 1))
     d2 = np.cross(tan, d1, axis=0)
 
-    dir[0, :, :] = d1
-    dir[1, :, :] = d2
-    dir[2, :, :] = tan
+    direction[0, :, :] = d1
+    direction[1, :, :] = d2
+    direction[2, :, :] = tan
 
     rod = ea.CosseratRod.straight_rod(
         n_elem,
@@ -77,24 +77,11 @@ def cantilever_subjected_to_a_transversal_load(
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         position=tmp,
-        directors=dir,
+        directors=direction,
     )
     # Adjust the Cross Section
-    adjust_section = adjust_square_cross_section(
-        n_elem,
-        direction,
-        normal,
-        base_length,
-        base_radius,
-        density,
-        youngs_modulus=youngs_modulus,
-        rod_origin_position=start,
-        ring_rod_flag=False,
-    )
 
-    rod.mass_second_moment_of_inertia = adjust_section[0]
-    rod.inv_mass_second_moment_of_inertia = adjust_section[1]
-    rod.bend_matrix = adjust_section[2]
+    adjust_square_cross_section(rod, youngs_modulus, side_length)
 
     stretch_sim.append(rod)
 
