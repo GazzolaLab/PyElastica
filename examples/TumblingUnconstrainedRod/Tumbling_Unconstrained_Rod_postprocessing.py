@@ -9,11 +9,11 @@ from tqdm import tqdm
 from typing import Dict, Sequence
 
 
-class EndpointForces_with_time_factor(NoForces):
+class EndpointforcesWithTimeFactor(NoForces):
 
     def __init__(self, start_force, end_force, time_factor):
 
-        super(EndpointForces_with_time_factor, self).__init__()
+        super(EndpointforcesWithTimeFactor, self).__init__()
         self.start_force = start_force
         self.end_force = end_force
         self.time_factor = time_factor
@@ -40,9 +40,9 @@ class EndPointTorque(NoForces):
         system.external_torques[..., -1] += self.torque * factor
 
 
-class EndPointTorque_with_time_factor(NoForces):
+class EndpointtorqueWithTimeFactor(NoForces):
     def __init__(self, torque, time_factor, direction=np.array([0.0, 0.0, 0.0])):
-        super(EndPointTorque_with_time_factor, self).__init__()
+        super(EndpointtorqueWithTimeFactor, self).__init__()
         self.torque = torque * direction
         self.time_factor = time_factor
 

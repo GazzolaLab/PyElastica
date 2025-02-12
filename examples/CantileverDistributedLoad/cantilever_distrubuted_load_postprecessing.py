@@ -13,8 +13,6 @@ class NonconserativeForce(NoForces):
         super(NonconserativeForce, self).__init__()
         self.load = load
 
-        # print(self.direction)
-
     def apply_forces(self, system: SystemType, time=0.0):
         self.compute_nonconserative_forces(
             self.load, system.mass, system.director_collection, system.external_forces

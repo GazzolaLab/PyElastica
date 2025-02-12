@@ -163,88 +163,87 @@ def cantilever_subjected_to_a_nonconservative_load(
     return relative_tip_position
 
 
-final_time = 10
-# setting up test params
-n_elem = 100
-start = np.zeros((3,))
-direction = np.array([1.0, 0.0, 0.0])
-normal = np.array([0.0, 1.0, 0.0])
-base_length = 0.5
-side_length = 0.01
-base_radius = 0.01 / (np.pi ** (1 / 2))
-base_area = np.pi * base_radius**2
-density = 1000
-dimentionless_varible = 15
-youngs_modulus = 1.2e7
-# For shear modulus of 1e4, nu is 99!
-poisson_ratio = 0
-shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
-I = (0.01**4) / 12
+if __name__ == "__main__":
+    final_time = 10
+    # setting up test params
+    n_elem = 100
+    start = np.zeros((3,))
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 1.0, 0.0])
+    base_length = 0.5
+    side_length = 0.01
+    base_radius = 0.01 / (np.pi ** (1 / 2))
+    base_area = np.pi * base_radius**2
+    density = 1000
+    dimentionless_varible = 15
+    youngs_modulus = 1.2e7
+    # For shear modulus of 1e4, nu is 99!
+    poisson_ratio = 0
+    shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
+    I = (0.01**4) / 12
 
-
-cantilever_subjected_to_a_nonconservative_load(
-    n_elem, base_length, side_length, base_radius, youngs_modulus, -15, True, False
-)
-
-
-with open("cantilever_distributed_load_data.json", "r") as file:
-    tip_position_paper = json.load(file)
-    tip_position_paper = tip_position_paper["non_conservative"]
-x_tip_experiment = []
-y_tip_experiment = []
-x_tip_paper = tip_position_paper["x_tip_position"]
-y_tip_paper = tip_position_paper["y_tip_position"]
-
-load_on_rod = np.arange(1, 26, 2)
-for i in load_on_rod:
-    x_tip_experiment.append(
-        cantilever_subjected_to_a_nonconservative_load(
-            n_elem, base_length, base_radius, youngs_modulus, i, False, False
-        )[0]
-    )
-    y_tip_experiment.append(
-        -cantilever_subjected_to_a_nonconservative_load(
-            n_elem, base_length, base_radius, youngs_modulus, i, False, False
-        )[1]
+    cantilever_subjected_to_a_nonconservative_load(
+        n_elem, base_length, side_length, base_radius, youngs_modulus, -15, True, False
     )
 
-plt.plot(
-    load_on_rod,
-    x_tip_paper,
-    color="black",
-    marker="*",
-    linestyle="--",
-    label="Theoretical_x",
-)
-plt.plot(
-    load_on_rod,
-    y_tip_paper,
-    color="black",
-    marker="*",
-    linestyle=":",
-    label="Theoretical_y",
-)
-plt.scatter(
-    load_on_rod,
-    x_tip_experiment,
-    color="blue",
-    marker="s",
-    linestyle="None",
-    label="x_tip/L",
-)
-plt.scatter(
-    load_on_rod,
-    y_tip_experiment,
-    color="red",
-    marker="s",
-    linestyle="None",
-    label="y_tip/L",
-)
+    with open("cantilever_distributed_load_data.json", "r") as file:
+        tip_position_paper = json.load(file)
+        tip_position_paper = tip_position_paper["non_conservative"]
+    x_tip_experiment = []
+    y_tip_experiment = []
+    x_tip_paper = tip_position_paper["x_tip_position"]
+    y_tip_paper = tip_position_paper["y_tip_position"]
 
-plt.title("Non-Conservative-Load Elastica Simulation Results")
-# Title
-plt.xlabel("Load")  # X-axis label
-plt.ylabel("x_tip/L and y_tip/L")  # Y-axis label
-plt.grid()
-plt.legend()  # Optional: Add a grid
-plt.show()  # Display the plot
+    load_on_rod = np.arange(1, 26, 2)
+    for i in load_on_rod:
+        x_tip_experiment.append(
+            cantilever_subjected_to_a_nonconservative_load(
+                n_elem, base_length, base_radius, youngs_modulus, i, False, False
+            )[0]
+        )
+        y_tip_experiment.append(
+            -cantilever_subjected_to_a_nonconservative_load(
+                n_elem, base_length, base_radius, youngs_modulus, i, False, False
+            )[1]
+        )
+
+    plt.plot(
+        load_on_rod,
+        x_tip_paper,
+        color="black",
+        marker="*",
+        linestyle="--",
+        label="Theoretical_x",
+    )
+    plt.plot(
+        load_on_rod,
+        y_tip_paper,
+        color="black",
+        marker="*",
+        linestyle=":",
+        label="Theoretical_y",
+    )
+    plt.scatter(
+        load_on_rod,
+        x_tip_experiment,
+        color="blue",
+        marker="s",
+        linestyle="None",
+        label="x_tip/L",
+    )
+    plt.scatter(
+        load_on_rod,
+        y_tip_experiment,
+        color="red",
+        marker="s",
+        linestyle="None",
+        label="y_tip/L",
+    )
+
+    plt.title("Non-Conservative-Load Elastica Simulation Results")
+    # Title
+    plt.xlabel("Load")  # X-axis label
+    plt.ylabel("x_tip/L and y_tip/L")  # Y-axis label
+    plt.grid()
+    plt.legend()  # Optional: Add a grid
+    plt.show()  # Display the plot

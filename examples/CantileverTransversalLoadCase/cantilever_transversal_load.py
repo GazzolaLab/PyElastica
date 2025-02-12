@@ -218,23 +218,24 @@ def cantilever_subjected_to_a_transversal_load(
     )
 
 
-cantilever_subjected_to_a_transversal_load(
-    32,
-    radius,
-    base_length,
-    base_radius,
-    youngs_modulus,
-    load=3.0,
-    PLOT_FIGURE=True,
-    PLOT_FIGURE_Reach_Equilibrium=True,
-)
-cantilever_subjected_to_a_transversal_load(
-    32,
-    radius,
-    base_length,
-    base_radius,
-    youngs_modulus,
-    load=6.0,
-    PLOT_FIGURE=True,
-    PLOT_FIGURE_Reach_Equilibrium=True,
-)
+if __name__ == "__main__":
+    cantilever_subjected_to_a_transversal_load(
+        32,
+        radius,
+        base_length,
+        base_radius,
+        youngs_modulus,
+        load=3.0,
+        PLOT_FIGURE=True,
+        PLOT_FIGURE_Reach_Equilibrium=True,
+    )
+    cantilever_subjected_to_a_transversal_load(
+        32,
+        radius,
+        base_length,
+        base_radius,
+        youngs_modulus,
+        load=6.0,
+        PLOT_FIGURE=True,
+        PLOT_FIGURE_Reach_Equilibrium=True,
+    )

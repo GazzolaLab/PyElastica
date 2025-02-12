@@ -5,8 +5,8 @@ from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from Tumbling_Unconstrained_Rod_postprocessing import (
     EndPointTorque,
-    EndpointForces_with_time_factor,
-    EndPointTorque_with_time_factor,
+    EndpointforcesWithTimeFactor,
+    EndpointtorqueWithTimeFactor,
 )
 from elastica.external_forces import UniformTorques
 from Tumbling_Unconstrained_Rod_postprocessing import (
@@ -71,12 +71,12 @@ origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([20.0, 0.0, 0.0])
 
 sim.add_forcing_to(rod).using(
-    EndpointForces_with_time_factor, origin_force, end_force, lamda_t_function
+    EndpointforcesWithTimeFactor, origin_force, end_force, lamda_t_function
 )
 
 
 sim.add_forcing_to(rod).using(
-    EndPointTorque_with_time_factor,
+    EndpointtorqueWithTimeFactor,
     1,
     lamda_t_function,
     direction=np.array([0.0, 200.0, -100.0]),
@@ -120,72 +120,71 @@ class TumblingUnconstrainedRodCallBack(ea.CallBackBaseClass):
             )
 
 
-recorded_history = ea.defaultdict(list)
-sim.collect_diagnostics(rod).using(
-    TumblingUnconstrainedRodCallBack,
-    step_skip=step_skip,
-    callback_params=recorded_history,
-)
+if __name__ == "__main__":
 
-sim.finalize()
-print("System finalized")
+    recorded_history = ea.defaultdict(list)
+    sim.collect_diagnostics(rod).using(
+        TumblingUnconstrainedRodCallBack,
+        step_skip=step_skip,
+        callback_params=recorded_history,
+    )
 
+    sim.finalize()
+    print("System finalized")
 
-timestepper = PositionVerlet()
-integrate(timestepper, sim, final_time, total_steps)
+    timestepper = PositionVerlet()
+    integrate(timestepper, sim, final_time, total_steps)
 
-with open("TumblingUnconstrainedRod.json", "r") as file:
-    analytic_data = json.load(file)
+    with open("TumblingUnconstrainedRod.json", "r") as file:
+        analytic_data = json.load(file)
 
-time_analytic = analytic_data["time_analytic"]
-mass_center_analytic = analytic_data["mass_center_analytic"]
+    time_analytic = analytic_data["time_analytic"]
+    mass_center_analytic = analytic_data["mass_center_analytic"]
 
-plt.plot(
-    time_analytic,
-    mass_center_analytic[0],
-    marker="*",
-    color="black",
-    label="x_analytic",
-)
-plt.plot(
-    time_analytic,
-    mass_center_analytic[1],
-    marker="*",
-    color="black",
-    label="y_analytic",
-)
-plt.plot(
-    time_analytic,
-    mass_center_analytic[2],
-    marker="*",
-    color="black",
-    label="z_analytic",
-)
+    plt.plot(
+        time_analytic,
+        mass_center_analytic[0],
+        marker="*",
+        color="black",
+        label="x_analytic",
+    )
+    plt.plot(
+        time_analytic,
+        mass_center_analytic[1],
+        marker="*",
+        color="black",
+        label="y_analytic",
+    )
+    plt.plot(
+        time_analytic,
+        mass_center_analytic[2],
+        marker="*",
+        color="black",
+        label="z_analytic",
+    )
 
+    mass_center = np.array(recorded_history["center_of_mass"])
 
-mass_center = np.array(recorded_history["center_of_mass"])
+    plt.plot(recorded_history["time"][0:240], mass_center[:, 0][0:240], label="x")
+    plt.plot(recorded_history["time"][0:240], mass_center[:, 1][0:240], label="y")
+    plt.plot(recorded_history["time"][0:240], mass_center[:, 2][0:240], label="z")
 
-plt.plot(recorded_history["time"][0:240], mass_center[:, 0][0:240], label="x")
-plt.plot(recorded_history["time"][0:240], mass_center[:, 1][0:240], label="y")
-plt.plot(recorded_history["time"][0:240], mass_center[:, 2][0:240], label="z")
+    plt.xlabel("Time/(second)")  # X-axis label
+    plt.ylabel("Center of mass")  # Y-axis label
+    plt.grid()
+    plt.legend()  # Optional: Add a grid
+    plt.show()
 
-plt.xlabel("Time/(second)")  # X-axis label
-plt.ylabel("Center of mass")  # Y-axis label
-plt.grid()
-plt.legend()  # Optional: Add a grid
-plt.show()
-
-
-plot_video_with_surface(
-    [recorded_history],
-    video_name="Tumbling_Unconstrained_Rod.mp4",
-    fps=rendering_fps,
-    step=1,
-    # The following parameters are optional
-    x_limits=(0, 200),  # Set bounds on x-axis
-    y_limits=(-4, 4),  # Set bounds on y-axis
-    z_limits=(0.0, 8),  # Set bounds on z-axis
-    dpi=100,  # Set the quality of the image
-    vis3D=True,  # Turn on 3D visualization
-    vis2D=False,  # Turn on projected (2D) visualization
-)
+    plot_video_with_surface(
+        [recorded_history],
+        video_name="Tumbling_Unconstrained_Rod.mp4",
+        fps=rendering_fps,
+        step=1,
+        # The following parameters are optional
+        x_limits=(0, 200),  # Set bounds on x-axis
+        y_limits=(-4, 4),  # Set bounds on y-axis
+        z_limits=(0.0, 8),  # Set bounds on z-axis
+        dpi=100,  # Set the quality of the image
+        vis3D=True,  # Turn on 3D visualization
+        vis2D=False,  # Turn on projected (2D) visualization
+    )

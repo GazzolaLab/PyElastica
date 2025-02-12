@@ -167,58 +167,60 @@ def conservative_force_simulator(load, Animation=False):
     return relative_tip_position
 
 
-with open("cantilever_distributed_load_data.json", "r") as file:
-    tip_position_paper = json.load(file)
-    tip_position_paper = tip_position_paper["conservative"]
+if __name__ == "__main__":
 
-x_tip_experiment = []
-y_tip_experiment = []
-x_tip_paper = tip_position_paper["x_tip_position"]
-y_tip_paper = tip_position_paper["y_tip_position"]
+    with open("cantilever_distributed_load_data.json", "r") as file:
+        tip_position_paper = json.load(file)
+        tip_position_paper = tip_position_paper["conservative"]
 
-load_on_rod = np.arange(1, 26, 2)
-for load in load_on_rod:
-    tip_displacement = conservative_force_simulator(load)
-    x_tip_experiment.append(tip_displacement[0])
-    y_tip_experiment.append(tip_displacement[1])
+    x_tip_experiment = []
+    y_tip_experiment = []
+    x_tip_paper = tip_position_paper["x_tip_position"]
+    y_tip_paper = tip_position_paper["y_tip_position"]
 
-plt.plot(
-    load_on_rod,
-    x_tip_paper,
-    color="black",
-    marker="*",
-    linestyle="--",
-    label="Theoretical_x",
-)
-plt.plot(
-    load_on_rod,
-    y_tip_paper,
-    color="black",
-    marker="*",
-    linestyle=":",
-    label="Theoretical_y",
-)
-plt.scatter(
-    load_on_rod,
-    x_tip_experiment,
-    color="blue",
-    marker="s",
-    linestyle="None",
-    label="x_tip/L",
-)
-plt.scatter(
-    load_on_rod,
-    y_tip_experiment,
-    color="red",
-    marker="s",
-    linestyle="None",
-    label="y_tip/L",
-)
+    load_on_rod = np.arange(1, 26, 2)
+    for load in load_on_rod:
+        tip_displacement = conservative_force_simulator(load)
+        x_tip_experiment.append(tip_displacement[0])
+        y_tip_experiment.append(tip_displacement[1])
 
-plt.title("Conservative-Load Elastica Simulation Results")
-# Title
-plt.xlabel("Load")  # X-axis label
-plt.ylabel("x_tip/L and y_tip/L")  # Y-axis label
-plt.grid()
-plt.legend()  # Optional: Add a grid
-plt.show()  # Display the plot
+    plt.plot(
+        load_on_rod,
+        x_tip_paper,
+        color="black",
+        marker="*",
+        linestyle="--",
+        label="Theoretical_x",
+    )
+    plt.plot(
+        load_on_rod,
+        y_tip_paper,
+        color="black",
+        marker="*",
+        linestyle=":",
+        label="Theoretical_y",
+    )
+    plt.scatter(
+        load_on_rod,
+        x_tip_experiment,
+        color="blue",
+        marker="s",
+        linestyle="None",
+        label="x_tip/L",
+    )
+    plt.scatter(
+        load_on_rod,
+        y_tip_experiment,
+        color="red",
+        marker="s",
+        linestyle="None",
+        label="y_tip/L",
+    )
+
+    plt.title("Conservative-Load Elastica Simulation Results")
+    # Title
+    plt.xlabel("Load")  # X-axis label
+    plt.ylabel("x_tip/L and y_tip/L")  # Y-axis label
+    plt.grid()
+    plt.legend()  # Optional: Add a grid
+    plt.show()  # Display the plot
