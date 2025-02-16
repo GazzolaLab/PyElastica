@@ -4,7 +4,6 @@ import numpy as np
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from Tumbling_Unconstrained_Rod_postprocessing import (
-    EndPointTorque,
     EndpointforcesWithTimeFactor,
     EndpointtorqueWithTimeFactor,
 )

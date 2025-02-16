@@ -3,20 +3,8 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from tqdm import tqdm
 from typing import Dict, Sequence
-
-pass
 import logging
-from numpy.testing import assert_allclose
 from elastica.utils import MaxDimension, Tolerance
-from elastica._linalg import _batch_cross, _batch_norm, _batch_dot
-from elastica.rod.factory_function import (
-    _assert_dim,
-    _position_validity_checker,
-    _directors_validity_checker,
-    _position_validity_checker_ring_rod,
-)
-
-pass
 
 
 def find_tip_position(rod, n_elem):

@@ -18,15 +18,15 @@ def cantilever_subjected_to_a_nonconservative_load(
     base_radius,
     youngs_modulus,
     dimentionless_varible,
-    Animation=False,
-    PLOT_FIGURE_Equilibrium=False,
+    animation=False,
+    plot_figure_equilibrium=False,
 ):
-    class StretchingBeamSimulator(
+    class SquareRodSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
         pass
 
-    stretch_sim = StretchingBeamSimulator()
+    squarerod_sim = SquareRodSimulator()
 
     stretchable_rod = ea.CosseratRod.straight_rod(
         n_elem,
@@ -42,9 +42,9 @@ def cantilever_subjected_to_a_nonconservative_load(
 
     adjust_square_cross_section(stretchable_rod, youngs_modulus, side_length)
 
-    stretch_sim.append(stretchable_rod)
+    squarerod_sim.append(stretchable_rod)
 
-    stretch_sim.constrain(stretchable_rod).using(
+    squarerod_sim.constrain(stretchable_rod).using(
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
@@ -52,14 +52,14 @@ def cantilever_subjected_to_a_nonconservative_load(
         density * base_area * (base_length**3)
     )
 
-    stretch_sim.add_forcing_to(stretchable_rod).using(NonconserativeForce, load)
+    squarerod_sim.add_forcing_to(stretchable_rod).using(NonconserativeForce, load)
 
     # add damping
     dl = base_length / n_elem
     dt = 0.1 * dl / 50
     damping_constant = 0.2
 
-    stretch_sim.dampen(stretchable_rod).using(
+    squarerod_sim.dampen(stretchable_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
@@ -108,19 +108,19 @@ def cantilever_subjected_to_a_nonconservative_load(
 
     recorded_history = ea.defaultdict(list)
 
-    stretch_sim.collect_diagnostics(stretchable_rod).using(
+    squarerod_sim.collect_diagnostics(stretchable_rod).using(
         AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
     )
 
-    stretch_sim.finalize()
+    squarerod_sim.finalize()
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    print(stretch_sim)
+    print(squarerod_sim)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, stretch_sim, final_time, total_steps)
+    ea.integrate(timestepper, squarerod_sim, final_time, total_steps)
 
-    if PLOT_FIGURE_Equilibrium:
+    if plot_figure_equilibrium:
 
         plt.plot(
             recorded_history["time"],
@@ -136,7 +136,7 @@ def cantilever_subjected_to_a_nonconservative_load(
         plt.show()
 
     rendering_fps = 30
-    if Animation:
+    if animation:
         plot_video_with_surface(
             [recorded_history],
             video_name="cantilever_Non-conservative_distributed_load.mp4",

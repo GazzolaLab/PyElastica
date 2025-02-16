@@ -37,15 +37,15 @@ def cantilever_subjected_to_a_transversal_load(
     base_radius,
     youngs_modulus,
     load,
-    PLOT_FIGURE,
-    PLOT_FIGURE_Reach_Equilibrium,
+    plot_figure,
+    plot_figure_reach_equilibrium,
 ):
-    class StretchingBeamSimulator(
+    class SquareRodSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
         pass
 
-    stretch_sim = StretchingBeamSimulator()
+    square_rod = SquareRodSimulator()
 
     rendering_fps = 30
 
@@ -83,19 +83,19 @@ def cantilever_subjected_to_a_transversal_load(
 
     adjust_square_cross_section(rod, youngs_modulus, side_length)
 
-    stretch_sim.append(rod)
+    square_rod.append(rod)
 
     dl = base_length / n_elem
     dt = 0.01 * dl / 50
     step_skip = int(1.0 / (rendering_fps * dt))
 
-    stretch_sim.constrain(rod).using(
+    square_rod.constrain(rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     print("One end of the rod is now fixed in place")
 
-    stretch_sim.dampen(rod).using(
+    square_rod.dampen(rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=0.1,
         time_step=dt,
@@ -106,7 +106,7 @@ def cantilever_subjected_to_a_transversal_load(
     origin_force = np.array([0.0, 0.0, 0.0])
     end_force = np.array([0.0, 0.0, load])
 
-    stretch_sim.add_forcing_to(rod).using(
+    square_rod.add_forcing_to(rod).using(
         EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
     )
     print("Forces added to the rod")
@@ -153,7 +153,7 @@ def cantilever_subjected_to_a_transversal_load(
 
     recorded_history = ea.defaultdict(list)
 
-    stretch_sim.collect_diagnostics(rod).using(
+    square_rod.collect_diagnostics(rod).using(
         CantileverTransversalLoadCallBack,
         step_skip=step_skip,
         callback_params=recorded_history,
@@ -163,15 +163,15 @@ def cantilever_subjected_to_a_transversal_load(
     total_steps = int(final_time / dt)
     print("Total steps to take", total_steps)
 
-    stretch_sim.finalize()
+    square_rod.finalize()
     print("System finalized")
     rod.rest_kappa[...] = rod.kappa
     rod.rest_sigma[...] = rod.sigma
 
     timestepper = PositionVerlet()
 
-    integrate(timestepper, stretch_sim, final_time, total_steps)
-    if PLOT_FIGURE:
+    integrate(timestepper, square_rod, final_time, total_steps)
+    if plot_figure:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         pos = rod.position_collection.view()
@@ -182,7 +182,7 @@ def cantilever_subjected_to_a_transversal_load(
         ax.view_init(elev=20, azim=20)
         plt.show()
 
-    if PLOT_FIGURE_Reach_Equilibrium:
+    if plot_figure_reach_equilibrium:
         plt.plot(
             recorded_history["time"],
             recorded_history["velocity_magnitude"],
@@ -226,8 +226,8 @@ if __name__ == "__main__":
         base_radius,
         youngs_modulus,
         load=3.0,
-        PLOT_FIGURE=True,
-        PLOT_FIGURE_Reach_Equilibrium=True,
+        plot_figure=True,
+        plot_figure_reach_equilibrium=True,
     )
     cantilever_subjected_to_a_transversal_load(
         32,
@@ -236,6 +236,6 @@ if __name__ == "__main__":
         base_radius,
         youngs_modulus,
         load=6.0,
-        PLOT_FIGURE=True,
-        PLOT_FIGURE_Reach_Equilibrium=True,
+        plot_figure=True,
+        plot_figure_reach_equilibrium=True,
     )

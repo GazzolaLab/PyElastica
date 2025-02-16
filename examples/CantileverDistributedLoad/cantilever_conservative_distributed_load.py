@@ -1,4 +1,3 @@
-# from charset_normalizer.legacy import ResultDict
 from matplotlib import pyplot as plt
 import numpy as np
 import elastica as ea
@@ -10,13 +9,13 @@ from cantilever_distrubuted_load_postprecessing import (
 )
 
 
-def conservative_force_simulator(load, Animation=False):
+def conservative_force_simulator(load, animation=False):
     class StretchingBeamSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
         pass
 
-    stretch_sim = StretchingBeamSimulator()
+    squarerod_sim = StretchingBeamSimulator()
     final_time = 10
 
     # setting up test params
@@ -42,7 +41,7 @@ def conservative_force_simulator(load, Animation=False):
 
     rendering_fps = 30
 
-    stretchable_rod = ea.CosseratRod.straight_rod(
+    square_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -54,16 +53,16 @@ def conservative_force_simulator(load, Animation=False):
         shear_modulus=shear_modulus,
     )
 
-    adjust_square_cross_section(stretchable_rod, youngs_modulus, side_length)
+    adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
-    stretch_sim.append(stretchable_rod)
-    stretch_sim.constrain(stretchable_rod).using(
+    squarerod_sim.append(square_rod)
+    squarerod_sim.constrain(square_rod).using(
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     conservative_load = np.array([0.0, -end_force_x, 0.0])
 
-    stretch_sim.add_forcing_to(stretchable_rod).using(
+    squarerod_sim.add_forcing_to(square_rod).using(
         ea.GravityForces, acc_gravity=conservative_load
     )
 
@@ -71,7 +70,7 @@ def conservative_force_simulator(load, Animation=False):
 
     damping_constant = 0.1
 
-    stretch_sim.dampen(stretchable_rod).using(
+    squarerod_sim.dampen(square_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
@@ -107,38 +106,33 @@ def conservative_force_simulator(load, Animation=False):
                 )
                 self.callback_params["velocity_magnitude"].append(
                     (
-                        stretchable_rod.velocity_collection[-1][0] ** 2
-                        + stretchable_rod.velocity_collection[-1][1] ** 2
-                        + stretchable_rod.velocity_collection[-1][2] ** 2
+                        square_rod.velocity_collection[-1][0] ** 2
+                        + square_rod.velocity_collection[-1][1] ** 2
+                        + square_rod.velocity_collection[-1][2] ** 2
                     )
                     ** 0.5
                 )
 
     recorded_history = ea.defaultdict(list)
-    stretch_sim.collect_diagnostics(stretchable_rod).using(
+    squarerod_sim.collect_diagnostics(square_rod).using(
         CantileverDistributedLoadCallBack,
         step_skip=200,
         callback_params=recorded_history,
     )
 
-    stretch_sim.finalize()
+    squarerod_sim.finalize()
     timestepper = ea.PositionVerlet()
-    # timestepper = PEFRL()
 
     total_steps = int(final_time / dt)
-    ea.integrate(timestepper, stretch_sim, final_time, total_steps)
+    ea.integrate(timestepper, squarerod_sim, final_time, total_steps)
 
     relative_tip_position = np.zeros(
         2,
     )
-    relative_tip_position[0] = (
-        find_tip_position(stretchable_rod, n_elem)[0] / base_length
-    )
-    relative_tip_position[1] = (
-        -find_tip_position(stretchable_rod, n_elem)[1] / base_length
-    )
+    relative_tip_position[0] = find_tip_position(square_rod, n_elem)[0] / base_length
+    relative_tip_position[1] = -find_tip_position(square_rod, n_elem)[1] / base_length
 
-    if Animation:
+    if animation:
         plot_video_with_surface(
             [recorded_history],
             video_name="cantilever_conservative_distributed_load.mp4",
@@ -156,12 +150,8 @@ def conservative_force_simulator(load, Animation=False):
     relative_tip_position = np.zeros(
         2,
     )
-    relative_tip_position[0] = (
-        find_tip_position(stretchable_rod, n_elem)[0] / base_length
-    )
-    relative_tip_position[1] = (
-        -find_tip_position(stretchable_rod, n_elem)[1] / base_length
-    )
+    relative_tip_position[0] = find_tip_position(square_rod, n_elem)[0] / base_length
+    relative_tip_position[1] = -find_tip_position(square_rod, n_elem)[1] / base_length
 
     print(relative_tip_position)
     return relative_tip_position

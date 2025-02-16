@@ -33,12 +33,12 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     poisson_ratio = 0
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    class StretchingBeamSimulator(
+    class SquareRodSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
         pass
 
-    stretch_sim = StretchingBeamSimulator()
+    squarerod_sim = SquareRodSimulator()
 
     density = 1000
     t = np.linspace(0, 0.25 * np.pi, n_elem + 1)
@@ -75,21 +75,21 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     # Adjust the Cross Section
     adjust_square_cross_section(rod, youngs_modulus, side_length)
 
-    stretch_sim.append(rod)
+    squarerod_sim.append(rod)
 
-    # stretch_sim.finalize()
+    # squarerod_sim.finalize()
     rod.rest_kappa[...] = rod.kappa
 
     dl = base_length / n_elem
     dt = 0.01 * dl / 100
 
-    stretch_sim.constrain(rod).using(
+    squarerod_sim.constrain(rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     print("One end of the rod is now fixed in place")
 
-    stretch_sim.dampen(rod).using(
+    squarerod_sim.dampen(rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=0.3,
         time_step=dt,
@@ -100,7 +100,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     origin_force = np.array([0.0, 0.0, 0.0])
     end_force = np.array([0.0, 0.0, 6.0])
 
-    stretch_sim.add_forcing_to(rod).using(
+    squarerod_sim.add_forcing_to(rod).using(
         EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
     )
     print("Forces added to the rod")
@@ -110,7 +110,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     total_steps = int(final_time / dt)
     print("Total steps to take", total_steps)
 
-    stretch_sim.finalize()
+    squarerod_sim.finalize()
     print("System finalized")
 
     # The simulation result from Project3.3.2 with 400 elements/ Tip position Z
@@ -126,7 +126,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
 
     timestepper = PositionVerlet()
 
-    integrate(timestepper, stretch_sim, final_time, total_steps)
+    integrate(timestepper, squarerod_sim, final_time, total_steps)
     print(rod.position_collection[2, ...])
 
     error, l1, l2, linf = calculate_error_norm(
