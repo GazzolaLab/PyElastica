@@ -10,12 +10,12 @@ from cantilever_distrubuted_load_postprecessing import (
 
 
 def conservative_force_simulator(load, animation=False):
-    class StretchingBeamSimulator(
+    class SquareRodSimulator(
         ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
     ):
         pass
 
-    squarerod_sim = StretchingBeamSimulator()
+    square_rod_sim = SquareRodSimulator()
     final_time = 10
 
     # setting up test params
@@ -55,14 +55,14 @@ def conservative_force_simulator(load, animation=False):
 
     adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
-    squarerod_sim.append(square_rod)
-    squarerod_sim.constrain(square_rod).using(
+    square_rod_sim.append(square_rod)
+    square_rod_sim.constrain(square_rod).using(
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     conservative_load = np.array([0.0, -end_force_x, 0.0])
 
-    squarerod_sim.add_forcing_to(square_rod).using(
+    square_rod_sim.add_forcing_to(square_rod).using(
         ea.GravityForces, acc_gravity=conservative_load
     )
 
@@ -70,7 +70,7 @@ def conservative_force_simulator(load, animation=False):
 
     damping_constant = 0.1
 
-    squarerod_sim.dampen(square_rod).using(
+    square_rod_sim.dampen(square_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
@@ -114,17 +114,17 @@ def conservative_force_simulator(load, animation=False):
                 )
 
     recorded_history = ea.defaultdict(list)
-    squarerod_sim.collect_diagnostics(square_rod).using(
+    square_rod_sim.collect_diagnostics(square_rod).using(
         CantileverDistributedLoadCallBack,
         step_skip=200,
         callback_params=recorded_history,
     )
 
-    squarerod_sim.finalize()
+    square_rod_sim.finalize()
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    ea.integrate(timestepper, squarerod_sim, final_time, total_steps)
+    ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
 
     relative_tip_position = np.zeros(
         2,

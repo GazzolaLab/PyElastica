@@ -46,7 +46,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     tmp[0, :] = -radius * np.cos(t) + 1
     tmp[1, :] = radius * np.sin(t)
     tmp[2, :] *= 0.0
-    dir = np.zeros((3, 3, n_elem), dtype=np.float64)
+    director = np.zeros((3, 3, n_elem), dtype=np.float64)
     tan = tmp[:, 1:] - tmp[:, :-1]
     tan = tan / np.linalg.norm(tan, axis=0)
     side_length = 0.01
@@ -54,9 +54,9 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     d1 = np.array([0.0, 0.0, 1.0]).reshape((3, 1))
     d2 = np.cross(tan, d1, axis=0)
 
-    dir[0, :, :] = d1
-    dir[1, :, :] = d2
-    dir[2, :, :] = tan
+    director[0, :, :] = d1
+    director[1, :, :] = d2
+    director[2, :, :] = tan
 
     rod = ea.CosseratRod.straight_rod(
         n_elem,
@@ -69,7 +69,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         position=tmp,
-        directors=dir,
+        directors=director,
     )
 
     # Adjust the Cross Section

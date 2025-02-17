@@ -46,7 +46,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     tmp[0, :] = -radius * np.cos(t) + 1
     tmp[1, :] = radius * np.sin(t)
     tmp[2, :] *= 0.0
-    dir = np.zeros((3, 3, n_elem), dtype=np.float64)
+    director = np.zeros((3, 3, n_elem), dtype=np.float64)
     tan = tmp[:, 1:] - tmp[:, :-1]
     tan = tan / np.linalg.norm(tan, axis=0)
     side_length = 0.01
@@ -54,11 +54,11 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     d1 = np.array([0.0, 0.0, 1.0]).reshape((3, 1))
     d2 = np.cross(tan, d1, axis=0)
 
-    dir[0, :, :] = d1
-    dir[1, :, :] = d2
-    dir[2, :, :] = tan
+    director[0, :, :] = d1
+    director[1, :, :] = d2
+    director[2, :, :] = tan
 
-    rod = ea.CosseratRod.straight_rod(
+    square_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -69,27 +69,27 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         position=tmp,
-        directors=dir,
+        directors=director,
     )
 
     # Adjust the Cross Section
-    adjust_square_cross_section(rod, youngs_modulus, side_length)
+    adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
-    square_rod_sim.append(rod)
+    square_rod_sim.append(square_rod)
 
     # square_rod_sim.finalize()
-    rod.rest_kappa[...] = rod.kappa
+    square_rod.rest_kappa[...] = square_rod.kappa
 
     dl = base_length / n_elem
     dt = 0.01 * dl / 100
 
-    square_rod_sim.constrain(rod).using(
+    square_rod_sim.constrain(square_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     print("One end of the rod is now fixed in place")
 
-    square_rod_sim.dampen(rod).using(
+    square_rod_sim.dampen(square_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=0.3,
         time_step=dt,
@@ -100,7 +100,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     origin_force = np.array([0.0, 0.0, 0.0])
     end_force = np.array([0.0, 0.0, 6.0])
 
-    square_rod_sim.add_forcing_to(rod).using(
+    square_rod_sim.add_forcing_to(square_rod).using(
         EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
     )
     print("Forces added to the rod")
@@ -127,15 +127,15 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     timestepper = PositionVerlet()
 
     integrate(timestepper, square_rod_sim, final_time, total_steps)
-    print(rod.position_collection[2, ...])
+    print(square_rod.position_collection[2, ...])
 
     error, l1, l2, linf = calculate_error_norm(
         analytical_results_sub,
-        rod.position_collection[2, ...],
+        square_rod.position_collection[2, ...],
         n_elem,
     )
 
-    return {"rod": rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
+    return {"rod": square_rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
 
 
 if __name__ == "__main__":

@@ -41,9 +41,9 @@ class NonConstrainRodSimulator(
     pass
 
 
-sim = NonConstrainRodSimulator()
+square_rod_sim = NonConstrainRodSimulator()
 
-rod = ea.CosseratRod.straight_rod(
+square_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -55,13 +55,13 @@ rod = ea.CosseratRod.straight_rod(
 )
 
 
-adjust_square_cross_section(rod, youngs_modulus, side_length)
+adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
 
-print("mass_second_moment_of_inertia=", rod.mass_second_moment_of_inertia)
-print("bend_matrix=", rod.bend_matrix)
+print("mass_second_moment_of_inertia=", square_rod.mass_second_moment_of_inertia)
+print("bend_matrix=", square_rod.bend_matrix)
 
-sim.append(rod)
+square_rod_sim.append(square_rod)
 
 dl = base_length / n_elem
 dt = 0.01 * dl / 1
@@ -69,19 +69,19 @@ dt = 0.01 * dl / 1
 origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([20.0, 0.0, 0.0])
 
-sim.add_forcing_to(rod).using(
+square_rod_sim.add_forcing_to(square_rod).using(
     EndpointforcesWithTimeFactor, origin_force, end_force, lamda_t_function
 )
 
 
-sim.add_forcing_to(rod).using(
+square_rod_sim.add_forcing_to(square_rod).using(
     EndpointtorqueWithTimeFactor,
     1,
     lamda_t_function,
     direction=np.array([0.0, 200.0, -100.0]),
 )
 
-sim.dampen(rod).using(
+square_rod_sim.dampen(square_rod).using(
     ea.AnalyticalLinearDamper,
     damping_constant=0.0,
     time_step=dt,
@@ -122,17 +122,17 @@ class TumblingUnconstrainedRodCallBack(ea.CallBackBaseClass):
 if __name__ == "__main__":
 
     recorded_history = ea.defaultdict(list)
-    sim.collect_diagnostics(rod).using(
+    square_rod_sim.collect_diagnostics(square_rod).using(
         TumblingUnconstrainedRodCallBack,
         step_skip=step_skip,
         callback_params=recorded_history,
     )
 
-    sim.finalize()
+    square_rod_sim.finalize()
     print("System finalized")
 
     timestepper = PositionVerlet()
-    integrate(timestepper, sim, final_time, total_steps)
+    integrate(timestepper, square_rod_sim, final_time, total_steps)
 
     with open("TumblingUnconstrainedRod.json", "r") as file:
         analytic_data = json.load(file)

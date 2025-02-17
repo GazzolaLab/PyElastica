@@ -26,9 +26,9 @@ def cantilever_subjected_to_a_nonconservative_load(
     ):
         pass
 
-    squarerod_sim = SquareRodSimulator()
+    square_rod_sim = SquareRodSimulator()
 
-    stretchable_rod = ea.CosseratRod.straight_rod(
+    square_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -40,11 +40,11 @@ def cantilever_subjected_to_a_nonconservative_load(
         shear_modulus=shear_modulus,
     )
 
-    adjust_square_cross_section(stretchable_rod, youngs_modulus, side_length)
+    adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
-    squarerod_sim.append(stretchable_rod)
+    square_rod_sim.append(square_rod)
 
-    squarerod_sim.constrain(stretchable_rod).using(
+    square_rod_sim.constrain(square_rod).using(
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
@@ -52,21 +52,21 @@ def cantilever_subjected_to_a_nonconservative_load(
         density * base_area * (base_length**3)
     )
 
-    squarerod_sim.add_forcing_to(stretchable_rod).using(NonconserativeForce, load)
+    square_rod_sim.add_forcing_to(square_rod).using(NonconserativeForce, load)
 
     # add damping
     dl = base_length / n_elem
     dt = 0.1 * dl / 50
     damping_constant = 0.2
 
-    squarerod_sim.dampen(stretchable_rod).using(
+    square_rod_sim.dampen(square_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=dt,
     )
 
     # Add call backs
-    class AxialStretchingCallBack(ea.CallBackBaseClass):
+    class NonConservativeDistributedLoadCallBack(ea.CallBackBaseClass):
         """
         Tracks the velocity norms of the rod
         """
@@ -99,26 +99,28 @@ def cantilever_subjected_to_a_nonconservative_load(
                 )
                 self.callback_params["velocity_magnitude"].append(
                     (
-                        stretchable_rod.velocity_collection[-1][0] ** 2
-                        + stretchable_rod.velocity_collection[-1][1] ** 2
-                        + stretchable_rod.velocity_collection[-1][2] ** 2
+                        square_rod.velocity_collection[-1][0] ** 2
+                        + square_rod.velocity_collection[-1][1] ** 2
+                        + square_rod.velocity_collection[-1][2] ** 2
                     )
                     ** 0.5
                 )
 
     recorded_history = ea.defaultdict(list)
 
-    squarerod_sim.collect_diagnostics(stretchable_rod).using(
-        AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
+    square_rod_sim.collect_diagnostics(square_rod).using(
+        NonConservativeDistributedLoadCallBack,
+        step_skip=200,
+        callback_params=recorded_history,
     )
 
-    squarerod_sim.finalize()
+    square_rod_sim.finalize()
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    print(squarerod_sim)
+    print(square_rod_sim)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, squarerod_sim, final_time, total_steps)
+    ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
 
     if plot_figure_equilibrium:
 
@@ -151,9 +153,9 @@ def cantilever_subjected_to_a_nonconservative_load(
             vis2D=False,  # Turn on projected (2D) visualization
         )
 
-    pos = stretchable_rod.position_collection.view()
+    pos = square_rod.position_collection.view()
 
-    tip_position = find_tip_position(stretchable_rod, n_elem)
+    tip_position = find_tip_position(square_rod, n_elem)
     relative_tip_position = np.zeros((2,))
 
     relative_tip_position[0] = tip_position[0] / base_length
