@@ -3,12 +3,10 @@ import elastica as ea
 import numpy as np
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
-from Tumbling_Unconstrained_Rod_postprocessing import (
+from elastica.external_forces import UniformTorques
+from tumbling_unconstrained_rod_postprocessing import (
     EndpointforcesWithTimeFactor,
     EndpointtorqueWithTimeFactor,
-)
-from elastica.external_forces import UniformTorques
-from Tumbling_Unconstrained_Rod_postprocessing import (
     plot_video_with_surface,
     adjust_square_cross_section,
     lamda_t_function,
