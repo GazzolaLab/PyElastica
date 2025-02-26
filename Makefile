@@ -63,6 +63,10 @@ format-codestyle: black autoflake-format
 .PHONY: mypy
 mypy:
 	poetry run mypy --config-file pyproject.toml elastica
+	poetry run mypy --config-file pyproject.toml --explicit-package-bases \
+		examples/AxialStretchingCase \
+		examples/ButterflyCase \
+		examples/CatenaryCase
 
 .PHONY: test
 test:

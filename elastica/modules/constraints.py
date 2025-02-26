@@ -18,9 +18,9 @@ from elastica.typing import (
     ConstrainingIndex,
     RigidBodyType,
     RodType,
-    BlockSystemType,
 )
-from .protocol import SystemCollectionProtocol, ModuleProtocol
+from elastica.memory_block.protocol import BlockRodProtocol
+from .protocol import ConstrainedSystemCollectionProtocol, ModuleProtocol
 
 
 class Constraints:
@@ -35,13 +35,13 @@ class Constraints:
             List of boundary condition classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: ConstrainedSystemCollectionProtocol) -> None:
         self._constraints_list: list[ModuleProtocol] = []
         super(Constraints, self).__init__()
         self._feature_group_finalize.append(self._finalize_constraints)
 
     def constrain(
-        self: SystemCollectionProtocol, system: "RodType | RigidBodyType"
+        self: ConstrainedSystemCollectionProtocol, system: "RodType | RigidBodyType"
     ) -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
@@ -67,7 +67,7 @@ class Constraints:
 
         return _constraint
 
-    def _finalize_constraints(self: SystemCollectionProtocol) -> None:
+    def _finalize_constraints(self: ConstrainedSystemCollectionProtocol) -> None:
         """
         In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
         periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
@@ -84,7 +84,7 @@ class Constraints:
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
                 memory_block_idx = self.get_system_index(block)
-                block_system = cast(BlockSystemType, self[memory_block_idx])
+                block_system = cast(BlockRodProtocol, self[memory_block_idx])
                 self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )

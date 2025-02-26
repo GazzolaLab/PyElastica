@@ -6,14 +6,18 @@ from numpy.typing import NDArray
 from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtocol
 
 
-class _RodEnergy(Protocol):
+class _CosseratRodStrainEnergy(Protocol):
     def compute_bending_energy(self) -> NDArray[np.float64]: ...
 
     def compute_shear_energy(self) -> NDArray[np.float64]: ...
 
+    def compute_translational_energy(self) -> NDArray[np.float64]: ...
+
+    def compute_rotational_energy(self) -> NDArray[np.float64]: ...
+
 
 class CosseratRodProtocol(
-    SystemProtocol, SlenderBodyGeometryProtocol, _RodEnergy, Protocol
+    SystemProtocol, SlenderBodyGeometryProtocol, _CosseratRodStrainEnergy, Protocol
 ):
 
     mass: NDArray[np.float64]

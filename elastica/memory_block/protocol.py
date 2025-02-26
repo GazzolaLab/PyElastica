@@ -1,14 +1,22 @@
 from typing import Protocol
-from elastica.systems.protocol import SystemProtocol
-
-import numpy as np
-
 from elastica.rod.protocol import CosseratRodProtocol
 from elastica.rigidbody.protocol import RigidBodyProtocol
-from elastica.systems.protocol import SymplecticSystemProtocol
+from elastica.systems.protocol import SystemProtocol
 
 
-class BlockSystemProtocol(SystemProtocol, Protocol):
+class BlockProtocol(Protocol):
     @property
     def n_systems(self) -> int:
         """Number of systems in the block."""
+
+
+class BlockSystemProtocol(SystemProtocol, BlockProtocol, Protocol):
+    pass
+
+
+class BlockRodProtocol(BlockProtocol, CosseratRodProtocol, Protocol):
+    pass
+
+
+class BlockRigidBodyProtocol(BlockProtocol, RigidBodyProtocol, Protocol):
+    pass

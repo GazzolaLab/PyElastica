@@ -9,11 +9,11 @@ import scipy as sci
 
 def plot_video(
     plot_params: dict,
-    video_name="video.mp4",
-    fps=15,
-    xlim=(0, 4),
-    ylim=(-1, 1),
-):
+    video_name: str = "video.mp4",
+    fps: int = 15,
+    xlim: tuple[float, float] = (0, 4),
+    ylim: tuple[float, float] = (-1, 1),
+) -> None:
     import matplotlib.animation as manimation
 
     positions_over_time = np.array(plot_params["position"])
@@ -43,7 +43,12 @@ def plot_video(
     plt.close(plt.gcf())
 
 
-def plot_catenary(plot_params: dict, xlim=(0, 1), ylim=(-0.5, 0.5), base_length=1.0):
+def plot_catenary(
+    plot_params: dict,
+    xlim: tuple[float, float] = (0, 1),
+    ylim: tuple[float, float] = (-0.5, 0.5),
+    base_length: float = 1.0,
+) -> None:
     """
     Catenary analytical solution from Routh, Edward John (1891). "Chapter X: On Strings". A Treatise on Analytical Statics. University Press.
     """
@@ -52,7 +57,7 @@ def plot_catenary(plot_params: dict, xlim=(0, 1), ylim=(-0.5, 0.5), base_length=
     lowest_point = np.min(position[-1][2])
     x_catenary = np.linspace(0, base_length, 100)
 
-    def f_non_elastic_catenary(x):
+    def f_non_elastic_catenary(x: float) -> float:
         return x * (1 - np.cosh(1 / (2 * x))) - lowest_point
 
     a = sci.optimize.fsolve(f_non_elastic_catenary, x0=1.0)  # solve for a
