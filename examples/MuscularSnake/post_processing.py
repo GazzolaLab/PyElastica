@@ -220,8 +220,8 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
                         rod_com_lines[rod_idx].set_xdata([com[0]])
@@ -311,8 +311,8 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[2])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[2]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
                         rod_com_lines[rod_idx].set_xdata([com[2]])
@@ -404,8 +404,8 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[2])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[2]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
                         rod_com_lines[rod_idx].set_xdata([com[0]])
