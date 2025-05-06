@@ -222,7 +222,7 @@ def test_isnan_check():
 
     blocksize = 100
 
-    input_vector = np.repeat(np.array([np.NaN]), blocksize)
+    input_vector = np.repeat(np.array([np.nan]), blocksize)
     correct_vector = np.repeat(np.array([np.True_]), blocksize)
     test_vector = _isnan_check(input_vector)
 
