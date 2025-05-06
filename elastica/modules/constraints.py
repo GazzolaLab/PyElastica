@@ -4,8 +4,23 @@ Constraints
 
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
+from typing import Any, Type, cast
+from typing_extensions import Self
+
+import functools
+
+import numpy as np
 
 from elastica.boundary_conditions import ConstraintBase
+
+from elastica.typing import (
+    SystemIdxType,
+    ConstrainingIndex,
+    RigidBodyType,
+    RodType,
+    BlockSystemType,
+)
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
 class Constraints:
@@ -20,14 +35,14 @@ class Constraints:
             List of boundary condition classes defined for rod-like objects.
     """
 
-    def __init__(self):
-        self._constraints = []
+    def __init__(self: SystemCollectionProtocol) -> None:
+        self._constraints_list: list[ModuleProtocol] = []
         super(Constraints, self).__init__()
-        self._feature_group_constrain_values.append(self._constrain_values)
-        self._feature_group_constrain_rates.append(self._constrain_rates)
         self._feature_group_finalize.append(self._finalize_constraints)
 
-    def constrain(self, system):
+    def constrain(
+        self: SystemCollectionProtocol, system: "RodType | RigidBodyType"
+    ) -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -42,46 +57,75 @@ class Constraints:
         -------
 
         """
-        sys_idx = self._get_sys_idx_if_valid(system)
+        sys_idx = self.get_system_index(system)
 
         # Create _Constraint object, cache it and return to user
-        _constraint = _Constraint(sys_idx)
-        self._constraints.append(_constraint)
+        _constraint: ModuleProtocol = _Constraint(sys_idx)
+        self._constraints_list.append(_constraint)
+        self._feature_group_constrain_values.append_id(_constraint)
+        self._feature_group_constrain_rates.append_id(_constraint)
 
         return _constraint
 
-    def _finalize_constraints(self):
+    def _finalize_constraints(self: SystemCollectionProtocol) -> None:
+        """
+        In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
+        periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
+        constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
+        """
+
+        for block in self.block_systems():
+            # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
+            if hasattr(block, "ring_rod_flag"):
+                from elastica._synchronize_periodic_boundary import (
+                    _ConstrainPeriodicBoundaries,
+                )
+
+                # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
+                # sys idx among other systems added and then apply boundary conditions.
+                memory_block_idx = self.get_system_index(block)
+                block_system = cast(BlockSystemType, self[memory_block_idx])
+                self.constrain(block_system).using(
+                    _ConstrainPeriodicBoundaries,
+                )
+
         # From stored _Constraint objects, instantiate the boundary conditions
         # inplace : https://stackoverflow.com/a/1208792
 
         # dev : the first index stores the rod index to apply the boundary condition
-        # to. Technically we can use another array but it its one more book-keeping
-        # step. Being lazy, I put them both in the same array
-        self._constraints[:] = [
-            (constraint.id(), constraint(self._systems[constraint.id()]))
-            for constraint in self._constraints
-        ]
-
+        # to.
         # Sort from lowest id to highest id for potentially better memory access
         # _constraints contains list of tuples. First element of tuple is rod number and
         # following elements are the type of boundary condition such as
         # [(0, ConstraintBase, OneEndFixedBC), (1, HelicalBucklingBC), ... ]
         # Thus using lambda we iterate over the list of tuples and use rod number (x[0])
         # to sort constraints.
-        self._constraints.sort(key=lambda x: x[0])
+        self._constraints_list.sort(key=lambda x: x.id())
+        for constraint in self._constraints_list:
+            sys_id = constraint.id()
+            constraint_instance = constraint.instantiate(self[sys_id])
+
+            constrain_values = functools.partial(
+                constraint_instance.constrain_values, system=self[sys_id]
+            )
+            constrain_rates = functools.partial(
+                constraint_instance.constrain_rates, system=self[sys_id]
+            )
+
+            self._feature_group_constrain_values.add_operators(
+                constraint, [constrain_values]
+            )
+            self._feature_group_constrain_rates.add_operators(
+                constraint, [constrain_rates]
+            )
 
         # At t=0.0, constrain all the boundary conditions (for compatability with
         # initial conditions)
-        self._constrain_values(time=0.0)
-        self._constrain_rates(time=0.0)
+        self.constrain_values(time=np.float64(0.0))
+        self.constrain_rates(time=np.float64(0.0))
 
-    def _constrain_values(self, time, *args, **kwargs):
-        for sys_id, constraint in self._constraints:
-            constraint.constrain_values(self._systems[sys_id], time, *args, **kwargs)
-
-    def _constrain_rates(self, time, *args, **kwargs):
-        for sys_id, constraint in self._constraints:
-            constraint.constrain_rates(self._systems[sys_id], time, *args, **kwargs)
+        self._constraints_list = []
+        del self._constraints_list
 
 
 class _Constraint:
@@ -91,14 +135,16 @@ class _Constraint:
     Attributes
     ----------
     _sys_idx: int
-    _bc_cls: list
+    _bc_cls: Type[ConstraintBase]
+    constrained_position_idx: ConstrainingIndex
+    constrained_director_idx: ConstrainingIndex
     *args
         Variable length argument list.
     **kwargs
         Arbitrary keyword arguments.
     """
 
-    def __init__(self, sys_idx: int):
+    def __init__(self, sys_idx: SystemIdxType) -> None:
         """
 
         Parameters
@@ -107,18 +153,27 @@ class _Constraint:
 
         """
         self._sys_idx = sys_idx
-        self._bc_cls = None
-        self._args = ()
-        self._kwargs = {}
+        self._bc_cls: Type[ConstraintBase]
+        self._args: Any
+        self._kwargs: Any
+        self.constrained_position_idx: ConstrainingIndex
+        self.constrained_director_idx: ConstrainingIndex
 
-    def using(self, bc_cls, *args, **kwargs):
+    def using(
+        self,
+        cls: Type[ConstraintBase],
+        *args: Any,
+        constrained_position_idx: ConstrainingIndex = (),
+        constrained_director_idx: ConstrainingIndex = (),
+        **kwargs: Any,
+    ) -> Self:
         """
         This method is a module to set which boundary condition class is used to
         enforce boundary condition from user defined rod-like objects.
 
         Parameters
         ----------
-        bc_cls : object
+        cls : Type[ConstraintBase]
             User defined boundary condition class.
         *args
             Variable length argument list
@@ -130,61 +185,55 @@ class _Constraint:
 
         """
         assert issubclass(
-            bc_cls, ConstraintBase
+            cls, ConstraintBase
         ), "{} is not a valid constraint. Constraint must be driven from ConstraintBase.".format(
-            bc_cls
+            cls
         )
-        self._bc_cls = bc_cls
+        self._bc_cls = cls
+        self.constrained_position_idx = constrained_position_idx
+        self.constrained_director_idx = constrained_director_idx
         self._args = args
         self._kwargs = kwargs
         return self
 
-    def id(self):
+    def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def __call__(self, rod, *args, **kwargs):
-        """Constructs a constraint after checks
-
-        Parameters
-        ----------
-        args
-        kwargs
-
-        Returns
-        -------
-
-        """
-        if not self._bc_cls:
+    def instantiate(self, system: "RodType | RigidBodyType") -> ConstraintBase:
+        """Constructs a constraint after checks"""
+        if not hasattr(self, "_bc_cls"):
             raise RuntimeError(
                 "No boundary condition provided to constrain rod"
                 "id {0} at {1}, but a BC was intended. Did you"
-                "forget to call the `using` method?".format(self.id(), rod)
+                "forget to call the `using` method?".format(self.id(), system)
             )
 
-        # If there is position, director in kwargs, deal with it first
-        # Returns None if not found
-        pos_indices = self._kwargs.get(
-            "constrained_position_idx", None
-        )  # calculate position indices as a tuple
-        director_indices = self._kwargs.get(
-            "constrained_director_idx", None
-        )  # calculate director indices as a tuple
-
-        # If pos_indices is not None, construct list else empty list
         # IMPORTANT : do copy for memory-safe operations
         positions = (
-            [rod.position_collection[..., idx].copy() for idx in pos_indices]
-            if pos_indices
+            [
+                system.position_collection[..., idx].copy()
+                for idx in self.constrained_position_idx
+            ]
+            if self.constrained_position_idx
             else []
         )
         directors = (
-            [rod.director_collection[..., idx].copy() for idx in director_indices]
-            if director_indices
+            [
+                system.director_collection[..., idx].copy()
+                for idx in self.constrained_director_idx
+            ]
+            if self.constrained_director_idx
             else []
         )
         try:
             bc = self._bc_cls(
-                *positions, *directors, *self._args, _system=rod, **self._kwargs
+                *positions,
+                *directors,
+                *self._args,
+                _system=system,
+                constrained_position_idx=self.constrained_position_idx,
+                constrained_director_idx=self.constrained_director_idx,
+                **self._kwargs,
             )
             return bc
         except (TypeError, IndexError):

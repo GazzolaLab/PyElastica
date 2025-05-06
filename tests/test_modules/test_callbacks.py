@@ -55,7 +55,7 @@ class TestCallBacks:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = callback()
+            _ = callback.instantiate()
         assert "Unable to construct" in str(excinfo.value)
 
 
@@ -80,7 +80,7 @@ class TestCallBacksMixin:
             sys_coll_with_callbacks.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_callbacks
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Callbacks require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -96,7 +96,7 @@ class TestCallBacksMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            scwc.collect_diagnostics(np.int_(100))
+            scwc.collect_diagnostics(np.int32(100))
         assert "exceeds number of" in str(excinfo.value)
 
     def test_callback_with_unregistered_system_throws(self, load_system_with_callbacks):
@@ -161,12 +161,17 @@ class TestCallBacksMixin:
 
     def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
 
         scwc._finalize_callback()
 
-        for (x, y) in scwc._callback_list:
+        for _callback in callback_features:
+            x = _callback.id()
+            y = _callback.instantiate()
             assert type(x) is int
             assert type(y) is callback_cls
+
+        assert not hasattr(scwc, "_callback_list")
 
     @pytest.mark.xfail
     def test_callback_finalize_sorted(self, load_rod_with_callbacks):
@@ -176,6 +181,21 @@ class TestCallBacksMixin:
 
         # this is allowed to fail (not critical)
         num = -np.inf
-        for (x, _) in scwc._callback_list:
+        for x, _ in scwc._callback_list:
             assert num < x
             num = x
+
+    def test_first_call_callback_during_finalize(self, mocker, load_rod_with_callbacks):
+        """
+        This test is to check if the callback is called during the finalize.
+        If this test fails, check if `apply_callbacks` is called during the finalization step.
+        """
+        scwc, callback_cls = load_rod_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
+
+        spy = mocker.spy(scwc, "apply_callbacks")
+        scwc._finalize_callback()
+
+        assert spy.call_count == 1
+        assert spy.call_args[1]["time"] == np.float64(0.0)
+        assert spy.call_args[1]["current_step"] == 0

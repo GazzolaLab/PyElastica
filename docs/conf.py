@@ -41,6 +41,7 @@ extensions = [
     #'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
+    "sphinxcontrib.mermaid",
     'numpydoc',
     'myst_parser',
 ]
@@ -98,3 +99,6 @@ autodoc_member_order = 'bysource'
 
 # -- Options for numpydoc ---------------------------------------------------
 numpydoc_show_class_members = False
+
+# -- Mermaid configuration ---------------------------------------------------
+mermaid_params = ['--theme', 'neutral']

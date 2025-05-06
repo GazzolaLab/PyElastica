@@ -6,13 +6,8 @@ from numpy.testing import assert_allclose
 from elastica.utils import Tolerance, MaxDimension
 from elastica.interaction import (
     InteractionPlane,
-    find_slipping_elements,
     AnisotropicFrictionalPlane,
-    node_to_element_mass_or_force,
     SlenderBodyTheory,
-    nodes_to_elements,
-    elements_to_nodes_inplace,
-    apply_normal_force_numba_rigid_body,
 )
 from elastica.contact_utils import (
     _node_to_element_mass_or_force,
@@ -105,7 +100,7 @@ class TestInteractionPlane:
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem, shift)
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
         correct_forces = external_forces  # since no contact
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -127,7 +122,7 @@ class TestInteractionPlane:
 
         [rod, interaction_plane, external_forces] = self.initializer(n_elem)
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         correct_forces = np.zeros((3, n_elem + 1))
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
@@ -158,7 +153,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -194,7 +189,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -224,7 +219,7 @@ class TestInteractionPlane:
             n_elem, shift=offset_of_plane_with_respect_to_rod, plane_normal=plane_normal
         )
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
         correct_forces = np.zeros((3, n_elem + 1))
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -269,7 +264,7 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
@@ -317,56 +312,9 @@ class TestInteractionPlane:
         correct_forces[..., 0] *= 0.5
         correct_forces[..., -1] *= 0.5
 
-        interaction_plane.apply_normal_force(rod)
+        interaction_plane.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
-
-
-class TestAuxiliaryFunctions:
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_linear_interpolation_slip_error_message(self, n_elem):
-        velocity_threshold = 1.0
-
-        # if slip velocity larger than threshold
-        velocity_slip = np.repeat(
-            np.array([0.0, 0.0, 2.0]).reshape(3, 1), n_elem, axis=1
-        )
-        error_message = (
-            "This function is removed in v0.3.2. Please use\n"
-            "elastica.contact_utils._find_slipping_elements()\n"
-            "instead for finding slipping elements."
-        )
-        with pytest.raises(NotImplementedError) as error_info:
-            slip_function = find_slipping_elements(velocity_slip, velocity_threshold)
-        assert error_info.value.args[0] == error_message
-
-    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_node_to_element_mass_or_force_error_message(self, n_elem):
-        random_vector = np.random.rand(3).reshape(3, 1)
-        input = np.repeat(random_vector, n_elem + 1, axis=1)
-        input[..., 0] *= 0.5
-        input[..., -1] *= 0.5
-        error_message = (
-            "This function is removed in v0.3.2. Please use\n"
-            "elastica.contact_utils._node_to_element_mass_or_force()\n"
-            "instead for converting the mass/forces on rod nodes to elements."
-        )
-        with pytest.raises(NotImplementedError) as error_info:
-            output = node_to_element_mass_or_force(input)
-        assert error_info.value.args[0] == error_message
-
-    @pytest.mark.parametrize("n_elem", [2, 10])
-    def test_not_impl_error_for_nodes_to_elements(self, n_elem):
-        random_vector = np.random.rand(3).reshape(3, 1)
-        input = np.repeat(random_vector, n_elem + 1, axis=1)
-        error_message = (
-            "This function is removed in v0.3.1. Please use\n"
-            "elastica.interaction.node_to_element_mass_or_force()\n"
-            "instead for node-to-element interpolation of mass/forces."
-        )
-        with pytest.raises(NotImplementedError) as error_info:
-            nodes_to_elements(input)
-        assert error_info.value.args[0] == error_message
 
 
 class TestAnisotropicFriction:
@@ -739,140 +687,33 @@ class TestAnisotropicFriction:
 
 
 # Slender Body Theory Unit Tests
+from elastica.interaction import (
+    sum_over_elements,
+)
 
-try:
-    from elastica.interaction import (
-        sum_over_elements,
-        node_to_element_position,
-        node_to_element_velocity,
-        node_to_element_pos_or_vel,
-    )
 
-    # These functions are used in the case if Numba is available
-    class TestAuxiliaryFunctionsForSlenderBodyTheory:
-        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_sum_over_elements(self, n_elem):
-            """
-            This function test sum over elements function with
-            respect to default python function .sum(). We write
-            this function because with numba we can get the sum
-            faster.
-            Parameters
-            ----------
-            n_elem
+# These functions are used in the case if Numba is available
+class TestAuxiliaryFunctionsForSlenderBodyTheory:
+    @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
+    def test_sum_over_elements(self, n_elem):
+        """
+        This function test sum over elements function with
+        respect to default python function .sum(). We write
+        this function because with numba we can get the sum
+        faster.
+        Parameters
+        ----------
+        n_elem
 
-            Returns
-            -------
+        Returns
+        -------
 
-            """
+        """
 
-            input_variable = np.random.rand(n_elem)
-            correct_output = input_variable.sum()
-            output = sum_over_elements(input_variable)
-            assert_allclose(correct_output, output, atol=Tolerance.atol())
-
-        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_node_to_element_position_error_message(self, n_elem):
-            """
-            This function tests node_to_element_position function. We are
-            converting node positions to element positions. Here also
-            we are using numba to speed up the process.
-
-            Parameters
-            ----------
-            n_elem
-
-            Returns
-            -------
-
-            """
-            random = np.random.rand()  # Adding some random numbers
-            input_position = random * np.ones((3, n_elem + 1))
-            correct_output = random * np.ones((3, n_elem))
-
-            error_message = (
-                "This function is removed in v0.3.2. For node-to-element_position() interpolation please use: \n"
-                "elastica.contact_utils._node_to_element_position() for rod position \n"
-                "For detail, refer to issue #113."
-            )
-            with pytest.raises(NotImplementedError) as error_info:
-                output = node_to_element_position(input_position)
-            assert error_info.value.args[0] == error_message
-
-        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_node_to_element_velocity_error_message(self, n_elem):
-            """
-            This function tests node_to_element_velocity function. We are
-            converting node velocities to element velocities. Here also
-            we are using numba to speed up the process.
-
-            Parameters
-            ----------
-            n_elem
-
-            Returns
-            -------
-
-            """
-            random = np.random.rand()  # Adding some random numbers
-            input_velocity = random * np.ones((3, n_elem + 1))
-            input_mass = 2.0 * random * np.ones(n_elem + 1)
-            correct_output = random * np.ones((3, n_elem))
-
-            error_message = (
-                "This function is removed in v0.3.2. For node-to-element_velocity() interpolation please use: \n"
-                "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
-                "For detail, refer to issue #113."
-            )
-            with pytest.raises(NotImplementedError) as error_info:
-                output = node_to_element_velocity(
-                    mass=input_mass, node_velocity_collection=input_velocity
-                )
-            assert error_info.value.args[0] == error_message
-
-        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_not_impl_error_for_node_to_element_pos_or_vel(self, n_elem):
-            random = np.random.rand()  # Adding some random numbers
-            input_velocity = random * np.ones((3, n_elem + 1))
-            error_message = (
-                "This function is removed in v0.3.0. For node-to-element interpolation please use: \n"
-                "elastica.contact_utils._node_to_element_position() for rod position \n"
-                "elastica.contact_utils._node_to_element_velocity() for rod velocity. \n"
-                "For detail, refer to issue #80."
-            )
-            with pytest.raises(NotImplementedError) as error_info:
-                node_to_element_pos_or_vel(input_velocity)
-            assert error_info.value.args[0] == error_message
-
-        @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-        def test_elements_to_nodes_inplace_error_message(self, n_elem):
-            """
-            This function tests _elements_to_nodes_inplace. We are
-            converting node velocities to element velocities. Here also
-            we are using numba to speed up the process.
-
-            Parameters
-            ----------
-            n_elem
-
-            Returns
-            -------
-
-            """
-            random = np.random.rand()  # Adding some random numbers
-            vector_in_element_frame = random * np.ones((3, n_elem))
-            vector_in_node_frame = np.zeros((3, n_elem + 1))
-            error_message = (
-                "This function is removed in v0.3.2. Please use\n"
-                "elastica.contact_utils._elements_to_nodes_inplace()\n"
-                "instead for updating nodal forces using the forces computed on elements."
-            )
-            with pytest.raises(NotImplementedError) as error_info:
-                elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame)
-            assert error_info.value.args[0] == error_message
-
-except ImportError:
-    pass
+        input_variable = np.random.rand(n_elem)
+        correct_output = input_variable.sum()
+        output = sum_over_elements(input_variable)
+        assert_allclose(correct_output, output, atol=Tolerance.atol())
 
 
 class TestSlenderBody:
@@ -1011,42 +852,3 @@ class TestSlenderBody:
         slender_body_theory.apply_forces(rod)
 
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
-
-
-@pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-def test_apply_normal_force_numba_rigid_body_error_message(n_elem):
-    """
-    This function _elements_to_nodes_inplace. We are
-    converting node velocities to element velocities. Here also
-    we are using numba to speed up the process.
-
-    Parameters
-    ----------
-    n_elem
-
-    Returns
-    -------
-
-    """
-
-    position_collection = np.zeros((3, n_elem + 1))
-    position_collection[0, :] = np.linspace(0, 1.0, n_elem + 1)
-
-    error_message = (
-        "This function is removed in v0.3.2. For cylinder plane contact please use: \n"
-        "elastica._contact_functions._calculate_contact_forces_cylinder_plane() \n"
-        "For detail, refer to issue #113."
-    )
-    with pytest.raises(NotImplementedError) as error_info:
-        apply_normal_force_numba_rigid_body(
-            plane_origin=np.array([0.0, 0.0, 0.0]),
-            plane_normal=np.array([0.0, 0.0, 1.0]),
-            surface_tol=1e-4,
-            k=1.0,
-            nu=1.0,
-            length=1.0,
-            position_collection=position_collection,
-            velocity_collection=np.zeros((3, n_elem + 1)),
-            external_forces=np.zeros((3, n_elem + 1)),
-        )
-    assert error_info.value.args[0] == error_message

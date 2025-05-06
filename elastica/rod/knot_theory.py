@@ -10,45 +10,14 @@ Following example cases includes computing LWT quantities to study the bifurcati
 The details discussion is included in `N Charles et. al. PRL (2019) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.123.208003>`_.
 """
 
-import sys
-
-if sys.version_info.minor >= 8:
-    # typing Protocol is introduced in python 3.8
-    from typing import Protocol
-elif sys.version_info.minor < 8:
-    # Protocol is implemented in typing_extensions for previous pythons
-    from typing_extensions import Protocol
-
-from typing import Union
-
-from numba import njit
 import numpy as np
+from numpy.typing import NDArray
+from numba import njit
 
 from elastica.rod.rod_base import RodBase
 from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
 
-
-class KnotTheoryCompatibleProtocol(Protocol):
-    """KnotTheoryCompatibleProtocol
-
-    Required properties to use KnotTheory mixin
-    """
-
-    @property
-    def position_collection(self) -> np.ndarray:
-        ...
-
-    @property
-    def director_collection(self) -> np.ndarray:
-        ...
-
-    @property
-    def radius(self) -> np.ndarray:
-        ...
-
-    @property
-    def base_length(self) -> np.ndarray:
-        ...
+from .protocol import CosseratRodProtocol
 
 
 class KnotTheory:
@@ -59,7 +28,7 @@ class KnotTheory:
     KnotTheory can be mixed with any rod-class based on RodBase::
 
         class MyRod(RodBase, KnotTheory):
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
         rod = MyRod(...)
 
@@ -89,9 +58,7 @@ class KnotTheory:
 
     """
 
-    MIXIN_PROTOCOL = Union[RodBase, KnotTheoryCompatibleProtocol]
-
-    def compute_twist(self: MIXIN_PROTOCOL):
+    def compute_twist(self: CosseratRodProtocol) -> NDArray[np.float64]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
         """
@@ -102,8 +69,10 @@ class KnotTheory:
         return total_twist[0]
 
     def compute_writhe(
-        self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
-    ):
+        self: CosseratRodProtocol,
+        type_of_additional_segment: str = "next_tangent",
+        alpha: float = 1.0,
+    ) -> NDArray[np.float64]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
@@ -112,16 +81,21 @@ class KnotTheory:
         type_of_additional_segment : str
             Determines the method to compute new segments (elements) added to the rod.
             Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+        alpha : float
+            Empirical factor to scale the segment length, where segment length is the rest length of the rod.
+            Depending on the error between Lk-(Tw+Wr), alpha value can be increased to reduce the error. Default is 1.0.
         """
         return compute_writhe(
             self.position_collection[None, ...],
-            self.rest_lengths.sum(),
+            alpha * self.rest_lengths.sum(),
             type_of_additional_segment,
         )[0]
 
     def compute_link(
-        self: MIXIN_PROTOCOL, type_of_additional_segment: str = "next_tangent"
-    ):
+        self: CosseratRodProtocol,
+        type_of_additional_segment: str = "next_tangent",
+        alpha: float = 1.0,
+    ) -> NDArray[np.float64]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
 
@@ -130,18 +104,23 @@ class KnotTheory:
         type_of_additional_segment : str
             Determines the method to compute new segments (elements) added to the rod.
             Valid inputs are "next_tangent", "end_to_end", "net_tangent", otherwise program uses the center line.
+        alpha : float
+            Empirical factor to scale the segment length, where segment length is the rest length of the rod.
+            Depending on the error between Lk-(Tw+Wr), alpha value can be increased to reduce the error. Default is 1.0.
         """
-        print(self.rest_lengths.sum())
+
         return compute_link(
             self.position_collection[None, ...],
             self.director_collection[0][None, ...],
             self.radius[None, ...],
-            self.rest_lengths.sum(),
+            alpha * self.rest_lengths.sum(),
             type_of_additional_segment,
         )[0]
 
 
-def compute_twist(center_line, normal_collection):
+def compute_twist(
+    center_line: NDArray[np.float64], normal_collection: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Compute the twist of a rod, using center_line and normal collection.
 
@@ -191,8 +170,10 @@ def compute_twist(center_line, normal_collection):
     return total_twist, local_twist
 
 
-@njit(cache=True)
-def _compute_twist(center_line, normal_collection):
+@njit(cache=True)  # type: ignore
+def _compute_twist(
+    center_line: NDArray[np.float64], normal_collection: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Parameters
     ----------
@@ -280,7 +261,11 @@ def _compute_twist(center_line, normal_collection):
     return total_twist, local_twist
 
 
-def compute_writhe(center_line, segment_length, type_of_additional_segment):
+def compute_writhe(
+    center_line: NDArray[np.float64],
+    segment_length: np.float64,
+    type_of_additional_segment: str,
+) -> NDArray[np.float64]:
     """
     This function computes the total writhe history of a rod.
 
@@ -329,8 +314,8 @@ def compute_writhe(center_line, segment_length, type_of_additional_segment):
     return total_writhe
 
 
-@njit(cache=True)
-def _compute_writhe(center_line):
+@njit(cache=True)  # type: ignore
+def _compute_writhe(center_line: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Parameters
     ----------
@@ -402,12 +387,12 @@ def _compute_writhe(center_line):
 
 
 def compute_link(
-    center_line: np.ndarray,
-    normal_collection: np.ndarray,
-    radius: np.ndarray,
-    segment_length: float,
+    center_line: NDArray[np.float64],
+    normal_collection: NDArray[np.float64],
+    radius: NDArray[np.float64],
+    segment_length: np.float64,
     type_of_additional_segment: str,
-):
+) -> NDArray[np.float64]:
     """
     This function computes the total link history of a rod.
 
@@ -485,8 +470,12 @@ def compute_link(
     return total_link
 
 
-@njit(cache=True)
-def _compute_auxiliary_line(center_line, normal_collection, radius):
+@njit(cache=True)  # type: ignore
+def _compute_auxiliary_line(
+    center_line: NDArray[np.float64],
+    normal_collection: NDArray[np.float64],
+    radius: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     This function computes the auxiliary line using rod center line and normal collection.
 
@@ -540,8 +529,10 @@ def _compute_auxiliary_line(center_line, normal_collection, radius):
     return auxiliary_line
 
 
-@njit(cache=True)
-def _compute_link(center_line, auxiliary_line):
+@njit(cache=True)  # type: ignore
+def _compute_link(
+    center_line: NDArray[np.float64], auxiliary_line: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
 
     Parameters
@@ -618,10 +609,13 @@ def _compute_link(center_line, auxiliary_line):
     return total_link
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_auxiliary_line_added_segments(
-    beginning_direction, end_direction, auxiliary_line, segment_length
-):
+    beginning_direction: NDArray[np.float64],
+    end_direction: NDArray[np.float64],
+    auxiliary_line: NDArray[np.float64],
+    segment_length: np.float64,
+) -> NDArray[np.float64]:
     """
     This code is for computing position of added segments to the auxiliary line.
 
@@ -661,10 +655,12 @@ def _compute_auxiliary_line_added_segments(
     return new_auxiliary_line
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _compute_additional_segment(
-    center_line, segment_length, type_of_additional_segment
-):
+    center_line: NDArray[np.float64],
+    segment_length: np.float64,
+    type_of_additional_segment: str,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """
     This function adds two points at the end of center line. Distance from the center line is given by segment_length.
     Direction from center line to the new point locations can be computed using 3 methods, which can be selected by

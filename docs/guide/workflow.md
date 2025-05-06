@@ -92,7 +92,7 @@ This can be repeated to create multiple rods. Supported geometries are listed in
 The number of element (`n_elements`) and `base_length` determines the spatial discretization `dx`. More detail discussion is included [here](discretization.md).
 :::
 
-<h2>3. Define Boundary Conditions, Forcings, Damping and Connections</h2>
+<h2>3.a Define Boundary Conditions, Forcings, and Connections</h2>
 
 Now that we have added all our rods to `sim`, we
 need to apply relevant boundary conditions.
@@ -127,6 +127,34 @@ sim.add_forcing_to(rod1).using(
 )
 ```
 
+One last condition we can define is the connections between rods. See [this page](../api/connections.rst) for in-depth explanations and documentation.
+
+```python
+from elastica.connections import FixedJoint
+
+# Connect rod 1 and rod 2. '_connect_idx' specifies the node number that
+# the connection should be applied to. You are specifying the index of a
+# list so you can use -1 to access the last node.
+SystemSimulator.connect(
+    first_rod  = rod1,
+    second_rod = rod2,
+    first_connect_idx  = -1, # Connect to the last node of the first rod.
+    second_connect_idx =  0  # Connect to first node of the second rod.
+    ).using(
+        FixedJoint,  # Type of connection between rods
+        k  = 1e5,    # Spring constant of force holding rods together (F = k*x)
+        nu = 0,      # Energy dissipation of joint
+        kt = 5e3     # Rotational stiffness of rod to avoid rods twisting
+        )
+```
+
+:::{note}
+Version 0.3.3: The order of the operation is defined by the order of the definition. For example, if you define the connection before the forcing condition, the connection will be applied first. This is less important for the boundary condition, forcing, and connection since they do not depend on each other. However, it is important for friction, contact, or any custom boundary conditions since they depend on other boundary conditions.
+For example, friction should be defined after contact, since contact will define the normal force applied to the surface, which friction depends on. Contact should be defined before any other boundary conditions, since aggregated normal force is used to calculate the repelling force.
+:::
+
+<h2>3.b Define Damping </h2>
+
 Next, if required, in order to numerically stabilize the simulation,
 we can apply damping to the rods.
 See [this page](../api/damping.rst) for in-depth explanations and documentation.
@@ -148,27 +176,6 @@ sim.dampen(rod2).using(
     damping_constant = nu,
     time_step = dt,
 )
-```
-
-One last condition we can define is the connections between rods. See [this page](../api/connections.rst) for in-depth explanations and documentation.
-
-```python
-from elastica.joint import FixedJoint
-
-# Connect rod 1 and rod 2. '_connect_idx' specifies the node number that
-# the connection should be applied to. You are specifying the index of a
-# list so you can use -1 to access the last node.
-sim.connect(
-    first_rod  = rod1,
-    second_rod = rod2,
-    first_connect_idx  = -1, # Connect to the last node of the first rod.
-    second_connect_idx =  0  # Connect to first node of the second rod.
-    ).using(
-        FixedJoint,  # Type of connection between rods
-        k  = 1e5,    # Spring constant of force holding rods together (F = k*x)
-        nu = 0,      # Energy dissipation of joint
-        kt = 5e3     # Rotational stiffness of rod to avoid rods twisting
-        )
 ```
 
 <h2>4. Add Callback Functions (optional)</h2>

@@ -48,7 +48,7 @@ class TestContact:
         contact = load_contact
 
         with pytest.raises(RuntimeError) as excinfo:
-            contact()
+            contact.instantiate()
         assert "No contacts provided to to establish contact between rod-like object id {0} and {1}, but a Contact was intended as per code. Did you forget to call the `using` method?".format(
             *contact.id()
         ) == str(
@@ -75,7 +75,7 @@ class TestContact:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = contact()
+            _ = contact.instantiate()
         assert (
             r"Unable to construct contact class.\nDid you provide all necessary contact properties?"
             == str(excinfo.value)
@@ -125,7 +125,7 @@ class TestContactMixin:
             sys_coll_with_contacts.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_contacts
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Contacts require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -157,7 +157,7 @@ class TestContactMixin:
 
         with pytest.raises(AssertionError) as excinfo:
             system_collection_with_contacts.detect_contact_between(
-                *[np.int_(x) for x in sys_idx]
+                *[np.int32(x) for x in sys_idx]
             )
         assert "exceeds number of" in str(excinfo.value)
 
@@ -240,9 +240,17 @@ class TestContactMixin:
             pass
 
         # in place class
-        MockContact = type(
-            "MockContact", (self.NoContact, object), {"__init__": mock_init}
-        )
+        class MockContact(self.NoContact):
+            def __init__(self, *args, **kwargs):
+                pass
+
+            @property
+            def _allowed_system_one(self):
+                return [TestContactMixin.MockRod]
+
+            @property
+            def _allowed_system_two(self):
+                return [TestContactMixin.MockRod]
 
         # Constrain any and all systems
         system_collection_with_contacts.detect_contact_between(0, 1).using(
@@ -260,13 +268,15 @@ class TestContactMixin:
 
     def test_contact_finalize_correctness(self, load_rod_with_contacts):
         system_collection_with_contacts, contact_cls = load_rod_with_contacts
+        contact = system_collection_with_contacts._contacts[0].instantiate()
+        fidx, sidx = system_collection_with_contacts._contacts[0].id()
 
         system_collection_with_contacts._finalize_contact()
 
-        for (fidx, sidx, contact) in system_collection_with_contacts._contacts:
-            assert type(fidx) is int
-            assert type(sidx) is int
-            assert type(contact) is contact_cls
+        assert not hasattr(system_collection_with_contacts, "_contacts")
+        assert type(fidx) is int
+        assert type(sidx) is int
+        assert type(contact) is contact_cls
 
     @pytest.fixture
     def load_contact_objects_with_incorrect_order(self, load_system_with_contacts):
@@ -281,9 +291,17 @@ class TestContactMixin:
             pass
 
         # in place class
-        MockContact = type(
-            "MockContact", (self.NoContact, object), {"__init__": mock_init}
-        )
+        class MockContact(self.NoContact):
+            def __init__(self, *args, **kwargs):
+                pass
+
+            @property
+            def _allowed_system_one(self):
+                return [TestContactMixin.MockRod]
+
+            @property
+            def _allowed_system_two(self):
+                return [TestContactMixin.MockRigidBody]
 
         # incorrect order contact
         system_collection_with_contacts.detect_contact_between(
@@ -300,17 +318,12 @@ class TestContactMixin:
             contact_cls,
         ) = load_contact_objects_with_incorrect_order
 
-        mock_rod = self.MockRod(2, 3, 4, 5)
-        mock_rigid_body = self.MockRigidBody(5.0, 5.0)
-
         with pytest.raises(TypeError) as excinfo:
             system_collection_with_contacts._finalize_contact()
         assert (
-            "Systems provided to the contact class have incorrect order. \n"
-            " First system is {0} and second system is {1}. \n"
-            " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
-            " If the first system is a rigid body, the second system can be a rigid body or surface."
-        ).format(mock_rigid_body.__class__, mock_rod.__class__) == str(excinfo.value)
+            "System provided (MockRigidBody) must be derived from ['MockRod']"
+            in str(excinfo.value)
+        )
 
     @pytest.fixture
     def load_system_with_rods_in_contact(self, load_system_with_contacts):
@@ -339,21 +352,20 @@ class TestContactMixin:
         return system_collection_with_rods_in_contact
 
     def test_contact_call_on_systems(self, load_system_with_rods_in_contact):
-
-        system_collection_with_rods_in_contact = load_system_with_rods_in_contact
-
-        system_collection_with_rods_in_contact._finalize_contact()
-        system_collection_with_rods_in_contact._call_contacts(time=0)
-
         from elastica.contact_forces import _calculate_contact_forces_rod_rod
 
-        for (
-            fidx,
-            sidx,
-            contact,
-        ) in system_collection_with_rods_in_contact._contacts:
-            system_one = system_collection_with_rods_in_contact._systems[fidx]
-            system_two = system_collection_with_rods_in_contact._systems[sidx]
+        system_collection_with_rods_in_contact = load_system_with_rods_in_contact
+        mock_contacts = [c for c in system_collection_with_rods_in_contact._contacts]
+
+        system_collection_with_rods_in_contact._finalize_contact()
+        system_collection_with_rods_in_contact.synchronize(time=0)
+
+        for _contact in mock_contacts:
+            fidx, sidx = _contact.id()
+            contact = _contact.instantiate()
+
+            system_one = system_collection_with_rods_in_contact[fidx]
+            system_two = system_collection_with_rods_in_contact[sidx]
             external_forces_system_one = np.zeros_like(system_one.external_forces)
             external_forces_system_two = np.zeros_like(system_two.external_forces)
 
@@ -381,12 +393,12 @@ class TestContactMixin:
             )
 
             assert_allclose(
-                system_collection_with_rods_in_contact._systems[fidx].external_forces,
+                system_collection_with_rods_in_contact[fidx].external_forces,
                 external_forces_system_one,
                 atol=Tolerance.atol(),
             )
             assert_allclose(
-                system_collection_with_rods_in_contact._systems[sidx].external_forces,
+                system_collection_with_rods_in_contact[sidx].external_forces,
                 external_forces_system_two,
                 atol=Tolerance.atol(),
             )

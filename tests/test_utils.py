@@ -28,7 +28,7 @@ def test_isqrt_small_numbers(inp, out):
     assert isqrt(inp) == out
 
 
-@pytest.mark.parametrize("inp, out", [(56 ** 2, 56), (98 ** 2, 98)])
+@pytest.mark.parametrize("inp, out", [(56**2, 56), (98**2, 98)])
 def test_isqrt_large_numbers(inp, out):
     assert isqrt(inp) == out
 

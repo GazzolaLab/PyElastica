@@ -8,14 +8,17 @@ from numpy import sin
 from numpy import cos
 from numpy import sqrt
 from numpy import arccos
+from numpy.typing import NDArray
 
 from numba import njit
 
 from elastica._linalg import _batch_matmul
 
 
-@njit(cache=True)
-def _get_rotation_matrix(scale: float, axis_collection):
+@njit(cache=True)  # type: ignore
+def _get_rotation_matrix(
+    scale: np.float64, axis_collection: NDArray[np.float64]
+) -> NDArray[np.float64]:
     blocksize = axis_collection.shape[1]
     rot_mat = np.empty((3, 3, blocksize))
 
@@ -48,8 +51,12 @@ def _get_rotation_matrix(scale: float, axis_collection):
     return rot_mat
 
 
-@njit(cache=True)
-def _rotate(director_collection, scale: float, axis_collection):
+@njit(cache=True)  # type: ignore
+def _rotate(
+    director_collection: NDArray[np.float64],
+    scale: np.float64,
+    axis_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     Does alibi rotations
     https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
@@ -73,8 +80,8 @@ def _rotate(director_collection, scale: float, axis_collection):
     )
 
 
-@njit(cache=True)
-def _inv_rotate(director_collection):
+@njit(cache=True)  # type: ignore
+def _inv_rotate(director_collection: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Calculated rate of change using Rodrigues' formula
 
@@ -146,9 +153,13 @@ def _inv_rotate(director_collection):
             )
         )
 
-        # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
-        theta = arccos(0.5 * trace - 0.5 - 1e-10)
+        # Clip the trace to between -1 and 3.
+        # Any deviation beyond this is numerical error
+        trace = min(trace, 3.0)
+        trace = max(trace, -1.0)
+        theta = arccos(0.5 * trace - 0.5)
 
+        # TODO HARDCODED bugfix has to be changed. Remove 1e-14 tolerance
         vector_collection[0, k] *= -0.5 * theta / sin(theta + 1e-14)
         vector_collection[1, k] *= -0.5 * theta / sin(theta + 1e-14)
         vector_collection[2, k] *= -0.5 * theta / sin(theta + 1e-14)
@@ -156,12 +167,15 @@ def _inv_rotate(director_collection):
     return vector_collection
 
 
+_generate_skew_map_sentinel = (0, 0, 0)
+
+
 # TODO: Below contains numpy-only implementations
 @functools.lru_cache(maxsize=1)
-def _generate_skew_map(dim: int):
+def _generate_skew_map(dim: int) -> list[tuple[int, int, int]]:
     # TODO Documentation
     # Preallocate
-    mapping_list = [None] * ((dim ** 2 - dim) // 2)
+    mapping_list = [_generate_skew_map_sentinel] * ((dim**2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
     # r = 2, r here is rank, we deal with only matrices
     for index, (i, j) in enumerate(combinations(range(dim), r=2)):
@@ -185,7 +199,7 @@ def _generate_skew_map(dim: int):
 
 
 @functools.lru_cache(maxsize=1)
-def _get_skew_map(dim):
+def _get_skew_map(dim: int) -> tuple[tuple[int, int, int], ...]:
     """Generates mapping from src to target skew-symmetric operator
 
     For input vector V and output Matrix M (represented in lexicographical index),
@@ -208,7 +222,7 @@ def _get_skew_map(dim):
 
 
 @functools.lru_cache(maxsize=1)
-def _get_inv_skew_map(dim):
+def _get_inv_skew_map(dim: int) -> tuple[tuple[int, int, int], ...]:
     # TODO Documentation
     # (vec_src, mat_i, mat_j, sign)
     mapping_list = _generate_skew_map(dim)
@@ -219,7 +233,7 @@ def _get_inv_skew_map(dim):
 
 
 @functools.lru_cache(maxsize=1)
-def _get_diag_map(dim):
+def _get_diag_map(dim: int) -> tuple[int, ...]:
     """Generates lexicographic mapping to diagonal in a serialized matrix-type
 
     For input dimension dim  we calculate mapping to * in Matrix M below
@@ -231,17 +245,10 @@ def _get_diag_map(dim):
     in a dimension agnostic way.
 
     """
-    # Preallocate
-    mapping_list = [None] * dim
-
-    # Store linear indices
-    for dim_iter in range(dim):
-        mapping_list[dim_iter] = dim_iter * (dim + 1)
-
-    return tuple(mapping_list)
+    return tuple([dim_iter * (dim + 1) for dim_iter in range(dim)])
 
 
-def _skew_symmetrize(vector):
+def _skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
 
     Parameters
@@ -276,7 +283,7 @@ def _skew_symmetrize(vector):
 
 # This is purely for testing and optimization sake
 # While calculating u^2, use u with einsum instead, as it is tad bit faster
-def _skew_symmetrize_sq(vector):
+def _skew_symmetrize_sq(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Generate the square of an orthogonal matrix from vector elements
 
@@ -298,12 +305,11 @@ def _skew_symmetrize_sq(vector):
     hardcoded : 23.1 µs ± 481 ns per loop
     this version: 14.1 µs ± 96.9 ns per loop
     """
-    dim, _ = vector.shape
 
     # First generate array of [x^2, xy, xz, yx, y^2, yz, zx, zy, z^2]
     # across blocksize
     # This is slightly faster than doing v[np.newaxis,:,:] * v[:,np.newaxis,:]
-    products_xy = np.einsum("ik,jk->ijk", vector, vector)
+    products_xy: NDArray[np.float64] = np.einsum("ik,jk->ijk", vector, vector)
 
     # No copy made here, as we do not change memory layout
     # products_xy = products_xy.reshape((dim * dim, -1))
@@ -335,7 +341,9 @@ def _skew_symmetrize_sq(vector):
     return products_xy
 
 
-def _get_skew_symmetric_pair(vector_collection):
+def _get_skew_symmetric_pair(
+    vector_collection: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
 
     Parameters
@@ -351,7 +359,7 @@ def _get_skew_symmetric_pair(vector_collection):
     return u, u_sq
 
 
-def _inv_skew_symmetrize(matrix):
+def _inv_skew_symmetrize(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Return the vector elements from a skew-symmetric matrix M
 
