@@ -13,12 +13,6 @@ install-dev-deps:
 	uv sync --all-groups --all-extras
 
 
-.PHONY: install_examples_dependencies
-install_examples_dependencies:
-	uv pip install -e ".[examples]"
-	# sadly pip ffmpeg doesnt work, hence we use conda for ffmpeg
-	conda install -c conda-forge ffmpeg
-
 .PHONY: build
 build:
 	uv build
