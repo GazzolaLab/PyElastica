@@ -19,6 +19,10 @@ install_examples_dependencies:
 	# sadly pip ffmpeg doesnt work, hence we use conda for ffmpeg
 	conda install -c conda-forge ffmpeg
 
+.PHONY: build
+build:
+	uv build
+
 .PHONY: pre-commit-install
 pre-commit-install:
 	pre-commit install
@@ -26,28 +30,28 @@ pre-commit-install:
 #* Formatters
 .PHONY: black
 black:
-	black --version
-	black --config pyproject.toml --required-version 24.3.0 elastica tests examples
+	uv run black --version
+	uv run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
 
 .PHONY: black-check
 black-check:
-	black --version
-	black --diff --check --config pyproject.toml elastica tests examples
+	uv run black --version
+	uv run black --diff --check --config pyproject.toml elastica tests examples
 
 .PHONY: flake8
 flake8:
-	flake8 --version
-	flake8 elastica tests
+	uv run flake8 --version
+	uv run flake8 elastica tests
 
 .PHONY: autoflake-check
 autoflake-check:
-	autoflake --version
-	autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
+	uv run autoflake --version
+	uv run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: autoflake-format
 autoflake-format:
-	autoflake --version
-	autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
+	uv run autoflake --version
+	uv run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: format-codestyle
 format-codestyle: black autoflake-format
@@ -62,15 +66,15 @@ mypy:
 
 .PHONY: test
 test:
-	pytest
+	uv run pytest -c pyproject.toml
 
 .PHONY: test_coverage
 test_coverage:
-	NUMBA_DISABLE_JIT=1 pytest --cov=elastica
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica -c pyproject.toml
 
 .PHONY: test_coverage_xml
 test_coverage_xml:
-	NUMBA_DISABLE_JIT=1 pytest --cov=elastica --cov-report=xml
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica --cov-report=xml -c pyproject.toml
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8 autoflake-check
@@ -101,10 +105,10 @@ pytestcache-remove:
 
 .PHONY: build-remove
 build-remove:
-	rm -rf build/
+	rm -rf build/ dist/
 
 .PHONY: cleanup
-cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove
+cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove build-remove
 
 all: format-codestyle cleanup test
 
