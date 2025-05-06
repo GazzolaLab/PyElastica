@@ -79,11 +79,11 @@ rod2 = CosseratRod.straight_rod(
 )
 
 # create a SystemSimulator instance
-sim = SystemSimulator()
+simulator = SystemSimulator()
 
-# Add rod to sim
-sim.append(rod1)
-sim.append(rod2)
+# Add rod to simulator
+simulator.append(rod1)
+simulator.append(rod2)
 ```
 
 This can be repeated to create multiple rods. Supported geometries are listed in [API documentation](../api/rods.rst).
@@ -94,7 +94,7 @@ The number of element (`n_elements`) and `base_length` determines the spatial di
 
 <h2>3.a Define Boundary Conditions, Forcings, and Connections</h2>
 
-Now that we have added all our rods to `sim`, we
+Now that we have added all our rods to `simulator`, we
 need to apply relevant boundary conditions.
 See [this page](../api/constraints.rst) for in-depth explanations and documentation.
 
@@ -103,7 +103,7 @@ As a simple example, to fix one end of a rod, we use the `OneEndFixedBC` boundar
 ```python
 from elastica.boundary_conditions import OneEndFixedBC
 
-sim.constrain(rod1).using(
+simulator.constrain(rod1).using(
     OneEndFixedBC,                  # Displacement BC being applied
     constrained_position_idx=(0,),  # Node number to apply BC
     constrained_director_idx=(0,)   # Element number to apply BC
@@ -119,7 +119,7 @@ from elastica.external_forces import EndpointForces
 final_time = 10
 origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([-15.0, 0.0, 0.0])
-sim.add_forcing_to(rod1).using(
+simulator.add_forcing_to(rod1).using(
     EndpointForces,                 # Traction BC being applied
     origin_force,                   # Force vector applied at first node
     end_force,                      # Force vector applied at last node
@@ -165,13 +165,13 @@ from elastica.dissipation import AnalyticalLinearDamper
 nu = 1e-3   # Damping constant of the rod
 dt = 1e-5   # Time-step of simulation in seconds
 
-sim.dampen(rod1).using(
+simulator.dampen(rod1).using(
     AnalyticalLinearDamper,
     damping_constant = nu,
     time_step = dt,
 )
 
-sim.dampen(rod2).using(
+simulator.dampen(rod2).using(
     AnalyticalLinearDamper,
     damping_constant = nu,
     time_step = dt,
@@ -211,10 +211,10 @@ class MyCallBack(CallBackBaseClass):
 from collections import defaultdict
 callback_data_rod1, callback_data_rod2 = defaultdict(list), defaultdict(list)
 
-# Add MyCallBack to sim for each rod telling it how often to save data (step_skip)
-sim.collect_diagnostics(rod1).using(
+# Add MyCallBack to simulator for each rod telling it how often to save data (step_skip)
+simulator.collect_diagnostics(rod1).using(
     MyCallBack, step_skip=1000, callback_params=callback_data_rod1)
-sim.collect_diagnostics(rod2).using(
+simulator.collect_diagnostics(rod2).using(
     MyCallBack, step_skip=1000, callback_params=callback_data_rod2)
 ```
 
@@ -225,7 +225,7 @@ You can define different callback functions for different rods and also have dif
 Now that we have finished defining our rods, the different boundary conditions and connections between them, and how often we want to save data, we have finished setting up the simulation. We now need to finalize the simulator by calling
 
 ```python
-sim.finalize()
+simulator.finalize()
 ```
 
 This goes through and collects all the rods and applied conditions, preparing the system for the simulation.
@@ -243,7 +243,7 @@ from elastica.timestepper import integrate
 timestepper = PositionVerlet()
 final_time = 10   # seconds
 total_steps = int(final_time / dt)
-integrate(timestepper, sim, final_time, total_steps)
+integrate(timestepper, simulator, final_time, total_steps)
 ```
 
 More documentation on timestepper and integrator is included [here](../api/time_steppers.rst)
