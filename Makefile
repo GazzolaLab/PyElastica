@@ -2,93 +2,81 @@
 PYTHON := python3
 PYTHONPATH := `pwd`
 AUTOFLAKE_ARGS := -r
-#* Poetry
-.PHONY: poetry-download
-poetry-download:
-	curl -sSL https://install.python-poetry.org/ | $(PYTHON) -
-
-.PHONY: poetry-remove
-poetry-remove:
-	curl -sSL https://install.python-poetry.org/ | $(PYTHON) - --uninstall
 
 #* Installation
 .PHONY: install
 install:
-	poetry install
+	uv sync
+
+.PHONY: install-dev-deps
+install-dev-deps:
+	uv sync --all-groups --all-extras
+
 
 .PHONY: install_examples_dependencies
 install_examples_dependencies:
-	poetry install -E examples
+	uv pip install -e ".[examples]"
 	# sadly pip ffmpeg doesnt work, hence we use conda for ffmpeg
 	conda install -c conda-forge ffmpeg
 
-.PHONY: install_with_new_dependency
-install_with_new_dependency:
-	poetry lock
-	poetry install
-
 .PHONY: pre-commit-install
 pre-commit-install:
-	poetry run pre-commit install
+	pre-commit install
 
 #* Formatters
 .PHONY: black
 black:
-	poetry run black --version
-	poetry run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
+	black --version
+	black --config pyproject.toml --required-version 24.3.0 elastica tests examples
 
 .PHONY: black-check
 black-check:
-	poetry run black --version
-	poetry run black --diff --check --config pyproject.toml elastica tests examples
+	black --version
+	black --diff --check --config pyproject.toml elastica tests examples
 
 .PHONY: flake8
 flake8:
-	poetry run flake8 --version
-	poetry run flake8 elastica tests
+	flake8 --version
+	flake8 elastica tests
 
 .PHONY: autoflake-check
 autoflake-check:
-	poetry run autoflake --version
-	poetry run autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
+	autoflake --version
+	autoflake --check $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: autoflake-format
 autoflake-format:
-	poetry run autoflake --version
-	poetry run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
+	autoflake --version
+	autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
 
 .PHONY: format-codestyle
 format-codestyle: black autoflake-format
 
 .PHONY: mypy
 mypy:
-	poetry run mypy --config-file pyproject.toml elastica
-	poetry run mypy --config-file pyproject.toml --explicit-package-bases \
+	uv run mypy --config-file pyproject.toml elastica
+	uv run mypy --config-file pyproject.toml --explicit-package-bases \
 		examples/AxialStretchingCase \
 		examples/ButterflyCase \
 		examples/CatenaryCase
 
 .PHONY: test
 test:
-	poetry run pytest
+	pytest
 
 .PHONY: test_coverage
 test_coverage:
-	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica
+	NUMBA_DISABLE_JIT=1 pytest --cov=elastica
 
 .PHONY: test_coverage_xml
 test_coverage_xml:
-	NUMBA_DISABLE_JIT=1 poetry run pytest --cov=elastica --cov-report=xml
+	NUMBA_DISABLE_JIT=1 pytest --cov=elastica --cov-report=xml
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8 autoflake-check
 
 .PHONY: formatting
 formatting: format-codestyle
-
-.PHONY: update-dev-deps
-update-dev-deps:
-	poetry add -D mypy@latest pytest@latest coverage@latest pytest-html@latest pytest-cov@latest black@latest
 
 #* Cleaning
 .PHONY: pycache-remove
