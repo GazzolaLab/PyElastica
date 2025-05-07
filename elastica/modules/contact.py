@@ -9,14 +9,13 @@ from typing import Type, Any
 from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
-    OperatorFinalizeType,
+    OperatorType,
     StaticSystemType,
     SystemType,
 )
-from .protocol import SystemCollectionProtocol, ModuleProtocol
+from .protocol import ContactedSystemCollectionProtocol, ModuleProtocol
 
 import logging
-import functools
 
 import numpy as np
 
@@ -40,13 +39,13 @@ class Contact:
             List of contact classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: ContactedSystemCollectionProtocol) -> None:
         self._contacts: list[ModuleProtocol] = []
         super(Contact, self).__init__()
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
-        self: SystemCollectionProtocol,
+        self: ContactedSystemCollectionProtocol,
         first_system: SystemType,
         second_system: "SystemType | StaticSystemType",
     ) -> ModuleProtocol:
@@ -73,22 +72,11 @@ class Contact:
 
         return _contact
 
-    def _finalize_contact(self: SystemCollectionProtocol) -> None:
+    def _finalize_contact(self: ContactedSystemCollectionProtocol) -> None:
 
         # dev : the first indices stores the
         # (first_rod_idx, second_rod_idx)
         # to apply the contacts to
-
-        def apply_contact(
-            time: np.float64,
-            contact_instance: NoContact,
-            first_sys_idx: SystemIdxType,
-            second_sys_idx: SystemIdxType,
-        ) -> None:
-            contact_instance.apply_contact(
-                system_one=self[first_sys_idx],
-                system_two=self[second_sys_idx],
-            )
 
         for contact in self._contacts:
             first_sys_idx, second_sys_idx = contact.id()
@@ -98,12 +86,11 @@ class Contact:
                 self[first_sys_idx],
                 self[second_sys_idx],
             )
-            func = functools.partial(
-                apply_contact,
-                contact_instance=contact_instance,
-                first_sys_idx=first_sys_idx,
-                second_sys_idx=second_sys_idx,
+            func: OperatorType = lambda time: contact_instance.apply_contact(
+                system_one=self[first_sys_idx],
+                system_two=self[second_sys_idx],
             )
+
             self._feature_group_synchronize.add_operators(contact, [func])
 
             if not self._feature_group_synchronize.is_last(contact):
