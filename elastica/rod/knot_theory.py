@@ -187,7 +187,9 @@ def _compute_twist(
     Returns
     -------
     total_twist : numpy.ndarray
+        (time)
     local_twist : numpy.ndarray
+        (time, n_voronoi)
     """
 
     timesize, _, blocksize = center_line.shape
@@ -207,12 +209,16 @@ def _compute_twist(
             normal_collection[k, :, :]
             - _batch_dot(tangent, normal_collection[k, :, :]) * tangent
         )
-        projection_of_normal_collection /= _batch_norm(projection_of_normal_collection)
+        projection_of_normal_collection /= (
+            _batch_norm(projection_of_normal_collection) + 1e-14
+        )
 
         # Eq 27 in Klenin & Langowski 2000
         # p is defined on interior nodes
         p = _batch_cross(s[:, :-1], s[:, 1:])
-        p /= _batch_norm(p)
+        p /= _batch_norm(
+            p
+        )  # Note: We deliberately make NaN in case of parallel elements.
 
         # Compute the angle we need to turn d1 around s to get p
         # sign part tells whether d1 must be rotated ccw(+) or cw(-) around s
@@ -241,7 +247,8 @@ def _compute_twist(
                 projection_of_normal_collection[:, i],
                 projection_of_normal_collection[:, i + 1],
             )
-            angle = np.arccos(dot_product)
+            # angle = np.arccos(dot_product)
+            angle = np.arccos(min(1, max(-1, dot_product)))
             cross = np.cross(
                 projection_of_normal_collection[:, i],
                 projection_of_normal_collection[:, i + 1],
