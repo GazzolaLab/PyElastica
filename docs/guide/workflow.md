@@ -130,12 +130,12 @@ simulator.add_forcing_to(rod1).using(
 One last condition we can define is the connections between rods. See [this page](../api/connections.rst) for in-depth explanations and documentation.
 
 ```python
-from elastica.connections import FixedJoint
+from elastica.joint import FixedJoint
 
 # Connect rod 1 and rod 2. '_connect_idx' specifies the node number that
 # the connection should be applied to. You are specifying the index of a
 # list so you can use -1 to access the last node.
-SystemSimulator.connect(
+simulator.connect(
     first_rod  = rod1,
     second_rod = rod2,
     first_connect_idx  = -1, # Connect to the last node of the first rod.
