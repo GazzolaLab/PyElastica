@@ -58,9 +58,11 @@ class Sphere(RigidBodyBase):
             (dim, dim, 1)
         )
 
-        self.inv_mass_second_moment_of_inertia = np.linalg.inv(
-            mass_second_moment_of_inertia
-        ).reshape((dim, dim, 1))
+        self.inv_mass_second_moment_of_inertia = (
+            np.linalg.inv(mass_second_moment_of_inertia)
+            .reshape((dim, dim, 1))
+            .astype(np.float64)
+        )
 
         # Allocate properties
         self.position_collection = np.zeros((dim, 1), dtype=np.float64)

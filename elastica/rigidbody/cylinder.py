@@ -100,9 +100,11 @@ class Cylinder(RigidBodyBase):
             (dim, dim, 1)
         )
 
-        self.inv_mass_second_moment_of_inertia = np.linalg.inv(
-            mass_second_moment_of_inertia
-        ).reshape((dim, dim, 1))
+        self.inv_mass_second_moment_of_inertia = (
+            np.linalg.inv(mass_second_moment_of_inertia)
+            .reshape((dim, dim, 1))
+            .astype(np.float64)
+        )
 
         # position is at the center
         self.position_collection[:] = (

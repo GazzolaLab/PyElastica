@@ -49,9 +49,11 @@ class MeshRigidBody(RigidBodyBase):
             MaxDimension.value(), MaxDimension.value(), 1
         )
 
-        self.inv_mass_second_moment_of_inertia = np.linalg.inv(
-            mass_second_moment_of_inertia
-        ).reshape(MaxDimension.value(), MaxDimension.value(), 1)
+        self.inv_mass_second_moment_of_inertia = (
+            np.linalg.inv(mass_second_moment_of_inertia)
+            .reshape(MaxDimension.value(), MaxDimension.value(), 1)
+            .astype(np.float64)
+        )
         normal = np.array([1.0, 0.0, 0.0]).reshape(3, 1)
         tangents = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
         binormal = _batch_cross(tangents, normal)
@@ -94,10 +96,9 @@ class MeshRigidBody(RigidBodyBase):
                     i, k
                 ]
 
-        self.face_normals_in_material_frame = np.zeros(
-            (MaxDimension.value(), self.n_faces)
+        self.face_normals_in_material_frame = self.face_normals.copy().reshape(
+            MaxDimension.value(), self.n_faces
         )
-        self.face_normals_in_material_frame = self.face_normals.copy()
 
         # position is at the center of mass
         self.position_collection = np.zeros((MaxDimension.value(), 1))
