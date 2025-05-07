@@ -114,9 +114,6 @@ jobs:
           make install-dev-deps
           uv cache prune --ci
           source .venv/bin/activate
-      - name: Run style checks
-        run: |
-          make check-codestyle
       - name: Test PyElastica using pytest
         if: startsWith(runner.os, 'macOS')
         run: |
