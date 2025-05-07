@@ -223,6 +223,9 @@ class CosseratRod(RodBase, KnotTheory):
         self.internal_couple = internal_couple
         self.ring_rod_flag = ring_rod_flag
 
+        self.ghost_elems_idx = np.array([], dtype=np.int32)
+        self.ghost_voronoi_idx = np.array([], dtype=np.int32)
+
         if not self.ring_rod_flag:
             # For ring rod there are no periodic elements so below code won't run.
             # We add periodic elements at the memory block construction.

@@ -31,6 +31,21 @@ if TYPE_CHECKING:
     from .memory_block.protocol import BlockSystemProtocol
 
     from .mesh.protocol import MeshProtocol
+else:
+    CosseratRodProtocol = "CosseratRodProtocol"
+    RigidBodyProtocol = "RigidBodyProtocol"
+    SurfaceBase = "SurfaceBase"
+    BaseSystemCollection = "BaseSystemCollection"
+
+    SystemCollectionProtocol = "SystemCollectionProtocol"
+    State = "State"
+    SystemProtocol = "SystemProtocol"
+    StaticSystemProtocol = "StaticSystemProtocol"
+    SymplecticSystemProtocol = "SymplecticSystemProtocol"
+    StepperProtocol = "StepperProtocol"
+    SymplecticStepperProtocol = "SymplecticStepperProtocol"
+    BlockSystemProtocol = "BlockSystemProtocol"
+    MeshProtocol = "MeshProtocol"
 
 
 StaticSystemType: TypeAlias = "StaticSystemProtocol"
