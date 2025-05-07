@@ -116,7 +116,7 @@ def _calculate_contact_forces_rod_cylinder(
         )
         # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
         friction_force = (
-            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            -np.minimum(damping_force_in_slip_direction, coulombic_friction_force)
             * slip_interpenetration_velocity_unitized
         )
         # Update contact force
@@ -447,7 +447,7 @@ def _calculate_contact_forces_rod_sphere(
         )
         # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
         friction_force = (
-            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            -np.minimum(damping_force_in_slip_direction, coulombic_friction_force)
             * slip_interpenetration_velocity_unitized
         )
         # Update contact force
