@@ -202,7 +202,7 @@ class EndpointForces(NoForces):
             Applied forces are ramped up until ramp up time.
 
         """
-        factor = min(np.float64(1.0), time / ramp_up_time)
+        factor = min(1.0, float(time / ramp_up_time))
         external_forces[..., 0] += start_force * factor
         external_forces[..., -1] += end_force * factor
 
@@ -410,7 +410,7 @@ class MuscleTorques(NoForces):
         external_torques: NDArray[np.float64],
     ) -> None:
         # Ramp up the muscle torque
-        factor = np.float64(min(np.float64(1.0), time / ramp_up_time))
+        factor = min(1.0, float(time / ramp_up_time))
         # From the node 1 to node nelem-1
         # Magnitude of the torque. Am = beta(s) * sin(2pi*t/T + 2pi*s/lambda + phi)
         # There is an inconsistency with paper and Elastica cpp implementation. In paper sign in

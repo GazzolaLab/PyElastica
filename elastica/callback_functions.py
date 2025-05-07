@@ -250,7 +250,7 @@ class ExportCallBack(CallBackBaseClass):
                 self._pickle.dump(data, file)
         elif self.method == ExportCallBack.AVAILABLE_METHOD[1]:
             # npz
-            self._savez(file_path, **data)
+            self._savez(file_path, **data)  # type: ignore
         elif self.method == ExportCallBack.AVAILABLE_METHOD[2]:
             # tempfile
             file = open(self._tempfile.name, "wb")
