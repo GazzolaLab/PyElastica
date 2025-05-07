@@ -166,10 +166,10 @@ if PLOT_VIDEO:
         with writer.saving(fig, video_name, dpi):
             with plt.style.context("seaborn-white"):
                 for i in range(0, positions.shape[0], int(step)):
-                    rod_line.set_xdata(positions[i, 2])
-                    rod_line.set_ydata(positions[i, 0])
-                    tip_line.set_xdata(positions[:i, 2, -1])
-                    tip_line.set_ydata(positions[:i, 0, -1])
+                    rod_line.set_xdata([positions[i, 2]])
+                    rod_line.set_ydata([positions[i, 0]])
+                    tip_line.set_xdata([positions[:i, 2, -1]])
+                    tip_line.set_ydata([positions[:i, 0, -1]])
                     writer.grab_frame()
 
     plot_video(recorded_history, "swinging_flexible_pendulum.mp4")

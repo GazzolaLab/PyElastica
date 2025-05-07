@@ -144,8 +144,8 @@ def plot_dynamic_cantilever_video_with(
 
     with writer.saving(mvfig, video_name, dpi=150):
         for t in tqdm(range(1, len(recorded_history["time"]))):
-            rod_lines_2d.set_xdata(positions_over_time[t][0])
-            rod_lines_2d.set_ydata(positions_over_time[t][2])
+            rod_lines_2d.set_xdata([positions_over_time[t][0]])
+            rod_lines_2d.set_ydata([positions_over_time[t][2]])
             writer.grab_frame()
 
     plt.close(plt.gcf())
