@@ -18,7 +18,7 @@ import numpy as np
 import functools
 from elastica.joint import FreeJoint
 
-from .protocol import SystemCollectionProtocol, ModuleProtocol
+from .protocol import ConnectedSystemCollectionProtocol, ModuleProtocol
 
 
 class Connections:
@@ -33,13 +33,13 @@ class Connections:
             List of joint classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionProtocol) -> None:
+    def __init__(self: ConnectedSystemCollectionProtocol) -> None:
         self._connections: list[ModuleProtocol] = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
-        self: SystemCollectionProtocol,
+        self: ConnectedSystemCollectionProtocol,
         first_rod: "RodType | RigidBodyType",
         second_rod: "RodType | RigidBodyType",
         first_connect_idx: ConnectionIndex = (),
@@ -81,7 +81,7 @@ class Connections:
 
         return _connect
 
-    def _finalize_connections(self: SystemCollectionProtocol) -> None:
+    def _finalize_connections(self: ConnectedSystemCollectionProtocol) -> None:
         # From stored _Connect objects, instantiate the joints and store it
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)

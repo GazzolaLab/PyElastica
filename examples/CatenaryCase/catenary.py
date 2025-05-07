@@ -1,5 +1,7 @@
+from collections import defaultdict
 import numpy as np
-from elastica import *
+
+import elastica as ea
 
 from post_processing import (
     plot_video,
@@ -7,7 +9,9 @@ from post_processing import (
 )
 
 
-class CatenarySimulator(BaseSystemCollection, Constraints, Forcing, Damping, CallBacks):
+class CatenarySimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
+):
     pass
 
 
@@ -37,7 +41,7 @@ E = 1e4
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
-base_rod = CosseratRod.straight_rod(
+base_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
     direction,
@@ -53,34 +57,38 @@ catenary_sim.append(base_rod)
 
 # add damping
 catenary_sim.dampen(base_rod).using(
-    AnalyticalLinearDamper,
+    ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
     time_step=time_step,
 )
 
 # Add gravity
 catenary_sim.add_forcing_to(base_rod).using(
-    GravityForces, acc_gravity=-9.80665 * normal
+    ea.GravityForces, acc_gravity=-9.80665 * normal
 )
 
 # fix catenary ends
 catenary_sim.constrain(base_rod).using(
-    FixedConstraint, constrained_position_idx=(0, -1), constrained_director_idx=(0, -1)
+    ea.FixedConstraint,
+    constrained_position_idx=(0, -1),
+    constrained_director_idx=(0, -1),
 )
 
 
 # Add call backs
-class CatenaryCallBack(CallBackBaseClass):
+class CatenaryCallBack(ea.CallBackBaseClass):
     """
     Call back function for continuum snake
     """
 
-    def __init__(self, step_skip: int, callback_params: dict):
-        CallBackBaseClass.__init__(self)
+    def __init__(self, step_skip: int, callback_params: dict) -> None:
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: ea.typing.RodType, time: np.float64, current_step: int
+    ) -> None:
 
         if current_step % self.every == 0:
 
@@ -93,19 +101,19 @@ class CatenaryCallBack(CallBackBaseClass):
             return
 
 
-pp_list = defaultdict(list)
+recorded_history: dict[str, list] = defaultdict(list)
 catenary_sim.collect_diagnostics(base_rod).using(
-    CatenaryCallBack, step_skip=step_skip, callback_params=pp_list
+    CatenaryCallBack, step_skip=step_skip, callback_params=recorded_history
 )
 
 
 catenary_sim.finalize()
 
 
-timestepper = PositionVerlet()
+timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 
-integrate(timestepper, catenary_sim, final_time, total_steps)
-position = np.array(pp_list["position"])
+ea.integrate(timestepper, catenary_sim, final_time, total_steps)
+position = np.array(recorded_history["position"])
 b = np.min(position[-1][2])
 
 SAVE_VIDEO = True
@@ -113,7 +121,7 @@ if SAVE_VIDEO:
     # plotting the videos
     filename_video = "catenary.mp4"
     plot_video(
-        pp_list,
+        recorded_history,
         video_name=filename_video,
         fps=rendering_fps,
         xlim=[0, base_length],
@@ -123,7 +131,7 @@ if SAVE_VIDEO:
 PLOT_RESULTS = True
 if PLOT_RESULTS:
     plot_catenary(
-        pp_list,
+        recorded_history,
         xlim=(0, base_length),
         ylim=(b, 0.0),
     )

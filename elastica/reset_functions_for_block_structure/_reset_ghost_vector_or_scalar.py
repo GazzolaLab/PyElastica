@@ -10,7 +10,7 @@ def _reset_vector_ghost(
     input: NDArray[np.float64],
     ghost_idx: NDArray[np.int32],
     reset_value: np.float64 = np.float64(0.0),
-):
+) -> None:
     """
     This function resets the ghost of an input vector collection. Default reset value is 0.0.
 
@@ -50,7 +50,7 @@ def _reset_scalar_ghost(
     input: NDArray[np.float64],
     ghost_idx: NDArray[np.int32],
     reset_value: np.float64 = np.float64(0.0),
-):
+) -> None:
     """
     This function resets the ghost of a scalar collection. Default reset value is 0.0.
 

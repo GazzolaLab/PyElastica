@@ -133,18 +133,20 @@ class MeshRigidBody(RigidBodyBase):
 
 @numba.njit(cache=True)  # type: ignore
 def _update_faces(
-    director_collection,
-    face_centers,
-    center_of_mass,
-    distance_to_face_centers_from_center_of_mass,
-    direction_to_face_centers_from_center_of_mass_in_material_frame,
-    face_normals,
-    face_normals_in_material_frame,
-    faces,
-    distance_to_faces_from_center_of_mass,
-    direction_to_faces_from_center_of_mass_in_material_frame,
-    n_faces,
-):
+    director_collection: NDArray[np.float64],
+    face_centers: NDArray[np.float64],
+    center_of_mass: NDArray[np.float64],
+    distance_to_face_centers_from_center_of_mass: NDArray[np.float64],
+    direction_to_face_centers_from_center_of_mass_in_material_frame: NDArray[
+        np.float64
+    ],
+    face_normals: NDArray[np.float64],
+    face_normals_in_material_frame: NDArray[np.float64],
+    faces: NDArray[np.float64],
+    distance_to_faces_from_center_of_mass: NDArray[np.float64],
+    direction_to_faces_from_center_of_mass_in_material_frame: NDArray[np.float64],
+    n_faces: int,
+) -> None:
     # this function updates the face_centers, face_normals, and faces
     face_centers[:] = np.zeros((3, n_faces))  # dim,faces
     face_normals[:] = np.zeros((3, n_faces))  # dim,faces
