@@ -19,18 +19,6 @@ PyElastica is compatible with Python 3.10 - 3.11.
 $ pip install pyelastica
 ~~~
 
-With this you get a minimal version with very little dependencies.
-
-All options:
-- `examples`: installs dependencies to run example cases,
-found under the folder [`examples`](https://github.com/GazzolaLab/PyElastica/tree/master/examples).
-- `docs`: packages to build documentation
-
-Options can be combined e.g.
-```bash
-$ pip install "pyelastica[examples,docs]"
-```
-
 For plotting videos, ffmpeg has to be installed:
 ```bash
 $ conda install -c conda-forge ffmpeg

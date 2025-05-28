@@ -11,26 +11,26 @@ from typing import Literal, Sequence
 
 
 @numba.njit(cache=True)  # type: ignore
-def _dot_product(a: Sequence[np.float64], b: Sequence[np.float64]) -> np.float64:
-    total: np.float64 = np.float64(0.0)
+def _dot_product(a: Sequence[float], b: Sequence[float]) -> float:
+    total: float = 0.0
     for i in range(3):
         total += a[i] * b[i]
     return total
 
 
 @numba.njit(cache=True)  # type: ignore
-def _norm(a: Sequence[np.float64]) -> float:
+def _norm(a: Sequence[float]) -> float:
     return sqrt(_dot_product(a, a))
 
 
 @numba.njit(cache=True)  # type: ignore
-def _clip(x: np.float64, low: np.float64, high: np.float64) -> np.float64:
+def _clip(x: float, low: float, high: float) -> float:
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
 @numba.njit(cache=True)  # type: ignore
-def _out_of_bounds(x: np.float64, low: np.float64, high: np.float64) -> bool:
+def _out_of_bounds(x: float, low: float, high: float) -> bool:
     return bool((x < low) or (x > high))
 
 
@@ -41,14 +41,14 @@ def _find_min_dist(
     x2: NDArray[np.float64],
     e2: NDArray[np.float64],
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
-    e1e1 = _dot_product(e1, e1)
-    e1e2 = _dot_product(e1, e2)
-    e2e2 = _dot_product(e2, e2)
+    e1e1 = _dot_product(e1, e1)  # type: ignore
+    e1e2 = _dot_product(e1, e2)  # type: ignore
+    e2e2 = _dot_product(e2, e2)  # type: ignore
 
-    x1e1 = _dot_product(x1, e1)
-    x1e2 = _dot_product(x1, e2)
-    x2e1 = _dot_product(e1, x2)
-    x2e2 = _dot_product(x2, e2)
+    x1e1 = _dot_product(x1, e1)  # type: ignore
+    x1e2 = _dot_product(x1, e2)  # type: ignore
+    x2e1 = _dot_product(e1, x2)  # type: ignore
+    x2e2 = _dot_product(x2, e2)  # type: ignore
 
     s = 0.0
     t = 0.0

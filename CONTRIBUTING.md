@@ -6,24 +6,25 @@ The following is a set of guidelines for contributing to PyElastica. These are m
 
 #### Table Of Contents
 
-[TLTR! I need three-line summary!!](#three-line-summary)
+[TL;DR! I need three-line summary!!](#three-line-summary)
 
-[Before I get started?](#before-i-get-started)
-  * [Installation and packages](#installation-and-packages)
-  * [Project workflow](#project-workflow)
-
-[How can I contribute?](#how-can-i-contribute)
-  * [Reporting bugs](#reporting-bugs)
-  * [Suggesting enhancements](#suggesting-enhancements)
-  * [Your first code contribution](#your-first-code-contribution)
-  * [Side projects](#side-projects)
-  * [Pull requests](#pull-requests)
-  * [Have questions about the source code](#have-questions-about-the-source-code)
-
-[Styleguides](#styleguides)
-  * [Git commit messages](#git-commit-messages)
-  * [Formatting and styleguide](#formatting-and-styleguide)
-  * [Documentation styleguide](#documentation-styleguide)
+- [Contributing to PyElastica](#contributing-to-pyelastica)
+      - [Table Of Contents](#table-of-contents)
+  - [Three-line summary](#three-line-summary)
+  - [Before I get started](#before-i-get-started)
+    - [Setup development environment](#setup-development-environment)
+    - [Project workflow](#project-workflow)
+  - [How can I contribute?](#how-can-i-contribute)
+    - [Reporting bugs](#reporting-bugs)
+    - [Suggesting enhancements](#suggesting-enhancements)
+    - [Your first code contribution](#your-first-code-contribution)
+    - [Side projects](#side-projects)
+    - [Pull requests](#pull-requests)
+    - [Have questions about the source code?](#have-questions-about-the-source-code)
+  - [Styleguides](#styleguides)
+    - [Git commit messages](#git-commit-messages)
+    - [Formatting and styleguide](#formatting-and-styleguide)
+    - [Documentation styleguide](#documentation-styleguide)
 
 ## Three-line summary
 
@@ -35,40 +36,29 @@ The following is a set of guidelines for contributing to PyElastica. These are m
 
 ### Setup development environment
 
-Below are steps of how to setup development environment. We mainly use `poetry` to manage
-the project, although most of the important commands will be provided in `Makefile`.
+Below are steps of how to setup development environment. We use `uv` to manage Python environments and dependencies.
 
 1. Clone!
 
 First **create the fork repository and clone** to your local machine.
 
-2. Virtual python workspace: `conda`, `pyenv`, or `venv`.
+2. Install `uv`!
 
-We recommend using python version above 3.10.0.
+Follow the installation instructions from the [official uv documentation](https://github.com/astral-sh/uv#installation).
 
-```bash
-conda create --name pyelastica-dev
-conda activate pyelastica-dev
-conda install python==3.10
-```
-
-3. Setup [`poetry`](https://python-poetry.org) and `dependencies`!
+3. Sync and activate virtual environment.
 
 ```bash
-make poetry-download
-make install
-make pre-commit-install
+make install-dev-deps
+make pre-commit-install  # Optional: to run pre-commit hooks
+source .venv/bin/activate  # On Unix/macOS
+.venv\Scripts\activate     # On Windows
 ```
 
-If you are planning to contribute to the examples,
-extra dependencies can be installed using `make install_examples_dependencies`.
+4. (Optional) Documentation
 
-If you are planning to contribute on documentation, extra dependencies can be installed
-using `poetry install -E docs`.
-The detail instruction is included
+The detail instruction of building and contributing to documentation is included
 [here](https://github.com/GazzolaLab/PyElastica/blob/master/docs/README.md).
-
-4. Now your working environment is set!
 
 ### Project workflow
 
@@ -138,14 +128,7 @@ If you are interested in hearing more, please contact one of our the maintainer.
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Follow the [styleguides](#styleguides)
-2. If you add a new dependency, add it to the `pyproject.toml` and then run the following line from the top directory:
-
-    `
-   make install_with_new_dependency
-   `
-
-	This will update `poetry.lock` to ensure version control. Don't forget to commit `.lock` and `.toml` files for Poetry in this case!
-3. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
+2. Before you submit your pull request run [pytests](https://pypi.org/project/pytest/) and make sure that all tests pass.
 
     In order to run pytest, run the following line from the top directory:
 
@@ -153,13 +136,13 @@ Please follow these steps to have your contribution considered by the maintainer
     make test
     `
 
-4. After you submit your pull request, verify that all status checks are passing <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
+3. After you submit your pull request, verify that all status checks are passing. <details><summary>What if the status checks are failing?</summary>If a status check is failing, and you believe that the failure is unrelated to your change, please leave a comment on the pull request explaining why you believe the failure is unrelated. A maintainer will re-run the status check for you. If we conclude that the failure was a false positive, then we will open an issue to track that problem with our status check suite.</details>
 
 The reviewer(s) may ask you to complete additional tests or changes before your pull request can be accepted.
 
 ### Have questions about the source code?
 
-Ask any question about **how to use PyElastica and detail implementation** in the **issue with label:question**.
+Ask any question about **how to use PyElastica and detailed implementation** in the **issue with label:question**.
 
 ## Styleguides
 
@@ -171,11 +154,13 @@ Ask any question about **how to use PyElastica and detail implementation** in th
 
 ### Formatting and styleguide
 
-We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/project/black/) for python style.
+We use [flake8](https://pypi.org/project/flake8/) and [Black](https://pypi.org/project/black/) for Python style. The versions are specified in `pyproject.toml`.
 
 In order to format the code:
 
-`make formatting`
+```bash
+make formatting
+```
 
 > **Note:** Format/refactoring patches that are not anything substantial to the context or functionality will likely be rejected.
 
