@@ -3,37 +3,44 @@ __doc__ = """ Helper functions for contact force calculation """
 from math import sqrt
 import numba
 import numpy as np
+from numpy.typing import NDArray
 from elastica._linalg import (
     _batch_norm,
 )
+from typing import Literal, Sequence
 
 
-@numba.njit(cache=True)
-def _dot_product(a, b):
-    sum = 0.0
+@numba.njit(cache=True)  # type: ignore
+def _dot_product(a: Sequence[np.float64], b: Sequence[np.float64]) -> np.float64:
+    total: np.float64 = np.float64(0.0)
     for i in range(3):
-        sum += a[i] * b[i]
-    return sum
+        total += a[i] * b[i]
+    return total
 
 
-@numba.njit(cache=True)
-def _norm(a):
+@numba.njit(cache=True)  # type: ignore
+def _norm(a: Sequence[np.float64]) -> float:
     return sqrt(_dot_product(a, a))
 
 
-@numba.njit(cache=True)
-def _clip(x, low, high):
+@numba.njit(cache=True)  # type: ignore
+def _clip(x: np.float64, low: np.float64, high: np.float64) -> np.float64:
     return max(low, min(x, high))
 
 
 # Can this be made more efficient than 2 comp, 1 or?
-@numba.njit(cache=True)
-def _out_of_bounds(x, low, high):
-    return (x < low) or (x > high)
+@numba.njit(cache=True)  # type: ignore
+def _out_of_bounds(x: np.float64, low: np.float64, high: np.float64) -> bool:
+    return bool((x < low) or (x > high))
 
 
-@numba.njit(cache=True)
-def _find_min_dist(x1, e1, x2, e2):
+@numba.njit(cache=True)  # type: ignore
+def _find_min_dist(
+    x1: NDArray[np.float64],
+    e1: NDArray[np.float64],
+    x2: NDArray[np.float64],
+    e2: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     e1e1 = _dot_product(e1, e1)
     e1e2 = _dot_product(e1, e2)
     e2e2 = _dot_product(e2, e2)
@@ -46,7 +53,7 @@ def _find_min_dist(x1, e1, x2, e2):
     s = 0.0
     t = 0.0
 
-    parallel = abs(1.0 - e1e2 ** 2 / (e1e1 * e2e2)) < 1e-6
+    parallel = abs(1.0 - e1e2**2 / (e1e1 * e2e2)) < 1e-6
     if parallel:
         # Some are parallel, so do processing
         t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal
@@ -98,8 +105,10 @@ def _find_min_dist(x1, e1, x2, e2):
     return x2 + s * e2 - x1 - t * e1, x2 + s * e2, x1 - t * e1
 
 
-@numba.njit(cache=True)
-def _aabbs_not_intersecting(aabb_one, aabb_two):
+@numba.njit(cache=True)  # type: ignore
+def _aabbs_not_intersecting(
+    aabb_one: NDArray[np.float64], aabb_two: NDArray[np.float64]
+) -> Literal[1, 0]:
     """Returns true if not intersecting else false"""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
         return 1
@@ -111,16 +120,16 @@ def _aabbs_not_intersecting(aabb_one, aabb_two):
     return 0
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_cylinder(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    cylinder_position,
-    cylinder_director,
-    cylinder_radius,
-    cylinder_length,
-):
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    cylinder_position: NDArray[np.float64],
+    cylinder_director: NDArray[np.float64],
+    cylinder_radius: NDArray[np.float64],
+    cylinder_length: NDArray[np.float64],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_cylinder = np.empty((3, 2))
@@ -153,15 +162,15 @@ def _prune_using_aabbs_rod_cylinder(
     return _aabbs_not_intersecting(aabb_cylinder, aabb_rod)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_rod(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    rod_two_position_collection,
-    rod_two_radius_collection,
-    rod_two_length_collection,
-):
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    rod_two_position_collection: NDArray[np.float64],
+    rod_two_radius_collection: NDArray[np.float64],
+    rod_two_length_collection: NDArray[np.float64],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod_one = np.empty((3, 2))
     aabb_rod_two = np.empty((3, 2))
@@ -191,15 +200,15 @@ def _prune_using_aabbs_rod_rod(
     return _aabbs_not_intersecting(aabb_rod_two, aabb_rod_one)
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True)  # type: ignore
 def _prune_using_aabbs_rod_sphere(
-    rod_one_position_collection,
-    rod_one_radius_collection,
-    rod_one_length_collection,
-    sphere_position,
-    sphere_director,
-    sphere_radius,
-):
+    rod_one_position_collection: NDArray[np.float64],
+    rod_one_radius_collection: NDArray[np.float64],
+    rod_one_length_collection: NDArray[np.float64],
+    sphere_position: NDArray[np.float64],
+    sphere_director: NDArray[np.float64],
+    sphere_radius: NDArray[np.float64],
+) -> Literal[1, 0]:
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_sphere = np.empty((3, 2))
@@ -230,8 +239,10 @@ def _prune_using_aabbs_rod_sphere(
     return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
 
 
-@numba.njit(cache=True)
-def _find_slipping_elements(velocity_slip, velocity_threshold):
+@numba.njit(cache=True)  # type: ignore
+def _find_slipping_elements(
+    velocity_slip: NDArray[np.float64], velocity_threshold: np.float64
+) -> NDArray[np.float64]:
     """
     This function takes the velocity of elements and checks if they are larger than the threshold velocity.
     If the velocity of elements is larger than threshold velocity, that means those elements are slipping.
@@ -271,8 +282,8 @@ def _find_slipping_elements(velocity_slip, velocity_threshold):
     return slip_function
 
 
-@numba.njit(cache=True)
-def _node_to_element_mass_or_force(input):
+@numba.njit(cache=True)  # type: ignore
+def _node_to_element_mass_or_force(input: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     This function converts the mass/forces on rod nodes to
     elements, where special treatment is necessary at the ends.
@@ -309,8 +320,11 @@ def _node_to_element_mass_or_force(input):
     return output
 
 
-@numba.njit(cache=True)
-def _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
+@numba.njit(cache=True)  # type: ignore
+def _elements_to_nodes_inplace(
+    vector_in_element_frame: NDArray[np.float64],
+    vector_in_node_frame: NDArray[np.float64],
+) -> None:
     """
     Updating nodal forces using the forces computed on elements
     Parameters
@@ -332,8 +346,10 @@ def _elements_to_nodes_inplace(vector_in_element_frame, vector_in_node_frame):
             vector_in_node_frame[i, k + 1] += 0.5 * vector_in_element_frame[i, k]
 
 
-@numba.njit(cache=True)
-def _node_to_element_position(node_position_collection):
+@numba.njit(cache=True)  # type: ignore
+def _node_to_element_position(
+    node_position_collection: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """
     This function computes the position of the elements
     from the nodal values.
@@ -378,8 +394,10 @@ def _node_to_element_position(node_position_collection):
     return element_position_collection
 
 
-@numba.njit(cache=True)
-def _node_to_element_velocity(mass, node_velocity_collection):
+@numba.njit(cache=True)  # type: ignore
+def _node_to_element_velocity(
+    mass: NDArray[np.float64], node_velocity_collection: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
     This function computes the velocity of the elements
     from the nodal values. Uses the velocity of center of mass

@@ -1,4 +1,8 @@
 __doc__ = """Base class for surfaces"""
+from typing import TYPE_CHECKING, Type
+
+import numpy as np
+from numpy.typing import NDArray
 
 
 class SurfaceBase:
@@ -11,8 +15,17 @@ class SurfaceBase:
 
     """
 
-    def __init__(self):
+    REQUISITE_MODULES: list[Type] = []
+
+    def __init__(self) -> None:
         """
         SurfaceBase does not take any arguments.
         """
-        pass
+        self.normal: NDArray[np.float64]  # (3,)
+        self.origin: NDArray[np.float64]  # (3, 1)
+
+
+if TYPE_CHECKING:
+    from elastica.systems.protocol import StaticSystemProtocol
+
+    _: StaticSystemProtocol = SurfaceBase()

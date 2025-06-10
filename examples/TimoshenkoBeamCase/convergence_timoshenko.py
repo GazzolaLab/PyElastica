@@ -36,7 +36,7 @@ def simulate_timoshenko_beam_with(
     base_length = 3.0
     base_radius = 0.25
     density = 5000
-    nu = 0.1 / 7 / density / (np.pi * base_radius ** 2)
+    nu = 0.1 / 7 / density / (np.pi * base_radius**2)
     E = 1e6
     # For shear modulus of 1e4, nu is 99!
     poisson_ratio = 99

@@ -44,7 +44,7 @@ def rigid_sphere_translational_motion_verification(force=0.0):
             super(PointForceToCenter, self).__init__()
             self.force = (force * direction).reshape(3, 1)
 
-        def apply_forces(self, system, time: np.float = 0.0):
+        def apply_forces(self, system, time: np.float64 = np.float64(0.0)):
             system.external_forces += self.force
 
     # Add point force on the rod
@@ -97,7 +97,7 @@ def rigid_sphere_translational_motion_verification(force=0.0):
     translational_energy = sphere.compute_translational_energy()
     rotational_energy = sphere.compute_rotational_energy()
     # compute translational and rotational energy using analytical equations
-    mass = 4.0 / 3.0 * np.pi * sphere_radius ** 3 * density
+    mass = 4.0 / 3.0 * np.pi * sphere_radius**3 * density
 
     analytical_translational_energy = 0.5 * mass * (force / mass * final_time) ** 2
     analytical_rotational_energy = 0.0

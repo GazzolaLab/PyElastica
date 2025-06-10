@@ -85,6 +85,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
     # Add callbacks
     post_processing_dict_list = []
+
     # For rod
     class StraightRodCallBack(ea.CallBackBaseClass):
         """

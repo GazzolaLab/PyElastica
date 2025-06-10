@@ -5,8 +5,10 @@ import os
 from itertools import groupby
 from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
 
+from typing import Iterable, Iterator, Any
 
-def all_equal(iterable):
+
+def all_equal(iterable: Iterable[Any]) -> bool:
     """
     Checks if all elements of list are equal.
     Parameters
@@ -20,11 +22,17 @@ def all_equal(iterable):
     ----------
         https://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
     """
-    g = groupby(iterable)
+    g: Iterator[Any] = groupby(iterable)
     return next(g, True) and not next(g, False)
 
 
-def save_state(simulator, directory: str = "", time=0.0, verbose: bool = False):
+# TODO: simulator should have better typing
+def save_state(
+    simulator: Iterable,
+    directory: str = "",
+    time: np.float64 = np.float64(0.0),
+    verbose: bool = False,
+) -> None:
     """
     Save state parameters of each rod.
     TODO : environment list variable is not uniform at the current stage of development.
@@ -53,7 +61,10 @@ def save_state(simulator, directory: str = "", time=0.0, verbose: bool = False):
         print("Save complete: {}".format(directory))
 
 
-def load_state(simulator, directory: str = "", verbose: bool = False):
+# TODO: simulator should have better typing
+def load_state(
+    simulator: Iterable, directory: str = "", verbose: bool = False
+) -> float:
     """
     Load the rod-state. Compatibale with 'save_state' method.
     If the save-file does not exist, it returns error.
@@ -72,7 +83,7 @@ def load_state(simulator, directory: str = "", verbose: bool = False):
     time : float
         Simulation time of systems when they are saved.
     """
-    time_list = []  # Simulation time of rods when they are saved.
+    time_list: list[float] = []  # Simulation time of rods when they are saved.
     for idx, rod in enumerate(simulator):
         if isinstance(rod, MemoryBlockCosseratRod) or isinstance(
             rod, MemoryBlockRigidBody

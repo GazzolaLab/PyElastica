@@ -54,7 +54,7 @@ normal = global_rot_mat @ normal
 
 base_length = 0.5
 base_radius = 0.01
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1750
 E = 3e5
 poisson_ratio = 0.5

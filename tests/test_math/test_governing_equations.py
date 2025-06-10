@@ -49,8 +49,8 @@ def constructor(n_elem):
     )
 
     # Ghost needed for Cosserat rod functions adapted for block structure.
-    rod.ghost_elems_idx = np.empty((0), dtype=int)
-    rod.ghost_voronoi_idx = np.empty((0), dtype=int)
+    rod.ghost_elems_idx = np.empty((0), dtype=np.int32)
+    rod.ghost_voronoi_idx = np.empty((0), dtype=np.int32)
 
     return cls, rod
 
@@ -372,7 +372,7 @@ class TestingClass:
             test_rod.shear_matrix,
             test_rod.internal_stress,
             test_rod.internal_forces,
-            ghost_elems_idx=np.empty((0), dtype=int),
+            ghost_elems_idx=np.empty((0), dtype=np.int32),
         )
 
         assert_allclose(
@@ -725,7 +725,7 @@ class TestingClass:
             test_rod.dilatation,
             test_rod.dilatation_rate,
             test_rod.internal_torques,
-            ghost_voronoi_idx=np.empty((0), dtype=int),
+            ghost_voronoi_idx=np.empty((0), dtype=np.int32),
         )
 
         # computed internal torques has to be zero. Internal torques created by Lagrangian

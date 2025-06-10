@@ -3,6 +3,7 @@ __doc__ = "Analytically integrable systems, used primarily for testing time-step
 import numpy as np
 from elastica._rotations import _rotate
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
+from elastica.rod.rod_base import RodBase
 
 
 class BaseStatefulSystem:
@@ -98,7 +99,7 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         self.omega = omega
         self.initial_value = init_val.copy()
         self._state = init_val.copy()
-        self.A_matrix = np.array([[0.0, 1.0], [-self.omega ** 2, 0.0]])
+        self.A_matrix = np.array([[0.0, 1.0], [-self.omega**2, 0.0]])
 
     def analytical_solution(self, time):
         # http://scipp.ucsc.edu/~haber/ph5B/sho09.pdf
@@ -155,16 +156,16 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         analytical_state = self.analytical_solution(time)
 
         def energy(st):
-            return self.omega ** 2 * st[0] ** 2 + st[1] ** 2
+            return self.omega**2 * st[0] ** 2 + st[1] ** 2
 
         anal_energy = energy(analytical_state)
         current_energy = energy(self._state)
         return current_energy, anal_energy
 
-    def update_internal_forces_and_torques(self, time):
+    def compute_internal_forces_and_torques(self, time):
         pass
 
-    def reset_external_forces_and_torques(self, time):
+    def zeroed_out_external_forces_and_torques(self, time):
         pass
 
 
@@ -174,10 +175,8 @@ class DampedSimpleHarmonicOscillatorSystem(
     def __init__(self, damping=0.5, omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])):
         super(DampedSimpleHarmonicOscillatorSystem, self).__init__(omega, init_val)
         self.zeta = 0.5 * damping
-        self.modified_omega = np.sqrt(
-            self.omega ** 2 - self.zeta ** 2, dtype=np.complex128
-        )
-        self.A_matrix = np.array([[0.0, 1.0], [-self.omega ** 2, -damping]])
+        self.modified_omega = np.sqrt(self.omega**2 - self.zeta**2, dtype=np.complex128)
+        self.A_matrix = np.array([[0.0, 1.0], [-self.omega**2, -damping]])
 
     def analytical_solution(self, time):
         # https://en.wikipedia.org/wiki/Harmonic_oscillator#Transient_solution
@@ -301,7 +300,12 @@ class CollectiveSystem:
 
     def __init__(self):
         self._memory_blocks = []
-        self.systems = self._memory_blocks
+
+    def systems(self):
+        return self._memory_blocks
+
+    def block_systems(self):
+        return self._memory_blocks
 
     def __getitem__(self, idx):
         return self._memory_blocks[idx]
@@ -345,8 +349,8 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         super(
             ScalarExponentialDampedHarmonicOscillatorCollectiveSystem, self
         ).__init__()
-        self.systems.append(ScalarExponentialDecaySystem())
-        self.systems.append(DampedSimpleHarmonicOscillatorSystem())
+        self._memory_blocks.append(ScalarExponentialDecaySystem())
+        self._memory_blocks.append(DampedSimpleHarmonicOscillatorSystem())
 
 
 def make_simple_system_with_positions_directors(
@@ -357,8 +361,9 @@ def make_simple_system_with_positions_directors(
     )
 
 
-class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
+class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin, RodBase):
     def __init__(self, start_position, end_position, start_director):
+        self.ring_rod_flag = False  # TODO:
         self.a = 0.5
         self.b = 1
         self.c = 2
@@ -420,7 +425,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
         if type == "Positions":
             analytical_solution = (
                 np.hstack((self.init_pos, self.final_pos))
-                + np.sin(np.pi * time) / np.pi ** 2
+                + np.sin(np.pi * time) / np.pi**2
             )
         elif type == "Velocity":
             analytical_solution = (
@@ -428,7 +433,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin):
                 + np.cos(np.pi * time) / np.pi
             )
         elif type == "Directors":
-            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time ** 2
+            final_angle = self.omega_value * time + 0.5 * 0.1 * np.pi * time**2
             axis = np.array([0.0, 0.0, 1.0]).reshape(3, 1)  # There is only one director
             # Reshaping done to prevent numba equivalent to complain
             # While we can prevent it here, its' done to make the front end testing scripts "look"

@@ -749,10 +749,10 @@ def test_periodic_boundary_one_ring_rod():
     block_structure = MemoryBlockCosseratRod([ring_rod], [0])
 
     correct_periodic_boundary_node_idx = np.array(
-        [[0, 6, 7], [5, 1, 2]], dtype=np.int64
+        [[0, 6, 7], [5, 1, 2]], dtype=np.int32
     )
-    correct_periodic_boundary_elem_idx = np.array([[0, 6], [5, 1]], dtype=np.int64)
-    correct_periodic_boundary_voronoi_idx = np.array([[0], [5]], dtype=np.int64)
+    correct_periodic_boundary_elem_idx = np.array([[0, 6], [5, 1]], dtype=np.int32)
+    correct_periodic_boundary_voronoi_idx = np.array([[0], [5]], dtype=np.int32)
 
     assert_allclose(
         correct_periodic_boundary_node_idx,
@@ -770,14 +770,14 @@ def test_periodic_boundary_one_ring_rod():
         atol=Tolerance.atol(),
     )
 
-    correct_start_node_idx = np.array([1], dtype=np.int64)
-    correct_end_node_idx = np.array([6], dtype=np.int64)
+    correct_start_node_idx = np.array([1], dtype=np.int32)
+    correct_end_node_idx = np.array([6], dtype=np.int32)
 
-    correct_start_elem_idx = np.array([1], dtype=np.int64)
-    correct_end_elem_idx = np.array([6], dtype=np.int64)
+    correct_start_elem_idx = np.array([1], dtype=np.int32)
+    correct_end_elem_idx = np.array([6], dtype=np.int32)
 
-    correct_start_voronoi_idx = np.array([1], dtype=np.int64)
-    correct_end_voronoi_idx = np.array([6], dtype=np.int64)
+    correct_start_voronoi_idx = np.array([1], dtype=np.int32)
+    correct_end_voronoi_idx = np.array([6], dtype=np.int32)
 
     assert_allclose(
         correct_start_node_idx,
@@ -826,12 +826,12 @@ def test_periodic_boundary_two_ring_rod():
     block_structure = MemoryBlockCosseratRod([ring_rod_1, ring_rod_2], [0, 1])
 
     correct_periodic_boundary_node_idx = np.array(
-        [[0, 6, 7, 9, 15, 16], [5, 1, 2, 14, 10, 11]], dtype=np.int64
+        [[0, 6, 7, 9, 15, 16], [5, 1, 2, 14, 10, 11]], dtype=np.int32
     )
     correct_periodic_boundary_elem_idx = np.array(
-        [[0, 6, 9, 15], [5, 1, 14, 10]], dtype=np.int64
+        [[0, 6, 9, 15], [5, 1, 14, 10]], dtype=np.int32
     )
-    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 14]], dtype=np.int64)
+    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 14]], dtype=np.int32)
 
     assert_allclose(
         correct_periodic_boundary_node_idx,
@@ -849,14 +849,14 @@ def test_periodic_boundary_two_ring_rod():
         atol=Tolerance.atol(),
     )
 
-    correct_start_node_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_node_idx = np.array([6, 15], dtype=np.int64)
+    correct_start_node_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_node_idx = np.array([6, 15], dtype=np.int32)
 
-    correct_start_elem_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_elem_idx = np.array([6, 15], dtype=np.int64)
+    correct_start_elem_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_elem_idx = np.array([6, 15], dtype=np.int32)
 
-    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_voronoi_idx = np.array([6, 15], dtype=np.int64)
+    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_voronoi_idx = np.array([6, 15], dtype=np.int32)
 
     assert_allclose(
         correct_start_node_idx,
@@ -906,12 +906,12 @@ def test_periodic_boundary_two_ring_rod_different_nelems():
     block_structure = MemoryBlockCosseratRod([ring_rod_1, ring_rod_2], [0, 1])
 
     correct_periodic_boundary_node_idx = np.array(
-        [[0, 6, 7, 9, 13, 14], [5, 1, 2, 12, 10, 11]], dtype=np.int64
+        [[0, 6, 7, 9, 13, 14], [5, 1, 2, 12, 10, 11]], dtype=np.int32
     )
     correct_periodic_boundary_elem_idx = np.array(
-        [[0, 6, 9, 13], [5, 1, 12, 10]], dtype=np.int64
+        [[0, 6, 9, 13], [5, 1, 12, 10]], dtype=np.int32
     )
-    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 12]], dtype=np.int64)
+    correct_periodic_boundary_voronoi_idx = np.array([[0, 9], [5, 12]], dtype=np.int32)
 
     assert_allclose(
         correct_periodic_boundary_node_idx,
@@ -929,14 +929,14 @@ def test_periodic_boundary_two_ring_rod_different_nelems():
         atol=Tolerance.atol(),
     )
 
-    correct_start_node_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_node_idx = np.array([6, 13], dtype=np.int64)
+    correct_start_node_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_node_idx = np.array([6, 13], dtype=np.int32)
 
-    correct_start_elem_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_elem_idx = np.array([6, 13], dtype=np.int64)
+    correct_start_elem_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_elem_idx = np.array([6, 13], dtype=np.int32)
 
-    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int64)
-    correct_end_voronoi_idx = np.array([6, 13], dtype=np.int64)
+    correct_start_voronoi_idx = np.array([1, 10], dtype=np.int32)
+    correct_end_voronoi_idx = np.array([6, 13], dtype=np.int32)
 
     assert_allclose(
         correct_start_node_idx,
@@ -985,10 +985,10 @@ def test_periodic_boundary_one_ring_one_straight_rod():
     block_structure = MemoryBlockCosseratRod([ring_rod, straight_rod], [0, 1])
 
     correct_periodic_boundary_node_idx = np.array(
-        [[7, 13, 14], [12, 8, 9]], dtype=np.int64
+        [[7, 13, 14], [12, 8, 9]], dtype=np.int32
     )
-    correct_periodic_boundary_elem_idx = np.array([[7, 13], [12, 8]], dtype=np.int64)
-    correct_periodic_boundary_voronoi_idx = np.array([[7], [12]], dtype=np.int64)
+    correct_periodic_boundary_elem_idx = np.array([[7, 13], [12, 8]], dtype=np.int32)
+    correct_periodic_boundary_voronoi_idx = np.array([[7], [12]], dtype=np.int32)
 
     assert_allclose(
         correct_periodic_boundary_node_idx,
@@ -1006,14 +1006,14 @@ def test_periodic_boundary_one_ring_one_straight_rod():
         atol=Tolerance.atol(),
     )
 
-    correct_start_node_idx = np.array([0, 8], dtype=np.int64)
-    correct_end_node_idx = np.array([6, 13], dtype=np.int64)
+    correct_start_node_idx = np.array([0, 8], dtype=np.int32)
+    correct_end_node_idx = np.array([6, 13], dtype=np.int32)
 
-    correct_start_elem_idx = np.array([0, 8], dtype=np.int64)
-    correct_end_elem_idx = np.array([5, 13], dtype=np.int64)
+    correct_start_elem_idx = np.array([0, 8], dtype=np.int32)
+    correct_end_elem_idx = np.array([5, 13], dtype=np.int32)
 
-    correct_start_voronoi_idx = np.array([0, 8], dtype=np.int64)
-    correct_end_voronoi_idx = np.array([4, 13], dtype=np.int64)
+    correct_start_voronoi_idx = np.array([0, 8], dtype=np.int32)
+    correct_end_voronoi_idx = np.array([4, 13], dtype=np.int32)
 
     assert_allclose(
         correct_start_node_idx,

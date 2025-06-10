@@ -1,9 +1,13 @@
 __doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
 
-from elastica.typing import RodType, SystemType, AllowedContactType
-from elastica.rod import RodBase
-from elastica.rigidbody import Cylinder, Sphere
-from elastica.surface import Plane
+from typing import TypeVar, Generic, Type
+from elastica.typing import RodType, SystemType, SurfaceType
+
+from elastica.rod.rod_base import RodBase
+from elastica.rigidbody.cylinder import Cylinder
+from elastica.rigidbody.sphere import Sphere
+from elastica.surface.plane import Plane
+from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_utils import (
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
@@ -19,9 +23,14 @@ from elastica._contact_functions import (
     _calculate_contact_forces_cylinder_plane,
 )
 import numpy as np
+from numpy.typing import NDArray
 
 
-class NoContact:
+S1 = TypeVar("S1")  # TODO: Find bound
+S2 = TypeVar("S2")
+
+
+class NoContact(Generic[S1, S2]):
     """
     This is the base class for contact applied between rod-like objects and allowed contact objects.
 
@@ -32,55 +41,52 @@ class NoContact:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         NoContact class does not need any input parameters.
         """
+        pass
+
+    @property
+    def _allowed_system_one(self) -> list[Type]:
+        # Modify this list to include the allowed system types for contact
+        return [RodBase]
+
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        # Modify this list to include the allowed system types for contact
+        return [RodBase]
 
     def _check_systems_validity(
         self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
+        system_one: S1,
+        system_two: S2,
     ) -> None:
         """
-        This checks the contact order between a SystemType object and an AllowedContactType object, the order should follow: Rod, Rigid body, Surface.
-        In NoContact class, this just checks if system_two is a rod then system_one must be a rod.
-
-
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
+        Here, we check the allowed system types for contact.
+        For derived classes, this method can be overridden to enforce specific system types
+        for contact model.
         """
-        if issubclass(system_two.__class__, RodBase):
-            if not issubclass(system_one.__class__, RodBase):
-                raise TypeError(
-                    "Systems provided to the contact class have incorrect order. \n"
-                    " First system is {0} and second system is {1}. \n"
-                    " If the first system is a rod, the second system can be a rod, rigid body or surface. \n"
-                    " If the first system is a rigid body, the second system can be a rigid body or surface.".format(
-                        system_one.__class__, system_two.__class__
-                    )
-                )
+
+        common_check_systems_validity(system_one, self._allowed_system_one)
+        common_check_systems_validity(system_two, self._allowed_system_two)
+
+        common_check_systems_identity(system_one, system_two)
 
     def apply_contact(
         self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
+        system_one: S1,
+        system_two: S2,
     ) -> None:
         """
-        Apply contact forces and torques between SystemType object and AllowedContactType object.
+        Apply contact forces and torques between two system object..
 
         In NoContact class, this routine simply passes.
 
         Parameters
         ----------
-        system_one : SystemType
-            Rod or rigid-body object
-        system_two : AllowedContactType
-            Rod, rigid-body, or surface object
+        system_one
+        system_two
         """
         pass
 
@@ -101,7 +107,7 @@ class RodRodContact(NoContact):
 
     """
 
-    def __init__(self, k: float, nu: float):
+    def __init__(self, k: np.float64, nu: np.float64) -> None:
         """
         Parameters
         ----------
@@ -114,49 +120,14 @@ class RodRodContact(NoContact):
         self.k = k
         self.nu = nu
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodRodContact class both systems must be distinct rods.
-
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, RodBase
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order. \n"
-                " First system is {0} and second system is {1}. \n"
-                " Both systems must be distinct rods".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
-        if system_one == system_two:
-            raise TypeError(
-                "First rod is identical to second rod. \n"
-                "Rods must be distinct for RodRodConact. \n"
-                "If you want self contact, use RodSelfContact instead"
-            )
-
     def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
         """
         Apply contact forces and torques between RodType object and RodType object.
 
         Parameters
         ----------
-        system_one: object
-            Rod object.
-        system_two: object
-            Rod object.
+        system_one: RodType
+        system_two: RodType
 
         """
         # First, check for a global AABB bounding box, and see whether that
@@ -227,9 +198,9 @@ class RodCylinderContact(NoContact):
         self,
         k: float,
         nu: float,
-        velocity_damping_coefficient=0.0,
-        friction_coefficient=0.0,
-    ):
+        velocity_damping_coefficient: float = 0.0,
+        friction_coefficient: float = 0.0,
+    ) -> None:
         """
 
         Parameters
@@ -245,39 +216,17 @@ class RodCylinderContact(NoContact):
             For Coulombic friction coefficient for rigid-body and rod contact.
         """
         super(RodCylinderContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.velocity_damping_coefficient = velocity_damping_coefficient
-        self.friction_coefficient = friction_coefficient
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.velocity_damping_coefficient = np.float64(velocity_damping_coefficient)
+        self.friction_coefficient = np.float64(friction_coefficient)
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodCylinderContact class first_system should be a rod and second_system should be a cylinder.
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        # Modify this list to include the allowed system types for contact
+        return [Cylinder]
 
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, Cylinder
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a rod, second should be a cylinder".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
-
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(self, system_one: RodType, system_two: Cylinder) -> None:
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -286,8 +235,8 @@ class RodCylinderContact(NoContact):
             system_one.lengths,
             system_two.position_collection,
             system_two.director_collection,
-            system_two.radius[0],
-            system_two.length[0],
+            system_two.radius,
+            system_two.length,
         ):
             return
 
@@ -338,7 +287,7 @@ class RodSelfContact(NoContact):
 
     """
 
-    def __init__(self, k: float, nu: float):
+    def __init__(self, k: float, nu: float) -> None:
         """
 
         Parameters
@@ -349,38 +298,20 @@ class RodSelfContact(NoContact):
             Contact damping constant.
         """
         super(RodSelfContact, self).__init__()
-        self.k = k
-        self.nu = nu
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
 
     def _check_systems_validity(
         self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
+        system_one: RodType,
+        system_two: RodType,
     ) -> None:
         """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodSelfContact class first_system and second_system should be the same rod.
-
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
+        Overriding the base class method to check if the two systems are identical.
         """
-        if (
-            not issubclass(system_one.__class__, RodBase)
-            or not issubclass(system_two.__class__, RodBase)
-            or system_one != system_two
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system and second system should be the same rod \n"
-                " If you want rod rod contact, use RodRodContact instead".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+        common_check_systems_validity(system_one, self._allowed_system_one)
+        common_check_systems_validity(system_two, self._allowed_system_two)
+        common_check_systems_different(system_one, system_two)
 
     def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
         """
@@ -388,10 +319,8 @@ class RodSelfContact(NoContact):
 
         Parameters
         ----------
-        system_one: object
-            Rod object.
-        system_two: object
-            Rod object.
+        system_one: RodType
+        system_two: RodType
 
         """
         _calculate_contact_forces_self_rod(
@@ -437,9 +366,9 @@ class RodSphereContact(NoContact):
         self,
         k: float,
         nu: float,
-        velocity_damping_coefficient=0.0,
-        friction_coefficient=0.0,
-    ):
+        velocity_damping_coefficient: float = 0.0,
+        friction_coefficient: float = 0.0,
+    ) -> None:
         """
         Parameters
         ----------
@@ -454,47 +383,23 @@ class RodSphereContact(NoContact):
             For Coulombic friction coefficient for rigid-body and rod contact.
         """
         super(RodSphereContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.velocity_damping_coefficient = velocity_damping_coefficient
-        self.friction_coefficient = friction_coefficient
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.velocity_damping_coefficient = np.float64(velocity_damping_coefficient)
+        self.friction_coefficient = np.float64(friction_coefficient)
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodSphereContact class first_system should be a rod and second_system should be a sphere.
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, Sphere
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a rod, second should be a sphere".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        return [Sphere]
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(self, system_one: RodType, system_two: Sphere) -> None:
         """
         Apply contact forces and torques between RodType object and Sphere object.
 
         Parameters
         ----------
-        system_one: object
-            Rod object.
-        system_two: object
-            Sphere object.
+        system_one: RodType
+        system_two: Sphere
 
         """
         # First, check for a global AABB bounding box, and see whether that
@@ -505,7 +410,7 @@ class RodSphereContact(NoContact):
             system_one.lengths,
             system_two.position_collection,
             system_two.director_collection,
-            system_two.radius[0],
+            system_two.radius,
         ):
             return
 
@@ -562,7 +467,7 @@ class RodPlaneContact(NoContact):
         self,
         k: float,
         nu: float,
-    ):
+    ) -> None:
         """
         Parameters
         ----------
@@ -572,37 +477,15 @@ class RodPlaneContact(NoContact):
             Contact damping constant.
         """
         super(RodPlaneContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodPlaneContact class first_system should be a rod and second_system should be a plane.
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, Plane
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a rod, second should be a plane".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        return [SurfaceBase]
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object.
 
@@ -655,9 +538,9 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
         k: float,
         nu: float,
         slip_velocity_tol: float,
-        static_mu_array: np.ndarray,
-        kinetic_mu_array: np.ndarray,
-    ):
+        static_mu_array: NDArray[np.float64],
+        kinetic_mu_array: NDArray[np.float64],
+    ) -> None:
         """
         Parameters
         ----------
@@ -675,9 +558,9 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
             [forward, backward, sideways] kinetic friction coefficients.
         """
         super(RodPlaneContactWithAnisotropicFriction, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
         self.slip_velocity_tol = slip_velocity_tol
         (
             self.static_mu_forward,
@@ -690,42 +573,18 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
             self.kinetic_mu_sideways,
         ) = kinetic_mu_array
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodSphereContact class first_system should be a rod and second_system should be a plane.
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, RodBase) or not issubclass(
-            system_two.__class__, Plane
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a rod, second should be a plane".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        return [SurfaceBase]
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object with anisotropic friction.
 
         Parameters
         ----------
-        system_one: object
-            Rod object.
-        system_two: object
-            Plane object.
+        system_one: RodType
+        system_two: SurfaceType
 
         """
 
@@ -778,7 +637,7 @@ class CylinderPlaneContact(NoContact):
         self,
         k: float,
         nu: float,
-    ):
+    ) -> None:
         """
         Parameters
         ----------
@@ -788,37 +647,19 @@ class CylinderPlaneContact(NoContact):
             Contact damping constant.
         """
         super(CylinderPlaneContact, self).__init__()
-        self.k = k
-        self.nu = nu
-        self.surface_tol = 1e-4
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
+        self.surface_tol = np.float64(1.0e-4)
 
-    def _check_systems_validity(
-        self,
-        system_one: SystemType,
-        system_two: AllowedContactType,
-    ) -> None:
-        """
-        This checks the contact order and type of a SystemType object and an AllowedContactType object.
-        For the RodPlaneContact class first_system should be a cylinder and second_system should be a plane.
-        Parameters
-        ----------
-        system_one
-            SystemType
-        system_two
-            AllowedContactType
-        """
-        if not issubclass(system_one.__class__, Cylinder) or not issubclass(
-            system_two.__class__, Plane
-        ):
-            raise TypeError(
-                "Systems provided to the contact class have incorrect order/type. \n"
-                " First system is {0} and second system is {1}. \n"
-                " First system should be a cylinder, second should be a plane".format(
-                    system_one.__class__, system_two.__class__
-                )
-            )
+    @property
+    def _allowed_system_one(self) -> list[Type]:
+        return [Cylinder]
 
-    def apply_contact(self, system_one: Cylinder, system_two: SystemType):
+    @property
+    def _allowed_system_two(self) -> list[Type]:
+        return [SurfaceBase]
+
+    def apply_contact(self, system_one: Cylinder, system_two: SurfaceType) -> None:
         """
         This function computes the plane force response on the cylinder, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
@@ -826,13 +667,11 @@ class CylinderPlaneContact(NoContact):
 
         Parameters
         ----------
-        system_one: object
-            Cylinder object.
-        system_two: object
-            Plane object.
+        system_one: Cylinder
+        system_two: SurfaceBase
 
         """
-        return _calculate_contact_forces_cylinder_plane(
+        _calculate_contact_forces_cylinder_plane(
             system_two.origin,
             system_two.normal,
             self.surface_tol,
@@ -842,4 +681,50 @@ class CylinderPlaneContact(NoContact):
             system_one.position_collection,
             system_one.velocity_collection,
             system_one.external_forces,
+        )
+
+
+def common_check_systems_identity(
+    system_one: S1,
+    system_two: S2,
+) -> None:
+    """
+    This checks if two objects are identical.
+
+    Raises
+    ------
+    TypeError
+        If two objects are identical.
+    """
+    if system_one == system_two:
+        raise TypeError(
+            "First system is identical to second system. Systems must be distinct for contact."
+        )
+
+
+def common_check_systems_different(
+    system_one: S1,
+    system_two: S2,
+) -> None:
+    """
+    This checks if two objects are identical.
+
+    Raises
+    ------
+    TypeError
+        If two objects are not identical.
+    """
+    if system_one != system_two:
+        raise TypeError("First system must be identical to the second system.")
+
+
+def common_check_systems_validity(
+    system: S1 | S2, allowed_system: list[Type[S1] | Type[S2]]
+) -> None:
+    # Check validity
+    if not isinstance(system, tuple(allowed_system)):
+        system_name = system.__class__.__name__
+        allowed_system_names = [candidate.__name__ for candidate in allowed_system]
+        raise TypeError(
+            f"System provided ({system_name}) must be derived from {allowed_system_names}."
         )

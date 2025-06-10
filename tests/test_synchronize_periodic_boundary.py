@@ -28,7 +28,7 @@ def test_synchronize_periodic_boundary_vector(n_elems):
 
     input_vector = np.random.random((3, n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
@@ -63,7 +63,7 @@ def test_synchronize_periodic_boundary_matrix(n_elems):
 
     input_matrix = np.random.random((3, 3, n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
@@ -98,7 +98,7 @@ def test_synchronize_periodic_boundary_scalar(n_elems):
 
     input_matrix = np.random.random((n_elems + 3))
 
-    periodic_idx = np.zeros((2, 3), dtype=np.int64)
+    periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
     periodic_idx[0, 1] = -2
     periodic_idx[0, 2] = -1
@@ -136,16 +136,16 @@ def test_ConstrainPeriodicBoundaries():
 
     for i in range(3):
         for k in range(periodic_boundary_node_idx.shape[1]):
-            test_position_collection[
-                i, periodic_boundary_node_idx[0, k]
-            ] = test_position_collection[i, periodic_boundary_node_idx[1, k]]
+            test_position_collection[i, periodic_boundary_node_idx[0, k]] = (
+                test_position_collection[i, periodic_boundary_node_idx[1, k]]
+            )
 
     for i in range(3):
         for j in range(3):
             for k in range(periodic_boundary_elems_idx.shape[1]):
-                test_director_collection[
-                    i, j, periodic_boundary_elems_idx[0, k]
-                ] = test_director_collection[i, j, periodic_boundary_elems_idx[1, k]]
+                test_director_collection[i, j, periodic_boundary_elems_idx[0, k]] = (
+                    test_director_collection[i, j, periodic_boundary_elems_idx[1, k]]
+                )
 
     assert_allclose(
         test_position_collection, test_rod.position_collection, atol=Tolerance.atol()
@@ -166,15 +166,15 @@ def test_ConstrainPeriodicBoundaries():
 
     for i in range(3):
         for k in range(periodic_boundary_node_idx.shape[1]):
-            test_velocity_collection[
-                i, periodic_boundary_node_idx[0, k]
-            ] = test_velocity_collection[i, periodic_boundary_node_idx[1, k]]
+            test_velocity_collection[i, periodic_boundary_node_idx[0, k]] = (
+                test_velocity_collection[i, periodic_boundary_node_idx[1, k]]
+            )
 
     for i in range(3):
         for k in range(periodic_boundary_elems_idx.shape[1]):
-            test_omega_collection[
-                i, periodic_boundary_elems_idx[0, k]
-            ] = test_omega_collection[i, periodic_boundary_elems_idx[1, k]]
+            test_omega_collection[i, periodic_boundary_elems_idx[0, k]] = (
+                test_omega_collection[i, periodic_boundary_elems_idx[1, k]]
+            )
 
     assert_allclose(
         test_velocity_collection, test_rod.velocity_collection, atol=Tolerance.atol()

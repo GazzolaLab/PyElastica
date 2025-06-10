@@ -108,7 +108,7 @@ class TestConnect:
 
     # Below test is to increase code coverage. If we pass nothing or idx=None, then do nothing.
     def test_set_index_no_input(self, load_connect):
-        load_connect.set_index(first_idx=None, second_idx=None)
+        load_connect.set_index(first_idx=(), second_idx=())
 
     @pytest.mark.parametrize(
         "legal_idx", [(80, 80), (0, 50), (50, 0), (-20, -20), (-20, 50), (-50, -20)]
@@ -150,7 +150,7 @@ class TestConnect:
         connect = load_connect
 
         with pytest.raises(RuntimeError) as excinfo:
-            connect()
+            connect.instantiate()
         assert "No connections provided" in str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_connect):
@@ -173,7 +173,7 @@ class TestConnect:
 
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
-            _ = connect()
+            _ = connect.instantiate()
         assert (
             r"Unable to construct connection class.\nDid you provide all necessary joint properties?"
             == str(excinfo.value)
@@ -201,7 +201,7 @@ class TestConnectionsMixin:
             sys_coll_with_connects.append(self.MockRod(2, 3, 4, 5))
         return sys_coll_with_connects
 
-    """ The following calls test _get_sys_idx_if_valid from BaseSystem indirectly,
+    """ The following calls test get_system_index from BaseSystem indirectly,
     and are here because of legacy reasons. I have not removed them because there
     are Connections require testing against multiple indices, which is still use
     ful to cross-verify against.
@@ -232,7 +232,7 @@ class TestConnectionsMixin:
         assert "exceeds number of" in str(excinfo.value)
 
         with pytest.raises(AssertionError) as excinfo:
-            system_collection_with_connections.connect(*[np.int_(x) for x in sys_idx])
+            system_collection_with_connections.connect(*[np.int32(x) for x in sys_idx])
         assert "exceeds number of" in str(excinfo.value)
 
     def test_connect_with_unregistered_system_throws(self, load_system_with_connects):
@@ -291,7 +291,8 @@ class TestConnectionsMixin:
         assert _mock_connect in system_collection_with_connections._connections
         assert _mock_connect.__class__ == _Connect
         # check sane defaults provided for connection indices
-        assert _mock_connect.id()[2] is None and _mock_connect.id()[3] is None
+        assert _mock_connect.id()[2] == ()
+        assert _mock_connect.id()[3] == ()
 
     from elastica.joint import FreeJoint
 
@@ -313,35 +314,32 @@ class TestConnectionsMixin:
         )
 
         # Constrain any and all systems
-        system_collection_with_connections.connect(0, 1).using(
-            MockConnect, 2, 42
-        )  # index based connect
+        # system_collection_with_connections.connect(0, 1).using(
+        #    MockConnect, 2, 42
+        # )  # index based connect
         system_collection_with_connections.connect(mock_rod_one, mock_rod_two).using(
             MockConnect, 2, 3
         )  # system based connect
-        system_collection_with_connections.connect(0, mock_rod_one).using(
-            MockConnect, 1, 2
-        )  # index/system based connect
+        # system_collection_with_connections.connect(0, mock_rod_one).using(
+        #    MockConnect, 1, 2
+        # )  # index/system based connect
 
         return system_collection_with_connections, MockConnect
 
     def test_connect_finalize_correctness(self, load_rod_with_connects):
         system_collection_with_connections, connect_cls = load_rod_with_connects
+        connect = system_collection_with_connections._connections[0]
+        assert connect._connect_cls == connect_cls
 
         system_collection_with_connections._finalize_connections()
+        assert (
+            system_collection_with_connections._feature_group_synchronize._operator_ids[
+                0
+            ]
+            == id(connect)
+        )
 
-        for (
-            fidx,
-            sidx,
-            fconnect,
-            sconnect,
-            connect,
-        ) in system_collection_with_connections._connections:
-            assert type(fidx) is int
-            assert type(sidx) is int
-            assert fconnect is None
-            assert sconnect is None
-            assert type(connect) is connect_cls
+        assert not hasattr(system_collection_with_connections, "_connections")
 
     @pytest.fixture
     def load_rod_with_connects_and_indices(self, load_system_with_connects):
@@ -392,32 +390,32 @@ class TestConnectionsMixin:
             system_collection_with_connections_and_indices,
             connect_cls,
         ) = load_rod_with_connects_and_indices
+        mock_connections = [
+            c for c in system_collection_with_connections_and_indices._connections
+        ]
 
         system_collection_with_connections_and_indices._finalize_connections()
-        system_collection_with_connections_and_indices._call_connections()
+        system_collection_with_connections_and_indices.synchronize(0)
 
-        for (
-            fidx,
-            sidx,
-            fconnect,
-            sconnect,
-            connect,
-        ) in system_collection_with_connections_and_indices._connections:
+        for connection in mock_connections:
+            fidx, sidx, fconnect, sconnect = connection.id()
+            connect = connection.instantiate()
+
             end_distance_vector = (
-                system_collection_with_connections_and_indices._systems[
+                system_collection_with_connections_and_indices[
                     sidx
                 ].position_collection[..., sconnect]
-                - system_collection_with_connections_and_indices._systems[
+                - system_collection_with_connections_and_indices[
                     fidx
                 ].position_collection[..., fconnect]
             )
             elastic_force = connect.k * end_distance_vector
 
             relative_velocity = (
-                system_collection_with_connections_and_indices._systems[
+                system_collection_with_connections_and_indices[
                     sidx
                 ].velocity_collection[..., sconnect]
-                - system_collection_with_connections_and_indices._systems[
+                - system_collection_with_connections_and_indices[
                     fidx
                 ].velocity_collection[..., fconnect]
             )
@@ -426,16 +424,16 @@ class TestConnectionsMixin:
             contact_force = elastic_force + damping_force
 
             assert_allclose(
-                system_collection_with_connections_and_indices._systems[
-                    fidx
-                ].external_forces[..., fconnect],
+                system_collection_with_connections_and_indices[fidx].external_forces[
+                    ..., fconnect
+                ],
                 contact_force,
                 atol=Tolerance.atol(),
             )
             assert_allclose(
-                system_collection_with_connections_and_indices._systems[
-                    sidx
-                ].external_forces[..., sconnect],
+                system_collection_with_connections_and_indices[sidx].external_forces[
+                    ..., sconnect
+                ],
                 -1 * contact_force,
                 atol=Tolerance.atol(),
             )

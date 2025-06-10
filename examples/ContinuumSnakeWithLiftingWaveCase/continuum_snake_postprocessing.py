@@ -74,8 +74,8 @@ def plot_video(
     # plt.axis("equal")
     with writer.saving(fig, video_name, dpi=150):
         for time in tqdm(range(1, len(plot_params["time"]))):
-            rod_lines_2d.set_xdata(positions_over_time[time][0])
-            rod_lines_2d.set_ydata(positions_over_time[time][1])
+            rod_lines_2d.set_xdata([positions_over_time[time][0]])
+            rod_lines_2d.set_ydata([positions_over_time[time][1]])
             writer.grab_frame()
 
     # Be a good boy and close figures

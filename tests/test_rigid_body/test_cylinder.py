@@ -27,7 +27,7 @@ def test_cylinder_initialization():
     base_length = 10
     base_radius = np.random.uniform(1, 10)
     density = np.random.uniform(1, 10)
-    mass = density * np.pi * base_radius ** 2 * base_length
+    mass = density * np.pi * base_radius**2 * base_length
 
     # Second moment of inertia
     A0 = np.pi * base_radius * base_radius
@@ -90,7 +90,7 @@ def test_cylinder_update_accelerations():
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
     base_radius = np.random.uniform(1, 10)
-    volume = np.pi * base_radius ** 2 * base_length
+    volume = np.pi * base_radius**2 * base_length
     density = np.random.uniform(1, 10)
     mass = volume * density
     test_cylinder = Cylinder(
@@ -166,7 +166,7 @@ def test_compute_translational_energy():
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
     base_radius = np.random.uniform(1, 10)
-    volume = np.pi * base_radius ** 2 * base_length
+    volume = np.pi * base_radius**2 * base_length
     density = np.random.uniform(1, 10)
     mass = volume * density
 
@@ -177,7 +177,7 @@ def test_compute_translational_energy():
     speed = np.random.randn()
     test_cylinder.velocity_collection[2] = speed
 
-    correct_energy = 0.5 * mass * speed ** 2
+    correct_energy = 0.5 * mass * speed**2
     test_energy = test_cylinder.compute_translational_energy()
 
     assert_allclose(correct_energy, test_energy, atol=Tolerance.atol())

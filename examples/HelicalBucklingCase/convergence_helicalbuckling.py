@@ -35,7 +35,7 @@ def simulate_helicalbucklin_beam_with(
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 100.0
     base_radius = 0.35
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     density = 1.0 / (base_area)
     nu = 0.01 / density / base_area
     E = 1e6

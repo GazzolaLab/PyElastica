@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
-from elastica.typing import RodBase
+from elastica.rod import RodBase
 from elastica.rigidbody import Cylinder, Sphere
 from elastica.contact_utils import (
     _dot_product,

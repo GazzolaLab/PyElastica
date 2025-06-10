@@ -2,12 +2,14 @@ __doc__ = """"""
 
 from elastica.surface.surface_base import SurfaceBase
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.typing import NDArray
 from elastica.utils import Tolerance
 
 
 class Plane(SurfaceBase):
-    def __init__(self, plane_origin: np.ndarray, plane_normal: np.ndarray):
+    def __init__(
+        self, plane_origin: NDArray[np.float64], plane_normal: NDArray[np.float64]
+    ):
         """
         Plane surface initializer.
 
@@ -21,11 +23,10 @@ class Plane(SurfaceBase):
             Expect (3,1)-shaped array.
         """
 
-        assert_allclose(
+        assert np.allclose(
             np.linalg.norm(plane_normal),
             1,
-            atol=Tolerance.atol(),
-            err_msg="plane normal is not a unit vector",
-        )
+            atol=float(Tolerance.atol()),
+        ), "plane normal is not a unit vector"
         self.normal = np.asarray(plane_normal).reshape(3)
         self.origin = np.asarray(plane_origin).reshape(3, 1)

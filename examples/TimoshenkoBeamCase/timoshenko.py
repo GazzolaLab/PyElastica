@@ -28,7 +28,7 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 5000
 nu = 0.1 / 7 / density / base_area
 E = 1e6
@@ -99,6 +99,7 @@ if ADD_UNSHEARABLE_ROD:
     timoshenko_sim.add_forcing_to(unshearable_rod).using(
         ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=final_time / 2.0
     )
+
 
 # Add call backs
 class VelocityCallBack(ea.CallBackBaseClass):

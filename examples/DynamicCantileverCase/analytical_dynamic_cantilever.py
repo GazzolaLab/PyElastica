@@ -74,10 +74,8 @@ class AnalyticalDynamicCantilever:
 
         betas = np.array([0.596864, 1.49418, 2.50025, 3.49999]) * np.pi / base_length
         self.beta = betas[mode]
-        self.omega = (self.beta ** 2) * np.sqrt(
-            youngs_modulus
-            * moment_of_inertia
-            / (density * base_area * base_length ** 4)
+        self.omega = (self.beta**2) * np.sqrt(
+            youngs_modulus * moment_of_inertia / (density * base_area * base_length**4)
         )
 
         nonparametrized_mode_at_end = self._compute_nonparametrized_mode(

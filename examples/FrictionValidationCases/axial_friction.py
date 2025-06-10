@@ -30,7 +30,7 @@ def simulate_axial_friction_with(force=0.0):
     normal = np.array([0.0, 1.0, 0.0])
     base_length = 1.0
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     mass = 1.0
     density = mass / (base_length * base_area)
     E = 1e5
@@ -108,7 +108,7 @@ def simulate_axial_friction_with(force=0.0):
             analytical_translational_energy = 0.0
         else:
             analytical_translational_energy = (
-                final_time ** 2
+                final_time**2
                 / (2.0 * mass)
                 * (
                     np.abs(force)
@@ -122,7 +122,7 @@ def simulate_axial_friction_with(force=0.0):
             analytical_translational_energy = 0.0
         else:
             analytical_translational_energy = (
-                final_time ** 2
+                final_time**2
                 / (2.0 * mass)
                 * (
                     np.abs(force)

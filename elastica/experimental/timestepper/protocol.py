@@ -1,34 +1,36 @@
-__doc__ = "Time stepper interface"
+from typing import Protocol
+
+from elastica.typing import StepType, StateType
+from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtocol
+from elastica.timestepper.protocol import StepperProtocol
+
+import numpy as np
 
 
-class _TimeStepper:
-    """Interface classes for all time-steppers"""
+class ExplicitSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
+    # TODO: Temporarily made to handle explicit stepper.
+    # Need to be refactored as the explicit stepper is further developed.
+    def __call__(self, time: np.float64, dt: np.float64) -> np.float64: ...
+    @property
+    def state(self) -> StateType: ...
+    @state.setter
+    def state(self, state: StateType) -> None: ...
+    @property
+    def n_elems(self) -> int: ...
 
-    def __init__(self):
-        pass
 
-    def do_step(self, *args, **kwargs):
-        raise NotImplementedError(
-            "TimeStepper hierarchy is not supposed to access the do-step routine of the TimeStepper base class. "
-        )
+class MemoryProtocol(Protocol):
+    @property
+    def initial_state(self) -> bool: ...
 
 
-# class _StatefulStepper:
-#     """
-#     Stateful explicit, symplectic stepper wrapper.
-#     """
-#
-#     def __init__(self):
-#         pass
-#
-#     # For stateful steppes, bind memory to self
-#     def do_step(self, System, time: np.float64, dt: np.float64):
-#         return self.stepper.do_step(System, self, time, dt)
-#
-#     @property
-#     def n_stages(self):
-#         return self.stepper.n_stages
-#
+class ExplicitStepperProtocol(StepperProtocol, Protocol):
+    """symplectic stepper protocol."""
+
+    def get_stages(self) -> list[StepType]: ...
+
+    def get_updates(self) -> list[StepType]: ...
+
 
 # class _LinearExponentialIntegratorMixin:
 #     """

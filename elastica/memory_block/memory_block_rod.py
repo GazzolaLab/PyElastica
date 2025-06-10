@@ -1,11 +1,7 @@
 __doc__ = """Create block-structure class for collection of Cosserat rod systems."""
 import numpy as np
-from typing import Sequence, Literal, Callable
-from elastica.memory_block.memory_block_rod_base import (
-    MemoryBlockRodBase,
-    make_block_memory_metadata,
-    make_block_memory_periodic_boundary_metadata,
-)
+from typing import Literal, Callable
+from elastica.typing import SystemIdxType, RodType
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 from elastica.reset_functions_for_block_structure import _reset_scalar_ghost
 from elastica.rod.cosserat_rod import (
@@ -18,10 +14,13 @@ from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_matrix_collection,
 )
 
+from .utils import (
+    make_block_memory_metadata,
+    make_block_memory_periodic_boundary_metadata,
+)
 
-class MemoryBlockCosseratRod(
-    MemoryBlockRodBase, CosseratRod, _RodSymplecticStepperMixin
-):
+
+class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
     """
     Memory block class for Cosserat rod equations. This class is derived from Cosserat Rod class in order to inherit
     the methods of Cosserat rod class. This class takes the cosserat rod object (systems) and creates big
@@ -31,7 +30,10 @@ class MemoryBlockCosseratRod(
     TODO: need more documentation!
     """
 
-    def __init__(self, systems: Sequence, system_idx_list):
+    def __init__(
+        self, systems: list[RodType], system_idx_list: list[SystemIdxType]
+    ) -> None:
+        self.n_systems = len(systems)
 
         # separate straight and ring rods
         system_straight_rod = []
@@ -51,20 +53,20 @@ class MemoryBlockCosseratRod(
         # Sorted systems
         systems = system_straight_rod + system_ring_rod
         self.system_idx_list = np.array(
-            system_idx_list_straight_rod + system_idx_list_ring_rod, dtype=np.int64
+            system_idx_list_straight_rod + system_idx_list_ring_rod, dtype=np.int32
         )
 
         n_elems_straight_rods = np.array(
-            [x.n_elems for x in system_straight_rod], dtype=np.int64
+            [x.n_elems for x in system_straight_rod], dtype=np.int32
         )
         n_elems_ring_rods = np.array(
-            [x.n_elems for x in system_ring_rod], dtype=np.int64
+            [x.n_elems for x in system_ring_rod], dtype=np.int32
         )
 
-        n_straight_rods = len(system_straight_rod)
-        n_ring_rods = len(system_ring_rod)
+        n_straight_rods: int = len(system_straight_rod)
+        n_ring_rods: int = len(system_ring_rod)
 
-        # self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int)
+        # self.n_elems_in_rods = np.array([x.n_elems for x in systems], dtype=np.int32)
         self.n_elems_in_rods = np.hstack((n_elems_straight_rods, n_elems_ring_rods + 2))
         self.n_rods = len(systems)
         (
@@ -146,16 +148,16 @@ class MemoryBlockCosseratRod(
             self.start_idx_in_rod_nodes[n_straight_rods:] = (
                 self.periodic_boundary_nodes_idx[0, 0::3] + 1
             )
-            self.end_idx_in_rod_nodes[
-                n_straight_rods:
-            ] = self.periodic_boundary_nodes_idx[0, 1::3]
+            self.end_idx_in_rod_nodes[n_straight_rods:] = (
+                self.periodic_boundary_nodes_idx[0, 1::3]
+            )
 
             self.start_idx_in_rod_elems[n_straight_rods:] = (
                 self.periodic_boundary_elems_idx[0, 0::2] + 1
             )
-            self.end_idx_in_rod_elems[
-                n_straight_rods:
-            ] = self.periodic_boundary_elems_idx[0, 1::2]
+            self.end_idx_in_rod_elems[n_straight_rods:] = (
+                self.periodic_boundary_elems_idx[0, 1::2]
+            )
 
             self.start_idx_in_rod_voronoi[n_straight_rods:] = (
                 self.periodic_boundary_voronoi_idx[0, :] + 1
@@ -200,7 +202,7 @@ class MemoryBlockCosseratRod(
         # Initialize the mixin class for symplectic time-stepper.
         _RodSymplecticStepperMixin.__init__(self)
 
-    def _allocate_block_variables_in_nodes(self, systems: Sequence):
+    def _allocate_block_variables_in_nodes(self, systems: list[RodType]) -> None:
         """
         This function takes system collection and allocates the variables on
         node for block-structure and references allocated variables back to the
@@ -250,7 +252,7 @@ class MemoryBlockCosseratRod(
             value_type="vector",
         )
 
-    def _allocate_block_variables_in_elements(self, systems: Sequence):
+    def _allocate_block_variables_in_elements(self, systems: list[RodType]) -> None:
         """
         This function takes system collection and allocates the variables on
         elements for block-structure and references allocated variables back to the
@@ -341,7 +343,7 @@ class MemoryBlockCosseratRod(
             value_type="tensor",
         )
 
-    def _allocate_blocks_variables_in_voronoi(self, systems: Sequence):
+    def _allocate_blocks_variables_in_voronoi(self, systems: list[RodType]) -> None:
         """
         This function takes system collection and allocates the variables on
         voronoi for block-structure and references allocated variables back to the
@@ -408,18 +410,12 @@ class MemoryBlockCosseratRod(
             value_type="tensor",
         )
 
-    def _allocate_blocks_variables_for_symplectic_stepper(self, systems: Sequence):
+    def _allocate_blocks_variables_for_symplectic_stepper(
+        self, systems: list[RodType]
+    ) -> None:
         """
         This function takes system collection and allocates the variables used by symplectic
         stepper for block-structure and references allocated variables back to the systems.
-
-        Parameters
-        ----------
-        systems
-
-        Returns
-        -------
-
         """
         # These vectors are on nodes or on elements, but we stack them together for
         # better memory access. Because we use them together in time-steppers.
@@ -475,7 +471,7 @@ class MemoryBlockCosseratRod(
     def _map_system_properties_to_block_memory(
         self,
         mapping_dict: dict,
-        systems: Sequence,
+        systems: list[RodType],
         block_memory: np.ndarray,
         domain_type: Literal["node", "element", "voronoi"],
         value_type: Literal["scalar", "vector", "tensor"],
@@ -490,7 +486,7 @@ class MemoryBlockCosseratRod(
         ----------
         mapping_dict: dict
             Dictionary with attribute names as keys and block row index as values.
-        systems: Sequence
+        systems: list[RodType]
             A sequence containing Cosserat rod objects to map from.
         block_memory: ndarray
             Memory block that, at the end of the method execution, contains all designated
@@ -509,8 +505,8 @@ class MemoryBlockCosseratRod(
         end_idx_list: np.ndarray
         periodic_boundary_idx: np.ndarray
         synchronize_periodic_boundary: Callable
-        domain_num: np.int64
-        view_shape: tuple
+        domain_num: int
+        view_shape: tuple[int, ...]
 
         if domain_type == "node":
             start_idx_list = self.start_idx_in_rod_nodes.view()

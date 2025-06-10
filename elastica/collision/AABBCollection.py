@@ -1,16 +1,20 @@
 """ Axis Aligned Bounding Boxes for coarse collision detection
 """
+
+from typing_extensions import Self
+
 import numpy as np
+from numpy.typing import NDArray
 from elastica.utils import MaxDimension
 
 
 class AABBCollection:
     def __init__(
         self,
-        elemental_position_collection,
-        dimension_collection,
+        elemental_position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
         elements_per_aabb: int,
-    ):
+    ) -> None:
         """
         Doesn't differentiate tangent direction from the rest : potentially harmful as
         maybe you don't need to expand to radius amount in tangential direction
@@ -35,7 +39,9 @@ class AABBCollection:
         self.update(elemental_position_collection, dimension_collection)
 
     @classmethod
-    def make_from_aabb(cls, aabb_collection, scale_factor=4):
+    def make_from_aabb(
+        cls, aabb_collection: list["AABBCollection"], scale_factor: int = 4
+    ) -> Self:
         # Make position collection and dimension collection arrays from aabb_collection
         # Wasted effort, but only once during construction
         n_aabb_from_lower_level = len(aabb_collection)
@@ -58,7 +64,7 @@ class AABBCollection:
 
         return cls(elemental_position_collection, dimension_collection, scale_factor)
 
-    def _update(self, aabb_collection):
+    def _update(self, aabb_collection: list["AABBCollection"]) -> None:
         # Updates internal state from another aabb
 
         """
@@ -77,7 +83,11 @@ class AABBCollection:
         temp = np.array([aabb.aabb[..., 1, 0] for aabb in aabb_collection])
         self.aabb[..., 1, 0] = np.amax(temp, axis=0)
 
-    def update(self, elemental_position_collection, dimension_collection):
+    def update(
+        self,
+        elemental_position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
+    ) -> None:
         # Initialize the boxes
         for i in range(self.n_aabb):
             start = i * self.elements_per_aabb
@@ -90,7 +100,7 @@ class AABBCollection:
             ) + np.amax(dimension_collection[..., start:stop], axis=1)
 
 
-def find_nearest_integer_square_root(x: int):
+def find_nearest_integer_square_root(x: int) -> int:
     from math import sqrt
 
     return round(sqrt(x))
@@ -100,8 +110,11 @@ class AABBHierarchy:
     """Simple hierarchy for handling cylinder collisions alone, meant for a rod"""
 
     def __init__(
-        self, position_collection, dimension_collection, avg_n_dofs_in_final_level
-    ):
+        self,
+        position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
+        avg_n_dofs_in_final_level: int,
+    ) -> None:
         """
         scaling is always set to 4, so that theres' 1 major AABBCollection, then scaling_factor
         smaller AABBs, then scaling factor even smaller AABBs (which cover the elements
@@ -120,17 +133,17 @@ class AABBHierarchy:
         )
 
         # nearest power of 4 that is less than the number
-        n_levels_bound_below = np.int(
+        n_levels_bound_below = int(
             np.floor(0.5 * np.log2(potential_n_aabbs_in_final_level))
         )
-        n_levels_bound_above = np.int(
+        n_levels_bound_above = int(
             np.ceil(0.5 * np.log2(potential_n_aabbs_in_final_level))
         )
         # Check which is the closest and use that as the number of levels
 
         # Else check differences
-        if (4 ** n_levels_bound_above - potential_n_aabbs_in_final_level) > (
-            potential_n_aabbs_in_final_level - 4 ** n_levels_bound_below
+        if (4**n_levels_bound_above - potential_n_aabbs_in_final_level) > (
+            potential_n_aabbs_in_final_level - 4**n_levels_bound_below
         ):
             self.n_levels = n_levels_bound_below + 1
         else:
@@ -213,11 +226,15 @@ class AABBHierarchy:
         # Add one for the middle level
         # self.aabb.append(AABBCollection(position_collection, dimension_collection, self.n_aabbs_in_first_level))
 
-    def n_aabbs_at_level(self, i: int):
+    def n_aabbs_at_level(self, i: int) -> int:
         assert i < self.n_levels
         return 4 ** (i)
 
-    def update(self, position_collection, dimension_collection):
+    def update(
+        self,
+        position_collection: NDArray[np.float64],
+        dimension_collection: NDArray[np.float64],
+    ) -> None:
         # Update bottom level first, the first level entries
         n_aabbs_in_final_level = self.n_aabbs_at_level(self.n_levels - 1)
         stop = 0
@@ -260,5 +277,8 @@ class AABBHierarchy:
             count_elapsed_n_aabbs += n_aabbs_in_next_level
 
 
-def are_aabb_intersecting(first_aabb_collection, second_aabb_collection):
+def are_aabb_intersecting(
+    first_aabb_collection: NDArray[np.float64],
+    second_aabb_collection: NDArray[np.float64],
+) -> bool:
     return True

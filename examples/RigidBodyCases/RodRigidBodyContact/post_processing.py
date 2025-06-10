@@ -81,9 +81,9 @@ def plot_video(
     with writer.saving(fig, video_name, dpi):
         with plt.style.context("seaborn-white"):
             for i in range(0, positions.shape[0], int(step)):
-                rod_line.set_xdata(positions[i, 0])
-                rod_line.set_ydata(positions[i, 1])
-                rod_line.set_3d_properties(positions[i, 2])
+                rod_line.set_xdata([positions[i, 0]])
+                rod_line.set_ydata([positions[i, 1]])
+                rod_line.set_3d_properties([positions[i, 2]])
                 XC, YC, ZC = make_data_for_cylinder_along_y(
                     cylinder_origin[i, ...], cylinder_radius, cylinder_height
                 )
@@ -113,10 +113,10 @@ def plot_video(
     with writer.saving(fig, video_name, dpi):
         with plt.style.context("fivethirtyeight"):
             for i in range(0, positions.shape[0], int(step)):
-                rod_line.set_xdata(positions[i, 0])
-                rod_line.set_ydata(positions[i, 2])
-                tip_line.set_xdata(com[:i, 0])
-                tip_line.set_ydata(com[:i, 2])
+                rod_line.set_xdata([positions[i, 0]])
+                rod_line.set_ydata([positions[i, 2]])
+                tip_line.set_xdata([com[:i, 0]])
+                tip_line.set_ydata([com[:i, 2]])
                 circle_artist.center = cstart[i, 0], cstart[i, 2]
                 writer.grab_frame()
 
@@ -485,12 +485,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[0])
-                        rod_com_lines[rod_idx].set_ydata(com[1])
+                        rod_com_lines[rod_idx].set_xdata([com[0]])
+                        rod_com_lines[rod_idx].set_ydata([com[1]])
 
                         rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
                         scaling_factor = (
@@ -585,12 +585,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[2])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[2]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[2])
-                        rod_com_lines[rod_idx].set_ydata(com[1])
+                        rod_com_lines[rod_idx].set_xdata([com[2]])
+                        rod_com_lines[rod_idx].set_ydata([com[1]])
 
                         rod_scatters[rod_idx].set_offsets(
                             np.vstack((inst_position[2], inst_position[1])).T
@@ -687,12 +687,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[2])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[2]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[0])
-                        rod_com_lines[rod_idx].set_ydata(com[2])
+                        rod_com_lines[rod_idx].set_xdata([com[0]])
+                        rod_com_lines[rod_idx].set_ydata([com[2]])
 
                         rod_scatters[rod_idx].set_offsets(
                             np.vstack((inst_position[0], inst_position[2])).T
