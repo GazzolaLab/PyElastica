@@ -90,6 +90,9 @@ Examples can serve as a starting template for customized usages.
 * [CatenaryCase](./CatenaryCase)
     * __Purpose__: Demonstrate simulation of cosserat rod under gravity with fixed ends, compared with Catenary Analytical Solution from Routh, Edward John (1891). [<strong>"Chapter X: On Strings"</strong>](https://books.google.com/books?id=3N5JAAAAMAAJ&pg=PA315#v=onepage&q&f=false). A Treatise on Analytical Statics. University Press.
     * __Features__: CosseratRod, FixedConstraint, GravityForce
+* [KnotCase](./KnotCase)
+    * __Purpose__: Demonstrate simulation of rod forming a knot using a tip-pose control.
+    * __Features__: CosseratRod, FixedConstraint, RodSelfContact, Custom p-controller for SO3.
 
 ## Functional Examples
 
