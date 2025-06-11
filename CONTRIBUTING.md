@@ -50,9 +50,9 @@ Follow the installation instructions from the [official uv documentation](https:
 
 ```bash
 make install-dev-deps
+source .venv/bin/activate    # On Unix/macOS
+# .venv\Scripts\activate     # On Windows
 make pre-commit-install  # Optional: to run pre-commit hooks
-source .venv/bin/activate  # On Unix/macOS
-.venv\Scripts\activate     # On Windows
 ```
 
 4. (Optional) Documentation
