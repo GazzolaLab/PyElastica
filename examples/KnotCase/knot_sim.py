@@ -22,21 +22,21 @@ GENERATE_2D_VIDEO = True
 GENERATE_3D_VIDEO = True
 
 stretch_sim = StretchingBeamSimulator()
-final_time = 60
+final_time = 25
 dt = 0.0005
 
 # setting up test params
-n_elem = 50
+n_elem = 80
 start = np.zeros((3,))
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 1.0, 0.0])
-base_length = 1.5
+base_length = 1.2
 base_radius = 0.025
 base_area = np.pi * base_radius ** 2
 density = 1000
 youngs_modulus =  2e3 
-poisson_ratio = 0.5
-shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+poisson_ratio = 0.1
+shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
 
 stretchable_rod = ea.CosseratRod.straight_rod(
     n_elem,
@@ -56,30 +56,29 @@ stretch_sim.constrain(stretchable_rod).using(ea.FixedConstraint, constrained_pos
 
 #Endpoint target forces
 force_mag = 1.0
-targets = np.array([[.85,0.03,.85],
-                    [0.0,0.06,1.2],
-                    [-0.60,0.09,.70],
-                    [-0.4,0.12,-0.4],
-                    [0.1,0.15,-0.7],
-                    [0.15,-0.5,-0.5],
-                    [0.2,-0.3,0.1],
-                    [0.2,0.1,0.12],
-                    [0.2,0.3,0.12],
-                    [0.0,5.0,0.0]])  # Target positions for the end node
+targets = np.array([[.68,0.03,.68],
+                    [0.0,0.06,0.95],
+                    [-0.45,0.09,.55],
+                    [-0.3,0.12,-0.35],
+                    [0.1,0.09,-0.55],
+                    [0.15,-0.3,-0.45],
+                    [0.2,-0.1,0.04],
+                    [0.2,0.1,0.08],
+                    [0.2,0.3,0.08],
+                    [0.0,5.0,0.0]])   # Target positions for the end node
 
 stretch_sim.add_forcing_to(stretchable_rod).using(MultiTargetForce, force_mag,ramp_up_time=1,targets=targets)
 
 #Snap forces - certain nodes along the rod are pulled to intermediate targets once in range to aid in forming the knot
-snap_force_mag = 2.0
-snap_targets = np.array([[0.27,0.0,0.0],
-                         [0.3,0.05,0.2],
-                         [0.2,0.1,-0.05]])
-snap_nodes = np.array([10,17,33])
+snap_force_mag = 0.5
+snap_targets = np.array([[0.27,0.0,0.03],
+                         [0.0,0.1,0.05]])
+snap_nodes = np.array([22,42])
 
 stretch_sim.add_forcing_to(stretchable_rod).using(SnapForce, snap_force_mag, snap_nodes, snap_targets, ramp_up_time=3, distance=.05, stop_target = targets[-3], stop_distance = 0.04)
 
 #Damping
-damping_constant = .4
+damping_constant = 0.2
 stretch_sim.dampen(stretchable_rod).using(
     ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
@@ -88,7 +87,7 @@ stretch_sim.dampen(stretchable_rod).using(
 
 stretch_sim.dampen(stretchable_rod).using(
     ea.LaplaceDissipationFilter,
-    filter_order=4
+    filter_order=3
 )
 
 #Self contact

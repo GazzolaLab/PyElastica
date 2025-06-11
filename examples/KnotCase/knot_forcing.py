@@ -137,28 +137,28 @@ class SnapForce(NoForces):
         for i in range(len(self.snap_time)):
             if (self.snap_time[i] == 0) and (np.linalg.norm(self.snap_targets[i] - system.position_collection[..., self.snap_nodes[i]]) < self.distance):
                 self.snap_time[i] = time
-        self.compute_end_point_forces(
-            system.external_forces,
-            self.force_mag,
-            time,
-            self.ramp_up_time,
-            system.position_collection,
-            self.snap_nodes,
-            self.snap_targets,
-            self.snap_time
-        )
+            if (self.snap_time[i] != 0):
+                self.compute_end_point_forces(
+                    system.external_forces,
+                    self.force_mag,
+                    time,
+                    self.ramp_up_time,
+                    system.position_collection[..., self.snap_nodes[i]],
+                    self.snap_nodes[i],
+                    self.snap_targets[i],
+                    self.snap_time[i]
+                )
         
 
     @staticmethod
     @njit(cache=True)
     def compute_end_point_forces(
-        external_forces, force_mag, time, ramp_up_time, position_collection, snap_nodes, snap_targets,last_snap_time
+        external_forces, force_mag, time, ramp_up_time, snap_node_position, snap_node, snap_target,snap_time
     ):
-        for i in range(len(snap_nodes)):
-            if (last_snap_time[i] != 0):
-                factor = min(1.0, (time - last_snap_time[i]) / ramp_up_time)
-                snap_force = force_mag * (snap_targets[i] - position_collection[..., snap_nodes[i]]) / np.linalg.norm(snap_targets[i] - position_collection[..., snap_nodes[i]])
-                external_forces[..., snap_nodes[i]] += snap_force * factor
+        factor = min(1.0, ((time - snap_time) / ramp_up_time)**2)
+        distance_factor = min(np.linalg.norm(snap_target - snap_node_position), 1) * 0.2 + 0.8
+        snap_force = force_mag * (snap_target - snap_node_position) / np.linalg.norm(snap_target - snap_node_position)
+        external_forces[..., snap_node] += snap_force * factor * distance_factor
             
 
 
