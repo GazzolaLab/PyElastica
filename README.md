@@ -13,26 +13,26 @@ Visit [www.cosseratrods.org][link-project-website] for more information and lear
 ## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
-PyElastica is compatible with Python 3.10 - 3.11.
+PyElastica is compatible with Python 3.10+.
 
-~~~bash
-$ pip install pyelastica
-~~~
-
-For plotting videos, ffmpeg has to be installed:
 ```bash
-$ conda install -c conda-forge ffmpeg
+$ pip install pyelastica
 ```
+
+For plotting videos, ffmpeg is typically used.
 
 Documentation of PyElastica is available [here][link-docs-website].
 
-If you want to simulate magnetic Cosserat rods interacting with external magnetic environments you can install the derived package using
+## Related Projects
 
-```bash
-$ pip install magneto_pyelastica
-```
-
-Details can be found [here](https://github.com/armantekinalp/MagnetoPyElastica).
+- Cosserat rod with magnetic field: [magneto-pyelastica](https://github.com/armantekinalp/MagnetoPyElastica)
+    - Simulate magnetic Cosserat rods interacting with external magnetic environments.
+    - `pip install magneto_pyelastica`
+- gymnasium environment for learning and control: [gym-softrobot](https://github.com/skim0119/gym-softrobot)
+- BR2 FREE pneumatic actuator simulation: [BR2-simulator](https://github.com/skim0119/BR2-simulator)
+- Blender visualization: [Blender-Soft-Rod](https://github.com/GazzolaLab/Blender-Soft-Rod)
+- Rhino3D plugin for visualizaion: [plugin](https://github.com/skim0119/PyElastica-to-Rhino)
+- Elastica web-interface: [PyElastica-Interactive](https://github.com/GazzolaLab/PyElastica-Interactive)
 
 ## Citation
 
