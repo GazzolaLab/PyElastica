@@ -148,19 +148,26 @@ def run_snake(
 
                 self.callback_params["tangents"].append(system.tangents.copy())
 
-                self.callback_params["friction"].append(self.get_slip_velocity(system).copy())
+                self.callback_params["friction"].append(
+                    self.get_slip_velocity(system).copy()
+                )
 
                 return
 
         def get_slip_velocity(self, system):
-            from elastica.contact_utils import _find_slipping_elements, _node_to_element_velocity
+            from elastica.contact_utils import (
+                _find_slipping_elements,
+                _node_to_element_velocity,
+            )
             from elastica._linalg import _batch_product_k_ik_to_ik, _batch_dot
 
             axial_direction = system.tangents
             element_velocity = _node_to_element_velocity(
                 mass=system.mass, node_velocity_collection=system.velocity_collection
             )
-            velocity_mag_along_axial_direction = _batch_dot(element_velocity, axial_direction)
+            velocity_mag_along_axial_direction = _batch_dot(
+                element_velocity, axial_direction
+            )
             velocity_along_axial_direction = _batch_product_k_ik_to_ik(
                 velocity_mag_along_axial_direction, axial_direction
             )
