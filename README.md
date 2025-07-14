@@ -94,7 +94,7 @@ We have also included an example script for visualizing PyElastica simulations u
 
 ## Contribution
 
-If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md)
+If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md). Private development branches are moved to [elastica-python](https://github.com/GazzolaLab/elastica-python) repository; access is limited to the core developers, collaborators, and maintainers.
 
 PyElastica is developed by the [Gazzola Lab][link-lab-website] at the University of Illinois Urbana-Champaign.
 
