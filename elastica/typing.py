@@ -30,7 +30,6 @@ if TYPE_CHECKING:
     )
     from .memory_block.protocol import BlockSystemProtocol
 
-    from .mesh.protocol import MeshProtocol
 else:
     CosseratRodProtocol = "CosseratRodProtocol"
     RigidBodyProtocol = "RigidBodyProtocol"
@@ -45,7 +44,6 @@ else:
     StepperProtocol = "StepperProtocol"
     SymplecticStepperProtocol = "SymplecticStepperProtocol"
     BlockSystemProtocol = "BlockSystemProtocol"
-    MeshProtocol = "MeshProtocol"
 
 
 StaticSystemType: TypeAlias = "StaticSystemProtocol"
@@ -86,5 +84,3 @@ class OperatorCallbackType(Protocol):
 
 
 OperatorFinalizeType: TypeAlias = Callable[[], None]
-
-MeshType: TypeAlias = "MeshProtocol"
