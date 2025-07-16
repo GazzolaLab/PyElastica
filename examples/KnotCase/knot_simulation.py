@@ -26,9 +26,9 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
     Records the position of the rod
     """
 
-    def __init__(self, step_skip: int, callback_params: dict):
+    def __init__(self, callback_params: dict):
         ea.CallBackBaseClass.__init__(self)
-        self.every = step_skip
+        self.every = 200
         self.callback_params = callback_params
 
     def make_callback(self, system, time, current_step: int):
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     simulator.dampen(stretchable_rod).using(ea.LaplaceDissipationFilter, filter_order=5)
 
     simulator.collect_diagnostics(stretchable_rod).using(
-        AxialStretchingCallBack, step_skip=1, callback_params=recorded_history
+        AxialStretchingCallBack, callback_params=recorded_history
     )
 
     # Finalize and run the simulation
