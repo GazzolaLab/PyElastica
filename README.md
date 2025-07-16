@@ -83,6 +83,7 @@ We ask that any publications which use Elastica cite as following:
 </details>
 
 ## List of publications and submissions
+- [Simulations and experiments with assemblies of fiber-reinforced soft actuators](https://arxiv.org/abs/2507.10121) (UIUC 2025)
 - [Soft, slender and active structures in fluids: embedding Cosserat rods in vortex methods](https://doi.org/10.48550/arXiv.2401.09506) (UIUC 2024)
 - [Neural models and algorithms for sensorimotor control of an octopus arm](https://doi.org/10.48550/arXiv.2402.01074)(UIUC 2024)
 - [On the mechanical origins of waving, coiling and skewing in Arabidopsis thaliana roots](https://www.pnas.org/doi/10.1073/pnas.2312761121) (Tel Aviv University, UIUC 2024) (PNAS)
