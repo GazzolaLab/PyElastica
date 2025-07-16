@@ -49,13 +49,18 @@ class TargetPoseProportionalControl(NoForces):
         self.ramp_up_time = ramp_up_time
         self.target = target
         self.target_history = target_history
+        self.save_counter = 0
+        self.save_every = 200
 
         if isinstance(target, np.ndarray):
             self.target = lambda t: target
 
     def apply_forces(self, system: SystemType, time=0.0):
         target_position, target_orientation = self.target(time, system)
-        self.target_history.append((target_position, target_orientation))
+        if self.save_counter % self.save_every == 0:
+            self.target_history.append((target_position, target_orientation))
+            self.save_counter = 0
+        self.save_counter += 1
 
         self.compute_node_force(
             system.external_forces,

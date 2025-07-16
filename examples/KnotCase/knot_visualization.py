@@ -3,7 +3,9 @@ import matplotlib.animation as manimation
 import numpy as np
 
 
-def plot_video3D(plot_params: dict, video_name="video.mp4", margin=0.2, fps=15):
+def plot_video3D(
+    plot_params: dict, video_name: str = "video.mp4", margin: float = 0.2, fps: int = 25
+):
     t = np.array(plot_params["time"])
     positions_over_time = np.array(plot_params["position"])
     directors_over_time = np.array(plot_params["orientation"])
@@ -12,11 +14,6 @@ def plot_video3D(plot_params: dict, video_name="video.mp4", margin=0.2, fps=15):
     for p, q in plot_params["base_pose"]:
         base_position.append(p)
         base_orientation.append(q)
-
-    total_time = int(np.around(t[..., -1], 1))
-    total_frames = fps * total_time
-    step = round(len(t) / total_frames)
-    print("Total time:", total_time, "Total frames:", total_frames)
 
     FFMpegWriter = manimation.writers["ffmpeg"]
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
@@ -27,6 +24,7 @@ def plot_video3D(plot_params: dict, video_name="video.mp4", margin=0.2, fps=15):
     ax.set_xlim(-0.0 - margin, 1.0 + margin)
     ax.set_ylim(-0.3 - margin, 0.3 + margin)
     ax.set_zlim(-0.3 - margin, 0.3 + margin)
+    ax.set_title("(RGB-Pose: tip-target)")
     ax.view_init(elev=10, azim=-45)
     ax.set_aspect("equal")
     rod_lines_3d = ax.plot(
@@ -64,7 +62,7 @@ def plot_video3D(plot_params: dict, video_name="video.mp4", margin=0.2, fps=15):
     )
     with writer.saving(fig, video_name, dpi=100):
         with plt.style.context("seaborn-v0_8-whitegrid"):
-            for time in range(1, len(t), step):
+            for time in range(1, len(t) - 1):
                 rod_lines_3d.set_xdata(positions_over_time[time][0])
                 rod_lines_3d.set_ydata(positions_over_time[time][1])
                 rod_lines_3d.set_3d_properties(positions_over_time[time][2])
