@@ -1,4 +1,4 @@
-from typing import TypeAlias
+from typing import TypeAlias, Callable
 
 import numpy as np
 from numba import njit
@@ -17,10 +17,10 @@ class TargetPoseProportionalControl(NoForces):
 
     def __init__(
         self,
-        elem_index,
-        p_linear_value,
-        p_angular_value,
-        target,
+        elem_index: int,
+        p_linear_value: float,
+        p_angular_value: float,
+        target: Pose | Callable[[float, SystemType], Pose],
         target_history: list[Pose],
         ramp_up_time=1.0,
     ):
@@ -34,10 +34,10 @@ class TargetPoseProportionalControl(NoForces):
             proportional linear gain
         p_angular_value: float
             proportional angular gain
-        target: Pose | Callable[[], Pose]
+        target: Pose | Callable[[float, SystemType], Pose]
             Target position and orientation.
             array (3,) containing data with 'float' type, or a function that returns the target Pose
-            given time.
+            given time and rod.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
         """

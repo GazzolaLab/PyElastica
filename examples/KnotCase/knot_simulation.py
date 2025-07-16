@@ -4,6 +4,7 @@ resembling a proportional-controller of SO3 Pose. The same class can be used fur
 to mimic the MPC control or trajectory-tracing."""
 
 import numpy as np
+import matplotlib.pyplot as plt
 import elastica as ea
 
 from knot_forcing import TargetPoseProportionalControl
@@ -36,6 +37,7 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
 
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
+            self.callback_params["radius"].append(system.radius.copy())
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["orientation"].append(
                 system.director_collection.copy()
@@ -167,3 +169,24 @@ if __name__ == "__main__":
     if GENERATE_3D_VIDEO:
         filename_video = "knot3D.mp4"
         plot_video3D(recorded_history, video_name=filename_video, margin=0.2, fps=10)
+
+    # Plot knot topological quantities
+    time = np.asarray(recorded_history["time"])
+    positions = np.asarray(recorded_history["position"])
+    orientations = np.asarray(recorded_history["orientation"])
+    radii = np.asarray(recorded_history["radius"])
+    total_twist, _ = ea.compute_twist(positions, orientations[:, 0, ...])
+    total_writhe = ea.compute_writhe(positions, base_length, "next_tangent")
+    total_link = ea.compute_link(
+        positions, orientations[:, 0, ...], radii, base_length, "next_tangent"
+    )
+
+    plt.figure()
+    plt.plot(time, total_twist, label="twist")
+    plt.plot(time, total_writhe, label="writhe")
+    plt.plot(time, total_link, label="link")
+    plt.legend()
+    plt.xlabel("time")
+    plt.ylabel("link-writhe-twist quantity")
+    plt.savefig("LWT.png", dpi=300)
+    plt.close("all")

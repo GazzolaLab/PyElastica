@@ -92,7 +92,7 @@ Examples can serve as a starting template for customized usages.
     * __Features__: CosseratRod, FixedConstraint, GravityForce
 * [KnotCase](./KnotCase)
     * __Purpose__: Demonstrate simulation of rod forming a knot using a tip-pose control.
-    * __Features__: CosseratRod, FixedConstraint, RodSelfContact, Custom p-controller for SO3.
+    * __Features__: CosseratRod, KnotTheory, FixedConstraint, RodSelfContact, Custom p-controller for SO3.
 
 ## Functional Examples
 
