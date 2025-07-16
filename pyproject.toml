@@ -37,8 +37,6 @@ dependencies = [
     "mypy-extensions",
     "flake8",
     "cma",
-    "pyvista",
-    "vtk",
 ]
 
 [build-system]
@@ -138,10 +136,6 @@ warn_unused_ignores = false
 
 exclude = [
     "elastica/experimental/*",
-]
-
-untyped_calls_exclude = [
-    "pyvista",
 ]
 
 [tool.coverage.report]
