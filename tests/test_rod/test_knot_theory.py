@@ -10,12 +10,13 @@ from mock_rod import MockTestRod
 
 from elastica.rod.rod_base import RodBase
 from elastica.rod.knot_theory import (
-    KnotTheoryCompatibleProtocol,
     compute_twist,
     compute_writhe,
     compute_link,
     _compute_additional_segment,
 )
+
+from elastica.rod.protocol import CosseratRodProtocol
 
 
 @pytest.fixture
@@ -28,7 +29,7 @@ def knot_theory():
 def test_knot_theory_protocol():
     # To clear the protocol test coverage
     with pytest.raises(TypeError) as e_info:
-        protocol = KnotTheoryCompatibleProtocol()
+        protocol = CosseratRodProtocol()
         assert "cannot be instantiated" in e_info
 
 
@@ -39,9 +40,6 @@ def test_knot_theory_mixin_methods(knot_theory):
             self.radius = np.random.randn(MaxDimension.value(), self.n_elems)
 
     rod = TestRodWithKnotTheory()
-    assert hasattr(
-        rod, "MIXIN_PROTOCOL"
-    ), "Expected to mix-in variables: MIXIN_PROTOCOL"
     assert hasattr(
         rod, "compute_writhe"
     ), "Expected to mix-in functionals into the rod class: compute_writhe"
@@ -265,3 +263,50 @@ def test_knot_theory_compute_additional_segment_none_case(
     assert_allclose(new_center_line.shape, [timesteps, 3, n_elem])
     assert_allclose(beginning_direction.shape[0], timesteps)
     assert_allclose(end_direction.shape[0], timesteps)
+
+
+@pytest.mark.parametrize("n_elem", [1, 2, 10, 50, 100])
+@pytest.mark.parametrize(
+    "diff_angle",
+    [
+        0.0,
+        np.pi * 0.1,
+        np.pi * 0.5,
+        np.pi * 0.9,
+        np.pi * 0.999,
+        -np.pi * 0.1,
+        -np.pi * 0.5,
+        -np.pi * 0.9,
+        -np.pi * 0.999,
+    ],
+)
+def test_knot_theory_compute_pure_twist(n_elem, diff_angle):
+    angle = np.arange(n_elem) * diff_angle
+
+    # setting up test params
+    normal = np.array([0.0, 1.0, 0.0])
+    base_length = 1.0
+
+    position_collection = np.zeros((3, n_elem + 1))
+    position_collection[2, :] = np.linspace(0, base_length, n_elem + 1)
+    normal_collection = np.zeros((3, n_elem))
+
+    for i in range(n_elem):
+        alpha = angle[i]
+        rot_matrix = np.array(
+            [
+                [np.cos(alpha), -np.sin(alpha), 0.0],
+                [np.sin(alpha), np.cos(alpha), 0.0],
+                [0.0, 0.0, 1.0],
+            ]
+        )
+        normal_temp = rot_matrix @ normal
+        normal_temp /= np.linalg.norm(normal_temp)
+
+        normal_collection[:, i] = normal_temp
+
+    total_twist, local_twist = compute_twist(
+        position_collection[None, ...], normal_collection[None, ...]
+    )
+    np.testing.assert_allclose(local_twist[0], np.diff(angle / (2 * np.pi)))
+    np.testing.assert_allclose(total_twist[0], angle[-1] / (2 * np.pi))

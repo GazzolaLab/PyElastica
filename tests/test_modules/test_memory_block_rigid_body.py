@@ -81,7 +81,7 @@ def test_memory_block_rigid_body(n_bodies):
 
     memory_block = MemoryBlockRigidBody(systems, system_idx_list)
 
-    assert memory_block.n_bodies == n_bodies
+    assert memory_block.n_systems == n_bodies
     assert memory_block.n_elems == n_bodies
     assert memory_block.n_nodes == n_bodies
 
@@ -89,10 +89,8 @@ def test_memory_block_rigid_body(n_bodies):
 
     expected_attr_list = [
         "mass",
-        "radius",
         "volume",
         "density",
-        "length",
         "position_collection",
         "external_forces",
         "external_torques",

@@ -38,7 +38,7 @@ normal = np.array([0.0, 1.0, 0.0])
 
 total_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 5000
 youngs_modulus = 1e4
 poisson_ratio = 0.5
@@ -75,18 +75,21 @@ butterfly_rod = ea.CosseratRod.straight_rod(
 
 butterfly_sim.append(butterfly_rod)
 
+
 # Add call backs
 class VelocityCallBack(ea.CallBackBaseClass):
     """
     Call back function for continuum snake
     """
 
-    def __init__(self, step_skip: int, callback_params: dict):
+    def __init__(self, step_skip: int, callback_params: dict) -> None:
         ea.CallBackBaseClass.__init__(self)
         self.every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: ea.typing.RodType, time: np.float64, current_step: int
+    ) -> None:
 
         if current_step % self.every == 0:
 
@@ -101,7 +104,7 @@ class VelocityCallBack(ea.CallBackBaseClass):
             return
 
 
-recorded_history = ea.defaultdict(list)
+recorded_history: dict[str, list] = ea.defaultdict(list)
 # initially record history
 recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
@@ -116,6 +119,7 @@ butterfly_sim.collect_diagnostics(butterfly_rod).using(
 
 
 butterfly_sim.finalize()
+timestepper: ea.typing.StepperProtocol
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
@@ -128,16 +132,16 @@ if PLOT_FIGURE:
     # Plot the histories
     fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
     ax = fig.add_subplot(111)
-    positions = recorded_history["position"]
+    positions_history = recorded_history["position"]
     # record first position
-    first_position = positions.pop(0)
+    first_position = positions_history.pop(0)
     ax.plot(first_position[2, ...], first_position[0, ...], "r--", lw=2.0)
-    n_positions = len(positions)
-    for i, pos in enumerate(positions):
+    n_positions = len(positions_history)
+    for i, pos in enumerate(positions_history):
         alpha = np.exp(i / n_positions - 1)
         ax.plot(pos[2, ...], pos[0, ...], "b", lw=0.6, alpha=alpha)
     # final position is also separate
-    last_position = positions.pop()
+    last_position = positions_history.pop()
     ax.plot(last_position[2, ...], last_position[0, ...], "k--", lw=2.0)
     # don't block
     fig.show()

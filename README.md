@@ -13,28 +13,13 @@ Visit [www.cosseratrods.org][link-project-website] for more information and lear
 ## How to Start
 [![PyPI version][badge-pypi]][link-pypi] [![Documentation Status][badge-docs-status]][link-docs-status]
 
-PyElastica is compatible with Python 3.10 - 3.11.
+PyElastica is compatible with Python 3.10+.
 
 ~~~bash
 $ pip install pyelastica
 ~~~
 
-With this you get a minimal version with very little dependencies.
-
-All options:
-- `examples`: installs dependencies to run example cases,
-found under the folder [`examples`](https://github.com/GazzolaLab/PyElastica/tree/master/examples).
-- `docs`: packages to build documentation
-
-Options can be combined e.g.
-```bash
-$ pip install "pyelastica[examples,docs]"
-```
-
-For plotting videos, ffmpeg has to be installed:
-```bash
-$ conda install -c conda-forge ffmpeg
-```
+For plotting videos, matplotlib + ffmpeg has to used.
 
 Documentation of PyElastica is available [here][link-docs-website].
 

@@ -31,7 +31,7 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([1.0, 0.0, 0.0])
 base_length = 1.0
 base_radius = 0.005
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1100.0
 youngs_modulus = 5e6
 # For shear modulus of 1e4, nu is 99!
@@ -166,10 +166,10 @@ if PLOT_VIDEO:
         with writer.saving(fig, video_name, dpi):
             with plt.style.context("seaborn-white"):
                 for i in range(0, positions.shape[0], int(step)):
-                    rod_line.set_xdata(positions[i, 2])
-                    rod_line.set_ydata(positions[i, 0])
-                    tip_line.set_xdata(positions[:i, 2, -1])
-                    tip_line.set_ydata(positions[:i, 0, -1])
+                    rod_line.set_xdata([positions[i, 2]])
+                    rod_line.set_ydata([positions[i, 0]])
+                    tip_line.set_xdata([positions[:i, 2, -1]])
+                    tip_line.set_ydata([positions[:i, 0, -1]])
                     writer.grab_frame()
 
     plot_video(recorded_history, "swinging_flexible_pendulum.mp4")

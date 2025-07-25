@@ -76,7 +76,7 @@ flagella_body = ea.CosseratRod.straight_rod(
 # geometric parameters of head is already computed, when flagella_body object is initialized.
 # Reference: Aydin, O., Zhang, X., Nuethong, S., Pagan-Diaz, G. J., et al. PNAS (2019).
 radius_reference = 0.0053  # mm
-area_reference = np.pi * radius_reference ** 2
+area_reference = np.pi * radius_reference**2
 
 # Second moment of area for disk cross-section
 I0_1 = area_reference * area_reference / (4.0 * np.pi)
@@ -133,7 +133,7 @@ base_radius_muscle = 0.01  # mm
 base_length_muscle = 0.10756
 E_muscle = 0.3e5  # MPa
 shear_modulus_muscle = E_muscle / (poisson_ratio + 1.0)
-nu_muscle = 1e-6 / density_muscle / (np.pi * base_radius_muscle ** 2)
+nu_muscle = 1e-6 / density_muscle / (np.pi * base_radius_muscle**2)
 
 # Start position of the muscle is the 4th element position of body. Lets use the exact location, because this will
 # simplify the connection implementation.
@@ -198,6 +198,7 @@ dynamic_viscosity = 1.2e-3
 muscular_flagella_sim.add_forcing_to(flagella_body).using(
     ea.SlenderBodyTheory, dynamic_viscosity=dynamic_viscosity
 )
+
 
 # Add call backs
 class MuscularFlagellaCallBack(ea.CallBackBaseClass):

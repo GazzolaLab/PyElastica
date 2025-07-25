@@ -4,16 +4,22 @@ __doc__ = """
 Built in damper module implementations
 """
 
+import logging
 from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar, TypeAlias, Callable
 
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType
 
 from numba import njit
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-class DamperBase(ABC):
+T = TypeVar("T")
+
+
+class DamperBase(Generic[T], ABC):
     """Base class for damping module implementations.
 
     Notes
@@ -23,13 +29,14 @@ class DamperBase(ABC):
 
     Attributes
     ----------
-    system : SystemType (RodBase or RigidBodyBase)
+    system : RodBase
 
     """
 
-    _system: SystemType
+    _system: T
 
-    def __init__(self, *args, **kwargs):
+    # TODO typing can be made better
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize damping module"""
         try:
             self._system = kwargs["_system"]
@@ -40,7 +47,7 @@ class DamperBase(ABC):
             )
 
     @property
-    def system(self):  # -> SystemType: (Return type is not parsed with sphinx book.)
+    def system(self) -> T:
         """
         get system (rod or rigid body) reference
 
@@ -52,7 +59,7 @@ class DamperBase(ABC):
         return self._system
 
     @abstractmethod
-    def dampen_rates(self, system: SystemType, time: float):
+    def dampen_rates(self, system: T, time: np.float64) -> None:
         # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
@@ -68,6 +75,9 @@ class DamperBase(ABC):
         pass
 
 
+DampenType: TypeAlias = Callable[[RodType], None]
+
+
 class AnalyticalLinearDamper(DamperBase):
     """
     Analytical linear damper class. This class corresponds to the analytical version of
@@ -76,17 +86,44 @@ class AnalyticalLinearDamper(DamperBase):
 
     .. math::
 
-        \\mathbf{v}^{n+1} = \\mathbf{v}^n \\exp \\left( -  \\nu~dt  \\right)
+        m \\frac{\\partial \\mathbf{v}}{\\partial t} = -\\gamma_t \\mathbf{v}
 
-        \\pmb{\\omega}^{n+1} = \\pmb{\\omega}^n \\exp \\left( - \\frac{{\\nu}~m~dt } { \\mathbf{J}} \\right)
+        \\frac{\\mathbf{J}}{e} \\frac{\\partial \\pmb{\\omega}}{\\partial t} = -\\gamma_r \\pmb{\\omega}
 
     Examples
     --------
-    How to set analytical linear damper for rod or rigid body:
+    The current AnalyticalLinearDamper class supports three types of protocols:
+
+    1.  Uniform damping constant: the user provides the keyword argument `uniform_damping_constant`
+        of dimension (1/T). This leads to an exponential damping constant that is used for both
+        translation and rotational velocities.
 
     >>> simulator.dampen(rod).using(
     ...     AnalyticalLinearDamper,
-    ...     damping_constant=0.1,
+    ...     uniform_damping_constant=0.1,
+    ...     time_step = 1E-4,   # Simulation time-step
+    ... )
+
+    2.  Physical damping constant: separate exponential coefficients are computed for the
+        translational and rotational velocities, based on user-defined
+        `translational_damping_constant` and `rotational_damping_constant`.
+
+    >>> simulator.dampen(rod).using(
+    ...     AnalyticalLinearDamper,
+    ...     translational_damping_constant=0.1,
+    ...     rotational_damping_constant=0.05,
+    ...     time_step = 1E-4,   # Simulation time-step
+    ... )
+
+    3.  Damping constant: this protocol follows the original algorithm where the damping
+        constants for translational and rotational velocities are assumed to be numerically
+        identical. This leads to dimensional inconsistencies (see
+        https://github.com/GazzolaLab/PyElastica/issues/354). Hence, this option will be deprecated
+        in version 0.4.0.
+
+    >>> simulator.dampen(rod).using(
+    ...     AnalyticalLinearDamper,
+    ...     damping_constant=0.1,   # To be deprecated in 0.4.0
     ...     time_step = 1E-4,   # Simulation time-step
     ... )
 
@@ -102,55 +139,146 @@ class AnalyticalLinearDamper(DamperBase):
     1. Set a high value for `damping_constant` to first acheive a stable simulation.
     2. If you feel the simulation is overdamped, reduce `damping_constant` until you
        feel the simulation is underdamped, and expected dynamics are recovered.
-
-    Attributes
-    ----------
-    translational_damping_coefficient: numpy.ndarray
-        1D array containing data with 'float' type.
-        Damping coefficient acting on translational velocity.
-    rotational_damping_coefficient : numpy.ndarray
-        1D array containing data with 'float' type.
-        Damping coefficient acting on rotational velocity.
     """
 
-    def __init__(self, damping_constant, time_step, **kwargs):
-        """
-        Analytical linear damper initializer
-
-        Parameters
-        ----------
-        damping_constant : float
-            Damping constant for the analytical linear damper.
-        time_step : float
-            Time-step of simulation
-        """
+    def __init__(self, time_step: np.float64, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        # Compute the damping coefficient for translational velocity
-        nodal_mass = self._system.mass
-        self.translational_damping_coefficient = np.exp(-damping_constant * time_step)
 
-        # Compute the damping coefficient for exponential velocity
+        damping_constant = kwargs.get("damping_constant", None)
+        uniform_damping_constant = kwargs.get("uniform_damping_constant", None)
+        translational_damping_constant = kwargs.get(
+            "translational_damping_constant", None
+        )
+        rotational_damping_constant = kwargs.get("rotational_damping_constant", None)
+
+        self._dampen_rates_protocol: DampenType
+
+        if (
+            (damping_constant is not None)
+            and (uniform_damping_constant is None)
+            and (translational_damping_constant is None)
+            and (rotational_damping_constant is None)
+        ):
+            logging.warning(
+                "Analytical linear damping using generic damping constant "
+                "will be deprecated in 0.4.0"
+            )
+            self._dampen_rates_protocol = self._deprecated_damping_protocol(
+                damping_constant=damping_constant, time_step=time_step
+            )
+
+        elif (
+            (damping_constant is None)
+            and (uniform_damping_constant is not None)
+            and (translational_damping_constant is None)
+            and (rotational_damping_constant is None)
+        ):
+            self._dampen_rates_protocol = self._uniform_damping_protocol(
+                uniform_damping_constant=uniform_damping_constant, time_step=time_step
+            )
+
+        elif (
+            (damping_constant is None)
+            and (uniform_damping_constant is None)
+            and (translational_damping_constant is not None)
+            and (rotational_damping_constant is not None)
+        ):
+            self._dampen_rates_protocol = self._physical_damping_protocol(
+                translational_damping_constant=translational_damping_constant,
+                rotational_damping_constant=rotational_damping_constant,
+                time_step=time_step,
+            )
+
+        else:
+            message = (
+                "AnalyticalLinearDamper usage:\n"
+                "\tsimulator.dampen(rod).using(\n"
+                "\t\tAnalyticalLinearDamper,\n"
+                "\t\ttranslational_damping_constant=...,\n"
+                "\t\trotational_damping_constant=...,\n"
+                "\t\ttime_step=...,\n"
+                "\t)\n"
+                "\tor\n"
+                "\tsimulator.dampen(rod).using(\n"
+                "\t\tAnalyticalLinearDamper,\n"
+                "\t\tuniform_damping_constant=...,\n"
+                "\t\ttime_step=...,\n"
+                "\t)\n"
+                "\tor (deprecated in 0.4.0)\n"
+                "\tsimulator.dampen(rod).using(\n"
+                "\t\tAnalyticalLinearDamper,\n"
+                "\t\tdamping_constant=...,\n"
+                "\t\ttime_step=...,\n"
+                "\t)\n"
+            )
+            raise ValueError(message)
+
+    def _deprecated_damping_protocol(
+        self, damping_constant: np.float64, time_step: np.float64
+    ) -> DampenType:
+        nodal_mass = self._system.mass
+        self._translational_damping_coefficient = np.exp(-damping_constant * time_step)
+
         if self._system.ring_rod_flag:
             element_mass = nodal_mass
         else:
             element_mass = 0.5 * (nodal_mass[1:] + nodal_mass[:-1])
             element_mass[0] += 0.5 * nodal_mass[0]
             element_mass[-1] += 0.5 * nodal_mass[-1]
-        self.rotational_damping_coefficient = np.exp(
+        self._rotational_damping_coefficient = np.exp(
             -damping_constant
             * time_step
             * element_mass
             * np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
         )
 
-    def dampen_rates(self, rod: RodType, time: float):
-        rod.velocity_collection[:] = (
-            rod.velocity_collection * self.translational_damping_coefficient
+        def dampen_rates_protocol(rod: RodType) -> None:
+            rod.velocity_collection *= self._translational_damping_coefficient
+            rod.omega_collection *= np.power(
+                self._rotational_damping_coefficient, rod.dilatation
+            )
+
+        return dampen_rates_protocol
+
+    def _uniform_damping_protocol(
+        self, uniform_damping_constant: np.float64, time_step: np.float64
+    ) -> DampenType:
+        self._translational_damping_coefficient = (
+            self._rotational_damping_coefficient
+        ) = np.exp(-uniform_damping_constant * time_step)
+
+        def dampen_rates_protocol(rod: RodType) -> None:
+            rod.velocity_collection *= self._translational_damping_coefficient
+            rod.omega_collection *= self._rotational_damping_coefficient
+
+        return dampen_rates_protocol
+
+    def _physical_damping_protocol(
+        self,
+        translational_damping_constant: np.float64,
+        rotational_damping_constant: np.float64,
+        time_step: np.float64,
+    ) -> DampenType:
+        nodal_mass = self._system.mass
+        self._translational_damping_coefficient = np.exp(
+            -translational_damping_constant / nodal_mass * time_step
         )
 
-        rod.omega_collection[:] = rod.omega_collection * np.power(
-            self.rotational_damping_coefficient, rod.dilatation
+        inv_moi = np.diagonal(self._system.inv_mass_second_moment_of_inertia).T
+        self._rotational_damping_coefficient = np.exp(
+            -rotational_damping_constant * inv_moi * time_step
         )
+
+        def dampen_rates_protocol(rod: RodType) -> None:
+            rod.velocity_collection *= self._translational_damping_coefficient
+            rod.omega_collection *= np.power(
+                self._rotational_damping_coefficient, rod.dilatation
+            )
+
+        return dampen_rates_protocol
+
+    def dampen_rates(self, rod: RodType, time: np.float64) -> None:
+        self._dampen_rates_protocol(rod)
 
 
 class LaplaceDissipationFilter(DamperBase):
@@ -202,7 +330,7 @@ class LaplaceDissipationFilter(DamperBase):
         Filter term that modifies rod rotational velocity.
     """
 
-    def __init__(self, filter_order: int, **kwargs):
+    def __init__(self, filter_order: int, **kwargs: Any) -> None:
         """
         Filter damper initializer
 
@@ -232,25 +360,25 @@ class LaplaceDissipationFilter(DamperBase):
             self.omega_filter_term = np.zeros_like(self._system.omega_collection)
             self.filter_function = _filter_function_periodic_condition
 
-    def dampen_rates(self, rod: RodType, time: float) -> None:
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
 
         self.filter_function(
-            rod.velocity_collection,
+            system.velocity_collection,
             self.velocity_filter_term,
-            rod.omega_collection,
+            system.omega_collection,
             self.omega_filter_term,
             self.filter_order,
         )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition_ring_rod(
-    velocity_collection,
-    velocity_filter_term,
-    omega_collection,
-    omega_filter_term,
-    filter_order,
-):
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
+    filter_order: int,
+) -> None:
     blocksize = velocity_filter_term.shape[1]
 
     # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
@@ -281,14 +409,14 @@ def _filter_function_periodic_condition_ring_rod(
     omega_collection[:] = omega_collection_with_periodic_bc[:, 1:-1]
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _filter_function_periodic_condition(
-    velocity_collection,
-    velocity_filter_term,
-    omega_collection,
-    omega_filter_term,
-    filter_order,
-):
+    velocity_collection: NDArray[np.float64],
+    velocity_filter_term: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    omega_filter_term: NDArray[np.float64],
+    filter_order: int,
+) -> None:
     nb_filter_rate(
         rate_collection=velocity_collection,
         filter_term=velocity_filter_term,
@@ -301,9 +429,11 @@ def _filter_function_periodic_condition(
     )
 
 
-@njit(cache=True)
+@njit(cache=True)  # type: ignore
 def nb_filter_rate(
-    rate_collection: np.ndarray, filter_term: np.ndarray, filter_order: int
+    rate_collection: NDArray[np.float64],
+    filter_term: NDArray[np.float64],
+    filter_order: int,
 ) -> None:
     """
     Filters the rod rates (velocities) in numba njit decorator

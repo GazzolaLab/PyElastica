@@ -154,12 +154,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[0])
-                        rod_com_lines[rod_idx].set_ydata(com[1])
+                        rod_com_lines[rod_idx].set_xdata([com[0]])
+                        rod_com_lines[rod_idx].set_ydata([com[1]])
 
                         rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
                         rod_scatters[rod_idx].set_sizes(
@@ -218,12 +218,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[2])
-                        rod_lines[rod_idx].set_ydata(inst_position[1])
+                        rod_lines[rod_idx].set_xdata([inst_position[2]])
+                        rod_lines[rod_idx].set_ydata([inst_position[1]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[2])
-                        rod_com_lines[rod_idx].set_ydata(com[1])
+                        rod_com_lines[rod_idx].set_xdata([com[2]])
+                        rod_com_lines[rod_idx].set_ydata([com[1]])
 
                         rod_scatters[rod_idx].set_offsets(
                             np.vstack((inst_position[2], inst_position[1])).T
@@ -283,12 +283,12 @@ def plot_video_with_surface(
                                 inst_position[..., 1:] + inst_position[..., :-1]
                             )
 
-                        rod_lines[rod_idx].set_xdata(inst_position[0])
-                        rod_lines[rod_idx].set_ydata(inst_position[2])
+                        rod_lines[rod_idx].set_xdata([inst_position[0]])
+                        rod_lines[rod_idx].set_ydata([inst_position[2]])
 
                         com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata(com[0])
-                        rod_com_lines[rod_idx].set_ydata(com[2])
+                        rod_com_lines[rod_idx].set_xdata([com[0]])
+                        rod_com_lines[rod_idx].set_ydata([com[2]])
 
                         rod_scatters[rod_idx].set_offsets(
                             np.vstack((inst_position[0], inst_position[2])).T

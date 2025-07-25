@@ -1,11 +1,14 @@
 """ Handy utilities
 """
 
+from typing import Generator, Iterable, Any, Literal, TypeVar
 import functools
 import numpy as np
 from numpy import finfo, float64
 from itertools import islice
 from scipy.interpolate import BSpline
+
+from numpy.typing import NDArray
 
 
 # Slower than the python3.8 isqrt implementation for small ints
@@ -47,6 +50,8 @@ def isqrt(num: int) -> int:
     elif num == 0:
         return 0
 
+    raise ValueError("num must be a positive number")
+
 
 class MaxDimension:
     """
@@ -54,7 +59,7 @@ class MaxDimension:
     """
 
     @staticmethod
-    def value():
+    def value() -> Literal[3]:
         """
         Returns spatial dimension
 
@@ -67,7 +72,7 @@ class MaxDimension:
 
 class Tolerance:
     @staticmethod
-    def atol():
+    def atol() -> float:
         """
         Static absolute tolerance method
 
@@ -75,10 +80,10 @@ class Tolerance:
         -------
         atol : library-wide set absolute tolerance for kernels
         """
-        return finfo(float64).eps * 1e4
+        return float(finfo(float64).eps * 1e4)
 
     @staticmethod
-    def rtol():
+    def rtol() -> float:
         """
         Static relative tolerance method
 
@@ -86,10 +91,10 @@ class Tolerance:
         -------
         tol : library-wide set relative tolerance for kernels
         """
-        return finfo(float64).eps * 1e11
+        return float(finfo(float64).eps * 1e11)
 
 
-def perm_parity(lst):
+def perm_parity(lst: list[int]) -> int:
     """
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
@@ -115,7 +120,10 @@ def perm_parity(lst):
     return parity
 
 
-def grouper(iterable, n):
+_T = TypeVar("_T")
+
+
+def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, None]:
     """Collect data into fixed-length chunks or blocks"
 
     Parameters
@@ -144,7 +152,7 @@ def grouper(iterable, n):
         yield group
 
 
-def extend_instance(obj, cls):
+def extend_instance(obj: Any, cls: Any) -> None:
     """
 
     Apply mixins to a class instance after creation
@@ -170,7 +178,9 @@ def extend_instance(obj, cls):
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 
 
-def _bspline(t_coeff, l_centerline=1.0):
+def _bspline(  # type: ignore[no-any-unimported]
+    t_coeff: NDArray, l_centerline: np.float64 = np.float64(1.0)
+) -> tuple[BSpline, NDArray, NDArray]:
     """Generates a bspline object that plots the spline interpolant for
     any vector x. Optionally takes in a centerline length, set to 1.0 by
     default and keep_pts for keeping record of control points
@@ -198,7 +208,9 @@ def _bspline(t_coeff, l_centerline=1.0):
     return __bspline_impl__(control_pts, t_coeff, degree)
 
 
-def __bspline_impl__(x_pts, t_c, degree):
+def __bspline_impl__(  # type: ignore[no-any-unimported]
+    x_pts: NDArray, t_c: NDArray, degree: int
+) -> tuple[BSpline, NDArray, NDArray]:
     """"""
 
     # Update the knots

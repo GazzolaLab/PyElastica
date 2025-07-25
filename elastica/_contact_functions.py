@@ -22,30 +22,32 @@ from elastica._linalg import (
     _batch_matrix_transpose,
     _batch_vec_oneD_vec_cross,
 )
-import numba
 import numpy as np
+from numpy.typing import NDArray
+
+from numba import njit
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_rod_cylinder(
-    x_collection_rod,
-    edge_collection_rod,
-    x_cylinder_center,
-    x_cylinder_tip,
-    edge_cylinder,
-    radii_sum,
-    length_sum,
-    internal_forces_rod,
-    external_forces_rod,
-    external_forces_cylinder,
-    external_torques_cylinder,
-    cylinder_director_collection,
-    velocity_rod,
-    velocity_cylinder,
-    contact_k,
-    contact_nu,
-    velocity_damping_coefficient,
-    friction_coefficient,
+    x_collection_rod: NDArray[np.float64],
+    edge_collection_rod: NDArray[np.float64],
+    x_cylinder_center: NDArray[np.float64],
+    x_cylinder_tip: NDArray[np.float64],
+    edge_cylinder: NDArray[np.float64],
+    radii_sum: NDArray[np.float64],
+    length_sum: NDArray[np.float64],
+    internal_forces_rod: NDArray[np.float64],
+    external_forces_rod: NDArray[np.float64],
+    external_forces_cylinder: NDArray[np.float64],
+    external_torques_cylinder: NDArray[np.float64],
+    cylinder_director_collection: NDArray[np.float64],
+    velocity_rod: NDArray[np.float64],
+    velocity_cylinder: NDArray[np.float64],
+    contact_k: np.float64,
+    contact_nu: np.float64,
+    velocity_damping_coefficient: np.float64,
+    friction_coefficient: np.float64,
 ) -> None:
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
@@ -114,7 +116,7 @@ def _calculate_contact_forces_rod_cylinder(
         )
         # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
         friction_force = (
-            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            -np.minimum(damping_force_in_slip_direction, coulombic_friction_force)
             * slip_interpenetration_velocity_unitized
         )
         # Update contact force
@@ -153,24 +155,24 @@ def _calculate_contact_forces_rod_cylinder(
     )
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_rod_rod(
-    x_collection_rod_one,
-    radius_rod_one,
-    length_rod_one,
-    tangent_rod_one,
-    velocity_rod_one,
-    internal_forces_rod_one,
-    external_forces_rod_one,
-    x_collection_rod_two,
-    radius_rod_two,
-    length_rod_two,
-    tangent_rod_two,
-    velocity_rod_two,
-    internal_forces_rod_two,
-    external_forces_rod_two,
-    contact_k,
-    contact_nu,
+    x_collection_rod_one: NDArray[np.float64],
+    radius_rod_one: NDArray[np.float64],
+    length_rod_one: NDArray[np.float64],
+    tangent_rod_one: NDArray[np.float64],
+    velocity_rod_one: NDArray[np.float64],
+    internal_forces_rod_one: NDArray[np.float64],
+    external_forces_rod_one: NDArray[np.float64],
+    x_collection_rod_two: NDArray[np.float64],
+    radius_rod_two: NDArray[np.float64],
+    length_rod_two: NDArray[np.float64],
+    tangent_rod_two: NDArray[np.float64],
+    velocity_rod_two: NDArray[np.float64],
+    internal_forces_rod_two: NDArray[np.float64],
+    external_forces_rod_two: NDArray[np.float64],
+    contact_k: np.float64,
+    contact_nu: np.float64,
 ) -> None:
     # We already pass in only the first n_elem x
     n_points_rod_one = x_collection_rod_one.shape[1]
@@ -270,16 +272,16 @@ def _calculate_contact_forces_rod_rod(
                 external_forces_rod_two[..., j + 1] += net_contact_force
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_self_rod(
-    x_collection_rod,
-    radius_rod,
-    length_rod,
-    tangent_rod,
-    velocity_rod,
-    external_forces_rod,
-    contact_k,
-    contact_nu,
+    x_collection_rod: NDArray[np.float64],
+    radius_rod: NDArray[np.float64],
+    length_rod: NDArray[np.float64],
+    tangent_rod: NDArray[np.float64],
+    velocity_rod: NDArray[np.float64],
+    external_forces_rod: NDArray[np.float64],
+    contact_k: np.float64,
+    contact_nu: np.float64,
 ) -> None:
     # We already pass in only the first n_elem x
     n_points_rod = x_collection_rod.shape[1]
@@ -358,26 +360,26 @@ def _calculate_contact_forces_self_rod(
                 external_forces_rod[..., j + 1] += net_contact_force
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_rod_sphere(
-    x_collection_rod,
-    edge_collection_rod,
-    x_sphere_center,
-    x_sphere_tip,
-    edge_sphere,
-    radii_sum,
-    length_sum,
-    internal_forces_rod,
-    external_forces_rod,
-    external_forces_sphere,
-    external_torques_sphere,
-    sphere_director_collection,
-    velocity_rod,
-    velocity_sphere,
-    contact_k,
-    contact_nu,
-    velocity_damping_coefficient,
-    friction_coefficient,
+    x_collection_rod: NDArray[np.float64],
+    edge_collection_rod: NDArray[np.float64],
+    x_sphere_center: NDArray[np.float64],
+    x_sphere_tip: NDArray[np.float64],
+    edge_sphere: NDArray[np.float64],
+    radii_sum: NDArray[np.float64],
+    length_sum: NDArray[np.float64],
+    internal_forces_rod: NDArray[np.float64],
+    external_forces_rod: NDArray[np.float64],
+    external_forces_sphere: NDArray[np.float64],
+    external_torques_sphere: NDArray[np.float64],
+    sphere_director_collection: NDArray[np.float64],
+    velocity_rod: NDArray[np.float64],
+    velocity_sphere: NDArray[np.float64],
+    contact_k: np.float64,
+    contact_nu: np.float64,
+    velocity_damping_coefficient: np.float64,
+    friction_coefficient: np.float64,
 ) -> None:
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
@@ -445,7 +447,7 @@ def _calculate_contact_forces_rod_sphere(
         )
         # Compare damping force in slip direction and kinetic friction and minimum is the friction force.
         friction_force = (
-            -min(damping_force_in_slip_direction, coulombic_friction_force)
+            -np.minimum(damping_force_in_slip_direction, coulombic_friction_force)
             * slip_interpenetration_velocity_unitized
         )
         # Update contact force
@@ -484,20 +486,20 @@ def _calculate_contact_forces_rod_sphere(
     )
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_rod_plane(
-    plane_origin,
-    plane_normal,
-    surface_tol,
-    k,
-    nu,
-    radius,
-    mass,
-    position_collection,
-    velocity_collection,
-    internal_forces,
-    external_forces,
-):
+    plane_origin: NDArray[np.float64],
+    plane_normal: NDArray[np.float64],
+    surface_tol: np.float64,
+    k: np.float64,
+    nu: np.float64,
+    radius: NDArray[np.float64],
+    mass: NDArray[np.float64],
+    position_collection: NDArray[np.float64],
+    velocity_collection: NDArray[np.float64],
+    internal_forces: NDArray[np.float64],
+    external_forces: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.intp]]:
     """
     This function computes the plane force response on the element, in the
     case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
@@ -569,32 +571,32 @@ def _calculate_contact_forces_rod_plane(
     return (_batch_norm(plane_response_force), no_contact_point_idx)
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_rod_plane_with_anisotropic_friction(
-    plane_origin,
-    plane_normal,
-    surface_tol,
-    slip_velocity_tol,
-    k,
-    nu,
-    kinetic_mu_forward,
-    kinetic_mu_backward,
-    kinetic_mu_sideways,
-    static_mu_forward,
-    static_mu_backward,
-    static_mu_sideways,
-    radius,
-    mass,
-    tangents,
-    position_collection,
-    director_collection,
-    velocity_collection,
-    omega_collection,
-    internal_forces,
-    external_forces,
-    internal_torques,
-    external_torques,
-):
+    plane_origin: NDArray[np.float64],
+    plane_normal: NDArray[np.float64],
+    surface_tol: np.float64,
+    slip_velocity_tol: np.float64,
+    k: np.float64,
+    nu: np.float64,
+    kinetic_mu_forward: np.float64,
+    kinetic_mu_backward: np.float64,
+    kinetic_mu_sideways: np.float64,
+    static_mu_forward: np.float64,
+    static_mu_backward: np.float64,
+    static_mu_sideways: np.float64,
+    radius: NDArray[np.float64],
+    mass: NDArray[np.float64],
+    tangents: NDArray[np.float64],
+    position_collection: NDArray[np.float64],
+    director_collection: NDArray[np.float64],
+    velocity_collection: NDArray[np.float64],
+    omega_collection: NDArray[np.float64],
+    internal_forces: NDArray[np.float64],
+    external_forces: NDArray[np.float64],
+    internal_torques: NDArray[np.float64],
+    external_torques: NDArray[np.float64],
+) -> None:
     (
         plane_response_force_mag,
         no_contact_point_idx,
@@ -782,18 +784,18 @@ def _calculate_contact_forces_rod_plane_with_anisotropic_friction(
     )
 
 
-@numba.njit(cache=True)
+@njit(cache=True)  # type: ignore
 def _calculate_contact_forces_cylinder_plane(
-    plane_origin,
-    plane_normal,
-    surface_tol,
-    k,
-    nu,
-    length,
-    position_collection,
-    velocity_collection,
-    external_forces,
-):
+    plane_origin: NDArray[np.float64],
+    plane_normal: NDArray[np.float64],
+    surface_tol: np.float64,
+    k: np.float64,
+    nu: np.float64,
+    length: NDArray[np.float64],
+    position_collection: NDArray[np.float64],
+    velocity_collection: NDArray[np.float64],
+    external_forces: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.intp]]:
 
     # Compute plane response force
     # total_forces = system.internal_forces + system.external_forces

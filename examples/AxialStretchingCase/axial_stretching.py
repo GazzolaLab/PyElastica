@@ -23,6 +23,7 @@
 
     isort:skip_file
 """
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -50,7 +51,7 @@ direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 1.0
 base_radius = 0.025
-base_area = np.pi * base_radius ** 2
+base_area = np.pi * base_radius**2
 density = 1000
 youngs_modulus = 1e4
 # For shear modulus of 1e4, nu is 99!
@@ -90,18 +91,21 @@ stretch_sim.dampen(stretchable_rod).using(
     time_step=dt,
 )
 
+
 # Add call backs
 class AxialStretchingCallBack(ea.CallBackBaseClass):
     """
     Tracks the velocity norms of the rod
     """
 
-    def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+    def __init__(self, step_skip: int, callback_params: dict) -> None:
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(
+        self, system: ea.typing.RodType, time: np.float64, current_step: int
+    ) -> None:
 
         if current_step % self.every == 0:
 
@@ -116,13 +120,13 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
             return
 
 
-recorded_history = ea.defaultdict(list)
+recorded_history: dict[str, list] = ea.defaultdict(list)
 stretch_sim.collect_diagnostics(stretchable_rod).using(
     AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
 )
 
 stretch_sim.finalize()
-timestepper = ea.PositionVerlet()
+timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 total_steps = int(final_time / dt)
@@ -161,7 +165,7 @@ if SAVE_RESULTS:
         np.asarray(recorded_history["velocity_norms"]),
     )
 
-    def as_time_series(v):
+    def as_time_series(v: np.ndarray) -> np.ndarray:
         return v.T
 
     np.savetxt(

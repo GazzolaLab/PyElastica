@@ -18,9 +18,11 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
+    env:
+      UV_CACHE_DIR: /tmp/.uv-cache
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest] #, windows-latest] # Run macos tests if really required, since they charge 10 times more for macos
         include:
           - os: ubuntu-latest
@@ -30,42 +32,56 @@ jobs:
           #- os: windows-latest
           #  path: ~\AppData\Local\pip\Cache
     # Steps represent a sequence of tasks that will be executed as part of the job
+    defaults:
+      run:
+        shell: bash
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Ref: https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          uv-version: latest
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       # You can test your matrix by printing the current Python version
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      # Install Poetry and dependencies
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      # Set up cache
       - name: Set up cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ matrix.path }}
-          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+      # Install dependencies
       - name: Install dependencies
         run: |
-          poetry config virtualenvs.in-project true
-          poetry install
+          make install-dev-deps
+          uv cache prune --ci
+          source .venv/bin/activate
       # Runs a single command using the runners shell
       - name: Welcome message
         run: echo Hello, world! Welcome PyElastica Build, lets start testing!
       # Run style checks (black and flake8)
       - name: Run style checks
+        if: always()
         run: |
           make check-codestyle
       # Test PyElastica using pytest
       - name: Run tests
+        if: always()
         run: |
           make test
+      - name: Typechecking
+        if: ${{ startsWith(runner.os, 'macOS') }}
+        run: |
+          make mypy
   report-coverage:  # Report coverage from python 3.10 and mac-os. May change later
     runs-on: ${{ matrix.os }}
     strategy:
@@ -76,27 +92,28 @@ jobs:
           - os: macos-latest
             path: ~/Library/Caches/pip
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          uv-version: latest
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
       - name: Set up cache
         uses: actions/cache@v3
         with:
           path: ${{ matrix.path }}
-          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies
         run: |
-          poetry config virtualenvs.in-project true
-          poetry install
-      - name: Run style checks
-        run: |
-          make check-codestyle
+          make install-dev-deps
+          uv cache prune --ci
+          source .venv/bin/activate
       - name: Test PyElastica using pytest
         if: startsWith(runner.os, 'macOS')
         run: |

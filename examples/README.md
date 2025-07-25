@@ -37,6 +37,15 @@ Examples can serve as a starting template for customized usages.
 * [ButterflyCase](./ButterflyCase)
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
+* [CantileverDistributedLoad](./CantileverDistributedLoad)
+    * __Purpose__: Demonstrate the demformation of a straight cantilever under both conservative (like water pressure) and non-conservative (like gravity) distributed load, compared with numerical solutions from Tschisgale, Silvio (2019).[<strong>"Chapter 3: Numerical models of partitioned problems"</strong>](https://nbn-resolving.org/urn:nbn:de:bsz:14-qucosa2-387063) Technische Univerisitat Dresden Institution of Fluid Mechanics
+    * __Features__: CosseratRod
+* [CantileverTransversalLoadCase](./CantileverTransversalLoadCase)
+    * __Purpose__: Demonstrate the demformation of a curved cantilever under transversal one-end load, and also do Physical convergence test, compared with numerical solutions from Tschisgale, Silvio (2019).
+    * __Features__: CosseratRod
+* [TumblingUnconstrainedRod](./TumblingUnconstrainedRod)
+    * __Purpose__: Demostrate the dynamics of tumbling uncontrained rod, compared with analytical solution from [Hisao, Kou Hou (1998).](https://www.sciencedirect.com/science/article/pii/S0045782598001522), Computer methods in applied mechanics and engineering.
+    * __Features__: CosseratRod
 * [FrictionValidationCases](./FrictionValidationCases)
     * __Purpose__: Physical validation of rolling and translational friction.
     * __Features__: CosseratRod, UniformForces, RodPlaneContactWithAnisotropicFriction
@@ -81,6 +90,9 @@ Examples can serve as a starting template for customized usages.
 * [CatenaryCase](./CatenaryCase)
     * __Purpose__: Demonstrate simulation of cosserat rod under gravity with fixed ends, compared with Catenary Analytical Solution from Routh, Edward John (1891). [<strong>"Chapter X: On Strings"</strong>](https://books.google.com/books?id=3N5JAAAAMAAJ&pg=PA315#v=onepage&q&f=false). A Treatise on Analytical Statics. University Press.
     * __Features__: CosseratRod, FixedConstraint, GravityForce
+* [KnotCase](./KnotCase)
+    * __Purpose__: Demonstrate simulation of rod forming a knot using a tip-pose control.
+    * __Features__: CosseratRod, KnotTheory, FixedConstraint, RodSelfContact, Custom p-controller for SO3.
 
 ## Functional Examples
 
