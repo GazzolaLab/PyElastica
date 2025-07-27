@@ -1,8 +1,0 @@
-[wrap-git]
-url = https://github.com/shibatch/sleef.git
-revision = head
-depth = 1
-method = cmake
-
-[provide]
-sleef = sleef_dep

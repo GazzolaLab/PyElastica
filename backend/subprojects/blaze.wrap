@@ -1,8 +1,0 @@
-[wrap-git]
-url = https://bitbucket.org/blaze-lib/blaze.git
-revision = head
-depth = 1
-method = cmake
-
-[provide]
-blaze = blaze_dep

@@ -1,8 +1,0 @@
-[wrap-git]
-url = https://github.com/edouarda/brigand.git
-revision = head
-depth = 1
-method = cmake
-
-[provide]
-brigand = brigand_dep
