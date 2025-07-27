@@ -17,6 +17,7 @@ py_dep = py.dependency()
 
 # set up global defines to optimize blaze usages
 add_global_arguments(
+    '-march=native', '-mavx',
     # - Enable external BLAS kernels
     '-DBLAZE_BLAS_MODE=0',
     # - Set default matrix storage order to column-major, since many of our
@@ -63,6 +64,8 @@ pybind11_dep = declare_dependency(
 py_deps = [py_dep, pybind11_dep]
 
 fs = import('fs')
+env = environment()
+# env.append('PKG_CONFIG_PATH', fs.parent(meson.current_source_dir()) / 'third-party-installed' / 'lib' / 'pkgconfig')
 
 message('Running buildscripts/build-all.sh (might take a while)')
 buildscripts = files('buildscripts/build-all.sh')
@@ -72,10 +75,16 @@ if res.returncode() != 0
     error(res.stderr().strip())
 endif
 
-deps_installed = fs.parent(meson.current_source_dir()) / 'deps' / 'installed'
+deps_installed = fs.parent(meson.current_source_dir()) / 'third-party-installed'
 
 deps_inc_dirs = [deps_installed / 'include']
 deps_lib_dirs = [deps_installed / 'lib']
+
+sleef_inc_dir = include_directories(deps_inc_dirs[0])
+sleef_dep = declare_dependency(
+    link_args: ['-L' + deps_lib_dirs[0], '-lsleef', '-Wl,-rpath,' + deps_lib_dirs[0]],
+    include_directories: sleef_inc_dir,
+)
 
 # see https://github.com/mesonbuild/meson/issues/7943
 # The strategy for the below required dependencies are as follows
@@ -84,24 +93,14 @@ deps_lib_dirs = [deps_installed / 'lib']
 #   ones installed in ./buildscripts
 
 # these three are picked up due to the installation script in ./buildscripts
-blaze_dep = dependency('blaze')
+blaze_dep = dependency('blaze' )
 blaze_tensor_dep = dependency('BlazeTensor')
-sleef_dep = dependency('sleef', required: false)
-if not sleef_dep.found()
-    sleef_dep = declare_dependency(
-        include_directories: deps_inc_dirs,
-        dependencies: cc.find_library('sleef', dirs: deps_lib_dirs),
-    )
-endif
 
 # blaze and deps commonly used together
 blaze_deps = [blaze_dep, blaze_tensor_dep, sleef_dep]
 
 # this is picked up due to the installation script in ./buildscripts
-brigand_dep = dependency('brigand', required: false)
-if not brigand_dep.found()
-    brigand_dep = declare_dependency(include_directories: deps_inc_dirs)
-endif
+brigand_dep = declare_dependency(include_directories: deps_inc_dirs)
 
 # this is picked up from ./subprojects
 cxxopts_dep = dependency('cxxopts', fallback : 'cxxopts')
