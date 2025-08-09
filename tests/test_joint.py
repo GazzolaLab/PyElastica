@@ -18,10 +18,6 @@ from scipy.spatial.transform import Rotation
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
 
-# seed random number generator
-rng = np.random.default_rng(0)
-
-
 def test_freejoint():
 
     # Some rod properties. We need them for constructer, they are not used.
@@ -217,6 +213,9 @@ def test_hingejoint():
         rod2.external_torques[..., rod2_index], torque_rod2, atol=Tolerance.atol()
     )
 
+
+# seed random number generator
+rng = np.random.default_rng(42)
 
 rest_euler_angles = [
     np.array([0.0, 0.0, 0.0]),

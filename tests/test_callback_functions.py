@@ -5,6 +5,8 @@ import os
 import logging
 import numpy as np
 from numpy.testing import assert_allclose
+
+
 from elastica.callback_functions import CallBackBaseClass, MyCallBack, ExportCallBack
 from elastica.utils import Tolerance
 import tempfile
@@ -23,12 +25,13 @@ class MockRod:
 
 class MockRodWithElements:
     def __init__(self, n_elems):
+        rng = np.random.default_rng(42)
         self.n_elems = n_elems
-        self.position_collection = np.random.rand(3, n_elems)
-        self.velocity_collection = np.random.rand(3, n_elems)
-        self.director_collection = np.random.rand(3, 3, n_elems)
-        self.external_forces = np.random.rand(3, n_elems)
-        self.external_torques = np.random.rand(3, n_elems)
+        self.position_collection = rng.random((3, n_elems))
+        self.velocity_collection = rng.random((3, n_elems))
+        self.director_collection = rng.random((3, 3, n_elems))
+        self.external_forces = rng.random((3, n_elems))
+        self.external_torques = rng.random((3, n_elems))
 
 
 class TestCallBackBaseClass:
@@ -54,13 +57,13 @@ class TestCallBackBaseClass:
 
 class TestMyCallBackClass:
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
-    def test_my_call_back_base_class(self, n_elems):
+    def test_my_call_back_base_class(self, rng, n_elems):
         """
         This test case is for testing MyCallBack function.
         """
         mock_rod = MockRodWithElements(n_elems)
 
-        time = np.random.rand(10)
+        time = rng.random(size=(10))
         current_step = list(range(10))
 
         step_skip = 1
@@ -211,7 +214,7 @@ class TestExportCallBackClass:
             saved_path_name = callback.get_last_saved_path()
             assert saved_path_name is None, f"{saved_path_name} should be None"
 
-    def test_export_call_back_close_test(self):
+    def test_export_call_back_close_test(self, rng):
         mock_rod = MockRodWithElements(5)
         with tempfile.TemporaryDirectory() as temp_dir_path:
             callback = ExportCallBack(
@@ -223,7 +226,7 @@ class TestExportCallBackClass:
             saved_path_name = callback.get_last_saved_path()
             assert os.path.exists(saved_path_name), "File is not saved."
 
-    def test_export_call_back_clear_test(self):
+    def test_export_call_back_clear_test(self, rng):
         mock_rod = MockRodWithElements(5)
         with tempfile.TemporaryDirectory() as temp_dir_path:
             callback = ExportCallBack(
@@ -236,14 +239,14 @@ class TestExportCallBackClass:
             assert os.path.exists(saved_path_name), "File is not saved."
 
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
-    def test_export_call_back_class_tempfile_option(self, tmp_path, n_elems):
+    def test_export_call_back_class_tempfile_option(self, rng, tmp_path, n_elems):
         """
         This test case is for testing ExportCallBack function, saving into temporary files.
         """
         import pickle
 
         mock_rod = MockRodWithElements(n_elems)
-        time = np.random.rand(10)
+        time = rng.random(size=(10))
         current_step = list(range(10))
 
         step_skip = 1
@@ -284,13 +287,13 @@ class TestExportCallBackClass:
         callback._tempfile.close()
 
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
-    def test_export_call_back_class_npz_option(self, n_elems):
+    def test_export_call_back_class_npz_option(self, rng, n_elems):
         """
         This test case is for testing ExportCallBack function, saving into numpy files.
         """
         filename = "test_rod"
         mock_rod = MockRodWithElements(n_elems)
-        time = np.random.rand(10)
+        time = rng.random(size=(10))
         current_step = list(range(10))
 
         step_skip = 1
@@ -341,7 +344,7 @@ class TestExportCallBackClass:
                 )
 
     @pytest.mark.parametrize("n_elems", [2, 4, 16])
-    def test_export_call_back_class_pickle_option(self, n_elems):
+    def test_export_call_back_class_pickle_option(self, rng, n_elems):
         """
         This test case is for testing ExportCallBack function, saving into pickle files.
         """
@@ -349,7 +352,7 @@ class TestExportCallBackClass:
 
         filename = "test_rod"
         mock_rod = MockRodWithElements(n_elems)
-        time = np.random.rand(10)
+        time = rng.random(size=(10))
         current_step = list(range(10))
 
         step_skip = 1

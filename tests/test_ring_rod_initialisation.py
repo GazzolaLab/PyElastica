@@ -179,7 +179,7 @@ class MockRingRodForTest:
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_deprecated_rod_nu_option(n_elems):
+def test_deprecated_rod_nu_option(rng, n_elems):
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
@@ -190,8 +190,8 @@ def test_deprecated_rod_nu_option(n_elems):
     youngs_modulus = 1e6
     poisson_ratio = 0.3
     correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0] = np.random.randn(n_elems + 1)
-    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[0] = rng.standard_normal(n_elems + 1)
+    correct_position[1] = rng.standard_normal(n_elems + 1)
     correct_position[..., 0] = start
     correct_error_message = (
         "The option to set damping coefficient (nu) for the rod during rod\n"
@@ -216,7 +216,7 @@ def test_deprecated_rod_nu_option(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_input_and_output_position_array(n_elems):
+def test_input_and_output_position_array(rng, n_elems):
     """
     This test, tests the case if the input position array
     valid, allocate sets input position as the rod position array.
@@ -237,8 +237,8 @@ def test_input_and_output_position_array(n_elems):
 
     # Check if the input position vector and output position vector are valid and same
     correct_position = np.zeros((3, n_elems))
-    correct_position[0] = np.random.randn(n_elems)
-    correct_position[1] = np.random.randn(n_elems)
+    correct_position[0] = rng.standard_normal(n_elems)
+    correct_position[1] = rng.standard_normal(n_elems)
     center_position = np.mean(correct_position, axis=1)
     mockrod = MockRingRodForTest.ring_rod(
         n_elems,
@@ -257,7 +257,7 @@ def test_input_and_output_position_array(n_elems):
 
 @pytest.mark.xfail(raises=AssertionError)
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_input_and_position_array_for_different_center_offset(n_elems):
+def test_input_and_position_array_for_different_center_offset(rng, n_elems):
     """
     This function tests fail check, for which input position array
     first element is not user defined center_offset position.
@@ -269,7 +269,7 @@ def test_input_and_position_array_for_different_center_offset(n_elems):
     -------
 
     """
-    center_offset = np.random.randn(3)
+    center_offset = rng.standard_normal(3)
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -278,7 +278,7 @@ def test_input_and_position_array_for_different_center_offset(n_elems):
     youngs_modulus = 1e6
 
     # Check if the input position vector center_offset position is different than the user defined center_offset position
-    correct_position = np.random.randn(3, n_elems)
+    correct_position = rng.standard_normal((3, n_elems))
     mockrod = MockRingRodForTest.ring_rod(
         n_elems,
         center_offset,
@@ -787,7 +787,7 @@ def test_density_invalid_shape(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_rest_sigma_and_kappa_user_input(n_elems):
+def test_rest_sigma_and_kappa_user_input(rng, n_elems):
     """
     This test is checking if user defined sigma is used to
     allocate rest sigma of the rod.
@@ -807,8 +807,8 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
     density = 1000
     youngs_modulus = 1e6
 
-    input_rest_sigma = np.random.randn(3, n_elems)
-    input_rest_kappa = np.random.randn(3, n_elems)
+    input_rest_sigma = rng.standard_normal((3, n_elems))
+    input_rest_kappa = rng.standard_normal((3, n_elems))
 
     mockrod = MockRingRodForTest.ring_rod(
         n_elems,
@@ -834,7 +834,7 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
 
 @pytest.mark.xfail(raises=AssertionError)
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_rest_sigma_and_kappa_invalid_shape(n_elems):
+def test_rest_sigma_and_kappa_invalid_shape(rng, n_elems):
     """
     This test, is checking AssertionErrors for invalid shapes for
     rest sigma and rest kappa
@@ -854,8 +854,8 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
     density = 1000
     youngs_modulus = 1e6
 
-    input_rest_sigma = np.random.randn(3, n_elems).reshape(n_elems, 3)
-    input_rest_kappa = np.random.randn(3, n_elems - 1).reshape(n_elems - 1, 3)
+    input_rest_sigma = rng.standard_normal((3, n_elems)).reshape(n_elems, 3)
+    input_rest_kappa = rng.standard_normal((3, n_elems - 1)).reshape(n_elems - 1, 3)
 
     MockRingRodForTest.ring_rod(
         n_elems,
@@ -950,18 +950,18 @@ def test_validity_of_allocated(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [80])
-def test_ring_rod(n_elems):
+def test_ring_rod(rng, n_elems):
 
     # setting up test params
-    center_offset = np.random.rand(3)
+    center_offset = rng.random(3)
     direction = np.array([1.0, 0, 0.0])
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     binormal = np.cross(direction, normal)
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
+    density = rng.uniform(1, 10)
 
     # Youngs Modulus [Pa]
     E = 1e6

@@ -216,7 +216,8 @@ class DampedSimpleHarmonicOscillatorSystem(
 #         self.initial_value = np.tile(
 #             np.eye(3, 3).reshape(3, 3, 1), n_frames
 #         )  # Start aligned initially
-#         self.omega = np.random.randn(3, n_frames)  # Randomly rotate frames
+#         rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
+#         self.omega = rng.standard_normal((3, n_frames))  # Randomly rotate frames
 #         # self.omega /= np.norm(self.omega, ord=2, axis=0)
 #         self._state = self.initial_value.copy()
 #

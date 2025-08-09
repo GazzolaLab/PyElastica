@@ -3,7 +3,6 @@ __doc__ = """ Test scripts for rotation kernels in Elastica Numba implementation
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-import sys
 
 from elastica._rotations import (
     _get_rotation_matrix,
@@ -14,8 +13,8 @@ from elastica._rotations import (
 from elastica.utils import Tolerance
 
 
-@pytest.mark.parametrize("zcomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("zcomp", [0.5, 1.0])
+@pytest.mark.parametrize("dt", [0.3, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     vector_collection = np.array([0.0, 0.0, zcomp]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -39,8 +38,8 @@ def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
-@pytest.mark.parametrize("ycomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("ycomp", [0.7, 1.0])
+@pytest.mark.parametrize("dt", [0.4, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     vector_collection = np.array([0.0, ycomp, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -58,8 +57,8 @@ def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
-@pytest.mark.parametrize("xcomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("xcomp", [0.6, 1.0])
+@pytest.mark.parametrize("dt", [0.2, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_x(xcomp, dt):
     vector_collection = np.array([xcomp, 0.0, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -137,10 +136,10 @@ def test_get_rotation_matrix_correctness_against_canned_example():
 
 
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
-def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
+def test_get_rotation_matrix_correctness_across_blocksizes(blocksize, rng):
     dim = 3
-    dt = np.random.random_sample()
-    vector_collection = np.random.randn(dim).reshape(-1, 1)
+    dt = rng.random()
+    vector_collection = rng.standard_normal(dim).reshape(-1, 1)
     # No need for copying the vector collection here, as we now create
     # new arrays inside
     correct_rot_mat_collection = _get_rotation_matrix(dt, vector_collection)
@@ -154,11 +153,11 @@ def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
     assert_allclose(test_rot_mat_collection, correct_rot_mat_collection)
 
 
-def test_get_rotation_matrix_gives_orthonormal_matrices():
+def test_get_rotation_matrix_gives_orthonormal_matrices(rng):
     dim = 3
     blocksize = 16
-    dt = np.random.random_sample()
-    rot_mat = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
+    dt = rng.random()
+    rot_mat = _get_rotation_matrix(dt, rng.standard_normal((dim, blocksize)))
 
     r_rt = np.einsum("ijk,ljk->ilk", rot_mat, rot_mat)
     rt_r = np.einsum("jik,jlk->ilk", rot_mat, rot_mat)
@@ -169,11 +168,13 @@ def test_get_rotation_matrix_gives_orthonormal_matrices():
     assert_allclose(rt_r, test_mat, atol=Tolerance.atol())
 
 
-def test_get_rotation_matrix_gives_unit_determinant():
+def test_get_rotation_matrix_gives_unit_determinant(rng):
     dim = 3
     blocksize = 16
-    dt = np.random.random_sample()
-    test_rot_mat_collection = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
+    dt = rng.random()
+    test_rot_mat_collection = _get_rotation_matrix(
+        dt, rng.standard_normal((dim, blocksize))
+    )
 
     test_det_collection = np.linalg.det(test_rot_mat_collection.T)
     correct_det_collection = 1.0 + 0.0 * test_det_collection
@@ -372,15 +373,3 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_direc
     assert test_axis_collection.shape == (3, blocksize - 1)
     assert_allclose(test_axis_collection, correct_axis_collection)
     assert_allclose(test_scaling, 0.0 * test_scaling + dtheta_di, atol=Tolerance.atol())
-
-
-###############################################################################
-##################### Implementation tests finis ##############################
-###############################################################################
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        exec(sys.argv[1])
-    else:
-        from pytest import main
-
-        main([__file__])

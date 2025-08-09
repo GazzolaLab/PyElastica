@@ -9,7 +9,7 @@ from elastica.rigidbody import Cylinder
 
 
 # tests Initialisation of cylinder
-def test_cylinder_initialization():
+def test_cylinder_initialization(rng):
     """
     This test case is for testing initialization of rigid cylinder and it checks the
     validity of the members of Cylinder class.
@@ -19,14 +19,14 @@ def test_cylinder_initialization():
 
     """
     # setting up test params
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    start = rng.random(3)
+    direction = 5 * rng.random(3)
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = density * np.pi * base_radius**2 * base_length
 
     # Second moment of inertia
@@ -74,7 +74,7 @@ def test_cylinder_initialization():
     )
 
 
-def test_cylinder_update_accelerations():
+def test_cylinder_update_accelerations(rng):
     """
     This test is testing the update acceleration method of cylinder class.
 
@@ -83,15 +83,15 @@ def test_cylinder_update_accelerations():
 
     """
 
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    start = rng.random(3)
+    direction = 5 * rng.random(3)
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
     volume = np.pi * base_radius**2 * base_length
-    density = np.random.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = volume * density
     test_cylinder = Cylinder(
         start, direction, normal, base_length, base_radius, density
@@ -101,8 +101,8 @@ def test_cylinder_update_accelerations():
         test_cylinder.inv_mass_second_moment_of_inertia.reshape(3, 3)
     )
 
-    external_forces = np.random.randn(3).reshape(3, 1)
-    external_torques = np.random.randn(3).reshape(3, 1)
+    external_forces = rng.standard_normal(3).reshape(3, 1)
+    external_torques = rng.standard_normal(3).reshape(3, 1)
 
     correct_acceleration = external_forces / mass
     correct_alpha = inv_mass_second_moment_of_inertia @ external_torques.reshape(3)
@@ -123,7 +123,7 @@ def test_cylinder_update_accelerations():
     )
 
 
-def test_compute_position_center_of_mass():
+def test_compute_position_center_of_mass(rng):
     """
     This test is testing compute position center of mass method of Cylinder class.
 
@@ -132,14 +132,14 @@ def test_compute_position_center_of_mass():
 
     """
 
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    start = rng.random(3)
+    direction = 5 * rng.random(3)
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
+    density = rng.uniform(1, 10)
     test_cylinder = Cylinder(
         start, direction, normal, base_length, base_radius, density
     )
@@ -151,7 +151,7 @@ def test_compute_position_center_of_mass():
     assert_allclose(correct_position, test_position, atol=Tolerance.atol())
 
 
-def test_compute_translational_energy():
+def test_compute_translational_energy(rng):
     """
     This test is testing compute translational energy function.
 
@@ -159,22 +159,22 @@ def test_compute_translational_energy():
     -------
 
     """
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    start = rng.random(3)
+    direction = 5 * rng.random(3)
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
     volume = np.pi * base_radius**2 * base_length
-    density = np.random.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = volume * density
 
     test_cylinder = Cylinder(
         start, direction, normal, base_length, base_radius, density
     )
 
-    speed = np.random.randn()
+    speed = rng.standard_normal()
     test_cylinder.velocity_collection[2] = speed
 
     correct_energy = 0.5 * mass * speed**2

@@ -12,22 +12,22 @@ from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 class MockRigidBodyForTesting(RigidBodyBase):
     def __init__(self):
         super().__init__()
-        self.radius = np.random.uniform(low=1, high=5)
-        self.length = np.random.uniform(low=1, high=10)
-        self.density = np.random.uniform(low=1, high=10)
+        # Fixed seed RNG for reproducible test data
+        rng = np.random.default_rng(42)
+        self.radius = rng.uniform(low=1, high=5)
+        self.length = rng.uniform(low=1, high=10)
+        self.density = rng.uniform(low=1, high=10)
         self.volume = self.length * self.radius * self.radius
         self.mass = np.array(self.volume * self.density)
 
-        self.position_collection = np.random.rand(3, 1)
-        self.external_forces = np.random.rand(3, 1)
-        self.external_torques = np.random.rand(3, 1)
+        self.position_collection = rng.random((3, 1))
+        self.external_forces = rng.random((3, 1))
+        self.external_torques = rng.random((3, 1))
 
-        self.director_collection = sp.linalg.qr(np.random.rand(3, 3))[0].reshape(
-            3, 3, 1
-        )
+        self.director_collection = sp.linalg.qr(rng.random((3, 3)))[0].reshape(3, 3, 1)
 
         mass_second_moi_diag = (
-            np.random.uniform(low=1, high=2, size=(3,))
+            rng.uniform(low=1, high=2, size=(3,))
             * self.radius
             * self.length
             * self.density
@@ -40,10 +40,10 @@ class MockRigidBodyForTesting(RigidBodyBase):
             1.0 / mass_second_moi_diag
         ).reshape((3, 3, 1))
 
-        self.velocity_collection = np.random.rand(3, 1)
-        self.acceleration_collection = np.random.rand(3, 1)
-        self.omega_collection = np.random.rand(3, 1)
-        self.alpha_collection = np.random.rand(3, 1)
+        self.velocity_collection = rng.random((3, 1))
+        self.acceleration_collection = rng.random((3, 1))
+        self.omega_collection = rng.random((3, 1))
+        self.alpha_collection = rng.random((3, 1))
 
 
 @pytest.mark.parametrize("n_bodies", [1, 2, 5, 6])

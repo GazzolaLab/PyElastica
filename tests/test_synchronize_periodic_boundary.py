@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 from elastica._synchronize_periodic_boundary import (
     _synchronize_periodic_boundary_of_matrix_collection,
     _synchronize_periodic_boundary_of_vector_collection,
@@ -13,7 +14,7 @@ from tests.test_rod.mock_rod import MockTestRingRod
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 40])
-def test_synchronize_periodic_boundary_vector(n_elems):
+def test_synchronize_periodic_boundary_vector(rng, n_elems):
     """
     Testing the validity of _synchronize_periodic_boundary_of_vector_collection function.
 
@@ -26,7 +27,7 @@ def test_synchronize_periodic_boundary_vector(n_elems):
 
     """
 
-    input_vector = np.random.random((3, n_elems + 3))
+    input_vector = rng.random((3, n_elems + 3))
 
     periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
@@ -48,7 +49,7 @@ def test_synchronize_periodic_boundary_vector(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 40])
-def test_synchronize_periodic_boundary_matrix(n_elems):
+def test_synchronize_periodic_boundary_matrix(rng, n_elems):
     """
     Testing the validity of _synchronize_periodic_boundary_of_matrix_collection function.
 
@@ -61,7 +62,7 @@ def test_synchronize_periodic_boundary_matrix(n_elems):
 
     """
 
-    input_matrix = np.random.random((3, 3, n_elems + 3))
+    input_matrix = rng.random((3, 3, n_elems + 3))
 
     periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
@@ -83,7 +84,7 @@ def test_synchronize_periodic_boundary_matrix(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 40])
-def test_synchronize_periodic_boundary_scalar(n_elems):
+def test_synchronize_periodic_boundary_scalar(rng, n_elems):
     """
     Testing the validity of _synchronize_periodic_boundary_of_scalar_collection function.
 
@@ -96,7 +97,7 @@ def test_synchronize_periodic_boundary_scalar(n_elems):
 
     """
 
-    input_matrix = np.random.random((n_elems + 3))
+    input_matrix = rng.random((n_elems + 3))
 
     periodic_idx = np.zeros((2, 3), dtype=np.int32)
     periodic_idx[0, 0] = 0
@@ -117,15 +118,15 @@ def test_synchronize_periodic_boundary_scalar(n_elems):
     assert_allclose(correct_matrix, input_matrix, atol=Tolerance.atol())
 
 
-def test_ConstrainPeriodicBoundaries():
+def test_ConstrainPeriodicBoundaries(rng):
     n_elem = 29
     test_rod = MockTestRingRod()
     fixed_rod = _ConstrainPeriodicBoundaries(_system=test_rod)
-    test_position_collection = np.random.rand(3, n_elem + 3)
+    test_position_collection = rng.random(size=(3, n_elem + 3))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_director_collection = np.random.rand(3, 3, n_elem + 2)
+    test_director_collection = rng.random(size=(3, 3, n_elem + 2))
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -154,11 +155,11 @@ def test_ConstrainPeriodicBoundaries():
         test_director_collection, test_rod.director_collection, atol=Tolerance.atol()
     )
 
-    test_velocity_collection = np.random.rand(3, n_elem + 3)
+    test_velocity_collection = rng.random(size=(3, n_elem + 3))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_omega_collection = np.random.rand(3, n_elem + 2)
+    test_omega_collection = rng.random(size=(3, n_elem + 2))
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array

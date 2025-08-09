@@ -38,7 +38,9 @@ class TestNoForces:
         mock_rod = MockRod()
         ext_no_forces = NoForces()
 
-        correct_external_forces = np.random.rand(3, 20)
+        correct_external_forces = (
+            np.ones((3, 20)) * 0.5
+        )  # Fixed arbitrary values instead of random
         mock_rod.external_forces = correct_external_forces
 
         ext_no_forces.apply_forces(mock_rod)
@@ -54,7 +56,9 @@ class TestNoForces:
         mock_rod = MockRod()
         ext_no_forces = NoForces()
 
-        correct_external_torques = np.random.rand(3, 20)
+        correct_external_torques = (
+            np.ones((3, 20)) * 0.3
+        )  # Fixed arbitrary values instead of random
         mock_rod.external_torques = correct_external_torques
 
         ext_no_forces.apply_torques(mock_rod)
@@ -66,13 +70,13 @@ class TestNoForces:
 
 # The minimum number of nodes in a system is 2
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
-def test_gravity_forces(n_elem):
+def test_gravity_forces(n_elem, rng):
     # tests uniform gravity
     dim = 3
 
     mock_rod = MockRod()
-    mass = np.random.randn(n_elem)
-    acceleration_gravity = np.random.rand(dim)
+    mass = rng.standard_normal(n_elem)
+    acceleration_gravity = rng.random(dim)
     correct_external_forces = (
         mass * np.broadcast_to(acceleration_gravity, (n_elem, dim)).T
     )
@@ -91,7 +95,7 @@ def test_gravity_forces(n_elem):
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
 @pytest.mark.parametrize("rampupTime", [5, 10, 15])
 @pytest.mark.parametrize("time", [0, 8, 20])
-def test_endpoint_forces(n_elem, rampupTime, time):
+def test_endpoint_forces(rng, n_elem, rampupTime, time):
     dim = 3
 
     mock_rod = MockRod()
@@ -102,8 +106,8 @@ def test_endpoint_forces(n_elem, rampupTime, time):
     elif rampupTime <= time:
         factor = 1.0
 
-    start_force = np.random.rand(dim)
-    end_force = np.random.rand(dim)
+    start_force = rng.random(dim)
+    end_force = rng.random(dim)
 
     ext_endpt_forces = EndpointForces(start_force, end_force, rampupTime)
     ext_endpt_forces.apply_forces(mock_rod, time)
@@ -119,7 +123,7 @@ def test_endpoint_forces(n_elem, rampupTime, time):
 # The minimum number of nodes in a system is 2
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
 @pytest.mark.parametrize("torques", [5, 10, 15])
-def test_uniform_torques(n_elem, torques, time=0.0):
+def test_uniform_torques(rng, n_elem, torques, time=0.0):
     dim = 3
 
     mock_rod = MockRod()
@@ -129,7 +133,7 @@ def test_uniform_torques(n_elem, torques, time=0.0):
         np.identity(3)[:, :, np.newaxis], n_elem, axis=2
     )
 
-    torque = np.random.rand()
+    torque = rng.random()
     direction = np.array([1.0, 0.0, 0.0])
 
     uniform_torques = UniformTorques(torque, direction)
@@ -141,14 +145,14 @@ def test_uniform_torques(n_elem, torques, time=0.0):
 # The minimum number of nodes in a system is 2
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
 @pytest.mark.parametrize("forces", [5, 10, 15])
-def test_uniform_forces(n_elem, forces, time=0.0):
+def test_uniform_forces(rng, n_elem, forces, time=0.0):
     dim = 3
 
     mock_rod = MockRod()
     mock_rod.external_forces = np.zeros((dim, n_elem + 1))
     mock_rod.n_elems = n_elem
 
-    force = np.random.rand()
+    force = rng.random()
     direction = np.array([0.0, 1.0, 0.0])
 
     uniform_forces = UniformForces(force, direction)
@@ -159,7 +163,7 @@ def test_uniform_forces(n_elem, forces, time=0.0):
 
 # Now test muscle torques
 @pytest.mark.parametrize("n_elem", [3, 4, 16])
-def test_muscle_torques(n_elem):
+def test_muscle_torques(n_elem, rng):
     # tests muscle torques
     dim = 3
 
@@ -225,13 +229,13 @@ def test_muscle_torques(n_elem):
 @pytest.mark.parametrize("n_elem", [2, 4, 16])
 @pytest.mark.parametrize("ramp_up_time", [5, 10, 15])
 @pytest.mark.parametrize("time", [0, 8, 20])
-def test_endpoint_forces_sinusoidal(n_elem, ramp_up_time, time):
+def test_endpoint_forces_sinusoidal(rng, n_elem, ramp_up_time, time):
     dim = 3
 
     mock_rod = MockRod()
     mock_rod.external_forces = np.zeros((dim, n_elem))
-    start_force_mag = np.random.rand()
-    end_force_mag = np.random.rand()
+    start_force_mag = rng.random()
+    end_force_mag = rng.random()
 
     direction = np.array([0, 0, 1])
     normal = np.array([0, 1, 0])
@@ -267,7 +271,7 @@ def test_endpoint_forces_sinusoidal(n_elem, ramp_up_time, time):
 
 
 @pytest.mark.parametrize("n_elem", [33, 59, 100])
-def test_inplace_addition(n_elem):
+def test_inplace_addition(rng, n_elem):
     """
     This test is for inplace addition written using Numba njit functions
     Parameters
@@ -281,8 +285,8 @@ def test_inplace_addition(n_elem):
 
     ndim = 3
 
-    first_input_vector = np.random.randn(ndim, n_elem)
-    second_input_vector = np.random.randn(ndim, n_elem)
+    first_input_vector = rng.standard_normal((ndim, n_elem))
+    second_input_vector = rng.standard_normal((ndim, n_elem))
 
     correct_vector = first_input_vector + second_input_vector
 
@@ -293,7 +297,7 @@ def test_inplace_addition(n_elem):
 
 
 @pytest.mark.parametrize("n_elem", [33, 59, 100])
-def test_inplace_substraction(n_elem):
+def test_inplace_substraction(rng, n_elem):
     """
     This test is for inplace substraction written using Numba njit functions
     Parameters
@@ -307,8 +311,8 @@ def test_inplace_substraction(n_elem):
 
     ndim = 3
 
-    first_input_vector = np.random.randn(ndim, n_elem)
-    second_input_vector = np.random.randn(ndim, n_elem)
+    first_input_vector = rng.standard_normal((ndim, n_elem))
+    second_input_vector = rng.standard_normal((ndim, n_elem))
 
     correct_vector = first_input_vector - second_input_vector
 

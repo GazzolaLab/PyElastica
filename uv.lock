@@ -1132,6 +1132,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-html" },
     { name = "pytest-mock" },
+    { name = "pytest-rng" },
 ]
 docs = [
     { name = "docutils" },
@@ -1168,6 +1169,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "pytest-html", marker = "extra == 'dev'" },
     { name = "pytest-mock", marker = "extra == 'dev'" },
+    { name = "pytest-rng", marker = "extra == 'dev'" },
     { name = "readthedocs-sphinx-search", marker = "extra == 'docs'", specifier = ">=0.1.1,<0.4.0" },
     { name = "scipy" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=6.1" },
@@ -1270,6 +1272,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c6/90/a955c3ab35ccd41ad4de556596fa86685bf4fc5ffcc62d22d856cfd4e29a/pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0", size = 32814 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f2/3b/b26f90f74e2986a82df6e7ac7e319b8ea7ccece1caec9f8ab6104dc70603/pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f", size = 9863 },
+]
+
+[[package]]
+name = "pytest-rng"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e1/b7/11c928ffabbb79d86cc120b9b67b74c2ac0d132b3ea19f14024f7f0a0e4c/pytest-rng-1.0.0.tar.gz", hash = "sha256:9d9ee96557246756072133ff9b990588f28f12d3e80357cad959ef0b05aed9fa", size = 14789 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ac/66/40c88e87c8731d96bb2f9a49329785d24236debb9685f6aaccc52536e697/pytest_rng-1.0.0-py3-none-any.whl", hash = "sha256:346e76a34f19c1f70e1059567460df9edf34aa6b41441c8707bf9ed40446b9c7", size = 7992 },
 ]
 
 [[package]]

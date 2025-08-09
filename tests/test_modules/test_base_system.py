@@ -24,13 +24,15 @@ class TestBaseSystemCollection:
 
     @pytest.fixture(scope="class")
     def load_collection(self):
+        rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
+
         bsc = BaseSystemCollection()
         bsc.extend_allowed_types((int, float, str, np.ndarray))
         # Bypass check, but its fine for testing
         bsc.append(3)
         bsc.append(5.0)
         bsc.append("a")
-        bsc.append(np.random.randn(3, 5))
+        bsc.append(rng.standard_normal((3, 5)))
         return bsc
 
     def test_len(self, load_collection):
