@@ -1,15 +1,17 @@
 import numpy as np
+from numpy.typing import NDArray
 from matplotlib import pyplot as plt
+import matplotlib.animation as manimation
 from matplotlib.colors import to_rgb
 from tqdm import tqdm
 
 
 def plot_snake_velocity(
     plot_params: dict,
-    period,
-    filename="slithering_snake_velocity.png",
-    SAVE_FIGURE=False,
-):
+    period: float,
+    filename: str = "slithering_snake_velocity.png",
+    SAVE_FIGURE: bool = False,
+) -> None:
     time_per_period = np.array(plot_params["time"]) / period
     avg_velocity = np.array(plot_params["avg_velocity"])
 
@@ -51,12 +53,11 @@ def plot_snake_velocity(
 
 def plot_video(
     plot_params: dict,
-    video_name="video.mp4",
-    fps=15,
-    xlim=(0, 4),
-    ylim=(-1, 1),
-):  # (time step, x/y/z, node)
-    import matplotlib.animation as manimation
+    video_name: str = "video.mp4",
+    fps: int = 15,
+    xlim: tuple[float, float] = (0, 4),
+    ylim: tuple[float, float] = (-1, 1),
+) -> None:  # (time step, x/y/z, node)
 
     positions_over_time = np.array(plot_params["position"])
 
@@ -85,7 +86,9 @@ def plot_video(
     plt.close(plt.gcf())
 
 
-def compute_projected_velocity(plot_params: dict, period):
+def compute_projected_velocity(
+    plot_params: dict, period: float
+) -> tuple[NDArray[np.float64], NDArray[np.float64], float, float]:
 
     time_per_period = np.array(plot_params["time"]) / period
     avg_velocity = np.array(plot_params["avg_velocity"])
@@ -145,11 +148,11 @@ def compute_projected_velocity(plot_params: dict, period):
 
 def plot_curvature(
     plot_params: dict,
-    rest_lengths,
-    period,
-    save_fig=False,
-    filename="continuum_snake_curvature",
-):
+    rest_lengths: NDArray[np.float64],
+    period: float,
+    save_fig: bool = False,
+    filename: str = "continuum_snake_curvature",
+) -> None:
     s = np.cumsum(rest_lengths)
     L0 = s[-1]
     s = s / L0
