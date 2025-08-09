@@ -1,5 +1,4 @@
-""" Axis Aligned Bounding Boxes for coarse collision detection
-"""
+"""Axis Aligned Bounding Boxes for coarse collision detection"""
 
 from typing_extensions import Self
 

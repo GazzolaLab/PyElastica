@@ -1,4 +1,4 @@
-""" POVray macros for pyelastica
+"""POVray macros for pyelastica
 
 This module includes utility methods to support POVray rendering.
 

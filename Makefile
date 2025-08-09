@@ -25,7 +25,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	uv run black --version
-	uv run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
+	uv run black --config pyproject.toml elastica tests examples
 
 .PHONY: black-check
 black-check:

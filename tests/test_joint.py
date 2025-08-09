@@ -379,7 +379,6 @@ from elastica.rigidbody import RigidBodyBase
 
 
 def mock_rod_init(self):
-
     "Initializing Rod"
     "Details of initialization are given in test_contact_specific_functions.py"
 
@@ -396,7 +395,6 @@ def mock_rod_init(self):
 
 
 def mock_rigid_body_init(self):
-
     "Initializing Rigid Body"
     "Details of initialization are given in test_contact_specific_functions.py"
 

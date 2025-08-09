@@ -1,5 +1,5 @@
-""" Flexible swinging pendulum test-case
-    isort:skip_file
+"""Flexible swinging pendulum test-case
+isort:skip_file
 """
 
 import numpy as np
