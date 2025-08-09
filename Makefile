@@ -53,11 +53,11 @@ format-codestyle: black autoflake-format
 .PHONY: mypy
 mypy:
 	uv run mypy --config-file pyproject.toml elastica  # Main
-	uv run mypy --config-file pyproject.toml --explicit-package-bases \  # Examples
+	uv run mypy --config-file pyproject.toml --explicit-package-bases \
 		examples/AxialStretchingCase \
 		examples/ButterflyCase \
 		examples/CatenaryCase \
-		examples/KnotCase \your interest in PyElastica.
+		examples/KnotCase \
 		examples/ContinuumSnakeCase
 
 .PHONY: test

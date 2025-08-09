@@ -78,7 +78,9 @@ class Damping:
             sys_id = damping.id()
             damping_instance = damping.instantiate(self[sys_id])
 
-            dampen_rate = functools.partial(damping_instance.dampen_rates, self[sys_id])
+            dampen_rate = functools.partial(
+                damping_instance.dampen_rates, system=self[sys_id]
+            )
             self._feature_group_constrain_rates.add_operators(damping, [dampen_rate])
 
         self._damping_list = []

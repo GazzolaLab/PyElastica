@@ -7,6 +7,8 @@ Provides the contact interface to apply contact forces between objects
 """
 from typing import Type, Any
 from typing_extensions import Self
+
+import functools
 from elastica.typing import (
     SystemIdxType,
     OperatorType,
@@ -86,7 +88,9 @@ class Contact:
                 self[first_sys_idx],
                 self[second_sys_idx],
             )
-            func: OperatorType = lambda time: contact_instance.apply_contact(
+
+            func = functools.partial(
+                contact_instance.apply_contact,
                 system_one=self[first_sys_idx],
                 system_two=self[second_sys_idx],
             )

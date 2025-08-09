@@ -50,6 +50,7 @@ class FreeJoint:
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
         Apply joint force to the connected rod objects.
@@ -93,6 +94,7 @@ class FreeJoint:
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
         Apply restoring joint torques to the connected rod objects.
@@ -174,6 +176,7 @@ class HingeJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
@@ -183,6 +186,7 @@ class HingeJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
@@ -281,6 +285,7 @@ class FixedJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
@@ -290,6 +295,7 @@ class FixedJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies

@@ -4,7 +4,6 @@ __doc__ = """
 Built in damper module implementations
 """
 
-import logging
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, TypeAlias, Callable
 
@@ -159,10 +158,6 @@ class AnalyticalLinearDamper(DamperBase):
             and (translational_damping_constant is None)
             and (rotational_damping_constant is None)
         ):
-            logging.warning(
-                "Analytical linear damping using generic damping constant "
-                "will be deprecated in 0.4.0"
-            )
             self._dampen_rates_protocol = self._deprecated_damping_protocol(
                 damping_constant=damping_constant, time_step=time_step
             )
