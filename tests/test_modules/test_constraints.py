@@ -68,8 +68,9 @@ class TestConstraint:
 
     class MockRod:
         def __init__(self):
-            self.position_collection = np.random.randn(3, 8)
-            self.director_collection = np.random.randn(3, 3, 7)
+            rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
+            self.position_collection = rng.standard_normal((3, 8))
+            self.director_collection = rng.standard_normal((3, 3, 7))
 
     @pytest.mark.parametrize("position_indices", [(0,), (1, 2), (0, 3, 6)])
     def test_call_with_positions_kwargs(self, load_constraint, position_indices):

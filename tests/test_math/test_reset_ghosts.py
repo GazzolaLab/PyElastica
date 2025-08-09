@@ -9,7 +9,7 @@ import pytest
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 41])
-def test_reset_vector_ghosts(n_elems):
+def test_reset_vector_ghosts(n_elems, rng):
     """
     Test resetting of ghosts on vector collection, for Numba implementation.
 
@@ -18,9 +18,9 @@ def test_reset_vector_ghosts(n_elems):
 
     """
 
-    ghosts = np.random.randint(1, n_elems, int(n_elems / 4))
+    ghosts = rng.randint(1, n_elems, int(n_elems / 4))
 
-    input_vector = np.random.randn(3, n_elems)
+    input_vector = rng.standard_normal((3, n_elems))
 
     _reset_vector_ghost(input_vector, ghosts)
 
@@ -29,7 +29,7 @@ def test_reset_vector_ghosts(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [10, 30, 41])
-def test_reset_scalar_ghosts(n_elems):
+def test_reset_scalar_ghosts(n_elems, rng):
     """
     Test resetting of ghosts on scalar collection, for Numba implementation.
 
@@ -38,9 +38,9 @@ def test_reset_scalar_ghosts(n_elems):
 
     """
 
-    ghosts = np.random.randint(1, n_elems, int(n_elems / 4))
+    ghosts = rng.randint(1, n_elems, int(n_elems / 4))
 
-    input_vector = np.random.randn(n_elems)
+    input_vector = rng.standard_normal(n_elems)
 
     _reset_scalar_ghost(input_vector, ghosts)
 

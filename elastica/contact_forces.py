@@ -45,7 +45,6 @@ class NoContact(Generic[S1, S2]):
         """
         NoContact class does not need any input parameters.
         """
-        pass
 
     @property
     def _allowed_system_one(self) -> list[Type]:
@@ -77,6 +76,7 @@ class NoContact(Generic[S1, S2]):
         self,
         system_one: S1,
         system_two: S2,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
         Apply contact forces and torques between two system object..
@@ -88,7 +88,6 @@ class NoContact(Generic[S1, S2]):
         system_one
         system_two
         """
-        pass
 
 
 class RodRodContact(NoContact):
@@ -120,7 +119,12 @@ class RodRodContact(NoContact):
         self.k = k
         self.nu = nu
 
-    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: RodType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and RodType object.
 
@@ -226,7 +230,12 @@ class RodCylinderContact(NoContact):
         # Modify this list to include the allowed system types for contact
         return [Cylinder]
 
-    def apply_contact(self, system_one: RodType, system_two: Cylinder) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Cylinder,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -313,7 +322,12 @@ class RodSelfContact(NoContact):
         common_check_systems_validity(system_two, self._allowed_system_two)
         common_check_systems_different(system_one, system_two)
 
-    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: RodType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and itself.
 
@@ -392,7 +406,12 @@ class RodSphereContact(NoContact):
     def _allowed_system_two(self) -> list[Type]:
         return [Sphere]
 
-    def apply_contact(self, system_one: RodType, system_two: Sphere) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Sphere,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Sphere object.
 
@@ -485,7 +504,12 @@ class RodPlaneContact(NoContact):
     def _allowed_system_two(self) -> list[Type]:
         return [SurfaceBase]
 
-    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: SurfaceType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object.
 
@@ -577,7 +601,12 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
     def _allowed_system_two(self) -> list[Type]:
         return [SurfaceBase]
 
-    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: SurfaceType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object with anisotropic friction.
 
@@ -659,7 +688,12 @@ class CylinderPlaneContact(NoContact):
     def _allowed_system_two(self) -> list[Type]:
         return [SurfaceBase]
 
-    def apply_contact(self, system_one: Cylinder, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: Cylinder,
+        system_two: SurfaceType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         This function computes the plane force response on the cylinder, in the
         case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper

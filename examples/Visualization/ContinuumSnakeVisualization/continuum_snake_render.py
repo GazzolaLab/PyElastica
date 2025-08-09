@@ -1,4 +1,4 @@
-""" Rendering Script using POVray
+"""Rendering Script using POVray
 
 This script reads simulated data file to render POVray animation movie.
 The data file should contain dictionary of positions vectors and times.

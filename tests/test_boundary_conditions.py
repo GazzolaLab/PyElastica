@@ -2,6 +2,8 @@ __doc__ = """ Test Boundary conditions for in Elastica implementation"""
 
 # System imports
 import numpy as np
+
+
 from elastica.boundary_conditions import (
     ConstraintBase,
     FreeBC,
@@ -84,14 +86,14 @@ def test_constraint_base_properties_access():
 
 
 # tests free rod boundary conditions
-def test_free_rod():
+def test_free_rod(rng):
     test_rod = MockTestRod()
     free_rod = FreeBC(_system=test_rod)
-    test_position_collection = np.random.rand(3, 20)
+    test_position_collection = rng.random(size=(3, 20))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_director_collection = np.random.rand(3, 3, 20)
+    test_director_collection = rng.random(size=(3, 3, 20))
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -103,11 +105,11 @@ def test_free_rod():
         test_director_collection, test_rod.director_collection, atol=Tolerance.atol()
     )
 
-    test_velocity_collection = np.random.rand(3, 20)
+    test_velocity_collection = rng.random(size=(3, 20))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_omega_collection = np.random.rand(3, 20)
+    test_omega_collection = rng.random(size=(3, 20))
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -120,19 +122,19 @@ def test_free_rod():
     )
 
 
-def test_one_end_fixed_bc():
+def test_one_end_fixed_bc(rng):
 
     test_rod = MockTestRod()
-    start_position_collection = np.random.rand(3)
-    start_director_collection = np.random.rand(3, 3)
+    start_position_collection = rng.random(size=(3))
+    start_director_collection = rng.random(size=(3, 3))
     fixed_rod = OneEndFixedBC(
         start_position_collection, start_director_collection, _system=test_rod
     )
-    test_position_collection = np.random.rand(3, 20)
+    test_position_collection = rng.random(size=(3, 20))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_director_collection = np.random.rand(3, 3, 20)
+    test_director_collection = rng.random(size=(3, 3, 20))
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -146,11 +148,11 @@ def test_one_end_fixed_bc():
         test_director_collection, test_rod.director_collection, atol=Tolerance.atol()
     )
 
-    test_velocity_collection = np.random.rand(3, 20)
+    test_velocity_collection = rng.random(size=(3, 20))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_omega_collection = np.random.rand(3, 20)
+    test_omega_collection = rng.random(size=(3, 20))
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -173,8 +175,8 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     test_rod = MockTestRod()
     N = test_rod.n_elems
 
-    start_position_collection = rng.random((n_position_constraint, 3))
-    start_director_collection = rng.random((n_director_constraint, 3, 3))
+    start_position_collection = rng.random(size=(n_position_constraint, 3))
+    start_director_collection = rng.random(size=(n_director_constraint, 3, 3))
     fixed_constrained = FixedConstraint(
         *start_position_collection, *start_director_collection, _system=test_rod
     )
@@ -183,11 +185,11 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
     fixed_constrained._constrained_position_idx = pos_indices.copy()
     fixed_constrained._constrained_director_idx = dir_indices.copy()
 
-    test_position_collection = rng.random((3, N))
+    test_position_collection = rng.random(size=(3, N))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_director_collection = rng.random((3, 3, N))
+    test_director_collection = rng.random(size=(3, 3, N))
     test_rod.director_collection = (
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -205,11 +207,11 @@ def test_fixed_constraint(seed, n_position_constraint, n_director_constraint):
         test_director_collection, test_rod.director_collection, atol=Tolerance.atol()
     )
 
-    test_velocity_collection = rng.random((3, N))
+    test_velocity_collection = rng.random(size=(3, N))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_omega_collection = rng.random((3, N))
+    test_omega_collection = rng.random(size=(3, N))
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -249,8 +251,8 @@ def test_general_constraint(
     rng = np.random.default_rng(seed)
     test_rod = MockTestRod()
 
-    start_position_collection = rng.random((num_translational_constraint, 3))
-    start_director_collection = rng.random((num_rotational_constraint, 3, 3))
+    start_position_collection = rng.random(size=(num_translational_constraint, 3))
+    start_director_collection = rng.random(size=(num_rotational_constraint, 3, 3))
     translational_constraint_selector = constraint_selector
     rotational_constraint_selector = constraint_selector
     general_constraint = GeneralConstraint(
@@ -269,7 +271,7 @@ def test_general_constraint(
     general_constraint._constrained_position_idx = pos_indices.copy()
     general_constraint._constrained_director_idx = dir_indices.copy()
 
-    test_position_collection = rng.random((3, test_rod.n_elems))
+    test_position_collection = rng.random(size=(3, test_rod.n_elems))
     test_rod.position_collection = (
         test_position_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -284,7 +286,7 @@ def test_general_constraint(
         atol=Tolerance.atol(),
     )
 
-    test_velocity_collection = rng.random((3, test_rod.n_elems))
+    test_velocity_collection = rng.random(size=(3, test_rod.n_elems))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
@@ -378,7 +380,7 @@ def test_general_constraint(
     )
 
 
-def test_helical_buckling_bc():
+def test_helical_buckling_bc(rng):
 
     twisting_time = 500.0
     slack = 3.0
@@ -390,7 +392,7 @@ def test_helical_buckling_bc():
 
     test_rod = MockTestRod()
 
-    test_position_collection = np.random.rand(3, 20)
+    test_position_collection = rng.random(size=(3, 20))
     test_position_collection[..., 0] = start_position_collection
     test_position_collection[..., -1] = end_position_collection
     test_rod.position_collection = (
@@ -403,11 +405,11 @@ def test_helical_buckling_bc():
         test_director_collection.copy()
     )  # We need copy of the list not a reference to this array
 
-    test_velocity_collection = np.random.rand(3, 20)
+    test_velocity_collection = rng.random(size=(3, 20))
     test_rod.velocity_collection = (
         test_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    test_omega_collection = np.random.rand(3, 20)
+    test_omega_collection = rng.random(size=(3, 20))
     test_rod.omega_collection = (
         test_omega_collection.copy()
     )  # We need copy of the list not a reference to this array

@@ -12,63 +12,66 @@ from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
 
 class BaseRodForTesting(RodBase):
     def __init__(self, n_elems: np.int64, ring_rod_flag: bool):
-        self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
+        self.n_elems = n_elems  # Fixed arbitrary number instead of random
         self.n_nodes = n_elems if ring_rod_flag else n_elems + 1
         self.n_voronoi = n_elems if ring_rod_flag else n_elems - 1
         self.ring_rod_flag = ring_rod_flag
 
+        # Fixed seed RNG for reproducible test data
+        rng = np.random.default_rng(42)
+
         # Things that are scalar mapped on nodes
-        self.mass = np.random.randn(self.n_nodes)
+        self.mass = rng.standard_normal(self.n_nodes)
 
         # Things that are vectors mapped on nodes
-        self.position_collection = np.random.randn(3, self.n_nodes)
-        self.velocity_collection = np.random.randn(3, self.n_nodes)
-        self.acceleration_collection = np.random.randn(3, self.n_nodes)
-        self.internal_forces = np.random.randn(3, self.n_nodes)
-        self.external_forces = np.random.randn(3, self.n_nodes)
+        self.position_collection = rng.standard_normal((3, self.n_nodes))
+        self.velocity_collection = rng.standard_normal((3, self.n_nodes))
+        self.acceleration_collection = rng.standard_normal((3, self.n_nodes))
+        self.internal_forces = rng.standard_normal((3, self.n_nodes))
+        self.external_forces = rng.standard_normal((3, self.n_nodes))
 
         # Things that are scalar mapped on elements
-        self.radius = np.random.rand(self.n_elems)
-        self.volume = np.random.rand(self.n_elems)
-        self.density = np.random.rand(self.n_elems)
-        self.lengths = np.random.rand(self.n_elems)
+        self.radius = rng.random(self.n_elems)
+        self.volume = rng.random(self.n_elems)
+        self.density = rng.random(self.n_elems)
+        self.lengths = rng.random(self.n_elems)
         self.rest_lengths = self.lengths.copy()
-        self.dilatation = np.random.rand(self.n_elems)
-        self.dilatation_rate = np.random.rand(self.n_elems)
+        self.dilatation = rng.random(self.n_elems)
+        self.dilatation_rate = rng.random(self.n_elems)
 
         # Things that are vector mapped on elements
-        self.omega_collection = np.random.randn(3, self.n_elems)
-        self.alpha_collection = np.random.randn(3, self.n_elems)
-        self.tangents = np.random.randn(3, self.n_elems)
-        self.sigma = np.random.randn(3, self.n_elems)
-        self.rest_sigma = np.random.randn(3, self.n_elems)
-        self.internal_torques = np.random.randn(3, self.n_elems)
-        self.external_torques = np.random.randn(3, self.n_elems)
-        self.internal_stress = np.random.randn(3, self.n_elems)
+        self.omega_collection = rng.standard_normal((3, self.n_elems))
+        self.alpha_collection = rng.standard_normal((3, self.n_elems))
+        self.tangents = rng.standard_normal((3, self.n_elems))
+        self.sigma = rng.standard_normal((3, self.n_elems))
+        self.rest_sigma = rng.standard_normal((3, self.n_elems))
+        self.internal_torques = rng.standard_normal((3, self.n_elems))
+        self.external_torques = rng.standard_normal((3, self.n_elems))
+        self.internal_stress = rng.standard_normal((3, self.n_elems))
 
         # Things that are matrix mapped on elements
         self.director_collection = np.tile(
             np.eye(3).reshape(3, 3, 1), (1, 1, self.n_elems)
         )
-        self.mass_second_moment_of_inertia = np.random.randn() * np.ones(
+        self.mass_second_moment_of_inertia = rng.standard_normal() * np.ones(
             (3, 3, self.n_elems)
         )
-        self.inv_mass_second_moment_of_inertia = np.random.randn() * np.ones(
+        self.inv_mass_second_moment_of_inertia = rng.standard_normal() * np.ones(
             (3, 3, self.n_elems)
         )
-        self.shear_matrix = np.random.randn() * np.ones((3, 3, self.n_elems))
+        self.shear_matrix = rng.standard_normal() * np.ones((3, 3, self.n_elems))
 
         # Things that are scalar mapped on voronoi
-        self.voronoi_dilatation = np.random.rand(self.n_voronoi)
-        self.rest_voronoi_lengths = np.random.rand(self.n_voronoi)
+        self.voronoi_dilatation = rng.random(self.n_voronoi)
+        self.rest_voronoi_lengths = rng.random(self.n_voronoi)
 
         # Things that are vectors mapped on voronoi
-        self.kappa = np.random.randn(3, self.n_voronoi)
-        self.rest_kappa = np.random.randn(3, self.n_voronoi)
-        self.internal_couple = np.random.randn(3, self.n_voronoi)
+        self.kappa = rng.standard_normal((3, self.n_voronoi))
+        self.rest_kappa = rng.standard_normal((3, self.n_voronoi))
+        self.internal_couple = rng.standard_normal((3, self.n_voronoi))
 
         # Things that are matrix mapped on voronoi
-        self.bend_matrix = np.random.randn() * np.ones((3, 3, self.n_voronoi))
+        self.bend_matrix = rng.standard_normal() * np.ones((3, 3, self.n_voronoi))
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
@@ -87,7 +90,9 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
     """
 
     systems = [
-        BaseRodForTesting(np.random.randint(10, 30 + 1), ring_rod_flag=False)
+        BaseRodForTesting(
+            20, ring_rod_flag=False
+        )  # Fixed arbitrary number instead of random
         for _ in range(n_rods)
     ]
 
@@ -121,7 +126,8 @@ def test_memory_block_rod(n_straight_rods, n_ring_rods):
         pytest.skip()
 
     # Define a temporary list of systems
-    n_elems = np.random.randint(low=10, high=31, size=(n_rods,))
+    rng = np.random.default_rng(42)  # Fixed seed for reproducible tests
+    n_elems = rng.integers(low=10, high=31, size=(n_rods,))
     systems = [
         BaseRodForTesting(n_elems=n_elems[k], ring_rod_flag=False)
         for k in range(n_straight_rods)

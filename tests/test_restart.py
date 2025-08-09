@@ -4,6 +4,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
+
+
 from elastica.modules import (
     BaseSystemCollection,
     Constraints,
@@ -48,14 +50,14 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
 
         return sc, rod_list
 
-    def test_restart_save_load(self, tmp_path, load_collection):
+    def test_restart_save_load(self, rng, tmp_path, load_collection):
         simulator_class, rod_list = load_collection
 
         # Finalize simulator
         simulator_class.finalize()
 
         directory = (tmp_path / "restart_test_data").as_posix()
-        time = np.random.rand()
+        time = rng.random()
 
         # save state
         save_state(simulator_class, directory, time=time)
@@ -206,14 +208,14 @@ class TestRestartFunctionsWithFeaturesUsingRigidBodies:
 
         return sc, cylinder_list
 
-    def test_restart_save_load(self, tmp_path, load_collection):
+    def test_restart_save_load(self, rng, tmp_path, load_collection):
         simulator_class, cylinder_list = load_collection
 
         # Finalize simulator
         simulator_class.finalize()
 
         directory = (tmp_path / "restart_test_data").as_posix()
-        time = np.random.rand()
+        time = rng.random()
 
         # save state
         save_state(simulator_class, directory, time=time)

@@ -67,6 +67,7 @@ dev = [
     "pre-commit",
     "pytest-html",
     "pytest-cov",
+    "pytest-rng",
     "pytest-mock",
     "codecov",
     "click",

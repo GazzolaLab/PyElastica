@@ -180,7 +180,7 @@ class MockRodForTest:
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_deprecated_rod_nu_option(n_elems):
+def test_deprecated_rod_nu_option(n_elems, rng):
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
@@ -191,8 +191,8 @@ def test_deprecated_rod_nu_option(n_elems):
     youngs_modulus = 1e6
     poisson_ratio = 0.3
     correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0] = np.random.randn(n_elems + 1)
-    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[0] = rng.standard_normal(n_elems + 1)
+    correct_position[1] = rng.standard_normal(n_elems + 1)
     correct_position[..., 0] = start
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     correct_error_message = (
@@ -220,7 +220,7 @@ def test_deprecated_rod_nu_option(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_input_and_output_position_array(n_elems):
+def test_input_and_output_position_array(n_elems, rng):
     """
     This test, tests the case if the input position array
     valid, allocate sets input position as the rod position array.
@@ -243,8 +243,8 @@ def test_input_and_output_position_array(n_elems):
 
     # Check if the input position vector and output position vector are valid and same
     correct_position = np.zeros((3, n_elems + 1))
-    correct_position[0] = np.random.randn(n_elems + 1)
-    correct_position[1] = np.random.randn(n_elems + 1)
+    correct_position[0] = rng.standard_normal(n_elems + 1)
+    correct_position[1] = rng.standard_normal(n_elems + 1)
     correct_position[..., 0] = start
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
     mockrod = MockRodForTest.straight_rod(
@@ -265,7 +265,7 @@ def test_input_and_output_position_array(n_elems):
 
 @pytest.mark.xfail(raises=AssertionError)
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_input_and_position_array_for_different_start(n_elems):
+def test_input_and_position_array_for_different_start(n_elems, rng):
     """
     This function tests fail check, for which input position array
     first element is not user defined start position.
@@ -277,7 +277,7 @@ def test_input_and_position_array_for_different_start(n_elems):
     -------
 
     """
-    start = np.random.randn(3)
+    start = rng.standard_normal(3)
     direction = np.array([1.0, 0.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
     base_length = 1.0
@@ -288,7 +288,7 @@ def test_input_and_position_array_for_different_start(n_elems):
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
     # Check if the input position vector start position is different than the user defined start position
-    correct_position = np.random.randn(3, n_elems + 1)
+    correct_position = rng.standard_normal((3, n_elems + 1))
     mockrod = MockRodForTest.straight_rod(
         n_elems,
         start,
@@ -438,7 +438,7 @@ def test_directors_using_input_position_array(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_directors_using_input_directory_array(n_elems):
+def test_directors_using_input_directory_array(n_elems, rng):
     """
     This test is testing the case for which directors are given as user input.
 
@@ -452,7 +452,7 @@ def test_directors_using_input_directory_array(n_elems):
     """
     start = np.array([0.0, 0.0, 0.0])
     direction = np.array([1.0, 0.0, 0.0])
-    angle = np.random.uniform(0, 2 * np.pi)
+    angle = rng.uniform(0, 2 * np.pi)
     normal = np.array([0.0, np.cos(angle), np.sin(angle)])
     base_length = 1.0
     base_radius = 0.25
@@ -1018,7 +1018,7 @@ def test_density_invalid_shape(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_rest_sigma_and_kappa_user_input(n_elems):
+def test_rest_sigma_and_kappa_user_input(n_elems, rng):
     """
     This test is checking if user defined sigma is used to
     allocate rest sigma of the rod.
@@ -1040,8 +1040,8 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
     poisson_ratio = 0.3
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    input_rest_sigma = np.random.randn(3, n_elems)
-    input_rest_kappa = np.random.randn(3, n_elems - 1)
+    input_rest_sigma = rng.standard_normal((3, n_elems))
+    input_rest_kappa = rng.standard_normal((3, n_elems - 1))
 
     mockrod = MockRodForTest.straight_rod(
         n_elems,
@@ -1068,7 +1068,7 @@ def test_rest_sigma_and_kappa_user_input(n_elems):
 
 @pytest.mark.xfail(raises=AssertionError)
 @pytest.mark.parametrize("n_elems", [5, 10, 50])
-def test_rest_sigma_and_kappa_invalid_shape(n_elems):
+def test_rest_sigma_and_kappa_invalid_shape(n_elems, rng):
     """
     This test, is checking AssertionErrors for invalid shapes for
     rest sigma and rest kappa
@@ -1090,8 +1090,8 @@ def test_rest_sigma_and_kappa_invalid_shape(n_elems):
     poisson_ratio = 0.3
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-    input_rest_sigma = np.random.randn(3, n_elems).reshape(n_elems, 3)
-    input_rest_kappa = np.random.randn(3, n_elems - 1).reshape(n_elems - 1, 3)
+    input_rest_sigma = rng.standard_normal((3, n_elems)).reshape(n_elems, 3)
+    input_rest_kappa = rng.standard_normal((3, n_elems - 1)).reshape(n_elems - 1, 3)
 
     MockRodForTest.straight_rod(
         n_elems,
@@ -1192,17 +1192,17 @@ def test_validity_of_allocated(n_elems):
 
 
 @pytest.mark.parametrize("n_elems", [5, 20, 50])
-def test_straight_rod(n_elems):
+def test_straight_rod(n_elems, rng):
 
     # setting up test params
-    start = np.random.rand(3)
-    direction = 5 * np.random.rand(3)
+    start = rng.random(3)
+    direction = 5 * rng.random(3)
     direction_norm = np.linalg.norm(direction)
     direction /= direction_norm
     normal = np.array((direction[1], -direction[0], 0))
     base_length = 10
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = density * np.pi * base_radius**2 * base_length / n_elems
     # Youngs Modulus [Pa]
     E = 1e6

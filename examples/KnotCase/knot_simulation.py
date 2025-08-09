@@ -3,12 +3,21 @@ A demonstration includes how to create an arbitrary controller for a node in a r
 resembling a proportional-controller of SO3 Pose. The same class can be used further
 to mimic the MPC control or trajectory-tracing."""
 
+from typing import Any, TypeAlias
+from numpy.typing import NDArray
+from elastica.typing import RodType
+
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import defaultdict
 import elastica as ea
 
 from knot_forcing import TargetPoseProportionalControl
 from knot_visualization import plot_video3D
+
+Position: TypeAlias = NDArray[np.float64]  # vector (3)
+Orientation: TypeAlias = NDArray[np.float64]  # SO3 matrix (3, 3)
+Pose: TypeAlias = tuple[Position, Orientation]
 
 
 class SoftRodSimulator(
@@ -27,12 +36,12 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
     Records the position of the rod
     """
 
-    def __init__(self, callback_params: dict):
+    def __init__(self, callback_params: dict) -> None:
         ea.CallBackBaseClass.__init__(self)
         self.every = 200
         self.callback_params = callback_params
 
-    def make_callback(self, system, time, current_step: int):
+    def make_callback(self, system: RodType, time: float, current_step: int) -> None:
         if current_step % self.every == 0:
 
             self.callback_params["time"].append(time)
@@ -51,7 +60,7 @@ if __name__ == "__main__":
     GENERATE_3D_VIDEO = True
 
     simulator = SoftRodSimulator()
-    recorded_history = ea.defaultdict(list)
+    recorded_history: dict[str, list[Any]] = defaultdict(list)
     final_time = 5
     dt = 0.0002
 
@@ -82,7 +91,7 @@ if __name__ == "__main__":
 
     run_time = 4
 
-    def base_target(t, rod):
+    def base_target(t: float, rod: RodType) -> Pose:
         target_position = direction * base_length - 5 * base_radius * normal
         if t <= run_time / 2:
             ratio = min(2 * t / run_time, 1.0)
@@ -176,9 +185,13 @@ if __name__ == "__main__":
     orientations = np.asarray(recorded_history["orientation"])
     radii = np.asarray(recorded_history["radius"])
     total_twist, _ = ea.compute_twist(positions, orientations[:, 0, ...])
-    total_writhe = ea.compute_writhe(positions, base_length, "next_tangent")
+    total_writhe = ea.compute_writhe(positions, np.float64(base_length), "next_tangent")
     total_link = ea.compute_link(
-        positions, orientations[:, 0, ...], radii, base_length, "next_tangent"
+        positions,
+        orientations[:, 0, ...],
+        radii,
+        np.float64(base_length),
+        "next_tangent",
     )
 
     plt.figure()

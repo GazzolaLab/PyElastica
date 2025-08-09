@@ -5,7 +5,7 @@ import numpy as np
 
 def plot_video3D(
     plot_params: dict, video_name: str = "video.mp4", margin: float = 0.2, fps: int = 25
-):
+) -> None:
     t = np.array(plot_params["time"])
     positions_over_time = np.array(plot_params["position"])
     directors_over_time = np.array(plot_params["orientation"])
@@ -23,9 +23,9 @@ def plot_video3D(
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(-0.0 - margin, 1.0 + margin)
     ax.set_ylim(-0.3 - margin, 0.3 + margin)
-    ax.set_zlim(-0.3 - margin, 0.3 + margin)
+    ax.set_zlim(-0.3 - margin, 0.3 + margin)  # type: ignore
     ax.set_title("(RGB-Pose: tip-target)")
-    ax.view_init(elev=10, azim=-45)
+    ax.view_init(elev=10, azim=-45)  # type: ignore
     ax.set_aspect("equal")
     rod_lines_3d = ax.plot(
         *positions_over_time[0],
@@ -65,7 +65,7 @@ def plot_video3D(
             for time in range(1, len(t) - 1):
                 rod_lines_3d.set_xdata(positions_over_time[time][0])
                 rod_lines_3d.set_ydata(positions_over_time[time][1])
-                rod_lines_3d.set_3d_properties(positions_over_time[time][2])
+                rod_lines_3d.set_3d_properties(positions_over_time[time][2])  # type: ignore
 
                 targets_orientation_normal.remove()
                 targets_orientation_normal = ax.quiver(

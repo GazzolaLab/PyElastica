@@ -7,7 +7,7 @@ import pytest
 
 
 # tests Initialisation of plane
-def test_plane_initialization():
+def test_plane_initialization(rng):
     """
     This test case is for testing initialization of rigid sphere and it checks the
     validity of the members of sphere class.
@@ -17,8 +17,8 @@ def test_plane_initialization():
 
     """
     # setting up test params
-    plane_origin = np.random.rand(3).reshape(3, 1)
-    plane_normal_direction = np.random.rand(3).reshape(3)
+    plane_origin = rng.random(3).reshape(3, 1)
+    plane_normal_direction = rng.random(3).reshape(3)
     plane_normal = plane_normal_direction / np.linalg.norm(plane_normal_direction)
 
     test_plane = Plane(plane_origin, plane_normal)

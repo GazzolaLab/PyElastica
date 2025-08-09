@@ -25,7 +25,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	uv run black --version
-	uv run black --config pyproject.toml --required-version 24.3.0 elastica tests examples
+	uv run black --config pyproject.toml elastica tests examples
 
 .PHONY: black-check
 black-check:
@@ -52,11 +52,13 @@ format-codestyle: black autoflake-format
 
 .PHONY: mypy
 mypy:
-	uv run mypy --config-file pyproject.toml elastica
+	uv run mypy --config-file pyproject.toml elastica  # Main
 	uv run mypy --config-file pyproject.toml --explicit-package-bases \
 		examples/AxialStretchingCase \
 		examples/ButterflyCase \
-		examples/CatenaryCase
+		examples/CatenaryCase \
+		examples/KnotCase \
+		examples/ContinuumSnakeCase
 
 .PHONY: test
 test:

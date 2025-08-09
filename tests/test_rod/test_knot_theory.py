@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 from elastica.utils import MaxDimension
 
 from mock_rod import MockTestRod
@@ -33,11 +34,11 @@ def test_knot_theory_protocol():
         assert "cannot be instantiated" in e_info
 
 
-def test_knot_theory_mixin_methods(knot_theory):
+def test_knot_theory_mixin_methods(rng, knot_theory):
     class TestRodWithKnotTheory(MockTestRod, knot_theory.KnotTheory):
         def __init__(self):
             super().__init__()
-            self.radius = np.random.randn(MaxDimension.value(), self.n_elems)
+            self.radius = rng.standard_normal((MaxDimension.value(), self.n_elems))
 
     rod = TestRodWithKnotTheory()
     assert hasattr(
@@ -250,9 +251,9 @@ def test_knot_theory_compute_additional_segment_net_tangent_case():
 @pytest.mark.parametrize("n_elem", [1, 3, 8])
 @pytest.mark.parametrize("segment_length", [1.0, 10.0, 100.0])
 def test_knot_theory_compute_additional_segment_none_case(
-    timesteps, n_elem, segment_length
+    rng, timesteps, n_elem, segment_length
 ):
-    center_line = np.random.random([timesteps, 3, n_elem])
+    center_line = rng.random([timesteps, 3, n_elem])
     new_center_line, beginning_direction, end_direction = _compute_additional_segment(
         center_line, segment_length, None
     )

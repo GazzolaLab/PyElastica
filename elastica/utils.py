@@ -1,5 +1,4 @@
-""" Handy utilities
-"""
+"""Handy utilities"""
 
 from typing import Generator, Iterable, Any, Literal, TypeVar
 import functools

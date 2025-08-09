@@ -3,6 +3,8 @@ __doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
 import os
 import numpy as np
 import elastica as ea
+from numpy.typing import NDArray
+from elastica.typing import RodType
 
 from examples.ContinuumSnakeCase.continuum_snake_postprocessing import (
     plot_snake_velocity,
@@ -24,8 +26,12 @@ class SnakeSimulator(
 
 
 def run_snake(
-    b_coeff, PLOT_FIGURE=False, SAVE_FIGURE=False, SAVE_VIDEO=False, SAVE_RESULTS=False
-):
+    b_coeff: NDArray[np.float64],
+    PLOT_FIGURE: bool = False,
+    SAVE_FIGURE: bool = False,
+    SAVE_VIDEO: bool = False,
+    SAVE_RESULTS: bool = False,
+) -> tuple[float, float, dict]:
     # Initialize the simulation class
     snake_sim = SnakeSimulator()
 
@@ -120,12 +126,14 @@ def run_snake(
         Call back function for continuum snake
         """
 
-        def __init__(self, step_skip: int, callback_params: dict):
+        def __init__(self, step_skip: int, callback_params: dict) -> None:
             ea.CallBackBaseClass.__init__(self)
             self.every = step_skip
             self.callback_params = callback_params
 
-        def make_callback(self, system, time, current_step: int):
+        def make_callback(
+            self, system: ea.CosseratRod, time: float, current_step: int
+        ) -> None:
 
             if current_step % self.every == 0:
 
@@ -154,7 +162,7 @@ def run_snake(
 
                 return
 
-        def get_slip_velocity(self, system):
+        def get_slip_velocity(self, system: RodType) -> NDArray[np.float64]:
             from elastica.contact_utils import (
                 _find_slipping_elements,
                 _node_to_element_velocity,
@@ -176,7 +184,7 @@ def run_snake(
             )
             return slip_function_along_axial_direction
 
-    pp_list = ea.defaultdict(list)
+    pp_list: dict[str, list] = ea.defaultdict(list)
     snake_sim.collect_diagnostics(shearable_rod).using(
         ContinuumSnakeCallBack, step_skip=step_skip, callback_params=pp_list
     )
@@ -229,7 +237,7 @@ if __name__ == "__main__":
 
         SAVE_OPTIMIZED_COEFFICIENTS = False
 
-        def optimize_snake(spline_coefficient):
+        def optimize_snake(spline_coefficient: NDArray[np.float64]) -> float:
             [avg_forward, _, _] = run_snake(
                 spline_coefficient,
                 PLOT_FIGURE=False,

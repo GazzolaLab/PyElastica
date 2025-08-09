@@ -64,7 +64,8 @@ class TestDamper:
 
     class MockRod:
         def __init__(self):
-            self.mass = np.random.randn(3, 8)
+            rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
+            self.mass = rng.standard_normal((3, 8))
 
     # def test_call_improper_bc_throws_type_error(self, load_damper):
     #     # Example of bad initiailization function
