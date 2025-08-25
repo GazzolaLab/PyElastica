@@ -26,12 +26,6 @@ class CallBackBaseClass(Generic[T]):
 
     """
 
-    def __init__(self) -> None:
-        """
-        CallBackBaseClass does not need any input parameters.
-        """
-        pass
-
     def make_callback(self, system: T, time: np.float64, current_step: int) -> None:
         """
         This method is called every time step. Users can define

@@ -272,8 +272,8 @@ class AnalyticalLinearDamper(DamperBase):
 
         return dampen_rates_protocol
 
-    def dampen_rates(self, rod: RodType, time: np.float64) -> None:
-        self._dampen_rates_protocol(rod)
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
+        self._dampen_rates_protocol(system)
 
 
 class LaplaceDissipationFilter(DamperBase):
