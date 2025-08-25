@@ -1,4 +1,4 @@
-from typing import Protocol, Generator, TypeVar, Any, Type, overload
+from typing import Protocol, Generator, TypeVar, Any, Type, overload, Iterator
 from typing import TYPE_CHECKING
 from typing_extensions import Self  # python 3.11: from typing import Self
 
@@ -57,6 +57,7 @@ class SystemCollectionProtocol(Protocol):
     def __delitem__(self, i: slice | int) -> None: ...
     def __setitem__(self, i: slice | int, value: SystemType) -> None: ...
     def insert(self, i: int, value: SystemType) -> None: ...
+    def __iter__(self) -> Iterator[SystemType]: ...
 
     def get_system_index(
         self, sys_to_be_added: "SystemType | StaticSystemType"
@@ -66,6 +67,7 @@ class SystemCollectionProtocol(Protocol):
     _feature_group_synchronize: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
     _feature_group_constrain_values: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
     _feature_group_constrain_rates: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
+    _feature_group_damping: "OperatorGroupFIFO[OperatorType, ModuleProtocol]"
     _feature_group_callback: "OperatorGroupFIFO[OperatorCallbackType, ModuleProtocol]"
 
     def synchronize(self, time: np.float64) -> None: ...

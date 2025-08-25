@@ -65,6 +65,9 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_constrain_rates: OperatorGroupFIFO[
             OperatorType, ModuleProtocol
         ] = OperatorGroupFIFO()
+        self._feature_group_damping: OperatorGroupFIFO[OperatorType, ModuleProtocol] = (
+            OperatorGroupFIFO()
+        )
         self._feature_group_callback: OperatorGroupFIFO[
             OperatorCallbackType, ModuleProtocol
         ] = OperatorGroupFIFO()
