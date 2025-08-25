@@ -60,7 +60,7 @@ class Damping:
         # Create _Damper object, cache it and return to user
         _damper: ModuleProtocol = _Damper(sys_idx)
         self._damping_list.append(_damper)
-        self._feature_group_constrain_rates.append_id(_damper)
+        self._feature_group_damping.append_id(_damper)
 
         return _damper
 
@@ -81,7 +81,7 @@ class Damping:
             dampen_rate = functools.partial(
                 damping_instance.dampen_rates, system=self[sys_id]
             )
-            self._feature_group_constrain_rates.add_operators(damping, [dampen_rate])
+            self._feature_group_damping.add_operators(damping, [dampen_rate])
 
         self._damping_list = []
         del self._damping_list

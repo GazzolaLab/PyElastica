@@ -6,7 +6,9 @@ import os
 import json
 from itertools import groupby
 
-from .typing import SystemType
+from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
+
+from .typing import SystemType, SystemCollectionType
 
 
 def all_equal(iterable: Iterable[Any]) -> bool:
@@ -28,8 +30,8 @@ def all_equal(iterable: Iterable[Any]) -> bool:
 
 
 def save_state(
-    simulator: Iterable[SystemType],
-    directory: str = "",
+    simulator: SystemCollectionType,
+    directory: str = "saved",
     time: np.float64 = np.float64(0.0),
     verbose: bool = False,
 ) -> None:
@@ -54,18 +56,19 @@ def save_state(
     for idx, system in enumerate(simulator):
         name = system.__class__.__name__
         path = os.path.join(directory, f"{name}_{idx}.npz")
-        np.savez(path, **system.__dict__)
+        np.savez(path, **system.__dict__)  # type: ignore
 
     # Save meta-data
     with open(os.path.join(directory, "meta.json"), "w") as f:
         json.dump({"time": time}, f)
 
     if verbose:
-        print("Save complete: {}".format(directory))
+        print(f"Save complete: {directory}")
+        print(f"  Saved time: {time}")
 
 
 def load_state(
-    simulator: Iterable[SystemType], directory: str = "", verbose: bool = False
+    simulator: SystemCollectionType, directory: str = "saved", verbose: bool = False
 ) -> float:
     """
     Load the simulator state. Compatible with 'save_state' method.
@@ -92,7 +95,10 @@ def load_state(
 
     # Load system state
     for idx, system in enumerate(simulator):
-        name = system.__class__.__name__
+        # TODO: Not exactly sure why this condition is necessary.
+        if isinstance(system, (MemoryBlockCosseratRod, MemoryBlockRigidBody)):
+            continue
+        name = system.__class__.__name__  # type: ignore
         path = os.path.join(directory, f"{name}_{idx}.npz")
         data = np.load(path, allow_pickle=True)
         for key, value in data.items():
@@ -101,9 +107,14 @@ def load_state(
                 getattr(system, key)[:] = value
             else:
                 # For single-value data
-                setattr(system, key, value)
+                setattr(system, key, value[()])
+
+    # Apply boundary conditions. Ring rods have periodic BC, so we need to update periodic elements in memory block
+    simulator.constrain_values(time)
+    simulator.constrain_rates(time)
 
     if verbose:
-        print("Load complete: {}".format(directory))
+        print(f"Load complete: {directory}")
+        print(f"  Loaded time: {time}")
 
     return time
