@@ -1,3 +1,46 @@
+# Release 0.3.3
+
+# PyElastica v0.3.3pre Release Notes
+
+## Major Changes
+
+This release introduces updates, new examples, and minor bug fixes to PyElastica. 
+Several **typing improvements** have been made across core modules (`rods`, `rigid_body`, `systems`, `contact`, etc.), which will improve readability, maintainability, and debugging.
+
+In terms of features, a new **OperatorGroup system** has been added for handling constraints and callbacks, improving modularity. 
+All modules now receive `time` as an argument, in case a user desires to implement external forcing/couple condition that depends on time.
+
+Example cases have been expanded with **cantilever load and unconstrained tumbling simulations**, along with a new **underhand knot case**.
+
+Finally, `PyElastica` now uses `uv` as a main dev and deployment scheme.
+
+> This version will be the last beta-development version for `PyElastica` project. Next update will be v1-stable.
+
+### What's Changed
+
+* Explicit operation order determined by user definition \[#379]
+* Typing improvements across `rods`, `rigid_body`, `systems`, `contact`, `modules`, and timestepper \[#341, #367, #372, #373, #382, #384, #394, #395, #396, #397]
+* \[Update] UV integration \[#483]
+* Remove `Mesh` related code \[#493]
+
+### New Example Cases
+* \[Examples] Cantilever load case and unconstrained tumbling case \[#456]
+* Case: Underhand knot \[#491]
+
+### Minor fix
+* Fix #380: All modules now receive `time` as an argument \[#494]
+* Fixed MuscularSnake example and workflow\.md errors \[#481]
+* Update: Python version of PyElastica and CI workflow \[#363]
+* Issue #354 analytical damper fix \[#437]
+* \[Hotfix 🔥] Compute twist angle for parallel elements \[#415]
+* Numerical noise reduction on `_inv_rotate` \[#467]
+
+### New Contributors
+
+* @Andrew-Tao (examples) \[#456]
+* @samkirkham (examples, docs, bugfix) \[#481]
+* @Rockostoneo (new case: underhand knot) \[#491]
+
 # Release 0.3.2
 
 ## New Features

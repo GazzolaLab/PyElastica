@@ -52,11 +52,10 @@ We ask that any publications which use Elastica cite as following:
                   Maximilian Stölzle and
                   Chia-Hsien (Cathy) Shih and
                   Mattia Gazzola},
-  title        = {GazzolaLab/PyElastica: v0.3.2},
+  title        = {GazzolaLab/PyElastica},
   month        = mar,
   year         = 2024,
   publisher    = {Zenodo},
-  version      = {v0.3.2},
   doi          = {10.5281/zenodo.10883271},
   url          = {https://doi.org/10.5281/zenodo.10883271}
 }
