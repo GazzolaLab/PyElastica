@@ -1,7 +1,7 @@
 <div align='center'>
 <h1> PyElastica </h1>
 
-[![Build_status][badge-travis]][link-travis] [![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![DOI][badge-doi]][link-doi] [![Binder][badge-binder]][link-binder] [![Gitter][badge-gitter]][link-gitter]
+[![CI][badge-CI]][link-CI] [![Documentation Status][badge-docs-status]][link-docs-status] [![codecov][badge-codecov]][link-codecov] [![Downloads][badge-pepy-download-count]][link-pepy-download-count] [![DOI][badge-doi]][link-doi] [![Binder][badge-binder]][link-binder] [![Gitter][badge-gitter]][link-gitter]
  </div>
 
 PyElastica is the python implementation of **Elastica**: an *open-source* project for simulating assemblies of slender, one-dimensional structures using Cosserat Rod theory.
@@ -121,7 +121,6 @@ _Names arranged alphabetically_
 [link-docs-website]: https://docs.cosseratrods.org/
 
 [badge-pypi]: https://badge.fury.io/py/pyelastica.svg
-[badge-travis]: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master
 [badge-CI]: https://github.com/GazzolaLab/PyElastica/workflows/CI/badge.svg
 [badge-docs-status]: https://readthedocs.org/projects/pyelastica/badge/?version=latest
 [badge-binder]: https://mybinder.org/badge_logo.svg
@@ -130,7 +129,6 @@ _Names arranged alphabetically_
 [badge-gitter]: https://badges.gitter.im/PyElastica/community.svg
 [badge-doi]: https://zenodo.org/badge/254172891.svg
 [link-pypi]: https://badge.fury.io/py/pyelastica
-[link-travis]: https://travis-ci.com/github/GazzolaLab/PyElastica
 [link-CI]: https://github.com/GazzolaLab/PyElastica/actions
 [link-docs-status]: https://docs.cosseratrods.org/en/latest/?badge=latest
 [link-pepy-download-count]: https://pepy.tech/project/pyelastica
