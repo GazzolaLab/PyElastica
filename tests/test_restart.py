@@ -90,10 +90,28 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
         simulator_class = BaseSimulatorClass()
 
         rod_list = []
-        for _ in range(5):
+        for _ in range(3):
             rod = ea.CosseratRod.straight_rod(
                 n_elements=10,
                 start=np.zeros((3)),
+                direction=np.array([0, 1, 0.0]),
+                normal=np.array([1, 0, 0.0]),
+                base_length=1,
+                base_radius=1,
+                density=1,
+                youngs_modulus=1,
+            )
+            # Bypass check, but its fine for testing
+            simulator_class.append(rod)
+
+            # Also add rods to a separate list
+            rod_list.append(rod)
+
+        for _ in range(2):
+            rod = ea.CosseratRod.ring_rod(
+                n_elements=10,
+                start=np.zeros((3)),
+                ring_center_position=np.zeros((3)),
                 direction=np.array([0, 1, 0.0]),
                 normal=np.array([1, 0, 0.0]),
                 base_length=1,
@@ -144,11 +162,11 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
             ea.save_state(simulator_class, directory, time, True)
 
         # Compute final time accelerations
-        recorded_list = np.zeros((len(rod_list), rod_list[0].n_elems + 1))
+        recorded_list = []
         for i, rod in enumerate(rod_list):
-            recorded_list[i, :] = rod.acceleration_collection[1, :]
+            recorded_list.append(rod.acceleration_collection[1, :])
 
-        return recorded_list
+        return np.concatenate(recorded_list)
 
     @pytest.mark.parametrize("final_time", [0.2, 1.0])
     def test_save_restart_run_sim(self, tmp_path, final_time):
