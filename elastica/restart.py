@@ -1,11 +1,12 @@
 __doc__ = """Generate or load restart file implementations."""
+from typing import Iterable, Iterator, Any
 
 import numpy as np
 import os
+import json
 from itertools import groupby
-from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
 
-from typing import Iterable, Iterator, Any
+from .typing import SystemType
 
 
 def all_equal(iterable: Iterable[Any]) -> bool:
@@ -26,15 +27,14 @@ def all_equal(iterable: Iterable[Any]) -> bool:
     return next(g, True) and not next(g, False)
 
 
-# TODO: simulator should have better typing
 def save_state(
-    simulator: Iterable,
+    simulator: Iterable[SystemType],
     directory: str = "",
     time: np.float64 = np.float64(0.0),
     verbose: bool = False,
 ) -> None:
     """
-    Save state parameters of each rod.
+    Save state parameters of each systems.
     TODO : environment list variable is not uniform at the current stage of development.
     It would be nice if we have set list (like env.system) that iterates all the rods.
     Parameters
@@ -49,24 +49,26 @@ def save_state(
 
     """
     os.makedirs(directory, exist_ok=True)
-    for idx, rod in enumerate(simulator):
-        if isinstance(rod, MemoryBlockCosseratRod) or isinstance(
-            rod, MemoryBlockRigidBody
-        ):
-            continue
-        path = os.path.join(directory, "system_{}.npz".format(idx))
-        np.savez(path, time=time, **rod.__dict__)
+
+    # Save system state
+    for idx, system in enumerate(simulator):
+        name = system.__class__.__name__
+        path = os.path.join(directory, f"{name}_{idx}.npz")
+        np.savez(path, **system.__dict__)
+
+    # Save meta-data
+    with open(os.path.join(directory, "meta.json"), "w") as f:
+        json.dump({"time": time}, f)
 
     if verbose:
         print("Save complete: {}".format(directory))
 
 
-# TODO: simulator should have better typing
 def load_state(
-    simulator: Iterable, directory: str = "", verbose: bool = False
+    simulator: Iterable[SystemType], directory: str = "", verbose: bool = False
 ) -> float:
     """
-    Load the rod-state. Compatibale with 'save_state' method.
+    Load the simulator state. Compatible with 'save_state' method.
     If the save-file does not exist, it returns error.
     Call this function after finalize method.
 
@@ -83,32 +85,25 @@ def load_state(
     time : float
         Simulation time of systems when they are saved.
     """
-    time_list: list[float] = []  # Simulation time of rods when they are saved.
-    for idx, rod in enumerate(simulator):
-        if isinstance(rod, MemoryBlockCosseratRod) or isinstance(
-            rod, MemoryBlockRigidBody
-        ):
-            continue
-        path = os.path.join(directory, "system_{}.npz".format(idx))
+    # Load meta-data
+    with open(os.path.join(directory, "meta.json"), "r") as f:
+        meta = json.load(f)
+    time = meta["time"]
+
+    # Load system state
+    for idx, system in enumerate(simulator):
+        name = system.__class__.__name__
+        path = os.path.join(directory, f"{name}_{idx}.npz")
         data = np.load(path, allow_pickle=True)
         for key, value in data.items():
-            if key == "time":
-                time_list.append(value.item())
-                continue
-
             if value.shape != ():
                 # Copy data into placeholders
-                getattr(rod, key)[:] = value
+                getattr(system, key)[:] = value
             else:
                 # For single-value data
-                setattr(rod, key, value)
-
-    if not all_equal(time_list):
-        raise ValueError(
-            "Restart time of loaded rods are different, check your inputs!"
-        )
+                setattr(system, key, value)
 
     if verbose:
         print("Load complete: {}".format(directory))
 
-    return time_list[0]
+    return time
