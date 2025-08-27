@@ -9,9 +9,9 @@ Elastica package follows Mixin and composition design patterns that may be unfam
 - [stackoverflow discussion on Mixin](https://stackoverflow.com/questions/533631/what-is-a-mixin-and-why-are-they-useful)
 - [example of Mixin: python collections](https://docs.python.org/dev/library/collections.abc.html)
 
-## Duck Typing
+## Structural subtyping
 
-Elastica package uses duck typing to allow users to define their own classes and functions. Here is a `typing.Protocol` structure that is used in the package.
+Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) to allow users to define their own classes and functions. Here is a `typing.Protocol` structure that is used in the package.
 
 ### Systems
 
