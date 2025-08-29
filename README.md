@@ -39,7 +39,7 @@ Documentation of PyElastica is available [here][link-docs-website].
 We ask that any publications which use Elastica cite as following:
 
 ```
-@software{arman_tekinalp_2024_10883271,
+@software{PyElastica,
   author       = {Arman Tekinalp and
                   Seung Hyun Kim and
                   Yashraj Bhosale and
@@ -53,11 +53,10 @@ We ask that any publications which use Elastica cite as following:
                   Chia-Hsien (Cathy) Shih and
                   Mattia Gazzola},
   title        = {GazzolaLab/PyElastica},
-  month        = mar,
   year         = 2024,
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.10883271},
-  url          = {https://doi.org/10.5281/zenodo.10883271}
+  doi          = {10.5281/zenodo.7658871},
+  url          = {https://doi.org/10.5281/zenodo.7658871}
 }
 ```
 
