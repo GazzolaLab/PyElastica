@@ -1,72 +1,17 @@
+from typing import Sequence
+
 import logging
-from elastica.utils import MaxDimension, Tolerance
-from elastica.external_forces import NoForces
-from elastica.typing import SystemType
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from tqdm import tqdm
-from typing import Dict, Sequence
 
-
-class EndpointforcesWithTimeFactor(NoForces):
-
-    def __init__(self, start_force, end_force, time_factor):
-
-        super(EndpointforcesWithTimeFactor, self).__init__()
-        self.start_force = start_force
-        self.end_force = end_force
-        self.time_factor = time_factor
-
-    def apply_forces(self, system: SystemType, time=0.0):
-
-        factor = self.time_factor(time)
-
-        system.external_forces[..., 0] += self.start_force * factor
-        system.external_forces[..., -1] += self.end_force * factor
-
-
-class EndPointTorque(NoForces):
-    def __init__(self, torque, direction=np.array([0.0, 0.0, 0.0])):
-        super(EndPointTorque, self).__init__()
-        self.torque = torque * direction
-
-    def apply_torques(self, system: SystemType, time: np.float64 = 0.0):
-        n_elems = system.n_elems
-        if time < 1:
-            factor = 1
-        else:
-            factor = 0
-        system.external_torques[..., -1] += self.torque * factor
-
-
-class EndpointtorqueWithTimeFactor(NoForces):
-    def __init__(self, torque, time_factor, direction=np.array([0.0, 0.0, 0.0])):
-        super(EndpointtorqueWithTimeFactor, self).__init__()
-        self.torque = torque * direction
-        self.time_factor = time_factor
-
-    def apply_torques(self, system: SystemType, time: np.float64 = 0.0):
-        n_elems = system.n_elems
-
-        factor = self.time_factor(time)
-
-        system.external_torques[..., -1] += self.torque * factor
-
-
-def lamda_t_function(time):
-    if time < 2.5:
-        factor = time * (1 / 2.5)
-    elif time > 2.5 and time < 5.0:
-        factor = -time * (1 / 2.5) + 2
-    else:
-        factor = 0
-
-    return factor
+from elastica.utils import MaxDimension, Tolerance
 
 
 def plot_video_with_surface(
-    rods_history: Sequence[Dict],
+    rods_history: Sequence[dict],
     video_name="video.mp4",
     fps=60,
     step=1,
@@ -174,41 +119,38 @@ def plot_video_with_surface(
         video_name_3D = folder_name + "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
-            with plt.style.context("seaborn-v0_8-whitegrid"):
-                for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                    for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(
-                            rod_idx, time_idx
-                        )
-                        if not inst_position.shape[1] == inst_radius.shape[0]:
-                            inst_position = 0.5 * (
-                                inst_position[..., 1:] + inst_position[..., :-1]
-                            )
-
-                        rod_scatters[rod_idx]._offsets3d = (
-                            inst_position[0],
-                            inst_position[1],
-                            inst_position[2],
+                for rod_idx in range(n_visualized_rods):
+                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                    if not inst_position.shape[1] == inst_radius.shape[0]:
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
                         )
 
-                        # rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
-                        rod_scatters[rod_idx].set_sizes(
-                            1000 * np.pi * (scaling_factor * inst_radius) ** 2
+                    rod_scatters[rod_idx]._offsets3d = (
+                        inst_position[0],
+                        inst_position[1],
+                        inst_position[2],
+                    )
+
+                    # rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
+                    rod_scatters[rod_idx].set_sizes(
+                        1000 * np.pi * (scaling_factor * inst_radius) ** 2
+                    )
+
+                if sphere_flag:
+                    for sphere_idx in range(n_visualized_spheres):
+                        sphere_position, _ = sphere_history_unpacker(
+                            sphere_idx, time_idx
+                        )
+                        sphere_artists[sphere_idx]._offsets3d = (
+                            sphere_position[0],
+                            sphere_position[1],
+                            sphere_position[2],
                         )
 
-                    if sphere_flag:
-                        for sphere_idx in range(n_visualized_spheres):
-                            sphere_position, _ = sphere_history_unpacker(
-                                sphere_idx, time_idx
-                            )
-                            sphere_artists[sphere_idx]._offsets3d = (
-                                sphere_position[0],
-                                sphere_position[1],
-                                sphere_position[2],
-                            )
-
-                    writer.grab_frame()
+                writer.grab_frame()
 
         # Be a good boy and close figures
         # https://stackoverflow.com/a/37451036

@@ -11,6 +11,12 @@ from cantilever_distrubuted_load_postprecessing import (
 )
 
 
+class SquareRodSimulator(
+    ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
+):
+    pass
+
+
 def cantilever_subjected_to_a_nonconservative_load(
     n_elem,
     base_length,
@@ -21,11 +27,6 @@ def cantilever_subjected_to_a_nonconservative_load(
     animation=False,
     plot_figure_equilibrium=False,
 ):
-    class SquareRodSimulator(
-        ea.BaseSystemCollection, ea.Constraints, ea.Forcing, ea.Damping, ea.CallBacks
-    ):
-        pass
-
     square_rod_sim = SquareRodSimulator()
 
     square_rod = ea.CosseratRod.straight_rod(
@@ -118,7 +119,6 @@ def cantilever_subjected_to_a_nonconservative_load(
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    print(square_rod_sim)
     print("Total steps", total_steps)
     ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
 
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         load_on_rod,
         x_tip_experiment,
         color="blue",
-        marker="s",
+        marker="o",
         linestyle="None",
         label="x_tip/L",
     )
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         load_on_rod,
         y_tip_experiment,
         color="red",
-        marker="s",
+        marker="o",
         linestyle="None",
         label="y_tip/L",
     )
