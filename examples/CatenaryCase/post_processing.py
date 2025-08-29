@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib
 
-matplotlib.use("Agg")  # Must be before importing matplotlib.pyplot or pylab!
 from matplotlib import pyplot as plt
+import matplotlib.animation as manimation
 from tqdm import tqdm
 import scipy as sci
 
@@ -14,8 +14,6 @@ def plot_video(
     xlim: tuple[float, float] = (0, 4),
     ylim: tuple[float, float] = (-1, 1),
 ) -> None:
-    import matplotlib.animation as manimation
-
     positions_over_time = np.array(plot_params["position"])
 
     print("plot video")
@@ -52,7 +50,6 @@ def plot_catenary(
     """
     Catenary analytical solution from Routh, Edward John (1891). "Chapter X: On Strings". A Treatise on Analytical Statics. University Press.
     """
-    matplotlib.use("TkAgg")
     position = np.array(plot_params["position"])
     lowest_point = np.min(position[-1][2])
     x_catenary = np.linspace(0, base_length, 100)

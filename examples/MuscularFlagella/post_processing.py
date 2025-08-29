@@ -76,36 +76,33 @@ def plot_video(
     # ax.set_aspect("equal")
 
     with writer.saving(fig, video_name, dpi):
-        with plt.style.context("seaborn-whitegrid"):
-            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+        for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                for rod_idx in range(n_visualized_rods):
-                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-                    inst_position = 0.5 * (
-                        inst_position[..., 1:] + inst_position[..., :-1]
-                    )
+            for rod_idx in range(n_visualized_rods):
+                inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
 
-                    # rod_lines[rod_idx].set_xdata([inst_position[0]])
-                    # rod_lines[rod_idx].set_ydata([inst_position[1]])
-                    # rod_lines[rod_idx].set_zdata([inst_position[2]])
+                # rod_lines[rod_idx].set_xdata([inst_position[0]])
+                # rod_lines[rod_idx].set_ydata([inst_position[1]])
+                # rod_lines[rod_idx].set_zdata([inst_position[2]])
 
-                    com = com_history_unpacker(rod_idx, time_idx)
-                    # rod_com_lines[rod_idx].set_xdata([com[0]])
-                    # rod_com_lines[rod_idx].set_ydata([com[1]])
-                    # rod_com_lines[rod_idx].set_zdata([com[2]])
+                com = com_history_unpacker(rod_idx, time_idx)
+                # rod_com_lines[rod_idx].set_xdata([com[0]])
+                # rod_com_lines[rod_idx].set_ydata([com[1]])
+                # rod_com_lines[rod_idx].set_zdata([com[2]])
 
-                    # rod_scatters[rod_idx].set_offsets(inst_position[:3].T)
-                    rod_scatters[rod_idx]._offsets3d = (
-                        inst_position[2],
-                        inst_position[0],
-                        inst_position[1],
-                    )
+                # rod_scatters[rod_idx].set_offsets(inst_position[:3].T)
+                rod_scatters[rod_idx]._offsets3d = (
+                    inst_position[2],
+                    inst_position[0],
+                    inst_position[1],
+                )
 
-                    rod_scatters[rod_idx].set_sizes(
-                        np.pi * (scaling_factor * inst_radius) ** 2 * 0.1
-                    )
+                rod_scatters[rod_idx].set_sizes(
+                    np.pi * (scaling_factor * inst_radius) ** 2 * 0.1
+                )
 
-                writer.grab_frame()
+            writer.grab_frame()
 
     # Be a good boy and close figures
     # https://stackoverflow.com/a/37451036
@@ -185,28 +182,25 @@ def plot_video_2D(
     ax.set_aspect("equal")
 
     with writer.saving(fig, video_name_xy, dpi):
-        with plt.style.context("seaborn-whitegrid"):
-            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+        for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                for rod_idx in range(n_visualized_rods):
-                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-                    inst_position = 0.5 * (
-                        inst_position[..., 1:] + inst_position[..., :-1]
-                    )
+            for rod_idx in range(n_visualized_rods):
+                inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
 
-                    rod_lines[rod_idx].set_xdata([inst_position[0]])
-                    rod_lines[rod_idx].set_ydata([inst_position[1]])
+                rod_lines[rod_idx].set_xdata([inst_position[0]])
+                rod_lines[rod_idx].set_ydata([inst_position[1]])
 
-                    com = com_history_unpacker(rod_idx, time_idx)
-                    rod_com_lines[rod_idx].set_xdata([com[0]])
-                    rod_com_lines[rod_idx].set_ydata([com[1]])
+                com = com_history_unpacker(rod_idx, time_idx)
+                rod_com_lines[rod_idx].set_xdata([com[0]])
+                rod_com_lines[rod_idx].set_ydata([com[1]])
 
-                    rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
-                    rod_scatters[rod_idx].set_sizes(
-                        np.pi * (scaling_factor * inst_radius) ** 2
-                    )
+                rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
+                rod_scatters[rod_idx].set_sizes(
+                    np.pi * (scaling_factor * inst_radius) ** 2
+                )
 
-                writer.grab_frame()
+            writer.grab_frame()
 
     # Be a good boy and close figures
     # https://stackoverflow.com/a/37451036
@@ -242,30 +236,27 @@ def plot_video_2D(
     ax.set_aspect("equal")
 
     with writer.saving(fig, video_name_xz, dpi):
-        with plt.style.context("seaborn-whitegrid"):
-            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+        for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                for rod_idx in range(n_visualized_rods):
-                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
-                    inst_position = 0.5 * (
-                        inst_position[..., 1:] + inst_position[..., :-1]
-                    )
+            for rod_idx in range(n_visualized_rods):
+                inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                inst_position = 0.5 * (inst_position[..., 1:] + inst_position[..., :-1])
 
-                    rod_lines[rod_idx].set_xdata([inst_position[0]])
-                    rod_lines[rod_idx].set_ydata([inst_position[2]])
+                rod_lines[rod_idx].set_xdata([inst_position[0]])
+                rod_lines[rod_idx].set_ydata([inst_position[2]])
 
-                    com = com_history_unpacker(rod_idx, time_idx)
-                    rod_com_lines[rod_idx].set_xdata([com[0]])
-                    rod_com_lines[rod_idx].set_ydata([com[2]])
+                com = com_history_unpacker(rod_idx, time_idx)
+                rod_com_lines[rod_idx].set_xdata([com[0]])
+                rod_com_lines[rod_idx].set_ydata([com[2]])
 
-                    rod_scatters[rod_idx].set_offsets(
-                        np.vstack((inst_position[0], inst_position[2])).T
-                    )
-                    rod_scatters[rod_idx].set_sizes(
-                        np.pi * (scaling_factor * inst_radius) ** 2
-                    )
+                rod_scatters[rod_idx].set_offsets(
+                    np.vstack((inst_position[0], inst_position[2])).T
+                )
+                rod_scatters[rod_idx].set_sizes(
+                    np.pi * (scaling_factor * inst_radius) ** 2
+                )
 
-                writer.grab_frame()
+            writer.grab_frame()
 
     # Be a good boy and close figures
     # https://stackoverflow.com/a/37451036

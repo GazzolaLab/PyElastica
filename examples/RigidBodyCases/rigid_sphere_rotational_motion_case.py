@@ -30,7 +30,7 @@ def rigid_sphere_rolling_verification(torque=0.0):
     # setting up test params
     density = 1000
     sphere_radius = 0.05
-    sphere = ea.Sphere([0.0, sphere_radius, 0.0], sphere_radius, density)
+    sphere = ea.Sphere(np.array([0.0, sphere_radius, 0.0]), sphere_radius, density)
 
     rigid_sphere_sim.append(sphere)
 

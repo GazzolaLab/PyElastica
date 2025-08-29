@@ -107,6 +107,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         index_one: int,
         system_two: SystemType,
         index_two: int,
+        time: np.float64,
     ):
         """
         Apply joint force to the connected systems.
@@ -196,6 +197,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         index_one: int,
         system_two: SystemType,
         index_two: int,
+        time: np.float64,
     ):
         """
         Apply restoring joint torques to the connected systems.
@@ -214,7 +216,6 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             Index of second system for joint.
 
         """
-        pass
 
 
 class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint):

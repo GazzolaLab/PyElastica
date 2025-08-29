@@ -293,7 +293,9 @@ class SnakeRodPlaneContact(NoContact):
         # Modify this list to include the allowed system types for contact
         return [SurfaceBase]
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(
+        self, system_one: RodType, system_two: SystemType, time: float
+    ) -> None:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 

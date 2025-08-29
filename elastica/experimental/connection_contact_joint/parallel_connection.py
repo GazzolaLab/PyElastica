@@ -82,7 +82,7 @@ class SurfaceJointSideBySide(FreeJoint):
         offset_btw_rods,
         **kwargs,
     ):
-        super().__init__(np.array(k), np.array(nu))
+        super().__init__(k=np.array(k), nu=np.array(nu))
 
         self.k_repulsive = np.array(k_repulsive)
 
@@ -96,7 +96,7 @@ class SurfaceJointSideBySide(FreeJoint):
         )
 
     # Apply force is same as free joint
-    def apply_forces(self, system_one, index_one, system_two, index_two):
+    def apply_forces(self, system_one, index_one, system_two, index_two, time):
         # TODO: documentation
 
         (
@@ -191,7 +191,7 @@ class SurfaceJointSideBySide(FreeJoint):
 
         # Compute spring force between two rods
         distance_vector = surface_position_rod_two - surface_position_rod_one
-        np.round_(distance_vector, 12, distance_vector)
+        np.round(distance_vector, 12, distance_vector)
         spring_force = k * (distance_vector)
 
         # Damping force
@@ -220,7 +220,7 @@ class SurfaceJointSideBySide(FreeJoint):
             + offset_rod_two
         )
 
-        np.round_(penetration_strain, 12, penetration_strain)
+        np.round(penetration_strain, 12, penetration_strain)
         # Contact present only if rods penetrate to each other
         idx_penetrate = np.where(penetration_strain < 0)[0]
         k_contact = np.zeros(index_one.shape[0])
@@ -256,7 +256,7 @@ class SurfaceJointSideBySide(FreeJoint):
             spring_force,
         )
 
-    def apply_torques(self, system_one, index_one, system_two, index_two):
+    def apply_torques(self, system_one, index_one, system_two, index_two, time):
         # pass
 
         self._apply_torques(

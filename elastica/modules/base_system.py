@@ -18,6 +18,7 @@ from elastica.typing import (
 )
 
 import numpy as np
+from itertools import chain
 
 from collections.abc import MutableSequence
 
@@ -267,7 +268,9 @@ class BaseSystemCollection(MutableSequence):
         Call constrain rates functions for all features.
         Features are registered in _feature_group_constrain_rates.
         """
-        for func in self._feature_group_constrain_rates:
+        for func in chain(
+            self._feature_group_constrain_rates, self._feature_group_damping
+        ):
             func(time=time)
 
     @final

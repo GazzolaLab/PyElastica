@@ -79,17 +79,16 @@ def plot_video(
     ax.set_ylim([min_limits[1], max_limits[1]])
     ax.set_zlim([min_limits[2], max_limits[2]])
     with writer.saving(fig, video_name, dpi):
-        with plt.style.context("seaborn-white"):
-            for i in range(0, positions.shape[0], int(step)):
-                rod_line.set_xdata([positions[i, 0]])
-                rod_line.set_ydata([positions[i, 1]])
-                rod_line.set_3d_properties([positions[i, 2]])
-                XC, YC, ZC = make_data_for_cylinder_along_y(
-                    cylinder_origin[i, ...], cylinder_radius, cylinder_height
-                )
-                surf.remove()
-                surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
-                writer.grab_frame()
+        for i in range(0, positions.shape[0], int(step)):
+            rod_line.set_xdata(positions[i, 0])
+            rod_line.set_ydata(positions[i, 1])
+            rod_line.set_3d_properties(positions[i, 2])
+            XC, YC, ZC = make_data_for_cylinder_along_y(
+                cylinder_origin[i, ...], cylinder_radius, cylinder_height
+            )
+            surf.remove()
+            surf = ax.plot_surface(XC, YC, ZC, color="g", alpha=0.5)
+            writer.grab_frame()
 
     from matplotlib.patches import Circle
 
@@ -373,47 +372,44 @@ def plot_video_with_surface(
         video_name_3D = folder_name + "3D_" + video_name
 
         with writer.saving(fig, video_name_3D, dpi):
-            with plt.style.context("seaborn-whitegrid"):
-                for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                    for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(
-                            rod_idx, time_idx
-                        )
-                        if not inst_position.shape[1] == inst_radius.shape[0]:
-                            inst_position = 0.5 * (
-                                inst_position[..., 1:] + inst_position[..., :-1]
-                            )
-
-                        rod_scatters[rod_idx]._offsets3d = (
-                            inst_position[0],
-                            inst_position[1],
-                            inst_position[2],
+                for rod_idx in range(n_visualized_rods):
+                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                    if not inst_position.shape[1] == inst_radius.shape[0]:
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
                         )
 
-                        scaling_factor = (
-                            ax.get_window_extent().width
-                            / (max_axis_length)
-                            * 72.0
-                            / fig.dpi
+                    rod_scatters[rod_idx]._offsets3d = (
+                        inst_position[0],
+                        inst_position[1],
+                        inst_position[2],
+                    )
+
+                    scaling_factor = (
+                        ax.get_window_extent().width
+                        / (max_axis_length)
+                        * 72.0
+                        / fig.dpi
+                    )
+                    # rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
+                    rod_scatters[rod_idx].set_sizes(
+                        4 * (scaling_factor * inst_radius) ** 2
+                    )
+
+                if sphere_flag:
+                    for sphere_idx in range(n_visualized_spheres):
+                        sphere_position, _ = sphere_history_unpacker(
+                            sphere_idx, time_idx
                         )
-                        # rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
-                        rod_scatters[rod_idx].set_sizes(
-                            4 * (scaling_factor * inst_radius) ** 2
+                        sphere_artists[sphere_idx]._offsets3d = (
+                            sphere_position[0],
+                            sphere_position[1],
+                            sphere_position[2],
                         )
 
-                    if sphere_flag:
-                        for sphere_idx in range(n_visualized_spheres):
-                            sphere_position, _ = sphere_history_unpacker(
-                                sphere_idx, time_idx
-                            )
-                            sphere_artists[sphere_idx]._offsets3d = (
-                                sphere_position[0],
-                                sphere_position[1],
-                                sphere_position[2],
-                            )
-
-                    writer.grab_frame()
+                writer.grab_frame()
 
         # Be a good boy and close figures
         # https://stackoverflow.com/a/37451036
@@ -473,47 +469,44 @@ def plot_video_with_surface(
         video_name_2D = folder_name + "2D_xy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
-            with plt.style.context("seaborn-whitegrid"):
-                for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                    for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(
-                            rod_idx, time_idx
-                        )
-                        if not inst_position.shape[1] == inst_radius.shape[0]:
-                            inst_position = 0.5 * (
-                                inst_position[..., 1:] + inst_position[..., :-1]
-                            )
-
-                        rod_lines[rod_idx].set_xdata([inst_position[0]])
-                        rod_lines[rod_idx].set_ydata([inst_position[1]])
-
-                        com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata([com[0]])
-                        rod_com_lines[rod_idx].set_ydata([com[1]])
-
-                        rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
-                        scaling_factor = (
-                            ax.get_window_extent().width
-                            / (max_axis_length)
-                            * 72.0
-                            / fig.dpi
-                        )
-                        rod_scatters[rod_idx].set_sizes(
-                            4 * (scaling_factor * inst_radius) ** 2
+                for rod_idx in range(n_visualized_rods):
+                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                    if not inst_position.shape[1] == inst_radius.shape[0]:
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
                         )
 
-                    if sphere_flag:
-                        for sphere_idx in range(n_visualized_spheres):
-                            sphere_position, _ = sphere_history_unpacker(
-                                sphere_idx, time_idx
-                            )
-                            sphere_artists[sphere_idx].center = (
-                                sphere_position[0],
-                                sphere_position[1],
-                            )
+                    rod_lines[rod_idx].set_xdata([inst_position[0]])
+                    rod_lines[rod_idx].set_ydata([inst_position[1]])
 
-                    writer.grab_frame()
+                    com = com_history_unpacker(rod_idx, time_idx)
+                    rod_com_lines[rod_idx].set_xdata([com[0]])
+                    rod_com_lines[rod_idx].set_ydata([com[1]])
+
+                    rod_scatters[rod_idx].set_offsets(inst_position[:2].T)
+                    scaling_factor = (
+                        ax.get_window_extent().width
+                        / (max_axis_length)
+                        * 72.0
+                        / fig.dpi
+                    )
+                    rod_scatters[rod_idx].set_sizes(
+                        4 * (scaling_factor * inst_radius) ** 2
+                    )
+
+                if sphere_flag:
+                    for sphere_idx in range(n_visualized_spheres):
+                        sphere_position, _ = sphere_history_unpacker(
+                            sphere_idx, time_idx
+                        )
+                        sphere_artists[sphere_idx].center = (
+                            sphere_position[0],
+                            sphere_position[1],
+                        )
+
+                writer.grab_frame()
 
         # Be a good boy and close figures
         # https://stackoverflow.com/a/37451036
@@ -573,49 +566,46 @@ def plot_video_with_surface(
         video_name_2D = folder_name + "2D_zy_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
-            with plt.style.context("seaborn-whitegrid"):
-                for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                    for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(
-                            rod_idx, time_idx
-                        )
-                        if not inst_position.shape[1] == inst_radius.shape[0]:
-                            inst_position = 0.5 * (
-                                inst_position[..., 1:] + inst_position[..., :-1]
-                            )
-
-                        rod_lines[rod_idx].set_xdata([inst_position[2]])
-                        rod_lines[rod_idx].set_ydata([inst_position[1]])
-
-                        com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata([com[2]])
-                        rod_com_lines[rod_idx].set_ydata([com[1]])
-
-                        rod_scatters[rod_idx].set_offsets(
-                            np.vstack((inst_position[2], inst_position[1])).T
-                        )
-                        scaling_factor = (
-                            ax.get_window_extent().width
-                            / (max_axis_length)
-                            * 72.0
-                            / fig.dpi
-                        )
-                        rod_scatters[rod_idx].set_sizes(
-                            4 * (scaling_factor * inst_radius) ** 2
+                for rod_idx in range(n_visualized_rods):
+                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                    if not inst_position.shape[1] == inst_radius.shape[0]:
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
                         )
 
-                    if sphere_flag:
-                        for sphere_idx in range(n_visualized_spheres):
-                            sphere_position, _ = sphere_history_unpacker(
-                                sphere_idx, time_idx
-                            )
-                            sphere_artists[sphere_idx].center = (
-                                sphere_position[2],
-                                sphere_position[1],
-                            )
+                    rod_lines[rod_idx].set_xdata([inst_position[2]])
+                    rod_lines[rod_idx].set_ydata([inst_position[1]])
 
-                    writer.grab_frame()
+                    com = com_history_unpacker(rod_idx, time_idx)
+                    rod_com_lines[rod_idx].set_xdata([com[2]])
+                    rod_com_lines[rod_idx].set_ydata([com[1]])
+
+                    rod_scatters[rod_idx].set_offsets(
+                        np.vstack((inst_position[2], inst_position[1])).T
+                    )
+                    scaling_factor = (
+                        ax.get_window_extent().width
+                        / (max_axis_length)
+                        * 72.0
+                        / fig.dpi
+                    )
+                    rod_scatters[rod_idx].set_sizes(
+                        4 * (scaling_factor * inst_radius) ** 2
+                    )
+
+                if sphere_flag:
+                    for sphere_idx in range(n_visualized_spheres):
+                        sphere_position, _ = sphere_history_unpacker(
+                            sphere_idx, time_idx
+                        )
+                        sphere_artists[sphere_idx].center = (
+                            sphere_position[2],
+                            sphere_position[1],
+                        )
+
+                writer.grab_frame()
 
         # Be a good boy and close figures
         # https://stackoverflow.com/a/37451036
@@ -675,49 +665,46 @@ def plot_video_with_surface(
         video_name_2D = folder_name + "2D_xz_" + video_name
 
         with writer.saving(fig, video_name_2D, dpi):
-            with plt.style.context("seaborn-whitegrid"):
-                for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
+            for time_idx in tqdm(range(0, sim_time.shape[0], int(step))):
 
-                    for rod_idx in range(n_visualized_rods):
-                        inst_position, inst_radius = rod_history_unpacker(
-                            rod_idx, time_idx
-                        )
-                        if not inst_position.shape[1] == inst_radius.shape[0]:
-                            inst_position = 0.5 * (
-                                inst_position[..., 1:] + inst_position[..., :-1]
-                            )
-
-                        rod_lines[rod_idx].set_xdata([inst_position[0]])
-                        rod_lines[rod_idx].set_ydata([inst_position[2]])
-
-                        com = com_history_unpacker(rod_idx, time_idx)
-                        rod_com_lines[rod_idx].set_xdata([com[0]])
-                        rod_com_lines[rod_idx].set_ydata([com[2]])
-
-                        rod_scatters[rod_idx].set_offsets(
-                            np.vstack((inst_position[0], inst_position[2])).T
-                        )
-                        scaling_factor = (
-                            ax.get_window_extent().width
-                            / (max_axis_length)
-                            * 72.0
-                            / fig.dpi
-                        )
-                        rod_scatters[rod_idx].set_sizes(
-                            4 * (scaling_factor * inst_radius) ** 2
+                for rod_idx in range(n_visualized_rods):
+                    inst_position, inst_radius = rod_history_unpacker(rod_idx, time_idx)
+                    if not inst_position.shape[1] == inst_radius.shape[0]:
+                        inst_position = 0.5 * (
+                            inst_position[..., 1:] + inst_position[..., :-1]
                         )
 
-                    if sphere_flag:
-                        for sphere_idx in range(n_visualized_spheres):
-                            sphere_position, _ = sphere_history_unpacker(
-                                sphere_idx, time_idx
-                            )
-                            sphere_artists[sphere_idx].center = (
-                                sphere_position[0],
-                                sphere_position[2],
-                            )
+                    rod_lines[rod_idx].set_xdata([inst_position[0]])
+                    rod_lines[rod_idx].set_ydata([inst_position[2]])
 
-                    writer.grab_frame()
+                    com = com_history_unpacker(rod_idx, time_idx)
+                    rod_com_lines[rod_idx].set_xdata([com[0]])
+                    rod_com_lines[rod_idx].set_ydata([com[2]])
+
+                    rod_scatters[rod_idx].set_offsets(
+                        np.vstack((inst_position[0], inst_position[2])).T
+                    )
+                    scaling_factor = (
+                        ax.get_window_extent().width
+                        / (max_axis_length)
+                        * 72.0
+                        / fig.dpi
+                    )
+                    rod_scatters[rod_idx].set_sizes(
+                        4 * (scaling_factor * inst_radius) ** 2
+                    )
+
+                if sphere_flag:
+                    for sphere_idx in range(n_visualized_spheres):
+                        sphere_position, _ = sphere_history_unpacker(
+                            sphere_idx, time_idx
+                        )
+                        sphere_artists[sphere_idx].center = (
+                            sphere_position[0],
+                            sphere_position[2],
+                        )
+
+                writer.grab_frame()
 
         # Be a good boy and close figures
         # https://stackoverflow.com/a/37451036

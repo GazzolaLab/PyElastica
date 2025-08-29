@@ -1,18 +1,22 @@
-import elastica as ea
+import json
 
 import numpy as np
+from matplotlib import pyplot as plt
+
+import elastica as ea
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 from elastica.timestepper import integrate
 from elastica.external_forces import UniformTorques
-from tumbling_unconstrained_rod_postprocessing import (
+
+from forces import (
     EndpointforcesWithTimeFactor,
     EndpointtorqueWithTimeFactor,
-    plot_video_with_surface,
-    adjust_square_cross_section,
     lamda_t_function,
 )
-from matplotlib import pyplot as plt
-import json
+from tumbling_unconstrained_rod_postprocessing import (
+    plot_video_with_surface,
+    adjust_square_cross_section,
+)
 
 n_elem = 256
 start = np.array([0.0, 0.0, 8.0])
@@ -23,14 +27,12 @@ base_length = 10
 
 side_length = 0.01
 
-
 base_radius = side_length / (np.pi ** (1 / 2))
-
 
 density = 1e4
 youngs_modulus = 1e7
-poisson_ratio = 0
-shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+poisson_ratio = 0.3
+shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
 
 
 class NonConstrainRodSimulator(
@@ -62,7 +64,7 @@ print("bend_matrix=", square_rod.bend_matrix)
 square_rod_sim.append(square_rod)
 
 dl = base_length / n_elem
-dt = 0.01 * dl / 1
+dt = 0.01 * dl / 10
 
 origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([20.0, 0.0, 0.0])

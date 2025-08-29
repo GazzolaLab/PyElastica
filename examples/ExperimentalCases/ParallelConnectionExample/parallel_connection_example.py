@@ -120,22 +120,21 @@ parallel_connection_sim.add_forcing_to(rod_one).using(
     rod_one, rod_two, (0, n_elem), (0, n_elem)
 )
 
-for i in range(n_elem):
-    parallel_connection_sim.connect(
-        first_rod=rod_one, second_rod=rod_two, first_connect_idx=i, second_connect_idx=i
-    ).using(
-        SurfaceJointSideBySide,
-        k=1e2,
-        nu=1e-5,
-        k_repulsive=1e3,
-        rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
-            :, i
-        ],
-        rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame[
-            :, i
-        ],
-        offset_btw_rods=offset_btw_rods[i],
-    )  # k=kg/s2 nu=kg/s 1e-2
+indices = np.arange(n_elem)
+parallel_connection_sim.connect(
+    first_rod=rod_one,
+    second_rod=rod_two,
+    first_connect_idx=indices,
+    second_connect_idx=indices,
+).using(
+    SurfaceJointSideBySide,
+    k=1e2,
+    nu=1e-5,
+    k_repulsive=1e3,
+    rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame,
+    rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame,
+    offset_btw_rods=offset_btw_rods,
+)  # k=kg/s2 nu=kg/s 1e-2
 
 
 # add damping

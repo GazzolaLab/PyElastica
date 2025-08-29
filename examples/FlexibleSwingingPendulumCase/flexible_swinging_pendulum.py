@@ -63,11 +63,11 @@ class HingeBC(ea.ConstraintBase):
         self.fixed_position = np.array(fixed_position)
         self.fixed_directors = np.array(fixed_directors)
 
-    def constrain_values(self, rod, time):
-        rod.position_collection[..., 0] = self.fixed_position
+    def constrain_values(self, system, time):
+        system.position_collection[..., 0] = self.fixed_position
 
-    def constrain_rates(self, rod, time):
-        rod.velocity_collection[..., 0] = 0.0
+    def constrain_rates(self, system, time):
+        system.velocity_collection[..., 0] = 0.0
 
 
 pendulum_sim.constrain(pendulum_rod).using(
@@ -164,13 +164,12 @@ if PLOT_VIDEO:
         ax.set_xlim([-1.0 - margin, 1.0 + margin])
         ax.set_ylim([-1.0 - margin, 0.0 + margin])
         with writer.saving(fig, video_name, dpi):
-            with plt.style.context("seaborn-white"):
-                for i in range(0, positions.shape[0], int(step)):
-                    rod_line.set_xdata([positions[i, 2]])
-                    rod_line.set_ydata([positions[i, 0]])
-                    tip_line.set_xdata([positions[:i, 2, -1]])
-                    tip_line.set_ydata([positions[:i, 0, -1]])
-                    writer.grab_frame()
+            for i in range(0, positions.shape[0], int(step)):
+                rod_line.set_xdata([positions[i, 2]])
+                rod_line.set_ydata([positions[i, 0]])
+                tip_line.set_xdata([positions[:i, 2, -1]])
+                tip_line.set_ydata([positions[:i, 0, -1]])
+                writer.grab_frame()
 
     plot_video(recorded_history, "swinging_flexible_pendulum.mp4")
 

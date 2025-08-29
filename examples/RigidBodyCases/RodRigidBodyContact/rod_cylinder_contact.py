@@ -159,7 +159,7 @@ def rod_cylinder_contact_case(inclination_angle=0.0):
 
                 cylinder_position_collection = (
                     start_position
-                    + np.linspace(0, cylinder_length[0], self.n_node_cylinder)
+                    + np.linspace(0, cylinder_length, self.n_node_cylinder)
                     * cylinder_direction
                 )
                 cylinder_radius_collection = (
