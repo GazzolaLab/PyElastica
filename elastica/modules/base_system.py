@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import TYPE_CHECKING, Type, Generator, Any, overload
+from typing import TYPE_CHECKING, Type, Generator, overload
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -26,6 +26,9 @@ from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.rigid_body import RigidBodyBase
 from elastica.surface.surface_base import SurfaceBase
 
+from ..memory_block.memory_block_rod import MemoryBlockCosseratRod
+from ..memory_block.memory_block_rigid_body import MemoryBlockRigidBody
+
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
 from .protocol import ModuleProtocol
@@ -39,8 +42,6 @@ class BaseSystemCollection(MutableSequence):
 
         Attributes
         ----------
-        allowed_sys_types: tuple[Type]
-            Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
         systems: Callable
             Returns all system objects. Once finalize, block objects are also included.
         blocks: Callable
@@ -76,12 +77,20 @@ class BaseSystemCollection(MutableSequence):
         # We need to initialize our mixin classes
         super().__init__()
 
-        # List of system types/bases that are allowed
-        self.allowed_sys_types: tuple[Type, ...] = (
+        # System types/bases that are allowed
+        self._allowed_sys_types: tuple[Type, ...] = (
             RodBase,
             RigidBodyBase,
             SurfaceBase,
         )
+        # Block support for System types.
+        # If True, the system can run without a block support.
+        # If False, the system is not part of time stepping integration.
+        self._associated_block_types: dict[Type, Type | bool] = {
+            RodBase: MemoryBlockCosseratRod,
+            RigidBodyBase: MemoryBlockRigidBody,
+            SurfaceBase: False,
+        }
 
         # List of systems to be integrated
         self.__systems: list[StaticSystemType] = []
@@ -92,8 +101,8 @@ class BaseSystemCollection(MutableSequence):
         self._finalize_flag: bool = False
 
     @final
-    def _check_type(self, sys_to_be_added: Any) -> bool:
-        if not isinstance(sys_to_be_added, self.allowed_sys_types):
+    def _check_type(self, sys_to_be_added: Type) -> bool:
+        if not isinstance(sys_to_be_added, self._allowed_sys_types):
             raise TypeError(
                 "{0}\n"
                 "is not a system passing validity\n"
@@ -102,7 +111,7 @@ class BaseSystemCollection(MutableSequence):
                 "satisfies all criteria for being a system, please add\n"
                 "it using BaseSystem.extend_allowed_types.\n"
                 "The allowed types are\n"
-                "{1}".format(sys_to_be_added.__class__, self.allowed_sys_types)
+                "{1}".format(sys_to_be_added.__class__, self._allowed_sys_types)
             )
         if not all(
             isinstance(self, req)
@@ -145,13 +154,30 @@ class BaseSystemCollection(MutableSequence):
     def extend_allowed_types(
         self, additional_types: tuple[Type[SystemType], ...]
     ) -> None:
-        self.allowed_sys_types += additional_types
+        """
+        Extend the allowed system types.
+        By default, added system will not have block support.
+        In order to add block support, use `extend_block_supports`.
+        """
+        self._allowed_sys_types += additional_types
 
     @final
-    def override_allowed_types(
-        self, allowed_types: tuple[Type[SystemType], ...]
+    def extend_block_supports(
+        self, allowed_types: dict[Type, Type[BlockSystemType] | bool]
     ) -> None:
-        self.allowed_sys_types = allowed_types
+        """
+        Extend the block support for system types.
+        If true, the system will run without a block support.
+        If false, the system will be excluded from time stepping integration.
+        """
+        for system_type, block_type in allowed_types.items():
+            assert (
+                system_type in self._allowed_sys_types
+            ), "System type not registered. Run extend_allowed_types first."
+            assert (
+                system_type not in self._associated_block_types
+            ), "System type already registered"
+            self._associated_block_types[system_type] = block_type
 
     @final
     def get_system_index(
@@ -231,7 +257,9 @@ class BaseSystemCollection(MutableSequence):
         self._finalize_flag = True
 
         # Construct memory block
-        self.__final_blocks = construct_memory_block_structures(self.__systems)
+        self.__final_blocks = construct_memory_block_structures(
+            self.__systems, self._associated_block_types
+        )
         # FIXME: We need this to make ring-rod working.
         # But probably need to be refactored
         self.__systems.extend(self.__final_blocks)

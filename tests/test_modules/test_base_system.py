@@ -79,7 +79,7 @@ class TestBaseSystemCollection:
         from elastica.surface import SurfaceBase
 
         # Types are extended in the fixture
-        assert bsc.allowed_sys_types == (
+        assert bsc._allowed_sys_types == (
             RodBase,
             RigidBodyBase,
             SurfaceBase,
@@ -88,6 +88,47 @@ class TestBaseSystemCollection:
             str,
             np.ndarray,
         )
+
+    def test_extend_block_supports(self, load_collection):
+        """Test extend_block_supports method with valid inputs"""
+        bsc = load_collection
+
+        # Test adding block support for int and float types
+        block_supports = {int: True, float: False}
+        bsc.extend_block_supports(block_supports)
+
+        # Check that the block types were added correctly
+        assert bsc._associated_block_types[int] == True
+        assert bsc._associated_block_types[float] == False
+
+    def test_extend_block_supports_with_unregistered_system_type_throws(
+        self, load_collection
+    ):
+        """Test that extend_block_supports raises error for unregistered system types"""
+        bsc = load_collection
+
+        # Try to add block support for a type that wasn't registered with extend_allowed_types
+        unregistered_type = dict
+        block_supports = {unregistered_type: True}
+
+        with pytest.raises(AssertionError) as excinfo:
+            bsc.extend_block_supports(block_supports)
+
+    def test_extend_block_supports_with_already_registered_system_type_throws(
+        self, load_collection
+    ):
+        """Test that extend_block_supports raises error for already registered system types"""
+        bsc = load_collection
+
+        # First, add block support for str (which hasn't been registered in block_supports yet)
+        block_supports_1 = {str: True}
+        bsc.extend_block_supports(block_supports_1)
+
+        # Try to add block support for str again
+        block_supports_2 = {str: False}
+
+        with pytest.raises(AssertionError) as excinfo:
+            bsc.extend_block_supports(block_supports_2)
 
     def test_extend_correctness(self, load_collection):
         """
@@ -101,17 +142,6 @@ class TestBaseSystemCollection:
         bsc._check_type(3.0)  # a float object
         bsc._check_type("whats the point of doing a PhD?")  # a str object
 
-    def test_override_allowed_types(self, load_collection, mock_rod):
-        bsc = load_collection
-        bsc.override_allowed_types((int, float, str))
-
-        # First check that adding a rod object throws an
-        # error as we have replaced rods now it
-        with pytest.raises(TypeError) as excinfo:
-            # None is the rod/system parameter
-            bsc._check_type(mock_rod)
-        assert "not a system" in str(excinfo.value)
-
     def test_override_correctness(self, load_collection):
         bsc = load_collection
         # then see if int, float and str are okay.
@@ -123,7 +153,7 @@ class TestBaseSystemCollection:
         from elastica.rod import RodBase
 
         bsc = load_collection
-        bsc.override_allowed_types((RodBase,))
+        bsc._allowed_sys_types = (RodBase,)
         with pytest.raises(AssertionError) as excinfo:
             bsc.get_system_index(100)
         assert "exceeds number of" in str(excinfo.value)
