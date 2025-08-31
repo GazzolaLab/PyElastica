@@ -60,7 +60,11 @@ def test_construct_memory_block_structures_for_rigid_bodies(n_bodies):
 
     systems = [MockRigidBodyForTesting() for _ in range(n_bodies)]
 
-    memory_block_list = construct_memory_block_structures(systems)
+    associated_block_types = {MockRigidBodyForTesting: MemoryBlockRigidBody}
+
+    memory_block_list = construct_memory_block_structures(
+        systems, associated_block_types
+    )
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockRigidBody)
 

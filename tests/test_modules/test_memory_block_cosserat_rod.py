@@ -96,7 +96,9 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
         for _ in range(n_rods)
     ]
 
-    memory_block_list = construct_memory_block_structures(systems)
+    associated_block_types = {BaseRodForTesting: MemoryBlockCosseratRod}
+
+    memory_block_list = construct_memory_block_structures(systems, associated_block_types)
 
     assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
 

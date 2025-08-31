@@ -31,7 +31,9 @@ def construct_memory_block_structures(
     system_list = defaultdict(list)
     index_list = defaultdict(list)
     for system_idx, system in enumerate(systems):
-        block_type = associated_block_types[type(system)]
+        block_type = [
+            t for k, t in associated_block_types.items() if isinstance(system, k)
+        ][0]
         if block_type is False:
             # System is not part of time stepping integration.
             continue
