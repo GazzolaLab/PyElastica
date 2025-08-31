@@ -3,7 +3,7 @@ __doc__ = """Mock Rod classes for testing."""
 import numpy as np
 
 
-from elastica.memory_block.memory_block_rod_base import (
+from elastica.memory_block.utils import (
     make_block_memory_periodic_boundary_metadata,
 )
 from elastica.utils import MaxDimension
