@@ -23,7 +23,7 @@ class RigidBodyBase(ABC):
 
     def __init__(self) -> None:
         # rigid body does not have elements it only has one node. We are setting n_elems to
-        # make code to work. _bootstrap_from_data requires n_elems to be define
+        # make code to work.
         self.n_elems: int = 1
         self.n_nodes: int = 1
 
