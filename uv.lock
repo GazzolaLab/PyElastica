@@ -1279,7 +1279,7 @@ wheels = [
 
 [[package]]
 name = "pyelastica"
-version = "0.3.3.post1"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "cma" },
