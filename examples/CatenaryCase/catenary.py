@@ -112,7 +112,10 @@ catenary_sim.finalize()
 
 timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 
-ea.integrate(timestepper, catenary_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(catenary_sim, time, dt)
 position = np.array(recorded_history["position"])
 b = np.min(position[-1][2])
 

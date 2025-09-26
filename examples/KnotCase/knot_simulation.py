@@ -173,7 +173,10 @@ if __name__ == "__main__":
     timestepper = ea.PositionVerlet()
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, simulator, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(simulator, time, dt)
 
     if GENERATE_3D_VIDEO:
         filename_video = "knot3D.mp4"

@@ -126,7 +126,10 @@ timestepper = ea.PositionVerlet()
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, butterfly_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(butterfly_sim, time, dt)
 
 if PLOT_FIGURE:
     # Plot the histories

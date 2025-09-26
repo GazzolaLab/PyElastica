@@ -2,7 +2,6 @@ import numpy as np
 from elastica.boundary_conditions import OneEndFixedBC
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
 import elastica as ea
 from examples.convergence_functions import calculate_error_norm
 from cantilever_transversal_load_postprocessing import adjust_square_cross_section
@@ -126,7 +125,10 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
 
     timestepper = PositionVerlet()
 
-    integrate(timestepper, squarerod_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(squarerod_sim, time, dt)
     print(rod.position_collection[2, ...])
 
     error, l1, l2, linf = calculate_error_norm(
