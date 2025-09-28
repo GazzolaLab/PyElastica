@@ -57,6 +57,7 @@ class CallBacks:
         _callback: ModuleProtocol = _CallBack(sys_idx)
         self._callback_list.append(_callback)
         self._feature_group_callback.append_id(_callback)
+        self._feature_group_on_close.append_id(_callback)
 
         return _callback
 
@@ -70,6 +71,9 @@ class CallBacks:
                 callback_instance.make_callback, system=self[sys_id]
             )
             self._feature_group_callback.add_operators(callback, [callback_operator])
+            self._feature_group_on_close.add_operators(
+                callback, [callback_instance.on_close]
+            )
 
         self._callback_list.clear()
         del self._callback_list

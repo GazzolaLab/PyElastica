@@ -1,4 +1,4 @@
-from typing import Protocol, Generator, TypeVar, Any, Type, overload, Iterator
+from typing import Protocol, Generator, TypeVar, Any, Type, overload, Iterator, Callable
 from typing import TYPE_CHECKING
 from typing_extensions import Self  # python 3.11: from typing import Self
 
@@ -79,6 +79,10 @@ class SystemCollectionProtocol(Protocol):
     _feature_group_finalize: list[OperatorFinalizeType]
 
     def finalize(self) -> None: ...
+
+    _feature_group_on_close: "OperatorGroupFIFO[Callable, ModuleProtocol]"
+
+    def close(self) -> None: ...
 
 
 # Mixin Protocols (Used to type Self)
