@@ -3,6 +3,7 @@ This function is a module to construct memory blocks for different types of syst
 Cosserat Rods, Rigid Body etc.
 """
 from typing import cast
+
 from elastica.typing import (
     RodType,
     RigidBodyType,

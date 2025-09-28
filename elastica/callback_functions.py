@@ -43,7 +43,12 @@ class CallBackBaseClass(Generic[T]):
             Simulation step.
 
         """
-        pass
+
+    def on_close(self) -> None:
+        """
+        This method is called collectively when when .close() is
+        called by the system collection.
+        """
 
 
 class MyCallBack(CallBackBaseClass):
@@ -264,15 +269,10 @@ class ExportCallBack(CallBackBaseClass):
         else:
             return self.save_path.format(self.file_count - 1, self._ext)
 
-    def close(self) -> None:
+    def on_close(self) -> None:
         """
-        Save residual buffer
+        Save residual buffer.
+        Can be called using `simulator.close()`.
         """
         if self.buffer_size:
             self._dump()
-
-    def clear(self) -> None:
-        """
-        Alias to `close`
-        """
-        self.close()
