@@ -183,7 +183,7 @@ if __name__ == "__main__":
         plot_video3D(recorded_history, video_name=filename_video, margin=0.2, fps=10)
 
     # Plot knot topological quantities
-    time = np.asarray(recorded_history["time"])
+    timestep = np.asarray(recorded_history["time"])
     positions = np.asarray(recorded_history["position"])
     orientations = np.asarray(recorded_history["orientation"])
     radii = np.asarray(recorded_history["radius"])
@@ -198,9 +198,9 @@ if __name__ == "__main__":
     )
 
     plt.figure()
-    plt.plot(time, total_twist, label="twist")
-    plt.plot(time, total_writhe, label="writhe")
-    plt.plot(time, total_link, label="link")
+    plt.plot(timestep, total_twist, label="twist")
+    plt.plot(timestep, total_writhe, label="writhe")
+    plt.plot(timestep, total_link, label="link")
     plt.legend()
     plt.xlabel("time")
     plt.ylabel("link-writhe-twist quantity")
