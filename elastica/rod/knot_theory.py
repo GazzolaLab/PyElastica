@@ -714,8 +714,11 @@ def _compute_additional_segment(
     beginning_direction = np.zeros((timesize, 3))
     end_direction = np.zeros((timesize, 3))
 
-    if type_of_additional_segment == "next_tangent":
-        for i in range(timesize):
+    # Compute new centerline and beginning/end direction
+    for i in range(timesize):
+
+        if type_of_additional_segment == "next_tangent":
+
             # Direction of the additional point at the beginning of the rod
             direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, 1]
             direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
@@ -723,16 +726,16 @@ def _compute_additional_segment(
             # Direction of the additional point at the end of the rod
             direction_of_rod_end = center_line[i, :, -1] - center_line[i, :, -2]
             direction_of_rod_end /= np.linalg.norm(direction_of_rod_end)
-    elif type_of_additional_segment == "end_to_end":
-        for i in range(timesize):
+        elif type_of_additional_segment == "end_to_end":
+
             # Direction of the additional point at the beginning of the rod
             direction_of_rod_begin = center_line[i, :, 0] - center_line[i, :, -1]
             direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
 
             # Direction of the additional point at the end of the rod
             direction_of_rod_end = -direction_of_rod_begin
-    elif type_of_additional_segment == "net_tangent":
-        for i in range(timesize):
+        elif type_of_additional_segment == "net_tangent":
+
             # Direction of the additional point at the beginning of the rod
             n_nodes_begin = int(np.floor(blocksize / 2))
             average_begin = (
@@ -745,11 +748,10 @@ def _compute_additional_segment(
             direction_of_rod_begin = average_begin - average_end
             direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
             direction_of_rod_end = -direction_of_rod_begin
-    else:
-        raise NotImplementedError("unavailable type_of_additional_segment is given")
-
-    # Compute new centerline and beginning/end direction
-    for i in range(timesize):
+        else:
+            raise NotImplementedError("unavailable type_of_additional_segment is given")
+        
+        
         first_point = center_line[i, :, 0] + segment_length * direction_of_rod_begin
         last_point = center_line[i, :, -1] + segment_length * direction_of_rod_end
 
