@@ -62,7 +62,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: |
-          make install-dev-deps
+          make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
           source .venv/bin/activate
       # Runs a single command using the runners shell
@@ -111,7 +111,7 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies
         run: |
-          make install-dev-deps
+          make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
           source .venv/bin/activate
       - name: Test PyElastica using pytest

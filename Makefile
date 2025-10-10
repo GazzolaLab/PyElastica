@@ -2,15 +2,24 @@
 PYTHON := python3
 PYTHONPATH := `pwd`
 AUTOFLAKE_ARGS := -r
+PYTHON_VERSION :=
 
 #* Installation
 .PHONY: install
 install:
+ifdef PYTHON_VERSION
+	uv sync --python $(PYTHON_VERSION)
+else
 	uv sync
+endif
 
 .PHONY: install-dev-deps
 install-dev-deps:
+ifdef PYTHON_VERSION
+	uv sync --all-groups --all-extras --python $(PYTHON_VERSION)
+else
 	uv sync --all-groups --all-extras
+endif
 
 
 .PHONY: build
