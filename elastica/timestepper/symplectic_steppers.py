@@ -66,11 +66,15 @@ class SymplecticStepperMixin:
     def step(
         self: SymplecticStepperProtocol,
         SystemCollection: SystemCollectionType,
-        time: np.float64,
-        dt: np.float64,
+        time: np.float64 | float,
+        dt: np.float64 | float,
     ) -> np.float64:
         return SymplecticStepperMixin.do_step(
-            self, self.steps_and_prefactors, SystemCollection, time, dt
+            self,
+            self.steps_and_prefactors,
+            SystemCollection,
+            np.float64(time),
+            np.float64(dt),
         )
 
     # TODO: Merge with .step method in the future.

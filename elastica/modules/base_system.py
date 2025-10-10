@@ -5,7 +5,7 @@ Base System
 Basic coordinating for multiple, smaller systems that have an independently integrable
 interface (i.e. works with symplectic or explicit routines `timestepper.py`.)
 """
-from typing import TYPE_CHECKING, Type, Generator, Any, overload
+from typing import TYPE_CHECKING, Type, Generator, Any, overload, Callable
 from typing import final
 from elastica.typing import (
     SystemType,
@@ -72,6 +72,9 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_callback: OperatorGroupFIFO[
             OperatorCallbackType, ModuleProtocol
         ] = OperatorGroupFIFO()
+        self._feature_group_on_close: OperatorGroupFIFO[Callable, ModuleProtocol] = (
+            OperatorGroupFIFO()
+        )
         self._feature_group_finalize: list[OperatorFinalizeType] = []
         # We need to initialize our mixin classes
         super().__init__()
@@ -281,6 +284,15 @@ class BaseSystemCollection(MutableSequence):
         """
         for func in self._feature_group_callback:
             func(time=time, current_step=current_step)
+
+    @final
+    def close(self) -> None:
+        """
+        Call close functions for all features.
+        Features are registered in _feature_group_on_close.
+        """
+        for func in self._feature_group_on_close:
+            func()
 
 
 if TYPE_CHECKING:
