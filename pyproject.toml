@@ -172,3 +172,8 @@ omit = [
     "elastica/experimental/*",
     "elastica/**/protocol.py",
 ]
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+]
