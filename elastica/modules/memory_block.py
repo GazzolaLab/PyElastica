@@ -3,6 +3,7 @@ This function is a module to construct memory blocks for different types of syst
 Cosserat Rods, Rigid Body etc.
 """
 from typing import cast
+
 from elastica.typing import (
     RodType,
     RigidBodyType,
@@ -50,25 +51,11 @@ def construct_memory_block_structures(
             temp_list_for_rigid_body_systems_idx.append(system_idx)
 
         elif isinstance(sys_to_be_added, SurfaceBase):
+            # TODO: Surface type is passive system
             pass
-            # surface_system = cast(SurfaceType, sys_to_be_added)
-            # raise NotImplementedError(
-            #     "Surfaces are not yet implemented in memory block construction."
-            # )
 
         else:
-            raise TypeError(
-                "{0}\n"
-                "is not a system passing validity\n"
-                "checks for constructing block structure. If you are sure that\n"
-                "{0}\n"
-                "satisfies all criteria for being a system, please add\n"
-                "it here with correct memory block implementation.\n"
-                "The allowed types are\n"
-                "{1} {2} {3}".format(
-                    sys_to_be_added.__class__, RodBase, RigidBodyBase, SurfaceBase
-                )
-            )
+            continue  # No error:: any typechecking should be finished by BaseSystemCollection._check_type
 
     if temp_list_for_cosserat_rod_systems:
         _memory_blocks.append(

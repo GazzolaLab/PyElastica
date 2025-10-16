@@ -1,6 +1,6 @@
 [project]
 name = "pyelastica"
-version = "0.3.3post1"
+version = "1.0.0"
 description = "Elastica is a software to simulate the dynamics of filaments that, at every cross-section, can undergo all six possible modes of deformation, allowing the filament to bend, twist, stretch and shear, while interacting with complex environments via muscular activity, surface contact, friction and hydrodynamics."
 readme = "README.md"
 authors = [
