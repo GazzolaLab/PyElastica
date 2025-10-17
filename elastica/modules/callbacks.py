@@ -78,9 +78,6 @@ class CallBacks:
         self._callback_list.clear()
         del self._callback_list
 
-        # First callback execution
-        self.apply_callbacks(time=np.float64(0.0), current_step=0)
-
 
 class _CallBack:
     """
