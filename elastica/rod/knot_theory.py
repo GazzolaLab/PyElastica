@@ -723,6 +723,9 @@ def _compute_additional_segment(
             # Direction of the additional point at the end of the rod
             direction_of_rod_end = center_line[i, :, -1] - center_line[i, :, -2]
             direction_of_rod_end /= np.linalg.norm(direction_of_rod_end)
+
+            beginning_direction[i, :] = direction_of_rod_begin
+            end_direction[i, :] = direction_of_rod_end
     elif type_of_additional_segment == "end_to_end":
         for i in range(timesize):
             # Direction of the additional point at the beginning of the rod
@@ -731,6 +734,9 @@ def _compute_additional_segment(
 
             # Direction of the additional point at the end of the rod
             direction_of_rod_end = -direction_of_rod_begin
+
+            beginning_direction[i, :] = direction_of_rod_begin
+            end_direction[i, :] = direction_of_rod_end
     elif type_of_additional_segment == "net_tangent":
         for i in range(timesize):
             # Direction of the additional point at the beginning of the rod
@@ -745,19 +751,18 @@ def _compute_additional_segment(
             direction_of_rod_begin = average_begin - average_end
             direction_of_rod_begin /= np.linalg.norm(direction_of_rod_begin)
             direction_of_rod_end = -direction_of_rod_begin
+
+            beginning_direction[i, :] = direction_of_rod_begin
+            end_direction[i, :] = direction_of_rod_end
     else:
         raise NotImplementedError("unavailable type_of_additional_segment is given")
 
     # Compute new centerline and beginning/end direction
     for i in range(timesize):
-        first_point = center_line[i, :, 0] + segment_length * direction_of_rod_begin
-        last_point = center_line[i, :, -1] + segment_length * direction_of_rod_end
-
+        first_point = center_line[i, :, 0] + segment_length * beginning_direction[i, :]
+        last_point = center_line[i, :, -1] + segment_length * end_direction[i, :]
         new_center_line[i, :, 1:-1] = center_line[i, :, :]
         new_center_line[i, :, 0] = first_point
         new_center_line[i, :, -1] = last_point
-
-        beginning_direction[i, :] = direction_of_rod_begin
-        end_direction[i, :] = direction_of_rod_end
 
     return new_center_line, beginning_direction, end_direction

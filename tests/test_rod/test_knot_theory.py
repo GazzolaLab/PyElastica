@@ -183,9 +183,14 @@ def test_knot_theory_compute_additional_segment_integrity(type_str):
 def test_knot_theory_compute_additional_segment_straight_case(
     n_elem, segment_length, type_str
 ):
-    # If straight rod give, result should be same regardless of type
-    center_line = np.zeros([1, 3, n_elem])
+    # If straight rod give, result should be same regardless of type and time steps
+    center_line = np.zeros([2, 3, n_elem])
     center_line[0, 2, :] = np.linspace(0, 5, n_elem)
+
+    # adding a sine curve to second time step to ensure it does not affect straight case
+    center_line[1, 1, :] = np.sin(np.linspace(0, 5, n_elem))
+    center_line[1, 2, :] = np.cos(np.linspace(0, 5, n_elem))
+
     ncl, bd, ed = _compute_additional_segment(center_line, segment_length, type_str)
     assert_allclose(ncl[0, :, 0], np.array([0, 0, -segment_length]))
     assert_allclose(
