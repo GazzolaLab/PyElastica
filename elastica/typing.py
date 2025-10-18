@@ -60,7 +60,7 @@ StepType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
 
-RodType: TypeAlias = "CosseratRodProtocol"
+RodType: TypeAlias = CosseratRodProtocol
 RigidBodyType: TypeAlias = "RigidBodyProtocol"
 SurfaceType: TypeAlias = "SurfaceBase"
 

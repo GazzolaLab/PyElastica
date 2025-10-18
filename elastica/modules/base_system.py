@@ -46,8 +46,8 @@ class BaseSystemCollection(MutableSequence):
         blocks: Callable
             Returns block objects. Should be called after finalize.
 
-    Note
-    ----
+    Notes
+    -----
     We can directly subclass a list for the
     most part, but this is a bad idea, as List is non abstract
     https://stackoverflow.com/q/3945940
@@ -164,8 +164,8 @@ class BaseSystemCollection(MutableSequence):
         Get the index of the system object in the system list.
         System list is private, so this is the only way to get the index of the system object.
 
-        Example
-        -------
+        Examples
+        --------
         >>> system_collection: SystemCollectionProtocol
         >>> system: SystemType
         ...
