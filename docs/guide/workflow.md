@@ -38,8 +38,8 @@ Available components are:
 | [Constraints](../api/constraints.rst) |                                 |
 | [Forcing](../api/external_forces.rst) |                                 |
 | [Connections](../api/connections.rst) |                                 |
-|   [CallBacks](../api/callback.rst)    |                                 |
-|     [Damping](../api/damping.rst)     |                                 |
+| [CallBacks](../api/callback.rst)      |                                 |
+| [Damping](../api/damping.rst)         |                                 |
 
 :::{Note}
 We adopted a composition and mixin design paradigm in building elastica. The detail of the implementation is not important in using the package, but we left some references to read [here](../advanced/PackageDesign.md).
@@ -219,6 +219,32 @@ simulator.collect_diagnostics(rod2).using(
 ```
 
 You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs. See [this page](../api/callback.rst) for more in-depth documentation.
+
+:::{note}
+During setting up callbacks, `.collect_diagnostics` can python-collection (list, dict, tuple) of rods:
+```python
+...
+    def make_callback(self, system, time, current_step):
+        rod1 = system[key1]
+        rod2 = system[key2]
+...
+simulator.collect_diagnostics({key1: rod1, key2: rod2}).using(
+    # custom callback class
+)
+```
+to collect data from multiple rods at the same time.
+Additionally, you can pass ellipsis (...) to collect data from all rods in the simulator.
+```python
+...
+    def make_callback(self, system, time, current_step):
+        for rod in system:
+            pass
+...
+simulator.collect_diagnostics(...).using(
+    # custom callback class
+)
+```
+:::
 
 <h2>5. Finalize Simulator</h2>
 
