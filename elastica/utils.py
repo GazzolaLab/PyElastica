@@ -32,11 +32,9 @@ def isqrt(num: int) -> int:
 
     Notes
     -----
-    - Doesn't handle edge-cases of negative numbers by design
-    - Doesn't type-check for integers by design, although it is hinted at
+    Doesn't handle edge-cases of negative numbers by design
 
-    Examples
-    --------
+    Doesn't type-check for integers by design, although it is hinted at
 
     """
     if num > 0:
@@ -97,6 +95,8 @@ def perm_parity(lst: list[int]) -> int:
     """
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
+    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
+    licensed with a MIT License
 
     Parameters
     ----------
@@ -105,10 +105,6 @@ def perm_parity(lst: list[int]) -> int:
     Returns
     -------
 
-    Credits
-    -------
-    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
-    licensed with a MIT License
     """
     parity = 1
     for i in range(0, len(lst) - 1):
@@ -123,7 +119,12 @@ _T = TypeVar("_T")
 
 
 def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, None]:
-    """Collect data into fixed-length chunks or blocks"
+    """
+    Collect data into fixed-length chunks or blocks"
+    https://docs.python.org/3/library/itertools.html#itertools-recipes
+    https://stackoverflow.com/a/10791887
+
+    grouper('ABCDEFG', 3) --> ABC DEF G"
 
     Parameters
     ----------
@@ -133,14 +134,6 @@ def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, N
     Returns
     -------
 
-    Example
-    -------
-    grouper('ABCDEFG', 3) --> ABC DEF G"
-
-    Credits
-    -------
-    https://docs.python.org/3/library/itertools.html#itertools-recipes
-    https://stackoverflow.com/a/10791887
     """
 
     it = iter(iterable)
@@ -154,7 +147,8 @@ def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, N
 def extend_instance(obj: Any, cls: Any) -> None:
     """
 
-    Apply mixins to a class instance after creation
+    Apply mixins to a class instance after creation.
+    https://stackoverflow.com/a/31075641
 
     Parameters
     ----------
@@ -165,10 +159,6 @@ def extend_instance(obj: Any, cls: Any) -> None:
     Returns
     -------
     None
-
-    Credits
-    -------
-    https://stackoverflow.com/a/31075641
 
     """
     base_cls = obj.__class__
