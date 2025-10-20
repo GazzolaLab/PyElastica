@@ -123,7 +123,7 @@ class SelonoidsBC(ea.ConstraintBase):
         self.position_start = position_start
         self.director_start = director_start
 
-    def constrain_values(self, rod, time):
+    def constrain_values(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
             rod.position_collection[..., 0] = self.position_start
             rod.position_collection[0, -1] = 0.0
@@ -132,7 +132,7 @@ class SelonoidsBC(ea.ConstraintBase):
             rod.director_collection[..., 0] = self.director_start
             rod.director_collection[..., -1] = self.final_end_directors
 
-    def constrain_rates(self, rod, time):
+    def constrain_rates(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
             rod.velocity_collection[..., 0] = 0.0
             rod.omega_collection[..., 0] = 0.0

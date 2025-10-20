@@ -40,13 +40,13 @@ def test_constraint_base():
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
 
-        def constrain_values(self, rod, time):
-            rod.position_collection *= time
-            rod.director_collection *= time
+        def constrain_values(self, system, time):
+            system.position_collection *= time
+            system.director_collection *= time
 
-        def constrain_rates(self, rod, time):
-            rod.velocity_collection *= time
-            rod.omega_collection *= time
+        def constrain_rates(self, system, time):
+            system.velocity_collection *= time
+            system.omega_collection *= time
 
     testBC = TestBC(_system=test_rod)
     testBC.constrain_values(test_rod, 2)
@@ -68,12 +68,12 @@ def test_constraint_base_properties_access():
             assert self.constrained_position_idx == 11
             assert self.constrained_director_idx == 17
 
-        def constrain_values(self, rod, time):
+        def constrain_values(self, system, time):
             assert self._system == test_rod
             assert self.constrained_position_idx == 11
             assert self.constrained_director_idx == 17
 
-        def constrain_rates(self, rod, time):
+        def constrain_rates(self, system, time):
             assert self._system == test_rod
             assert self.constrained_position_idx == 11
             assert self.constrained_director_idx == 17
