@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __doc__ = """
 This module contains aliases of type-hints for elastica.
 
@@ -47,7 +49,7 @@ else:
 
 
 StaticSystemType: TypeAlias = "StaticSystemProtocol"
-SystemType: TypeAlias = "SystemProtocol"
+SystemType: TypeAlias = SystemProtocol
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"
 

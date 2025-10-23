@@ -247,6 +247,9 @@ class BaseSystemCollection(MutableSequence):
         self._feature_group_finalize.clear()
         del self._feature_group_finalize
 
+        # First callback execution
+        self.apply_callbacks(time=np.float64(0.0), current_step=0)
+
     @final
     def synchronize(self, time: np.float64) -> None:
         """

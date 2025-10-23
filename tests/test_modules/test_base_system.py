@@ -231,8 +231,11 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
     from elastica.callback_functions import CallBackBaseClass
 
     @pytest.mark.parametrize("legal_callback", [CallBackBaseClass])
-    def test_callback(self, load_collection, legal_callback):
+    def test_callback(self, mocker, load_collection, legal_callback):
         simulator_class, rod = load_collection
+
+        spy = mocker.spy(legal_callback, "make_callback")
+
         simulator_class.collect_diagnostics(rod).using(legal_callback)
         simulator_class.finalize()
         # After finalize check if the created callback object is instance of the class we have given.
@@ -243,5 +246,68 @@ class TestBaseSystemWithFeaturesUsingCosseratRod:
             legal_callback,
         )
 
-        # TODO: this is a dummy test for apply_callbacks find a better way to test them
         simulator_class.apply_callbacks(time=0, current_step=0)
+
+        assert (
+            spy.call_count == 2
+        )  # Callback should be called twice: once during the finalize and once during the apply_callbacks
+        assert spy.call_args[1]["system"] == rod
+        assert spy.call_args[1]["time"] == np.float64(0.0)
+        assert spy.call_args[1]["current_step"] == 0
+
+    @pytest.mark.parametrize("legal_callback", [CallBackBaseClass])
+    def test_callback_in_data_structure(self, mocker, load_collection, legal_callback):
+        simulator_class, rod = load_collection
+
+        spy = mocker.spy(legal_callback, "make_callback")
+
+        simulator_class.collect_diagnostics((rod, rod)).using(legal_callback)
+        simulator_class.finalize()
+        # After finalize check if the created callback object is instance of the class we have given.
+        assert isinstance(
+            simulator_class._feature_group_callback._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_callback,
+        )
+
+        simulator_class.apply_callbacks(time=0, current_step=0)
+
+        assert (
+            spy.call_count == 2
+        )  # Callback should be called twice: once during the finalize and once during the apply_callbacks
+        assert spy.call_args[1]["system"] == (rod, rod)
+        assert spy.call_args[1]["time"] == np.float64(0.0)
+        assert spy.call_args[1]["current_step"] == 0
+
+    @pytest.mark.parametrize("legal_callback", [CallBackBaseClass])
+    def test_callback_in_ellipsis(self, mocker, load_collection, legal_callback):
+        simulator_class, rod = load_collection
+        simulator_class.extend_allowed_types((int,))
+
+        simulator_class.append(rod)
+
+        spy = mocker.spy(legal_callback, "make_callback")
+
+        simulator_class.collect_diagnostics(...).using(legal_callback)
+        simulator_class.finalize()
+        # After finalize check if the created callback object is instance of the class we have given.
+        assert isinstance(
+            simulator_class._feature_group_callback._operator_collection[-1][
+                -1
+            ].func.__self__,
+            legal_callback,
+        )
+
+        simulator_class.apply_callbacks(time=0, current_step=0)
+        simulator_class.apply_callbacks(time=1, current_step=1)
+
+        assert (
+            spy.call_count == 3
+        )  # Callback should be called twice: once during the finalize and once during the apply_callbacks
+        assert spy.call_args_list[1][1]["system"][0] == rod
+        assert spy.call_args_list[1][1]["system"][1] == rod
+        assert spy.call_args_list[1][1]["time"] == 0
+        assert spy.call_args_list[1][1]["current_step"] == 0
+        assert spy.call_args_list[2][1]["time"] == 1
+        assert spy.call_args_list[2][1]["current_step"] == 1
