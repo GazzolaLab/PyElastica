@@ -237,9 +237,10 @@ def rod_cylinder_contact_friction_case(
     rod_cylinder_parallel_contact_simulator.finalize()
     timestepper = ea.PositionVerlet()
 
-    ea.integrate(
-        timestepper, rod_cylinder_parallel_contact_simulator, final_time, total_steps
-    )
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rod_cylinder_parallel_contact_simulator, time, dt)
 
     if POST_PROCESSING:
         # Plot the rods

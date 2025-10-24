@@ -106,7 +106,10 @@ ring_sim.collect_diagnostics(ring_rod).using(
 ring_sim.finalize()
 
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, ring_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(ring_sim, time, dt)
 
 
 filename_video = "ring_rod.mp4"

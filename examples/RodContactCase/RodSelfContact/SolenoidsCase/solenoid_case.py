@@ -226,7 +226,10 @@ solenoid_sim.finalize()
 
 # Run the simulation
 time_stepper = ea.PositionVerlet()
-ea.integrate(time_stepper, solenoid_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = time_stepper.step(solenoid_sim, time, dt)
 
 # plotting the videos
 filename_video = "solenoid.mp4"

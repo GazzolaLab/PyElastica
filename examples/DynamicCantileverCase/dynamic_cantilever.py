@@ -124,12 +124,10 @@ def simulate_dynamic_cantilever_with(
 
     timestepper = ea.PositionVerlet()
 
-    ea.integrate(
-        timestepper,
-        cantilever_sim,
-        final_time,
-        total_steps,
-    )
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(cantilever_sim, time, dt)
 
     # FFT
     amplitudes = np.abs(fft(recorded_history["deflection"]))

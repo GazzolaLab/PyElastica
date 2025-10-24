@@ -135,7 +135,10 @@ timestepper = ea.PositionVerlet()
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, timoshenko_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(timoshenko_sim, time, dt)
 
 if PLOT_FIGURE:
     plot_timoshenko(shearable_rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD)

@@ -92,7 +92,10 @@ def simulate_helicalbucklin_beam_with(
     final_time = 10500
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(helicalbuckling_sim, time, dt)
 
     # calculate errors and norms
     # Since we need to evaluate analytical solution only on nodes, n_nodes = n_elems+1

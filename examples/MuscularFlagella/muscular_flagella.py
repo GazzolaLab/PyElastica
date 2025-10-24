@@ -237,7 +237,10 @@ muscular_flagella_sim.finalize()
 
 timestepper = ea.PositionVerlet()
 print("Total steps", total_steps)
-ea.integrate(timestepper, muscular_flagella_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(muscular_flagella_sim, time, dt)
 
 
 # Plot the videos

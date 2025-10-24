@@ -131,7 +131,10 @@ timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, stretch_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(stretch_sim, time, dt)
 
 if PLOT_FIGURE:
     # First-order theory with base-length

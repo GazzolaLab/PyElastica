@@ -97,7 +97,10 @@ def rigid_cylinder_translational_motion_verification(force=0.0):
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, rigid_cylinder_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rigid_cylinder_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = cylinder.compute_translational_energy()

@@ -126,7 +126,10 @@ pendulum_sim.finalize()
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
-ea.integrate(timestepper, pendulum_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(pendulum_sim, time, dt)
 
 if PLOT_VIDEO:
 

@@ -124,7 +124,10 @@ def conservative_force_simulator(load, animation=False):
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(square_rod_sim, time, dt)
 
     relative_tip_position = np.zeros(
         2,

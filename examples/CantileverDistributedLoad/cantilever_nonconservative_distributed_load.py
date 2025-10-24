@@ -120,7 +120,10 @@ def cantilever_subjected_to_a_nonconservative_load(
 
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(square_rod_sim, time, dt)
 
     if plot_figure_equilibrium:
 

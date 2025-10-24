@@ -120,7 +120,10 @@ final_time = 10
 dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, hinge_joint_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(hinge_joint_sim, time, dt)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False

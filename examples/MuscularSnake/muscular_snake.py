@@ -394,7 +394,10 @@ for idx, rod in enumerate(rod_list):
 
 muscular_snake_simulator.finalize()
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, muscular_snake_simulator, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(muscular_snake_simulator, time, dt)
 
 
 plot_video_with_surface(

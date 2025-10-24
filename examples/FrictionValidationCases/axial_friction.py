@@ -95,7 +95,10 @@ def simulate_axial_friction_with(force=0.0):
     dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, axial_friction_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(axial_friction_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()

@@ -215,7 +215,10 @@ plectonemes_sim.finalize()
 
 # Run the simulation
 time_stepper = ea.PositionVerlet()
-ea.integrate(time_stepper, plectonemes_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = time_stepper.step(plectonemes_sim, time, dt)
 
 # plotting the videos
 filename_video = "plectonemes.mp4"

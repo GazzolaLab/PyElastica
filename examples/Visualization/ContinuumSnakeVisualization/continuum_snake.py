@@ -124,7 +124,10 @@ def run_snake(b_coeff, SAVE_RESULTS=False):
     final_time = (11.0 + 0.01) * period
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, snake_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(snake_sim, time, dt)
 
     if SAVE_RESULTS:
         import pickle

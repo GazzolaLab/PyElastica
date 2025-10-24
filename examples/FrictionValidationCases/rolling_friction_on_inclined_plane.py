@@ -95,9 +95,10 @@ def simulate_rolling_friction_on_inclined_plane_with(alpha_s=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(
-        timestepper, rolling_friction_on_inclined_plane_sim, final_time, total_steps
-    )
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rolling_friction_on_inclined_plane_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()

@@ -192,7 +192,10 @@ def run_snake(
     snake_sim.finalize()
 
     timestepper = ea.PositionVerlet()
-    ea.integrate(timestepper, snake_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(snake_sim, time, dt)
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"

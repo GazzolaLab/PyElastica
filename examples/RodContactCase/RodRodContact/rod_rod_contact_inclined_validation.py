@@ -162,7 +162,10 @@ inclined_rod_rod_contact_sim.finalize()
 # Do the simulation
 
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, inclined_rod_rod_contact_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(inclined_rod_rod_contact_sim, time, dt)
 
 # plotting the videos
 filename_video = "inclined_rods_contact.mp4"
