@@ -17,7 +17,7 @@ import functools
 import numpy as np
 
 from elastica.dissipation import DamperBase
-from elastica.typing import RodType, SystemType, SystemIdxType
+from elastica.typing import RodType, SystemType, SystemIdxType, CosseratRodProtocol
 from .protocol import DampenedSystemCollectionProtocol, ModuleProtocol
 
 

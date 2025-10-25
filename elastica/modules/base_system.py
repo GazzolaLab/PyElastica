@@ -10,7 +10,9 @@ from typing import final
 from elastica.typing import (
     SystemType,
     StaticSystemType,
+    StaticSystemProtocol,
     BlockSystemType,
+    BlockSystemProtocol,
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,
