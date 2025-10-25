@@ -4,10 +4,7 @@ import functools
 from itertools import combinations
 
 import numpy as np
-from numpy import sin
-from numpy import cos
-from numpy import sqrt
-from numpy import arccos
+from numpy import sin, cos, sqrt, arccos
 from numpy.typing import NDArray
 
 from numba import njit

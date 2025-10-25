@@ -24,7 +24,6 @@ class FreeJoint:
             Stiffness coefficient of the joint.
         nu: float
             Damping coefficient of the joint.
-
     """
 
     # pass the k and nu for the forces
@@ -137,7 +136,7 @@ class HingeJoint(FreeJoint):
             Rotational stiffness coefficient of the joint.
         normal_direction: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
-    """
+"""
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
@@ -234,7 +233,7 @@ class FixedJoint(FreeJoint):
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
             is enforced.
-    """
+"""
 
     def __init__(
         self,

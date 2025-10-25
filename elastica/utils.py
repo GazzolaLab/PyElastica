@@ -1,4 +1,4 @@
-"""Handy utilities"""
+__doc__ = """Handy utilities"""
 
 from typing import Generator, Iterable, Any, Literal, TypeVar
 import functools
@@ -100,10 +100,11 @@ def perm_parity(lst: list[int]) -> int:
 
     Parameters
     ----------
-    lst
+    lst : list[int]
 
     Returns
     -------
+    int
 
     """
     parity = 1
@@ -131,9 +132,6 @@ def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, N
     iterable : input collection
     n : size of chunk
 
-    Returns
-    -------
-
     """
 
     it = iter(iterable)
@@ -146,20 +144,16 @@ def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, N
 
 def extend_instance(obj: Any, cls: Any) -> None:
     """
-
     Apply mixins to a class instance after creation.
     https://stackoverflow.com/a/31075641
 
     Parameters
     ----------
-    obj : object (not class!) targeted for interface extension
-          Interface carries throughout its lifetime.
-    cls : class (not object!) to dynamically mixin
-
-    Returns
-    -------
-    None
-
+    obj :
+        object (not class!) targeted for interface extension
+        Interface carries throughout its lifetime.
+    cls :
+        class (not object!) to dynamically mixin
     """
     base_cls = obj.__class__
     base_cls_name = obj.__class__.__name__
@@ -200,8 +194,6 @@ def _bspline(  # type: ignore[no-any-unimported]
 def __bspline_impl__(  # type: ignore[no-any-unimported]
     x_pts: NDArray, t_c: NDArray, degree: int
 ) -> tuple[BSpline, NDArray, NDArray]:
-    """"""
-
     # Update the knots
     n_upd = t_c.shape[0] + (degree + 1)
 
