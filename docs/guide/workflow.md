@@ -220,6 +220,32 @@ simulator.collect_diagnostics(rod2).using(
 
 You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs. See [this page](../api/callback.rst) for more in-depth documentation.
 
+:::{note}
+During setting up callbacks, `.collect_diagnostics` can take python-collection (list, dict, tuple) of rods/systems:
+```python
+...
+    def make_callback(self, system, time, current_step):
+        rod1 = system[key1]
+        rod2 = system[key2]
+...
+simulator.collect_diagnostics({key1: rod1, key2: rod2}).using(
+    # custom callback class
+)
+```
+to handle data from multiple rods at the same time.
+Additionally, you can pass ellipsis (...) to collect data from all rods/systems in the simulator.
+```python
+...
+    def make_callback(self, system, time, current_step):
+        for rod in system:
+            pass
+...
+simulator.collect_diagnostics(...).using(
+    # custom callback class
+)
+```
+:::
+
 <h2>5. Finalize Simulator</h2>
 
 Now that we have finished defining our rods, the different boundary conditions and connections between them, and how often we want to save data, we have finished setting up the simulation. We now need to finalize the simulator by calling

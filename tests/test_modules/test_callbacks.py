@@ -112,8 +112,9 @@ class TestCallBacksMixin:
     def test_callback_with_illegal_system_throws(self, load_system_with_callbacks):
         scwc = load_system_with_callbacks
 
-        # Not a rod, but a list!
-        mock_rod = [1, 2, 3, 5]
+        # Not a rod, but a set!
+        # only ordered collections or single system are allowed
+        mock_rod = {1, 2, 3, 5}
 
         with pytest.raises(TypeError) as excinfo:
             scwc.collect_diagnostics(mock_rod)
@@ -159,6 +160,60 @@ class TestCallBacksMixin:
 
         return scwc, MockCallBack
 
+    @pytest.fixture
+    def load_multiple_rod_in_data_structure_with_callbacks(
+        self, load_system_with_callbacks
+    ):
+        scwc = load_system_with_callbacks
+
+        mock_rod1 = self.MockRod(2, 3, 4, 5)
+        mock_rod2 = self.MockRod(2, 3, 4, 5)
+        mock_rod3 = self.MockRod(2, 3, 4, 5)
+
+        scwc.append(mock_rod1)
+        scwc.append(mock_rod2)
+        scwc.append(mock_rod3)
+
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        # in place class
+        MockCallBack = type(
+            "MockCallBack", (self.CallBackBaseClass, object), {"__init__": mock_init}
+        )
+
+        # Constrain any and all systems
+        scwc.collect_diagnostics([mock_rod1, mock_rod2, mock_rod3]).using(
+            MockCallBack, 2, 3
+        )  # system based constraint
+
+        return scwc, MockCallBack
+
+    @pytest.fixture
+    def load_multiple_rod_in_ellipsis_with_callbacks(self, load_system_with_callbacks):
+        scwc = load_system_with_callbacks
+
+        mock_rod1 = self.MockRod(2, 3, 4, 5)
+        mock_rod2 = self.MockRod(2, 3, 4, 5)
+
+        scwc.append(mock_rod1)
+        scwc.append(mock_rod2)
+
+        def mock_init(self, *args, **kwargs):
+            pass
+
+        # in place class
+        MockCallBack = type(
+            "MockCallBack", (self.CallBackBaseClass, object), {"__init__": mock_init}
+        )
+
+        # Constrain any and all systems
+        scwc.collect_diagnostics(...).using(
+            MockCallBack, 2, 3
+        )  # system based constraint
+
+        return scwc, MockCallBack
+
     def test_callback_finalize_correctness(self, load_rod_with_callbacks):
         scwc, callback_cls = load_rod_with_callbacks
         callback_features = [d for d in scwc._callback_list]
@@ -185,17 +240,36 @@ class TestCallBacksMixin:
             assert num < x
             num = x
 
-    def test_first_call_callback_during_finalize(self, mocker, load_rod_with_callbacks):
-        """
-        This test is to check if the callback is called during the finalize.
-        If this test fails, check if `apply_callbacks` is called during the finalization step.
-        """
-        scwc, callback_cls = load_rod_with_callbacks
+    def test_callback_finalize_correctness_with_data_structure_of_systems(
+        self, load_multiple_rod_in_data_structure_with_callbacks
+    ):
+        scwc, callback_cls = load_multiple_rod_in_data_structure_with_callbacks
         callback_features = [d for d in scwc._callback_list]
 
-        spy = mocker.spy(scwc, "apply_callbacks")
         scwc._finalize_callback()
 
-        assert spy.call_count == 1
-        assert spy.call_args[1]["time"] == np.float64(0.0)
-        assert spy.call_args[1]["current_step"] == 0
+        for _callback in callback_features:
+            x = _callback.id()
+            y = _callback.instantiate()
+            assert isinstance(x, list)
+            assert isinstance(x[0], int)
+            assert isinstance(y, callback_cls)
+
+        assert not hasattr(scwc, "_callback_list")
+
+    def test_callback_finalize_correctness_with_ellipsis(
+        self, load_multiple_rod_in_ellipsis_with_callbacks
+    ):
+        scwc, callback_cls = load_multiple_rod_in_ellipsis_with_callbacks
+        callback_features = [d for d in scwc._callback_list]
+
+        scwc._finalize_callback()
+
+        for _callback in callback_features:
+            x = _callback.id()
+            y = _callback.instantiate()
+            assert isinstance(x, tuple)
+            assert isinstance(x[0], int)
+            assert isinstance(y, callback_cls)
+
+        assert not hasattr(scwc, "_callback_list")

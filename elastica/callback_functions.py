@@ -26,7 +26,12 @@ class CallBackBaseClass(Generic[T]):
 
     """
 
-    def make_callback(self, system: T, time: np.float64, current_step: int) -> None:
+    def make_callback(
+        self,
+        system: T,
+        time: np.float64,
+        current_step: int,
+    ) -> None:
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users
@@ -35,7 +40,7 @@ class CallBackBaseClass(Generic[T]):
 
         Parameters
         ----------
-        system : object
+        system : T (SystemType | tuple[SystemType] | dict[Any, SystemType] | list[SystemType])
             System is a rod-like object.
         time : float
             The time of the simulation.
@@ -80,7 +85,7 @@ class MyCallBack(CallBackBaseClass):
         self.callback_params = callback_params
 
     def make_callback(
-        self, system: "RodType | RigidBodyType", time: np.float64, current_step: int
+        self, system: RodType, time: np.float64, current_step: int
     ) -> None:
 
         if current_step % self.sample_every == 0:
