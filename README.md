@@ -89,8 +89,6 @@ We ask that any publications which use Elastica cite as following:
 
 We have created several Jupyter notebooks and Python scripts to help users get started with PyElastica. The Jupyter notebooks are available on Binder, allowing you to try out some of the tutorials without having to install PyElastica.
 
-We have also included an example script for visualizing PyElastica simulations using POVray. This script is located in the examples folder ([`examples/Visualization`](examples/Visualization)).
-
 ## Contribution
 
 If you would like to participate, please read our [contribution guideline](CONTRIBUTING.md). Private development branches are moved to [elastica-python](https://github.com/GazzolaLab/elastica-python) repository; access is limited to the core developers, collaborators, and maintainers.

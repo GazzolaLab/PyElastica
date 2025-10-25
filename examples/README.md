@@ -99,9 +99,6 @@ Examples can serve as a starting template for customized usages.
 * [RestartExample](./RestartExample)
    * __Purpose__: Demonstrate the usage of restart module.
    * __Features__: save_state, load_state
-* [Visualization](./Visualization)
-    * __Purpose__: Include simple examples of raytrace rendering data.
-    * __Features__: POVray
 
 ## Advanced Cases
 
