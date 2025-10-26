@@ -1,3 +1,12 @@
+"""
+Butterfly
+=========
+
+This case simulates the motion of a rod that is initially shaped like a
+butterfly. The rod is released from rest and allowed to fall under gravity.
+The simulation tracks the position and energy of the rod over time.
+"""
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
@@ -5,6 +14,9 @@ from matplotlib.colors import to_rgb
 
 import elastica as ea
 from elastica.utils import MaxDimension
+
+# %%
+# First, we define a simulator class that inherits from the necessary mixins.
 
 
 class ButterflySimulator(ea.BaseSystemCollection, ea.CallBacks):
@@ -14,11 +26,10 @@ class ButterflySimulator(ea.BaseSystemCollection, ea.CallBacks):
 butterfly_sim = ButterflySimulator()
 final_time = 40.0
 
-# Options
-PLOT_FIGURE = True
-SAVE_FIGURE = True
-SAVE_RESULTS = True
-ADD_UNSHEARABLE_ROD = False
+# %%
+# Next, we set up the test parameters for the simulation. This includes the
+# number of elements, the origin, the angle of inclination, the length,
+# radius, density, and Young's modulus of the rod.
 
 # setting up test params
 # FIXME : Doesn't work with elements > 10 (the inverse rotate kernel fails)
@@ -44,6 +55,10 @@ youngs_modulus = 1e4
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
+# %%
+# We then define the initial positions of the nodes of the rod to create the
+# butterfly shape.
+
 positions = np.empty((MaxDimension.value(), n_elem + 1))
 dl = total_length / n_elem
 
@@ -60,6 +75,9 @@ positions[..., half_n_elem:] = positions[
     - np.sin(angle_of_inclination) * vertical_direction
 )
 
+# %%
+# Now we can create the `CosseratRod` object with the specified positions.
+
 butterfly_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start=origin.reshape(3),
@@ -74,6 +92,11 @@ butterfly_rod = ea.CosseratRod.straight_rod(
 )
 
 butterfly_sim.append(butterfly_rod)
+
+
+# %%
+# We define a callback class to record the position and energy of the rod
+# during the simulation.
 
 
 # Add call backs
@@ -117,11 +140,16 @@ butterfly_sim.collect_diagnostics(butterfly_rod).using(
     VelocityCallBack, step_skip=100, callback_params=recorded_history
 )
 
+# %%
+# We finalize the simulator and create the time-stepper.
 
 butterfly_sim.finalize()
 timestepper: ea.typing.StepperProtocol
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
+
+# %%
+# The simulation is run for the specified `final_time`.
 
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
@@ -131,52 +159,43 @@ time = 0.0
 for i in range(total_steps):
     time = timestepper.step(butterfly_sim, time, dt)
 
-if PLOT_FIGURE:
-    # Plot the histories
-    fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    positions_history = recorded_history["position"]
-    # record first position
-    first_position = positions_history.pop(0)
-    ax.plot(first_position[2, ...], first_position[0, ...], "r--", lw=2.0)
-    n_positions = len(positions_history)
-    for i, pos in enumerate(positions_history):
-        alpha = np.exp(i / n_positions - 1)
-        ax.plot(pos[2, ...], pos[0, ...], "b", lw=0.6, alpha=alpha)
-    # final position is also separate
-    last_position = positions_history.pop()
-    ax.plot(last_position[2, ...], last_position[0, ...], "k--", lw=2.0)
-    # don't block
-    fig.show()
+# %%
+# Finally, we plot the results. The position of the rod is plotted at
+# different time steps, and the energies are plotted as a function of time.
 
-    # Plot the energies
-    energy_fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
-    energy_ax = energy_fig.add_subplot(111)
-    times = np.asarray(recorded_history["time"])
-    te = np.asarray(recorded_history["te"])
-    re = np.asarray(recorded_history["re"])
-    be = np.asarray(recorded_history["be"])
-    se = np.asarray(recorded_history["se"])
+# Plot the histories
+fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+ax = fig.add_subplot(111)
+positions_history = recorded_history["position"]
+# record first position
+first_position = positions_history.pop(0)
+ax.plot(first_position[2, ...], first_position[0, ...], "r--", lw=2.0)
+n_positions = len(positions_history)
+for i, pos in enumerate(positions_history):
+    alpha = np.exp(i / n_positions - 1)
+    ax.plot(pos[2, ...], pos[0, ...], "b", lw=0.6, alpha=alpha)
+# final position is also separate
+last_position = positions_history.pop()
+ax.plot(last_position[2, ...], last_position[0, ...], "k--", lw=2.0)
+# don't block
+fig.show()
 
-    energy_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translations")
-    energy_ax.plot(times, re, c=to_rgb("xkcd:bluish"), lw=2.0, label="Rotation")
-    energy_ax.plot(times, be, c=to_rgb("xkcd:burple"), lw=2.0, label="Bend")
-    energy_ax.plot(times, se, c=to_rgb("xkcd:goldenrod"), lw=2.0, label="Shear")
-    energy_ax.plot(times, te + re + be + se, c="k", lw=2.0, label="Total energy")
-    energy_ax.legend()
-    # don't block
-    energy_fig.show()
+# Plot the energies
+energy_fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+energy_ax = energy_fig.add_subplot(111)
+times = np.asarray(recorded_history["time"])
+te = np.asarray(recorded_history["te"])
+re = np.asarray(recorded_history["re"])
+be = np.asarray(recorded_history["be"])
+se = np.asarray(recorded_history["se"])
 
-    if SAVE_FIGURE:
-        fig.savefig("butterfly.png")
-        energy_fig.savefig("energies.png")
+energy_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translations")
+energy_ax.plot(times, re, c=to_rgb("xkcd:bluish"), lw=2.0, label="Rotation")
+energy_ax.plot(times, be, c=to_rgb("xkcd:burple"), lw=2.0, label="Bend")
+energy_ax.plot(times, se, c=to_rgb("xkcd:goldenrod"), lw=2.0, label="Shear")
+energy_ax.plot(times, te + re + be + se, c="k", lw=2.0, label="Total energy")
+energy_ax.legend()
+# don't block
+energy_fig.show()
 
-    plt.show()
-
-if SAVE_RESULTS:
-    import pickle
-
-    filename = "butterfly_data.dat"
-    file = open(filename, "wb")
-    pickle.dump(butterfly_rod, file)
-    file.close()
+plt.show()

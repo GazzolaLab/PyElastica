@@ -22,7 +22,7 @@ from elastica.version import VERSION
 from timoshenko_postprocessing import plot_timoshenko
 
 # %%
-# Now that we have imported all the necessary classes, we want to create our beam system. We do this by combining all the modules we need to represent the physics that we to include in the simulation. In this case, that is the `BaseSystemCollection`, `Constraint`, `Forcings` and `Damping` because the simulation will consider a rod that is fixed in place on one end, and subject to an applied force on the other end.
+# Now that we have imported all the necessary classes, we want to create our beam system. We do this by combining all the modules we need to represent the physics that we to include in the simulation. In this case, that is the ``BaseSystemCollection``, ``Constraint``, ``Forcings`` and ``Damping`` because the simulation will consider a rod that is fixed in place on one end, and subject to an applied force on the other end.
 
 
 class TimoshenkoBeamSimulator(
@@ -40,12 +40,12 @@ timoshenko_sim = TimoshenkoBeamSimulator()
 #
 # First we define the number of elements in the rod. Next, the material properties are defined for every rod. These are the Young's modulus, the Poisson ratio, the density and the viscous damping coefficient. Finally, the geometry of the rod also needs to be defined by specifying the location of the rod and its orientation, length and radius.
 #
-# All of the values defined here are done in SI units, though this is not strictly necessary. You can rescale properties however you want, as long as you use consistent units throughout the simulation. See [here](https://info.simuleon.com/blog/units-in-abaqus) for an example of consistent units.
+# All of the values defined here are done in SI units, though this is not strictly necessary. You can rescale properties however you want, as long as you use consistent units throughout the simulation. See `here <https://info.simuleon.com/blog/units-in-abaqus>`_ for an example of consistent units.
 #
 # In order to make the difference between a shearable and unshearable rod more clear, we are using a Poisson ratio of 99. This is an unphysical value, as Poisson ratios can not exceed 0.5, however, it is used here for demonstration purposes.
 
 # setting up test params
-simulation_time = 5  # 5000.0  # (sec)
+simulation_time = 500  # 5000.0  # (sec)
 
 n_elem = 100
 start = np.zeros((3,))
@@ -62,7 +62,7 @@ poisson_ratio = 99
 shear_modulus = E / (poisson_ratio + 1.0)
 
 # %%
-# With all of the rod's parameters set, we can now create a rod with the specificed properties and add the rod to the simulator system. **Important:** Make sure that any rods you create get added to the simulator system (`timoshenko_sim`), otherwise they will not be included in your simulation.
+# With all of the rod's parameters set, we can now create a rod with the specificed properties and add the rod to the simulator system. **Important:** Make sure that any rods you create get added to the simulator system (``timoshenko_sim``), otherwise they will not be included in your simulation.
 
 shearable_rod = ea.CosseratRod.straight_rod(
     n_elem,
@@ -80,9 +80,9 @@ timoshenko_sim.append(shearable_rod)
 # %%
 # Adding Damping
 # --------------
-# With the rod added to the simulator, we can add damping to the rod. We do this using the `.dampen()` option and the `AnalyticalLinearDamper`. We are modifying `timoshenko_sim` simulator to `dampen` the `shearable_rod` object using `AnalyticalLinearDamper` type of dissipation (damping) model.
+# With the rod added to the simulator, we can add damping to the rod. We do this using the ``.dampen()`` option and the ``AnalyticalLinearDamper``. We are modifying ``timoshenko_sim`` simulator to ``dampen`` the ``shearable_rod`` object using ``AnalyticalLinearDamper`` type of dissipation (damping) model.
 #
-# We also need to define `damping_constant` and simulation `time_step` and pass in `.using()` method.
+# We also need to define ``damping_constant`` and simulation ``time_step`` and pass in ``.using()`` method.
 
 dl = base_length / n_elem
 dt = 0.07 * dl
@@ -95,9 +95,9 @@ timoshenko_sim.dampen(shearable_rod).using(
 # %%
 # Adding Boundary Conditions
 # --------------------------
-# With the rod added to the system, we need to apply boundary conditions. The first condition we will apply is fixing the location of one end of the rod. We do this using the `.constrain()` option and the `OneEndFixedRod` boundary condition. We are modifying the `timoshenko_sim` simulator to `constrain` the `shearable_rod` object using the `OneEndFixedRod` type of constraint.
+# With the rod added to the system, we need to apply boundary conditions. The first condition we will apply is fixing the location of one end of the rod. We do this using the ``.constrain()`` option and the ``OneEndFixedRod`` boundary condition. We are modifying the ``timoshenko_sim`` simulator to ``constrain`` the ``shearable_rod`` object using the ``OneEndFixedRod`` type of constraint.
 #
-# We also need to define which node of the rod is being constrained. We do this by passing the index of the nodes that we want to constain to `constrained_position_idx`. Here we are fixing the first node in the rod. In order to keep the rod from rotating around the fixed node, we also need to constrain an element between two nodes. This fixes the orientation of the rod. We do this by passing the index of the element that we want to fix to `constrained_director_idx`. Like with the position, we are fixing the first element of the rod. Together, this contrains the position and orientation of the rod at the origin.
+# We also need to define which node of the rod is being constrained. We do this by passing the index of the nodes that we want to constrain to ``constrained_position_idx``. Here we are fixing the first node in the rod. In order to keep the rod from rotating around the fixed node, we also need to constrain an element between two nodes. This fixes the orientation of the rod. We do this by passing the index of the element that we want to fix to ``constrained_director_idx``. Like with the position, we are fixing the first element of the rod. Together, this constrains the position and orientation of the rod at the origin.
 
 # One end of the rod is now fixed in place
 timoshenko_sim.constrain(shearable_rod).using(
@@ -105,7 +105,7 @@ timoshenko_sim.constrain(shearable_rod).using(
 )
 
 # %%
-# The next boundary condition that we want to apply is the endpoint force. Similarly to how we constrained one of the points, we want the `timoshenko_sim` simulator to `add_forcing_to` the `shearable_rod` object using the `EndpointForces` type of forcing. This `EndpointForces` applies forces to both ends of the rod. We want to apply a negative force in the $d_1$ direction, but only at the end of the rod. We do this by specifying the force vector to be applied at each end as `origin_force` and `end_force`. We also want to ramp up the force over time, so we make the force take some `ramp_up_time` to reach its steady-state value. This helps avoid numerical errors due to discontinuities in the applied force.
+# The next boundary condition that we want to apply is the endpoint force. Similarly to how we constrained one of the points, we want the ``timoshenko_sim`` simulator to ``add_forcing_to`` the ``shearable_rod`` object using the ``EndpointForces`` type of forcing. This ``EndpointForces`` applies forces to both ends of the rod. We want to apply a negative force in the :math:`d_1` direction, but only at the end of the rod. We do this by specifying the force vector to be applied at each end as ``origin_force`` and ``end_force``. We also want to ramp up the force over time, so we make the force take some ``ramp_up_time`` to reach its steady-state value. This helps avoid numerical errors due to discontinuities in the applied force.
 
 # Forces added to the rod
 end_force = np.array([-15.0, 0.0, 0.0])
@@ -212,7 +212,7 @@ print("Total steps", total_steps)
 # Run Simulation
 # --------------
 #
-# We are now ready to perform the simulation. To run the simulation, we `integrate` the `timoshenko_sim` system using the `timestepper` method until `final_time` by taking `total_steps`. As currently setup, the beam simulation takes about 1 minute to run.
+# We are now ready to perform the simulation. To run the simulation, we ``integrate`` the ``timoshenko_sim`` system using the ``timestepper`` method until ``final_time`` by taking ``total_steps``. As currently setup, the beam simulation takes about 1 minute to run.
 
 time = 0.0
 for i in range(total_steps):
@@ -221,6 +221,6 @@ for i in range(total_steps):
 # %%
 # Post Processing Results
 # -----------------------
-# Now that we have finished the simulation, we want to post-process the results. Post processing script is separately provided in `timoshenko_postprocessing.py`.
+# Now that we have finished the simulation, we want to post-process the results. Post processing script is separately provided in ``timoshenko_postprocessing.py``.
 
 plot_timoshenko(shearable_rod, end_force, False, True)

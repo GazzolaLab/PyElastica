@@ -1,33 +1,22 @@
-"""Axial stretching test-case
-
-Assume we have a rod lying aligned in the x-direction, with high internal
-damping.
-
-We fix one end (say, the left end) of the rod to a wall. On the right
-end we apply a force directed axially pulling the rods tip. Linear
-theory (assuming small displacements) predict that the net displacement
-experienced by the rod tip is Δx = FL/AE where the symbols carry their
-usual meaning (the rod is just a linear spring). We compare our results
-with the above result.
-
-We can "improve" the theory by having a better estimate for the rod's
-spring constant by assuming that it equilibriates under the new position,
-with
-Δx = F * (L + Δx)/ (A * E)
-which results in Δx = (F*l)/(A*E - F). Our rod reaches equilibrium wrt to
-this position.
-
-Note that if the damping is not high, the rod oscillates about the eventual
-resting position (and this agrees with the theoretical predictions without
-any damping : we should see the rod oscillating simple-harmonically in time).
-
-isort:skip_file
 """
+Axial Stretching
+================
+
+This case tests the axial stretching of a rod. A rod is fixed at one end and
+a force is applied at the other end. The rod stretches and the displacement
+of the tip is compared with the analytical solution.
+"""
+
+# isort:skip_file
 
 import numpy as np
 from matplotlib import pyplot as plt
 
 import elastica as ea
+
+# %%
+# First, we define a simulator class that inherits from the necessary mixins.
+# This makes it easy to add constraints, forces, and damping to the system.
 
 
 class StretchingBeamSimulator(
@@ -39,10 +28,10 @@ class StretchingBeamSimulator(
 stretch_sim = StretchingBeamSimulator()
 final_time = 200.0
 
-# Options
-PLOT_FIGURE = True
-SAVE_FIGURE = False
-SAVE_RESULTS = False
+# %%
+# Next, we set up the test parameters for the simulation. This includes the
+# number of elements, the start position, direction, normal, length, radius,
+# density, and Young's modulus of the rod.
 
 # setting up test params
 n_elem = 19
@@ -58,6 +47,10 @@ youngs_modulus = 1e4
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
+# %%
+# Now we can create the `CosseratRod` object. We use the `straight_rod` method
+# to create a straight rod with the specified parameters.
+
 stretchable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
@@ -71,15 +64,28 @@ stretchable_rod = ea.CosseratRod.straight_rod(
 )
 
 stretch_sim.append(stretchable_rod)
+
+# %%
+# We then apply a boundary condition to fix one end of the rod. We use the
+# `OneEndFixedBC` constraint to fix the position and director of the first node.
+
 stretch_sim.constrain(stretchable_rod).using(
     ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
+
+# %%
+# A force is applied to the other end of the rod. We use the `EndpointForces`
+# forcing to apply a force in the x-direction.
 
 end_force_x = 1.0
 end_force = np.array([end_force_x, 0.0, 0.0])
 stretch_sim.add_forcing_to(stretchable_rod).using(
     ea.EndpointForces, 0.0 * end_force, end_force, ramp_up_time=1e-2
 )
+
+# %%
+# Damping is added to the system to help it reach a steady state. We use an
+# `AnalyticalLinearDamper` to add damping to the rod.
 
 # add damping
 dl = base_length / n_elem
@@ -90,6 +96,11 @@ stretch_sim.dampen(stretchable_rod).using(
     damping_constant=damping_constant,
     time_step=dt,
 )
+
+
+# %%
+# We define a callback class to record the position and velocity of the rod
+# during the simulation. This is useful for post-processing the results.
 
 
 # Add call backs
@@ -125,9 +136,16 @@ stretch_sim.collect_diagnostics(stretchable_rod).using(
     AxialStretchingCallBack, step_skip=200, callback_params=recorded_history
 )
 
+# %%
+# We finalize the simulator and create the time-stepper. The `PositionVerlet`
+# time-stepper is used to integrate the system.
+
 stretch_sim.finalize()
 timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 # timestepper = PEFRL()
+
+# %%
+# The simulation is run for the specified `final_time`.
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
@@ -136,43 +154,23 @@ time = 0.0
 for i in range(total_steps):
     time = timestepper.step(stretch_sim, time, dt)
 
-if PLOT_FIGURE:
-    # First-order theory with base-length
-    expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
-    # First-order theory with modified-length, gives better estimates
-    expected_tip_disp_improved = (
-        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
-    )
+# %%
+# Finally, we plot the results and compare them with the analytical solution.
+# The analytical solution is calculated using the first-order theory with
+# both the base length and the modified length.
 
-    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    ax.plot(recorded_history["time"], recorded_history["position"], lw=2.0)
-    ax.hlines(base_length + expected_tip_disp, 0.0, final_time, "k", "dashdot", lw=1.0)
-    ax.hlines(
-        base_length + expected_tip_disp_improved, 0.0, final_time, "k", "dashed", lw=2.0
-    )
-    if SAVE_FIGURE:
-        fig.savefig("axial_stretching.pdf")
-    plt.show()
+# First-order theory with base-length
+expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
+# First-order theory with modified-length, gives better estimates
+expected_tip_disp_improved = (
+    end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+)
 
-if SAVE_RESULTS:
-    import pickle
-
-    filename = "axial_stretching_data.dat"
-    file = open(filename, "wb")
-    pickle.dump(stretchable_rod, file)
-    file.close()
-
-    tv = (
-        np.asarray(recorded_history["time"]),
-        np.asarray(recorded_history["velocity_norms"]),
-    )
-
-    def as_time_series(v: np.ndarray) -> np.ndarray:
-        return v.T
-
-    np.savetxt(
-        "velocity_norms.csv",
-        as_time_series(np.stack(tv)),
-        delimiter=",",
-    )
+fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
+ax = fig.add_subplot(111)
+ax.plot(recorded_history["time"], recorded_history["position"], lw=2.0)
+ax.hlines(base_length + expected_tip_disp, 0.0, final_time, "k", "dashdot", lw=1.0)
+ax.hlines(
+    base_length + expected_tip_disp_improved, 0.0, final_time, "k", "dashed", lw=2.0
+)
+plt.show()
