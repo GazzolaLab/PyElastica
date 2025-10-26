@@ -148,7 +148,7 @@ class CosseratRod(RodBase, KnotTheory):
         dilatation_rate: NDArray[np.float64]
             1D (n_elems) array containing data with 'float' type.
             Rod element dilatation rates.
-    """
+"""
 
     REQUISITE_MODULES: list[Type] = []
 
@@ -295,7 +295,7 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        **kwargs : dict, optional
+        kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
         Returns
@@ -442,7 +442,7 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        **kwargs : dict, optional
+        kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
         Returns

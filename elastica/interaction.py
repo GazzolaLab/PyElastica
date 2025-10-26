@@ -41,7 +41,6 @@ class InteractionPlane(NoForces):
            The normal vector of the plane.
         surface_tol: float
             Penetration tolerance between the plane and the rod-like object.
-
     """
 
     def __init__(
@@ -138,7 +137,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
         kinetic_mu_array: numpy.ndarray
             1D (3,) array containing data with 'float' type.
             [forward, backward, sideways] kinetic friction coefficients.
-    """
+"""
 
     def __init__(
         self,

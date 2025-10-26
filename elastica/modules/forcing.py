@@ -13,7 +13,7 @@ from typing_extensions import Self
 import numpy as np
 
 from elastica.external_forces import NoForces
-from elastica.typing import SystemType, SystemIdxType
+from elastica.typing import SystemType, SystemIdxType, SystemProtocol
 from .protocol import ForcedSystemCollectionProtocol, ModuleProtocol
 
 logger = logging.getLogger(__name__)

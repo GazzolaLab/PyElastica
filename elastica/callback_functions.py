@@ -68,7 +68,7 @@ class MyCallBack(CallBackBaseClass):
             Collect data using make_callback method every sampling step.
         callback_params: dict
             Collected callback data is saved in this dictionary.
-    """
+"""
 
     def __init__(self, step_skip: int, callback_params: dict) -> None:
         """

@@ -133,10 +133,6 @@ class _Connect:
     _connect_class: list
     first_sys_connection_idx: ConnectionIndex
     second_sys_connection_idx: ConnectionIndex
-    *args
-        Variable length argument list.
-    **kwargs
-        Arbitrary keyword arguments.
     """
 
     def __init__(

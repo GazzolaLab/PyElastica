@@ -9,7 +9,12 @@ Provides the callBack interface to collect data over time (see `callback_functio
 from types import EllipsisType
 from typing import Type, Any, TypeAlias, cast
 from typing_extensions import Self  # 3.11: from typing import Self
-from elastica.typing import SystemType, SystemIdxType, OperatorFinalizeType
+from elastica.typing import (
+    SystemType,
+    SystemIdxType,
+    OperatorFinalizeType,
+    SystemProtocol,
+)
 from .protocol import ModuleProtocol
 
 import functools

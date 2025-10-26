@@ -29,7 +29,6 @@ class DamperBase(Generic[T], ABC):
     Attributes
     ----------
     system : RodBase
-
     """
 
     _system: T
