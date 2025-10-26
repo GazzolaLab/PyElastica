@@ -255,7 +255,7 @@ class UniformForces(NoForces):
         ----------
         force:  numpy.ndarray
             2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
-"""
+    """
 
     def __init__(
         self,

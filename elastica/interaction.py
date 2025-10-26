@@ -137,7 +137,7 @@ class AnisotropicFrictionalPlane(InteractionPlane):
         kinetic_mu_array: numpy.ndarray
             1D (3,) array containing data with 'float' type.
             [forward, backward, sideways] kinetic friction coefficients.
-"""
+    """
 
     def __init__(
         self,
