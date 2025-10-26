@@ -112,8 +112,12 @@ pytestcache-remove:
 build-remove:
 	rm -rf build/ dist/
 
+.PHONY: doc-remove
+doc-remove:
+	rm -rf docs/_build docs/gen_modules/ docs/sg_execution_times.rst docs/_gallery/
+
 .PHONY: cleanup
-cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove build-remove
+cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove build-remove doc-remove
 
 all: format-codestyle cleanup test
 

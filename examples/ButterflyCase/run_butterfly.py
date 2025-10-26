@@ -3,8 +3,13 @@ Butterfly
 =========
 
 This case simulates the motion of a rod that is initially shaped like a
-butterfly. The rod is released from rest and allowed to fall under gravity.
+butterfly. The rod is released from rest and allowed to deform freely.
+The goal of the simulation is for sanity check: how does the timestepper
+reliably preserve total energy of the system, when the system is simple Hamiltonian.
 The simulation tracks the position and energy of the rod over time.
+
+This example case also demonstrate how to setup rod with customized
+positions and directors.
 """
 
 import numpy as np
@@ -16,7 +21,9 @@ import elastica as ea
 from elastica.utils import MaxDimension
 
 # %%
-# First, we define a simulator class that inherits from the necessary mixins.
+# Simulation Setup
+# ----------------
+# We define a simulator class that inherits from the necessary mixins.
 
 
 class ButterflySimulator(ea.BaseSystemCollection, ea.CallBacks):
@@ -27,9 +34,9 @@ butterfly_sim = ButterflySimulator()
 final_time = 40.0
 
 # %%
-# Next, we set up the test parameters for the simulation. This includes the
-# number of elements, the origin, the angle of inclination, the length,
-# radius, density, and Young's modulus of the rod.
+# Rod Setup
+# ---------
+# Next, we set up the test parameters for the simulation.
 
 # setting up test params
 # FIXME : Doesn't work with elements > 10 (the inverse rotate kernel fails)
@@ -95,7 +102,9 @@ butterfly_sim.append(butterfly_rod)
 
 
 # %%
-# We define a callback class to record the position and energy of the rod
+# Callback Setup
+# --------------
+# A callback object is defined to record the position and energy of the rod
 # during the simulation.
 
 
@@ -127,7 +136,9 @@ class VelocityCallBack(ea.CallBackBaseClass):
             return
 
 
+# database
 recorded_history: dict[str, list] = ea.defaultdict(list)
+
 # initially record history
 recorded_history["time"].append(0.0)
 recorded_history["position"].append(butterfly_rod.position_collection.copy())
@@ -141,15 +152,14 @@ butterfly_sim.collect_diagnostics(butterfly_rod).using(
 )
 
 # %%
+# Finalize and Run
+# ----------------
 # We finalize the simulator and create the time-stepper.
 
 butterfly_sim.finalize()
 timestepper: ea.typing.StepperProtocol
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
-
-# %%
-# The simulation is run for the specified `final_time`.
 
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
@@ -160,8 +170,10 @@ for i in range(total_steps):
     time = timestepper.step(butterfly_sim, time, dt)
 
 # %%
-# Finally, we plot the results. The position of the rod is plotted at
-# different time steps, and the energies are plotted as a function of time.
+# Post-Processing
+# ---------------
+# The position of the rod is plotted at different time steps,
+# and the energies are plotted as a function of time.
 
 # Plot the histories
 fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
@@ -179,6 +191,8 @@ last_position = positions_history.pop()
 ax.plot(last_position[2, ...], last_position[0, ...], "k--", lw=2.0)
 # don't block
 fig.show()
+
+# %%
 
 # Plot the energies
 energy_fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)

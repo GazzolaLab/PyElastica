@@ -18,7 +18,9 @@ from post_processing import (
 )
 
 # %%
-# First, we define a simulator class that inherits from the necessary mixins.
+# Simulation Setup
+# ----------------
+# We define a simulator class that inherits from the necessary mixins.
 
 
 class CatenarySimulator(
@@ -28,23 +30,18 @@ class CatenarySimulator(
 
 
 catenary_sim = CatenarySimulator()
+final_time = 30
 
 # %%
-# Next, we set up the simulation parameters. This includes the final time,
-# damping constant, time step, and rendering frame rate.
+# Rod Setup
+# ---------
+# We set up the rod parameters. This rod is affected by a gravity force.
 
-final_time = 10
-damping_constant = 0.3
+n_elem = 500
 time_step = 1e-4
 total_steps = int(final_time / time_step)
 rendering_fps = 20
 step_skip = int(1.0 / (rendering_fps * time_step))
-
-# %%
-# We then define the properties of the rod, such as the number of elements,
-# start position, direction, normal, length, radius, and material properties.
-
-n_elem = 500
 
 start = np.zeros((3,))
 direction = np.array([1.0, 0.0, 0.0])
@@ -62,9 +59,6 @@ E = 1e4
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
 
-# %%
-# Now we can create the `CosseratRod` object and add it to the simulator.
-
 base_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
@@ -79,10 +73,16 @@ base_rod = ea.CosseratRod.straight_rod(
 
 catenary_sim.append(base_rod)
 
+# Add gravity
+catenary_sim.add_forcing_to(base_rod).using(
+    ea.GravityForces, acc_gravity=-9.80665 * normal
+)
+
 # %%
 # Damping is added to the system to help it reach a steady state.
 
 # add damping
+damping_constant = 0.3
 catenary_sim.dampen(base_rod).using(
     ea.AnalyticalLinearDamper,
     damping_constant=damping_constant,
@@ -90,14 +90,8 @@ catenary_sim.dampen(base_rod).using(
 )
 
 # %%
-# We add gravity to the system to simulate the weight of the rod.
-
-# Add gravity
-catenary_sim.add_forcing_to(base_rod).using(
-    ea.GravityForces, acc_gravity=-9.80665 * normal
-)
-
-# %%
+# Boundary Conditions
+# -------------------
 # We fix both ends of the rod using the `FixedConstraint`.
 
 # fix catenary ends
@@ -107,10 +101,10 @@ catenary_sim.constrain(base_rod).using(
     constrained_director_idx=(0, -1),
 )
 
-
 # %%
-# We define a callback class to record the position, radius, and internal
-# forces of the rod during the simulation.
+# Callback
+# --------
+# We define a callback class to record the rod state during the simulation.
 
 
 # Add call backs
@@ -145,13 +139,12 @@ catenary_sim.collect_diagnostics(base_rod).using(
 )
 
 # %%
-# We finalize the simulator and create the time-stepper.
+# Finalize and Run
+# ----------------
+# We finalize the simulator, create the time-stepper, and run.
 
 catenary_sim.finalize()
 timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
-
-# %%
-# The simulation is run for the specified number of steps.
 
 dt = final_time / total_steps
 time = 0.0
@@ -161,6 +154,8 @@ position = np.array(recorded_history["position"])
 b = np.min(position[-1][2])
 
 # %%
+# Post-processing
+# ---------------
 # Finally, we can save a video of the simulation and plot the final
 # shape of the catenary.
 

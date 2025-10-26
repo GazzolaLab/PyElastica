@@ -4,7 +4,7 @@ Knot Simulation
 
 This script simulates the formation of an overhand knot in a soft rod.
 It demonstrates how to create a controller to manipulate a node on the rod,
-which can be used for tasks like trajectory tracing or model predictive control.
+which can be used for tasks like trajectory tracing or proportional control.
 """
 
 from typing import Any, TypeAlias
@@ -24,8 +24,9 @@ Orientation: TypeAlias = NDArray[np.float64]  # SO3 matrix (3, 3)
 Pose: TypeAlias = tuple[Position, Orientation]
 
 # %%
-# First, we define a simulator class that inherits from the necessary mixins
-# for constraints, forcing, damping, callbacks, and contact.
+# Simulation Setup
+# ----------------
+# We define a simulator class that inherits from the necessary mixins.
 
 
 class SoftRodSimulator(
@@ -39,12 +40,19 @@ class SoftRodSimulator(
     pass
 
 
+simulator = SoftRodSimulator()
+final_time = 5
+dt = 0.0002
+
+
 # %%
+# Callback Setup
+# --------------
 # We also define a callback class to record the position of the rod during the
 # simulation.
 
 
-class AxialStretchingCallBack(ea.CallBackBaseClass):
+class Callback(ea.CallBackBaseClass):
     """
     Records the position of the rod
     """
@@ -67,19 +75,12 @@ class AxialStretchingCallBack(ea.CallBackBaseClass):
             return
 
 
-# %%
-# The main part of the script is wrapped in an `if __name__ == "__main__"` block.
-# We start by setting some options and initializing the simulator.
-
-simulator = SoftRodSimulator()
 recorded_history: dict[str, list[Any]] = defaultdict(list)
-final_time = 5
-dt = 0.0002
 
 # %%
-# Next, we set up the parameters for the rod, including the number of
-# elements, start position, direction, normal, length, radius, density,
-# and material properties.
+# Rod Setup
+# ---------
+# Next, we set up the parameters for the rod.
 
 # setting up test params
 n_elem = 50
@@ -93,9 +94,7 @@ youngs_modulus = 1e6
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
 
-# %%
 # We create the `CosseratRod` object and add it to the simulator.
-
 stretchable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
@@ -109,18 +108,24 @@ stretchable_rod = ea.CosseratRod.straight_rod(
 )
 simulator.append(stretchable_rod)
 
+simulator.collect_diagnostics(stretchable_rod).using(
+    Callback, callback_params=recorded_history
+)
+
 # %%
+# Controller Setup
+# ----------------
 # We define a function that returns the target pose (position and
 # orientation) for the controller at a given time. This function creates
 # the trajectory for the end of the rod to follow to tie the knot.
 
-run_time = 4
+activation_time = 4
 
 
 def base_target(t: float, rod: RodType) -> Pose:
     target_position = direction * base_length - 5 * base_radius * normal
-    if t <= run_time / 2:
-        ratio = min(2 * t / run_time, 1.0)
+    if t <= activation_time / 2:
+        ratio = min(2 * t / activation_time, 1.0)
         angular_ratio = ratio * np.pi * 2
         position = target_position * ratio
         orientation_twist = np.array(
@@ -132,7 +137,7 @@ def base_target(t: float, rod: RodType) -> Pose:
             dtype=float,
         )
     else:
-        ratio = min(2 * (t - run_time / 2) / run_time, 1.0)
+        ratio = min(2 * (t - activation_time / 2) / activation_time, 1.0)
         R = 8
         position = np.array(
             [
@@ -156,7 +161,7 @@ def base_target(t: float, rod: RodType) -> Pose:
 # %%
 # We add a `TargetPoseProportionalControl` forcing to the rod. This
 # controller applies forces and torques to drive a specific node of the
-# rod to the target pose.
+# rod to the target pose. The class is defined in `knot_forcing.py`.
 
 # Control point
 p = 3e3
@@ -172,6 +177,8 @@ simulator.add_forcing_to(stretchable_rod).using(
 )
 
 # %%
+# Boundary Conditions
+# -------------------
 # We apply boundary conditions to fix the other end of the rod.
 
 # Boundary conditions
@@ -180,6 +187,8 @@ simulator.constrain(stretchable_rod).using(
 )
 
 # %%
+# Contact Setup
+# -------------
 # We enable self-contact detection for the rod to prevent it from passing
 # through itself.
 
@@ -189,6 +198,8 @@ simulator.detect_contact_between(stretchable_rod, stretchable_rod).using(
 )
 
 # %%
+# Environmental Forcing and Damping
+# ---------------------------------
 # We add gravity and damping to the system.
 
 # Gravity
@@ -206,22 +217,15 @@ simulator.dampen(stretchable_rod).using(
 )
 simulator.dampen(stretchable_rod).using(ea.LaplaceDissipationFilter, filter_order=5)
 
-# %%
-# We set up the callback to record the simulation data.
-
-simulator.collect_diagnostics(stretchable_rod).using(
-    AxialStretchingCallBack, callback_params=recorded_history
-)
 
 # %%
+# Finalize and Run
+# ----------------
 # We finalize the simulator and create the time-stepper.
 
 # Finalize and run the simulation
 simulator.finalize()
 timestepper = ea.PositionVerlet()
-
-# %%
-# The simulation is run for the specified number of steps.
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
@@ -231,6 +235,8 @@ for i in range(total_steps):
     time = timestepper.step(simulator, time, dt)
 
 # %%
+# Post-Processing
+# ---------------
 # After the simulation, we can generate a 3D video of the knot tying
 # process.
 

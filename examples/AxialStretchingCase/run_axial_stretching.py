@@ -2,9 +2,11 @@
 Axial Stretching
 ================
 
-This case tests the axial stretching of a rod. A rod is fixed at one end and
-a force is applied at the other end. The rod stretches and the displacement
-of the tip is compared with the analytical solution.
+This case tests the axial stretching of a rod.
+The expected behavior is supposed to be like a spring-gravity motion, but
+with a rod. A rod is fixed at one end and a force is applied at the other
+end. The rod stretches and the displacement of the tip is compared with
+the analytical solution.
 """
 
 # isort:skip_file
@@ -15,8 +17,10 @@ from matplotlib import pyplot as plt
 import elastica as ea
 
 # %%
-# First, we define a simulator class that inherits from the necessary mixins.
-# This makes it easy to add constraints, forces, and damping to the system.
+# Simulation Setup
+# ----------------
+# We define a simulator class that inherits from the necessary mixins.
+# This makes constraints, forces, and damping evailable to the system.
 
 
 class StretchingBeamSimulator(
@@ -29,9 +33,13 @@ stretch_sim = StretchingBeamSimulator()
 final_time = 200.0
 
 # %%
-# Next, we set up the test parameters for the simulation. This includes the
+# Rod Setup
+# ---------
+# Next, we set up the test parameters for the simulating rods. This includes the
 # number of elements, the start position, direction, normal, length, radius,
 # density, and Young's modulus of the rod.
+# For this case, we have fixed boundary condition at one end, and we apply external
+# force at the other end.
 
 # setting up test params
 n_elem = 19
@@ -47,10 +55,6 @@ youngs_modulus = 1e4
 poisson_ratio = 0.5
 shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
 
-# %%
-# Now we can create the `CosseratRod` object. We use the `straight_rod` method
-# to create a straight rod with the specified parameters.
-
 stretchable_rod = ea.CosseratRod.straight_rod(
     n_elem,
     start,
@@ -65,17 +69,9 @@ stretchable_rod = ea.CosseratRod.straight_rod(
 
 stretch_sim.append(stretchable_rod)
 
-# %%
-# We then apply a boundary condition to fix one end of the rod. We use the
-# `OneEndFixedBC` constraint to fix the position and director of the first node.
-
 stretch_sim.constrain(stretchable_rod).using(
     ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
 )
-
-# %%
-# A force is applied to the other end of the rod. We use the `EndpointForces`
-# forcing to apply a force in the x-direction.
 
 end_force_x = 1.0
 end_force = np.array([end_force_x, 0.0, 0.0])
@@ -99,7 +95,9 @@ stretch_sim.dampen(stretchable_rod).using(
 
 
 # %%
-# We define a callback class to record the position and velocity of the rod
+# Callbacks
+# ---------
+# A callback object is passed to the simulator to record states of the rod
 # during the simulation. This is useful for post-processing the results.
 
 
@@ -137,15 +135,14 @@ stretch_sim.collect_diagnostics(stretchable_rod).using(
 )
 
 # %%
+# Finalize and Run
+# ----------------
 # We finalize the simulator and create the time-stepper. The `PositionVerlet`
 # time-stepper is used to integrate the system.
 
 stretch_sim.finalize()
 timestepper: ea.typing.StepperProtocol = ea.PositionVerlet()
 # timestepper = PEFRL()
-
-# %%
-# The simulation is run for the specified `final_time`.
 
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
@@ -155,6 +152,8 @@ for i in range(total_steps):
     time = timestepper.step(stretch_sim, time, dt)
 
 # %%
+# Post-Processing
+# ---------------
 # Finally, we plot the results and compare them with the analytical solution.
 # The analytical solution is calculated using the first-order theory with
 # both the base length and the modified length.
