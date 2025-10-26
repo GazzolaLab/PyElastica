@@ -6,7 +6,6 @@ Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
 from typing import Type, cast, Any
-from typing_extensions import Self
 from elastica.typing import (
     SystemIdxType,
     OperatorFinalizeType,
@@ -243,7 +242,7 @@ class _Connect:
         cls: Type[FreeJoint],
         *args: Any,
         **kwargs: Any,
-    ) -> Self:
+    ) -> None:
         """
         This method is a module to set which joint class is used to connect
         user defined rod-like objects.
@@ -269,7 +268,6 @@ class _Connect:
         self._connect_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(
         self,

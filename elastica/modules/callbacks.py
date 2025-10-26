@@ -8,7 +8,6 @@ Provides the callBack interface to collect data over time (see `callback_functio
 """
 from types import EllipsisType
 from typing import Type, Any, TypeAlias, cast
-from typing_extensions import Self  # 3.11: from typing import Self
 from elastica.typing import (
     SystemType,
     SystemIdxType,
@@ -157,7 +156,7 @@ class _CallBack:
         cls: Type[CallBackBaseClass],
         *args: Any,
         **kwargs: Any,
-    ) -> Self:
+    ) -> None:
         """
         This method is a module to set which callback class is used to collect data
         from user defined rod-like object.
@@ -179,7 +178,6 @@ class _CallBack:
         self._callback_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxDSType:
         return self._sys_idx

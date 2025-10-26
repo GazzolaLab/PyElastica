@@ -8,7 +8,6 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 import logging
 import functools
 from typing import Any, Type, List
-from typing_extensions import Self
 
 import numpy as np
 
@@ -112,7 +111,7 @@ class _ExtForceTorque:
         self._args: Any
         self._kwargs: Any
 
-    def using(self, cls: Type[NoForces], *args: Any, **kwargs: Any) -> Self:
+    def using(self, cls: Type[NoForces], *args: Any, **kwargs: Any) -> None:
         """
         This method sets which forcing class is used to apply forcing
         to user defined rod-like objects.
@@ -138,7 +137,6 @@ class _ExtForceTorque:
         self._forcing_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxType:
         return self._sys_idx
