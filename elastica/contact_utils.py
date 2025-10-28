@@ -162,6 +162,7 @@ def _prune_using_aabbs_rod_cylinder(
     of a rod and a cylinder. It's a quick way to rule out collision without performing
     a more detailed and expensive check.
     """
+    max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_cylinder = np.empty((3, 2))
     max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
@@ -202,6 +203,13 @@ def _prune_using_aabbs_rod_rod(
     rod_two_radius_collection: NDArray[np.float64],
     rod_two_length_collection: NDArray[np.float64],
 ) -> Literal[1, 0]:
+    """
+    Prunes broad-phase collision detection between two rods using AABBs.
+
+    This function checks for intersection between the axis-aligned bounding boxes (AABBs)
+    of two rods. It's a quick way to rule out collision without performing
+    a more detailed and expensive check.
+    """
     max_possible_dimension = np.zeros((3,))
     aabb_rod_one = np.empty((3, 2))
     aabb_rod_two = np.empty((3, 2))

@@ -512,7 +512,7 @@ def _calculate_contact_forces_rod_plane(
     It includes a linear spring-damper model for the normal force to handle penetration
     and a response to prevent the rod from passing through the plane.
     It returns the magnitude of the plane response force and indices of elements not in contact.
-    
+
     Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
     is used.
 
