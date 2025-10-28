@@ -26,8 +26,7 @@ from elastica.contact_forces import NoContact
 logger = logging.getLogger(__name__)
 
 
-def warnings() -> None:
-    logger.warning("Contact features should be instantiated lastly.")
+
 
 
 class Contact:
@@ -97,8 +96,7 @@ class Contact:
 
             self._feature_group_synchronize.add_operators(contact, [func])
 
-            if not self._feature_group_synchronize.is_last(contact):
-                warnings()
+
 
         self._contacts = []
         del self._contacts
