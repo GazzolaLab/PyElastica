@@ -547,6 +547,92 @@ class TestRodSphereContact:
             atol=1e-6,
         )
 
+    def test_contact_rod_sphere_without_collision(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper without Collision"
+
+        mock_rod = MockRod()
+        mock_sphere = MockSphere()
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
+
+        # Setting sphere position such that there is no collision
+        mock_sphere.position_collection = np.array([[100], [200], [300]])
+
+        mock_rod_external_forces_before_execution = mock_rod.external_forces.copy()
+        mock_sphere_external_forces_before_execution = (
+            mock_sphere.external_forces.copy()
+        )
+        mock_sphere_external_torques_before_execution = (
+            mock_sphere.external_torques.copy()
+        )
+
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_rod.external_forces, mock_rod_external_forces_before_execution
+        )
+        assert_allclose(
+            mock_sphere.external_forces,
+            mock_sphere_external_forces_before_execution,
+        )
+        assert_allclose(
+            mock_sphere.external_torques,
+            mock_sphere_external_torques_before_execution,
+        )
+
+    def test_contact_rod_sphere_with_collision_with_nu_without_k(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper with Collision with nu without k"
+
+        mock_rod = MockRod()
+        mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+
+        mock_sphere = MockSphere()
+        mock_sphere.velocity_collection = np.array([[1], [0], [0]])
+
+        rod_sphere_contact = RodSphereContact(k=0.0, nu=1.0)
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_sphere.external_forces, np.array([[-1.5], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array([[0.5, 1.0, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
+    def test_contact_rod_sphere_with_collision_with_k_and_nu(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper with Collision with k and nu"
+
+        mock_rod = MockRod()
+        mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+
+        mock_sphere = MockSphere()
+        mock_sphere.velocity_collection = np.array([[1], [0], [0]])
+
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=1.0)
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_sphere.external_forces, np.array([[-2.0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array([[0.666666, 1.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
 
 class TestRodPlaneContact:
     def initializer(

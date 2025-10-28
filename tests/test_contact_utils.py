@@ -12,6 +12,7 @@ from elastica.contact_utils import (
     _clip,
     _out_of_bounds,
     _find_min_dist,
+    _find_min_dist_cylinder_sphere,
     _aabbs_not_intersecting,
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
