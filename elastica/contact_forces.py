@@ -433,10 +433,7 @@ class RodSphereContact(NoContact):
         ):
             return
 
-        x_sph = (
-            system_two.position_collection[..., 0]
-            - system_two.radius * system_two.director_collection[2, :, 0]
-        )
+        sphere_position = system_two.position_collection[..., 0]
 
         rod_element_position = 0.5 * (
             system_one.position_collection[..., 1:]
@@ -445,16 +442,11 @@ class RodSphereContact(NoContact):
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             system_one.lengths * system_one.tangents,
-            system_two.position_collection[..., 0],
-            x_sph,
-            system_two.radius * system_two.director_collection[2, :, 0],
+            sphere_position,
             system_one.radius + system_two.radius,
             system_one.lengths + 2 * system_two.radius,
-            system_one.internal_forces,
             system_one.external_forces,
             system_two.external_forces,
-            system_two.external_torques,
-            system_two.director_collection[:, :, 0],
             system_one.velocity_collection,
             system_two.velocity_collection,
             self.k,
