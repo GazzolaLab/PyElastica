@@ -109,6 +109,28 @@ def _find_min_dist(
 
 
 @numba.njit(cache=True)  # type: ignore
+def _find_min_dist_cylinder_sphere(
+    x1: NDArray[np.float64],
+    e1: NDArray[np.float64],
+    x2: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """
+    Find the minimum distance between centerline segment and point: (x1, edge1) and (x2).
+    """
+    e1e1 = _dot_product(e1, e1)  # type: ignore
+    x1e1 = _dot_product(x1, e1)  # type: ignore
+    x2e1 = _dot_product(e1, x2)  # type: ignore
+
+    # Parametrization
+    s = 0.0
+    t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal
+    t = _clip(t, 0.0, 1.0)
+
+    # Return distance, contact point of system 2, contact point of system 1
+    return x2 - x1 - t * e1, x2, x1 - t * e1
+
+
+@numba.njit(cache=True)  # type: ignore
 def _aabbs_not_intersecting(
     aabb_one: NDArray[np.float64], aabb_two: NDArray[np.float64]
 ) -> Literal[1, 0]:
