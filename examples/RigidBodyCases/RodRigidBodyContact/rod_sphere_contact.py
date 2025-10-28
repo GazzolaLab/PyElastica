@@ -10,14 +10,18 @@ base_length = 0.5
 base_radius = 0.1
 
 sphere_radius = 0.10
-overlap_perc = 0.9
+# overlap_perc = 1.0  # Should be no contact
+# overlap_perc = 1.0 + 1e-2  # Should be no contact
+overlap_perc = 1.0 - 1e-2  # Contact
 sphere_center = np.array(
     [(base_radius + sphere_radius) * overlap_perc, base_length / 2, 0.0]
 )
 
 
 def rotate_random_axis_and_angle(R):
-    # return R
+    """
+    Randomly rotate the frame for testing purpose.
+    """
     from scipy.spatial.transform import Rotation
 
     axis = np.random.rand(3)
@@ -46,6 +50,7 @@ def main():
     rendering_fps = 30  # 20 * 1e1
     step_skip = 100
 
+    # Add rod
     density = 1000
     E = 3e5
     n_elem = 50
@@ -68,31 +73,28 @@ def main():
         constrained_director_idx=(0, -1),
     )
 
-    density = 1000
-    rr = rotate_random_axis_and_angle(np.eye(3))
-    rigid_body = ea.Sphere(sphere_center, sphere_radius, density)
-    rigid_body.director_collection[0] = rr[0][:, None]
-    rigid_body.director_collection[1] = rr[1][:, None]
-    rigid_body.director_collection[2] = rr[2][:, None]
-    simulator.append(rigid_body)
-
-    # Add contact between rigid body and rod
-    simulator.detect_contact_between(rod, rigid_body).using(
-        ea.RodSphereContact, k=5e4, nu=0.0
-    )
-
-    # add damping
     damping_constant = 1e-1
     simulator.dampen(rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=damping_constant,
         time_step=time_step,
     )
-    # simulator.dampen(rigid_body).using(
-    #    ea.AnalyticalLinearDamper,
-    #    damping_constant=damping_constant,
-    #    time_step=time_step,
-    # )
+
+    # Add sphere
+    density = 1000
+    n_sphere = 1
+    for _ in range(n_sphere):
+        rr = rotate_random_axis_and_angle(np.eye(3))
+        rigid_body = ea.Sphere(sphere_center, sphere_radius, density)
+        rigid_body.director_collection[0] = rr[0][:, None]
+        rigid_body.director_collection[1] = rr[1][:, None]
+        rigid_body.director_collection[2] = rr[2][:, None]
+        simulator.append(rigid_body)
+
+        # Add contact between rigid body and rod
+        simulator.detect_contact_between(rod, rigid_body).using(
+            ea.RodSphereContact, k=3e4, nu=0.0
+        )
 
     # Add callbacks
     post_processing_dict_list = []
@@ -163,13 +165,15 @@ def main():
         step_skip=step_skip,
         callback_params=post_processing_dict_list[0],
     )
-    # For rigid body
-    post_processing_dict_list.append(ea.defaultdict(list))
-    simulator.collect_diagnostics(rigid_body).using(
-        RigidBodyCallback,
-        step_skip=step_skip,
-        callback_params=post_processing_dict_list[1],
-    )
+    for _ in range(n_sphere):
+        # For rigid body
+        db = ea.defaultdict(list)
+        post_processing_dict_list.append(db)
+        simulator.collect_diagnostics(rigid_body).using(
+            RigidBodyCallback,
+            step_skip=step_skip,
+            callback_params=db,
+        )
     simulator.finalize()
 
     timestepper = ea.PositionVerlet()
