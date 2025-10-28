@@ -209,6 +209,51 @@ def test_find_min_dist():
     assert_allclose(contact_point_of_system1, [0, 0, 0])
 
 
+def test_find_min_dist_cylinder_sphere():
+    "Function to test the _find_min_dist_cylinder_sphere function"
+
+    "testing function with analytically verified values"
+
+    # Case 1: Closest point is on the segment (0 < t < 1).
+    x1 = np.array([0.0, 0.0, 0.0])
+    e1 = np.array([1.0, 0.0, 0.0])
+    x2 = np.array([0.5, 1.0, 0.0])
+    (
+        min_dist_vec,
+        contact_point_of_system2,
+        contact_point_of_system1,
+    ) = _find_min_dist_cylinder_sphere(x1, e1, x2)
+    assert_allclose(min_dist_vec, [0.0, 1.0, 0.0])
+    assert_allclose(contact_point_of_system2, [0.5, 1.0, 0.0])
+    assert_allclose(contact_point_of_system1, [-0.5, 0.0, 0.0])
+
+    # Case 2: Closest point is at the start of the segment (t < 0, clipped to t=0).
+    x1 = np.array([0.0, 0.0, 0.0])
+    e1 = np.array([1.0, 0.0, 0.0])
+    x2 = np.array([-0.5, 1.0, 0.0])
+    (
+        min_dist_vec,
+        contact_point_of_system2,
+        contact_point_of_system1,
+    ) = _find_min_dist_cylinder_sphere(x1, e1, x2)
+    assert_allclose(min_dist_vec, [-0.5, 1.0, 0.0])
+    assert_allclose(contact_point_of_system2, [-0.5, 1.0, 0.0])
+    assert_allclose(contact_point_of_system1, [0.0, 0.0, 0.0])
+
+    # Case 3: Closest point is at the end of the segment (t > 1, clipped to t=1).
+    x1 = np.array([0.0, 0.0, 0.0])
+    e1 = np.array([1.0, 0.0, 0.0])
+    x2 = np.array([1.5, 1.0, 0.0])
+    (
+        min_dist_vec,
+        contact_point_of_system2,
+        contact_point_of_system1,
+    ) = _find_min_dist_cylinder_sphere(x1, e1, x2)
+    assert_allclose(min_dist_vec, [0.5, 1.0, 0.0])
+    assert_allclose(contact_point_of_system2, [1.5, 1.0, 0.0])
+    assert_allclose(contact_point_of_system1, [-1.0, 0.0, 0.0])
+
+
 def test_aabbs_not_intersecting():
     "Function to test the _aabb_intersecting function"
 

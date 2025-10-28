@@ -122,7 +122,6 @@ def _find_min_dist_cylinder_sphere(
     x2e1 = _dot_product(e1, x2)  # type: ignore
 
     # Parametrization
-    s = 0.0
     t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal
     t = _clip(t, 0.0, 1.0)
 
