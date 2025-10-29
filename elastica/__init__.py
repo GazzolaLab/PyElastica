@@ -28,8 +28,6 @@ from elastica.external_forces import (
     EndpointForcesSinusoidal,
 )
 from elastica.interaction import (
-    AnisotropicFrictionalPlane,
-    InteractionPlane,
     SlenderBodyTheory,
 )
 from elastica.joint import (

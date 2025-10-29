@@ -41,6 +41,9 @@ def _find_min_dist(
     x2: NDArray[np.float64],
     e2: NDArray[np.float64],
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """
+    Find the minimum distance between two centerline segments: (x1, edge1) and (x2, edge2).
+    """
     e1e1 = _dot_product(e1, e1)  # type: ignore
     e1e2 = _dot_product(e1, e2)  # type: ignore
     e2e2 = _dot_product(e2, e2)  # type: ignore
@@ -106,10 +109,31 @@ def _find_min_dist(
 
 
 @numba.njit(cache=True)  # type: ignore
+def _find_min_dist_cylinder_sphere(
+    x1: NDArray[np.float64],
+    e1: NDArray[np.float64],
+    x2: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """
+    Find the minimum distance between centerline segment and point: (x1, edge1) and (x2).
+    """
+    e1e1 = _dot_product(e1, e1)  # type: ignore
+    x1e1 = _dot_product(x1, e1)  # type: ignore
+    x2e1 = _dot_product(e1, x2)  # type: ignore
+
+    # Parametrization
+    t = (x2e1 - x1e1) / e1e1  # Comes from taking dot of e1 with a normal
+    t = _clip(t, 0.0, 1.0)
+
+    # Return distance, contact point of system 2, contact point of system 1
+    return x2 - x1 - t * e1, x2, x1 - t * e1
+
+
+@numba.njit(cache=True)  # type: ignore
 def _aabbs_not_intersecting(
     aabb_one: NDArray[np.float64], aabb_two: NDArray[np.float64]
 ) -> Literal[1, 0]:
-    """Returns true if not intersecting else false"""
+    """Checks if two axis-aligned bounding boxes (AABBs) are not intersecting."""
     if (aabb_one[0, 1] < aabb_two[0, 0]) | (aabb_one[0, 0] > aabb_two[0, 1]):
         return 1
     if (aabb_one[1, 1] < aabb_two[1, 0]) | (aabb_one[1, 0] > aabb_two[1, 1]):
@@ -130,6 +154,13 @@ def _prune_using_aabbs_rod_cylinder(
     cylinder_radius: NDArray[np.float64],
     cylinder_length: NDArray[np.float64],
 ) -> Literal[1, 0]:
+    """
+    Prunes broad-phase collision detection between a rod and a cylinder using AABBs.
+
+    This function checks for intersection between the axis-aligned bounding boxes (AABBs)
+    of a rod and a cylinder. It's a quick way to rule out collision without performing
+    a more detailed and expensive check.
+    """
     max_possible_dimension = np.zeros((3,))
     aabb_rod = np.empty((3, 2))
     aabb_cylinder = np.empty((3, 2))
@@ -171,6 +202,13 @@ def _prune_using_aabbs_rod_rod(
     rod_two_radius_collection: NDArray[np.float64],
     rod_two_length_collection: NDArray[np.float64],
 ) -> Literal[1, 0]:
+    """
+    Prunes broad-phase collision detection between two rods using AABBs.
+
+    This function checks for intersection between the axis-aligned bounding boxes (AABBs)
+    of two rods. It's a quick way to rule out collision without performing
+    a more detailed and expensive check.
+    """
     max_possible_dimension = np.zeros((3,))
     aabb_rod_one = np.empty((3, 2))
     aabb_rod_two = np.empty((3, 2))
@@ -209,33 +247,29 @@ def _prune_using_aabbs_rod_sphere(
     sphere_director: NDArray[np.float64],
     sphere_radius: NDArray[np.float64],
 ) -> Literal[1, 0]:
-    max_possible_dimension = np.zeros((3,))
+    """
+    Prunes broad-phase collision detection between a rod and a sphere using AABBs.
+
+    This function checks for intersection between the axis-aligned bounding boxes (AABBs)
+    of a rod and a sphere. It's a quick way to rule out collision without performing
+    a more detailed and expensive check.
+    """
+    # AABB for rod
     aabb_rod = np.empty((3, 2))
+    # Taking max radius of rod
+    max_rod_radius = np.max(rod_one_radius_collection)
+    for i in range(3):
+        aabb_rod[i, 0] = np.min(rod_one_position_collection[i]) - max_rod_radius
+        aabb_rod[i, 1] = np.max(rod_one_position_collection[i]) + max_rod_radius
+
+    # AABB for sphere
     aabb_sphere = np.empty((3, 2))
-    max_possible_dimension[...] = np.max(rod_one_radius_collection) + np.max(
-        rod_one_length_collection
-    )
+    # A sphere is symmetrical, so its AABB is easy to compute.
+    # The director is not needed.
     for i in range(3):
-        aabb_rod[i, 0] = (
-            np.min(rod_one_position_collection[i]) - max_possible_dimension[i]
-        )
-        aabb_rod[i, 1] = (
-            np.max(rod_one_position_collection[i]) + max_possible_dimension[i]
-        )
+        aabb_sphere[i, 0] = sphere_position[i, 0] - sphere_radius
+        aabb_sphere[i, 1] = sphere_position[i, 0] + sphere_radius
 
-    sphere_dimensions_in_local_FOR = np.array(
-        [sphere_radius, sphere_radius, sphere_radius]
-    )
-    sphere_dimensions_in_world_FOR = np.zeros_like(sphere_dimensions_in_local_FOR)
-    for i in range(3):
-        for j in range(3):
-            sphere_dimensions_in_world_FOR[i] += (
-                sphere_director[j, i, 0] * sphere_dimensions_in_local_FOR[j]
-            )
-
-    max_possible_dimension = np.abs(sphere_dimensions_in_world_FOR)
-    aabb_sphere[..., 0] = sphere_position[..., 0] - max_possible_dimension
-    aabb_sphere[..., 1] = sphere_position[..., 0] + max_possible_dimension
     return _aabbs_not_intersecting(aabb_sphere, aabb_rod)
 
 

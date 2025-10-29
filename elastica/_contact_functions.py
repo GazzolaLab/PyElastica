@@ -4,6 +4,7 @@ from elastica.contact_utils import (
     _dot_product,
     _norm,
     _find_min_dist,
+    _find_min_dist_cylinder_sphere,
     _find_slipping_elements,
     _node_to_element_mass_or_force,
     _elements_to_nodes_inplace,
@@ -49,6 +50,13 @@ def _calculate_contact_forces_rod_cylinder(
     velocity_damping_coefficient: np.float64,
     friction_coefficient: np.float64,
 ) -> None:
+    """
+    Calculates the contact forces between a rod and a cylinder.
+
+    This function computes the linear and angular contact forces acting on both the rod and the cylinder
+    when they come into contact. It considers spring-damper-based contact forces as well as friction.
+    The forces are applied to the nodes of the rod and the center of mass of the cylinder.
+    """
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
     cylinder_total_contact_forces = np.zeros((3))
@@ -174,6 +182,9 @@ def _calculate_contact_forces_rod_rod(
     contact_k: np.float64,
     contact_nu: np.float64,
 ) -> None:
+    """
+    Calculates the contact forces between two rods.
+    """
     # We already pass in only the first n_elem x
     n_points_rod_one = x_collection_rod_one.shape[1]
     n_points_rod_two = x_collection_rod_two.shape[1]
@@ -283,6 +294,12 @@ def _calculate_contact_forces_self_rod(
     contact_k: np.float64,
     contact_nu: np.float64,
 ) -> None:
+    """
+    Calculates the self-contact forces within a single rod.
+
+    This function prevents self-penetration of a rod by calculating contact forces between different elements
+    of the same rod. A skip parameter is used to avoid checking adjacent elements.
+    """
     # We already pass in only the first n_elem x
     n_points_rod = x_collection_rod.shape[1]
     edge_collection_rod_one = _batch_product_k_ik_to_ik(length_rod, tangent_rod)
@@ -364,16 +381,11 @@ def _calculate_contact_forces_self_rod(
 def _calculate_contact_forces_rod_sphere(
     x_collection_rod: NDArray[np.float64],
     edge_collection_rod: NDArray[np.float64],
-    x_sphere_center: NDArray[np.float64],
-    x_sphere_tip: NDArray[np.float64],
-    edge_sphere: NDArray[np.float64],
+    x_sphere: NDArray[np.float64],
     radii_sum: NDArray[np.float64],
     length_sum: NDArray[np.float64],
-    internal_forces_rod: NDArray[np.float64],
     external_forces_rod: NDArray[np.float64],
     external_forces_sphere: NDArray[np.float64],
-    external_torques_sphere: NDArray[np.float64],
-    sphere_director_collection: NDArray[np.float64],
     velocity_rod: NDArray[np.float64],
     velocity_sphere: NDArray[np.float64],
     contact_k: np.float64,
@@ -381,15 +393,21 @@ def _calculate_contact_forces_rod_sphere(
     velocity_damping_coefficient: np.float64,
     friction_coefficient: np.float64,
 ) -> None:
+    """
+    Calculates the contact forces between a rod and a sphere.
+
+    This function computes the linear and angular contact forces acting on both the rod and the sphere
+    when they come into contact. It considers spring-damper-based contact forces as well as friction.
+    The forces are applied to the nodes of the rod and the center of mass of the sphere.
+    """
     # We already pass in only the first n_elem x
     n_points = x_collection_rod.shape[1]
     sphere_total_contact_forces = np.zeros((3))
-    sphere_total_contact_torques = np.zeros((3))
     for i in range(n_points):
         # Element-wise bounding box
         x_selected = x_collection_rod[..., i]
         # x_sphere is already a (,) array from outside
-        del_x = x_selected - x_sphere_tip
+        del_x = x_selected - x_sphere
         norm_del_x = _norm(del_x)
 
         # If outside then don't process
@@ -397,8 +415,10 @@ def _calculate_contact_forces_rod_sphere(
             continue
 
         # find the shortest line segment between the two centerline
-        distance_vector, x_sphere_contact_point, _ = _find_min_dist(
-            x_selected, edge_collection_rod[..., i], x_sphere_tip, edge_sphere
+        distance_vector, _, _ = _find_min_dist_cylinder_sphere(
+            x_selected,
+            edge_collection_rod[..., i],
+            x_sphere,
         )
         distance_vector_length = _norm(distance_vector)
         distance_vector /= distance_vector_length
@@ -453,37 +473,22 @@ def _calculate_contact_forces_rod_sphere(
         # Update contact force
         net_contact_force += friction_force
 
-        # Torques acting on the cylinder
-        moment_arm = x_sphere_contact_point - x_sphere_center
-
         # Add it to the rods at the end of the day
         if i == 0:
             external_forces_rod[..., i] -= 2 / 3 * net_contact_force
             external_forces_rod[..., i + 1] -= 4 / 3 * net_contact_force
             sphere_total_contact_forces += 2.0 * net_contact_force
-            sphere_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
         elif i == n_points - 1:
             external_forces_rod[..., i] -= 4 / 3 * net_contact_force
             external_forces_rod[..., i + 1] -= 2 / 3 * net_contact_force
             sphere_total_contact_forces += 2.0 * net_contact_force
-            sphere_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
         else:
             external_forces_rod[..., i] -= net_contact_force
             external_forces_rod[..., i + 1] -= net_contact_force
             sphere_total_contact_forces += 2.0 * net_contact_force
-            sphere_total_contact_torques += np.cross(
-                moment_arm, 2.0 * net_contact_force
-            )
 
     # Update the cylinder external forces and torques
     external_forces_sphere[..., 0] += sphere_total_contact_forces
-    external_torques_sphere[..., 0] += (
-        sphere_director_collection @ sphere_total_contact_torques
-    )
 
 
 @njit(cache=True)  # type: ignore
@@ -501,17 +506,16 @@ def _calculate_contact_forces_rod_plane(
     external_forces: NDArray[np.float64],
 ) -> tuple[NDArray[np.float64], NDArray[np.intp]]:
     """
-    This function computes the plane force response on the element, in the
-    case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+    Calculates the contact forces between a rod and a plane.
+
+    This function computes the contact force exerted by a flat plane on a rod.
+    It includes a linear spring-damper model for the normal force to handle penetration
+    and a response to prevent the rod from passing through the plane.
+    It returns the magnitude of the plane response force and indices of elements not in contact.
+
+    Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
     is used.
 
-    Parameters
-    ----------
-    system
-
-    Returns
-    -------
-    magnitude of the plane response
     """
 
     # Compute plane response force
@@ -597,6 +601,9 @@ def _calculate_contact_forces_rod_plane_with_anisotropic_friction(
     internal_torques: NDArray[np.float64],
     external_torques: NDArray[np.float64],
 ) -> None:
+    """
+    Calculates contact forces between a rod and a plane with anisotropic friction.
+    """
     (
         plane_response_force_mag,
         no_contact_point_idx,
@@ -796,6 +803,9 @@ def _calculate_contact_forces_cylinder_plane(
     velocity_collection: NDArray[np.float64],
     external_forces: NDArray[np.float64],
 ) -> tuple[NDArray[np.float64], NDArray[np.intp]]:
+    """
+    Calculates the contact forces between a cylinder and a plane.
+    """
 
     # Compute plane response force
     # total_forces = system.internal_forces + system.external_forces

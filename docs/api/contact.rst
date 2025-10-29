@@ -8,6 +8,12 @@ Contact
 Description
 -----------
 
+.. note::
+   (CAUTION)
+   The contact is recommended to be added at last. This is because contact forces often includes
+   friction that may depend on other normal forces and contraints to be calculated accurately.
+   Be careful on the order of adding interactions.
+
 .. rubric:: Available Contact Classes
 
 .. autosummary::
