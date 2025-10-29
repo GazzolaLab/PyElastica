@@ -65,8 +65,7 @@ class Forcing:
         # From stored _ExtForceTorque objects, and instantiate a Force
         # inplace : https://stackoverflow.com/a/1208792
 
-        # dev : the first index stores the rod index to apply the boundary condition
-        # to.
+        # dev : the first index stores the rod index to apply the boundary condition to.
         for external_force_and_torque in self._ext_forces_torques:
             sys_id = external_force_and_torque.id()
             forcing_instance = external_force_and_torque.instantiate()

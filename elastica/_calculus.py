@@ -171,7 +171,7 @@ def _two_point_difference_for_block_structure(
     Returns
     -------
     result: numpy.ndarray
-        2D (dim, blocksize-1) array containing data with 'float' type.
+        2D (dim, blocksize+1) array containing data with 'float' type.
 
 
     Notes

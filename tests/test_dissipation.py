@@ -24,9 +24,9 @@ def test_damper_base():
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
 
-        def dampen_rates(self, rod, time):
-            rod.velocity_collection *= time
-            rod.omega_collection *= time
+        def dampen_rates(self, system, time):
+            system.velocity_collection *= time
+            system.omega_collection *= time
 
     test_damper = TestDamper(_system=test_rod)
     test_damper.dampen_rates(test_rod, np.float64(2.0))
@@ -43,7 +43,7 @@ def test_damper_base_properties_access():
             # Able to access properties in constraint class
             assert self._system == test_rod
 
-        def dampen_rates(self, rod, time):
+        def dampen_rates(self, system, time):
             assert self._system == test_rod
 
     test_damper = TestDamper(_system=test_rod)
