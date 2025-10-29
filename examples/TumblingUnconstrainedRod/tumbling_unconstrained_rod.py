@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 import elastica as ea
 from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
+from tqdm import tqdm
 from elastica.external_forces import UniformTorques
 
 from forces import (
@@ -132,7 +132,11 @@ if __name__ == "__main__":
     print("System finalized")
 
     timestepper = PositionVerlet()
-    integrate(timestepper, square_rod_sim, final_time, total_steps)
+
+    dt = final_time / total_steps
+    time = 0.0
+    for i in tqdm(range(total_steps)):
+        time = timestepper.step(square_rod_sim, time, dt)
 
     with open("TumblingUnconstrainedRod.json", "r") as file:
         analytic_data = json.load(file)

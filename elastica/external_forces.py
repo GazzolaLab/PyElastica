@@ -73,7 +73,6 @@ class GravityForces(NoForces):
         ----------
         acc_gravity: numpy.ndarray
             1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
-
     """
 
     def __init__(
@@ -136,7 +135,6 @@ class EndpointForces(NoForces):
             1D (dim) array containing data with 'float' type. Force applied to last node of the system.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
-
     """
 
     def __init__(
@@ -215,7 +213,6 @@ class UniformTorques(NoForces):
         ----------
         torque: numpy.ndarray
             2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
-
     """
 
     def __init__(
@@ -314,7 +311,6 @@ class MuscleTorques(NoForces):
             Applied muscle torques are ramped up until ramp up time.
         my_spline: numpy.ndarray
             1D (blocksize) array containing data with 'float' type. Generated spline.
-
     """
 
     def __init__(

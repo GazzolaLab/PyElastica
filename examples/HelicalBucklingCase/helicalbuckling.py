@@ -88,7 +88,10 @@ shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 
 final_time = 10500.0
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(helicalbuckling_sim, time, dt)
 
 if PLOT_FIGURE:
     plot_helicalbuckling(shearable_rod, SAVE_FIGURE)

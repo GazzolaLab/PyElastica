@@ -675,8 +675,6 @@ class HelicalBucklingBC(ConstraintBase):
         final_end_directors: numpy.ndarray
             3D (dim, dim, 1) array containing data with 'float' type.
             Directors of last element of rod after twist completed.
-
-
     """
 
     def __init__(

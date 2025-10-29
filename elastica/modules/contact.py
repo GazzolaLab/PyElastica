@@ -6,7 +6,6 @@ Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
 from typing import Type, Any
-from typing_extensions import Self
 
 import functools
 from elastica.typing import (
@@ -130,7 +129,7 @@ class _Contact:
         self._args: Any
         self._kwargs: Any
 
-    def using(self, cls: Type[NoContact], *args: Any, **kwargs: Any) -> Self:
+    def using(self, cls: Type[NoContact], *args: Any, **kwargs: Any) -> None:
         """
         This method is a module to set which contact class is used to apply contact
         between user defined rod-like objects.
@@ -156,7 +155,6 @@ class _Contact:
         self._contact_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> Any:
         return (
