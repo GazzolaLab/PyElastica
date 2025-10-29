@@ -1,16 +1,19 @@
 Utility Functions
-==================
+=================
 
 Here, we provide some useful functions that we often use along with elastica.
 
 Transformations
------------------
+---------------
+
 .. automodule:: elastica.transformations
    :members:
    :exclude-members: __weakref__
 
+
 Math
 ----
+
 .. automodule:: elastica._calculus
    :members:
    :exclude-members: __weakref__
@@ -25,6 +28,7 @@ Math
 
 Miscellaneous
 -------------
+
 .. automodule:: elastica.utils
    :members:
    :exclude-members: __weakref__

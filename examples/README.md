@@ -4,13 +4,6 @@ This directory contains number of examples of elastica.
 Each [example cases](#example-cases) are stored in separate subdirectories, containing case descriptions, run file, and all other data/script necessary to run.
 More [advanced cases](#advanced-cases) are stored in separate repository with its description.
 
-## Installing Requirements
-In order to run examples, you will need to install additional dependencies.
-
-```bash
-make install_examples_dependencies
-```
-
 ## Case Examples
 
 Some examples provide additional files or links to published paper for a complete description.
@@ -56,8 +49,8 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Demonstrate usage of rigid body on simulation.
     * __Features__: Cylinder, Sphere
     * [RodRigidBodyContact](./RigidBodyCases/RodRigidBodyContact)
-      * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
-      * __Features__: Cylinder, CosseratRods, RodCylinderContact
+        * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
+        * __Features__: Cylinder, CosseratRods, RodCylinderContact
 * [HelicalBucklingCase](./HelicalBucklingCase)
     * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
     * __Features__: HelicalBucklingBC
@@ -68,16 +61,16 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Example of customizing [Joint module](./MuscularFlagella/connection_flagella.py) and [Force module](./MuscularFlagella/muscle_forces_flagella.py) to implement muscular flagella.
     * __Features__: MuscleForces(custom implemented)
 * [RodContactCase](./RodContactCase)
-  * [RodRodContact](./RodContactCase/RodRodContact)
-    * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
-    * __Features__: CosseratRod, RodRodContact
-  * [RodSelfContact](./RodContactCase/RodSelfContact)
-    * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
-      * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
-    * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
-      * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
+    * [RodRodContact](./RodContactCase/RodRodContact)
+        * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
+        * __Features__: CosseratRod, RodRodContact
+    * [RodSelfContact](./RodContactCase/RodSelfContact)
+        * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
+            * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
+            * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
+        * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
+            * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
+            * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
 * [BoundaryConditionsCases](./BoundaryConditionsCases)
     * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
     * __Features__: GeneralConstraint, CosseratRod
@@ -97,11 +90,8 @@ Examples can serve as a starting template for customized usages.
 ## Functional Examples
 
 * [RestartExample](./RestartExample)
-   * __Purpose__: Demonstrate the usage of restart module.
-   * __Features__: save_state, load_state
-* [Visualization](./Visualization)
-    * __Purpose__: Include simple examples of raytrace rendering data.
-    * __Features__: POVray
+    * __Purpose__: Demonstrate the usage of restart module.
+    * __Features__: save_state, load_state
 
 ## Advanced Cases
 
@@ -109,6 +99,7 @@ Examples can serve as a starting template for customized usages.
 * [Gym Softrobot](https://github.com/skim0119/gym-softrobot) - Soft-robot control environment developed in OpenAI-gym format to study slender body control with reinforcement learning.
 
 ## Experimental Cases
+
 * [ParallelConnectionExample](./ExperimentalCases/ParallelConnectionExample)
-  * __Purpose__: Demonstrate the usage of parallel connection.
-  * __Features__: connect two parallel rods
+    * __Purpose__: Demonstrate the usage of parallel connection.
+    * __Features__: connect two parallel rods

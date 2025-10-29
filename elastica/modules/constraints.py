@@ -5,7 +5,6 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 from typing import Any, Type, cast
-from typing_extensions import Self
 
 import functools
 
@@ -166,7 +165,7 @@ class _Constraint:
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
-    ) -> Self:
+    ) -> None:
         """
         This method is a module to set which boundary condition class is used to
         enforce boundary condition from user defined rod-like objects.
@@ -194,7 +193,6 @@ class _Constraint:
         self.constrained_director_idx = constrained_director_idx
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxType:
         return self._sys_idx

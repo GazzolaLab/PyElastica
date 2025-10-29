@@ -24,7 +24,6 @@ class FreeJoint:
             Stiffness coefficient of the joint.
         nu: float
             Damping coefficient of the joint.
-
     """
 
     # pass the k and nu for the forces

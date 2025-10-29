@@ -41,7 +41,6 @@ class InteractionPlane(NoForces):
            The normal vector of the plane.
         surface_tol: float
             Penetration tolerance between the plane and the rod-like object.
-
     """
 
     def __init__(

@@ -35,26 +35,24 @@ class KnotTheory:
         total_twist = rod.compute_twist()
         total_link = rod.compute_link()
 
-    There are few alternative way of handling edge-condition in computing Link and Writhe.
-    Here, we provide three methods: "next_tangent", "end_to_end", and "net_tangent".
-    The default *type_of_additional_segment* is set to "next_tangent."
+    There are a few alternative ways of handling edge-conditions in computing Link and Writhe.
+    The `type_of_additional_segment` parameter, which defaults to ``"next_tangent"``, can be set to one of the following:
 
-    ========================== =====================================
-    type_of_additional_segment Description
-    ========================== =====================================
-    next_tangent               | Adds a two new point at the begining and end of the center line.
-                               | Distance of these points are given in segment_length.
-                               | Direction of these points are computed using the rod tangents at
-                               | the begining and end.
-    end_to_end                 | Adds a two new point at the begining and end of the center line.
-                               | Distance of these points are given in segment_length.
-                               | Direction of these points are computed using the rod node end
-                               | positions.
-    net_tangent                | Adds a two new point at the begining and end of the center line.
-                               | Distance of these points are given in segment_length. Direction of
-                               | these points are point wise avarege of nodes at the first and
-                               | second half of the rod.
-    ========================== =====================================
+    ``"next_tangent"``
+        Adds two new points at the beginning and end of the center line.
+        The distance of these points is given by `segment_length`.
+        The direction of these points is computed using the rod tangents at
+        the beginning and end.
+    ``"end_to_end"``
+        Adds two new points at the beginning and end of the center line.
+        The distance of these points is given by `segment_length`.
+        The direction of these points is computed using the rod node end
+        positions.
+    ``"net_tangent"``
+        Adds two new points at the beginning and end of the center line.
+        The distance of these points is given by `segment_length`. The direction of
+        these points is the point-wise average of nodes in the first and
+        second half of the rod.=
 
     """
 

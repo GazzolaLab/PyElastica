@@ -108,9 +108,10 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     final_time = 2.0
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(
-        timestepper, rolling_friction_initial_velocity_sim, final_time, total_steps
-    )
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rolling_friction_initial_velocity_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()

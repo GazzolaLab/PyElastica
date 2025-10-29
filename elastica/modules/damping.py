@@ -10,14 +10,13 @@ on the rods. (see `dissipation.py`).
 """
 
 from typing import Any, Type, List
-from typing_extensions import Self
 
 import functools
 
 import numpy as np
 
 from elastica.dissipation import DamperBase
-from elastica.typing import RodType, SystemType, SystemIdxType
+from elastica.typing import RodType, SystemType, SystemIdxType, CosseratRodProtocol
 from .protocol import DampenedSystemCollectionProtocol, ModuleProtocol
 
 
@@ -114,7 +113,7 @@ class _Damper:
         self._args: Any
         self._kwargs: Any
 
-    def using(self, cls: Type[DamperBase], *args: Any, **kwargs: Any) -> Self:
+    def using(self, cls: Type[DamperBase], *args: Any, **kwargs: Any) -> None:
         """
         This method is a module to set which damper class is used to
         enforce damping from user defined rod-like objects.
@@ -140,7 +139,6 @@ class _Damper:
         self._damper_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxType:
         return self._sys_idx

@@ -84,13 +84,10 @@ else:
 timestepper = ea.PositionVerlet()
 total_steps = int(final_time / dt)
 
-time = ea.integrate(
-    timestepper,
-    restart_example_simulator,
-    final_time,
-    total_steps,
-    restart_time=restart_time,
-)
+dt = final_time / total_steps
+time = restart_time
+for i in range(total_steps):
+    time = timestepper.step(restart_example_simulator, time, dt)
 
 # Save all the systems appended on the simulator class. Since in this example have only one system, under the
 # `restart_file_location` directory there is one file called system_0.npz . For each system appended on the simulator

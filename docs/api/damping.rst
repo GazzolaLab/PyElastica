@@ -28,8 +28,8 @@ LaplaceDissipationFilter        ✅       ❌
 =============================== ==== ===========
 
 
-Built-in Constraints
---------------------
+Built-in Dampers
+----------------
 
 .. autoclass:: DamperBase
    :inherited-members:

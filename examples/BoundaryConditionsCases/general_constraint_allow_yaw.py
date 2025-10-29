@@ -103,7 +103,10 @@ general_constraint_sim.finalize()
 timestepper = ea.PositionVerlet()
 
 print("Total steps", total_steps)
-ea.integrate(timestepper, general_constraint_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(general_constraint_sim, time, dt)
 
 
 plot_orientation(

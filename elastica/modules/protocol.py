@@ -1,6 +1,5 @@
 from typing import Protocol, Generator, TypeVar, Any, Type, overload, Iterator, Callable
 from typing import TYPE_CHECKING
-from typing_extensions import Self  # python 3.11: from typing import Self
 
 from elastica.typing import (
     SystemIdxType,
@@ -34,7 +33,7 @@ M = TypeVar("M", bound=MixinProtocol)
 
 
 class ModuleProtocol(Protocol[M]):
-    def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> Self: ...
+    def using(self, cls: Type[M], *args: Any, **kwargs: Any) -> None: ...
 
     def instantiate(self, *args: Any, **kwargs: Any) -> M: ...
 

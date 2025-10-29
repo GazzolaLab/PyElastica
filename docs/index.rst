@@ -44,9 +44,13 @@ If you are interested to contribute, please read `contribution-guide`_ first.
 
    guide/workflow
    guide/discretization
-   guide/example_cases
-   guide/binder
    guide/visualization
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Case Examples
+
+   _gallery/index
 
 .. toctree::
    :maxdepth: 2
@@ -66,10 +70,6 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    api/utility
 
 ..   api/elastica++
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Gallary
 
 .. toctree::
    :maxdepth: 2
