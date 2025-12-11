@@ -22,14 +22,14 @@ class ConstraintBase(ABC, Generic[S]):
 
     Notes
     -----
-    Constraint class must inherit BaseConstraint class.
+    Constraint class must inherit ConstraintBase class.
 
 
         Attributes
         ----------
-        system : RodBase or RigidBodyBase
-        node_indices : None or numpy.ndarray
-        element_indices : None or numpy.ndarray
+        _system : RodType or RigidBodyType
+        _constrained_position_idx : NDArray[np.int32]
+        _constrained_director_idx : NDArray[np.int32]
 
     """
 
@@ -39,6 +39,7 @@ class ConstraintBase(ABC, Generic[S]):
 
     def __init__(
         self,
+        _system: "RodType | RigidBodyType",
         *args: Any,
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
@@ -46,7 +47,7 @@ class ConstraintBase(ABC, Generic[S]):
     ) -> None:
         """Initialize boundary condition"""
         try:
-            self._system = kwargs["_system"]
+            self._system = _system
             self._constrained_position_idx = np.array(
                 constrained_position_idx, dtype=np.int32
             )
@@ -85,7 +86,6 @@ class ConstraintBase(ABC, Generic[S]):
         time : float
             The time of simulation.
         """
-        pass
 
     @abstractmethod
     def constrain_rates(self, system: S, time: np.float64) -> None:
@@ -100,7 +100,6 @@ class ConstraintBase(ABC, Generic[S]):
             The time of simulation.
 
         """
-        pass
 
 
 class FreeBC(ConstraintBase):
@@ -115,13 +114,11 @@ class FreeBC(ConstraintBase):
         self, system: "RodType | RigidBodyType", time: np.float64
     ) -> None:
         """In FreeBC, this routine simply passes."""
-        pass
 
     def constrain_rates(
         self, system: "RodType | RigidBodyType", time: np.float64
     ) -> None:
         """In FreeBC, this routine simply passes."""
-        pass
 
 
 class OneEndFixedBC(ConstraintBase):
@@ -138,9 +135,13 @@ class OneEndFixedBC(ConstraintBase):
 
     >>> simulator.constrain(rod).using(
     ...    OneEndFixedBC,
-    ...    constrained_position_idx=(0,),
-    ...    constrained_director_idx=(0,)
+    ...    constrained_position_idx=(0,),  # Specify node to fix
+    ...    constrained_director_idx=(0,),  # Specify element to fix
     ... )
+
+    See Also
+    --------
+    :class:`GeneralConstraint`: For fixing multiple node/element with specific degrees-of-freedom.
     """
 
     def __init__(
