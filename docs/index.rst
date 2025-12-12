@@ -18,9 +18,9 @@ Community
     :alt: on gitter
 
 We mainly use `git-issue`_ to communicate the roadmap, updates, helps, and bug fixes.
-If you have problem using PyElastica, check if similar issue is reported in `git-issue`_.
+If you have a problem using PyElastica, check if similar issue is reported in `git-issue`_.
 
-We also opened `gitter` channel for short and immediate feedbacks.
+We also opened `gitter` channel for short and immediate feedback.
 
 
 Contributing

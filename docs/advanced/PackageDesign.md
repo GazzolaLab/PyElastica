@@ -46,14 +46,14 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
         style StP text-align:left
         SymplecticStepperProtocol["SymplecticStepperProtocol\n• PositionVerlet"]
         style SymplecticStepperProtocol text-align:left
-        ExpplicitStepperProtocol["ExpplicitStepperProtocol\n(Unused)"]
+        ExplicitStepperProtocol["ExplicitStepperProtocol\n(Unused)"]
       end
 
       subgraph SystemCollection
 
       end
       SymST --> SystemCollection --> SymplecticStepperProtocol
-      ExpST --> SystemCollection --> ExpplicitStepperProtocol
+      ExpST --> SystemCollection --> ExplicitStepperProtocol
       StaticSystemType --> SystemCollection
 
 ```
@@ -104,7 +104,7 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
         Contact -->|detect_contact_between| Synchronize
         Connection -->|connect| Synchronize
         Damping -->|dampen| ConstrainRates
-        Callback -->|collect_diagnosis| CallbackGroup
+        Callback -->|collect_diagnostics| CallbackGroup
         end
       end
       Sys --> StSys --> Feature

@@ -21,7 +21,7 @@ Compatibility
 ~~~~~~~~~~~~~
 
 =============================== ==== ===========
-Connection / Joints   		Rod  Rigid Body
+Connection / Joints             Rod  Rigid Body
 =============================== ==== ===========
 FreeJoint                       ✅   ❌
 FixedJoint                      ✅   ❌
