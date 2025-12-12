@@ -66,7 +66,8 @@ class GenericSystemTypeFreeJoint(ConnectionBase):
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
         """
-        super().__init__(k=k, nu=nu, **kwargs)
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
 
         self.point_system_one = (
             point_system_one
