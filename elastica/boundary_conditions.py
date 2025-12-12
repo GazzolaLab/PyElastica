@@ -39,8 +39,8 @@ class ConstraintBase(ABC, Generic[S]):
 
     def __init__(
         self,
-        _system: "RodType | RigidBodyType",
         *args: Any,
+        _system: "RodType | RigidBodyType",
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
