@@ -1,6 +1,8 @@
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
-from examples.RodContactCase.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_link_writhe_twist,
 )
@@ -213,7 +215,7 @@ class RodCallBack(ea.CallBackBaseClass):
             return
 
 
-post_processing_dict = ea.defaultdict(list)  # list which collected data will be append
+post_processing_dict = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 solenoid_sim.collect_diagnostics(sherable_rod).using(
     RodCallBack,

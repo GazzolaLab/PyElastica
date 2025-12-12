@@ -1,19 +1,16 @@
 __doc__ = """Parallel connection example"""
 
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     get_connection_vector_straight_straight_rod,
     SurfaceJointSideBySide,
 )
 from elastica._calculus import difference_kernel
-import sys
 
-sys.path.append("../")
-sys.path.append("../../")
-sys.path.append("../../../")
-
-from examples.JointCases.joint_cases_postprocessing import (
+from joint_cases_postprocessing import (
     plot_position,
     plot_video,
     plot_video_xy,
@@ -171,15 +168,15 @@ class ParallelConnecitonCallback(ea.CallBackBaseClass):
             return
 
 
-pp_list_rod1 = ea.defaultdict(list)
-pp_list_rod2 = ea.defaultdict(list)
+pp_list_rod1 = defaultdict(list)
+pp_list_rod2 = defaultdict(list)
 
 
 parallel_connection_sim.collect_diagnostics(rod_one).using(
-    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod1
+    ParallelConnectionCallback, step_skip=40, callback_params=pp_list_rod1
 )
 parallel_connection_sim.collect_diagnostics(rod_two).using(
-    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod2
+    ParallelConnectionCallback, step_skip=40, callback_params=pp_list_rod2
 )
 
 

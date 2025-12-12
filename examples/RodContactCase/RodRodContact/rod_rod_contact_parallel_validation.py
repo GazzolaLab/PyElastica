@@ -1,6 +1,8 @@
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
-from examples.RodContactCase.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_velocity,
 )
@@ -135,7 +137,7 @@ class RodCallBack(ea.CallBackBaseClass):
             return
 
 
-post_processing_dict_rod1 = ea.defaultdict(
+post_processing_dict_rod1 = defaultdict(
     list
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data
@@ -145,7 +147,7 @@ parallel_rod_rod_contact_sim.collect_diagnostics(rod_one).using(
     callback_params=post_processing_dict_rod1,
 )
 
-post_processing_dict_rod2 = ea.defaultdict(
+post_processing_dict_rod2 = defaultdict(
     list
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data

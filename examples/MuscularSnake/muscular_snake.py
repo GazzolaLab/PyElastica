@@ -1,11 +1,12 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.MuscularSnake.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_snake_velocity,
 )
-from examples.MuscularSnake.muscle_forces import MuscleForces
+from muscle_forces import MuscleForces
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     SurfaceJointSideBySide,
     get_connection_vector_straight_straight_rod,
@@ -248,7 +249,7 @@ for rod in rod_list:
 post_processing_forces_dict_list = []
 
 for i in range(n_muscle_fibers):
-    post_processing_forces_dict_list.append(ea.defaultdict(list))
+    post_processing_forces_dict_list.append(defaultdict(list))
     muscle_rod = muscle_rod_list[i]
     side_of_body = 1 if i % 2 == 0 else -1
 
@@ -268,7 +269,7 @@ for i in range(n_muscle_fibers):
 
 
 straight_straight_rod_connection_list = []
-straight_straight_rod_connection_post_processing_dict = ea.defaultdict(list)
+straight_straight_rod_connection_post_processing_dict = defaultdict(list)
 for idx, rod_two in enumerate(muscle_rod_list):
     rod_one = snake_body
     (
@@ -385,7 +386,7 @@ class MuscularSnakeCallBack(ea.CallBackBaseClass):
 post_processing_dict_list = []
 
 for idx, rod in enumerate(rod_list):
-    post_processing_dict_list.append(ea.defaultdict(list))
+    post_processing_dict_list.append(defaultdict(list))
     muscular_snake_simulator.collect_diagnostics(rod).using(
         MuscularSnakeCallBack,
         step_skip=step_skip,

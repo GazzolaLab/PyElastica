@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 from post_processing import plot_velocity, plot_video_with_surface
 
@@ -219,14 +220,14 @@ def rod_cylinder_contact_friction_case(
                 return
 
     if POST_PROCESSING:
-        post_processing_dict_list.append(ea.defaultdict(list))
+        post_processing_dict_list.append(defaultdict(list))
         rod_cylinder_parallel_contact_simulator.collect_diagnostics(rod).using(
             StraightRodCallBack,
             step_skip=step_skip,
             callback_params=post_processing_dict_list[0],
         )
         # For rigid body
-        post_processing_dict_list.append(ea.defaultdict(list))
+        post_processing_dict_list.append(defaultdict(list))
         rod_cylinder_parallel_contact_simulator.collect_diagnostics(rigid_body).using(
             RigidCylinderCallBack,
             step_skip=step_skip,

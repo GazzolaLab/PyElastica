@@ -16,6 +16,7 @@ To set up the simulation, the first thing you need to do is import the necessary
 """
 
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 from elastica.version import VERSION
 
@@ -179,7 +180,7 @@ class VelocityCallBack(ea.CallBackBaseClass):
             return
 
 
-recorded_history = ea.defaultdict(list)
+recorded_history = defaultdict(list)
 timoshenko_sim.collect_diagnostics(shearable_rod).using(
     VelocityCallBack, step_skip=500, callback_params=recorded_history
 )

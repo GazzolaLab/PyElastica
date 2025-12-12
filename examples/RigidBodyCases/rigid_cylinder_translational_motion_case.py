@@ -1,6 +1,7 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.FrictionValidationCases.friction_validation_postprocessing import (
+from friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -60,34 +61,30 @@ def rigid_cylinder_translational_motion_verification(force=0.0):
         PointForceToCenter, force=force, direction=normal.reshape(3, 1)
     )
 
-    # Add call backs
-    class RigidSphereCallBack(ea.CallBackBaseClass):
+    # Add callbacks
+    class RigidCylinderCallBack(ea.CallBackBaseClass):
         """
-        Call back function
+        Callback function
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
         def make_callback(self, system, time, current_step: int):
             if current_step % self.every == 0:
                 self.callback_params["time"].append(time)
-                self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
-                )
-                self.callback_params["velocity"].append(
-                    system.velocity_collection.copy()
                 )
 
             return
 
     step_skip = 200
-    pp_list = ea.defaultdict(list)
+    pp_list = defaultdict(list)
     rigid_cylinder_sim.collect_diagnostics(cylinder).using(
-        RigidSphereCallBack, step_skip=step_skip, callback_params=pp_list
+        RigidCylinderCallBack, step_skip=step_skip, callback_params=pp_list
     )
 
     rigid_cylinder_sim.finalize()

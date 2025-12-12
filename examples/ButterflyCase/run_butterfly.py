@@ -15,7 +15,7 @@ positions and directors.
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-
+from collections import defaultdict
 
 import elastica as ea
 from elastica.utils import MaxDimension
@@ -137,7 +137,7 @@ class VelocityCallBack(ea.CallBackBaseClass):
 
 
 # database
-recorded_history: dict[str, list] = ea.defaultdict(list)
+recorded_history: dict[str, list] = defaultdict(list)
 
 # initially record history
 recorded_history["time"].append(0.0)

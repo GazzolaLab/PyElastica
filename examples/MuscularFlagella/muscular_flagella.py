@@ -1,17 +1,20 @@
 __doc__ = """Muscular flagella example from Zhang et. al. Nature Comm 2019 paper."""
 
+import os
+from collections import defaultdict
+
 import numpy as np
 import elastica as ea
-from examples.MuscularFlagella.post_processing import (
+from post_processing import (
     plot_video_2D,
     plot_video,
     plot_com_position_vs_time,
     plot_position_vs_time_comparison_cpp,
 )
-from examples.MuscularFlagella.connection_flagella import (
+from connection_flagella import (
     MuscularFlagellaConnection,
 )
-from examples.MuscularFlagella.muscle_forces_flagella import MuscleForces
+from muscle_forces_flagella import MuscleForces
 
 
 class MuscularFlagellaSimulator(
@@ -200,32 +203,36 @@ muscular_flagella_sim.add_forcing_to(flagella_body).using(
 )
 
 
-# Add call backs
+# Add callbacks
 class MuscularFlagellaCallBack(ea.CallBackBaseClass):
+    """
+    Callback function for collecting data from Muscular Flagella simulation.
+    Records time, position, center of mass, radius, velocity, and tangents.
+    """
+
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
     def make_callback(self, system, time, current_step: int):
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(system.compute_position_center_of_mass())
             self.callback_params["radius"].append(system.radius.copy())
             self.callback_params["velocity"].append(system.velocity_collection.copy())
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-post_processing_dict_body = ea.defaultdict(list)
+post_processing_dict_body = defaultdict(list)
 muscular_flagella_sim.collect_diagnostics(flagella_body).using(
     MuscularFlagellaCallBack,
     step_skip=step_skip,
     callback_params=post_processing_dict_body,
 )
 
-post_processing_dict_muscle = ea.defaultdict(list)
+post_processing_dict_muscle = defaultdict(list)
 muscular_flagella_sim.collect_diagnostics(flagella_muscle).using(
     MuscularFlagellaCallBack,
     step_skip=step_skip,

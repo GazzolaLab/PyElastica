@@ -1,7 +1,8 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 
-from examples.RingRodCase.ring_rod_post_processing import plot_video
+from ring_rod_post_processing import plot_video
 
 
 class RingSimulator(
@@ -85,20 +86,14 @@ class RingRodCallBack(ea.CallBackBaseClass):
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["length"].append(system.rest_lengths.copy())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
-            self.callback_params["avg_velocity"].append(
-                system.compute_velocity_center_of_mass()
-            )
 
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
-            self.callback_params["curvature"].append(system.kappa.copy())
+            self.callback_params["center_of_mass"].append(system.compute_position_center_of_mass())
 
             return
 
 
-pp_list = ea.defaultdict(list)
+pp_list = defaultdict(list)
 ring_sim.collect_diagnostics(ring_rod).using(
     RingRodCallBack, step_skip=step_skip, callback_params=pp_list
 )

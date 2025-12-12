@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from collections import defaultdict
 import numpy as np
 import elastica as ea
 import json
@@ -107,7 +108,7 @@ def cantilever_subjected_to_a_nonconservative_load(
                     ** 0.5
                 )
 
-    recorded_history = ea.defaultdict(list)
+    recorded_history = defaultdict(list)
 
     square_rod_sim.collect_diagnostics(square_rod).using(
         NonConservativeDistributedLoadCallBack,

@@ -1,8 +1,9 @@
-__doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
+__doc__ = """Snake friction case from X. Zhang et al. Nat. Comm. 2021"""
 
 import os
 import numpy as np
 import pickle
+from collections import defaultdict
 
 from elastica import *
 

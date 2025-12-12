@@ -1,9 +1,11 @@
-__doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
+__doc__ = """General constraint example allowing yaw rotation, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
 
-from examples.BoundaryConditionsCases.bc_cases_postprocessing import (
+from bc_cases_postprocessing import (
     plot_position,
     plot_orientation,
     plot_video,
@@ -92,7 +94,7 @@ general_constraint_sim.dampen(rod1).using(
 )
 
 
-pp_list_rod1 = ea.defaultdict(list)
+pp_list_rod1 = defaultdict(list)
 
 
 general_constraint_sim.collect_diagnostics(rod1).using(

@@ -1,6 +1,8 @@
 __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
 
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
 from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
     GenericSystemTypeFixedJoint,
@@ -135,9 +137,9 @@ fixed_joint_sim.dampen(rod2).using(
     time_step=dt,
 )
 
-pp_list_rod1 = ea.defaultdict(list)
-pp_list_rod2 = ea.defaultdict(list)
-pp_list_cylinder = ea.defaultdict(list)
+pp_list_rod1 = defaultdict(list)
+pp_list_rod2 = defaultdict(list)
+pp_list_cylinder = defaultdict(list)
 
 fixed_joint_sim.collect_diagnostics(rod1).using(
     ea.MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1

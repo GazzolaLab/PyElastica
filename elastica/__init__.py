@@ -1,4 +1,3 @@
-from collections import defaultdict
 from elastica.rod.knot_theory import (
     compute_link,
     compute_twist,

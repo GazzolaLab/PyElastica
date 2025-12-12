@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
@@ -113,18 +115,15 @@ def simulate_dynamic_cantilever_with(
                 )
                 return
 
-    recorded_history = ea.defaultdict(list)
+    recorded_history = defaultdict(list)
     cantilever_sim.collect_diagnostics(cantilever_rod).using(
         CantileverCallBack, step_skip=step_skips, callback_params=recorded_history
     )
     cantilever_sim.finalize()
 
-    total_steps = int(final_time / dt)
     print(f"Total steps: {total_steps}")
 
     timestepper = ea.PositionVerlet()
-
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(cantilever_sim, time, dt)

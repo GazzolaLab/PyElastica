@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 from tqdm import tqdm
 import elastica as ea
 from post_processing import plot_video_with_surface
@@ -155,11 +156,11 @@ def main():
                     system.director_collection.copy()
                 )
                 self.callback_params["radius"].append(np.array([system.radius.copy()]))
-                self.callback_params["com"].append(
+                self.callback_params["center_of_mass"].append(
                     system.compute_position_center_of_mass()
                 )
 
-    post_processing_dict_list.append(ea.defaultdict(list))
+    post_processing_dict_list.append(defaultdict(list))
     simulator.collect_diagnostics(rod).using(
         StraightRodCallBack,
         step_skip=step_skip,
@@ -167,7 +168,7 @@ def main():
     )
     for _ in range(n_sphere):
         # For rigid body
-        db = ea.defaultdict(list)
+        db = defaultdict(list)
         post_processing_dict_list.append(db)
         simulator.collect_diagnostics(rigid_body).using(
             RigidBodyCallback,

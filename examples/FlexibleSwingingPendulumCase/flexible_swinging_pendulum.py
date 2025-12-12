@@ -2,6 +2,9 @@
 isort:skip_file
 """
 
+import pickle
+from collections import defaultdict
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -112,7 +115,7 @@ dt = (0.0007 if SAVE_RESULTS else 0.002) * dl
 total_steps = int(final_time / dt)
 
 print("Total steps", total_steps)
-recorded_history = ea.defaultdict(list)
+recorded_history = defaultdict(list)
 step_skip = (
     60
     if PLOT_VIDEO

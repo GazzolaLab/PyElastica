@@ -1,6 +1,7 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.FrictionValidationCases.friction_validation_postprocessing import (
+from friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -53,32 +54,28 @@ def rigid_sphere_rolling_verification(torque=0.0):
         PointCoupleToCenter, torque=torque, direction=np.array([0.0, -1.0, 0.0])
     )
 
-    # Add call backs
+    # Add callbacks
     class RigidSphereCallBack(ea.CallBackBaseClass):
         """
-        Call back function
+        Callback function
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
         def make_callback(self, system, time, current_step: int):
             if current_step % self.every == 0:
                 self.callback_params["time"].append(time)
-                self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
-                )
-                self.callback_params["velocity"].append(
-                    system.velocity_collection.copy()
                 )
 
             return
 
     step_skip = 200
-    pp_list = ea.defaultdict(list)
+    pp_list = defaultdict(list)
     rigid_sphere_sim.collect_diagnostics(sphere).using(
         RigidSphereCallBack, step_skip=step_skip, callback_params=pp_list
     )

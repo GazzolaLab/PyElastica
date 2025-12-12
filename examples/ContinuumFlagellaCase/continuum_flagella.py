@@ -1,10 +1,11 @@
-__doc__ = """Continuum flagella example, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
+__doc__ = """Continuum flagella example, for detailed explanation refer to Gazzola et al. R. Soc. 2018
 section 5.2.1 """
 
 import numpy as np
 import os
+from collections import defaultdict
 import elastica as ea
-from examples.ContinuumFlagellaCase.continuum_flagella_postprocessing import (
+from continuum_flagella_postprocessing import (
     plot_velocity,
     plot_video,
     compute_projected_velocity,
@@ -117,7 +118,7 @@ def run_flagella(
 
                 return
 
-    pp_list = ea.defaultdict(list)
+    pp_list = defaultdict(list)
     flagella_sim.collect_diagnostics(shearable_rod).using(
         ContinuumFlagellaCallBack, step_skip=200, callback_params=pp_list
     )

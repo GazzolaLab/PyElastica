@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 from post_processing import plot_video, plot_cylinder_rod_position
 
@@ -130,15 +131,15 @@ class PositionCollector(ea.CallBackBaseClass):
             self.callback_params["time"].append(time)
             # Collect only x
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(system.compute_position_center_of_mass())
             return
 
 
-recorded_rod_history = ea.defaultdict(list)
+recorded_rod_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(rod1).using(
     PositionCollector, step_skip=200, callback_params=recorded_rod_history
 )
-recorded_cyl_history = ea.defaultdict(list)
+recorded_cyl_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(cylinder).using(
     PositionCollector, step_skip=200, callback_params=recorded_cyl_history
 )
