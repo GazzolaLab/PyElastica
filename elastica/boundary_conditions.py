@@ -14,7 +14,7 @@ from elastica._rotations import _get_rotation_matrix
 from elastica.typing import SystemType, RodType, RigidBodyType, ConstrainingIndex
 
 
-S = TypeVar("S")
+S = TypeVar("S", bound=SystemType)
 
 
 class ConstraintBase(ABC, Generic[S]):
@@ -40,7 +40,7 @@ class ConstraintBase(ABC, Generic[S]):
     def __init__(
         self,
         *args: Any,
-        _system: "RodType | RigidBodyType",
+        _system: S,
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
