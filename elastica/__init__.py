@@ -33,6 +33,8 @@ from elastica.joint import (
     ConnectionBase,
     FreeJoint,
     FixedJoint,
+    BallJoint,  # Alias
+    SphericalJoint,  # Alias
     HingeJoint,
 )
 from elastica.contact_forces import (

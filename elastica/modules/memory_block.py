@@ -7,7 +7,6 @@ from typing import cast
 from elastica.typing import (
     RodType,
     RigidBodyType,
-    SurfaceType,
     StaticSystemType,
     SystemIdxType,
     BlockSystemType,
@@ -15,7 +14,6 @@ from elastica.typing import (
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.rigid_body import RigidBodyBase
-from elastica.surface.surface_base import SurfaceBase
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
 from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 
@@ -49,10 +47,6 @@ def construct_memory_block_structures(
             rigid_body_system = cast(RigidBodyType, sys_to_be_added)
             temp_list_for_rigid_body_systems.append(rigid_body_system)
             temp_list_for_rigid_body_systems_idx.append(system_idx)
-
-        elif isinstance(sys_to_be_added, SurfaceBase):
-            # TODO: Surface type is passive system
-            pass
 
         else:
             continue  # No error:: any typechecking should be finished by BaseSystemCollection._check_type

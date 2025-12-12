@@ -76,13 +76,13 @@ class TestBaseSystemCollection:
 
         from elastica.rod import RodBase
         from elastica.rigidbody import RigidBodyBase
-        from elastica.surface import SurfaceBase
+        from elastica.systems.protocol import StaticSystemBase
 
         # Types are extended in the fixture
         assert bsc.allowed_sys_types == (
             RodBase,
             RigidBodyBase,
-            SurfaceBase,
+            StaticSystemBase,
             int,
             float,
             str,

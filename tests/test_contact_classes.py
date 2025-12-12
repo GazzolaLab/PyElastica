@@ -686,7 +686,7 @@ class TestRodPlaneContact:
         # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 
@@ -959,7 +959,7 @@ class TestRodPlaneWithAnisotropicFriction:
         # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 
@@ -1284,7 +1284,7 @@ class TestCylinderPlaneContact:
         # Testing Cylinder Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             cylinder_plane_contact._check_systems_validity(mock_cylinder, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 

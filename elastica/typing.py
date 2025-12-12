@@ -16,14 +16,13 @@ if TYPE_CHECKING:
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
     from .rod.protocol import CosseratRodProtocol
     from .rigidbody.protocol import RigidBodyProtocol
-    from .surface.surface_base import SurfaceBase
     from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
     from .rod.data_structures import _State as State
     from .systems.protocol import (
+        StaticSystemBase,
         SystemProtocol,
-        StaticSystemProtocol,
         SymplecticSystemProtocol,
     )
     from .timestepper.protocol import (
@@ -35,20 +34,19 @@ if TYPE_CHECKING:
 else:
     CosseratRodProtocol = "CosseratRodProtocol"
     RigidBodyProtocol = "RigidBodyProtocol"
-    SurfaceBase = "SurfaceBase"
     BaseSystemCollection = "BaseSystemCollection"
 
     SystemCollectionProtocol = "SystemCollectionProtocol"
     State = "State"
     SystemProtocol = "SystemProtocol"
-    StaticSystemProtocol = "StaticSystemProtocol"
+    StaticSystemBase = "StaticSystemBase"
     SymplecticSystemProtocol = "SymplecticSystemProtocol"
     StepperProtocol = "StepperProtocol"
     SymplecticStepperProtocol = "SymplecticStepperProtocol"
     BlockSystemProtocol = "BlockSystemProtocol"
 
 
-StaticSystemType: TypeAlias = "StaticSystemProtocol"
+StaticSystemType: TypeAlias = "StaticSystemBase"
 SystemType: TypeAlias = SystemProtocol
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"
@@ -64,7 +62,6 @@ SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
 RodType: TypeAlias = "CosseratRodProtocol"
 RigidBodyType: TypeAlias = "RigidBodyProtocol"
-SurfaceType: TypeAlias = "SurfaceBase"
 
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 

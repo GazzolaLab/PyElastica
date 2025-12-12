@@ -1,12 +1,15 @@
 __doc__ = """"""
 
-from elastica.surface.surface_base import SurfaceBase
+from typing import Type
+from elastica.systems.protocol import StaticSystemBase
 import numpy as np
 from numpy.typing import NDArray
 from elastica.utils import Tolerance
 
 
-class Plane(SurfaceBase):
+class Plane(StaticSystemBase):
+    REQUISITE_MODULES: list[Type] = []
+
     def __init__(
         self, plane_origin: NDArray[np.float64], plane_normal: NDArray[np.float64]
     ):

@@ -1,13 +1,12 @@
 __doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
 
 from typing import TypeVar, Generic, Type
-from elastica.typing import RodType, SystemType, SurfaceType, CosseratRodProtocol
+from elastica.typing import RodType, SystemType, CosseratRodProtocol
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
 from elastica.surface.plane import Plane
-from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_utils import (
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
@@ -494,12 +493,12 @@ class RodPlaneContact(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
     def apply_contact(
         self,
         system_one: RodType,
-        system_two: SurfaceType,
+        system_two: Plane,
         time: np.float64 = np.float64(0.0),
     ) -> None:
         """
@@ -591,12 +590,12 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
     def apply_contact(
         self,
         system_one: RodType,
-        system_two: SurfaceType,
+        system_two: Plane,
         time: np.float64 = np.float64(0.0),
     ) -> None:
         """
@@ -605,7 +604,7 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
         Parameters
         ----------
         system_one: RodType
-        system_two: SurfaceType
+        system_two: Plane
 
         """
 
@@ -678,12 +677,12 @@ class CylinderPlaneContact(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
     def apply_contact(
         self,
         system_one: Cylinder,
-        system_two: SurfaceType,
+        system_two: Plane,
         time: np.float64 = np.float64(0.0),
     ) -> None:
         """
@@ -694,7 +693,7 @@ class CylinderPlaneContact(NoContact):
         Parameters
         ----------
         system_one: Cylinder
-        system_two: SurfaceBase
+        system_two: Plane
 
         """
         _calculate_contact_forces_cylinder_plane(

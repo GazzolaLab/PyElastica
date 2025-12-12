@@ -90,7 +90,7 @@ class TestContactMixin:
 
     from elastica.rod import RodBase
     from elastica.rigidbody import RigidBodyBase
-    from elastica.surface import SurfaceBase
+    from elastica.systems.protocol import StaticSystemBase
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
@@ -113,7 +113,7 @@ class TestContactMixin:
         def __init__(self, *args, **kwargs):
             self.n_elems = 1
 
-    class MockSurface(SurfaceBase):
+    class MockSurface(StaticSystemBase):
         def __init__(self, *args, **kwargs):
             self.n_facets = 1
 

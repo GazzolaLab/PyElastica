@@ -1,6 +1,6 @@
 __doc__ = """Base class for elastica system"""
 
-from typing import Protocol, Type
+from typing import Protocol, Type, runtime_checkable
 from elastica.typing import StateType, SystemType
 
 from elastica.rod.data_structures import _KinematicState, _DynamicState
@@ -9,11 +9,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-class StaticSystemProtocol(Protocol):
+# TODO: Better organize this part
+@runtime_checkable
+class StaticSystemBase(Protocol):
     REQUISITE_MODULES: list[Type]
 
 
-class SystemProtocol(StaticSystemProtocol, Protocol):
+class SystemProtocol(StaticSystemBase, Protocol):
     """
     Protocol for all dynamic elastica system
     """

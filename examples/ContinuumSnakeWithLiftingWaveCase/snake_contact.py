@@ -25,7 +25,6 @@ from elastica.contact_utils import (
 from numba import njit
 from elastica.rod.rod_base import RodBase
 from elastica.surface import Plane
-from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_forces import NoContact
 from elastica.typing import RodType, SystemType
 
@@ -291,7 +290,7 @@ class SnakeRodPlaneContact(NoContact):
     @property
     def _allowed_system_two(self) -> list[Type]:
         # Modify this list to include the allowed system types for contact
-        return [SurfaceBase]
+        return [Plane]
 
     def apply_contact(
         self, system_one: RodType, system_two: SystemType, time: float
