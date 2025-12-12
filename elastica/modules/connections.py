@@ -15,7 +15,7 @@ from elastica.typing import (
 )
 import numpy as np
 import functools
-from elastica.joint import FreeJoint
+from elastica.joint import ConnectionBase
 
 from .protocol import ConnectedSystemCollectionProtocol, ModuleProtocol
 
@@ -90,7 +90,7 @@ class Connections:
             first_sys_idx, second_sys_idx, first_connect_idx, second_connect_idx = (
                 connection.id()
             )
-            connect_instance: FreeJoint = connection.instantiate()
+            connect_instance: ConnectionBase = connection.instantiate()
 
             func_force = functools.partial(
                 connect_instance.apply_forces,
@@ -156,7 +156,7 @@ class _Connect:
         self._second_sys_n_lim: int = second_sys_nlim
         self.first_sys_connection_idx: ConnectionIndex = ()
         self.second_sys_connection_idx: ConnectionIndex = ()
-        self._connect_cls: Type[FreeJoint]
+        self._connect_cls: Type[ConnectionBase]
 
     def set_index(
         self, first_idx: ConnectionIndex, second_idx: ConnectionIndex
@@ -239,7 +239,7 @@ class _Connect:
 
     def using(
         self,
-        cls: Type[FreeJoint],
+        cls: Type[ConnectionBase],
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -261,8 +261,8 @@ class _Connect:
 
         """
         assert issubclass(
-            cls, FreeJoint
-        ), "{} is not a valid joint class. Did you forget to derive from FreeJoint?".format(
+            cls, ConnectionBase
+        ), "{} is not a valid connection class. Did you forget to derive from ConnectionBase?".format(
             cls
         )
         self._connect_cls = cls
@@ -279,7 +279,7 @@ class _Connect:
             self.second_sys_connection_idx,
         )
 
-    def instantiate(self) -> FreeJoint:
+    def instantiate(self) -> ConnectionBase:
         if not hasattr(self, "_connect_cls"):
             raise RuntimeError(
                 "No connections provided to link rod id {0}"
@@ -293,5 +293,5 @@ class _Connect:
         except (TypeError, IndexError):
             raise TypeError(
                 r"Unable to construct connection class.\n"
-                r"Did you provide all necessary joint properties?"
+                r"Did you provide all necessary connection properties?"
             )

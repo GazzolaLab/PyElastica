@@ -1,7 +1,7 @@
 __doc__ = """Contains SurfaceJointSideBySide class which connects two parallel rods ."""
 import numpy as np
 from numba import njit
-from elastica.joint import FreeJoint
+from elastica.joint import ConnectionBase
 
 # Join the two rods
 from elastica._linalg import (
@@ -67,7 +67,7 @@ def get_connection_vector_straight_straight_rod(
     )
 
 
-class SurfaceJointSideBySide(FreeJoint):
+class SurfaceJointSideBySide(ConnectionBase):
     """
     TODO: documentation
     """

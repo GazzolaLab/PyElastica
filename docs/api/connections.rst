@@ -13,6 +13,7 @@ Description
 .. autosummary::
    :nosignatures:
 
+   ConnectionBase
    FreeJoint
    FixedJoint
    HingeJoint
@@ -23,6 +24,7 @@ Compatibility
 =============================== ==== ===========
 Connection / Joints             Rod  Rigid Body
 =============================== ==== ===========
+ConnectionBase                  ✅   ✅
 FreeJoint                       ✅   ❌
 FixedJoint                      ✅   ❌
 HingeJoint                      ✅   ❌
@@ -30,6 +32,9 @@ HingeJoint                      ✅   ❌
 
 Built-in Connection / Joint
 -------------------------------------
+
+.. autoclass:: ConnectionBase
+   :special-members: __init__,apply_forces,apply_torques
 
 .. autoclass:: FreeJoint
    :special-members: __init__,apply_forces,apply_torques

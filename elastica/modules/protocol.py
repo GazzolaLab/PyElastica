@@ -13,7 +13,7 @@ from elastica.typing import (
     BlockSystemType,
     ConnectionIndex,
 )
-from elastica.joint import FreeJoint
+from elastica.joint import ConnectionBase
 from elastica.callback_functions import CallBackBaseClass
 from elastica.boundary_conditions import ConstraintBase
 from elastica.dissipation import DamperBase
