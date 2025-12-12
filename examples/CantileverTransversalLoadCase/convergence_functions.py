@@ -51,6 +51,9 @@ def plot_convergence(results, SAVE_FIGURE, filename):
         label="l2",
     )
     ax.loglog(convergence_elements, linf, marker="o", ms=10, c="k", lw=2, label="linf")
+    ax.set_xlabel("N_element")
+    ax.set_ylabel("Error")
+    ax.set_title("Error Convergence Analysis")
     fig.legend(prop={"size": 20})
     if SAVE_FIGURE:
         assert filename != "", "provide a file name for figure"
