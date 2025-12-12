@@ -1,6 +1,9 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
 __all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_systems"]
 
+from typing import TypeVar, Generic
+from abc import ABC, abstractmethod
+
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
 
@@ -8,15 +11,80 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-class FreeJoint:
+S = TypeVar("S", bound=SystemType)
+
+
+class ConnectionBase(ABC, Generic[S]):
     """
-    This free joint class is the base class for all joints. Free or spherical
-    joints constrains the relative movement between two nodes (chosen by the user)
+    This Connection base class is for all system-to-system connections.
+    Every operator for Connections must be derived from this class.
+    """
+
+    @abstractmethod
+    def apply_forces(
+        self,
+        system_one: "RodType | RigidBodyType",
+        index_one: ConnectionIndex,
+        system_two: "RodType | RigidBodyType",
+        index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
+        """
+        Apply connection force to the connected objects.
+
+        Parameters
+        ----------
+        system_one : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_one : ConnectionIndex
+            Index of first system for connection.
+        system_two : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_two : ConnectionIndex
+            Index of second system for connection.
+
+        Returns
+        -------
+
+        """
+
+    @abstractmethod
+    def apply_torques(
+        self,
+        system_one: "RodType | RigidBodyType",
+        index_one: ConnectionIndex,
+        system_two: "RodType | RigidBodyType",
+        index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
+        """
+        Apply connection torques to the connected objects.
+
+        Parameters
+        ----------
+        system_one : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_one : ConnectionIndex
+            Index of first system for connection
+        system_two : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_two : ConnectionIndex
+            Index of second system for connection.
+
+        Returns
+        -------
+
+        """
+
+
+class FreeJoint(ConnectionBase):
+    """
+    Free or spherical joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
     Notes
     -----
-    Every new joint class must be derived from the FreeJoint class.
+    Alias for BallJoint and SphericalJoint
 
         Attributes
         ----------
@@ -59,11 +127,11 @@ class FreeJoint:
         system_one : RodType | RigidBodyType
             Rod or rigid-body object
         index_one : ConnectionIndex
-            Index of first rod for joint.
+            Index of first system for connection.
         system_two : RodType | RigidBodyType
             Rod or rigid-body object
         index_two : ConnectionIndex
-            Index of second rod for joint.
+            Index of second system for connection.
 
         Returns
         -------
@@ -85,8 +153,6 @@ class FreeJoint:
         system_one.external_forces[..., index_one] += contact_force
         system_two.external_forces[..., index_two] -= contact_force
 
-        return
-
     def apply_torques(
         self,
         system_one: "RodType | RigidBodyType",
@@ -96,26 +162,13 @@ class FreeJoint:
         time: np.float64 = np.float64(0.0),
     ) -> None:
         """
-        Apply restoring joint torques to the connected rod objects.
-
         In FreeJoint class, this routine simply passes.
-
-        Parameters
-        ----------
-        system_one : RodType | RigidBodyType
-            Rod or rigid-body object
-        index_one : ConnectionIndex
-            Index of first rod for joint.
-        system_two : RodType | RigidBodyType
-            Rod or rigid-body object
-        index_two : ConnectionIndex
-            Index of second rod for joint.
-
-        Returns
-        -------
-
         """
-        pass
+
+
+# ALIAS
+BallJoint = FreeJoint
+SphericalJoint = FreeJoint
 
 
 class HingeJoint(FreeJoint):
@@ -338,6 +391,7 @@ class FixedJoint(FreeJoint):
         system_two.external_torques[..., index_two] += system_two_director @ torque
 
 
+# TODO: Remove this
 def get_relative_rotation_two_systems(
     system_one: "RodType | RigidBodyType",
     index_one: ConnectionIndex,
@@ -373,11 +427,11 @@ def get_relative_rotation_two_systems(
     system_one : RodType | RigidBodyType
         Rod or rigid-body object
     index_one : ConnectionIndex
-        Index of first rod for joint.
+        Index of first system for connection.
     system_two : RodType | RigidBodyType
         Rod or rigid-body object
     index_two : ConnectionIndex
-        Index of second rod for joint.
+        Index of second system for connection.
 
     Returns
     -------

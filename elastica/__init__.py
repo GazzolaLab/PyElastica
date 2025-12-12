@@ -30,6 +30,7 @@ from elastica.interaction import (
     SlenderBodyTheory,
 )
 from elastica.joint import (
+    ConnectionBase,
     FreeJoint,
     FixedJoint,
     HingeJoint,
