@@ -84,7 +84,7 @@ def plot_video(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
     position_of_cylinder = (
@@ -104,31 +104,31 @@ def plot_video(
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
             ax.grid(which="minor", color="k", linestyle="--")
             ax.grid(which="major", color="k", linestyle="-")
             ax.plot(
-                position_of_rod1[time, 0],
-                position_of_rod1[time, 1],
-                position_of_rod1[time, 2],
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                position_of_rod1[time_idx, 2],
                 "or",
                 label="rod1",
             )
             ax.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 1],
-                position_of_rod2[time, 2],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 1],
+                position_of_rod2[time_idx, 2],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
             if position_of_cylinder is not None:
                 ax.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 1],
-                    position_of_cylinder[time, 2],
+                    position_of_cylinder[time_idx, 0],
+                    position_of_cylinder[time_idx, 1],
+                    position_of_cylinder[time_idx, 2],
                     "o",
                     c=to_rgb("xkcd:greenish"),
                     label="Cylinder CoM",
@@ -140,7 +140,7 @@ def plot_video(
                         stop=cylinder.length.squeeze() / 2,
                         num=cylinder_axis_points.shape[1],
                     )
-                    cylinder_director = director_of_cylinder[time, ...]
+                    cylinder_director = director_of_cylinder[time_idx, ...]
                     cylinder_director_batched = np.repeat(
                         cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
                     )
@@ -150,7 +150,7 @@ def plot_video(
                         cylinder_axis_points,
                     )
                     # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
+                    cylinder_axis_points += position_of_cylinder[time_idx, ...]
                     ax.plot(
                         cylinder_axis_points[0, :],
                         cylinder_axis_points[1, :],
@@ -178,7 +178,7 @@ def plot_video_xy(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
     position_of_cylinder = (
@@ -199,22 +199,25 @@ def plot_video_xy(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 1], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                "or",
+                label="rod1",
             )
             plt.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 1],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 1],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
             if position_of_cylinder is not None:
                 plt.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 1],
+                    position_of_cylinder[time_idx, 0],
+                    position_of_cylinder[time_idx, 1],
                     "o",
                     c=to_rgb("xkcd:greenish"),
                     label="cylinder",
@@ -226,7 +229,7 @@ def plot_video_xy(
                         stop=cylinder.length.squeeze() / 2,
                         num=cylinder_axis_points.shape[1],
                     )
-                    cylinder_director = director_of_cylinder[time, ...]
+                    cylinder_director = director_of_cylinder[time_idx, ...]
                     cylinder_director_batched = np.repeat(
                         cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
                     )
@@ -236,7 +239,7 @@ def plot_video_xy(
                         cylinder_axis_points,
                     )
                     # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
+                    cylinder_axis_points += position_of_cylinder[time_idx, ...]
                     plt.plot(
                         cylinder_axis_points[0, :],
                         cylinder_axis_points[1, :],
@@ -261,7 +264,7 @@ def plot_video_xz(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
     position_of_rod2 = np.array(plot_params_rod2["position"])
     position_of_cylinder = (
@@ -282,22 +285,25 @@ def plot_video_xz(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 2], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 2],
+                "or",
+                label="rod1",
             )
             plt.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 2],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 2],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
             )
             if position_of_cylinder is not None:
                 plt.plot(
-                    position_of_cylinder[time, 0],
-                    position_of_cylinder[time, 2],
+                    position_of_cylinder[time_idx, 0],
+                    position_of_cylinder[time_idx, 2],
                     "o",
                     c=to_rgb("xkcd:greenish"),
                     label="cylinder",
@@ -309,7 +315,7 @@ def plot_video_xz(
                         stop=cylinder.length.squeeze() / 2,
                         num=cylinder_axis_points.shape[1],
                     )
-                    cylinder_director = director_of_cylinder[time, ...]
+                    cylinder_director = director_of_cylinder[time_idx, ...]
                     cylinder_director_batched = np.repeat(
                         cylinder_director, repeats=cylinder_axis_points.shape[1], axis=2
                     )
@@ -319,7 +325,7 @@ def plot_video_xz(
                         cylinder_axis_points,
                     )
                     # add offset position of CoM
-                    cylinder_axis_points += position_of_cylinder[time, ...]
+                    cylinder_axis_points += position_of_cylinder[time_idx, ...]
                     plt.plot(
                         cylinder_axis_points[0, :],
                         cylinder_axis_points[2, :],

@@ -61,39 +61,39 @@ def plot_video3D(
         length=quiver_length * 0.8,
     )
     with writer.saving(fig, video_name, dpi=100):
-        for time in range(1, len(t) - 1):
-            rod_lines_3d.set_xdata(positions_over_time[time][0])
-            rod_lines_3d.set_ydata(positions_over_time[time][1])
-            rod_lines_3d.set_3d_properties(positions_over_time[time][2])  # type: ignore
+        for time_idx in range(1, len(t) - 1):
+            rod_lines_3d.set_xdata(positions_over_time[time_idx][0])
+            rod_lines_3d.set_ydata(positions_over_time[time_idx][1])
+            rod_lines_3d.set_3d_properties(positions_over_time[time_idx][2])  # type: ignore
 
             targets_orientation_normal.remove()
             targets_orientation_normal = ax.quiver(
-                *base_position[time],
-                *base_orientation[time][0],
+                *base_position[time_idx],
+                *base_orientation[time_idx][0],
                 color="r",
                 length=quiver_length,
             )
 
             targets_orientation_binormal.remove()
             targets_orientation_binormal = ax.quiver(
-                *base_position[time],
-                *base_orientation[time][1],
+                *base_position[time_idx],
+                *base_orientation[time_idx][1],
                 color="g",
                 length=quiver_length,
             )
 
             targets_orientation_tangent.remove()
             targets_orientation_tangent = ax.quiver(
-                *base_position[time],
-                *base_orientation[time][2],
+                *base_position[time_idx],
+                *base_orientation[time_idx][2],
                 color="b",
                 length=quiver_length,
             )
 
             normal.remove()
             normal = ax.quiver(
-                *elem_positions[time],
-                *directors_over_time[time][1],
+                *elem_positions[time_idx],
+                *directors_over_time[time_idx][1],
                 color="k",
                 alpha=0.5,
                 length=quiver_length * 0.8,
