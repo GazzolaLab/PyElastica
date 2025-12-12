@@ -127,34 +127,34 @@ class SelonoidsBC(ea.ConstraintBase):
 
     def constrain_values(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
-            rod.position_collection[..., 0] = self.position_start
-            rod.position_collection[0, -1] = 0.0
-            rod.position_collection[2, -1] = 0.0
+            system.position_collection[..., 0] = self.position_start
+            system.position_collection[0, -1] = 0.0
+            system.position_collection[2, -1] = 0.0
 
-            rod.director_collection[..., 0] = self.director_start
-            rod.director_collection[..., -1] = self.final_end_directors
+            system.director_collection[..., 0] = self.director_start
+            system.director_collection[..., -1] = self.final_end_directors
 
     def constrain_rates(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
-            rod.velocity_collection[..., -1] = 0.0
-            rod.omega_collection[..., -1] = 0.0
+            system.velocity_collection[..., -1] = 0.0
+            system.omega_collection[..., -1] = 0.0
 
         elif time < self.time_twis_start:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
         else:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
-            rod.velocity_collection[0, -1] = 0.0
-            rod.velocity_collection[2, -1] = 0.0
-            rod.omega_collection[..., -1] = -self.ang_vel
+            system.velocity_collection[0, -1] = 0.0
+            system.velocity_collection[2, -1] = 0.0
+            system.omega_collection[..., -1] = -self.ang_vel
 
-            rod.velocity_collection[2, int(rod.n_elems / 2)] -= 1e-4
+            system.velocity_collection[2, int(system.n_elems / 2)] -= 1e-4
 
 
 solenoid_sim.constrain(sherable_rod).using(
