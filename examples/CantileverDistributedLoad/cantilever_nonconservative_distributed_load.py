@@ -74,7 +74,7 @@ def cantilever_subjected_to_a_nonconservative_load(
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -84,9 +84,6 @@ def cantilever_subjected_to_a_nonconservative_load(
                 self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
-                )
-                self.callback_params["com"].append(
-                    system.compute_position_center_of_mass()
                 )
                 self.callback_params["radius"].append(system.radius.copy())
                 self.callback_params["velocity"].append(

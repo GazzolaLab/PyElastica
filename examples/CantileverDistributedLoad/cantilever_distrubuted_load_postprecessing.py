@@ -158,7 +158,9 @@ def plot_video_with_surface(
         rods_history[rod_idx]["radius"][t_idx],
     )
     # Rod center of mass
-    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
+    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx][
+        "center_of_mass"
+    ][t_idx]
 
     # Generate target sphere data
     sphere_flag = False
