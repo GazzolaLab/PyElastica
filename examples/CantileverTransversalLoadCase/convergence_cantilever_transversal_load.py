@@ -3,11 +3,12 @@ from elastica.boundary_conditions import OneEndFixedBC
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 import elastica as ea
-from examples.convergence_functions import calculate_error_norm
-from cantilever_transversal_load_postprocessing import adjust_square_cross_section
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 import json
+
+from convergence_functions import calculate_error_norm, plot_convergence
+from setup_helper import adjust_square_cross_section
 
 
 def analytical_results(index):
@@ -160,42 +161,4 @@ if __name__ == "__main__":
     for i in convergence_elements:
         results.append(cantilever_subjected_to_a_transversal_load(i))
 
-    l1 = []
-    l2 = []
-    linf = []
-
-    for result in results:
-        l1.append(result["l1"])
-        l2.append(result["l2"])
-        linf.append(result["linf"])
-
-    fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    ax.grid(which="minor", color="k", linestyle="--")
-    ax.grid(which="major", color="k", linestyle="-")
-    ax.set_xlabel("N_element")  # X-axis label
-    ax.set_ylabel("Error")  # Y-axis label
-    ax.set_title("Error Convergence Analysis")
-
-    ax.loglog(
-        convergence_elements,
-        l1,
-        marker="o",
-        ms=10,
-        c=to_rgb("xkcd:bluish"),
-        lw=2,
-        label="l1",
-    )
-    ax.loglog(
-        convergence_elements,
-        l2,
-        marker="o",
-        ms=10,
-        c=to_rgb("xkcd:reddish"),
-        lw=2,
-        label="l2",
-    )
-    ax.loglog(convergence_elements, linf, marker="o", ms=10, c="k", lw=2, label="linf")
-    fig.legend(prop={"size": 20})
-
-    fig.show()
+    plot_convergence(results, SAVE_FIGURE=False, filename="")

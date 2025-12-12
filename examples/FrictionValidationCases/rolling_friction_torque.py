@@ -1,9 +1,9 @@
-__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
+__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et al. R. Soc. 2018
 section 4.1.4 and Appendix G """
 
 import numpy as np
 import elastica as ea
-from examples.FrictionValidationCases.friction_validation_postprocessing import (
+from friction_validation_postprocessing import (
     plot_friction_validation,
 )
 

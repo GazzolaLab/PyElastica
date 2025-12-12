@@ -3,11 +3,12 @@ from elastica.boundary_conditions import OneEndFixedBC
 from elastica.external_forces import EndpointForces
 from elastica.timestepper.symplectic_steppers import PositionVerlet
 import elastica as ea
-from examples.convergence_functions import calculate_error_norm
-from cantilever_transversal_load_postprocessing import adjust_square_cross_section
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 import json
+
+from convergence_functions import calculate_error_norm
+from setup_helper import adjust_square_cross_section
 
 
 def analytical_results(index):

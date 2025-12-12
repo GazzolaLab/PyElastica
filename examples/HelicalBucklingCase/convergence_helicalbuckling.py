@@ -1,14 +1,15 @@
-__doc__ = """Helical buckling convergence study, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
+__doc__ = """Helical buckling convergence study, for detailed explanation refer to Gazzola et al. R. Soc. 2018
   section 3.4.1 """
 
 import numpy as np
 import elastica as ea
-from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
+
+from helicalbuckling_postprocessing import (
     analytical_solution,
     envelope,
     plot_helicalbuckling,
 )
-from examples.convergence_functions import plot_convergence, calculate_error_norm
+from convergence_functions import calculate_error_norm, plot_convergence
 
 
 class HelicalBucklingSimulator(
