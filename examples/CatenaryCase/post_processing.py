@@ -28,10 +28,10 @@ def plot_video(
     ax.set_ylabel("y [m]", fontsize=16)
     # plt.axis("equal")
     with writer.saving(fig, video_name, dpi=150):
-        rod_lines_2d = ax.plot(positions_over_time[0][2], positions_over_time[0][0])[0]
-        for time in tqdm(range(1, len(plot_params["time"]))):
-            rod_lines_2d.set_xdata([positions_over_time[time][0]])
-            rod_lines_2d.set_ydata([positions_over_time[time][2]])
+        rod_lines_2d = ax.plot(positions_over_time[0][0], positions_over_time[0][2])[0]
+        for time_idx in tqdm(range(1, len(plot_params["time"]))):
+            rod_lines_2d.set_xdata(positions_over_time[time_idx][0])
+            rod_lines_2d.set_ydata(positions_over_time[time_idx][2])
             writer.grab_frame()
 
     # Be a good boy and close figures
