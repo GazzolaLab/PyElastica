@@ -7,6 +7,10 @@ import elastica as ea
 from analytical_dynamic_cantilever import AnalyticalDynamicCantilever
 
 
+class DynamicCantileverSimulator(ea.BaseSystemCollection, ea.Constraints, ea.CallBacks):
+    pass
+
+
 def simulate_dynamic_cantilever_with(
     density=2000.0,
     n_elem=100,
@@ -39,11 +43,6 @@ def simulate_dynamic_cantilever_with(
 
     """
 
-    class DynamicCantileverSimulator(
-        ea.BaseSystemCollection, ea.Constraints, ea.CallBacks
-    ):
-        pass
-
     cantilever_sim = DynamicCantileverSimulator()
 
     # Add test parameters
@@ -59,6 +58,7 @@ def simulate_dynamic_cantilever_with(
 
     dl = base_length / n_elem
     dt = dl * 0.05
+    total_steps = int(final_time / dt)
     step_skips = int(1.0 / (rendering_fps * dt))
 
     # Add Cosserat rod
@@ -98,7 +98,7 @@ def simulate_dynamic_cantilever_with(
     # Add call backs
     class CantileverCallBack(ea.CallBackBaseClass):
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 

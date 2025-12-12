@@ -115,14 +115,14 @@ single_rod_sim.detect_contact_between(rod1, cylinder).using(
 )
 
 
-# Add call backs
+# Add callbacks
 class PositionCollector(ea.CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Callback function for collecting position data of a rod and cylinder.
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -131,7 +131,9 @@ class PositionCollector(ea.CallBackBaseClass):
             self.callback_params["time"].append(time)
             # Collect only x
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["center_of_mass"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
             return
 
 

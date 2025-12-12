@@ -31,7 +31,6 @@ normal = np.array([0.0, 1.0, 0.0])
 roll_direction = np.cross(direction, normal)
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e7
 poisson_ratio = 0.5
@@ -137,10 +136,8 @@ timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 final_time = 10
-dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-dt = final_time / total_steps
 time = 0.0
 for i in range(total_steps):
     time = timestepper.step(hinge_joint_sim, time, dt)

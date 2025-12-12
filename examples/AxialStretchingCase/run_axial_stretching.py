@@ -21,7 +21,7 @@ import elastica as ea
 # Simulation Setup
 # ----------------
 # We define a simulator class that inherits from the necessary mixins.
-# This makes constraints, forces, and damping evailable to the system.
+# This makes constraints, forces, and damping available to the system.
 
 
 class StretchingBeamSimulator(

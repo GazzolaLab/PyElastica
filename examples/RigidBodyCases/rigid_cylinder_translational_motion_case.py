@@ -30,14 +30,11 @@ def rigid_cylinder_translational_motion_verification(force=0.0):
     rigid_cylinder_sim = RigidCylinderSimulator()
 
     # setting up test params
-    # setting up test params
     start = np.zeros((3,))
     direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
-    binormal = np.cross(direction, normal)
     base_length = 1.0
     base_radius = 0.05
-    base_area = np.pi * base_radius**2
     density = 1000
 
     cylinder = ea.Cylinder(start, direction, normal, base_length, base_radius, density)
@@ -94,7 +91,6 @@ def rigid_cylinder_translational_motion_verification(force=0.0):
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(rigid_cylinder_sim, time, dt)

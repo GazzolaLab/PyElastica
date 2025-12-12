@@ -23,7 +23,7 @@ SAVE_FIGURE = True
 SAVE_RESULTS = False
 
 
-def simulate_helicalbucklin_beam_with(
+def simulate_helicalbuckling_beam_with(
     elements=10, SAVE_FIGURE=False, PLOT_FIGURE=False
 ):
     helicalbuckling_sim = HelicalBucklingSimulator()
@@ -57,6 +57,7 @@ def simulate_helicalbucklin_beam_with(
         base_radius,
         density,
         youngs_modulus=E,
+        shear_modulus=shear_modulus,
     )
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
 
@@ -92,7 +93,6 @@ def simulate_helicalbucklin_beam_with(
     final_time = 10500
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(helicalbuckling_sim, time, dt)
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     # Convergence study
     # for n_elem in [5, 6, 7, 8, 9, 10]
     with mp.Pool(mp.cpu_count()) as pool:
-        results = pool.map(simulate_helicalbucklin_beam_with, convergence_elements)
+        results = pool.map(simulate_helicalbuckling_beam_with, convergence_elements)
 
     if PLOT_FIGURE:
         filename = "HelicalBuckling_convergence_test.png"

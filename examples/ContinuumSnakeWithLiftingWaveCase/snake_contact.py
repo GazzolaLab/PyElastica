@@ -1,4 +1,4 @@
-__doc__ = """Rod plane contact with anistropic friction (no static friction)"""
+__doc__ = """Rod plane contact with anisotropic friction (no static friction)"""
 from typing import Type
 
 import numpy as np
@@ -46,7 +46,7 @@ def apply_normal_force_numba(
 ):
     """
     This function computes the plane force response on the element, in the
-    case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+    case of contact. Contact model given in Eqn 4.8 Gazzola et al. RSoS 2018 paper
     is used.
 
     Parameters

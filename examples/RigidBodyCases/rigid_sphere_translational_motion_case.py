@@ -88,7 +88,6 @@ def rigid_sphere_translational_motion_verification(force=0.0):
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(rigid_sphere_sim, time, dt)

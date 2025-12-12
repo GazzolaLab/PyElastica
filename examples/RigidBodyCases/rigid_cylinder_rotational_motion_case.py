@@ -21,23 +21,20 @@ SAVE_RESULTS = False
 def rigid_cylinder_rotational_motion_verification(torque=0.0):
     """
     This test case is for validating rotational motion of
-    rigid cylinder. Here we are applying point for on the cylinder
+    rigid cylinder. Here we are applying point torque on the cylinder
     and compare the kinetic energy of the cylinder after T=0.25s
     with the analytical calculation.
-    :param force:
+    :param torque:
     :return:
     """
     rigid_cylinder_sim = RigidCylinderSimulator()
 
     # setting up test params
-    # setting up test params
     start = np.zeros((3,))
     direction = np.array([0.0, 1.0, 0.0])
     normal = np.array([0.0, 0.0, 1.0])
-    binormal = np.cross(direction, normal)
     base_length = 1.0
     base_radius = 0.05
-    base_area = np.pi * base_radius**2
     density = 1000
 
     cylinder = ea.Cylinder(start, direction, normal, base_length, base_radius, density)
@@ -53,7 +50,7 @@ def rigid_cylinder_rotational_motion_verification(torque=0.0):
             super(PointCoupleToCenter, self).__init__()
             self.torque = (torque * direction).reshape(3, 1)
 
-        def apply_forces(self, system, time: np.float64 = np.float64(0.0)):
+        def apply_torques(self, system, time: np.float64 = np.float64(0.0)):
             system.external_torques += np.einsum(
                 "ijk, jk->ik", system.director_collection, self.torque
             )
@@ -96,7 +93,6 @@ def rigid_cylinder_rotational_motion_verification(torque=0.0):
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(rigid_cylinder_sim, time, dt)

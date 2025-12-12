@@ -17,7 +17,6 @@ from bc_cases_postprocessing import (
 class GeneralConstraintSimulator(
     ea.BaseSystemCollection,
     ea.Constraints,
-    ea.Connections,
     ea.Forcing,
     ea.Damping,
     ea.CallBacks,
@@ -33,7 +32,6 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e7
 poisson_ratio = 0.5
@@ -41,14 +39,12 @@ shear_modulus = E / (poisson_ratio + 1.0)
 
 # setting up timestepper and video
 final_time = 10
-dl = base_length / n_elem
 dt = 1e-5
 total_steps = int(final_time / dt)
 fps = 100  # frames per second of the video
 diagnostic_step_skip = 1 / (fps * dt)
 
 start_rod_1 = np.zeros((3,))
-start_rod_2 = start_rod_1 + direction * base_length
 
 # Create rod 1
 rod1 = ea.CosseratRod.straight_rod(

@@ -32,9 +32,7 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 # Rod parameters
 base_length = 0.5
 base_radius = 0.01
-base_area = np.pi * base_radius**2
 density = 1750
-nu = 0.0
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -111,7 +109,7 @@ class RodCallBack(ea.CallBackBaseClass):
     """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -121,7 +119,9 @@ class RodCallBack(ea.CallBackBaseClass):
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
             self.callback_params["com_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
@@ -177,10 +177,10 @@ plot_video_with_surface(
     vis2D=True,
 )
 
-filaname = "parallel_rods_velocity.png"
+filename = "parallel_rods_velocity.png"
 plot_velocity(
     post_processing_dict_rod1,
     post_processing_dict_rod2,
-    filename=filaname,
+    filename=filename,
     SAVE_FIGURE=True,
 )

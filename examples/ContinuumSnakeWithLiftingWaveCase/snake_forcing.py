@@ -21,7 +21,7 @@ class MuscleTorquesLifting(NoForces):
     This class applies muscle torques along the body. The applied muscle torques are treated
     as applied external forces. This class can apply lifting
     muscle torques as a traveling wave with a beta spline or only
-    as a traveling wave. For implementation details refer to X. Zhang et. al. Nat. Comm. 2021
+    as a traveling wave. For implementation details refer to X. Zhang et al. Nat. Comm. 2021
 
             Attributes
             ----------
@@ -57,7 +57,7 @@ class MuscleTorquesLifting(NoForces):
 
         Parameters
         ----------
-        b_coeff: nump.ndarray
+        b_coeff: numpy.ndarray
                 1D array containing data with 'float' type.
                 Beta coefficients for beta-spline.
         period: float

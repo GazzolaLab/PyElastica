@@ -2,7 +2,7 @@
 Continuum Snake
 ===============
 
-Snake friction case from X. Zhang et. al. Nat. Comm. 2021
+Snake friction case from X. Zhang et al. Nat. Comm. 2021
 
 This Elastica tutorial explains how to setup a Cosserat rod simulation to simulate a slithering snake. It covers many of the basics of setting up and running simulations with Elastica.
 
@@ -165,7 +165,7 @@ def run_snake(
         """
 
         def __init__(self, step_skip: int, callback_params: dict) -> None:
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 

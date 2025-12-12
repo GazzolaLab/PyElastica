@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
+import matplotlib.animation as manimation
 from typing import Dict, Sequence
 from tqdm import tqdm
 
@@ -36,16 +37,14 @@ def plot_video(
         cylinder_start, cylinder_radius, cylinder_height
     )
 
-    import matplotlib.animation as manimation
-
     plt.rcParams.update({"font.size": 22})
 
     # Should give a (n_time, 3, n_elem) array
     positions = np.array(rod_history["position"])
     # (n_time, 3) array
-    com = np.array(rod_history["com"])
+    com = np.array(rod_history["center_of_mass"])
 
-    cylinder_com = np.array(cylinder_history["com"])
+    cylinder_com = np.array(cylinder_history["center_of_mass"])
     cylinder_origin = cylinder_com - 0.5 * cylinder_height * cylinder_direction
 
     print("plot video")
@@ -53,8 +52,6 @@ def plot_video(
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     dpi = 50
-
-    # min_limits = np.roll(np.array([0.0, -0.5 * cylinder_height, 0.0]), _roll_key)
 
     fig = plt.figure(1, figsize=(10, 8), frameon=True, dpi=dpi)
     ax = plt.axes(projection="3d")  # fig.add_subplot(111)
@@ -267,9 +264,6 @@ def plot_video_with_surface(
 
     folder_name = kwargs.get("folder_name", "")
 
-    # 2d case <always 2d case for now>
-    import matplotlib.animation as animation
-
     # simulation time
     sim_time = np.array(rods_history[0]["time"])
 
@@ -281,7 +275,9 @@ def plot_video_with_surface(
         rods_history[rod_idx]["radius"][t_idx],
     )
     # Rod center of mass
-    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
+    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx][
+        "center_of_mass"
+    ][time_idx]
 
     # Generate target sphere data
     sphere_flag = False
@@ -298,7 +294,7 @@ def plot_video_with_surface(
 
     # video pre-processing
     print("plot scene visualization video")
-    FFMpegWriter = animation.writers["ffmpeg"]
+    FFMpegWriter = manimation.writers["ffmpeg"]
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     dpi = kwargs.get("dpi", 100)

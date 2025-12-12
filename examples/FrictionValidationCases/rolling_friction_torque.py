@@ -55,7 +55,7 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     )
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
-    shearable_rod.shear_matrix = shear_matrix
+    shearable_rod.shear_matrix[:] = shear_matrix
 
     rolling_friction_torque_sim.append(shearable_rod)
     rolling_friction_torque_sim.constrain(shearable_rod).using(ea.FreeBC)
@@ -99,7 +99,6 @@ def simulate_rolling_friction_torque_with(C_s=0.0):
     dt = 1e-6
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(rolling_friction_torque_sim, time, dt)

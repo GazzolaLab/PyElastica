@@ -4,7 +4,7 @@ Butterfly
 
 This case simulates the motion of a rod that is initially shaped like a
 butterfly. The rod is released from rest and allowed to deform freely.
-The goal of the simulation is for sanity check: how does the timestepper
+The goal of the simulation is as a sanity check: how does the timestepper
 reliably preserve total energy of the system, when the system is simple Hamiltonian.
 The simulation tracks the position and energy of the rod over time.
 
@@ -39,7 +39,8 @@ final_time = 40.0
 # Next, we set up the test parameters for the simulation.
 
 # setting up test params
-# FIXME : Doesn't work with elements > 10 (the inverse rotate kernel fails)
+# Note: This example has a limitation where n_elem > 10 may fail due to
+# inverse rotation kernel issues. For reliable results, keep n_elem <= 10.
 n_elem = 4  # Change based on requirements, but be careful
 n_elem += n_elem % 2
 half_n_elem = n_elem // 2
@@ -56,7 +57,6 @@ normal = np.array([0.0, 1.0, 0.0])
 
 total_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius**2
 density = 5000
 youngs_modulus = 1e4
 poisson_ratio = 0.5
@@ -109,13 +109,13 @@ butterfly_sim.append(butterfly_rod)
 
 
 # Add call backs
-class VelocityCallBack(ea.CallBackBaseClass):
+class ButterflyCallBack(ea.CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Call back function for butterfly case to track position and energy
     """
 
     def __init__(self, step_skip: int, callback_params: dict) -> None:
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -148,7 +148,7 @@ recorded_history["se"].append(butterfly_rod.compute_shear_energy())
 recorded_history["be"].append(butterfly_rod.compute_bending_energy())
 
 butterfly_sim.collect_diagnostics(butterfly_rod).using(
-    VelocityCallBack, step_skip=100, callback_params=recorded_history
+    ButterflyCallBack, step_skip=100, callback_params=recorded_history
 )
 
 # %%
@@ -203,7 +203,7 @@ re = np.asarray(recorded_history["re"])
 be = np.asarray(recorded_history["be"])
 se = np.asarray(recorded_history["se"])
 
-energy_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translations")
+energy_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translational")
 energy_ax.plot(times, re, c=to_rgb("xkcd:bluish"), lw=2.0, label="Rotation")
 energy_ax.plot(times, be, c=to_rgb("xkcd:burple"), lw=2.0, label="Bend")
 energy_ax.plot(times, se, c=to_rgb("xkcd:goldenrod"), lw=2.0, label="Shear")

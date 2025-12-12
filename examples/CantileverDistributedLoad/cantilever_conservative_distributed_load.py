@@ -30,7 +30,7 @@ def conservative_force_simulator(load, animation=False):
         np.pi ** (1 / 2)
     )  # The Cross-sectional area is 1e-4(we assume its equivalent to a square cross-sectional surface with same area)
     base_area = np.pi * base_radius**2
-    density = 1000  # nomilized with conservative case F=15
+    density = 1000  # normalized with conservative case F=15
     youngs_modulus = 1.2e7
     dl = base_length / n_elem
     dt = 0.1 * dl / 50
@@ -126,12 +126,6 @@ def conservative_force_simulator(load, animation=False):
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(square_rod_sim, time, dt)
-
-    relative_tip_position = np.zeros(
-        2,
-    )
-    relative_tip_position[0] = find_tip_position(square_rod, n_elem)[0] / base_length
-    relative_tip_position[1] = -find_tip_position(square_rod, n_elem)[1] / base_length
 
     if animation:
         plot_video_with_surface(

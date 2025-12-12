@@ -68,14 +68,14 @@ rendering_fps = 60
 step_skip = int(1.0 / (rendering_fps * time_step))
 
 
-# Add call backs
+# Add callbacks
 class RingRodCallBack(ea.CallBackBaseClass):
     """
-    Call back function for ring rod
+    Callback function for ring rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -88,7 +88,9 @@ class RingRodCallBack(ea.CallBackBaseClass):
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["radius"].append(system.radius.copy())
 
-            self.callback_params["center_of_mass"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
 
             return
 
@@ -101,10 +103,9 @@ ring_sim.collect_diagnostics(ring_rod).using(
 ring_sim.finalize()
 
 timestepper = ea.PositionVerlet()
-dt = final_time / total_steps
 time = 0.0
 for i in range(total_steps):
-    time = timestepper.step(ring_sim, time, dt)
+    time = timestepper.step(ring_sim, time, time_step)
 
 
 filename_video = "ring_rod.mp4"

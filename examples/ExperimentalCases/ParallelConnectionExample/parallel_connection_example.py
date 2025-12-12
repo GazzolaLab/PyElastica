@@ -38,7 +38,6 @@ normal = np.array([0.0, 1.0, 0.0])
 binormal = np.cross(direction, normal)
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e4
 poisson_ratio = 0.5
@@ -149,13 +148,13 @@ parallel_connection_sim.dampen(rod_two).using(
 )
 
 
-class ParallelConnecitonCallback(ea.CallBackBaseClass):
+class ParallelConnectionCallback(ea.CallBackBaseClass):
     """
     Call back function for parallel connection
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -184,7 +183,6 @@ parallel_connection_sim.finalize()
 timestepper = ea.PositionVerlet()
 
 final_time = 20.0
-dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 dt = final_time / total_steps

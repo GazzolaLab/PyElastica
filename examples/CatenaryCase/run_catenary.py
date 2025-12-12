@@ -46,7 +46,6 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 start = np.zeros((3,))
 direction = np.array([1.0, 0.0, 0.0])
 normal = np.array([0.0, 0.0, 1.0])
-binormal = np.cross(direction, normal)
 
 # catenary parameters
 base_length = 1.0
@@ -110,7 +109,7 @@ catenary_sim.constrain(base_rod).using(
 # Add call backs
 class CatenaryCallBack(ea.CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Call back function for catenary case
     """
 
     def __init__(self, step_skip: int, callback_params: dict) -> None:

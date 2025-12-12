@@ -8,17 +8,17 @@ from elastica.utils import MaxDimension, Tolerance
 from elastica.external_forces import NoForces, inplace_addition, SystemType
 
 
-class NonconserativeForce(NoForces):
+class NonConservativeForce(NoForces):
     def __init__(self, load=1):
-        super(NonconserativeForce, self).__init__()
+        super().__init__()
         self.load = load
 
     def apply_forces(self, system: SystemType, time=0.0):
-        self.compute_nonconserative_forces(
+        self.compute_nonconservative_forces(
             self.load, system.mass, system.director_collection, system.external_forces
         )
 
-    def compute_nonconserative_forces(self, load, mass, direction, external_forces):
+    def compute_nonconservative_forces(self, load, mass, direction, external_forces):
         NCforce_direction = direction[0]
         NCforce_direction = NCforce_direction / np.linalg.norm(
             NCforce_direction, axis=0

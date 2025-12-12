@@ -45,7 +45,7 @@ def analytical_solution(L, n_elem=10000):
     # nu = 1.0 / gamma - 1.0
 
     # These are magic constants, but you can obtain them by solving
-    # this equation (accoring to matlab syntax)
+    # this equation (according to matlab syntax)
     # syms x y
     # S = vpasolve([d == sqrt(16/y*(1-x*x/(4*y))), R == x/gamma+4*acos(x/(2*sqrt(y)))], [x, y]);
     # moment = double(S.x); # dimensionless end moment

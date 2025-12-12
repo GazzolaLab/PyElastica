@@ -8,7 +8,7 @@ from cantilever_distrubuted_load_postprecessing import (
     plot_video_with_surface,
     find_tip_position,
     adjust_square_cross_section,
-    NonconserativeForce,
+    NonConservativeForce,
 )
 
 
@@ -19,15 +19,27 @@ class SquareRodSimulator(
 
 
 def cantilever_subjected_to_a_nonconservative_load(
-    n_elem,
-    base_length,
-    side_length,
-    base_radius,
-    youngs_modulus,
-    dimentionless_varible,
+    dimensionless_variable,
     animation=False,
     plot_figure_equilibrium=False,
 ):
+    # Setting up test params
+    final_time = 10
+    n_elem = 100
+    start = np.zeros((3,))
+    direction = np.array([1.0, 0.0, 0.0])
+    normal = np.array([0.0, 1.0, 0.0])
+    base_length = 0.5
+    side_length = 0.01
+    base_radius = 0.01 / (np.pi ** (1 / 2))
+    base_area = np.pi * base_radius**2
+    density = 1000
+    youngs_modulus = 1.2e7
+    # For shear modulus of 1e4, nu is 99!
+    poisson_ratio = 0
+    shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
+    I = (0.01**4) / 12
+
     square_rod_sim = SquareRodSimulator()
 
     square_rod = ea.CosseratRod.straight_rod(
@@ -50,11 +62,11 @@ def cantilever_subjected_to_a_nonconservative_load(
         ea.OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
-    load = (youngs_modulus * I * dimentionless_varible) / (
+    load = (youngs_modulus * I * dimensionless_variable) / (
         density * base_area * (base_length**3)
     )
 
-    square_rod_sim.add_forcing_to(square_rod).using(NonconserativeForce, load)
+    square_rod_sim.add_forcing_to(square_rod).using(NonConservativeForce, load)
 
     # add damping
     dl = base_length / n_elem
@@ -167,27 +179,7 @@ def cantilever_subjected_to_a_nonconservative_load(
 
 
 if __name__ == "__main__":
-    final_time = 10
-    # setting up test params
-    n_elem = 100
-    start = np.zeros((3,))
-    direction = np.array([1.0, 0.0, 0.0])
-    normal = np.array([0.0, 1.0, 0.0])
-    base_length = 0.5
-    side_length = 0.01
-    base_radius = 0.01 / (np.pi ** (1 / 2))
-    base_area = np.pi * base_radius**2
-    density = 1000
-    dimentionless_varible = 15
-    youngs_modulus = 1.2e7
-    # For shear modulus of 1e4, nu is 99!
-    poisson_ratio = 0
-    shear_modulus = youngs_modulus / (2 * (poisson_ratio + 1.0))
-    I = (0.01**4) / 12
-
-    cantilever_subjected_to_a_nonconservative_load(
-        n_elem, base_length, side_length, base_radius, youngs_modulus, -15, True, False
-    )
+    cantilever_subjected_to_a_nonconservative_load(-15, True, False)
 
     with open("cantilever_distributed_load_data.json", "r") as file:
         tip_position_paper = json.load(file)
@@ -199,16 +191,11 @@ if __name__ == "__main__":
 
     load_on_rod = np.arange(1, 26, 2)
     for i in load_on_rod:
-        x_tip_experiment.append(
-            cantilever_subjected_to_a_nonconservative_load(
-                n_elem, base_length, base_radius, youngs_modulus, i, False, False
-            )[0]
+        relative_tip_position = cantilever_subjected_to_a_nonconservative_load(
+            i, False, False
         )
-        y_tip_experiment.append(
-            -cantilever_subjected_to_a_nonconservative_load(
-                n_elem, base_length, base_radius, youngs_modulus, i, False, False
-            )[1]
-        )
+        x_tip_experiment.append(relative_tip_position[0])
+        y_tip_experiment.append(-relative_tip_position[1])
 
     plt.plot(
         load_on_rod,

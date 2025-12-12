@@ -360,8 +360,13 @@ muscular_snake_simulator.detect_contact_between(snake_body, friction_plane).usin
 
 
 class MuscularSnakeCallBack(ea.CallBackBaseClass):
+    """
+    Callback function for collecting data from Muscular Snake simulation.
+    Records time, position, center of mass, radius, and average velocity.
+    """
+
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -369,15 +374,11 @@ class MuscularSnakeCallBack(ea.CallBackBaseClass):
 
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
             self.callback_params["avg_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
-
             self.callback_params["center_of_mass"].append(
                 system.compute_position_center_of_mass()
             )
@@ -395,10 +396,9 @@ for idx, rod in enumerate(rod_list):
 
 muscular_snake_simulator.finalize()
 timestepper = ea.PositionVerlet()
-dt = final_time / total_steps
 time = 0.0
 for i in range(total_steps):
-    time = timestepper.step(muscular_snake_simulator, time, dt)
+    time = timestepper.step(muscular_snake_simulator, time, time_step)
 
 
 plot_video_with_surface(

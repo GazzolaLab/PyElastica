@@ -54,7 +54,7 @@ def simulate_axial_friction_with(force=0.0):
     )
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
-    shearable_rod.shear_matrix = shear_matrix
+    shearable_rod.shear_matrix[:] = shear_matrix
 
     axial_friction_sim.append(shearable_rod)
     axial_friction_sim.constrain(shearable_rod).using(ea.FreeBC)
@@ -95,7 +95,6 @@ def simulate_axial_friction_with(force=0.0):
     dt = 1e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
         time = timestepper.step(axial_friction_sim, time, dt)

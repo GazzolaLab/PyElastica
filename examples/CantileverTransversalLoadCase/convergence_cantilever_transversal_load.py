@@ -26,7 +26,6 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     base_radius = 0.01 / (
         np.pi ** (1 / 2)
     )  # The Cross-sectional area is 1e-4(we assume its equivalent to a square cross-sectional surface with same area)
-    base_area = 1e-4
     density = 1000
     youngs_modulus = 1e9
     poisson_ratio = 0
@@ -37,9 +36,8 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     ):
         pass
 
-    squarerod_sim = SquareRodSimulator()
+    square_rod_sim = SquareRodSimulator()
 
-    density = 1000
     t = np.linspace(0, 0.25 * np.pi, n_elem + 1)
     tmp = np.zeros((3, n_elem + 1), dtype=np.float64)
     tmp[0, :] = -radius * np.cos(t) + 1
@@ -57,7 +55,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     director[1, :, :] = d2
     director[2, :, :] = tan
 
-    rod = ea.CosseratRod.straight_rod(
+    square_rod = ea.CosseratRod.straight_rod(
         n_elem,
         start,
         direction,
@@ -72,23 +70,22 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     )
 
     # Adjust the Cross Section
-    adjust_square_cross_section(rod, youngs_modulus, side_length)
+    adjust_square_cross_section(square_rod, youngs_modulus, side_length)
 
-    squarerod_sim.append(rod)
+    square_rod_sim.append(square_rod)
 
-    # squarerod_sim.finalize()
-    rod.rest_kappa[...] = rod.kappa
+    square_rod.rest_kappa[...] = square_rod.kappa
 
     dl = base_length / n_elem
     dt = 0.01 * dl / 100
 
-    squarerod_sim.constrain(rod).using(
+    square_rod_sim.constrain(square_rod).using(
         OneEndFixedBC, constrained_position_idx=(0,), constrained_director_idx=(0,)
     )
 
     print("One end of the rod is now fixed in place")
 
-    squarerod_sim.dampen(rod).using(
+    square_rod_sim.dampen(square_rod).using(
         ea.AnalyticalLinearDamper,
         damping_constant=0.3,
         time_step=dt,
@@ -99,7 +96,7 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     origin_force = np.array([0.0, 0.0, 0.0])
     end_force = np.array([0.0, 0.0, 6.0])
 
-    squarerod_sim.add_forcing_to(rod).using(
+    square_rod_sim.add_forcing_to(square_rod).using(
         EndpointForces, origin_force, end_force, ramp_up_time=ramp_up_time
     )
     print("Forces added to the rod")
@@ -109,12 +106,11 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     total_steps = int(final_time / dt)
     print("Total steps to take", total_steps)
 
-    squarerod_sim.finalize()
+    square_rod_sim.finalize()
     print("System finalized")
 
-    # The simulation result from Project3.3.2 with 400 elements/ Tip position Z
-
-    # generate analytical solution array from [400]
+    # The simulation result from Project3.3.2 with 400 elements (tip position Z)
+    # Generate analytical solution array by interpolating from the 400-element reference solution
 
     analytical_results_sub = np.zeros(n_elem + 1)
 
@@ -128,16 +124,16 @@ def cantilever_subjected_to_a_transversal_load(n_elem=19):
     dt = final_time / total_steps
     time = 0.0
     for i in range(total_steps):
-        time = timestepper.step(squarerod_sim, time, dt)
-    print(rod.position_collection[2, ...])
+        time = timestepper.step(square_rod_sim, time, dt)
+    print(square_rod.position_collection[2, ...])
 
     error, l1, l2, linf = calculate_error_norm(
         analytical_results_sub,
-        rod.position_collection[2, ...],
+        square_rod.position_collection[2, ...],
         n_elem,
     )
 
-    return {"rod": rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
+    return {"rod": square_rod, "error": error, "l1": l1, "l2": l2, "linf": linf}
 
 
 if __name__ == "__main__":

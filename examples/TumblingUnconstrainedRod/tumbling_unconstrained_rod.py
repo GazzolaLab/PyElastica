@@ -20,7 +20,6 @@ from tumbling_unconstrained_rod_postprocessing import (
 
 n_elem = 256
 start = np.array([0.0, 0.0, 8.0])
-end = np.array([6.0, 0.0, 0.0])
 direction = np.array([0.6, 0.0, -0.8])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 10
@@ -70,14 +69,14 @@ origin_force = np.array([0.0, 0.0, 0.0])
 end_force = np.array([20.0, 0.0, 0.0])
 
 square_rod_sim.add_forcing_to(square_rod).using(
-    EndpointforcesWithTimeFactor, origin_force, end_force, lamda_t_function
+    EndpointforcesWithTimeFactor, origin_force, end_force, time_factor_function
 )
 
 
 square_rod_sim.add_forcing_to(square_rod).using(
     EndpointtorqueWithTimeFactor,
     1,
-    lamda_t_function,
+    time_factor_function,
     direction=np.array([0.0, 200.0, -100.0]),
 )
 

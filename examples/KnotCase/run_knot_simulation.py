@@ -58,7 +58,7 @@ class Callback(ea.CallBackBaseClass):
     """
 
     def __init__(self, callback_params: dict) -> None:
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = 200
         self.callback_params = callback_params
 

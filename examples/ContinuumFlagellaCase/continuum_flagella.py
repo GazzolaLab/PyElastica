@@ -89,11 +89,11 @@ def run_flagella(
     # Add call backs
     class ContinuumFlagellaCallBack(ea.CallBackBaseClass):
         """
-        Call back function for continuum snake
+        Call back function for continuum flagella
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
         SAVE_OPTIMIZED_COEFFICIENTS = False
 
-        def optimize_snake(spline_coefficient):
+        def optimize_flagella(spline_coefficient):
             [avg_forward, _, _] = run_flagella(
                 spline_coefficient,
                 PLOT_FIGURE=False,
@@ -181,10 +181,10 @@ if __name__ == "__main__":
             )
             return -avg_forward
 
-        # Optimize snake for forward velocity. In cma.fmin first input is function
+        # Optimize flagella for forward velocity. In cma.fmin first input is function
         # to be optimized, second input is initial guess for coefficients you are optimizing
         # for and third input is standard deviation you initially set.
-        optimized_spline_coefficients = cma.fmin(optimize_snake, 5 * [0], 0.5)
+        optimized_spline_coefficients = cma.fmin(optimize_flagella, 5 * [0], 0.5)
 
         # Save the optimized coefficients to a file
         filename_data = "optimized_coefficients.txt"

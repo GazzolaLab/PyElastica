@@ -56,7 +56,7 @@ class MuscularFlagellaConnection(FreeJoint):
         system_two_external_forces,
     ):
         # This connection routine is not generalizable. Our goal here is to replicate the experiment data.
-        # Thus below code is hard codded. Torques are computed along the centerline of the muscle
+        # Thus below code is hard coded. Torques are computed along the centerline of the muscle
         # and transfered to the body.
         start_idx = index_one[0]
         end_idx = index_one[-1]
