@@ -11,7 +11,6 @@ from elastica.typing import (
     SystemType,
     StaticSystemType,
     BlockSystemType,
-    BlockSystemProtocol,
     SystemIdxType,
     OperatorType,
     OperatorCallbackType,

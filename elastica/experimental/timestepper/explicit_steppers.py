@@ -10,13 +10,14 @@ from elastica.typing import (
     SystemCollectionType,
     StepType,
     SteppersOperatorsType,
-    StateType,
 )
 from elastica.experimental.timestepper.protocol import (
     ExplicitSystemProtocol,
     ExplicitStepperProtocol,
     MemoryProtocol,
 )
+
+from elastica.rod.data_structures import _State as StateType
 
 
 """
