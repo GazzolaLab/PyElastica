@@ -9,16 +9,15 @@ import logging
 import functools
 from typing import Any, Type, List
 
-import numpy as np
-
 from elastica.external_forces import NoForces
-from elastica.typing import SystemType, SystemIdxType, SystemProtocol
-from .protocol import ForcedSystemCollectionProtocol, ModuleProtocol
+from elastica.typing import SystemType, SystemIdxType
+from elastica.systems.protocol import SystemProtocol
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 logger = logging.getLogger(__name__)
 
 
-class Forcing:
+class Forcing(SystemCollectionProtocol):
     """
     The Forcing class is a module for applying boundary conditions that
     consist of applied external forces. To apply forcing on rod-like objects,
@@ -30,14 +29,14 @@ class Forcing:
             List of forcing class defined for rod-like objects.
     """
 
-    def __init__(self: ForcedSystemCollectionProtocol) -> None:
-        self._ext_forces_torques: List[ModuleProtocol] = []
+    _ext_forces_torques: List[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._ext_forces_torques = []
         super().__init__()
         self._feature_group_finalize.append(self._finalize_forcing)
 
-    def add_forcing_to(
-        self: ForcedSystemCollectionProtocol, system: SystemType
-    ) -> ModuleProtocol:
+    def add_forcing_to(self, system: "SystemType") -> ModuleProtocol:
         """
         This method applies external forces and torques on the relevant
         user-defined system or rod-like object. You must input the system
@@ -61,7 +60,7 @@ class Forcing:
 
         return _ext_force_torque
 
-    def _finalize_forcing(self: ForcedSystemCollectionProtocol) -> None:
+    def _finalize_forcing(self) -> None:
         # From stored _ExtForceTorque objects, and instantiate a Force
         # inplace : https://stackoverflow.com/a/1208792
 

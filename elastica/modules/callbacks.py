@@ -11,19 +11,14 @@ from typing import Type, Any, TypeAlias, cast
 from elastica.typing import (
     SystemType,
     SystemIdxType,
-    OperatorFinalizeType,
-    SystemProtocol,
 )
-from .protocol import ModuleProtocol
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 import functools
 
-import numpy as np
-
 from elastica.callback_functions import CallBackBaseClass
-from .protocol import SystemCollectionWithCallbackProtocol
 
-
+# Callback takes data-structures and collection of SystemType
 SystemIdxDSType: TypeAlias = """
 (
     SystemIdxType
@@ -40,7 +35,7 @@ SystemDSType: TypeAlias = """
 """
 
 
-class CallBacks:
+class CallBacks(SystemCollectionProtocol):
     """
     CallBacks class is a module for calling callback functions, set by the user. If the user
     wants to collect data from the simulation, the simulator class has to be derived
@@ -52,13 +47,15 @@ class CallBacks:
             List of call back classes defined for rod-like objects.
     """
 
-    def __init__(self: SystemCollectionWithCallbackProtocol) -> None:
-        self._callback_list: list[ModuleProtocol] = []
+    _callback_list: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._callback_list = []
         super(CallBacks, self).__init__()
         self._feature_group_finalize.append(self._finalize_callback)
 
     def collect_diagnostics(
-        self: SystemCollectionWithCallbackProtocol,
+        self,
         system: SystemDSType | EllipsisType,
     ) -> ModuleProtocol:
         """
@@ -77,7 +74,7 @@ class CallBacks:
         """
         sys_idx: SystemIdxDSType
         if system is Ellipsis:
-            sys_idx = tuple([self.get_system_index(sys) for sys in self])
+            sys_idx = tuple([self.get_system_index(sys) for sys in self.systems()])
         elif isinstance(system, list):
             sys_idx = [self.get_system_index(sys) for sys in system]
         elif isinstance(system, dict):
@@ -96,7 +93,7 @@ class CallBacks:
 
         return _callback
 
-    def _finalize_callback(self: SystemCollectionWithCallbackProtocol) -> None:
+    def _finalize_callback(self) -> None:
         # dev : the first index stores the rod index to collect data.
         for callback in self._callback_list:
             sys_id = callback.id()

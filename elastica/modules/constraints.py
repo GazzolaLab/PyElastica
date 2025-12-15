@@ -15,14 +15,14 @@ from elastica.boundary_conditions import ConstraintBase
 from elastica.typing import (
     SystemIdxType,
     ConstrainingIndex,
-    RigidBodyType,
     RodType,
+    RigidBodyType,
 )
-from elastica.memory_block.protocol import BlockRodProtocol
-from .protocol import ConstrainedSystemCollectionProtocol, ModuleProtocol
+from elastica.typing import RodType
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
-class Constraints:
+class Constraints(SystemCollectionProtocol):
     """
     The Constraints class is a module for enforcing displacement boundary conditions.
     To enforce boundary conditions on rod-like objects, the simulator class
@@ -34,14 +34,14 @@ class Constraints:
             List of boundary condition classes defined for rod-like objects.
     """
 
-    def __init__(self: ConstrainedSystemCollectionProtocol) -> None:
-        self._constraints_list: list[ModuleProtocol] = []
+    _constraints_list: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._constraints_list = []
         super(Constraints, self).__init__()
         self._feature_group_finalize.append(self._finalize_constraints)
 
-    def constrain(
-        self: ConstrainedSystemCollectionProtocol, system: "RodType | RigidBodyType"
-    ) -> ModuleProtocol:
+    def constrain(self, system: "RodType | RigidBodyType") -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -66,7 +66,7 @@ class Constraints:
 
         return _constraint
 
-    def _finalize_constraints(self: ConstrainedSystemCollectionProtocol) -> None:
+    def _finalize_constraints(self) -> None:
         """
         In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
         periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
@@ -83,7 +83,7 @@ class Constraints:
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
                 memory_block_idx = self.get_system_index(block)
-                block_system = cast(BlockRodProtocol, self[memory_block_idx])
+                block_system = cast(RodType, self[memory_block_idx])
                 self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )

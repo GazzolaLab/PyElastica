@@ -53,7 +53,7 @@ def save_state(
     os.makedirs(directory, exist_ok=True)
 
     # Save system state
-    for idx, system in enumerate(simulator):
+    for idx, system in enumerate(simulator.systems()):
         name = system.__class__.__name__
         path = os.path.join(directory, f"{name}_{idx}.npz")
         np.savez(path, **system.__dict__)  # type: ignore
@@ -94,7 +94,7 @@ def load_state(
     time = meta["time"]
 
     # Load system state
-    for idx, system in enumerate(simulator):
+    for idx, system in enumerate(simulator.systems()):
         # TODO: Not exactly sure why this condition is necessary.
         if isinstance(system, (MemoryBlockCosseratRod, MemoryBlockRigidBody)):
             continue

@@ -23,9 +23,7 @@ from itertools import chain
 
 from collections.abc import MutableSequence
 
-from elastica.rod.rod_base import RodBase
-from elastica.rigidbody.rigid_body import RigidBodyBase
-from elastica.systems.protocol import StaticSystemBase
+from elastica.systems.protocol import StaticSystemBase, SystemProtocol
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
@@ -81,11 +79,7 @@ class BaseSystemCollection(MutableSequence):
         super().__init__()
 
         # List of system types/bases that are allowed
-        self.allowed_sys_types: tuple[Type, ...] = (
-            RodBase,
-            RigidBodyBase,
-            StaticSystemBase,
-        )
+        self.allowed_sys_types: tuple[Type, ...] = (StaticSystemBase,)
 
         # List of systems to be integrated
         self.__systems: list[StaticSystemType] = []

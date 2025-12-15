@@ -8,7 +8,6 @@ rigid bodies) using joints (see `joints.py`).
 from typing import Type, cast, Any
 from elastica.typing import (
     SystemIdxType,
-    OperatorFinalizeType,
     ConnectionIndex,
     RodType,
     RigidBodyType,
@@ -17,10 +16,10 @@ import numpy as np
 import functools
 from elastica.joint import ConnectionBase
 
-from .protocol import ConnectedSystemCollectionProtocol, ModuleProtocol
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
-class Connections:
+class Connections(SystemCollectionProtocol):
     """
     The Connections class is a module for connecting rod-like objects using joints selected
     by the user. To connect two rod-like objects, the simulator class must be derived from
@@ -32,13 +31,15 @@ class Connections:
             List of joint classes defined for rod-like objects.
     """
 
-    def __init__(self: ConnectedSystemCollectionProtocol) -> None:
-        self._connections: list[ModuleProtocol] = []
+    _connections: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._connections = []
         super(Connections, self).__init__()
         self._feature_group_finalize.append(self._finalize_connections)
 
     def connect(
-        self: ConnectedSystemCollectionProtocol,
+        self,
         first_rod: "RodType | RigidBodyType",
         second_rod: "RodType | RigidBodyType",
         first_connect_idx: ConnectionIndex = (),
@@ -80,7 +81,7 @@ class Connections:
 
         return _connect
 
-    def _finalize_connections(self: ConnectedSystemCollectionProtocol) -> None:
+    def _finalize_connections(self) -> None:
         # From stored _Connect objects, instantiate the joints and store it
         # dev : the first indices stores the
         # (first rod index, second_rod_idx, connection_idx_on_first_rod, connection_idx_on_second_rod)

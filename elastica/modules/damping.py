@@ -13,14 +13,13 @@ from typing import Any, Type, List
 
 import functools
 
-import numpy as np
-
 from elastica.dissipation import DamperBase
-from elastica.typing import RodType, SystemType, SystemIdxType, CosseratRodProtocol
-from .protocol import DampenedSystemCollectionProtocol, ModuleProtocol
+from elastica.typing import RodType, SystemIdxType
+from elastica.rod.rod_base import RodBase
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
-class Damping:
+class Damping(SystemCollectionProtocol):
     """
     The Damping class is a module for applying damping
     on rod-like objects, the simulator class must be derived from
@@ -32,14 +31,14 @@ class Damping:
             List of damper classes defined for rod-like objects.
     """
 
-    def __init__(self: DampenedSystemCollectionProtocol) -> None:
-        self._damping_list: List[ModuleProtocol] = []
+    _damping_list: List[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._damping_list = []
         super().__init__()
         self._feature_group_finalize.append(self._finalize_dampers)
 
-    def dampen(
-        self: DampenedSystemCollectionProtocol, system: RodType
-    ) -> ModuleProtocol:
+    def dampen(self, system: "RodType") -> ModuleProtocol:
         """
         This method applies damping on relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -63,7 +62,7 @@ class Damping:
 
         return _damper
 
-    def _finalize_dampers(self: DampenedSystemCollectionProtocol) -> None:
+    def _finalize_dampers(self) -> None:
         # From stored _Damping objects, instantiate the dissipation/damping
         # inplace : https://stackoverflow.com/a/1208792
 
@@ -143,7 +142,7 @@ class _Damper:
     def id(self) -> SystemIdxType:
         return self._sys_idx
 
-    def instantiate(self, rod: SystemType) -> DamperBase:
+    def instantiate(self, rod: "RodType") -> DamperBase:
         """Constructs a Damper class object after checks"""
         if not hasattr(self, "_damper_cls"):
             raise RuntimeError(

@@ -10,22 +10,19 @@ from typing import Type, Any
 import functools
 from elastica.typing import (
     SystemIdxType,
-    OperatorType,
-    StaticSystemType,
     SystemType,
+    StaticSystemType,
 )
-from .protocol import ContactedSystemCollectionProtocol, ModuleProtocol
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 import logging
-
-import numpy as np
 
 from elastica.contact_forces import NoContact
 
 logger = logging.getLogger(__name__)
 
 
-class Contact:
+class Contact(SystemCollectionProtocol):
     """
     The Contact class is a module for applying contact between rod-like objects . To apply contact between rod-like objects,
     the simulator class must be derived from the Contact class.
@@ -36,13 +33,15 @@ class Contact:
             List of contact classes defined for rod-like objects.
     """
 
-    def __init__(self: ContactedSystemCollectionProtocol) -> None:
-        self._contacts: list[ModuleProtocol] = []
+    _contacts: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._contacts = []
         super(Contact, self).__init__()
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
-        self: ContactedSystemCollectionProtocol,
+        self,
         first_system: SystemType,
         second_system: "SystemType | StaticSystemType",
     ) -> ModuleProtocol:
@@ -69,7 +68,7 @@ class Contact:
 
         return _contact
 
-    def _finalize_contact(self: ContactedSystemCollectionProtocol) -> None:
+    def _finalize_contact(self) -> None:
 
         # dev : the first indices stores the
         # (first_rod_idx, second_rod_idx)
