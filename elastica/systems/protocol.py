@@ -1,7 +1,8 @@
 __doc__ = """Base class for elastica system"""
 
 from typing import Protocol, Type, runtime_checkable
-from elastica.typing import StateType, SystemType
+
+from abc import abstractmethod
 
 from elastica.rod.data_structures import _KinematicState, _DynamicState
 
@@ -9,64 +10,73 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-# TODO: Better organize this part
 @runtime_checkable
 class StaticSystemBase(Protocol):
+    """
+    Protocol for all static elastica system. Minimal requirement interface
+    to be included in the simulator.
+    """
+
     REQUISITE_MODULES: list[Type]
 
 
 class SystemProtocol(StaticSystemBase, Protocol):
     """
-    Protocol for all dynamic elastica system
+    Protocol for all dynamic elastica system.
     """
 
+    @abstractmethod
     def compute_internal_forces_and_torques(self, time: np.float64) -> None: ...
 
+    @abstractmethod
     def update_accelerations(self, time: np.float64) -> None: ...
 
+    @abstractmethod
     def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None: ...
 
 
-class SlenderBodyGeometryProtocol(Protocol):
-    @property
-    def n_nodes(self) -> int: ...
-
-    @property
-    def n_elems(self) -> int: ...
-
-    position_collection: NDArray[np.float64]
-    velocity_collection: NDArray[np.float64]
-    acceleration_collection: NDArray[np.float64]
-
-    omega_collection: NDArray[np.float64]
-    alpha_collection: NDArray[np.float64]
-    director_collection: NDArray[np.float64]
-
-    external_forces: NDArray[np.float64]
-    external_torques: NDArray[np.float64]
-
-    internal_forces: NDArray[np.float64]
-    internal_torques: NDArray[np.float64]
-
-
-class SymplecticSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
+class SymplecticSystemProtocol(SystemProtocol, Protocol):
     """
-    Protocol for system with symplectic state variables
+    Protocol defining the required interface for symplectic time integration.
+    Typically, implementation of these properties are provided in data_structures.py
+    for the specific system, and use to build the block structure.
+
+    Any class used with the symplectic timesteppers in :mod:`elastica.timestepper`
+    (e.g., :class:`PositionVerlet`, :class:`PEFRL`) must satisfy this protocol.
+
+    The symplectic stepper accesses:
+        - ``n_nodes``
+        - ``kinematic_states`` (position_collection, director_collection)
+        - ``dynamic_states`` (velocity_collection, omega_collection, rate_collection)
+        - ``dynamic_rates(time, prefac)`` to compute acceleration updates
+
+    See Also
+    --------
+    elastica.timestepper.symplectic_steppers : Symplectic stepper implementations
+    elastica.rod.CosseratRod : A concrete implementation satisfying this protocol
+
     """
 
-    v_w_collection: NDArray[np.float64]
-    dvdt_dwdt_collection: NDArray[np.float64]
+    n_nodes: int
 
     @property
-    def kinematic_states(self) -> _KinematicState: ...
+    def kinematic_states(self) -> _KinematicState:
+        """Return kinematic state."""
+        ...
 
     @property
-    def dynamic_states(self) -> _DynamicState: ...
+    def dynamic_states(self) -> _DynamicState:
+        """Return dynamic state."""
+        ...
 
     def kinematic_rates(
         self, time: np.float64, prefac: np.float64
-    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]: ...
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """Compute kinematic rates."""
+        ...
 
     def dynamic_rates(
         self, time: np.float64, prefac: np.float64
-    ) -> NDArray[np.float64]: ...
+    ) -> NDArray[np.float64]:
+        """Compute dynamic rates."""
+        ...

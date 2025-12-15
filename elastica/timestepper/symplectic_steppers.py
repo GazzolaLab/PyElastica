@@ -190,8 +190,8 @@ class PositionVerlet(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
 
     def _first_dynamic_step(
@@ -250,8 +250,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
@@ -277,8 +277,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
@@ -305,8 +305,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 

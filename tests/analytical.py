@@ -65,6 +65,9 @@ class TestDynamicState:
         for k in range(blocksize + 1):
             self.rate_collection[:, k] = state
         self.n_kinematic_rates = blocksize
+        # velocity and omega are accessed via dynamic_states by the stepper
+        self.velocity_collection = self.rate_collection[..., 0].reshape(3, 1)
+        self.omega_collection = self.rate_collection[..., 1].reshape(3, 1)
 
 
 # class BaseLinearStatefulSystem:

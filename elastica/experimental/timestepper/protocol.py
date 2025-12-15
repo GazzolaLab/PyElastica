@@ -1,22 +1,47 @@
 from typing import Protocol
 
-from elastica.typing import StepType, StateType
-from elastica.systems.protocol import SystemProtocol, SlenderBodyGeometryProtocol
+from elastica.typing import StepType
+from elastica.systems.protocol import SystemProtocol
 from elastica.timestepper.protocol import StepperProtocol
+from elastica.rod.data_structures import _State as StateType
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-class ExplicitSystemProtocol(SystemProtocol, SlenderBodyGeometryProtocol, Protocol):
-    # TODO: Temporarily made to handle explicit stepper.
-    # Need to be refactored as the explicit stepper is further developed.
+class ExplicitSystemProtocol(SystemProtocol, Protocol):
+    """
+    Protocol defining the required interface for explicit time integration.
+
+    TODO: Temporarily made to handle explicit stepper.
+    Need to be refactored as the explicit stepper is further developed.
+    """
+
+    # Geometry
+    n_nodes: int
+    n_elems: int
+
+    # State arrays
+    position_collection: NDArray[np.float64]
+    velocity_collection: NDArray[np.float64]
+    acceleration_collection: NDArray[np.float64]
+    omega_collection: NDArray[np.float64]
+    alpha_collection: NDArray[np.float64]
+    director_collection: NDArray[np.float64]
+
+    # Forces/torques
+    external_forces: NDArray[np.float64]
+    external_torques: NDArray[np.float64]
+    internal_forces: NDArray[np.float64]
+    internal_torques: NDArray[np.float64]
+
     def __call__(self, time: np.float64, dt: np.float64) -> np.float64: ...
+
     @property
     def state(self) -> StateType: ...
+
     @state.setter
     def state(self, state: StateType) -> None: ...
-    @property
-    def n_elems(self) -> int: ...
 
 
 class MemoryProtocol(Protocol):
