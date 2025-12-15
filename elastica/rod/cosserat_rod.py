@@ -1,9 +1,9 @@
 __doc__ = """ Rod classes and implementation details """
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import Any, Optional, Type
 from typing_extensions import Self
 
 from elastica.typing import RodType
-from .protocol import CosseratRodProtocol
+from elastica.rod import RodBase
 
 from numpy.typing import NDArray
 
@@ -11,6 +11,7 @@ import numpy as np
 import functools
 import numba
 from elastica.rod import RodBase
+from elastica.systems.protocol import SystemProtocol
 from elastica._linalg import (
     _batch_cross,
     _batch_norm,
@@ -70,7 +71,7 @@ def _compute_sigma_kappa_for_blockstructure(memory_block: RodType) -> None:
     )
 
 
-class CosseratRod(RodBase, KnotTheory):
+class CosseratRod(RodBase, SystemProtocol):
     """
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
     of the essential base classes.
@@ -153,7 +154,7 @@ class CosseratRod(RodBase, KnotTheory):
     REQUISITE_MODULES: list[Type] = []
 
     def __init__(
-        self: CosseratRodProtocol,
+        self,
         n_elements: int,
         position: NDArray[np.float64],
         velocity: NDArray[np.float64],
@@ -547,9 +548,7 @@ class CosseratRod(RodBase, KnotTheory):
         rod.REQUISITE_MODULES.append(Constraints)
         return rod
 
-    def compute_internal_forces_and_torques(
-        self: CosseratRodProtocol, time: np.float64
-    ) -> None:
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None:
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -604,7 +603,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self: CosseratRodProtocol, time: np.float64) -> None:
+    def update_accelerations(self, time: np.float64) -> None:
         """
         Updates the acceleration variables
 
@@ -626,14 +625,12 @@ class CosseratRod(RodBase, KnotTheory):
             self.dilatation,
         )
 
-    def zeroed_out_external_forces_and_torques(
-        self: CosseratRodProtocol, time: np.float64
-    ) -> None:
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:
         _zeroed_out_external_forces_and_torques(
             self.external_forces, self.external_torques
         )
 
-    def compute_translational_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_translational_energy(self) -> NDArray[np.float64]:
         """
         Compute total translational energy of the rod at the instance.
         """
@@ -647,7 +644,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_rotational_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_rotational_energy(self) -> NDArray[np.float64]:
         """
         Compute total rotational energy of the rod at the instance.
         """
@@ -657,9 +654,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
 
-    def compute_velocity_center_of_mass(
-        self: CosseratRodProtocol,
-    ) -> NDArray[np.float64]:
+    def compute_velocity_center_of_mass(self) -> NDArray[np.float64]:
         """
         Compute velocity center of mass of the rod at the instance.
         """
@@ -668,9 +663,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_velocity / self.mass.sum()
 
-    def compute_position_center_of_mass(
-        self: CosseratRodProtocol,
-    ) -> NDArray[np.float64]:
+    def compute_position_center_of_mass(self) -> NDArray[np.float64]:
         """
         Compute position center of mass of the rod at the instance.
         """
@@ -679,7 +672,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_position / self.mass.sum()
 
-    def compute_bending_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_bending_energy(self) -> NDArray[np.float64]:
         """
         Compute total bending energy of the rod at the instance.
         """
@@ -695,7 +688,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_shear_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_shear_energy(self) -> NDArray[np.float64]:
         """
         Compute total shear energy of the rod at the instance.
         """
@@ -1130,26 +1123,3 @@ def _zeroed_out_external_forces_and_torques(
     for i in range(3):
         for k in range(n_elems):
             external_torques[i, k] = 0.0
-
-
-if TYPE_CHECKING:
-    _: CosseratRodProtocol = CosseratRod.straight_rod(
-        3,
-        np.zeros(3),
-        np.array([0, 1, 0]),
-        np.array([0, 0, 1]),
-        1.0,
-        0.1,
-        1.0,
-        youngs_modulus=1.0,
-    )
-    _: CosseratRodProtocol = CosseratRod.ring_rod(  # type: ignore[no-redef]
-        3,
-        np.zeros(3),
-        np.array([0, 1, 0]),
-        np.array([0, 0, 1]),
-        1.0,
-        0.1,
-        1.0,
-        youngs_modulus=1.0,
-    )

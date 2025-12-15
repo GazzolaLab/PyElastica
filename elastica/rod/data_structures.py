@@ -50,7 +50,16 @@ else:
 
 
 class _RodSymplecticStepperMixin:
-    def __init__(self: SymplecticSystemProtocol) -> None:
+
+    position_collection: NDArray[np.float64]
+    director_collection: NDArray[np.float64]
+    velocity_collection: NDArray[np.float64]
+    omega_collection: NDArray[np.float64]
+
+    v_w_collection: NDArray[np.float64]
+    dvdt_dwdt_collection: NDArray[np.float64]
+
+    def __init__(self) -> None:
         self.kinematic_states = _KinematicState(
             self.position_collection, self.director_collection
         )

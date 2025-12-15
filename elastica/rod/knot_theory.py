@@ -14,10 +14,7 @@ import numpy as np
 from numpy.typing import NDArray
 from numba import njit
 
-from elastica.rod.rod_base import RodBase
 from elastica._linalg import _batch_norm, _batch_dot, _batch_cross
-
-from .protocol import CosseratRodProtocol
 
 
 class KnotTheory:
@@ -56,7 +53,13 @@ class KnotTheory:
 
     """
 
-    def compute_twist(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    # Required attributes (provided by RodBase-derived class)
+    position_collection: NDArray[np.float64]
+    director_collection: NDArray[np.float64]
+    rest_lengths: NDArray[np.float64]
+    radius: NDArray[np.float64]
+
+    def compute_twist(self) -> NDArray[np.float64]:
         """
         See :ref:`api/rods:Knot Theory (Mixin)` for the detail.
         """
@@ -67,7 +70,7 @@ class KnotTheory:
         return total_twist[0]
 
     def compute_writhe(
-        self: CosseratRodProtocol,
+        self,
         type_of_additional_segment: str = "next_tangent",
         alpha: float = 1.0,
     ) -> NDArray[np.float64]:
@@ -90,7 +93,7 @@ class KnotTheory:
         )[0]
 
     def compute_link(
-        self: CosseratRodProtocol,
+        self,
         type_of_additional_segment: str = "next_tangent",
         alpha: float = 1.0,
     ) -> NDArray[np.float64]:
