@@ -1,4 +1,5 @@
 __doc__ = """"""
+from typing import Type
 
 import numpy as np
 from numpy.typing import NDArray
@@ -10,6 +11,8 @@ class Plane(StaticSystemBase):
     """
     Plane static system. Static system does not change by the timestepping.
     """
+
+    REQUISITE_MODULES: list[Type] = []
 
     def __init__(
         self, plane_origin: NDArray[np.float64], plane_normal: NDArray[np.float64]
