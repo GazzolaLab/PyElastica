@@ -9,6 +9,7 @@ from numpy.typing import NDArray
 
 from numba import njit
 
+from elastica.typing import RodType, RigidBodyType, ConnectionIndex
 from elastica._linalg import _batch_matmul
 
 
@@ -385,3 +386,54 @@ def _inv_skew_symmetrize(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
         vector[tgt_index] = matrix[src_i, src_j]
 
     return vector
+
+
+def get_relative_rotation_two_systems(
+    system_one: "RodType | RigidBodyType",
+    index_one: "ConnectionIndex",
+    system_two: "RodType | RigidBodyType",
+    index_two: "ConnectionIndex",
+) -> NDArray[np.float64]:
+    """
+    Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
+
+    Examples
+    ----------
+    How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
+
+        >>> rel_rot_mat = get_relative_rotation_two_systems(system1, -1, system2, 0)
+
+    How to initialize a FixedJoint with a rest rotation between the two systems,
+    which is enforced throughout the simulation:
+
+        >>> simulator.connect(
+        ...    first_rod=system1, second_rod=system2, first_connect_idx=-1, second_connect_idx=0
+        ... ).using(
+        ...    FixedJoint,
+        ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
+        ...    rest_rotation_matrix=get_relative_rotation_two_systems(system1, -1, system2, 0)
+        ... )
+
+    See Also
+    ---------
+    FixedJoint
+
+    Parameters
+    ----------
+    system_one : RodType | RigidBodyType
+        Rod or rigid-body object
+    index_one : ConnectionIndex
+        Index of first system for connection.
+    system_two : RodType | RigidBodyType
+        Rod or rigid-body object
+    index_two : ConnectionIndex
+        Index of second system for connection.
+
+    Returns
+    -------
+    relative_rotation_matrix : np.array
+        Relative rotation matrix C_12 between the two systems for their current state.
+    """
+    director_one = system_one.director_collection[..., index_one]
+    director_two = system_two.director_collection[..., index_two]
+    return director_one @ director_two.T

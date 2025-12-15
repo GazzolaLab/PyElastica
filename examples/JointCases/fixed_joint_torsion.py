@@ -3,7 +3,7 @@ __doc__ = """Fixed joint example, for detailed explanation refer to Zhang et al.
 import numpy as np
 from collections import defaultdict
 import elastica as ea
-from elastica.joint import get_relative_rotation_two_systems
+from elastica._rotations import get_relative_rotation_two_systems
 from joint_cases_postprocessing import (
     plot_position,
     plot_orientation,
