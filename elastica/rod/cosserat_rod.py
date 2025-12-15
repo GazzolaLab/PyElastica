@@ -2,9 +2,6 @@ __doc__ = """ Rod classes and implementation details """
 from typing import Any, Optional, Type
 from typing_extensions import Self
 
-from elastica.typing import RodType
-from elastica.rod import RodBase
-
 from numpy.typing import NDArray
 
 import numpy as np
@@ -37,7 +34,7 @@ def _get_z_vector() -> NDArray[np.float64]:
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-def _compute_sigma_kappa_for_blockstructure(memory_block: RodType) -> None:
+def _compute_sigma_kappa_for_blockstructure(memory_block: RodBase) -> None:
     """
     This function is a wrapper to call functions which computes shear stretch, strain and bending twist and strain.
 

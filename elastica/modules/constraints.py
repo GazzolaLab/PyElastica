@@ -18,7 +18,7 @@ from elastica.typing import (
     RodType,
     RigidBodyType,
 )
-from elastica.typing import RodType
+from elastica.typing import RodType  # noqa: F811
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 

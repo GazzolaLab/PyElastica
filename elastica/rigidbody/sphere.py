@@ -1,7 +1,6 @@
 __doc__ = """
 Implementation of a sphere rigid body.
 """
-pass
 
 import numpy as np
 from numpy.typing import NDArray
