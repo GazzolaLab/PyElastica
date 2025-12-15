@@ -1,14 +1,14 @@
 __doc__ = """
 Implementation of a sphere rigid body.
 """
-from typing import TYPE_CHECKING
+pass
 
 import numpy as np
 from numpy.typing import NDArray
 
 from elastica._linalg import _batch_cross
 from elastica.utils import MaxDimension
-from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.rigidbody.rigid_body_base import RigidBodyBase
 
 
 class Sphere(RigidBodyBase):
@@ -81,13 +81,3 @@ class Sphere(RigidBodyBase):
         self.director_collection[0, ...] = normal
         self.director_collection[1, ...] = binormal
         self.director_collection[2, ...] = tangents
-
-
-if TYPE_CHECKING:
-    from .protocol import RigidBodyProtocol
-
-    _: RigidBodyProtocol = Sphere(
-        center=np.zeros(3),
-        base_radius=1.0,
-        density=1.0,
-    )

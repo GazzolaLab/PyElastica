@@ -6,10 +6,12 @@ from abc import ABC
 
 import numpy as np
 from numpy.typing import NDArray
+
 from elastica._linalg import _batch_matvec, _batch_cross
+from elastica.systems.protocol import SystemProtocol
 
 
-class RigidBodyBase(ABC):
+class RigidBodyBase(ABC, SystemProtocol):
     """
     Base class for rigid body classes.
 

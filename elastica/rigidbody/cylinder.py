@@ -1,14 +1,14 @@
 __doc__ = """
 Implementation of a rigid body cylinder.
 """
-from typing import TYPE_CHECKING
+pass
 
 import numpy as np
 from numpy.typing import NDArray
 
 from elastica._linalg import _batch_cross
 from elastica.utils import MaxDimension
-from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.rigidbody.rigid_body_base import RigidBodyBase
 
 
 class Cylinder(RigidBodyBase):
@@ -114,16 +114,3 @@ class Cylinder(RigidBodyBase):
         self.director_collection[0, ...] = normal
         self.director_collection[1, ...] = binormal
         self.director_collection[2, ...] = tangents
-
-
-if TYPE_CHECKING:
-    from .protocol import RigidBodyProtocol
-
-    _: RigidBodyProtocol = Cylinder(
-        start=np.zeros(3),
-        direction=np.ones(3),
-        normal=np.ones(3),
-        base_length=1.0,
-        base_radius=1.0,
-        density=1.0,
-    )
