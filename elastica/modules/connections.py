@@ -25,10 +25,10 @@ class Connections(SystemCollectionProtocol):
     by the user. To connect two rod-like objects, the simulator class must be derived from
     the Connections class.
 
-        Attributes
-        ----------
-        _connections: list
-            List of joint classes defined for rod-like objects.
+    Attributes
+    ----------
+    _connections: list
+        List of joint classes defined for rod-like objects.
     """
 
     _connections: list[ModuleProtocol]

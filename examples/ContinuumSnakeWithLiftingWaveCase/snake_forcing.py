@@ -12,7 +12,7 @@ from elastica._linalg import (
 from elastica.external_forces import NoForces
 from elastica.external_forces import (
     inplace_addition,
-    inplace_substraction,
+    inplace_subtraction,
 )
 
 
@@ -174,7 +174,7 @@ class MuscleTorquesLifting(NoForces):
                 external_torques[..., 1:],
                 _batch_matvec(director_collection[..., 1:], torque),
             )
-            inplace_substraction(
+            inplace_subtraction(
                 external_torques[..., :-1],
                 _batch_matvec(director_collection[..., :-1], torque),
             )

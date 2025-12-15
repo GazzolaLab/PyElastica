@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 
 class Contact(SystemCollectionProtocol):
     """
-    The Contact class is a module for applying contact between rod-like objects . To apply contact between rod-like objects,
+    The Contact class is a module for applying contact between rod-like objects. To apply contact between rod-like objects,
     the simulator class must be derived from the Contact class.
 
-        Attributes
-        ----------
-        _contacts: list
-            List of contact classes defined for rod-like objects.
+    Attributes
+    ----------
+    _contacts: list
+        List of contact classes defined for rod-like objects.
     """
 
     _contacts: list[ModuleProtocol]

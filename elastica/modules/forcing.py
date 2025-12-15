@@ -23,10 +23,10 @@ class Forcing(SystemCollectionProtocol):
     consist of applied external forces. To apply forcing on rod-like objects,
     the simulator class must be derived from the Forcing class.
 
-        Attributes
-        ----------
-        _ext_forces_torques: list
-            List of forcing class defined for rod-like objects.
+    Attributes
+    ----------
+    _ext_forces_torques: list
+        List of forcing class defined for rod-like objects.
     """
 
     _ext_forces_torques: List[ModuleProtocol]

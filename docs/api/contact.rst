@@ -1,5 +1,5 @@
 Contact
-==============================
+=======
 
 .. _contact:
 
@@ -30,7 +30,7 @@ Description
 
 
 Built-in Contact Classes
--------------------------------------
+------------------------
 
 .. autoclass:: NoContact
    :special-members: __init__,apply_contact

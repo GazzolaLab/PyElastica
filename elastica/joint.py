@@ -42,10 +42,6 @@ class ConnectionBase(ABC, Generic[S]):
             Rod or rigid-body object
         index_two : ConnectionIndex
             Index of second system for connection.
-
-        Returns
-        -------
-
         """
 
     @abstractmethod
@@ -70,10 +66,6 @@ class ConnectionBase(ABC, Generic[S]):
             Rod or rigid-body object
         index_two : ConnectionIndex
             Index of second system for connection.
-
-        Returns
-        -------
-
         """
 
 
@@ -86,12 +78,12 @@ class FreeJoint(ConnectionBase):
     -----
     Alias for BallJoint and SphericalJoint
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
     """
 
     # pass the k and nu for the forces
@@ -132,10 +124,6 @@ class FreeJoint(ConnectionBase):
             Rod or rigid-body object
         index_two : ConnectionIndex
             Index of second system for connection.
-
-        Returns
-        -------
-
         """
         end_distance_vector = (
             system_two.position_collection[..., index_two]
@@ -162,7 +150,22 @@ class FreeJoint(ConnectionBase):
         time: np.float64 = np.float64(0.0),
     ) -> None:
         """
+        Apply joint torques to the connected objects.
+
         In FreeJoint class, this routine simply passes.
+
+        Parameters
+        ----------
+        system_one : RodType | RigidBodyType
+            Rod or rigid-body object.
+        index_one : ConnectionIndex
+            Index of first system for connection.
+        system_two : RodType | RigidBodyType
+            Rod or rigid-body object.
+        index_two : ConnectionIndex
+            Index of second system for connection.
+        time : float
+            The time of simulation.
         """
 
 
@@ -179,16 +182,16 @@ class HingeJoint(FreeJoint):
     implementation details, refer to Zhang et. al. Nature
     Communications (2019).
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
-        kt: float
-            Rotational stiffness coefficient of the joint.
-        normal_direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
+    kt: float
+        Rotational stiffness coefficient of the joint.
+    normal_direction: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
     # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
@@ -267,25 +270,25 @@ class FixedJoint(FreeJoint):
     For implementation details, refer to Zhang et al. Nature
     Communications (2019).
 
-        Notes
-        -----
-        Issue #131 : Add constraint in twisting, add rest_rotation_matrix (v0.3.0)
+    Notes
+    -----
+    Issue #131 : Add constraint in twisting, add rest_rotation_matrix (v0.3.0)
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
-        kt: float
-            Rotational stiffness coefficient of the joint.
-        nut: float
-            Rotational damping coefficient of the joint.
-        rest_rotation_matrix: np.array
-            2D (3,3) array containing data with 'float' type.
-            Rest 3x3 rotation matrix from system one to system two at the connected elements.
-            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
-            is enforced.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
+    kt: float
+        Rotational stiffness coefficient of the joint.
+    nut: float
+        Rotational damping coefficient of the joint.
+    rest_rotation_matrix: numpy.ndarray
+        2D (3, 3) array containing data with 'float' type.
+        Rest 3x3 rotation matrix from system one to system two at the connected elements.
+        Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
+        is enforced.
     """
 
     def __init__(
@@ -297,7 +300,6 @@ class FixedJoint(FreeJoint):
         rest_rotation_matrix: NDArray[np.float64] | None = None,
     ) -> None:
         """
-
         Parameters
         ----------
         k: float
@@ -306,10 +308,10 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
-        nut: float = 0.
+        nut: float
             Rotational damping coefficient of the joint.
-        rest_rotation_matrix: np.array | None
-            2D (3,3) array containing data with 'float' type.
+        rest_rotation_matrix: numpy.ndarray | None
+            2D (3, 3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
             If not provided, `rest_rotation_matrix` is initialized to the identity matrix,

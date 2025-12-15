@@ -23,6 +23,7 @@ from itertools import chain
 from collections.abc import MutableSequence
 
 from elastica.systems.protocol import StaticSystemBase, SystemProtocol
+from elastica.memory_block.protocol import BlockSystemProtocol  # noqa: F811
 
 from .memory_block import construct_memory_block_structures
 from .operator_group import OperatorGroupFIFO
@@ -33,16 +34,16 @@ class BaseSystemCollection(MutableSequence):
     """
     Base System for simulator classes. Every simulation class written by the user
     must be derived from the BaseSystemCollection class; otherwise the simulation will
-    proceed.
+    not proceed.
 
-        Attributes
-        ----------
-        allowed_sys_types: tuple[Type]
-            Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
-        systems: Callable
-            Returns all system objects. Once finalize, block objects are also included.
-        blocks: Callable
-            Returns block objects. Should be called after finalize.
+    Attributes
+    ----------
+    allowed_sys_types: tuple[Type]
+        Tuple of allowed type rod-like objects. Here use a base class for objects, i.e. RodBase.
+    systems: Callable
+        Returns all system objects. Once finalize, block objects are also included.
+    blocks: Callable
+        Returns block objects. Should be called after finalize.
 
     Notes
     -----

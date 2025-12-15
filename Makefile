@@ -44,7 +44,7 @@ black-check:
 .PHONY: flake8
 flake8:
 	uv run flake8 --version
-	uv run flake8 elastica tests
+	uv run flake8 elastica
 
 .PHONY: autoflake-check
 autoflake-check:

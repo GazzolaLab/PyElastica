@@ -1,5 +1,4 @@
-__doc__ = """ Numba implementation module for boundary condition implementations that apply
-external forces to the system."""
+__doc__ = """Numba implementation module for external forces applied to objects."""
 
 from typing import TypeVar, Generic
 
@@ -69,10 +68,20 @@ class GravityForces(NoForces):
     """
     This class applies a constant gravitational force to the entire rod.
 
-        Attributes
-        ----------
-        acc_gravity: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+    Attributes
+    ----------
+    acc_gravity : numpy.ndarray
+        1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+
+    Examples
+    --------
+    How to apply gravity to a rod:
+
+    >>> simulator.add_forcing_to(rod).using(
+    ...     GravityForces,
+    ...     acc_gravity=np.array([0.0, -9.80665, 0.0]),
+    ... )
+
     """
 
     def __init__(
@@ -107,7 +116,7 @@ class GravityForces(NoForces):
         external_forces: NDArray[np.float64],
     ) -> None:
         """
-        This function add gravitational forces on the nodes. We are
+        This function adds gravitational forces on the nodes. We are
         using njit decorated function to increase the speed.
 
         Parameters
@@ -127,14 +136,14 @@ class EndpointForces(NoForces):
     """
     This class applies constant forces on the endpoint nodes.
 
-        Attributes
-        ----------
-        start_force: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Force applied to first node of the system.
-        end_force: numpy.ndarray
-            1D (dim) array containing data with 'float' type. Force applied to last node of the system.
-        ramp_up_time: float
-            Applied forces are ramped up until ramp up time.
+    Attributes
+    ----------
+    start_force: numpy.ndarray
+        1D (dim) array containing data with 'float' type. Force applied to first node of the system.
+    end_force: numpy.ndarray
+        1D (dim) array containing data with 'float' type. Force applied to last node of the system.
+    ramp_up_time: float
+        Applied forces are ramped up until ramp up time.
     """
 
     def __init__(
@@ -192,13 +201,14 @@ class EndpointForces(NoForces):
             2D (dim, blocksize) array containing data with 'float' type. External force vector.
         start_force: numpy.ndarray
             1D (dim) array containing data with 'float' type.
+            Force applied to first node of the system.
         end_force: numpy.ndarray
             1D (dim) array containing data with 'float' type.
             Force applied to last node of the system.
         time: float
+            The time of simulation.
         ramp_up_time: float
             Applied forces are ramped up until ramp up time.
-
         """
         factor = min(1.0, float(time / ramp_up_time))
         external_forces[..., 0] += start_force * factor
@@ -209,10 +219,10 @@ class UniformTorques(NoForces):
     """
     This class applies a uniform torque to the entire rod.
 
-        Attributes
-        ----------
-        torque: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
+    Attributes
+    ----------
+    torque : numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Total torque applied to a rod-like object.
     """
 
     def __init__(
@@ -251,10 +261,10 @@ class UniformForces(NoForces):
     """
     This class applies a uniform force to the entire rod.
 
-        Attributes
-        ----------
-        force:  numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
+    Attributes
+    ----------
+    force : numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Total force applied to a rod-like object.
     """
 
     def __init__(
@@ -297,20 +307,20 @@ class MuscleTorques(NoForces):
     as a traveling wave. For implementation details refer to Gazzola et. al.
     RSoS. (2018).
 
-        Attributes
-        ----------
-        direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Muscle torque direction.
-        angular_frequency: float
-            Angular frequency of traveling wave.
-        wave_number: float
-            Wave number of traveling wave.
-        phase_shift: float
-            Phase shift of traveling wave.
-        ramp_up_time: float
-            Applied muscle torques are ramped up until ramp up time.
-        my_spline: numpy.ndarray
-            1D (blocksize) array containing data with 'float' type. Generated spline.
+    Attributes
+    ----------
+    direction: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Muscle torque direction.
+    angular_frequency: float
+        Angular frequency of traveling wave.
+    wave_number: float
+        Wave number of traveling wave.
+    phase_shift: float
+        Phase shift of traveling wave.
+    ramp_up_time: float
+        Applied muscle torques are ramped up until ramp up time.
+    my_spline: numpy.ndarray
+        1D (blocksize) array containing data with 'float' type. Generated spline.
     """
 
     def __init__(
@@ -331,7 +341,7 @@ class MuscleTorques(NoForces):
         ----------
         base_length: float
             Rest length of the rod-like object.
-        b_coeff: nump.ndarray
+        b_coeff: numpy.ndarray
             1D array containing data with 'float' type.
             Beta coefficients for beta-spline.
         period: float
@@ -342,7 +352,10 @@ class MuscleTorques(NoForces):
             Phase shift of traveling wave.
         direction: numpy.ndarray
            1D (dim) array containing data with 'float' type. Muscle torque direction.
-        ramp_up_time: np.float64
+        rest_lengths: numpy.ndarray
+            1D (n_elems) array containing data with 'float' type.
+            Rod element lengths at rest configuration.
+        ramp_up_time: float
             Applied muscle torques are ramped up until ramp up time.
         with_spline: boolean
             Option to use beta-spline.
@@ -423,7 +436,7 @@ class MuscleTorques(NoForces):
             external_torques[..., 1:],
             _batch_matvec(director_collection, torque)[..., 1:],
         )
-        inplace_substraction(
+        inplace_subtraction(
             external_torques[..., :-1],
             _batch_matvec(director_collection[..., :-1], torque[..., 1:]),
         )
@@ -456,23 +469,22 @@ def inplace_addition(
 
 
 @njit(cache=True)  # type: ignore
-def inplace_substraction(
+def inplace_subtraction(
     external_force_or_torque: NDArray[np.float64],
     force_or_torque: NDArray[np.float64],
 ) -> None:
     """
-    This function does inplace substraction. First argument
+    This function does inplace subtraction. First argument
     `external_force_or_torque` is the system.external_forces
     or system.external_torques. Second argument force or torque
-    vector to be substracted.
+    vector to be subtracted.
+
     Parameters
     ----------
     external_force_or_torque: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
     force_or_torque: numpy.ndarray
         2D (dim, blocksize) array containing data with 'float' type.
-
-
     """
     blocksize = force_or_torque.shape[1]
     for i in range(3):
@@ -485,25 +497,24 @@ class EndpointForcesSinusoidal(NoForces):
     This class applies sinusoidally varying forces to the ends of a rod.
     Forces are applied in a plane, which is defined by the tangent_direction and normal_direction.
 
-        Attributes
-        ----------
-        start_force_mag: float
-            Magnitude of the force that is applied to the start of the rod (node 0).
-        end_force_mag: float
-            Magnitude of the force that is applied to the end of the rod (node -1).
-        ramp_up_time: float
-            Applied forces are applied in the normal direction until time reaches ramp_up_time.
-        normal_direction: np.ndarray
-            An array (3,) contains type float.
-            This is the normal direction of the rod.
-        roll_direction: np.ndarray
-            An array (3,) contains type float.
-            This is the direction perpendicular to rod tangent, and rod normal.
+    Attributes
+    ----------
+    start_force_mag: float
+        Magnitude of the force that is applied to the start of the rod (node 0).
+    end_force_mag: float
+        Magnitude of the force that is applied to the end of the rod (node -1).
+    ramp_up_time: float
+        Applied forces are applied in the normal direction until time reaches ramp_up_time.
+    normal_direction: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+        This is the normal direction of the rod.
+    roll_direction: numpy.ndarray
+        1D (3,) array containing data with 'float' type.
+        This is the direction perpendicular to rod tangent, and rod normal.
 
-        Notes
-        -----
-        In order to see example how to use this class, see joint examples.
-
+    Notes
+    -----
+    In order to see example how to use this class, see joint examples.
     """
 
     def __init__(
@@ -519,7 +530,6 @@ class EndpointForcesSinusoidal(NoForces):
         ),  # FIXME: avoid mutable default
     ) -> None:
         """
-
         Parameters
         ----------
         start_force_mag: float
@@ -527,12 +537,12 @@ class EndpointForcesSinusoidal(NoForces):
         end_force_mag: float
             Magnitude of the force that is applied to the end of the system (node -1).
         ramp_up_time: float
-            Applied muscle torques are ramped up until ramp up time.
-        tangent_direction: np.ndarray
-            An array (3,) contains type float.
+            Applied forces are ramped up until ramp up time.
+        tangent_direction: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
             This is the tangent direction of the system, or normal of the plane that forces applied.
-        normal_direction: np.ndarray
-            An array (3,) contains type float.
+        normal_direction: numpy.ndarray
+            1D (3,) array containing data with 'float' type.
             This is the normal direction of the system.
         """
         super(EndpointForcesSinusoidal, self).__init__()

@@ -41,10 +41,10 @@ class CallBacks(SystemCollectionProtocol):
     wants to collect data from the simulation, the simulator class has to be derived
     from the CallBacks class.
 
-        Attributes
-        ----------
-        _callback_list: list
-            List of call back classes defined for rod-like objects.
+    Attributes
+    ----------
+    _callback_list: list
+        List of call back classes defined for rod-like objects.
     """
 
     _callback_list: list[ModuleProtocol]
@@ -125,14 +125,14 @@ class _CallBack:
     """
     CallBack module private class
 
-        Attributes
-        ----------
-        _sys_idx: rod object index
-        _callback_cls: list
-        *args
-            Variable length argument list.
-        **kwargs
-            Arbitrary keyword arguments.
+    Attributes
+    ----------
+    _sys_idx: rod object index
+    _callback_cls: list
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     def __init__(self, sys_idx: SystemIdxDSType):

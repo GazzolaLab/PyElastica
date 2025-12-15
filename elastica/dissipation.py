@@ -19,12 +19,12 @@ T = TypeVar("T")
 
 
 class DamperBase(Generic[T], ABC):
-    """Base class for damping module implementations.
+    """
+    Base class for damping module implementations.
 
     Notes
     -----
     All damper classes must inherit DamperBase class.
-
 
     Attributes
     ----------
@@ -58,7 +58,6 @@ class DamperBase(Generic[T], ABC):
 
     @abstractmethod
     def dampen_rates(self, system: T, time: np.float64) -> None:
-        # TODO: In the future, we can remove rod and use self.system
         """
         Dampen rates (velocity and/or omega) of a rod object.
 
@@ -134,9 +133,9 @@ class AnalyticalLinearDamper(DamperBase):
     about the simulation becoming unstable. This now leads to a streamlined procedure
     for tuning the `damping_constant`:
 
-    1. Set a high value for `damping_constant` to first acheive a stable simulation.
+    1. Set a high value for `damping_constant` to first achieve a stable simulation.
     2. If you feel the simulation is overdamped, reduce `damping_constant` until you
-       feel the simulation is underdamped, and expected dynamics are recovered.
+    feel the simulation is underdamped, and expected dynamics are recovered.
     """
 
     def __init__(self, time_step: np.float64, **kwargs: Any) -> None:
@@ -326,7 +325,7 @@ class LaplaceDissipationFilter(DamperBase):
 
     def __init__(self, filter_order: int, **kwargs: Any) -> None:
         """
-        Filter damper initializer
+        Filter damper initializer.
 
         Parameters
         ----------
@@ -334,6 +333,12 @@ class LaplaceDissipationFilter(DamperBase):
             Filter order, which corresponds to the number of times the Laplacian
             operator is applied. Increasing `filter_order` implies higher-order/weaker
             filtering.
+
+        Raises
+        ------
+        ValueError
+            If filter_order is not a positive integer.
+
         """
         super().__init__(**kwargs)
         if not (filter_order > 0 and isinstance(filter_order, int)):
@@ -375,13 +380,13 @@ def _filter_function_periodic_condition_ring_rod(
 ) -> None:
     blocksize = velocity_filter_term.shape[1]
 
-    # Transfer velocity to an array which has periodic boundaries and synchornize boundaries
+    # Transfer velocity to an array which has periodic boundaries and synchronize boundaries
     velocity_collection_with_periodic_bc = np.empty((3, blocksize))
     velocity_collection_with_periodic_bc[:, 1:-1] = velocity_collection[:]
     velocity_collection_with_periodic_bc[:, 0] = velocity_collection[:, -1]
     velocity_collection_with_periodic_bc[:, -1] = velocity_collection[:, 0]
 
-    # Transfer omega to an array which has periodic boundaries and synchornize boundaries
+    # Transfer omega to an array which has periodic boundaries and synchronize boundaries
     omega_collection_with_periodic_bc = np.empty((3, blocksize))
     omega_collection_with_periodic_bc[:, 1:-1] = omega_collection[:]
     omega_collection_with_periodic_bc[:, 0] = omega_collection[:, -1]

@@ -73,79 +73,79 @@ class CosseratRod(RodBase, SystemProtocol):
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
     of the essential base classes.
 
-        Attributes
-        ----------
-        n_elems: int
-            The number of elements of the rod.
-        position_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node position vectors.
-        velocity_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node velocity vectors.
-        acceleration_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node acceleration vectors.
-        omega_collection: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array containing element angular velocity vectors.
-        alpha_collection: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array contining element angular acceleration vectors.
-        director_collection: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Array containing element director matrices.
-        rest_lengths: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element lengths at rest configuration.
-        density: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod elements densities.
-        volume: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element volumes.
-        mass: NDArray[np.float64]
-            1D (n_nodes) array containing data with 'float' type.
-            Rod node masses. Note that masses are stored on the nodes, not on elements.
-        mass_second_moment_of_inertia: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Rod element mass second moment of interia.
-        inv_mass_second_moment_of_inertia: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Rod element inverse mass moment of inertia.
-        rest_voronoi_lengths: NDArray[np.float64]
-            1D (n_voronoi) array containing data with 'float' type.
-            Rod lengths on the voronoi domain at the rest configuration.
-        internal_forces: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Rod node internal forces. Note that internal forces are stored on the node, not on elements.
-        internal_torques: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Rod element internal torques.
-        external_forces: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            External forces acting on rod nodes.
-        external_torques: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            External torques acting on rod elements.
-        lengths: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element lengths.
-        tangents: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Rod element tangent vectors.
-        radius: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element radius.
-        dilatation: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dilatation.
-        voronoi_dilatation: NDArray[np.float64]
-            1D (n_voronoi) array containing data with 'float' type.
-            Rod dilatation on voronoi domain.
-        dilatation_rate: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dilatation rates.
+    Attributes
+    ----------
+    n_elems: int
+        The number of elements of the rod.
+    position_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node position vectors.
+    velocity_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node velocity vectors.
+    acceleration_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node acceleration vectors.
+    omega_collection: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array containing element angular velocity vectors.
+    alpha_collection: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array containing element angular acceleration vectors.
+    director_collection: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Array containing element director matrices.
+    rest_lengths: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element lengths at rest configuration.
+    density: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element densities.
+    volume: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element volumes.
+    mass: NDArray[np.float64]
+        1D (n_nodes) array containing data with 'float' type.
+        Rod node masses. Note that masses are stored on the nodes, not on elements.
+    mass_second_moment_of_inertia: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Rod element mass second moment of inertia.
+    inv_mass_second_moment_of_inertia: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Rod element inverse mass moment of inertia.
+    rest_voronoi_lengths: NDArray[np.float64]
+        1D (n_voronoi) array containing data with 'float' type.
+        Rod lengths on the voronoi domain at the rest configuration.
+    internal_forces: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Rod node internal forces. Note that internal forces are stored on the node, not on elements.
+    internal_torques: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Rod element internal torques.
+    external_forces: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        External forces acting on rod nodes.
+    external_torques: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        External torques acting on rod elements.
+    lengths: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element lengths.
+    tangents: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Rod element tangent vectors.
+    radius: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element radius.
+    dilatation: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element dilatation.
+    voronoi_dilatation: NDArray[np.float64]
+        1D (n_voronoi) array containing data with 'float' type.
+        Rod dilatation on voronoi domain.
+    dilatation_rate: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element dilatation rates.
     """
 
     REQUISITE_MODULES: list[Type] = []
@@ -411,7 +411,7 @@ class CosseratRod(RodBase, SystemProtocol):
         **kwargs: Any,
     ) -> Self:
         """
-        Cosserat rod constructor for straight-rod geometry.
+        Cosserat rod constructor for ring-rod geometry.
 
 
         Notes
@@ -423,7 +423,7 @@ class CosseratRod(RodBase, SystemProtocol):
         Parameters
         ----------
         n_elements : int
-            Number of element. Must be greater than 3. Generarally recommended to start with 40-50, and adjust the resolution.
+            Number of element. Must be greater than 3. Generally recommended to start with 40-50, and adjust the resolution.
         ring_center_position : NDArray[np.float64]
             Center coordinate for ring rod in 3D
         direction : NDArray[np.float64]
@@ -459,7 +459,7 @@ class CosseratRod(RodBase, SystemProtocol):
                 "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
                 "and for usage check examples/axial_stretching.py"
             )
-        # Straight rod is not ring rod set flag to false
+        # Ring rod flag set to true
         ring_rod_flag = True
         (
             n_elements,
@@ -673,7 +673,6 @@ class CosseratRod(RodBase, SystemProtocol):
         """
         Compute total bending energy of the rod at the instance.
         """
-
         kappa_diff = self.kappa - self.rest_kappa
         bending_internal_torques = _batch_matvec(self.bend_matrix, kappa_diff)
 
@@ -689,7 +688,6 @@ class CosseratRod(RodBase, SystemProtocol):
         """
         Compute total shear energy of the rod at the instance.
         """
-
         sigma_diff = self.sigma - self.rest_sigma
         shear_internal_forces = _batch_matvec(self.shear_matrix, sigma_diff)
 
@@ -751,11 +749,11 @@ def _compute_all_dilatations(
     for k in range(lengths.shape[0]):
         dilatation[k] = lengths[k] / rest_lengths[k]
 
-    # Cmopute eq (3.4) from 2018 RSOS paper
+    # Compute eq (3.4) from 2018 RSOS paper
     # Note : we can use trapezoidal kernel, but it has padding and will be slower
     voronoi_lengths = position_average(lengths)
 
-    # Cmopute eq (3.45 from 2018 RSOS paper
+    # Compute eq (3.4) from 2018 RSOS paper
     for k in range(voronoi_lengths.shape[0]):
         voronoi_dilatation[k] = voronoi_lengths[k] / rest_voronoi_lengths[k]
 

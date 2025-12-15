@@ -62,12 +62,12 @@ class MyCallBack(CallBackBaseClass):
     This is just an example of a callback class, this class as an example/template to write
     new call back classes in your client file.
 
-        Attributes
-        ----------
-        sample_every: int
-            Collect data using make_callback method every sampling step.
-        callback_params: dict
-            Collected callback data is saved in this dictionary.
+    Attributes
+    ----------
+    sample_every: int
+        Collect data using make_callback method every sampling step.
+    callback_params: dict
+        Collected callback data is saved in this dictionary.
     """
 
     def __init__(self, step_skip: int, callback_params: dict) -> None:
@@ -107,16 +107,16 @@ class ExportCallBack(CallBackBaseClass):
     If one wants to customize the saving data, we recommend to
     override `make_callback` method.
 
-        Attributes
-        ----------
-        AVAILABLE_METHOD
-            Supported method to save the file. We recommend
-            binary save to maintain the tensor structure of
-            data.
-        FILE_SIZE_CUTOFF
-            Maximum buffer size for each file. If the buffer
-            size exceed, new file is created. Actual size of
-            the file is expected to be marginally larger.
+    Attributes
+    ----------
+    AVAILABLE_METHOD
+        Supported method to save the file. We recommend
+        binary save to maintain the tensor structure of
+        data.
+    FILE_SIZE_CUTOFF
+        Maximum buffer size for each file. If the buffer
+        size exceed, new file is created. Actual size of
+        the file is expected to be marginally larger.
     """
 
     AVAILABLE_METHOD = ["pickle", "npz", "tempfile"]
@@ -208,15 +208,16 @@ class ExportCallBack(CallBackBaseClass):
         self, system: "RodType | RigidBodyType", time: np.float64, current_step: int
     ) -> None:
         """
+        Collect simulation data at specified intervals.
 
         Parameters
         ----------
-        system :
-            Each part of the system (i.e. rod, rigid body, etc)
-        time :
-            simulation time unit
+        system : RodType | RigidBodyType
+            Each part of the system (i.e. rod, rigid body, etc).
+        time : float
+            Simulation time.
         current_step : int
-            simulation step
+            Current simulation step.
         """
         if current_step % self.step_skip == 0:
             position = system.position_collection.copy()

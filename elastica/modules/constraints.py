@@ -28,10 +28,10 @@ class Constraints(SystemCollectionProtocol):
     To enforce boundary conditions on rod-like objects, the simulator class
     must be derived from Constraints class.
 
-        Attributes
-        ----------
-        _constraints: list
-            List of boundary condition classes defined for rod-like objects.
+    Attributes
+    ----------
+    _constraints: list
+        List of boundary condition classes defined for rod-like objects.
     """
 
     _constraints_list: list[ModuleProtocol]

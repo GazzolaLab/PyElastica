@@ -49,7 +49,7 @@ class Cylinder(RigidBodyBase):
         ) -> None:
             assert (
                 to_check > lower_bound
-            ), f"Value for '{name}' ({to_check}) must be at lease {lower_bound}. "
+            ), f"Value for '{name}' ({to_check}) must be at least {lower_bound}. "
 
         assert_check_array_size(start, "start")
         assert_check_array_size(direction, "direction")

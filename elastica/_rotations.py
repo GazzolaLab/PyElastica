@@ -258,8 +258,8 @@ def _skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
              [0, -z, y, z, 0, -x, -y , x, 0]
 
-    Note
-    ----
+    Notes
+    -----
     Gets close to the hard-coded implementation in time but with slightly
     high memory requirement for iteration.
 
@@ -359,20 +359,22 @@ def _get_skew_symmetric_pair(
 
 def _inv_skew_symmetrize(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
     """
-    Return the vector elements from a skew-symmetric matrix M
+    Return the vector elements from a skew-symmetric matrix M.
 
     Parameters
     ----------
-    matrix : np.ndarray of dimension (dim, dim, blocksize)
+    matrix : numpy.ndarray
+        3D (dim, dim, blocksize) array containing skew-symmetric matrices.
 
     Returns
     -------
-    vector : np.ndarray of dimension (dim, blocksize)
+    vector : numpy.ndarray
+        2D (dim, blocksize) array containing the extracted vector elements.
 
-    Note
-    ----
-    Harcoded : 2.28 µs ± 63.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    This : 2.91 µs ± 58.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    Notes
+    -----
+    Hardcoded: 2.28 µs ± 63.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+    This: 2.91 µs ± 58.3 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
     """
     dim, dim, blocksize = matrix.shape
 
@@ -398,7 +400,7 @@ def get_relative_rotation_two_systems(
     Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
 
     Examples
-    ----------
+    --------
     How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
 
         >>> rel_rot_mat = get_relative_rotation_two_systems(system1, -1, system2, 0)
@@ -415,7 +417,7 @@ def get_relative_rotation_two_systems(
         ... )
 
     See Also
-    ---------
+    --------
     FixedJoint
 
     Parameters
@@ -431,8 +433,9 @@ def get_relative_rotation_two_systems(
 
     Returns
     -------
-    relative_rotation_matrix : np.array
-        Relative rotation matrix C_12 between the two systems for their current state.
+    relative_rotation_matrix : numpy.ndarray
+        2D (3, 3) array containing the relative rotation matrix C_12 between the two systems
+        for their current state.
     """
     director_one = system_one.director_collection[..., index_one]
     director_two = system_two.director_collection[..., index_two]

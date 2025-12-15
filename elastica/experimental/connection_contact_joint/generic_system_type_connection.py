@@ -200,51 +200,51 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint):
     The fixed joint class restricts the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
 
-        Attributes
-        ----------
-        k : float
-            Stiffness coefficient of the joint.
-        nu : float
-            Damping coefficient of the joint.
-        kt : float
-            Rotational stiffness coefficient of the joint.
-        nut : float
-            Rotational damping coefficient of the joint.
-        point_system_one : numpy.ndarray
-            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
-            or the center of mass (for rigid bodies) to the joint.
-        point_system_two : numpy.ndarray
-            Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
-            or the center of mass (for rigid bodies) to the joint.
-        rest_rotation_matrix : np.ndarray
-            2D (3,3) array containing data with 'float' type.
-            Rest 3x3 rotation matrix from system one to system two at the connected elements.
-            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
-            is enforced.
+    Attributes
+    ----------
+    k : float
+        Stiffness coefficient of the joint.
+    nu : float
+        Damping coefficient of the joint.
+    kt : float
+        Rotational stiffness coefficient of the joint.
+    nut : float
+        Rotational damping coefficient of the joint.
+    point_system_one : numpy.ndarray
+        Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
+    point_system_two : numpy.ndarray
+        Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
+    rest_rotation_matrix : np.ndarray
+        2D (3,3) array containing data with 'float' type.
+        Rest 3x3 rotation matrix from system one to system two at the connected elements.
+        Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
+        is enforced.
 
-        Examples
-        --------
-        How to connect two Cosserat rods together using a fixed joint while aligning the tangents (e.g. local z-axis).
+    Examples
+    --------
+    How to connect two Cosserat rods together using a fixed joint while aligning the tangents (e.g. local z-axis).
 
-        >>> simulator.connect(rod_one, rod_two).using(
-        ...    FixedJoint,
-        ...    k=1e4,
-        ...    nu=1,
-        ... )
+    >>> simulator.connect(rod_one, rod_two).using(
+    ...    FixedJoint,
+    ...    k=1e4,
+    ...    nu=1,
+    ... )
 
-        How to connect a cosserat rod with the base of a cylinder using a fixed joint, where the cylinder is rotated
-        by 45 degrees around the y-axis.
+    How to connect a cosserat rod with the base of a cylinder using a fixed joint, where the cylinder is rotated
+    by 45 degrees around the y-axis.
 
-        >>> from scipy.spatial.transform import Rotation
-        ... simulator.connect(rod, cylinder).using(
-        ...    FixedJoint,
-        ...    k=1e5,
-        ...    nu=1e0,
-        ...    kt=1e3,
-        ...    nut=1e-3,
-        ...    point_system_two=np.array([0, 0, -cylinder.length / 2]),
-        ...    rest_rotation_matrix=Rotation.from_euler('y', np.pi / 4, degrees=False).as_matrix(),
-        ... )
+    >>> from scipy.spatial.transform import Rotation
+    ... simulator.connect(rod, cylinder).using(
+    ...    FixedJoint,
+    ...    k=1e5,
+    ...    nu=1e0,
+    ...    kt=1e3,
+    ...    nut=1e-3,
+    ...    point_system_two=np.array([0, 0, -cylinder.length / 2]),
+    ...    rest_rotation_matrix=Rotation.from_euler('y', np.pi / 4, degrees=False).as_matrix(),
+    ... )
     """
 
     def __init__(

@@ -34,9 +34,7 @@ def sum_over_elements(input: NDArray[np.float64]) -> np.float64:
     -------
     float
 
-    """
-    """
-    Developer Note
+    Notes
     -----
     Faster than sum(), .sum() and np.sum()
 
@@ -86,7 +84,7 @@ def slender_body_forces(
         Rod-like object velocity collection.
     dynamic_viscosity: float
         Dynamic viscosity of the fluid.
-    length: numpy.ndarray
+    lengths: numpy.ndarray
         1D (blocksize) array containing data with 'float' type.
         Rod-like object element lengths.
     radius: numpy.ndarray
@@ -170,11 +168,10 @@ class SlenderBodyTheory(NoForces):
     forces on the body using the slender body theory given in
     Eq. 4.13 of Gazzola et al. RSoS (2018).
 
-        Attributes
-        ----------
-        dynamic_viscosity: float
-            Dynamic viscosity of the fluid.
-
+    Attributes
+    ----------
+    dynamic_viscosity: float
+        Dynamic viscosity of the fluid.
     """
 
     def __init__(self, dynamic_viscosity: float) -> None:
@@ -211,9 +208,14 @@ class SlenderBodyTheory(NoForces):
         _elements_to_nodes_inplace(stokes_force, system.external_forces)
 
 
-# base class for interaction
-# only applies normal force no friction
 class InteractionPlaneRigidBody(NoForces):
+    """
+    Interaction class for applying contact forces between a rigid body and a plane.
+
+    This class applies normal contact forces (no friction) when a rigid body
+    contacts a plane surface.
+    """
+
     def __init__(
         self,
         k: float,
@@ -221,6 +223,23 @@ class InteractionPlaneRigidBody(NoForces):
         plane_origin: NDArray[np.float64],
         plane_normal: NDArray[np.float64],
     ) -> None:
+        """
+        Initialize the plane-rigid body interaction.
+
+        Parameters
+        ----------
+        k : float
+            Contact spring constant.
+        nu : float
+            Contact damping constant.
+        plane_origin : numpy.ndarray
+            1D (3,) or 2D (3, 1) array containing data with 'float' type.
+            Origin of the plane.
+        plane_normal : numpy.ndarray
+            1D (3,) array containing data with 'float' type.
+            Normal vector of the plane.
+
+        """
         self.k = np.float64(k)
         self.nu = np.float64(nu)
         self.surface_tol = np.float64(1e-4)
@@ -231,16 +250,16 @@ class InteractionPlaneRigidBody(NoForces):
         self, system: RigidBodyType, time: np.float64 = np.float64(0.0)
     ) -> None:
         """
-        This function computes the plane force response on the rigid body, in the
-        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
-        is used.
+        Compute the plane force response on the rigid body in the case of contact.
+
+        Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper is used.
+
         Parameters
         ----------
-        system
-
-        Returns
-        -------
-        magnitude of the plane response
+        system : RigidBodyType
+            Rigid body object.
+        time : float
+            The time of simulation.
         """
         _calculate_contact_forces_cylinder_plane(
             self.plane_origin,

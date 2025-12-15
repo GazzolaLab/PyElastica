@@ -1,4 +1,4 @@
-__doc__ = """"""
+__doc__ = """Base class for rigid body implementations"""
 
 from typing import Type
 

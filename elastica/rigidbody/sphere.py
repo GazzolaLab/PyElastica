@@ -11,6 +11,10 @@ from elastica.rigidbody.rigid_body_base import RigidBodyBase
 
 
 class Sphere(RigidBodyBase):
+    """
+    Rigid sphere class.
+    """
+
     def __init__(
         self,
         center: NDArray[np.float64],
@@ -22,7 +26,7 @@ class Sphere(RigidBodyBase):
 
         Parameters
         ----------
-        center : NDArray[np.float64]
+        center : numpy.ndarray
         base_radius : float
         density : float
         """

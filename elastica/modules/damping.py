@@ -25,10 +25,10 @@ class Damping(SystemCollectionProtocol):
     on rod-like objects, the simulator class must be derived from
     Damping class.
 
-        Attributes
-        ----------
-        _dampers: list
-            List of damper classes defined for rod-like objects.
+    Attributes
+    ----------
+    _dampers: list
+        List of damper classes defined for rod-like objects.
     """
 
     _damping_list: List[ModuleProtocol]
