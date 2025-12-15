@@ -3,14 +3,6 @@ name: CI
 
 # Controls when the action will run.
 on: [push, pull_request]
-# Older settings:
-# Triggers the workflow on push request events for the master branch,
-# and pull request events for all branches.
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ '**' ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -102,7 +94,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ matrix.path }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}

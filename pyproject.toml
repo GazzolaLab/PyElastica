@@ -14,7 +14,7 @@ documentation = "https://docs.cosseratrods.org/en/latest/"
 
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -33,9 +33,6 @@ dependencies = [
     "scipy",
     "tqdm",
     "matplotlib",
-    "mypy",
-    "mypy-extensions",
-    "flake8",
     "cma",
 ]
 
@@ -74,6 +71,9 @@ dev = [
     "codecov",
     "click",
     "autoflake",
+    "mypy",
+    "mypy-extensions",
+    "flake8",
 ]
 
 [tool.black]

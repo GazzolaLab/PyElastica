@@ -121,7 +121,7 @@ Please don't hesitate improving [documentation](https://github.com/GazzolaLab/Py
 
 We also have many related projects in separate repositories that utilize the PyElastica as a core library.
 Since the package is often used for research purpose, many on-going projects are typically not published.
-If you are interested in hearing more, please contact one of our the maintainer.
+If you are interested in hearing more, please contact the maintainer.
 
 ### Pull requests
 
