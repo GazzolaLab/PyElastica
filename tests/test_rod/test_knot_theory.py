@@ -17,21 +17,12 @@ from elastica.rod.knot_theory import (
     _compute_additional_segment,
 )
 
-from elastica.rod.protocol import CosseratRodProtocol
-
 
 @pytest.fixture
 def knot_theory():
     from elastica.rod import knot_theory
 
     return knot_theory
-
-
-def test_knot_theory_protocol():
-    # To clear the protocol test coverage
-    with pytest.raises(TypeError) as e_info:
-        protocol = CosseratRodProtocol()
-        assert "cannot be instantiated" in e_info
 
 
 def test_knot_theory_mixin_methods(rng, knot_theory):

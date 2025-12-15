@@ -1,20 +1,21 @@
 __doc__ = """"""
 
-from typing import Type
-from elastica.systems.protocol import StaticSystemBase
 import numpy as np
 from numpy.typing import NDArray
 from elastica.utils import Tolerance
+from elastica.systems.protocol import StaticSystemBase
 
 
 class Plane(StaticSystemBase):
-    REQUISITE_MODULES: list[Type] = []
+    """
+    Plane static system. Static system does not change by the timestepping.
+    """
 
     def __init__(
         self, plane_origin: NDArray[np.float64], plane_normal: NDArray[np.float64]
     ):
         """
-        Plane surface initializer.
+        Plane initializer.
 
         Parameters
         ----------

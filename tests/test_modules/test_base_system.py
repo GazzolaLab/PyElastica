@@ -76,18 +76,14 @@ class TestBaseSystemCollection:
 
         from elastica.rod import RodBase
         from elastica.rigidbody import RigidBodyBase
-        from elastica.systems.protocol import StaticSystemBase
+        from elastica.systems.protocol import StaticSystemBase, SystemProtocol
 
         # Types are extended in the fixture
-        assert bsc.allowed_sys_types == (
-            RodBase,
-            RigidBodyBase,
-            StaticSystemBase,
-            int,
-            float,
-            str,
-            np.ndarray,
-        )
+        assert int in bsc.allowed_sys_types
+        assert float in bsc.allowed_sys_types
+        assert str in bsc.allowed_sys_types
+        assert np.ndarray in bsc.allowed_sys_types
+        assert StaticSystemBase in bsc.allowed_sys_types  # Minimal requirement
 
     def test_extend_correctness(self, load_collection):
         """

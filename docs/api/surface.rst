@@ -1,15 +1,18 @@
 Surface
 ==========
 
-+----------+----+
-| type     |    |
-+==========+====+
-| plane    |    |
-+----------+----+
+Description
+-----------
 
-.. automodule:: elastica.surface.surface_base
-   :members:
-   :exclude-members: __weakref__
+Surface is a static system that does not change by the timestepping.
+
+Available Surface Types
+-----------------------
++----------+---------------------+
+| type     | description         |
++==========+=====================+
+| plane    | Plane static system.|
++----------+---------------------+
 
 .. automodule:: elastica.surface.plane
    :members:

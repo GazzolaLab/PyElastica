@@ -1,7 +1,7 @@
 __doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
 
 from typing import TypeVar, Generic, Type
-from elastica.typing import RodType, SystemType, CosseratRodProtocol
+from elastica.typing import RodType, SystemType
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.cylinder import Cylinder

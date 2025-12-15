@@ -1,6 +1,4 @@
 from typing import Protocol
-from elastica.rod.protocol import CosseratRodProtocol
-from elastica.rigidbody.protocol import RigidBodyProtocol
 from elastica.systems.protocol import SystemProtocol
 
 
@@ -11,12 +9,4 @@ class BlockProtocol(Protocol):
 
 
 class BlockSystemProtocol(SystemProtocol, BlockProtocol, Protocol):
-    pass
-
-
-class BlockRodProtocol(BlockProtocol, CosseratRodProtocol, Protocol):
-    pass
-
-
-class BlockRigidBodyProtocol(BlockProtocol, RigidBodyProtocol, Protocol):
     pass

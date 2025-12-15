@@ -14,12 +14,11 @@ import numpy as np
 if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
-    from .rod.protocol import CosseratRodProtocol
-    from .rigidbody.protocol import RigidBodyProtocol
+    from .rod.rod_base import RodBase
+    from .rigidbody.rigid_body_base import RigidBodyBase
     from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
-    from .rod.data_structures import _State as State
     from .systems.protocol import (
         StaticSystemBase,
         SystemProtocol,
@@ -32,12 +31,11 @@ if TYPE_CHECKING:
     from .memory_block.protocol import BlockSystemProtocol
 
 else:
-    CosseratRodProtocol = "CosseratRodProtocol"
-    RigidBodyProtocol = "RigidBodyProtocol"
+    RodBase = "RodBase"
+    RigidBodyType = "RigidBodyBase"
     BaseSystemCollection = "BaseSystemCollection"
 
     SystemCollectionProtocol = "SystemCollectionProtocol"
-    State = "State"
     SystemProtocol = "SystemProtocol"
     StaticSystemBase = "StaticSystemBase"
     SymplecticSystemProtocol = "SymplecticSystemProtocol"
@@ -47,26 +45,19 @@ else:
 
 
 StaticSystemType: TypeAlias = "StaticSystemBase"
-SystemType: TypeAlias = SystemProtocol
+SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"
 
-
-# Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
-StateType: TypeAlias = "State"
-
-# TODO: Maybe can be more specific. Up for discussion.
 StepType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
-
-RodType: TypeAlias = "CosseratRodProtocol"
-RigidBodyType: TypeAlias = "RigidBodyProtocol"
+RodType: TypeAlias = "RodBase"
+RigidBodyType: TypeAlias = "RigidBodyBase"
 
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 
 # Indexing types
-# TODO: Maybe just use slice??
 ConstrainingIndex: TypeAlias = tuple[int, ...]
 ConnectionIndex: TypeAlias = (
     int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
