@@ -10,6 +10,29 @@ from elastica.utils import MaxDimension
 from elastica.rigidbody.rigid_body_base import RigidBodyBase
 
 
+def _assert_check_array_size(
+    to_check: NDArray[np.float64], name: str, expected: int = 3
+) -> None:
+    """
+    Validate that an array has the expected size.
+    """
+    array_size = to_check.size
+    assert array_size == expected, (
+        f"Invalid size of '{name}'. " f"Expected: {expected}, but got: {array_size}"
+    )
+
+
+def _assert_check_lower_bound(
+    to_check: float, name: str, lower_bound: float = 0.0
+) -> None:
+    """
+    Validate that a value is greater than a lower bound.
+    """
+    assert (
+        to_check > lower_bound
+    ), f"Value for '{name}' ({to_check}) must be at least {lower_bound}. "
+
+
 class Cylinder(RigidBodyBase):
     def __init__(
         self,
@@ -32,32 +55,13 @@ class Cylinder(RigidBodyBase):
         base_radius : float
         density : float
         """
+        _assert_check_array_size(start, "start")
+        _assert_check_array_size(direction, "direction")
+        _assert_check_array_size(normal, "normal")
 
-        # FIXME: Refactor
-        def assert_check_array_size(
-            to_check: NDArray[np.float64], name: str, expected: int = 3
-        ) -> None:
-            array_size = to_check.size
-            assert array_size == expected, (
-                f"Invalid size of '{name}'. "
-                f"Expected: {expected}, but got: {array_size}"
-            )
-
-        # FIXME: Refactor
-        def assert_check_lower_bound(
-            to_check: float, name: str, lower_bound: float = 0.0
-        ) -> None:
-            assert (
-                to_check > lower_bound
-            ), f"Value for '{name}' ({to_check}) must be at least {lower_bound}. "
-
-        assert_check_array_size(start, "start")
-        assert_check_array_size(direction, "direction")
-        assert_check_array_size(normal, "normal")
-
-        assert_check_lower_bound(base_length, "base_length")
-        assert_check_lower_bound(base_radius, "base_radius")
-        assert_check_lower_bound(density, "density")
+        _assert_check_lower_bound(base_length, "base_length")
+        _assert_check_lower_bound(base_radius, "base_radius")
+        _assert_check_lower_bound(density, "density")
 
         super().__init__()
 

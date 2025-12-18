@@ -98,7 +98,7 @@ class SymplecticStepperMixin:
         """
         for kin_prefactor, kin_step, dyn_step in steps_and_prefactors[:-1]:
 
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 kin_step(system, time, dt)
 
             time += kin_prefactor(dt)
@@ -107,14 +107,14 @@ class SymplecticStepperMixin:
             SystemCollection.constrain_values(time)
 
             # We need internal forces and torques because they are used by interaction module.
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 system.compute_internal_forces_and_torques(time)
                 # system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)
 
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 dyn_step(system, time, dt)
 
             # Constrain only rates
@@ -124,7 +124,7 @@ class SymplecticStepperMixin:
         last_kin_prefactor = steps_and_prefactors[-1][0]
         last_kin_step = steps_and_prefactors[-1][1]
 
-        for system in SystemCollection.block_systems():
+        for system in SystemCollection.final_systems():
             last_kin_step(system, time, dt)
         time += last_kin_prefactor(dt)
         SystemCollection.constrain_values(time)
@@ -133,7 +133,7 @@ class SymplecticStepperMixin:
         SystemCollection.apply_callbacks(time, round(time / dt))
 
         # Zero out the external forces and torques
-        for system in SystemCollection.block_systems():
+        for system in SystemCollection.final_systems():
             system.zeroed_out_external_forces_and_torques(time)
 
         return time

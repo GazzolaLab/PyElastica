@@ -769,7 +769,6 @@ def _compute_dilatation_rate(
     """
     Update dilatation_rate given position, velocity, length, and rest_length
     """
-    # TODO Use the vector formula rather than separating it out
     # self.lengths = l_i = |r^{i+1} - r^{i}|
     r_dot_v = _batch_dot(position_collection, velocity_collection)
     r_plus_one_dot_v = _batch_dot(
