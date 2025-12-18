@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 
 
 @runtime_checkable
-class StaticSystemBase(Protocol):
+class StaticSystemProtocol(Protocol):
     """
     Protocol for all static elastica system. Minimal requirement interface
     to be included in the simulator.
@@ -21,7 +21,7 @@ class StaticSystemBase(Protocol):
 
 
 @runtime_checkable
-class SystemProtocol(StaticSystemBase, Protocol):
+class SystemProtocol(StaticSystemProtocol, Protocol):
     """
     Protocol for all dynamic elastica system.
     """

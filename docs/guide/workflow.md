@@ -271,7 +271,7 @@ timestepper = PositionVerlet()
 final_time = 10   # seconds
 total_steps = int(final_time / dt)
 
-# Explicit timestepper loop
+# Timestepper loop
 dt = final_time / total_steps
 time = 0.0
 for i in range(total_steps):

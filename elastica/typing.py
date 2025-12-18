@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from .modules.protocol import SystemCollectionProtocol
     from .systems.protocol import (
-        StaticSystemBase,
+        StaticSystemProtocol,
         SystemProtocol,
         SymplecticSystemProtocol,
     )
@@ -37,14 +37,14 @@ else:
 
     SystemCollectionProtocol = "SystemCollectionProtocol"
     SystemProtocol = "SystemProtocol"
-    StaticSystemBase = "StaticSystemBase"
+    StaticSystemProtocol = "StaticSystemProtocol"
     SymplecticSystemProtocol = "SymplecticSystemProtocol"
     StepperProtocol = "StepperProtocol"
     SymplecticStepperProtocol = "SymplecticStepperProtocol"
     BlockSystemProtocol = "BlockSystemProtocol"
 
 
-StaticSystemType: TypeAlias = "StaticSystemBase"
+StaticSystemType: TypeAlias = "StaticSystemProtocol"
 SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"

@@ -24,7 +24,7 @@ from itertools import chain
 from collections import defaultdict
 from collections.abc import MutableSequence
 
-from elastica.systems.protocol import StaticSystemBase, SystemProtocol
+from elastica.systems.protocol import StaticSystemProtocol, SystemProtocol
 from elastica.memory_block.protocol import BlockSystemProtocol
 
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
@@ -87,9 +87,9 @@ class BaseSystemCollection(MutableSequence):
         super().__init__()
 
         # List of system types/bases that are allowed
-        # By default, any object that is a subclass of StaticSystemBase is allowed.
+        # By default, any object that is a subclass of StaticSystemProtocol is allowed.
         # (Technically, any object that is conforms StaticSystemProtocol is allowed.)
-        self.allowed_sys_types: tuple[Type, ...] = (StaticSystemBase,)
+        self.allowed_sys_types: tuple[Type, ...] = (StaticSystemProtocol,)
 
         # Block support for System types.
         # If a system type is not in this dictionary, no block will be constructed for it.

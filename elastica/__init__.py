@@ -1,5 +1,5 @@
 from elastica.systems.protocol import (
-    StaticSystemBase,
+    StaticSystemProtocol,
     SystemProtocol,
 )
 from elastica.rod.knot_theory import (

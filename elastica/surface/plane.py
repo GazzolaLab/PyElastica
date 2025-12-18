@@ -4,10 +4,9 @@ from typing import Type
 import numpy as np
 from numpy.typing import NDArray
 from elastica.utils import Tolerance
-from elastica.systems.protocol import StaticSystemBase
 
 
-class Plane(StaticSystemBase):
+class Plane:
     """
     Plane static system. Static system does not change by the timestepping.
 

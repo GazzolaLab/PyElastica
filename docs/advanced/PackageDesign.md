@@ -20,43 +20,35 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
       direction RL
       subgraph Systems Protocol
         direction RL
-        SLBD(SlenderBodyGeometryProtool)
-        SymST["SymplecticSystem:\n• KinematicStates/Rates\n• DynamicStates/Rates"]
+        SymST["SymplecticSystemProtocol<br/>(Necessary to be stepped by the timestepper)"]
         style SymST text-align:left
-        ExpST["ExplicitSystem:\n• States (Unused)"]
-        style ExpST text-align:left
-        P((position\nvelocity\nacceleration\n..)) --> SLBD
-        subgraph StaticSystemType
-            Surface
-            Mesh
-        end
-        subgraph SystemType
-            direction TB
-            Rod
-            RigidBody
-        end
-        SLBD --> SymST
+        StaticSystemType["Static System Type"<br/>• Plane]
+        SystemType["(Dynamic) System Type<br/>• CosseratRod (Rod)<br/>• Sphere (RigidBody)<br/>• Cylinder (RigidBody)"]
+
         SystemType --> SymST
-        SLBD --> ExpST
-        SystemType --> ExpST
       end
+
+      subgraph System Collection
+        SysColl["SystemCollectionProtocol"]
+      end
+
       subgraph Timestepper Protocol
-        direction TB
-        StP["StepperProtocol\n• step(SystemCollection, time, dt)"]
-        style StP text-align:left
-        SymplecticStepperProtocol["SymplecticStepperProtocol\n• PositionVerlet"]
+        direction LR
+        SymplecticStepperProtocol["SymplecticStepperProtocol<br/>• PositionVerlet"]
         style SymplecticStepperProtocol text-align:left
-        ExplicitStepperProtocol["ExplicitStepperProtocol\n(Unused)"]
       end
 
-      subgraph SystemCollection
-
-      end
-      SymST --> SystemCollection --> SymplecticStepperProtocol
-      ExpST --> SystemCollection --> ExplicitStepperProtocol
-      StaticSystemType --> SystemCollection
-
+      SymST --> SysColl -->|Symplectic systems only| SymplecticStepperProtocol
+      StaticSystemType --> SysColl
 ```
+
+#### Key takeaways:
+
+- Any object that conforms to `StaticSystemProtocol` can be added to the system collection.
+    - If you want to add custom type to the system, you can use `append_allowed_types` to add it to the system collection. To add associated block support, you can use `enable_block_supports`.
+- Among the systems added to the system collection, only objects that conform to `SystemProtocol` will be integrated by the timestepper.
+- If block support is available for a system, they will be collected together during the `finalize` step, and passed to the timestepper.
+
 
 ### System Collection (Build memory block)
 
@@ -66,15 +58,15 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
       St((Stepper))
       subgraph SystemCollectionType
         direction LR
-        StSys["StaticSystem:\n• Surface\n• Mesh"]
+        StSys["StaticSystem:<br/>• Plane"]
         style StSys text-align:left
-        DynSys["DynamicSystem:\n• Rod\n&nbsp;&nbsp;• CosseratRod\n• RigidBody\n&nbsp;&nbsp;• Sphere\n&nbsp;&nbsp;• Cylinder"]
+        DynSys["DynamicSystem:<br/>• CosseratRod<br/>• Sphere<br/>• Cylinder"]
         style DynSys text-align:left
 
-        BlDynSys["BlockSystemType:\n• BlockCosseratRod\n• BlockRigidBody"]
+        BlDynSys["BlockSystem:<br/>• MemoryBlockCosseratRod<br/>• MemoryBlockRigidBody"]
         style BlDynSys text-align:left
 
-        F{{"Feature Group (OperatorGroup):\n• Synchronize\n• Constrain values\n• Constrain rates\n• Callback"}}
+        F{{"Feature Group (OperatorGroup):<br/>• Synchronize<br/>• Constrain values<br/>• Constrain rates<br/>• Callback"}}
         style F text-align:left
       end
       Sys --> StSys --> F
@@ -91,9 +83,9 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
       St((Stepper))
       subgraph SystemCollectionType
         direction LR
-        StSys["StaticSystem:\n• Surface\n• Mesh"]
+        StSys["StaticSystem:<br/>• Plane"]
         style StSys text-align:left
-        DynSys["DynamicSystem:\n• Rod\n&nbsp;&nbsp;• CosseratRod\n• RigidBody\n&nbsp;&nbsp;• Sphere\n&nbsp;&nbsp;• Cylinder"]
+        DynSys["DynamicSystem:<br/>• Rod<br/>&nbsp;&nbsp;• CosseratRod<br/>• RigidBody<br/>&nbsp;&nbsp;• Sphere<br/>&nbsp;&nbsp;• Cylinder"]
         style DynSys text-align:left
 
         subgraph Feature
