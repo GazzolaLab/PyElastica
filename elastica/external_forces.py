@@ -86,9 +86,7 @@ class GravityForces(NoForces):
 
     def __init__(
         self,
-        acc_gravity: NDArray[np.float64] = np.array(
-            [0.0, -9.80665, 0.0]
-        ),  # FIXME: avoid mutable default
+        acc_gravity: NDArray[np.float64] | None = None,
     ) -> None:
         """
 
@@ -96,10 +94,14 @@ class GravityForces(NoForces):
         ----------
         acc_gravity: numpy.ndarray
             1D (dim) array containing data with 'float' type. Gravitational acceleration vector.
+            Defaults to [0.0, -9.80665, 0.0] if not provided.
 
         """
-        super(GravityForces, self).__init__()
-        self.acc_gravity = acc_gravity
+        super().__init__()
+        if acc_gravity is None:
+            acc_gravity = np.array([0.0, -9.80665, 0.0])
+        assert len(acc_gravity) == 3, "Gravity acceleration vector must be 3D"
+        self.acc_gravity = np.array(acc_gravity)
 
     def apply_forces(
         self, system: "RodType | RigidBodyType", time: np.float64 = np.float64(0.0)
@@ -228,9 +230,7 @@ class UniformTorques(NoForces):
     def __init__(
         self,
         torque: np.float64,
-        direction: NDArray[np.float64] = np.array(
-            [0.0, 0.0, 0.0]
-        ),  # FIXME: avoid mutable default
+        direction: NDArray[np.float64] | None = None,
     ) -> None:
         """
 
@@ -240,9 +240,11 @@ class UniformTorques(NoForces):
             Torque magnitude applied to a rod-like object.
         direction: numpy.ndarray
             1D (dim) array containing data with 'float' type.
-            Direction in which torque applied.
+            Direction in which torque applied. Defaults to [0.0, 0.0, 0.0] if not provided.
         """
         super(UniformTorques, self).__init__()
+        if direction is None:
+            direction = np.array([0.0, 0.0, 0.0])
         self.torque = torque * direction
 
     def apply_torques(
@@ -270,9 +272,7 @@ class UniformForces(NoForces):
     def __init__(
         self,
         force: np.float64,
-        direction: NDArray[np.float64] = np.array(
-            [0.0, 0.0, 0.0]
-        ),  # FIXME: avoid mutable default
+        direction: NDArray[np.float64] | None = None,
     ) -> None:
         """
 
@@ -282,9 +282,11 @@ class UniformForces(NoForces):
             Force magnitude applied to a rod-like object.
         direction: numpy.ndarray
             1D (dim) array containing data with 'float' type.
-            Direction in which force applied.
+            Direction in which force applied. Defaults to [0.0, 0.0, 0.0] if not provided.
         """
         super(UniformForces, self).__init__()
+        if direction is None:
+            direction = np.array([0.0, 0.0, 0.0])
         self.force = (force * direction).reshape(3, 1)
 
     def apply_forces(
@@ -325,7 +327,7 @@ class MuscleTorques(NoForces):
 
     def __init__(
         self,
-        base_length: float,  # TODO: Is this necessary?
+        base_length: float,
         b_coeff: NDArray[np.float64],
         period: float,
         wave_number: float,
@@ -340,7 +342,9 @@ class MuscleTorques(NoForces):
         Parameters
         ----------
         base_length: float
-            Rest length of the rod-like object.
+            Rest length of the rod-like object. This parameter is used to
+            normalize the spatial coordinate along the rod for the traveling
+            wave calculation.
         b_coeff: numpy.ndarray
             1D array containing data with 'float' type.
             Beta coefficients for beta-spline.
@@ -522,12 +526,8 @@ class EndpointForcesSinusoidal(NoForces):
         start_force_mag: float,
         end_force_mag: float,
         ramp_up_time: float = 0.0,
-        tangent_direction: NDArray[np.floating] = np.array(
-            [0.0, 0.0, 1.0]
-        ),  # FIXME: avoid mutable default
-        normal_direction: NDArray[np.floating] = np.array(
-            [0.0, 1.0, 0.0]
-        ),  # FIXME: avoid mutable default
+        tangent_direction: NDArray[np.floating] | None = None,
+        normal_direction: NDArray[np.floating] | None = None,
     ) -> None:
         """
         Parameters
@@ -541,9 +541,10 @@ class EndpointForcesSinusoidal(NoForces):
         tangent_direction: numpy.ndarray
             1D (3,) array containing data with 'float' type.
             This is the tangent direction of the system, or normal of the plane that forces applied.
+            Defaults to [0.0, 0.0, 1.0] if not provided.
         normal_direction: numpy.ndarray
             1D (3,) array containing data with 'float' type.
-            This is the normal direction of the system.
+            This is the normal direction of the system. Defaults to [0.0, 1.0, 0.0] if not provided.
         """
         super(EndpointForcesSinusoidal, self).__init__()
         # Start force
@@ -551,6 +552,10 @@ class EndpointForcesSinusoidal(NoForces):
         self.end_force_mag = np.float64(end_force_mag)
 
         # Applied force directions
+        if normal_direction is None:
+            normal_direction = np.array([0.0, 1.0, 0.0])
+        if tangent_direction is None:
+            tangent_direction = np.array([0.0, 0.0, 1.0])
         self.normal_direction = normal_direction
         self.roll_direction = np.cross(normal_direction, tangent_direction)
 
