@@ -4,11 +4,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 from elastica.timestepper import integrate, extend_stepper_interface
-from elastica.experimental.timestepper.explicit_steppers import (
-    RungeKutta4,
-    EulerForward,
-    ExplicitStepperMixin,
-)
 from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
@@ -49,20 +44,6 @@ class TestExtendStepperInterface:
         def _dynamic_step(self):
             pass
 
-    class MockExplicitStepper(ExplicitStepperMixin):
-
-        def get_stages(self):
-            return [self._stage]
-
-        def get_updates(self):
-            return [self._update]
-
-        def _stage(self):
-            pass
-
-        def _update(self):
-            pass
-
     # We cannot call a stepper on a system until both the stepper
     # and system "see" one another (for performance reasons, mostly)
     # So before "seeing" the system, the stepper should not have
@@ -72,7 +53,6 @@ class TestExtendStepperInterface:
         "stepper_module",
         [
             MockSymplecticStepper,
-            MockExplicitStepper,
         ],
     )
     def test_symplectic_stepper_interface_for_simple_systems(self, stepper_module):
@@ -86,7 +66,7 @@ class TestExtendStepperInterface:
 
     @pytest.mark.parametrize(
         "stepper_module",
-        [MockSymplecticStepper, MockExplicitStepper],
+        [MockSymplecticStepper],
     )
     def test_symplectic_stepper_interface_for_collective_systems(self, stepper_module):
         system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()
@@ -122,11 +102,7 @@ def test_integrate_throws_an_assert_for_negative_total_steps(rng):
     assert "steps is negative" in str(excinfo.value)
 
 
-# Added automatic discovery of Stateful explicit integrators
-# ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
 # SymplecticSteppers = SymplecticStepper.__subclasses__()
-# StatefulExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
-ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
 
 
@@ -147,59 +123,6 @@ class TestSteppersAgainstCollectiveSystems:
                 rtol=Tolerance.rtol() * 1e1,
                 atol=Tolerance.atol(),
             )
-
-    @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers)
-    def test_explicit_steppers(self, explicit_stepper):
-        collective_system = ScalarExponentialDampedHarmonicOscillatorCollectiveSystem()
-        final_time = 1.0
-        if explicit_stepper == EulerForward:
-            # Euler requires very small time-steps and in order not to slow down test,
-            # we are scaling the difference between analytical and numerical solution.
-            n_steps = 25000
-            scale = 1e3
-        else:
-            n_steps = 500
-            scale = 1
-
-        stepper = explicit_stepper()
-
-        dt = np.float64(float(final_time) / n_steps)
-        time = np.float64(0.0)
-        tol = Tolerance.atol()
-
-        # Before stepping, let's extend the interface of the stepper
-        # while providing memory slots
-        from elastica.experimental.timestepper.memory import (
-            make_memory_for_explicit_stepper,
-        )
-
-        memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
-        from elastica.timestepper import extend_stepper_interface
-
-        do_step, stagets_and_updates = extend_stepper_interface(
-            stepper, collective_system
-        )
-
-        while np.abs(final_time - time) > 1e5 * tol:
-            time = do_step(
-                stepper,
-                stagets_and_updates,
-                collective_system,
-                memory_collection,
-                time,
-                dt,
-            )
-
-        for system in collective_system:
-            assert_allclose(
-                system.state,
-                system.analytical_solution(final_time),
-                rtol=Tolerance.rtol() * scale,
-                atol=Tolerance.atol() * scale,
-            )
-
-    # @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
-    # def test_symplectic_against_collective_system(self, symplectic_stepper):
 
 
 class TestSteppersAgainstRodLikeSystems:
