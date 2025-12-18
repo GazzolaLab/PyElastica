@@ -3,7 +3,7 @@ Numba implementation module containing contact between rods and rigid bodies and
 """
 
 from typing import TypeVar, Generic, Type
-from elastica.typing import RodType, SystemType
+from elastica.typing import RodType, SystemType, StaticSystemType
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.cylinder import Cylinder
@@ -27,8 +27,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-S1 = TypeVar("S1")  # TODO: Find bound
-S2 = TypeVar("S2")
+S1 = TypeVar("S1", bound=StaticSystemType)
+S2 = TypeVar("S2", bound=StaticSystemType)
 
 
 class NoContact(Generic[S1, S2]):

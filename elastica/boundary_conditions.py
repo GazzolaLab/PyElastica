@@ -284,17 +284,17 @@ class GeneralConstraint(ConstraintBase):
         """
         super().__init__(**kwargs)
         pos, dir = [], []
-        for data in fixed_data:
+        for idx, data in enumerate(fixed_data):
             if isinstance(data, np.ndarray) and data.shape == (3,):
                 pos.append(data)
-            elif isinstance(data, np.ndarray) and data.shape == (
-                3,
-                3,
-            ):
+            elif isinstance(data, np.ndarray) and data.shape == (3, 3):
                 dir.append(data)
             else:
-                # TODO: This part is prone to error.
-                break
+                raise ValueError(
+                    f"Invalid data at position {idx} in fixed_data. "
+                    f"Expected numpy array with shape (3,) for position or (3, 3) for director, "
+                    f"but got {type(data).__name__} with value: {data}."
+                )
 
         if len(pos) > 0:
             # transpose from (blocksize, dim) to (dim, blocksize)

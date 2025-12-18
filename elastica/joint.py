@@ -194,7 +194,6 @@ class HingeJoint(FreeJoint):
         2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
-    # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
         self,
         k: float,
