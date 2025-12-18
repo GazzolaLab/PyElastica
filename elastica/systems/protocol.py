@@ -20,6 +20,7 @@ class StaticSystemBase(Protocol):
     REQUISITE_MODULES: list[Type]
 
 
+@runtime_checkable
 class SystemProtocol(StaticSystemBase, Protocol):
     """
     Protocol for all dynamic elastica system.

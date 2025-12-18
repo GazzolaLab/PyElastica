@@ -1,6 +1,7 @@
 __doc__ = """ Test modules for base systems """
 
 import pytest
+import warnings
 import numpy as np
 
 from elastica.modules import (
@@ -27,7 +28,8 @@ class TestBaseSystemCollection:
         rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
 
         bsc = BaseSystemCollection()
-        bsc.extend_allowed_types((int, float, str, np.ndarray))
+        bsc.extend_allowed_types((int, float, str))
+        bsc.append_allowed_types(np.ndarray)
         # Bypass check, but its fine for testing
         bsc.append(3)
         bsc.append(5.0)
@@ -99,7 +101,7 @@ class TestBaseSystemCollection:
 
     def test_override_allowed_types(self, load_collection, mock_rod):
         bsc = load_collection
-        bsc.override_allowed_types((int, float, str))
+        bsc._override_allowed_types((int, float, str))
 
         # First check that adding a rod object throws an
         # error as we have replaced rods now it
@@ -119,7 +121,7 @@ class TestBaseSystemCollection:
         from elastica.rod import RodBase
 
         bsc = load_collection
-        bsc.override_allowed_types((RodBase,))
+        bsc._override_allowed_types((RodBase,))
         with pytest.raises(AssertionError) as excinfo:
             bsc.get_system_index(100)
         assert "exceeds number of" in str(excinfo.value)
@@ -141,10 +143,156 @@ class TestBaseSystemCollection:
     def test_get_sys_index_returns_correct_idx(self, load_collection):
         assert load_collection.get_system_index(1) == 1
 
+    def test_duplicate_system_warning(self):
+        """Test that adding the same system instance twice emits a warning."""
+        bsc = BaseSystemCollection()
+        bsc.extend_allowed_types((int,))
+
+        # Add a system
+        test_system = 42
+        bsc.append(test_system)
+
+        # Try to add the same system again - should emit warning
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            bsc._check_type(test_system)
+
+            # Verify warning was issued
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "already in the system collection" in str(w[0].message)
+            assert "not recommended" in str(w[0].message)
+
+    def test_duplicate_system_warning_with_rod(self, mock_rod):
+        """Test that adding the same rod instance twice emits a warning."""
+        bsc = BaseSystemCollection()
+        from elastica.rod import RodBase
+
+        bsc.extend_allowed_types((RodBase,))
+
+        # Add a rod
+        bsc.append(mock_rod)
+
+        # Try to add the same rod again - should emit warning
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            bsc.append(mock_rod)
+
+            # Verify warning was issued
+            assert len(w) == 1
+            assert issubclass(w[0].category, UserWarning)
+            assert "already in the system collection" in str(w[0].message)
+            assert "not recommended" in str(w[0].message)
+
     @pytest.mark.xfail
     def test_delitem(self, load_collection):
         del load_collection[0]
         assert load_collection[0] == 3
+
+    def test_requisite_modules_error(self):
+        """Test that RuntimeError is raised when system requires modules not present."""
+
+        class Collection(BaseSystemCollection):
+            pass
+
+        bsc = Collection()
+
+        # Create a mock system class that requires Constraints module
+        class SystemWithRequisiteModules:
+            REQUISITE_MODULES = [int]  # Require int module
+
+        system = SystemWithRequisiteModules()
+        bsc.append_allowed_types(
+            SystemWithRequisiteModules,
+        )
+
+        # Should raise RuntimeError because BaseSystemCollection doesn't have Constraints
+        # The type check passes (SystemWithRequisiteModules is in allowed_sys_types),
+        # but REQUISITE_MODULES check fails
+        with pytest.raises(RuntimeError) as excinfo:
+            bsc._check_type(system)
+        assert "requires the following modules" in str(excinfo.value)
+        assert "int" in str(excinfo.value)
+
+    def test_requisite_modules_success(self):
+        """Test that system with REQUISITE_MODULES passes when modules are present."""
+
+        # Create a simulator with Constraints module
+        class SimulatorInt(BaseSystemCollection, int):
+            pass
+
+        bsc = SimulatorInt()
+
+        # Create a mock system class that requires Constraints module
+        class SystemWithRequisiteModules:
+            REQUISITE_MODULES = [int]
+
+        system = SystemWithRequisiteModules()
+        bsc.append_allowed_types(
+            SystemWithRequisiteModules,
+        )
+
+        # Should pass because BaseSystemCollection has Constraints
+        assert bsc._check_type(system) is True
+
+    def test_enable_block_supports_new_system_type(self):
+        """Test enable_block_supports when system_type is not in any block_supports (else clause)."""
+        from elastica.rod.cosserat_rod import CosseratRod
+
+        class CustomBlock:
+            pass
+
+        class DerivedRod(CosseratRod):
+            def __init__(self):
+                pass
+
+        derived_rod = DerivedRod()
+
+        bsc = BaseSystemCollection()
+
+        # Initially, CustomRod should not be in block_supports
+        found = False
+        for block_type in bsc._block_supports.values():
+            if derived_rod in block_type:
+                found = True
+                break
+        assert not found, "CustomRod should not be in block_supports initially"
+
+        # Enable block support for CustomRod (else clause - creates new entry)
+        bsc.enable_block_supports(derived_rod, CustomBlock)
+        assert derived_rod in bsc._block_supports[CustomBlock]
+
+    def test_enable_block_supports_existing_system_type(self):
+        """Test enable_block_supports when system_type is already in block_supports (if branch)."""
+        from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
+        from elastica.rod.cosserat_rod import CosseratRod
+
+        class CustomBlock:
+            pass
+
+        bsc = BaseSystemCollection()
+
+        # CosseratRod should already be in block_supports (set in __init__)
+        assert CosseratRod in bsc._block_supports[MemoryBlockCosseratRod]
+
+        # Get the initial count
+        bsc.enable_block_supports(CosseratRod, MemoryBlockCosseratRod)
+        assert bsc._block_supports[MemoryBlockCosseratRod].count(CosseratRod) == 1
+
+        # Switch block support
+        bsc.enable_block_supports(CosseratRod, CustomBlock)
+        assert bsc._block_supports[MemoryBlockCosseratRod].count(CosseratRod) == 0
+        assert bsc._block_supports[CustomBlock].count(CosseratRod) == 1
+
+        # Create no duplicates
+        bsc.enable_block_supports(CosseratRod, CustomBlock)
+        assert bsc._block_supports[MemoryBlockCosseratRod].count(CosseratRod) == 0
+        assert bsc._block_supports[CustomBlock].count(CosseratRod) == 1
+
+        # Switch block support back
+        bsc.enable_block_supports(CosseratRod, MemoryBlockCosseratRod)
+        assert bsc._block_supports[MemoryBlockCosseratRod].count(CosseratRod) == 1
+        assert bsc._block_supports[CustomBlock].count(CosseratRod) == 0
 
 
 class GenericSimulatorClass(

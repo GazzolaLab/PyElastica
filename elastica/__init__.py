@@ -1,3 +1,7 @@
+from elastica.systems.protocol import (
+    StaticSystemBase,
+    SystemProtocol,
+)
 from elastica.rod.knot_theory import (
     compute_link,
     compute_twist,

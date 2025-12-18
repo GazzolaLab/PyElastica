@@ -3,64 +3,76 @@ This function is a module to construct memory blocks for different types of syst
 Cosserat Rods, Rigid Body etc.
 """
 
-from elastica.typing import (
-    RodType,
-    RigidBodyType,
-    StaticSystemType,
-    SystemIdxType,
-    BlockSystemType,
-)
+from typing import Type, TYPE_CHECKING
+from collections import defaultdict
+from elastica.systems.protocol import SystemProtocol
 
-from elastica.rod.rod_base import RodBase
-from elastica.rigidbody.rigid_body_base import RigidBodyBase
-from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
-from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
+if TYPE_CHECKING:
+    from elastica.typing import (
+        SystemType,
+        StaticSystemType,
+        SystemIdxType,
+        BlockSystemType,
+    )
 
 
 def construct_memory_block_structures(
-    systems: list[StaticSystemType],
-) -> list[BlockSystemType]:
+    systems: list["StaticSystemType"],
+    block_supports: dict[Type["BlockSystemType"], list[Type["SystemType"]]],
+) -> tuple[list["BlockSystemType"], list["SystemType"]]:
     """
-    This function takes the systems (rod or rigid body) appended to the simulator class and
-    separates them into lists depending on if system is Cosserat rod or rigid body. Then using
-    these separated out systems it creates the memory blocks for Cosserat rods and rigid bodies.
+    This function takes the systems appended to the simulator class and
+    separates them into groups based on their block support. Then using
+    these grouped systems it creates the memory blocks.
+
+    Parameters
+    ----------
+    systems : list[StaticSystemType]
+        List of systems to be grouped into memory blocks.
+    block_supports : dict[Type[BlockSystemType], list[Type[SystemType]]]
+        Dictionary mapping block types to the list of system types that support it.
 
     Returns
     -------
+    list[BlockSystemType]
+        List of memory block structures created from the systems.
 
+    Notes
+    -----
+    Systems that don't have an associated block type in the dictionary will be
+    skipped (no block constructed), but they are still allowed to be appended
+    to the system collection.
     """
-    _memory_blocks: list[BlockSystemType] = []
-    temp_list_for_cosserat_rod_systems: list[RodType] = []
-    temp_list_for_rigid_body_systems: list[RigidBodyType] = []
-    temp_list_for_cosserat_rod_systems_idx: list[SystemIdxType] = []
-    temp_list_for_rigid_body_systems_idx: list[SystemIdxType] = []
+    _memory_blocks: list["BlockSystemType"] = []
+    _non_blocked_systems: list[SystemProtocol] = []
 
-    for system_idx, sys_to_be_added in enumerate(systems):
+    # Group systems by their block type
+    system_list: dict[Type["BlockSystemType"], list["StaticSystemType"]] = defaultdict(
+        list
+    )
+    index_list: dict[Type["BlockSystemType"], list["SystemIdxType"]] = defaultdict(list)
 
-        if isinstance(sys_to_be_added, RodBase):
-            temp_list_for_cosserat_rod_systems.append(sys_to_be_added)
-            temp_list_for_cosserat_rod_systems_idx.append(system_idx)
+    for system_idx, system in enumerate(systems):
+        # Find the matching system type in block_supports
+        block_type = None
+        for bt, system_types in block_supports.items():
+            if (
+                type(system) in system_types
+            ):  # Explicit check for *exact* system type, not subclasses.
+                block_type = bt
+                break
 
-        elif isinstance(sys_to_be_added, RigidBodyBase):
-            temp_list_for_rigid_body_systems.append(sys_to_be_added)
-            temp_list_for_rigid_body_systems_idx.append(system_idx)
+        if block_type is not None:
+            # If block type found, group the system
+            system_list[block_type].append(system)
+            index_list[block_type].append(system_idx)
+        elif isinstance(system, SystemProtocol):
+            _non_blocked_systems.append(system)
 
-        else:
-            continue  # No error:: any typechecking should be finished by BaseSystemCollection._check_type
+    # Create blocks for each block type
+    for block_type, systems_for_block in system_list.items():
+        # block_type is a concrete class with constructor (systems, system_idx_list)
+        block: BlockSystemType = block_type(systems_for_block, index_list[block_type])
+        _memory_blocks.append(block)
 
-    if temp_list_for_cosserat_rod_systems:
-        _memory_blocks.append(
-            MemoryBlockCosseratRod(
-                temp_list_for_cosserat_rod_systems,
-                temp_list_for_cosserat_rod_systems_idx,
-            )
-        )
-
-    if temp_list_for_rigid_body_systems:
-        _memory_blocks.append(
-            MemoryBlockRigidBody(
-                temp_list_for_rigid_body_systems, temp_list_for_rigid_body_systems_idx
-            )
-        )
-
-    return list(_memory_blocks)
+    return _memory_blocks, _non_blocked_systems
