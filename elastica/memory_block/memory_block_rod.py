@@ -22,12 +22,73 @@ from .utils import (
 
 class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
     """
-    Memory block class for Cosserat rod equations. This class is derived from Cosserat Rod class in order to inherit
-    the methods of Cosserat rod class. This class takes the cosserat rod object (systems) and creates big
-    arrays to store the system data and returns a reference of that data to the systems.
-    Thus each system is now in contiguous memory, so it is faster to compute Cosserat rod equations.
+    Memory block class for Cosserat rod equations.
 
-    TODO: need more documentation!
+    This class is derived from CosseratRod to inherit all rod methods while providing
+    a memory-efficient block structure for multiple rod systems. It takes a collection
+    of CosseratRod objects and creates contiguous memory blocks to store all system data,
+    allowing for faster computation of Cosserat rod equations through better cache locality
+    and vectorized operations.
+
+    The class separates rods into straight rods and ring rods (periodic boundary conditions),
+    and handles ghost nodes, elements, and Voronoi indices for proper boundary conditions.
+    All rod data is stored in contiguous arrays, with references maintained to the original
+    rod objects for compatibility.
+
+    Parameters
+    ----------
+    systems : list[RodType]
+        List of CosseratRod objects to be included in the memory block structure.
+        Rods are automatically separated into straight rods and ring rods based on
+        their `ring_rod_flag` attribute.
+    system_idx_list : list[SystemIdxType]
+        List of system indices corresponding to each rod in the `systems` list.
+        These indices are used to map rods back to their original positions in
+        the simulator's system collection.
+
+    Attributes
+    ----------
+    n_systems : int
+        Total number of rod systems in the memory block.
+    n_rods : int
+        Total number of rods (same as n_systems).
+    n_elems : int
+        Total number of elements across all rods in the block structure.
+    n_nodes : int
+        Total number of nodes across all rods (n_elems + 1).
+    n_voronoi : int
+        Total number of Voronoi points across all rods (n_elems - 1).
+    ring_rod_flag : bool
+        Flag indicating if any ring rods are present in the block.
+    system_idx_list : numpy.ndarray
+        Array of system indices mapping rods to their original positions.
+    ghost_nodes_idx : numpy.ndarray
+        Indices of ghost nodes used for boundary conditions.
+    ghost_elems_idx : numpy.ndarray
+        Indices of ghost elements used for boundary conditions.
+    ghost_voronoi_idx : numpy.ndarray
+        Indices of ghost Voronoi points used for boundary conditions.
+    periodic_boundary_nodes_idx : numpy.ndarray
+        Indices of periodic boundary nodes for ring rods.
+    periodic_boundary_elems_idx : numpy.ndarray
+        Indices of periodic boundary elements for ring rods.
+    periodic_boundary_voronoi_idx : numpy.ndarray
+        Indices of periodic boundary Voronoi points for ring rods.
+
+    Notes
+    -----
+    - Straight rods are placed first in memory, followed by ring rods.
+    - Ring rods require additional periodic boundary nodes, elements, and Voronoi points
+      to maintain compatibility with the block structure implementation.
+    - Ghost nodes/elements/Voronoi are used to handle boundaries between rods and
+      periodic boundaries for ring rods.
+    - All rod data (positions, directors, velocities, etc.) is stored in contiguous
+      memory blocks for efficient computation.
+
+    See Also
+    --------
+    CosseratRod : Base class for Cosserat rod systems
+    _RodSymplecticStepperMixin : Mixin providing symplectic stepper interface
     """
 
     def __init__(

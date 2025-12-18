@@ -29,13 +29,35 @@ class DamperBase(Generic[T], ABC):
     Attributes
     ----------
     system : RodBase
+
     """
 
     _system: T
 
-    # TODO typing can be made better
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initialize damping module"""
+        """Initialize damping module
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments (not currently used, reserved for future use).
+        **kwargs : Any
+            Keyword arguments. Must include '_system' key containing the system
+            (rod or rigid body) to be damped. Additional keyword arguments are
+            passed to derived classes for their specific configuration.
+
+        Raises
+        ------
+        KeyError
+            If '_system' is not provided in kwargs. This typically indicates
+            incorrect usage - use simulator.dampen(...).using(...) syntax instead.
+
+        Notes
+        -----
+        The base class extracts the '_system' parameter from kwargs. Derived
+        damper classes (e.g., AnalyticalLinearDamper, LaplaceDissipationFilter)
+        may accept additional keyword arguments for their specific configuration.
+        """
         try:
             self._system = kwargs["_system"]
         except KeyError:
@@ -115,12 +137,11 @@ class AnalyticalLinearDamper(DamperBase):
     3.  Damping constant: this protocol follows the original algorithm where the damping
         constants for translational and rotational velocities are assumed to be numerically
         identical. This leads to dimensional inconsistencies (see
-        https://github.com/GazzolaLab/PyElastica/issues/354). Hence, this option will be deprecated
-        in version 0.4.0.
+        https://github.com/GazzolaLab/PyElastica/issues/354).
 
     >>> simulator.dampen(rod).using(
     ...     AnalyticalLinearDamper,
-    ...     damping_constant=0.1,   # To be deprecated in 0.4.0
+    ...     damping_constant=0.1,
     ...     time_step = 1E-4,   # Simulation time-step
     ... )
 
@@ -135,7 +156,7 @@ class AnalyticalLinearDamper(DamperBase):
 
     1. Set a high value for `damping_constant` to first achieve a stable simulation.
     2. If you feel the simulation is overdamped, reduce `damping_constant` until you
-    feel the simulation is underdamped, and expected dynamics are recovered.
+       feel the simulation is underdamped, and expected dynamics are recovered.
     """
 
     def __init__(self, time_step: np.float64, **kwargs: Any) -> None:
@@ -148,41 +169,44 @@ class AnalyticalLinearDamper(DamperBase):
         )
         rotational_damping_constant = kwargs.get("rotational_damping_constant", None)
 
+        # Count non-None parameters
+        provided_params = [
+            p
+            for p in [
+                damping_constant,
+                uniform_damping_constant,
+                translational_damping_constant,
+                rotational_damping_constant,
+            ]
+            if p is not None
+        ]
+
         self._dampen_rates_protocol: DampenType
 
-        if (
-            (damping_constant is not None)
-            and (uniform_damping_constant is None)
-            and (translational_damping_constant is None)
-            and (rotational_damping_constant is None)
-        ):
+        # Determine which protocol to use based on provided parameters
+        if len(provided_params) == 1 and damping_constant is not None:
+            # Deprecated: single damping_constant
             self._dampen_rates_protocol = self._deprecated_damping_protocol(
                 damping_constant=damping_constant, time_step=time_step
             )
-
-        elif (
-            (damping_constant is None)
-            and (uniform_damping_constant is not None)
-            and (translational_damping_constant is None)
-            and (rotational_damping_constant is None)
-        ):
+        elif len(provided_params) == 1 and uniform_damping_constant is not None:
+            # Uniform damping: single uniform_damping_constant
             self._dampen_rates_protocol = self._uniform_damping_protocol(
                 uniform_damping_constant=uniform_damping_constant, time_step=time_step
             )
-
         elif (
-            (damping_constant is None)
-            and (uniform_damping_constant is None)
-            and (translational_damping_constant is not None)
-            and (rotational_damping_constant is not None)
+            len(provided_params) == 2
+            and translational_damping_constant is not None
+            and rotational_damping_constant is not None
         ):
+            # Physical damping: both translational and rotational constants
             self._dampen_rates_protocol = self._physical_damping_protocol(
                 translational_damping_constant=translational_damping_constant,
                 rotational_damping_constant=rotational_damping_constant,
                 time_step=time_step,
             )
-
         else:
+            # Invalid parameter combination
             message = (
                 "AnalyticalLinearDamper usage:\n"
                 "\tsimulator.dampen(rod).using(\n"

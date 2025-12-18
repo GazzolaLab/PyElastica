@@ -17,6 +17,29 @@ from elastica._linalg import _batch_matmul
 def _get_rotation_matrix(
     scale: np.float64, axis_collection: NDArray[np.float64]
 ) -> NDArray[np.float64]:
+    """
+    Compute rotation matrices from axis-angle representation using Rodrigues' formula.
+
+    Parameters
+    ----------
+    scale : float
+        Scale factor applied to rotation angles. The actual rotation angle for each
+        axis is scale * ||axis||.
+    axis_collection : numpy.ndarray
+        2D array of shape (dim, blocksize) containing rotation axes. Each column
+        represents an axis of rotation.
+
+    Returns
+    -------
+    rot_mat : numpy.ndarray
+        3D array of shape (dim, dim, blocksize) containing rotation matrices computed
+        using Rodrigues' rotation formula.
+
+    Notes
+    -----
+    The axes are normalized before computing the rotation matrices. A small epsilon
+    (1e-14) is added to prevent division by zero for zero-length axes.
+    """
     blocksize = axis_collection.shape[1]
     rot_mat = np.empty((3, 3, blocksize))
 
@@ -56,19 +79,42 @@ def _rotate(
     axis_collection: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """
-    Does alibi rotations
-    https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
+    Rotate director collection by specified axes and scale (alibi rotation).
+
+    Performs alibi (active) rotations on a collection of director frames.
+    Each director frame is rotated around its corresponding axis by an angle
+    proportional to the scale factor. The rotation is applied using Rodrigues'
+    rotation formula via `_get_rotation_matrix`.
 
     Parameters
     ----------
-    director_collection
-    scale
-    axis_collection
+    director_collection : numpy.ndarray
+        3D array of shape (dim, dim, blocksize) containing rotation matrices
+        (director frames) to be rotated.
+    scale : float
+        Scale factor for rotation angles. The actual rotation angle for each
+        frame is scale * ||axis||, where ||axis|| is the magnitude of the
+        corresponding axis vector.
+    axis_collection : numpy.ndarray
+        2D array of shape (dim, blocksize) containing rotation axes for each
+        director frame. Each column represents the axis of rotation for the
+        corresponding director frame.
 
     Returns
     -------
+    rotated_directors : numpy.ndarray
+        3D array of shape (dim, dim, blocksize) containing the rotated director
+        frames. Each frame is rotated around its corresponding axis by the
+        scaled angle.
 
-    TODO Finish documentation
+    Notes
+    -----
+    This function performs alibi (active) rotations, meaning the coordinate
+    system is rotated. For more information on rotation matrix ambiguities, see:
+    https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities
+
+    The rotation is computed as: R(scale * axis) @ director, where R is the
+    rotation matrix computed from the axis-angle representation.
     """
     # return _batch_matmul(
     #     director_collection, _get_rotation_matrix(scale, axis_collection)
@@ -81,22 +127,30 @@ def _rotate(
 @njit(cache=True)  # type: ignore
 def _inv_rotate(director_collection: NDArray[np.float64]) -> NDArray[np.float64]:
     """
-    Calculated rate of change using Rodrigues' formula
+    Compute rotation axes between consecutive director frames using Rodrigues' formula.
+
+    Calculates the rotation axis (in axis-angle representation) that transforms
+    each director frame to the next one. This is the inverse operation of rotating
+    directors and is used to extract the relative rotation between consecutive
+    elements.
 
     Parameters
     ----------
-    director_collection : The collection of frames/directors at every element,
-    numpy.ndarray of shape (dim, dim, n)
+    director_collection : numpy.ndarray
+        The collection of frames/directors at every element, of shape (dim, dim, n)
+        where n is the number of director frames.
 
     Returns
     -------
-    vector_collection : The collection of axes around which the body rotates
-    numpy.ndarray of shape (dim, n)
+    vector_collection : numpy.ndarray
+        The collection of rotation axes, of shape (dim, n-1). Each column represents
+        the axis of rotation (scaled by angle) that transforms director[k] to director[k+1].
 
-    Note
-    ----
-    TODO: Benchmark missing
-
+    Notes
+    -----
+    The output has n-1 elements because it computes the relative rotation between
+    consecutive pairs of directors. The rotation axis is computed using the trace
+    of the relative rotation matrix Q_{k+1} @ Q_k^T.
     """
     blocksize = director_collection.shape[2] - 1
     vector_collection = np.empty((3, blocksize))
@@ -171,7 +225,22 @@ _generate_skew_map_sentinel = (0, 0, 0)
 # TODO: Below contains numpy-only implementations
 @functools.lru_cache(maxsize=1)
 def _generate_skew_map(dim: int) -> list[tuple[int, int, int]]:
-    # TODO Documentation
+    """
+    Generate mapping indices for converting vectors to skew-symmetric matrices.
+
+    Creates a mapping that defines how vector elements are arranged in a
+    flattened skew-symmetric matrix representation. This is used for efficient
+    conversion between vector and matrix forms in dimension-agnostic operations.
+
+    Notes
+    -----
+    The mapping handles the conversion from a vector v = [x, y, z] to a
+    skew-symmetric matrix M where M[i,j] = -M[j,i] and the off-diagonal
+    elements correspond to vector components.
+
+    The formula used (dim - (i + j)) works correctly for dimensions 2 and 3,
+    but may need verification for higher dimensions.
+    """
     # Preallocate
     mapping_list = [_generate_skew_map_sentinel] * ((dim**2 - dim) // 2)
     # Indexing (i,j), j is the fastest changing
@@ -221,7 +290,19 @@ def _get_skew_map(dim: int) -> tuple[tuple[int, int, int], ...]:
 
 @functools.lru_cache(maxsize=1)
 def _get_inv_skew_map(dim: int) -> tuple[tuple[int, int, int], ...]:
-    # TODO Documentation
+    """
+    Generate inverse mapping for extracting vectors from skew-symmetric matrices.
+
+    Creates a mapping that defines how to extract vector elements from a
+    flattened skew-symmetric matrix representation. This is the inverse
+    operation of `_generate_skew_map`.
+
+    Notes
+    -----
+    This mapping is used to extract vector components from skew-symmetric
+    matrices. The mapping is generated by inverting the tuple element order
+    from `_generate_skew_map`.
+    """
     # (vec_src, mat_i, mat_j, sign)
     mapping_list = _generate_skew_map(dim)
 
@@ -248,15 +329,7 @@ def _get_diag_map(dim: int) -> tuple[int, ...]:
 
 def _skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
-
-    Parameters
-    ----------
-    vector : numpy.ndarray of shape (dim, blocksize)
-
-    Returns
-    -------
-    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
-             [0, -z, y, z, 0, -x, -y , x, 0]
+    Convert vector collection to skew-symmetric matrix collection.
 
     Notes
     -----
@@ -283,16 +356,24 @@ def _skew_symmetrize(vector: NDArray[np.float64]) -> NDArray[np.float64]:
 # While calculating u^2, use u with einsum instead, as it is tad bit faster
 def _skew_symmetrize_sq(vector: NDArray[np.float64]) -> NDArray[np.float64]:
     """
-    Generate the square of an orthogonal matrix from vector elements
+    Generate the square of a skew-symmetric matrix from vector elements.
+
+    Computes u^2 where u is the skew-symmetric matrix corresponding to the input
+    vector. This is used in Rodrigues' rotation formula.
 
     Parameters
     ----------
-    vector : numpy.ndarray of shape (dim, blocksize)
+    vector : numpy.ndarray
+        Input vector collection of shape (dim, blocksize).
 
     Returns
     -------
-    output : numpy.ndarray of shape (dim*dim, blocksize) corresponding to
-             [-(y^2+z^2), xy, xz, yx, -(x^2+z^2), yz, zx, zy, -(x^2+y^2)]
+    output : numpy.ndarray
+        Square of skew-symmetric matrices of shape (dim, dim, blocksize).
+        For a 3D vector [x, y, z], the corresponding matrix u^2 is:
+        [[-(y^2+z^2), xy, xz],
+         [yx, -(x^2+z^2), yz],
+         [zx, zy, -(x^2+y^2)]]
 
     Note
     ----
@@ -343,13 +424,11 @@ def _get_skew_symmetric_pair(
     vector_collection: NDArray[np.float64],
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
+    Compute both the skew-symmetric matrix and its square from vector collection.
 
-    Parameters
-    ----------
-    vector_collection
-
-    Returns
-    -------
+    This is a convenience function that computes both u and u^2 where u is the
+    skew-symmetric matrix corresponding to the input vectors. These are commonly
+    used together in Rodrigues' rotation formula.
 
     """
     u = _skew_symmetrize(vector_collection)
