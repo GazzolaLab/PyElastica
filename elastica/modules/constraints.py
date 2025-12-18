@@ -73,9 +73,9 @@ class Constraints(SystemCollectionProtocol):
         constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
         """
 
-        for block in self.block_systems():
+        for block in self.final_systems():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
-            if hasattr(block, "ring_rod_flag"):
+            if hasattr(block, "ring_rod_flag") and block.ring_rod_flag:
                 from elastica._synchronize_periodic_boundary import (
                     _ConstrainPeriodicBoundaries,
                 )

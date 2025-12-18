@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from elastica.rod import RodBase
 from elastica.modules.memory_block import construct_memory_block_structures
 from elastica.memory_block.memory_block_rod import MemoryBlockCosseratRod
+from elastica.systems.protocol import SystemProtocol
 
 
 class BaseRodForTesting(RodBase):
@@ -74,19 +75,38 @@ class BaseRodForTesting(RodBase):
         self.bend_matrix = rng.standard_normal() * np.ones((3, 3, self.n_voronoi))
 
 
+class BaseRodForTestingSteppable(SystemProtocol):
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None:
+        pass
+
+    def update_accelerations(self, time: np.float64) -> None:
+        pass
+
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:
+        pass
+
+
+@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
+def test_construct_memory_block_structures_for_cosserat_rod_with_non_blocking_systems(
+    n_rods,
+):
+    """
+    This test is only testing the validity of created block-structure class with non-blocking systems, using the
+    construct_memory_block_structures function.
+    """
+
+    systems = [BaseRodForTestingSteppable() for _ in range(n_rods)]
+    _, non_blocking_systems_list = construct_memory_block_structures(systems, {})
+
+    assert len(non_blocking_systems_list) == n_rods
+    assert systems == non_blocking_systems_list
+
+
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
 def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
     """
     This test is only testing the validity of created block-structure class, using the
     construct_memory_block_structures function.
-
-    Parameters
-    ----------
-    n_rods
-
-    Returns
-    -------
-
     """
 
     systems = [
@@ -96,9 +116,11 @@ def test_construct_memory_block_structures_for_cosserat_rod(n_rods):
         for _ in range(n_rods)
     ]
 
-    memory_block_list = construct_memory_block_structures(systems)
+    block_supports = {MemoryBlockCosseratRod: [BaseRodForTesting]}
+    memory_block_list, _ = construct_memory_block_structures(systems, block_supports)
 
-    assert issubclass(memory_block_list[0].__class__, MemoryBlockCosseratRod)
+    assert isinstance(memory_block_list[0], MemoryBlockCosseratRod)
+    assert len(memory_block_list) == 1
 
 
 @pytest.mark.parametrize("n_straight_rods", [0, 1, 2, 5])

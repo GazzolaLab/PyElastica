@@ -6,9 +6,9 @@ import os
 import json
 from itertools import groupby
 
-from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
+from .memory_block.protocol import BlockSystemProtocol
 
-from .typing import SystemType, SystemCollectionType
+from .typing import SystemCollectionType
 
 
 def all_equal(iterable: Iterable[Any]) -> bool:
@@ -96,7 +96,7 @@ def load_state(
     # Load system state
     for idx, system in enumerate(simulator.systems()):
         # TODO: Not exactly sure why this condition is necessary.
-        if isinstance(system, (MemoryBlockCosseratRod, MemoryBlockRigidBody)):
+        if isinstance(system, BlockSystemProtocol):
             continue
         name = system.__class__.__name__  # type: ignore
         path = os.path.join(directory, f"{name}_{idx}.npz")

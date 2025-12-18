@@ -65,7 +65,6 @@ class TestCallBacksMixin:
     class SystemCollectionWithCallBacksMixedin(BaseSystemCollection, CallBacks):
         pass
 
-    # TODO fix link after new PR
     from elastica.rod import RodBase
 
     class MockRod(RodBase):

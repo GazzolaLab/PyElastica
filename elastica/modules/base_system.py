@@ -219,10 +219,9 @@ class BaseSystemCollection(MutableSequence):
         """
         for btype in self._block_supports:
             if system_type in self._block_supports[btype]:
-                self._block_supports[btype].append(system_type)
+                self._block_supports[btype].remove(system_type)
                 break
-        else:
-            self._block_supports[block_type] = [system_type]
+        self._block_supports[block_type].append(system_type)
 
     @final
     def get_system_index(
