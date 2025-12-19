@@ -1,6 +1,9 @@
-""" Flexible swinging pendulum test-case
-    isort:skip_file
+"""Flexible swinging pendulum test-case
+isort:skip_file
 """
+
+import pickle
+from collections import defaultdict
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -20,7 +23,7 @@ PLOT_VIDEO = False
 SAVE_FIGURE = False
 SAVE_RESULTS = True
 
-# For 10 elements, the prefac is  0.0007
+# For 10 elements, the prefactor is 0.0007
 pendulum_sim = SwingingFlexiblePendulumSimulator()
 final_time = 1.0 if SAVE_RESULTS else 5.0
 
@@ -31,7 +34,6 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([1.0, 0.0, 0.0])
 base_length = 1.0
 base_radius = 0.005
-base_area = np.pi * base_radius**2
 density = 1100.0
 youngs_modulus = 5e6
 # For shear modulus of 1e4, nu is 99!
@@ -52,10 +54,9 @@ pendulum_rod = ea.CosseratRod.straight_rod(
 pendulum_sim.append(pendulum_rod)
 
 
-# Bad name : whats a FreeRod anyway?
 class HingeBC(ea.ConstraintBase):
     """
-    the end of the rod fixed x[0]
+    Hinge boundary condition that fixes the position of the first node
     """
 
     def __init__(self, fixed_position, fixed_directors, **kwargs):
@@ -63,11 +64,11 @@ class HingeBC(ea.ConstraintBase):
         self.fixed_position = np.array(fixed_position)
         self.fixed_directors = np.array(fixed_directors)
 
-    def constrain_values(self, rod, time):
-        rod.position_collection[..., 0] = self.fixed_position
+    def constrain_values(self, system, time):
+        system.position_collection[..., 0] = self.fixed_position
 
-    def constrain_rates(self, rod, time):
-        rod.velocity_collection[..., 0] = 0.0
+    def constrain_rates(self, system, time):
+        system.velocity_collection[..., 0] = 0.0
 
 
 pendulum_sim.constrain(pendulum_rod).using(
@@ -81,14 +82,14 @@ pendulum_sim.add_forcing_to(pendulum_rod).using(
 )
 
 
-# Add call backs
+# Add callbacks
 class PendulumCallBack(ea.CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Callback function for flexible swinging pendulum
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -112,7 +113,7 @@ dt = (0.0007 if SAVE_RESULTS else 0.002) * dl
 total_steps = int(final_time / dt)
 
 print("Total steps", total_steps)
-recorded_history = ea.defaultdict(list)
+recorded_history = defaultdict(list)
 step_skip = (
     60
     if PLOT_VIDEO
@@ -126,7 +127,9 @@ pendulum_sim.finalize()
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
-ea.integrate(timestepper, pendulum_sim, final_time, total_steps)
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(pendulum_sim, time, dt)
 
 if PLOT_VIDEO:
 
@@ -164,13 +167,12 @@ if PLOT_VIDEO:
         ax.set_xlim([-1.0 - margin, 1.0 + margin])
         ax.set_ylim([-1.0 - margin, 0.0 + margin])
         with writer.saving(fig, video_name, dpi):
-            with plt.style.context("seaborn-white"):
-                for i in range(0, positions.shape[0], int(step)):
-                    rod_line.set_xdata([positions[i, 2]])
-                    rod_line.set_ydata([positions[i, 0]])
-                    tip_line.set_xdata([positions[:i, 2, -1]])
-                    tip_line.set_ydata([positions[:i, 0, -1]])
-                    writer.grab_frame()
+            for i in range(0, positions.shape[0], int(step)):
+                rod_line.set_xdata([positions[i, 2]])
+                rod_line.set_ydata([positions[i, 0]])
+                tip_line.set_xdata([positions[:i, 2, -1]])
+                tip_line.set_ydata([positions[:i, 0, -1]])
+                writer.grab_frame()
 
     plot_video(recorded_history, "swinging_flexible_pendulum.mp4")
 
@@ -186,8 +188,6 @@ if PLOT_FIGURE:
     plt.show()
 
 if SAVE_RESULTS:
-    import pickle as pickle
-
     filename = "flexible_swinging_pendulum.dat"
     with open(filename, "wb") as file:
         pickle.dump(recorded_history, file)

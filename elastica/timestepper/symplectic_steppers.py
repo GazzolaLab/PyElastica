@@ -66,11 +66,15 @@ class SymplecticStepperMixin:
     def step(
         self: SymplecticStepperProtocol,
         SystemCollection: SystemCollectionType,
-        time: np.float64,
-        dt: np.float64,
+        time: np.float64 | float,
+        dt: np.float64 | float,
     ) -> np.float64:
         return SymplecticStepperMixin.do_step(
-            self, self.steps_and_prefactors, SystemCollection, time, dt
+            self,
+            self.steps_and_prefactors,
+            SystemCollection,
+            np.float64(time),
+            np.float64(dt),
         )
 
     # TODO: Merge with .step method in the future.
@@ -94,7 +98,7 @@ class SymplecticStepperMixin:
         """
         for kin_prefactor, kin_step, dyn_step in steps_and_prefactors[:-1]:
 
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 kin_step(system, time, dt)
 
             time += kin_prefactor(dt)
@@ -103,14 +107,14 @@ class SymplecticStepperMixin:
             SystemCollection.constrain_values(time)
 
             # We need internal forces and torques because they are used by interaction module.
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 system.compute_internal_forces_and_torques(time)
                 # system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)
 
-            for system in SystemCollection.block_systems():
+            for system in SystemCollection.final_systems():
                 dyn_step(system, time, dt)
 
             # Constrain only rates
@@ -120,7 +124,7 @@ class SymplecticStepperMixin:
         last_kin_prefactor = steps_and_prefactors[-1][0]
         last_kin_step = steps_and_prefactors[-1][1]
 
-        for system in SystemCollection.block_systems():
+        for system in SystemCollection.final_systems():
             last_kin_step(system, time, dt)
         time += last_kin_prefactor(dt)
         SystemCollection.constrain_values(time)
@@ -129,7 +133,7 @@ class SymplecticStepperMixin:
         SystemCollection.apply_callbacks(time, round(time / dt))
 
         # Zero out the external forces and torques
-        for system in SystemCollection.block_systems():
+        for system in SystemCollection.final_systems():
             system.zeroed_out_external_forces_and_torques(time)
 
         return time
@@ -186,8 +190,8 @@ class PositionVerlet(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
 
     def _first_dynamic_step(
@@ -246,8 +250,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
@@ -273,8 +277,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
@@ -301,8 +305,8 @@ class PEFRL(SymplecticStepperMixin):
             prefac,
             System.kinematic_states.position_collection,
             System.kinematic_states.director_collection,
-            System.velocity_collection,
-            System.omega_collection,
+            System.dynamic_states.velocity_collection,
+            System.dynamic_states.omega_collection,
         )
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 

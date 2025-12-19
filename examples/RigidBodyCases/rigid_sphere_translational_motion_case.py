@@ -1,6 +1,7 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.FrictionValidationCases.friction_validation_postprocessing import (
+from friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -31,7 +32,7 @@ def rigid_sphere_translational_motion_verification(force=0.0):
     # setting up test params
     density = 1000
     sphere_radius = 0.05
-    sphere = ea.Sphere([0.0, sphere_radius, 0.0], sphere_radius, density)
+    sphere = ea.Sphere(np.array([0.0, sphere_radius, 0.0]), sphere_radius, density)
 
     rigid_sphere_sim.append(sphere)
 
@@ -54,32 +55,28 @@ def rigid_sphere_translational_motion_verification(force=0.0):
         direction=np.array([0.0, -1.0, 0.0]).reshape(3, 1),
     )
 
-    # Add call backs
+    # Add callbacks
     class RigidSphereCallBack(ea.CallBackBaseClass):
         """
-        Call back function
+        Callback function
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
         def make_callback(self, system, time, current_step: int):
             if current_step % self.every == 0:
                 self.callback_params["time"].append(time)
-                self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
-                )
-                self.callback_params["velocity"].append(
-                    system.velocity_collection.copy()
                 )
 
             return
 
     step_skip = 200
-    pp_list = ea.defaultdict(list)
+    pp_list = defaultdict(list)
     rigid_sphere_sim.collect_diagnostics(sphere).using(
         RigidSphereCallBack, step_skip=step_skip, callback_params=pp_list
     )
@@ -91,7 +88,9 @@ def rigid_sphere_translational_motion_verification(force=0.0):
     dt = 4.0e-5
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(timestepper, rigid_sphere_sim, final_time, total_steps)
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rigid_sphere_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = sphere.compute_translational_energy()

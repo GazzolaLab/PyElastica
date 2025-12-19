@@ -65,6 +65,9 @@ class TestDynamicState:
         for k in range(blocksize + 1):
             self.rate_collection[:, k] = state
         self.n_kinematic_rates = blocksize
+        # velocity and omega are accessed via dynamic_states by the stepper
+        self.velocity_collection = self.rate_collection[..., 0].reshape(3, 1)
+        self.omega_collection = self.rate_collection[..., 1].reshape(3, 1)
 
 
 # class BaseLinearStatefulSystem:
@@ -216,7 +219,8 @@ class DampedSimpleHarmonicOscillatorSystem(
 #         self.initial_value = np.tile(
 #             np.eye(3, 3).reshape(3, 3, 1), n_frames
 #         )  # Start aligned initially
-#         self.omega = np.random.randn(3, n_frames)  # Randomly rotate frames
+#         rng = np.random.default_rng(42)  # Fixed seed for test reproducibility
+#         self.omega = rng.standard_normal((3, n_frames))  # Randomly rotate frames
 #         # self.omega /= np.norm(self.omega, ord=2, axis=0)
 #         self._state = self.initial_value.copy()
 #
@@ -299,22 +303,22 @@ class CollectiveSystem:
     """This collective system class is to test multiple memory structure blocks."""
 
     def __init__(self):
-        self._memory_blocks = []
+        self._final_systems = []
 
     def systems(self):
-        return self._memory_blocks
+        return self._final_systems
 
-    def block_systems(self):
-        return self._memory_blocks
+    def final_systems(self):
+        return self._final_systems
 
     def __getitem__(self, idx):
-        return self._memory_blocks[idx]
+        return self._final_systems[idx]
 
     def __len__(self):
-        return len(self._memory_blocks)
+        return len(self._final_systems)
 
     def __iter__(self):
-        return self._memory_blocks.__iter__()
+        return self._final_systems.__iter__()
 
     def synchronize(self, time):
         pass
@@ -332,12 +336,12 @@ class CollectiveSystem:
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
         super(SymplecticUndampedHarmonicOscillatorCollectiveSystem, self).__init__()
-        self._memory_blocks.append(
+        self._final_systems.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])
             )
         )
-        self._memory_blocks.append(
+        self._final_systems.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=1.0 * np.pi, init_val=np.array([0.0, 0.5])
             )
@@ -349,8 +353,8 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         super(
             ScalarExponentialDampedHarmonicOscillatorCollectiveSystem, self
         ).__init__()
-        self._memory_blocks.append(ScalarExponentialDecaySystem())
-        self._memory_blocks.append(DampedSimpleHarmonicOscillatorSystem())
+        self._final_systems.append(ScalarExponentialDecaySystem())
+        self._final_systems.append(DampedSimpleHarmonicOscillatorSystem())
 
 
 def make_simple_system_with_positions_directors(

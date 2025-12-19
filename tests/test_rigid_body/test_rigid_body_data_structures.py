@@ -3,6 +3,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
+
+
 from elastica.rigidbody.data_structures import _RigidRodSymplecticStepperMixin
 from elastica._rotations import _rotate
 from elastica.timestepper.symplectic_steppers import (
@@ -108,7 +110,7 @@ class TestSteppersAgainstRigidBodyLikeSystems:
     #     )
     #
     #     rod_like_system = SimpleSystemWithPositionsDirectors(
-    #         np.array([0.0, 0.0, 0.0]), np.random.randn(3, 3, 1)
+    #         np.array([0.0, 0.0, 0.0]), rng.standard_normal(3, 3, 1)
     #     )
     #     final_time = 1.0
     #     n_steps = 500
@@ -124,10 +126,12 @@ class TestSteppersAgainstRigidBodyLikeSystems:
     #     )
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
-    def test_symplectics_against_ellipse_motion_with_numba(self, symplectic_stepper):
+    def test_symplectics_against_ellipse_motion_with_numba(
+        self, rng, symplectic_stepper
+    ):
 
-        random_start_position = np.random.randn(3, 1)
-        random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+        random_start_position = rng.standard_normal(size=(3, 1))
+        random_directors, _ = np.linalg.qr(rng.standard_normal(size=(3, 3)))
         random_directors = random_directors.reshape(3, 3, 1)
 
         rod_like_system = make_simple_system_with_positions_directors(
@@ -176,8 +180,8 @@ class TestSteppersAgainstRigidBodyLikeSystems:
 #         from elastica.timestepper.symplectic_steppers import PositionVerlet
 #         from elastica.timestepper import integrate
 #
-#         random_start_position = np.random.randn(3, 1)
-#         random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+#         random_start_position = rng.standard_normal(3, 1)
+#         random_directors, _ = np.linalg.qr(rng.standard_normal(3, 3))
 #         random_directors = random_directors.reshape(3, 3, 1)
 #
 #         rod_like_system = make_simple_system_with_positions_directors(
@@ -231,8 +235,8 @@ class TestSteppersAgainstRigidBodyLikeSystems:
 #         from elastica.timestepper.symplectic_steppers import PEFRL
 #         from elastica.timestepper import integrate
 #
-#         random_start_position = np.random.randn(3, 1)
-#         random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+#         random_start_position = rng.standard_normal(3, 1)
+#         random_directors, _ = np.linalg.qr(rng.standard_normal(3, 3))
 #         random_directors = random_directors.reshape(3, 3, 1)
 #
 #         rod_like_system = make_simple_system_with_positions_directors(

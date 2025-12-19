@@ -5,6 +5,7 @@ Constraints
 
 .. automodule::  elastica.boundary_conditions
 
+
 Description
 -----------
 
@@ -21,8 +22,6 @@ Constraints are equivalent to displacement boundary condition.
    GeneralConstraint
    FixedConstraint
    HelicalBucklingBC
-   FreeRod
-   OneEndFixedRod
 
 Compatibility
 ~~~~~~~~~~~~~
@@ -72,7 +71,3 @@ Built-in Constraints
 
 .. autoclass:: HelicalBucklingBC
    :special-members: __init__
-
-.. autoclass:: FreeRod
-
-.. autoclass:: OneEndFixedRod

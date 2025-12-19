@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 from elastica.utils import MaxDimension
 
 from mock_rod import MockTestRod
@@ -16,8 +17,6 @@ from elastica.rod.knot_theory import (
     _compute_additional_segment,
 )
 
-from elastica.rod.protocol import CosseratRodProtocol
-
 
 @pytest.fixture
 def knot_theory():
@@ -26,18 +25,11 @@ def knot_theory():
     return knot_theory
 
 
-def test_knot_theory_protocol():
-    # To clear the protocol test coverage
-    with pytest.raises(TypeError) as e_info:
-        protocol = CosseratRodProtocol()
-        assert "cannot be instantiated" in e_info
-
-
-def test_knot_theory_mixin_methods(knot_theory):
+def test_knot_theory_mixin_methods(rng, knot_theory):
     class TestRodWithKnotTheory(MockTestRod, knot_theory.KnotTheory):
         def __init__(self):
             super().__init__()
-            self.radius = np.random.randn(MaxDimension.value(), self.n_elems)
+            self.radius = rng.standard_normal((MaxDimension.value(), self.n_elems))
 
     rod = TestRodWithKnotTheory()
     assert hasattr(
@@ -182,9 +174,14 @@ def test_knot_theory_compute_additional_segment_integrity(type_str):
 def test_knot_theory_compute_additional_segment_straight_case(
     n_elem, segment_length, type_str
 ):
-    # If straight rod give, result should be same regardless of type
-    center_line = np.zeros([1, 3, n_elem])
+    # If straight rod give, result should be same regardless of type and time steps
+    center_line = np.zeros([2, 3, n_elem])
     center_line[0, 2, :] = np.linspace(0, 5, n_elem)
+
+    # adding a sine curve to second time step to ensure it does not affect straight case
+    center_line[1, 1, :] = np.sin(np.linspace(0, 5, n_elem))
+    center_line[1, 2, :] = np.cos(np.linspace(0, 5, n_elem))
+
     ncl, bd, ed = _compute_additional_segment(center_line, segment_length, type_str)
     assert_allclose(ncl[0, :, 0], np.array([0, 0, -segment_length]))
     assert_allclose(
@@ -250,9 +247,9 @@ def test_knot_theory_compute_additional_segment_net_tangent_case():
 @pytest.mark.parametrize("n_elem", [1, 3, 8])
 @pytest.mark.parametrize("segment_length", [1.0, 10.0, 100.0])
 def test_knot_theory_compute_additional_segment_none_case(
-    timesteps, n_elem, segment_length
+    rng, timesteps, n_elem, segment_length
 ):
-    center_line = np.random.random([timesteps, 3, n_elem])
+    center_line = rng.random([timesteps, 3, n_elem])
     new_center_line, beginning_direction, end_direction = _compute_additional_segment(
         center_line, segment_length, None
     )

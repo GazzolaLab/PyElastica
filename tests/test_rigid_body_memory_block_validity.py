@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 from elastica.memory_block.memory_block_rigid_body import MemoryBlockRigidBody
 import pytest
 from elastica.utils import Tolerance
@@ -8,25 +9,26 @@ from elastica.utils import Tolerance
 
 class MockRigidBody:
     def __init__(self):
+        rng = np.random.default_rng(42)
 
-        self.radius = np.random.randn()
-        self.length = np.random.randn()
-        self.density = np.random.randn()
-        self.volume = np.random.randn()
-        self.mass = np.random.randn()
+        self.radius = rng.standard_normal()
+        self.length = rng.standard_normal()
+        self.density = rng.standard_normal()
+        self.volume = rng.standard_normal()
+        self.mass = rng.standard_normal()
 
-        self.position_collection = np.random.randn(3, 1)
-        self.velocity_collection = np.random.randn(3, 1)
-        self.acceleration_collection = np.random.randn(3, 1)
-        self.omega_collection = np.random.randn(3, 1)
-        self.alpha_collection = np.random.randn(3, 1)
-        self.director_collection = np.random.randn(3, 3, 1)
+        self.position_collection = rng.standard_normal(size=(3, 1))
+        self.velocity_collection = rng.standard_normal(size=(3, 1))
+        self.acceleration_collection = rng.standard_normal(size=(3, 1))
+        self.omega_collection = rng.standard_normal(size=(3, 1))
+        self.alpha_collection = rng.standard_normal(size=(3, 1))
+        self.director_collection = rng.standard_normal(size=(3, 3, 1))
 
-        self.external_forces = np.random.randn(3, 1)
-        self.external_torques = np.random.randn(3, 1)
+        self.external_forces = rng.standard_normal(size=(3, 1))
+        self.external_torques = rng.standard_normal(size=(3, 1))
 
-        self.mass_second_moment_of_inertia = np.random.randn(3, 3, 1)
-        self.inv_mass_second_moment_of_inertia = np.random.randn(3, 3, 1)
+        self.mass_second_moment_of_inertia = rng.standard_normal(size=(3, 3, 1))
+        self.inv_mass_second_moment_of_inertia = rng.standard_normal(size=(3, 3, 1))
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])

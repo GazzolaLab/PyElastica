@@ -24,9 +24,9 @@ def test_damper_base():
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
 
-        def dampen_rates(self, rod, time):
-            rod.velocity_collection *= time
-            rod.omega_collection *= time
+        def dampen_rates(self, system, time):
+            system.velocity_collection *= time
+            system.omega_collection *= time
 
     test_damper = TestDamper(_system=test_rod)
     test_damper.dampen_rates(test_rod, np.float64(2.0))
@@ -43,7 +43,7 @@ def test_damper_base_properties_access():
             # Able to access properties in constraint class
             assert self._system == test_rod
 
-        def dampen_rates(self, rod, time):
+        def dampen_rates(self, system, time):
             assert self._system == test_rod
 
     test_damper = TestDamper(_system=test_rod)
@@ -102,7 +102,7 @@ def test_analytical_linear_damper_error(analytical_error_message):
                     )
 
 
-def test_analytical_linear_damper_deprecated():
+def test_analytical_linear_damper_deprecated(rng):
     test_rod = MockTestRod()
     test_rod.mass[:] = 1.0
     test_dilatation = 2.0 * np.ones((3, test_rod.n_elems))
@@ -127,11 +127,11 @@ def test_analytical_linear_damper_deprecated():
     ref_rotational_damping_coefficient[:, 0] = np.exp(-0.25 * 0.5 * 1.5 * 3.0)
     ref_rotational_damping_coefficient[:, -1] = np.exp(-0.25 * 0.5 * 1.5 * 3.0)
 
-    pre_damping_velocity_collection = np.random.rand(3, test_rod.n_elems + 1)
+    pre_damping_velocity_collection = rng.random((3, test_rod.n_elems + 1))
     test_rod.velocity_collection = (
         pre_damping_velocity_collection.copy()
     )  # We need copy of the list not a reference to this array
-    pre_damping_omega_collection = np.random.rand(3, test_rod.n_elems)
+    pre_damping_omega_collection = rng.random((3, test_rod.n_elems))
     test_rod.omega_collection = (
         pre_damping_omega_collection.copy()
     )  # We need copy of the list not a reference to this array

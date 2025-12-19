@@ -632,7 +632,7 @@ class TestingClass:
             test_rod.internal_torques, correct_shear_torques, atol=Tolerance.atol()
         )
 
-    def test_case_lagrange_transport_unsteady_dilatation(self):
+    def test_case_lagrange_transport_unsteady_dilatation(self, rng):
         """
         In this test case, we initialize a straight rod. Then we modify
         angular velocity of elements and set mass moment of inertia
@@ -703,7 +703,7 @@ class TestingClass:
         # Make sure shape of the random vector correct
         omega = np.zeros(3 * n_elem).reshape(3, n_elem)
         for i in range(0, n_elem):
-            omega[..., i] = np.random.rand(3)
+            omega[..., i] = rng.random(3)
 
         test_rod.omega_collection = omega
         _compute_internal_torques(
@@ -807,7 +807,7 @@ class TestingClass:
         test_rod.compute_internal_forces_and_torques(time=0)
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_update_acceleration(self, n_elem):
+    def test_update_acceleration(self, n_elem, rng):
         """
         In this test case, we initialize a straight rod.
         We set correct parameters for rod mass, dilatation, mass moment of inertia
@@ -826,10 +826,10 @@ class TestingClass:
         external_torques = np.zeros(3 * n_elem).reshape(3, n_elem)
 
         for i in range(0, n_elem):
-            external_torques[..., i] = np.random.rand(3)
+            external_torques[..., i] = rng.random(3)
 
         for i in range(0, n_elem + 1):
-            external_forces[..., i] = np.random.rand(3)
+            external_forces[..., i] = rng.random(3)
 
         test_rod.external_forces[:] = external_forces
         test_rod.external_torques[:] = external_torques
@@ -943,7 +943,7 @@ class TestingClass:
         assert_allclose(output_energy, input_energy, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_velocity_center_of_mass(self, n_elem):
+    def test_case_compute_velocity_center_of_mass(self, n_elem, rng):
         """
         This function tests compute velocity center of mass function. We initialize a
         random velocity vector and copy this vector to velocity_collection array. We call
@@ -959,7 +959,7 @@ class TestingClass:
 
         """
 
-        correct_velocity = np.random.rand(3) / (n_elem + 1)
+        correct_velocity = rng.random(3) / (n_elem + 1)
 
         initial, test_rod = constructor(n_elem)
 
@@ -969,7 +969,7 @@ class TestingClass:
         assert_allclose(output_velocity, correct_velocity, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("n_elem", [2, 3, 5, 10, 20])
-    def test_case_compute_position_center_of_mass(self, n_elem):
+    def test_case_compute_position_center_of_mass(self, n_elem, rng):
         """
         This function tests compute position center of mass function. We initialize a
         random position vector and copy this vector to position_collection array. We call
@@ -985,7 +985,7 @@ class TestingClass:
 
         """
 
-        correct_position = np.random.rand(3) / (n_elem + 1)
+        correct_position = rng.random(3) / (n_elem + 1)
 
         initial, test_rod = constructor(n_elem)
 

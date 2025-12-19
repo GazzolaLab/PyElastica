@@ -9,7 +9,7 @@ Rigid Body
 | Sphere   |    |
 +----------+----+
 
-.. automodule:: elastica.rigidbody.rigid_body
+.. automodule:: elastica.rigidbody.rigid_body_base
    :members:
    :exclude-members: __weakref__, update_acceleration, zeroed_out_external_forces_and_torques
 

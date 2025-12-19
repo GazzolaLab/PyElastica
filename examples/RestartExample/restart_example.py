@@ -1,7 +1,8 @@
 """
-This script is an example to how to use Pyelastica restart functionality.
+This script is an example of how to use PyElastica restart functionality.
 """
 
+import os
 import numpy as np
 import elastica as ea
 
@@ -22,7 +23,6 @@ direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_length = 3.0
 base_radius = 0.25
-base_area = np.pi * base_radius**2
 density = 5000
 E = 1e6
 # For shear modulus of 1e4, nu is 99!
@@ -83,17 +83,13 @@ else:
 
 timestepper = ea.PositionVerlet()
 total_steps = int(final_time / dt)
-
-time = ea.integrate(
-    timestepper,
-    restart_example_simulator,
-    final_time,
-    total_steps,
-    restart_time=restart_time,
-)
+time = restart_time
+for i in range(total_steps):
+    time = timestepper.step(restart_example_simulator, time, dt)
 
 # Save all the systems appended on the simulator class. Since in this example have only one system, under the
 # `restart_file_location` directory there is one file called system_0.npz . For each system appended on the simulator
 # separate system_#.npz file will be created.
 if SAVE_DATA_RESTART:
+    os.makedirs(restart_file_location, exist_ok=True)
     ea.save_state(restart_example_simulator, restart_file_location, time, True)

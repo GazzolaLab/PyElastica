@@ -6,7 +6,7 @@ When using PyElastica, users will setup a simulation in which they define a syst
 **A note on notation:** Like other FEA packages such as Abaqus, PyElastica does not enforce units. This means that you are required to make sure that all units for your input variables are consistent. When in doubt, SI units are always safe, however, if you have a very small length scale ($\sim$ nm), then you may need to rescale your units to avoid needing prohibitively small time steps and/or roundoff errors.
 :::
 
-<h2>1. Setup Simulation</h2>
+## 1. Setup Simulation
 
 ```python
 from elastica.modules import (
@@ -38,15 +38,15 @@ Available components are:
 | [Constraints](../api/constraints.rst) |                                 |
 | [Forcing](../api/external_forces.rst) |                                 |
 | [Connections](../api/connections.rst) |                                 |
-|   [CallBacks](../api/callback.rst)    |                                 |
-|     [Damping](../api/damping.rst)     |                                 |
+| [CallBacks](../api/callback.rst)      |                                 |
+| [Damping](../api/damping.rst)         |                                 |
 
 :::{Note}
 We adopted a composition and mixin design paradigm in building elastica. The detail of the implementation is not important in using the package, but we left some references to read [here](../advanced/PackageDesign.md).
 :::
 
 
-<h2>2. Create Rods</h2>
+## 2. Create Rods
 Each rod has a number of physical parameters that need to be defined. These values then need to be assigned to the rod to create the object, and the rod needs to be added to the simulator.
 
 ```python
@@ -92,7 +92,7 @@ This can be repeated to create multiple rods. Supported geometries are listed in
 The number of element (`n_elements`) and `base_length` determines the spatial discretization `dx`. More detail discussion is included [here](discretization.md).
 :::
 
-<h2>3.a Define Boundary Conditions, Forcings, and Connections</h2>
+## 3.a Define Boundary Conditions, Forcings, and Connections
 
 Now that we have added all our rods to `simulator`, we
 need to apply relevant boundary conditions.
@@ -153,7 +153,7 @@ Version 0.3.3: The order of the operation is defined by the order of the definit
 For example, friction should be defined after contact, since contact will define the normal force applied to the surface, which friction depends on. Contact should be defined before any other boundary conditions, since aggregated normal force is used to calculate the repelling force.
 :::
 
-<h2>3.b Define Damping </h2>
+## 3.b Define Damping
 
 Next, if required, in order to numerically stabilize the simulation,
 we can apply damping to the rods.
@@ -178,7 +178,7 @@ simulator.dampen(rod2).using(
 )
 ```
 
-<h2>4. Add Callback Functions (optional)</h2>
+## 4. Add Callback Functions (optional)
 
 If you want to know what happens to the rod during the course of the simulation, you must collect data during the simulation. Here, we demonstrate how the callback function can be defined to export the data you need. There is a base class `CallBackBaseClass` that can help with this.
 
@@ -220,7 +220,33 @@ simulator.collect_diagnostics(rod2).using(
 
 You can define different callback functions for different rods and also have different data outputted at different time step intervals depending on your needs. See [this page](../api/callback.rst) for more in-depth documentation.
 
-<h2>5. Finalize Simulator</h2>
+:::{note}
+During setting up callbacks, `.collect_diagnostics` can take python-collection (list, dict, tuple) of rods/systems:
+```python
+...
+    def make_callback(self, system, time, current_step):
+        rod1 = system[key1]
+        rod2 = system[key2]
+...
+simulator.collect_diagnostics({key1: rod1, key2: rod2}).using(
+    # custom callback class
+)
+```
+to handle data from multiple rods at the same time.
+Additionally, you can pass ellipsis (...) to collect data from all rods/systems in the simulator.
+```python
+...
+    def make_callback(self, system, time, current_step):
+        for rod in system:
+            pass
+...
+simulator.collect_diagnostics(...).using(
+    # custom callback class
+)
+```
+:::
+
+## 5. Finalize Simulator
 
 Now that we have finished defining our rods, the different boundary conditions and connections between them, and how often we want to save data, we have finished setting up the simulation. We now need to finalize the simulator by calling
 
@@ -230,24 +256,30 @@ simulator.finalize()
 
 This goes through and collects all the rods and applied conditions, preparing the system for the simulation.
 
-<h2>6. Set Timestepper</h2>
+## 6. Set Timestepper
 
-With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation by calling `integrate()`, which will start the simulation.
+With our system now ready to be run, we need to define which time stepping algorithm to use. Currently, we suggest using the Position Verlet algorithm. We also need to define how much time we want to simulate as well as either the time step (dt) or the number of total time steps we want to take. Once we have defined these things, we can run the simulation using an a timestepper loop.
 
->> We are still actively testing different integration and time-stepping techniques, `PositionVerlet` is the best default at this moment.
+:::{note}
+We are still actively testing different integration and time-stepping techniques, `PositionVerlet` is the best default at this moment.
+:::
 
 ```python
 from elastica.timestepper.symplectic_steppers import PositionVerlet
-from elastica.timestepper import integrate
 
 timestepper = PositionVerlet()
 final_time = 10   # seconds
 total_steps = int(final_time / dt)
-integrate(timestepper, simulator, final_time, total_steps)
+
+# Timestepper loop
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(simulator, time, dt)
 ```
 
 More documentation on timestepper and integrator is included [here](../api/time_steppers.rst)
 
-<h2>7. Post Process</h2>
+## 7. Post Process
 
 Once the simulation ends, it is time to analyze the data. If you defined a callback function, the data you outputted in available there (i.e. `callback_data_rod1`), otherwise you can access the final configuration of your system through your rod objects. For example, if you want the final position of one of your rods, you can get it from `rod1.position_collection[:]`.

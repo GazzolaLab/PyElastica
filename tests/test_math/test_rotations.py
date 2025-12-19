@@ -3,19 +3,26 @@ __doc__ = """ Test scripts for rotation kernels in Elastica Numba implementation
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-import sys
 
 from elastica._rotations import (
     _get_rotation_matrix,
     _rotate,
     _inv_rotate,
+    get_relative_rotation_two_systems,
 )
 
 from elastica.utils import Tolerance
 
 
-@pytest.mark.parametrize("zcomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+class MockRod:
+    """Mock rod class with only director_collection attribute for testing."""
+
+    def __init__(self, director_collection):
+        self.director_collection = director_collection
+
+
+@pytest.mark.parametrize("zcomp", [0.5, 1.0])
+@pytest.mark.parametrize("dt", [0.3, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     vector_collection = np.array([0.0, 0.0, zcomp]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -39,8 +46,8 @@ def test_get_rotation_matrix_correct_rotation_about_z(zcomp, dt):
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
-@pytest.mark.parametrize("ycomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("ycomp", [0.7, 1.0])
+@pytest.mark.parametrize("dt", [0.4, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     vector_collection = np.array([0.0, ycomp, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -58,8 +65,8 @@ def test_get_rotation_matrix_correct_rotation_about_y(ycomp, dt):
     assert_allclose(test_rot_mat, correct_rot_mat, atol=Tolerance.atol())
 
 
-@pytest.mark.parametrize("xcomp", [np.random.random_sample(), 1.0])
-@pytest.mark.parametrize("dt", [np.random.random_sample(), 1.0])
+@pytest.mark.parametrize("xcomp", [0.6, 1.0])
+@pytest.mark.parametrize("dt", [0.2, 1.0])
 def test_get_rotation_matrix_correct_rotation_about_x(xcomp, dt):
     vector_collection = np.array([xcomp, 0.0, 0.0]).reshape(-1, 1)
     test_rot_mat = _get_rotation_matrix(dt, vector_collection)
@@ -137,10 +144,10 @@ def test_get_rotation_matrix_correctness_against_canned_example():
 
 
 @pytest.mark.parametrize("blocksize", [32, 128, 512])
-def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
+def test_get_rotation_matrix_correctness_across_blocksizes(blocksize, rng):
     dim = 3
-    dt = np.random.random_sample()
-    vector_collection = np.random.randn(dim).reshape(-1, 1)
+    dt = rng.random()
+    vector_collection = rng.standard_normal(dim).reshape(-1, 1)
     # No need for copying the vector collection here, as we now create
     # new arrays inside
     correct_rot_mat_collection = _get_rotation_matrix(dt, vector_collection)
@@ -154,11 +161,11 @@ def test_get_rotation_matrix_correctness_across_blocksizes(blocksize):
     assert_allclose(test_rot_mat_collection, correct_rot_mat_collection)
 
 
-def test_get_rotation_matrix_gives_orthonormal_matrices():
+def test_get_rotation_matrix_gives_orthonormal_matrices(rng):
     dim = 3
     blocksize = 16
-    dt = np.random.random_sample()
-    rot_mat = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
+    dt = rng.random()
+    rot_mat = _get_rotation_matrix(dt, rng.standard_normal((dim, blocksize)))
 
     r_rt = np.einsum("ijk,ljk->ilk", rot_mat, rot_mat)
     rt_r = np.einsum("jik,jlk->ilk", rot_mat, rot_mat)
@@ -169,11 +176,13 @@ def test_get_rotation_matrix_gives_orthonormal_matrices():
     assert_allclose(rt_r, test_mat, atol=Tolerance.atol())
 
 
-def test_get_rotation_matrix_gives_unit_determinant():
+def test_get_rotation_matrix_gives_unit_determinant(rng):
     dim = 3
     blocksize = 16
-    dt = np.random.random_sample()
-    test_rot_mat_collection = _get_rotation_matrix(dt, np.random.randn(dim, blocksize))
+    dt = rng.random()
+    test_rot_mat_collection = _get_rotation_matrix(
+        dt, rng.standard_normal((dim, blocksize))
+    )
 
     test_det_collection = np.linalg.det(test_rot_mat_collection.T)
     correct_det_collection = 1.0 + 0.0 * test_det_collection
@@ -374,13 +383,148 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_direc
     assert_allclose(test_scaling, 0.0 * test_scaling + dtheta_di, atol=Tolerance.atol())
 
 
-###############################################################################
-##################### Implementation tests finis ##############################
-###############################################################################
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        exec(sys.argv[1])
-    else:
-        from pytest import main
+def test_get_relative_rotation_two_systems_identity():
+    """Test that two rods with identical orientations give identity rotation matrix."""
+    # Create two mock rods with same orientation (identity rotation matrices)
+    n = 4
+    identity_director = np.eye(3)
+    director_collection = np.tile(identity_director[..., np.newaxis], (1, 1, n + 1))
 
-        main([__file__])
+    rod1 = MockRod(director_collection)
+    rod2 = MockRod(director_collection.copy())
+
+    # Test with different indices
+    rel_rot = get_relative_rotation_two_systems(rod1, 0, rod2, 0)
+    rel_rot_end = get_relative_rotation_two_systems(rod1, -1, rod2, -1)
+
+    # Should be identity matrix (or very close to it)
+    identity = np.eye(3)
+    assert rel_rot.shape == (3, 3)
+    assert_allclose(rel_rot, identity, atol=Tolerance.atol())
+    assert_allclose(rel_rot_end, identity, atol=Tolerance.atol())
+
+
+def test_get_relative_rotation_two_systems_known_rotation():
+    """Test with rods rotated by a known angle."""
+    n = 4
+
+    # First rod: identity rotation (aligned with standard axes)
+    director1 = np.eye(3)
+    director_collection1 = np.tile(director1[..., np.newaxis], (1, 1, n + 1))
+    rod1 = MockRod(director_collection1)
+
+    # Second rod: rotated 90 degrees about z-axis
+    # Rotation matrix for 90 degrees about z-axis
+    director2 = np.array(
+        [
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    director_collection2 = np.tile(director2[..., np.newaxis], (1, 1, n + 1))
+    rod2 = MockRod(director_collection2)
+
+    rel_rot = get_relative_rotation_two_systems(rod1, 0, rod2, 0)
+
+    # Expected rotation matrix: Since rel_rot = director1 @ director2.T
+    # and director1 = I, we get director2.T
+    # director2 is a 90-degree rotation about z-axis, so director2.T is:
+    expected_rot = np.array(
+        [
+            [0.0, -1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+
+    assert rel_rot.shape == (3, 3)
+    assert_allclose(rel_rot, expected_rot, atol=Tolerance.atol())
+
+
+def test_get_relative_rotation_two_systems_properties():
+    """Test that the relative rotation matrix has proper rotation matrix properties."""
+    n = 4
+
+    # First rod: identity rotation
+    director1 = np.eye(3)
+    director_collection1 = np.tile(director1[..., np.newaxis], (1, 1, n + 1))
+    rod1 = MockRod(director_collection1)
+
+    # Second rod: rotated 90 degrees about z-axis
+    director2 = np.array(
+        [
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    director_collection2 = np.tile(director2[..., np.newaxis], (1, 1, n + 1))
+    rod2 = MockRod(director_collection2)
+
+    rel_rot = get_relative_rotation_two_systems(rod1, 0, rod2, 0)
+
+    # Check orthogonality: R @ R.T should be identity
+    r_rt = rel_rot @ rel_rot.T
+    rt_r = rel_rot.T @ rel_rot
+    identity = np.eye(3)
+
+    assert_allclose(r_rt, identity, atol=Tolerance.atol())
+    assert_allclose(rt_r, identity, atol=Tolerance.atol())
+
+    # Check determinant is 1 (for proper rotation)
+    det = np.linalg.det(rel_rot)
+    assert_allclose(det, 1.0, atol=Tolerance.atol())
+
+
+@pytest.mark.parametrize("index1", [0, -1, 2])
+@pytest.mark.parametrize("index2", [0, -1, 1])
+def test_get_relative_rotation_two_systems_different_indices(index1, index2):
+    """Test function with different index combinations."""
+    n = 4
+
+    # Create mock rods with identity rotations
+    director = np.eye(3)
+    director_collection = np.tile(director[..., np.newaxis], (1, 1, n + 1))
+
+    rod1 = MockRod(director_collection)
+    rod2 = MockRod(director_collection.copy())
+
+    rel_rot = get_relative_rotation_two_systems(rod1, index1, rod2, index2)
+
+    # Should always return a 3x3 matrix
+    assert rel_rot.shape == (3, 3)
+
+    # Should be a valid rotation matrix
+    r_rt = rel_rot @ rel_rot.T
+    assert_allclose(r_rt, np.eye(3), atol=Tolerance.atol())
+    assert_allclose(np.linalg.det(rel_rot), 1.0, atol=Tolerance.atol())
+
+
+def test_get_relative_rotation_two_systems_inverse_relationship():
+    """Test that rel_rot(system1, system2) is the inverse of rel_rot(system2, system1)."""
+    n = 4
+
+    # First rod: identity rotation
+    director1 = np.eye(3)
+    director_collection1 = np.tile(director1[..., np.newaxis], (1, 1, n + 1))
+    rod1 = MockRod(director_collection1)
+
+    # Second rod: rotated 90 degrees about z-axis
+    director2 = np.array(
+        [
+            [0.0, 1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    director_collection2 = np.tile(director2[..., np.newaxis], (1, 1, n + 1))
+    rod2 = MockRod(director_collection2)
+
+    rel_rot_12 = get_relative_rotation_two_systems(rod1, 0, rod2, 0)
+    rel_rot_21 = get_relative_rotation_two_systems(rod2, 0, rod1, 0)
+
+    # rel_rot_21 should be the transpose (inverse) of rel_rot_12
+    assert_allclose(rel_rot_21, rel_rot_12.T, atol=Tolerance.atol())
+    # Or equivalently, their product should be identity
+    assert_allclose(rel_rot_12 @ rel_rot_21, np.eye(3), atol=Tolerance.atol())

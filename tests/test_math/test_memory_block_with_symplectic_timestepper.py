@@ -15,65 +15,68 @@ from elastica.rod.data_structures import (
 
 class MockRod:
     def __init__(self, n_elems):
-        self.n_elems = n_elems  # np.random.randint(10, 30 + 1)
+        self.n_elems = n_elems
         self.n_nodes = self.n_elems + 1
         self.n_voronoi = self.n_elems - 1
         self.ring_rod_flag = False
 
+        # Fixed seed RNG for reproducible test data
+        rng = np.random.default_rng(42)
+
         # Things that are scalar mapped on nodes
-        self.mass = np.random.randn(self.n_nodes)
+        self.mass = rng.standard_normal(self.n_nodes)
 
         # Things that are vectors mapped on nodes
-        self.position_collection = np.random.randn(3, self.n_nodes)
-        self.velocity_collection = np.random.randn(3, self.n_nodes)
-        self.acceleration_collection = np.random.randn(3, self.n_nodes)
-        self.internal_forces = np.random.randn(3, self.n_nodes)
-        self.external_forces = np.random.randn(3, self.n_nodes)
+        self.position_collection = rng.standard_normal((3, self.n_nodes))
+        self.velocity_collection = rng.standard_normal((3, self.n_nodes))
+        self.acceleration_collection = rng.standard_normal((3, self.n_nodes))
+        self.internal_forces = rng.standard_normal((3, self.n_nodes))
+        self.external_forces = rng.standard_normal((3, self.n_nodes))
 
         # Things that are scalar mapped on elements
-        self.radius = np.random.rand(self.n_elems)
-        self.volume = np.random.rand(self.n_elems)
-        self.density = np.random.rand(self.n_elems)
-        self.lengths = np.random.rand(self.n_elems)
+        self.radius = rng.random(self.n_elems)
+        self.volume = rng.random(self.n_elems)
+        self.density = rng.random(self.n_elems)
+        self.lengths = rng.random(self.n_elems)
         self.rest_lengths = self.lengths.copy()
-        self.dilatation = np.random.rand(self.n_elems)
-        self.dilatation_rate = np.random.rand(self.n_elems)
+        self.dilatation = rng.random(self.n_elems)
+        self.dilatation_rate = rng.random(self.n_elems)
 
         # Things that are vector mapped on elements
-        self.omega_collection = np.random.randn(3, self.n_elems)
-        self.alpha_collection = np.random.randn(3, self.n_elems)
-        self.tangents = np.random.randn(3, self.n_elems)
-        self.sigma = np.random.randn(3, self.n_elems)
-        self.rest_sigma = np.random.randn(3, self.n_elems)
-        self.internal_torques = np.random.randn(3, self.n_elems)
-        self.external_torques = np.random.randn(3, self.n_elems)
-        self.internal_stress = np.random.randn(3, self.n_elems)
+        self.omega_collection = rng.standard_normal((3, self.n_elems))
+        self.alpha_collection = rng.standard_normal((3, self.n_elems))
+        self.tangents = rng.standard_normal((3, self.n_elems))
+        self.sigma = rng.standard_normal((3, self.n_elems))
+        self.rest_sigma = rng.standard_normal((3, self.n_elems))
+        self.internal_torques = rng.standard_normal((3, self.n_elems))
+        self.external_torques = rng.standard_normal((3, self.n_elems))
+        self.internal_stress = rng.standard_normal((3, self.n_elems))
 
         # Things that are matrix mapped on elements
         self.director_collection = np.zeros((3, 3, self.n_elems))
         for i in range(3):
             for j in range(3):
                 self.director_collection[i, j, ...] = 3 * i + j
-        # self.director_collection *= np.random.randn()
-        self.mass_second_moment_of_inertia = np.random.randn() * np.ones(
+        # self.director_collection *= rng.standard_normal()  # Commented out as before
+        self.mass_second_moment_of_inertia = rng.standard_normal() * np.ones(
             (3, 3, self.n_elems)
         )
-        self.inv_mass_second_moment_of_inertia = np.random.randn() * np.ones(
+        self.inv_mass_second_moment_of_inertia = rng.standard_normal() * np.ones(
             (3, 3, self.n_elems)
         )
-        self.shear_matrix = np.random.randn() * np.ones((3, 3, self.n_elems))
+        self.shear_matrix = rng.standard_normal() * np.ones((3, 3, self.n_elems))
 
         # Things that are scalar mapped on voronoi
-        self.voronoi_dilatation = np.random.rand(self.n_voronoi)
-        self.rest_voronoi_lengths = np.random.rand(self.n_voronoi)
+        self.voronoi_dilatation = rng.random(self.n_voronoi)
+        self.rest_voronoi_lengths = rng.random(self.n_voronoi)
 
         # Things that are vectors mapped on voronoi
-        self.kappa = np.random.randn(3, self.n_voronoi)
-        self.rest_kappa = np.random.randn(3, self.n_voronoi)
-        self.internal_couple = np.random.randn(3, self.n_voronoi)
+        self.kappa = rng.standard_normal((3, self.n_voronoi))
+        self.rest_kappa = rng.standard_normal((3, self.n_voronoi))
+        self.internal_couple = rng.standard_normal((3, self.n_voronoi))
 
         # Things that are matrix mapped on voronoi
-        self.bend_matrix = np.random.randn() * np.ones((3, 3, self.n_voronoi))
+        self.bend_matrix = rng.standard_normal() * np.ones((3, 3, self.n_voronoi))
 
 
 class BlockStructureWithSymplecticStepper(
@@ -88,7 +91,7 @@ class BlockStructureWithSymplecticStepper(
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_kinematic_state_references(n_rods):
+def test_block_structure_kinematic_state_references(n_rods, rng):
     """
     This function is testing validity of kinematic state views and compare them
     with the block structure vectors.
@@ -101,7 +104,7 @@ def test_block_structure_kinematic_state_references(n_rods):
     -------
 
     """
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     assert_allclose(
@@ -126,7 +129,7 @@ def test_block_structure_kinematic_state_references(n_rods):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_kinematic_update(n_rods):
+def test_block_structure_kinematic_update(n_rods, rng):
     """
     This function is testing validity __iadd__ operation of kinematic_states.
 
@@ -139,7 +142,7 @@ def test_block_structure_kinematic_update(n_rods):
 
     """
 
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     position = block_structure.position_collection.copy()
@@ -148,7 +151,7 @@ def test_block_structure_kinematic_update(n_rods):
     directors = block_structure.director_collection.copy()
     omega = block_structure.omega_collection.copy()
 
-    prefac = np.random.randn()
+    prefac = rng.standard_normal()
 
     correct_position = position + prefac * velocity
     correct_director = np.zeros(directors.shape)
@@ -179,7 +182,7 @@ def test_block_structure_kinematic_update(n_rods):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_references(n_rods):
+def test_block_structure_dynamic_state_references(n_rods, rng):
     """
     This function is testing validity of dynamic state views and compare them
     with the block structure vectors.
@@ -192,7 +195,7 @@ def test_block_structure_dynamic_state_references(n_rods):
     -------
 
     """
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     assert_allclose(
@@ -236,7 +239,7 @@ def test_block_structure_dynamic_state_references(n_rods):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_kinematic_rates(n_rods):
+def test_block_structure_dynamic_state_kinematic_rates(n_rods, rng):
     """
     This function is testing validity of dynamic state function and compare them
     with the block structure vectors.
@@ -249,7 +252,7 @@ def test_block_structure_dynamic_state_kinematic_rates(n_rods):
     -------
 
     """
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     prefac = 1.0
@@ -274,7 +277,7 @@ def test_block_structure_dynamic_state_kinematic_rates(n_rods):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_dynamic_rates(n_rods):
+def test_block_structure_dynamic_state_dynamic_rates(n_rods, rng):
     """
     This function is testing validity of dynamic rates function and compare them
     with the block structure vector.
@@ -287,7 +290,7 @@ def test_block_structure_dynamic_state_dynamic_rates(n_rods):
     -------
 
     """
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     assert_allclose(
@@ -298,7 +301,7 @@ def test_block_structure_dynamic_state_dynamic_rates(n_rods):
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_update(n_rods):
+def test_block_structure_dynamic_update(n_rods, rng):
     """
     This function is testing validity __iadd__ operation of dynamic_states.
 
@@ -311,13 +314,13 @@ def test_block_structure_dynamic_update(n_rods):
 
     """
 
-    world_rods = [MockRod(np.random.randint(10, 30 + 1)) for _ in range(n_rods)]
+    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
     block_structure = BlockStructureWithSymplecticStepper(world_rods)
 
     v_w = block_structure.v_w_collection.copy()
     dvdt_dwdt = block_structure.dvdt_dwdt_collection.copy()
 
-    prefac = np.random.randn()
+    prefac = rng.standard_normal()
 
     correct_v_w = v_w + prefac * dvdt_dwdt
 

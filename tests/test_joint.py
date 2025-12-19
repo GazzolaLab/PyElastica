@@ -18,10 +18,6 @@ from scipy.spatial.transform import Rotation
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
 
-# seed random number generator
-rng = np.random.default_rng(0)
-
-
 def test_freejoint():
 
     # Some rod properties. We need them for constructer, they are not used.
@@ -218,6 +214,9 @@ def test_hingejoint():
     )
 
 
+# seed random number generator
+rng = np.random.default_rng(42)
+
 rest_euler_angles = [
     np.array([0.0, 0.0, 0.0]),
     np.array([np.pi / 2, 0.0, 0.0]),
@@ -380,7 +379,6 @@ from elastica.rigidbody import RigidBodyBase
 
 
 def mock_rod_init(self):
-
     "Initializing Rod"
     "Details of initialization are given in test_contact_specific_functions.py"
 
@@ -397,7 +395,6 @@ def mock_rod_init(self):
 
 
 def mock_rigid_body_init(self):
-
     "Initializing Rigid Body"
     "Details of initialization are given in test_contact_specific_functions.py"
 

@@ -14,7 +14,6 @@ from elastica._contact_functions import (
 
 
 def mock_rod_init(self):
-
     "Initializing Rod"
 
     """
@@ -39,7 +38,6 @@ def mock_rod_init(self):
 
 
 def mock_cylinder_init(self):
-
     "Initializing Cylinder"
 
     """
@@ -65,7 +63,6 @@ def mock_cylinder_init(self):
 
 
 def mock_sphere_init(self):
-
     "Initializing Sphere"
 
     """
@@ -104,7 +101,6 @@ class TestCalculateContactForcesRodCylinder:
     def test_calculate_contact_forces_rod_cylinder_with_k_without_nu_and_friction(
         self,
     ):
-
         "initializing rod parameters"
         rod = MockRod()
         rod_element_position = 0.5 * (
@@ -172,7 +168,6 @@ class TestCalculateContactForcesRodCylinder:
     def test_calculate_contact_forces_rod_cylinder_with_nu_without_k_and_friction(
         self,
     ):
-
         "initializing rod parameters"
         rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
@@ -244,7 +239,6 @@ class TestCalculateContactForcesRodCylinder:
     def test_calculate_contact_forces_rod_cylinder_with_k_and_nu_without_friction(
         self,
     ):
-
         "initializing rod parameters"
         rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
@@ -307,7 +301,6 @@ class TestCalculateContactForcesRodCylinder:
         )
 
     def test_calculate_contact_forces_rod_cylinder_with_k_and_nu_and_friction(self):
-
         "initializing rod parameters"
         rod = MockRod()
         "Moving rod towards the cylinder with a velocity of -1 in x-axis"
@@ -623,7 +616,6 @@ class TestCalculateContactForcesRodSphere:
     def test_calculate_contact_forces_rod_sphere_with_k_without_nu_and_friction(
         self,
     ):
-
         "initializing rod parameters"
         rod = MockRod()
         rod_element_position = 0.5 * (
@@ -632,7 +624,7 @@ class TestCalculateContactForcesRodSphere:
 
         "initializing sphere parameters"
         sphere = MockSphere()
-        x_sph = sphere.position[..., 0] - sphere.radius * sphere.director[2, :, 0]
+        x_sph = sphere.position[..., 0]
 
         "initializing constants"
         """
@@ -648,16 +640,11 @@ class TestCalculateContactForcesRodSphere:
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             rod.lengths * rod.tangents,
-            sphere.position[..., 0],
             x_sph,
-            sphere.radius * sphere.director[2, :, 0],
             rod.radius + sphere.radius,
             rod.lengths + sphere.radius * 2,
-            rod.internal_forces,
             rod.external_forces,
             sphere.external_forces,
-            sphere.external_torques,
-            sphere.director[:, :, 0],
             rod.velocity_collection,
             sphere.velocity_collection,
             k,

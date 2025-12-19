@@ -1,8 +1,14 @@
+from collections import defaultdict
+
 import numpy as np
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
 import elastica as ea
 from analytical_dynamic_cantilever import AnalyticalDynamicCantilever
+
+
+class DynamicCantileverSimulator(ea.BaseSystemCollection, ea.Constraints, ea.CallBacks):
+    pass
 
 
 def simulate_dynamic_cantilever_with(
@@ -37,11 +43,6 @@ def simulate_dynamic_cantilever_with(
 
     """
 
-    class DynamicCantileverSimulator(
-        ea.BaseSystemCollection, ea.Constraints, ea.CallBacks
-    ):
-        pass
-
     cantilever_sim = DynamicCantileverSimulator()
 
     # Add test parameters
@@ -57,6 +58,7 @@ def simulate_dynamic_cantilever_with(
 
     dl = base_length / n_elem
     dt = dl * 0.05
+    total_steps = int(final_time / dt)
     step_skips = int(1.0 / (rendering_fps * dt))
 
     # Add Cosserat rod
@@ -96,7 +98,7 @@ def simulate_dynamic_cantilever_with(
     # Add call backs
     class CantileverCallBack(ea.CallBackBaseClass):
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -113,23 +115,18 @@ def simulate_dynamic_cantilever_with(
                 )
                 return
 
-    recorded_history = ea.defaultdict(list)
+    recorded_history = defaultdict(list)
     cantilever_sim.collect_diagnostics(cantilever_rod).using(
         CantileverCallBack, step_skip=step_skips, callback_params=recorded_history
     )
     cantilever_sim.finalize()
 
-    total_steps = int(final_time / dt)
     print(f"Total steps: {total_steps}")
 
     timestepper = ea.PositionVerlet()
-
-    ea.integrate(
-        timestepper,
-        cantilever_sim,
-        final_time,
-        total_steps,
-    )
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(cantilever_sim, time, dt)
 
     # FFT
     amplitudes = np.abs(fft(recorded_history["deflection"]))

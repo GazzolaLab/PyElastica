@@ -73,22 +73,22 @@ def plot_video(
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time)):
             fig.clf()
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
             ax.grid(which="minor", color="k", linestyle="--")
             ax.grid(which="major", color="k", linestyle="-")
             ax.plot(
-                position_of_rod1[time, 0],
-                position_of_rod1[time, 1],
-                position_of_rod1[time, 2],
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                position_of_rod1[time_idx, 2],
                 "or",
                 label="rod1",
             )
             ax.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 1],
-                position_of_rod2[time, 2],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 1],
+                position_of_rod2[time_idx, 2],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
@@ -120,14 +120,17 @@ def plot_video_xy(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 1], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                "or",
+                label="rod1",
             )
             plt.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 1],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 1],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",
@@ -158,14 +161,17 @@ def plot_video_xz(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 2], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 2],
+                "or",
+                label="rod1",
             )
             plt.plot(
-                position_of_rod2[time, 0],
-                position_of_rod2[time, 2],
+                position_of_rod2[time_idx, 0],
+                position_of_rod2[time_idx, 2],
                 "o",
                 c=to_rgb("xkcd:bluish"),
                 label="rod2",

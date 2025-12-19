@@ -21,7 +21,8 @@ class Trapezoidal:
     @staticmethod
     def oned_setup():
         blocksize = 32
-        input_vector = np.random.randn(blocksize)
+        rng = np.random.default_rng(42)
+        input_vector = rng.standard_normal(blocksize)
 
         first_element = 0.5 * input_vector[0]
         last_element = 0.5 * input_vector[-1]
@@ -38,7 +39,8 @@ class Difference:
     @staticmethod
     def oned_setup():
         blocksize = 32
-        input_vector = np.random.randn(blocksize)
+        rng = np.random.default_rng(42)
+        input_vector = rng.standard_normal(blocksize)
 
         first_element = input_vector[0]
         last_element = -input_vector[-1]
@@ -102,7 +104,7 @@ def test_trapezoidal_correctness():
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
-def test_trapezoidal_for_block_structure_correctness():
+def test_trapezoidal_for_block_structure_correctness(rng):
     """
     This test is testing the validity of trapezoidal rule for block structure implementation.
     Here we are using the _trapezoidal for validity check, because it is already tested in the
@@ -115,7 +117,7 @@ def test_trapezoidal_for_block_structure_correctness():
 
     blocksize = 30
     ghost_idx = np.array([14, 15])
-    input_vector = np.random.randn(3, blocksize)
+    input_vector = rng.standard_normal((3, blocksize))
 
     correct_vector = np.hstack(
         (
@@ -162,7 +164,7 @@ def test_two_point_difference_correctness():
     assert_allclose(test_vector, correct_vector, atol=1e-4)
 
 
-def test_two_point_difference_for_block_structure_correctness():
+def test_two_point_difference_for_block_structure_correctness(rng):
     """
     This test is testing the validity of two_point_difference rule for block structure implementation.
     Here we are using the _two_point_difference for validity check, because it is already tested in the
@@ -175,7 +177,7 @@ def test_two_point_difference_for_block_structure_correctness():
 
     blocksize = 30
     ghost_idx = np.array([14, 15])
-    input_vector = np.random.randn(3, blocksize)
+    input_vector = rng.standard_normal((3, blocksize))
 
     correct_vector = np.hstack(
         (
@@ -190,7 +192,7 @@ def test_two_point_difference_for_block_structure_correctness():
     assert_allclose(test_vector, correct_vector, atol=Tolerance.atol())
 
 
-def test_clip_array():
+def test_clip_array(rng):
     """
     Test _clip array function.
     Returns
@@ -199,9 +201,7 @@ def test_clip_array():
     """
 
     blocksize = 100
-    input_array = np.hstack(
-        (10 * np.random.rand(blocksize), -10 * np.random.rand(blocksize))
-    )
+    input_array = np.hstack((10 * rng.random(blocksize), -10 * rng.random(blocksize)))
 
     vmin = -1
     vmax = 1

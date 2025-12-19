@@ -72,11 +72,11 @@ def compute_projected_velocity(plot_params: dict, period):
     center_of_mass = np.array(plot_params["center_of_mass"])
 
     # Compute rod velocity in rod direction. We need to compute that because,
-    # after snake starts to move it chooses an arbitrary direction, which does not
+    # after flagella starts to move it chooses an arbitrary direction, which does not
     # have to be initial tangent direction of the rod. Thus we need to project the
-    # snake velocity with respect to its new tangent and roll direction, after that
+    # flagella velocity with respect to its new tangent and roll direction, after that
     # we will get the correct forward and lateral speed. After this projection
-    # lateral velocity of the snake has to be oscillating between + and - values with
+    # lateral velocity of the flagella has to be oscillating between + and - values with
     # zero mean.
 
     # Number of steps in one period.
@@ -108,7 +108,7 @@ def compute_projected_velocity(plot_params: dict, period):
     # velocity in the direction of rod
     velocity_in_rod_roll_dir = avg_velocity - velocity_in_direction_of_rod
 
-    # Compute the average velocity over the simulation, this can be used for optimizing snake
+    # Compute the average velocity over the simulation, this can be used for optimizing flagella
     # for fastest forward velocity. We start after first period, because of the ramping up happens
     # in first period.
     average_velocity_over_simulation = np.mean(

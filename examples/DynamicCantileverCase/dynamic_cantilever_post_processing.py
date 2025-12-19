@@ -1,5 +1,7 @@
+import matplotlib.animation as manimation
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 
 # Plotting frequency and amplitudes against densities
@@ -123,9 +125,6 @@ def plot_dynamic_cantilever_video_with(
 ):
     print("Plotting video ...")
     video_name = f"Dynamic_cantilever_mode_{mode + 1}.mp4"
-
-    import matplotlib.animation as manimation
-    from tqdm import tqdm
 
     positions_over_time = np.array(recorded_history["position"])
 

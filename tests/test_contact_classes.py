@@ -3,6 +3,8 @@ __doc__ = """ Test Wrapper Classes used in contact in Elastica.contact_forces im
 import numpy as np
 from numpy.testing import assert_allclose
 from elastica.utils import Tolerance
+
+
 from elastica.contact_forces import (
     RodRodContact,
     RodCylinderContact,
@@ -22,7 +24,6 @@ from elastica.contact_utils import (
 
 
 def mock_rod_init(self):
-
     "Initializing Rod"
     "Details of initialization are given in test_contact_specific_functions.py"
 
@@ -43,7 +44,6 @@ def mock_rod_init(self):
 
 
 def mock_cylinder_init(self):
-
     "Initializing Cylinder"
     "Details of initialization are given in test_contact_specific_functions.py"
 
@@ -60,7 +60,6 @@ def mock_cylinder_init(self):
 
 
 def mock_sphere_init(self):
-
     "Initializing Sphere"
     "Details of initialization are given in test_contact_specific_functions.py"
 
@@ -76,7 +75,6 @@ def mock_sphere_init(self):
 
 
 def mock_plane_init(self):
-
     "Initializing Plane"
 
     self.normal = np.asarray([1.0, 0.0, 0.0]).reshape(3)
@@ -156,7 +154,6 @@ class TestRodCylinderContact:
     def test_contact_rod_cylinder_with_collision_with_nu_without_k_and_friction(
         self,
     ):
-
         "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -186,7 +183,6 @@ class TestRodCylinderContact:
     def test_contact_rod_cylinder_with_collision_with_k_and_nu_without_friction(
         self,
     ):
-
         "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -216,7 +212,6 @@ class TestRodCylinderContact:
     def test_contact_rod_cylinder_with_collision_with_k_and_nu_and_friction(
         self,
     ):
-
         "Testing Rod Cylinder Contact wrapper with Collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -252,7 +247,6 @@ class TestRodCylinderContact:
         )
 
     def test_contact_rod_cylinder_without_collision(self):
-
         "Testing Rod Cylinder Contact wrapper without Collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -314,7 +308,6 @@ class TestRodRodContact:
         )
 
     def test_contact_with_two_rods_with_collision_with_k_without_nu(self):
-
         "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
@@ -336,7 +329,6 @@ class TestRodRodContact:
         )
 
     def test_contact_with_two_rods_with_collision_without_k_with_nu(self):
-
         "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
@@ -366,7 +358,6 @@ class TestRodRodContact:
         )
 
     def test_contact_with_two_rods_with_collision_with_k_and_nu(self):
-
         "Testing RodRod Contact wrapper with two rods with analytical verified values"
         "Test values have been copied from 'test_contact_specific_functions.py/test_calculate_contact_forces_rod_rod()'"
 
@@ -396,7 +387,6 @@ class TestRodRodContact:
         )
 
     def test_contact_with_two_rods_without_collision(self):
-
         "Testing Rod Rod Contact wrapper with two rods with analytical verified values"
 
         mock_rod_one = MockRod()
@@ -454,7 +444,6 @@ class TestRodSelfContact:
         )
 
     def test_self_contact_with_rod_self_collision(self):
-
         "Testing Self Contact wrapper rod self collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -490,7 +479,6 @@ class TestRodSelfContact:
         )
 
     def test_self_contact_with_rod_no_self_collision(self):
-
         "Testing Self Contact wrapper rod no self collision with analytical verified values"
 
         mock_rod = MockRod()
@@ -559,6 +547,92 @@ class TestRodSphereContact:
             atol=1e-6,
         )
 
+    def test_contact_rod_sphere_without_collision(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper without Collision"
+
+        mock_rod = MockRod()
+        mock_sphere = MockSphere()
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=0.0)
+
+        # Setting sphere position such that there is no collision
+        mock_sphere.position_collection = np.array([[100], [200], [300]])
+
+        mock_rod_external_forces_before_execution = mock_rod.external_forces.copy()
+        mock_sphere_external_forces_before_execution = (
+            mock_sphere.external_forces.copy()
+        )
+        mock_sphere_external_torques_before_execution = (
+            mock_sphere.external_torques.copy()
+        )
+
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_rod.external_forces, mock_rod_external_forces_before_execution
+        )
+        assert_allclose(
+            mock_sphere.external_forces,
+            mock_sphere_external_forces_before_execution,
+        )
+        assert_allclose(
+            mock_sphere.external_torques,
+            mock_sphere_external_torques_before_execution,
+        )
+
+    def test_contact_rod_sphere_with_collision_with_nu_without_k(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper with Collision with nu without k"
+
+        mock_rod = MockRod()
+        mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+
+        mock_sphere = MockSphere()
+        mock_sphere.velocity_collection = np.array([[1], [0], [0]])
+
+        rod_sphere_contact = RodSphereContact(k=0.0, nu=1.0)
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_sphere.external_forces, np.array([[-1.5], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array([[0.5, 1.0, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
+    def test_contact_rod_sphere_with_collision_with_k_and_nu(
+        self,
+    ):
+        "Testing Rod Sphere Contact wrapper with Collision with k and nu"
+
+        mock_rod = MockRod()
+        mock_rod.velocity_collection = np.array([[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]])
+
+        mock_sphere = MockSphere()
+        mock_sphere.velocity_collection = np.array([[1], [0], [0]])
+
+        rod_sphere_contact = RodSphereContact(k=1.0, nu=1.0)
+        rod_sphere_contact.apply_contact(mock_rod, mock_sphere)
+
+        assert_allclose(
+            mock_sphere.external_forces, np.array([[-2.0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_sphere.external_torques, np.array([[0], [0], [0]]), atol=1e-6
+        )
+        assert_allclose(
+            mock_rod.external_forces,
+            np.array([[0.666666, 1.333333, 0], [0, 0, 0], [0, 0, 0]]),
+            atol=1e-6,
+        )
+
 
 class TestRodPlaneContact:
     def initializer(
@@ -568,6 +642,8 @@ class TestRodPlaneContact:
         nu_w=0.0,
         plane_normal=np.array([0.0, 1.0, 0.0]),
     ):
+        rng = np.random.default_rng(42)
+
         # create rod
         rod = MockRod()
         start = np.array([0.0, 0.0, 0.0])
@@ -589,7 +665,7 @@ class TestRodPlaneContact:
         )
         rod_plane_contact = RodPlaneContact(k_w, nu_w)
 
-        fnormal = -10.0 * np.sign(plane_normal[1]) * np.random.random_sample(1).item()
+        fnormal = -10.0 * np.sign(plane_normal[1]) * rng.random()
         external_forces = np.repeat(
             np.array([0.0, fnormal, 0.0]).reshape(3, 1), 3, axis=1
         )
@@ -610,7 +686,7 @@ class TestRodPlaneContact:
         # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 
@@ -621,18 +697,15 @@ class TestRodPlaneContact:
             excinfo.value
         )
 
-    def test_rod_plane_contact_without_contact(self):
+    def test_rod_plane_contact_without_contact(self, rng):
         """
         This test case tests the forces on rod, when there is no
         contact between rod and the plane.
 
         """
 
-        shift = -(
-            (2.0 - 1.0) * np.random.random_sample(1) + 1.0
-        ).item()  # we move plane away from rod
-        print("q")
-        [rod, plane, rod_plane_contact, external_forces] = self.initializer(shift)
+        shift = -((2.0 - 1.0) * rng.random() + 1.0)  # we move plane away from rod
+        [rod, plane, rod_plane_contact, external_forces] = self.initializer(shift=shift)
 
         rod_plane_contact.apply_contact(rod, plane)
         correct_forces = external_forces  # since no contact
@@ -654,7 +727,7 @@ class TestRodPlaneContact:
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
-    def test_rod_plane_contact_with_k_without_nu(self, k_w):
+    def test_rod_plane_contact_with_k_without_nu(self, rng, k_w):
         """
         Here wall stiffness coefficient changed parametrically
         and damping coefficient set to zero .
@@ -665,7 +738,7 @@ class TestRodPlaneContact:
 
         """
 
-        shift = np.random.random_sample(1).item()  # we move plane towards to rod
+        shift = rng.random()  # we move plane towards to rod
         [rod, plane, rod_plane_contact, external_forces] = self.initializer(
             shift=shift, k_w=k_w
         )
@@ -680,7 +753,7 @@ class TestRodPlaneContact:
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
-    def test_rod_plane_contact_without_k_with_nu(self, nu_w):
+    def test_rod_plane_contact_without_k_with_nu(self, rng, nu_w):
         """
         Here wall damping coefficient are changed parametrically and
         wall response functions tested.
@@ -691,7 +764,7 @@ class TestRodPlaneContact:
 
         [rod, plane, rod_plane_contact, external_forces] = self.initializer(nu_w=nu_w)
 
-        normal_velocity = np.random.random_sample(1).item()
+        normal_velocity = rng.random()
         rod.velocity_collection[..., :] += np.array(
             [0.0, -normal_velocity, 0.0]
         ).reshape(3, 1)
@@ -733,7 +806,9 @@ class TestRodPlaneContact:
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
-    def test_rod_plane_contact_when_rod_is_under_plane_with_k_without_nu(self, k_w):
+    def test_rod_plane_contact_when_rod_is_under_plane_with_k_without_nu(
+        self, rng, k_w
+    ):
         """
         In this test case we move the rod under the plane.
         Here wall stiffness coefficient changed parametrically
@@ -747,7 +822,7 @@ class TestRodPlaneContact:
         offset_of_plane_with_respect_to_rod = 2.0 * 0.25
 
         # we move plane towards to rod by random distance
-        shift = offset_of_plane_with_respect_to_rod - np.random.random_sample(1).item()
+        shift = offset_of_plane_with_respect_to_rod - rng.random()
 
         # plane normal changed, it is towards the negative direction, because rod
         # is under the plane.
@@ -773,7 +848,9 @@ class TestRodPlaneContact:
         assert_allclose(correct_forces, rod.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
-    def test_rod_plane_contact_when_rod_is_under_plane_without_k_with_nu(self, nu_w):
+    def test_rod_plane_contact_when_rod_is_under_plane_without_k_with_nu(
+        self, rng, nu_w
+    ):
         """
         In this test case we move under the plane and test damping force.
         Here wall damping coefficient are changed parametrically and
@@ -796,7 +873,7 @@ class TestRodPlaneContact:
             plane_normal=plane_normal,
         )
 
-        normal_velocity = np.random.random_sample(1).item()
+        normal_velocity = rng.random()
         rod.velocity_collection[..., :] += np.array(
             [0.0, -normal_velocity, 0.0]
         ).reshape(3, 1)
@@ -823,6 +900,7 @@ class TestRodPlaneWithAnisotropicFriction:
         force_mag_long=0.0,  # forces along the rod
         force_mag_side=0.0,  # side forces on the rod
     ):
+        rng = np.random.default_rng(42)
 
         # create rod
         rod = MockRod()
@@ -852,7 +930,7 @@ class TestRodPlaneWithAnisotropicFriction:
             kinetic_mu_array,  # forward, backward, sideways
         )
 
-        fnormal = (10.0 - 5.0) * np.random.random_sample(
+        fnormal = (10.0 - 5.0) * rng.random(
             1
         ).item() + 5.0  # generates random numbers [5.0,10)
         external_forces = np.array([force_mag_side, -fnormal, force_mag_long])
@@ -881,7 +959,7 @@ class TestRodPlaneWithAnisotropicFriction:
         # Testing Rod Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             rod_plane_contact._check_systems_validity(mock_rod, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 
@@ -1176,6 +1254,8 @@ class TestCylinderPlaneContact:
         nu_w=0.0,
         plane_normal=np.array([0.0, 1.0, 0.0]),
     ):
+        rng = np.random.default_rng(42)
+
         # create cylinder
         cylinder = MockCylinder()
 
@@ -1187,7 +1267,7 @@ class TestCylinderPlaneContact:
         )
         cylinder_plane_contact = CylinderPlaneContact(k_w, nu_w)
 
-        fnormal = -10.0 * np.sign(plane_normal[1]) * np.random.random_sample(1).item()
+        fnormal = -10.0 * np.sign(plane_normal[1]) * rng.random(1).item()
         external_forces = np.array([0.0, fnormal, 0.0]).reshape(3, 1)
         cylinder.external_forces = external_forces.copy()
 
@@ -1204,7 +1284,7 @@ class TestCylinderPlaneContact:
         # Testing Cylinder Plane Contact wrapper with incorrect type for second argument
         with pytest.raises(TypeError) as excinfo:
             cylinder_plane_contact._check_systems_validity(mock_cylinder, mock_list)
-        assert "System provided (list) must be derived from ['SurfaceBase']." == str(
+        assert "System provided (list) must be derived from ['Plane']." == str(
             excinfo.value
         )
 
@@ -1215,17 +1295,14 @@ class TestCylinderPlaneContact:
             excinfo.value
         )
 
-    def test_cylinder_plane_contact_without_contact(self):
+    def test_cylinder_plane_contact_without_contact(self, rng):
         """
         This test case tests the forces on cylinder, when there is no
         contact between cylinder and the plane.
 
         """
 
-        shift = -(
-            (2.0 - 1.0) * np.random.random_sample(1) + 1.0
-        ).item()  # we move plane away from cylinder
-        print("q")
+        shift = -((2.0 - 1.0) * rng.random() + 1.0)  # we move plane away from cylinder
         [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
             shift
         )
@@ -1250,7 +1327,7 @@ class TestCylinderPlaneContact:
         assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
-    def test_cylinder_plane_contact_with_k_without_nu(self, k_w):
+    def test_cylinder_plane_contact_with_k_without_nu(self, rng, k_w):
         """
         Here wall stiffness coefficient changed parametrically
         and damping coefficient set to zero .
@@ -1261,7 +1338,7 @@ class TestCylinderPlaneContact:
 
         """
 
-        shift = np.random.random_sample(1).item()  # we move plane towards to cylinder
+        shift = rng.random()  # we move plane towards to cylinder
         [cylinder, plane, cylinder_plane_contact, external_forces] = self.initializer(
             shift=shift, k_w=k_w
         )
@@ -1272,7 +1349,7 @@ class TestCylinderPlaneContact:
         assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
 
     @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
-    def test_cylinder_plane_contact_without_k_with_nu(self, nu_w):
+    def test_cylinder_plane_contact_without_k_with_nu(self, rng, nu_w):
         """
         Here wall damping coefficient are changed parametrically and
         wall response functions tested.
@@ -1285,7 +1362,7 @@ class TestCylinderPlaneContact:
             nu_w=nu_w
         )
 
-        normal_velocity = np.random.random_sample(1).item()
+        normal_velocity = rng.random()
         cylinder.velocity_collection[..., :] += np.array(
             [0.0, -normal_velocity, 0.0]
         ).reshape(3, 1)
@@ -1296,7 +1373,7 @@ class TestCylinderPlaneContact:
 
         assert_allclose(correct_forces, cylinder.external_forces, atol=Tolerance.atol())
 
-    def test_cylinder_plane_contact_when_cylinder_is_under_plane(self):
+    def test_cylinder_plane_contact_when_cylinder_is_under_plane(self, rng):
         """
         This test case tests plane response forces on the cylinder
         in the case cylinder is under the plane and pushed towards
@@ -1321,7 +1398,7 @@ class TestCylinderPlaneContact:
 
     @pytest.mark.parametrize("k_w", [0.1, 0.5, 1.0, 2, 10])
     def test_cylinder_plane_contact_when_cylinder_is_under_plane_with_k_without_nu(
-        self, k_w
+        self, rng, k_w
     ):
         """
         In this test case we move the cylinder under the plane.
@@ -1336,9 +1413,7 @@ class TestCylinderPlaneContact:
         offset_of_plane_with_respect_to_cylinder = 2.0 * 1.0
 
         # we move plane towards to cylinder by random distance
-        shift = (
-            offset_of_plane_with_respect_to_cylinder - np.random.random_sample(1).item()
-        )
+        shift = offset_of_plane_with_respect_to_cylinder - rng.random()
 
         # plane normal changed, it is towards the negative direction, because cylinder
         # is under the plane.
@@ -1359,7 +1434,7 @@ class TestCylinderPlaneContact:
 
     @pytest.mark.parametrize("nu_w", [0.5, 1.0, 5.0, 7.0, 12.0])
     def test_cylinder_plane_contact_when_cylinder_is_under_plane_without_k_with_nu(
-        self, nu_w
+        self, rng, nu_w
     ):
         """
         In this test case we move under the plane and test damping force.
@@ -1383,7 +1458,7 @@ class TestCylinderPlaneContact:
             plane_normal=plane_normal,
         )
 
-        normal_velocity = np.random.random_sample(1).item()
+        normal_velocity = rng.random()
         cylinder.velocity_collection[..., :] += np.array(
             [0.0, -normal_velocity, 0.0]
         ).reshape(3, 1)

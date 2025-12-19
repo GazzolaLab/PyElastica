@@ -22,9 +22,9 @@ from elastica._linalg import (
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_matvec(blocksize):
-    input_matrix_collection = np.random.randn(3, 3, blocksize)
-    input_vector_collection = np.random.randn(3, blocksize)
+def test_batch_matvec(blocksize, rng):
+    input_matrix_collection = rng.standard_normal((3, 3, blocksize))
+    input_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_matvec(
         input_matrix_collection, input_vector_collection
@@ -40,9 +40,9 @@ def test_batch_matvec(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_matmul(blocksize):
-    input_first_matrix_collection = np.random.randn(3, 3, blocksize)
-    input_second_matrix_collection = np.random.randn(3, 3, blocksize)
+def test_batch_matmul(blocksize, rng):
+    input_first_matrix_collection = rng.standard_normal((3, 3, blocksize))
+    input_second_matrix_collection = rng.standard_normal((3, 3, blocksize))
 
     test_matrix_collection = _batch_matmul(
         input_first_matrix_collection, input_second_matrix_collection
@@ -61,9 +61,9 @@ def test_batch_matmul(blocksize):
 # TODO : Generalize to two dimensions
 @pytest.mark.parametrize("dim", [3])
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_cross(dim, blocksize):
-    input_first_vector_collection = np.random.randn(dim, blocksize)
-    input_second_vector_collection = np.random.randn(dim, blocksize)
+def test_batch_cross(dim, blocksize, rng):
+    input_first_vector_collection = rng.standard_normal((dim, blocksize))
+    input_second_vector_collection = rng.standard_normal((dim, blocksize))
 
     test_vector_collection = _batch_cross(
         input_first_vector_collection, input_second_vector_collection
@@ -76,9 +76,9 @@ def test_batch_cross(dim, blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_vec_oneD_vec_cross(blocksize):
-    input_first_vector_collection = np.random.randn(3, blocksize)
-    input_second_vector = np.random.randn(3)
+def test_batch_vec_oneD_vec_cross(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal((3, blocksize))
+    input_second_vector = rng.standard_normal(3)
 
     test_vector_collection = _batch_vec_oneD_vec_cross(
         input_first_vector_collection, input_second_vector
@@ -92,9 +92,9 @@ def test_batch_vec_oneD_vec_cross(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_dot(blocksize):
-    input_first_vector_collection = np.random.randn(3, blocksize)
-    input_second_vector_collection = np.random.randn(3, blocksize)
+def test_batch_dot(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal((3, blocksize))
+    input_second_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_dot(
         input_first_vector_collection, input_second_vector_collection
@@ -108,8 +108,8 @@ def test_batch_dot(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_norm(blocksize):
-    input_first_vector_collection = np.random.randn(3, blocksize)
+def test_batch_norm(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_norm(input_first_vector_collection)
 
@@ -123,9 +123,9 @@ def test_batch_norm(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_product_i_k_to_ik(blocksize):
-    input_first_vector_collection = np.random.randn(3)
-    input_second_vector_collection = np.random.randn(blocksize)
+def test_batch_product_i_k_to_ik(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal(3)
+    input_second_vector_collection = rng.standard_normal(blocksize)
 
     test_vector_collection = _batch_product_i_k_to_ik(
         input_first_vector_collection, input_second_vector_collection
@@ -139,9 +139,9 @@ def test_batch_product_i_k_to_ik(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_product_i_ik_to_k(blocksize):
-    input_first_vector_collection = np.random.randn(3)
-    input_second_vector_collection = np.random.randn(3, blocksize)
+def test_batch_product_i_ik_to_k(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal(3)
+    input_second_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_product_i_ik_to_k(
         input_first_vector_collection, input_second_vector_collection
@@ -155,9 +155,9 @@ def test_batch_product_i_ik_to_k(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_product_k_ik_to_ik(blocksize):
-    input_first_vector_collection = np.random.randn(blocksize)
-    input_second_vector_collection = np.random.randn(3, blocksize)
+def test_batch_product_k_ik_to_ik(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal(blocksize)
+    input_second_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_product_k_ik_to_ik(
         input_first_vector_collection, input_second_vector_collection
@@ -171,9 +171,9 @@ def test_batch_product_k_ik_to_ik(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_vector_sum(blocksize):
-    input_first_vector_collection = np.random.randn(3, blocksize)
-    input_second_vector_collection = np.random.randn(3, blocksize)
+def test_batch_vector_sum(blocksize, rng):
+    input_first_vector_collection = rng.standard_normal((3, blocksize))
+    input_second_vector_collection = rng.standard_normal((3, blocksize))
 
     test_vector_collection = _batch_vector_sum(
         input_first_vector_collection, input_second_vector_collection
@@ -187,8 +187,8 @@ def test_batch_vector_sum(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [8, 32])
-def test_batch_matrix_transpose(blocksize):
-    input_matrix_collection = np.random.randn(3, 3, blocksize)
+def test_batch_matrix_transpose(blocksize, rng):
+    input_matrix_collection = rng.standard_normal((3, 3, blocksize))
 
     test_matrix_collection = _batch_matrix_transpose(input_matrix_collection)
 

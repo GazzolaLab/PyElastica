@@ -1,5 +1,8 @@
 __doc__ = """ Module containing joint classes to connect multiple rods together. """
-__all__ = ["FreeJoint", "HingeJoint", "FixedJoint", "get_relative_rotation_two_systems"]
+__all__ = ["FreeJoint", "HingeJoint", "FixedJoint"]
+
+from typing import TypeVar, Generic
+from abc import ABC, abstractmethod
 
 from elastica._rotations import _inv_rotate
 from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
@@ -8,23 +11,79 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-class FreeJoint:
+S = TypeVar("S", bound=SystemType)
+
+
+class ConnectionBase(ABC, Generic[S]):
     """
-    This free joint class is the base class for all joints. Free or spherical
-    joints constrains the relative movement between two nodes (chosen by the user)
+    This Connection base class is for all system-to-system connections.
+    Every operator for Connections must be derived from this class.
+    """
+
+    @abstractmethod
+    def apply_forces(
+        self,
+        system_one: "RodType | RigidBodyType",
+        index_one: ConnectionIndex,
+        system_two: "RodType | RigidBodyType",
+        index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
+        """
+        Apply connection force to the connected objects.
+
+        Parameters
+        ----------
+        system_one : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_one : ConnectionIndex
+            Index of first system for connection.
+        system_two : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_two : ConnectionIndex
+            Index of second system for connection.
+        """
+
+    @abstractmethod
+    def apply_torques(
+        self,
+        system_one: "RodType | RigidBodyType",
+        index_one: ConnectionIndex,
+        system_two: "RodType | RigidBodyType",
+        index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
+        """
+        Apply connection torques to the connected objects.
+
+        Parameters
+        ----------
+        system_one : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_one : ConnectionIndex
+            Index of first system for connection
+        system_two : RodType | RigidBodyType
+            Rod or rigid-body object
+        index_two : ConnectionIndex
+            Index of second system for connection.
+        """
+
+
+class FreeJoint(ConnectionBase):
+    """
+    Free or spherical joints constrains the relative movement between two nodes (chosen by the user)
     by applying restoring forces. For implementation details, refer to Zhang et al. Nature Communications (2019).
 
     Notes
     -----
-    Every new joint class must be derived from the FreeJoint class.
+    Alias for BallJoint and SphericalJoint
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
-
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
     """
 
     # pass the k and nu for the forces
@@ -50,6 +109,7 @@ class FreeJoint:
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
         Apply joint force to the connected rod objects.
@@ -59,15 +119,11 @@ class FreeJoint:
         system_one : RodType | RigidBodyType
             Rod or rigid-body object
         index_one : ConnectionIndex
-            Index of first rod for joint.
+            Index of first system for connection.
         system_two : RodType | RigidBodyType
             Rod or rigid-body object
         index_two : ConnectionIndex
-            Index of second rod for joint.
-
-        Returns
-        -------
-
+            Index of second system for connection.
         """
         end_distance_vector = (
             system_two.position_collection[..., index_two]
@@ -85,36 +141,37 @@ class FreeJoint:
         system_one.external_forces[..., index_one] += contact_force
         system_two.external_forces[..., index_two] -= contact_force
 
-        return
-
     def apply_torques(
         self,
         system_one: "RodType | RigidBodyType",
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
-        Apply restoring joint torques to the connected rod objects.
+        Apply joint torques to the connected objects.
 
         In FreeJoint class, this routine simply passes.
 
         Parameters
         ----------
         system_one : RodType | RigidBodyType
-            Rod or rigid-body object
+            Rod or rigid-body object.
         index_one : ConnectionIndex
-            Index of first rod for joint.
+            Index of first system for connection.
         system_two : RodType | RigidBodyType
-            Rod or rigid-body object
+            Rod or rigid-body object.
         index_two : ConnectionIndex
-            Index of second rod for joint.
-
-        Returns
-        -------
-
+            Index of second system for connection.
+        time : float
+            The time of simulation.
         """
-        pass
+
+
+# ALIAS
+BallJoint = FreeJoint
+SphericalJoint = FreeJoint
 
 
 class HingeJoint(FreeJoint):
@@ -125,19 +182,18 @@ class HingeJoint(FreeJoint):
     implementation details, refer to Zhang et. al. Nature
     Communications (2019).
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
-        kt: float
-            Rotational stiffness coefficient of the joint.
-        normal_direction: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
+    kt: float
+        Rotational stiffness coefficient of the joint.
+    normal_direction: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type. Constraint rotation direction.
     """
 
-    # TODO: IN WRAPPER COMPUTE THE NORMAL DIRECTION OR ASK USER TO GIVE INPUT, IF NOT THROW ERROR
     def __init__(
         self,
         k: float,
@@ -174,6 +230,7 @@ class HingeJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
@@ -183,6 +240,7 @@ class HingeJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         # current tangent direction of the `index_two` element of system two
         system_two_tangent = system_two.director_collection[2, :, index_two]
@@ -211,25 +269,25 @@ class FixedJoint(FreeJoint):
     For implementation details, refer to Zhang et al. Nature
     Communications (2019).
 
-        Notes
-        -----
-        Issue #131 : Add constraint in twisting, add rest_rotation_matrix (v0.3.0)
+    Notes
+    -----
+    Issue #131 : Add constraint in twisting, add rest_rotation_matrix (v0.3.0)
 
-        Attributes
-        ----------
-        k: float
-            Stiffness coefficient of the joint.
-        nu: float
-            Damping coefficient of the joint.
-        kt: float
-            Rotational stiffness coefficient of the joint.
-        nut: float
-            Rotational damping coefficient of the joint.
-        rest_rotation_matrix: np.array
-            2D (3,3) array containing data with 'float' type.
-            Rest 3x3 rotation matrix from system one to system two at the connected elements.
-            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
-            is enforced.
+    Attributes
+    ----------
+    k: float
+        Stiffness coefficient of the joint.
+    nu: float
+        Damping coefficient of the joint.
+    kt: float
+        Rotational stiffness coefficient of the joint.
+    nut: float
+        Rotational damping coefficient of the joint.
+    rest_rotation_matrix: numpy.ndarray
+        2D (3, 3) array containing data with 'float' type.
+        Rest 3x3 rotation matrix from system one to system two at the connected elements.
+        Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
+        is enforced.
     """
 
     def __init__(
@@ -241,7 +299,6 @@ class FixedJoint(FreeJoint):
         rest_rotation_matrix: NDArray[np.float64] | None = None,
     ) -> None:
         """
-
         Parameters
         ----------
         k: float
@@ -250,10 +307,10 @@ class FixedJoint(FreeJoint):
             Damping coefficient of the joint.
         kt: float
             Rotational stiffness coefficient of the joint.
-        nut: float = 0.
+        nut: float
             Rotational damping coefficient of the joint.
-        rest_rotation_matrix: np.array | None
-            2D (3,3) array containing data with 'float' type.
+        rest_rotation_matrix: numpy.ndarray | None
+            2D (3, 3) array containing data with 'float' type.
             Rest 3x3 rotation matrix from system one to system two at the connected elements.
             If provided, the rest rotation matrix is enforced between the two systems throughout the simulation.
             If not provided, `rest_rotation_matrix` is initialized to the identity matrix,
@@ -281,6 +338,7 @@ class FixedJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         return super().apply_forces(system_one, index_one, system_two, index_two)
 
@@ -290,6 +348,7 @@ class FixedJoint(FreeJoint):
         index_one: ConnectionIndex,
         system_two: "RodType | RigidBodyType",
         index_two: ConnectionIndex,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         # collect directors of systems one and two
         # note that systems can be either rods or rigid bodies
@@ -331,55 +390,3 @@ class FixedJoint(FreeJoint):
         # The opposite torques will be applied to system one and two after rotating the torques into the local frame
         system_one.external_torques[..., index_one] -= system_one_director @ torque
         system_two.external_torques[..., index_two] += system_two_director @ torque
-
-
-def get_relative_rotation_two_systems(
-    system_one: "RodType | RigidBodyType",
-    index_one: ConnectionIndex,
-    system_two: "RodType | RigidBodyType",
-    index_two: ConnectionIndex,
-) -> NDArray[np.float64]:
-    """
-    Compute the relative rotation matrix C_12 between system one and system two at the specified elements.
-
-    Examples
-    ----------
-    How to get the relative rotation between two systems (e.g. the rotation from end of rod one to base of rod two):
-
-        >>> rel_rot_mat = get_relative_rotation_two_systems(system1, -1, system2, 0)
-
-    How to initialize a FixedJoint with a rest rotation between the two systems,
-    which is enforced throughout the simulation:
-
-        >>> simulator.connect(
-        ...    first_rod=system1, second_rod=system2, first_connect_idx=-1, second_connect_idx=0
-        ... ).using(
-        ...    FixedJoint,
-        ...    ku=1e6, nu=0.0, kt=1e3, nut=0.0,
-        ...    rest_rotation_matrix=get_relative_rotation_two_systems(system1, -1, system2, 0)
-        ... )
-
-    See Also
-    ---------
-    FixedJoint
-
-    Parameters
-    ----------
-    system_one : RodType | RigidBodyType
-        Rod or rigid-body object
-    index_one : ConnectionIndex
-        Index of first rod for joint.
-    system_two : RodType | RigidBodyType
-        Rod or rigid-body object
-    index_two : ConnectionIndex
-        Index of second rod for joint.
-
-    Returns
-    -------
-    relative_rotation_matrix : np.array
-        Relative rotation matrix C_12 between the two systems for their current state.
-    """
-    return (
-        system_one.director_collection[..., index_one]
-        @ system_two.director_collection[..., index_two].T
-    )

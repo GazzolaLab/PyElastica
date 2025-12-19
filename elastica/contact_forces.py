@@ -1,13 +1,14 @@
-__doc__ = """ Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces."""
+__doc__ = """
+Numba implementation module containing contact between rods and rigid bodies and other rods rigid bodies or surfaces.
+"""
 
 from typing import TypeVar, Generic, Type
-from elastica.typing import RodType, SystemType, SurfaceType
+from elastica.typing import RodType, SystemType, StaticSystemType
 
 from elastica.rod.rod_base import RodBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
 from elastica.surface.plane import Plane
-from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_utils import (
     _prune_using_aabbs_rod_cylinder,
     _prune_using_aabbs_rod_rod,
@@ -26,8 +27,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-S1 = TypeVar("S1")  # TODO: Find bound
-S2 = TypeVar("S2")
+S1 = TypeVar("S1", bound=StaticSystemType)
+S2 = TypeVar("S2", bound=StaticSystemType)
 
 
 class NoContact(Generic[S1, S2]):
@@ -45,7 +46,6 @@ class NoContact(Generic[S1, S2]):
         """
         NoContact class does not need any input parameters.
         """
-        pass
 
     @property
     def _allowed_system_one(self) -> list[Type]:
@@ -77,18 +77,21 @@ class NoContact(Generic[S1, S2]):
         self,
         system_one: S1,
         system_two: S2,
+        time: np.float64 = np.float64(0.0),
     ) -> None:
         """
-        Apply contact forces and torques between two system object..
-
+        Apply contact forces and torques between two system objects.
         In NoContact class, this routine simply passes.
 
         Parameters
         ----------
-        system_one
-        system_two
+        system_one : SystemType
+            First system object.
+        system_two : SystemType
+            Second system object.
+        time : float
+            The time of simulation.
         """
-        pass
 
 
 class RodRodContact(NoContact):
@@ -120,14 +123,23 @@ class RodRodContact(NoContact):
         self.k = k
         self.nu = nu
 
-    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: RodType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and RodType object.
 
         Parameters
         ----------
-        system_one: RodType
-        system_two: RodType
+        system_one : RodType
+            First rod object.
+        system_two : RodType
+            Second rod object.
+        time : float
+            The time of simulation.
 
         """
         # First, check for a global AABB bounding box, and see whether that
@@ -170,7 +182,7 @@ class RodRodContact(NoContact):
 class RodCylinderContact(NoContact):
     """
     This class is for applying contact forces between rod-cylinder.
-    If you are want to apply contact forces between rod and cylinder, first system is always rod and second system
+    If you want to apply contact forces between rod and cylinder, first system is always rod and second system
     is always cylinder.
     In addition to the contact forces, user can define apply friction forces between rod and cylinder that
     are in contact. For details on friction model refer to this [1]_.
@@ -189,7 +201,6 @@ class RodCylinderContact(NoContact):
     ...    k=1e4,
     ...    nu=10,
     ... )
-
 
     .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
     """
@@ -226,7 +237,25 @@ class RodCylinderContact(NoContact):
         # Modify this list to include the allowed system types for contact
         return [Cylinder]
 
-    def apply_contact(self, system_one: RodType, system_two: Cylinder) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Cylinder,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
+        """
+        Apply contact forces and torques between RodType object and Cylinder object.
+
+        Parameters
+        ----------
+        system_one : RodType
+            Rod object.
+        system_two : Cylinder
+            Cylinder object.
+        time : float
+            The time of simulation.
+
+        """
         # First, check for a global AABB bounding box, and see whether that
         # intersects
         if _prune_using_aabbs_rod_cylinder(
@@ -313,14 +342,23 @@ class RodSelfContact(NoContact):
         common_check_systems_validity(system_two, self._allowed_system_two)
         common_check_systems_different(system_one, system_two)
 
-    def apply_contact(self, system_one: RodType, system_two: RodType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: RodType,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and itself.
 
         Parameters
         ----------
-        system_one: RodType
-        system_two: RodType
+        system_one : RodType
+            Rod object.
+        system_two : RodType
+            Same rod object as system_one (self-contact).
+        time : float
+            The time of simulation.
 
         """
         _calculate_contact_forces_self_rod(
@@ -344,6 +382,8 @@ class RodSphereContact(NoContact):
     In addition to the contact forces, user can define apply friction forces between rod and sphere that
     are in contact. For details on friction model refer to this [1]_.
 
+    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
+
     Notes
     -----
     The `velocity_damping_coefficient` is set to a high value (e.g. 1e4) to minimize slip and simulate stiction
@@ -359,7 +399,6 @@ class RodSphereContact(NoContact):
     ...    nu=10,
     ... )
 
-    .. [1] Preclik T., Popa Constantin., Rude U., Regularizing a Time-Stepping Method for Rigid Multibody Dynamics, Multibody Dynamics 2011, ECCOMAS. URL: https://www10.cs.fau.de/publications/papers/2011/Preclik_Multibody_Ext_Abstr.pdf
     """
 
     def __init__(
@@ -370,6 +409,7 @@ class RodSphereContact(NoContact):
         friction_coefficient: float = 0.0,
     ) -> None:
         """
+
         Parameters
         ----------
         k : float
@@ -392,14 +432,23 @@ class RodSphereContact(NoContact):
     def _allowed_system_two(self) -> list[Type]:
         return [Sphere]
 
-    def apply_contact(self, system_one: RodType, system_two: Sphere) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Sphere,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Sphere object.
 
         Parameters
         ----------
-        system_one: RodType
-        system_two: Sphere
+        system_one : RodType
+            Rod object.
+        system_two : Sphere
+            Sphere object.
+        time : float
+            The time of simulation.
 
         """
         # First, check for a global AABB bounding box, and see whether that
@@ -414,10 +463,7 @@ class RodSphereContact(NoContact):
         ):
             return
 
-        x_sph = (
-            system_two.position_collection[..., 0]
-            - system_two.radius * system_two.director_collection[2, :, 0]
-        )
+        sphere_position = system_two.position_collection[..., 0]
 
         rod_element_position = 0.5 * (
             system_one.position_collection[..., 1:]
@@ -426,16 +472,11 @@ class RodSphereContact(NoContact):
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             system_one.lengths * system_one.tangents,
-            system_two.position_collection[..., 0],
-            x_sph,
-            system_two.radius * system_two.director_collection[2, :, 0],
+            sphere_position,
             system_one.radius + system_two.radius,
             system_one.lengths + 2 * system_two.radius,
-            system_one.internal_forces,
             system_one.external_forces,
             system_two.external_forces,
-            system_two.external_torques,
-            system_two.director_collection[:, :, 0],
             system_one.velocity_collection,
             system_two.velocity_collection,
             self.k,
@@ -483,18 +524,25 @@ class RodPlaneContact(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
-    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Plane,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object.
 
         Parameters
         ----------
-        system_one: object
+        system_one : RodType
             Rod object.
-        system_two: object
+        system_two : Plane
             Plane object.
+        time : float
+            The time of simulation.
 
         """
         _calculate_contact_forces_rod_plane(
@@ -542,6 +590,7 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
         kinetic_mu_array: NDArray[np.float64],
     ) -> None:
         """
+
         Parameters
         ----------
         k : float
@@ -575,19 +624,27 @@ class RodPlaneContactWithAnisotropicFriction(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
-    def apply_contact(self, system_one: RodType, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: RodType,
+        system_two: Plane,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
         Apply contact forces and torques between RodType object and Plane object with anisotropic friction.
 
         Parameters
         ----------
-        system_one: RodType
-        system_two: SurfaceType
+        system_one : RodType
+            Rod object.
+        system_two : Plane
+            Plane object.
+        time : float
+            The time of simulation.
 
         """
-
         _calculate_contact_forces_rod_plane_with_anisotropic_friction(
             system_two.origin,
             system_two.normal,
@@ -631,6 +688,7 @@ class CylinderPlaneContact(NoContact):
     ...    k=1e4,
     ...    nu=10,
     ... )
+
     """
 
     def __init__(
@@ -639,6 +697,7 @@ class CylinderPlaneContact(NoContact):
         nu: float,
     ) -> None:
         """
+
         Parameters
         ----------
         k : float
@@ -657,18 +716,27 @@ class CylinderPlaneContact(NoContact):
 
     @property
     def _allowed_system_two(self) -> list[Type]:
-        return [SurfaceBase]
+        return [Plane]
 
-    def apply_contact(self, system_one: Cylinder, system_two: SurfaceType) -> None:
+    def apply_contact(
+        self,
+        system_one: Cylinder,
+        system_two: Plane,
+        time: np.float64 = np.float64(0.0),
+    ) -> None:
         """
-        This function computes the plane force response on the cylinder, in the
-        case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
-        is used.
+        Compute the plane force response on the cylinder in the case of contact.
+
+        Contact model given in Eqn 4.8 Gazzola et al. RSoS 2018 paper is used.
 
         Parameters
         ----------
-        system_one: Cylinder
-        system_two: SurfaceBase
+        system_one : Cylinder
+            Cylinder object.
+        system_two : Plane
+            Plane object.
+        time : float
+            The time of simulation.
 
         """
         _calculate_contact_forces_cylinder_plane(

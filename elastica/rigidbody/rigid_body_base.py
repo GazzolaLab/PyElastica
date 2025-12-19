@@ -1,4 +1,4 @@
-__doc__ = """"""
+__doc__ = """Base class for rigid body implementations"""
 
 from typing import Type
 
@@ -6,10 +6,12 @@ from abc import ABC
 
 import numpy as np
 from numpy.typing import NDArray
+
 from elastica._linalg import _batch_matvec, _batch_cross
+from elastica.systems.protocol import SystemProtocol
 
 
-class RigidBodyBase(ABC):
+class RigidBodyBase(ABC, SystemProtocol):
     """
     Base class for rigid body classes.
 
@@ -23,7 +25,7 @@ class RigidBodyBase(ABC):
 
     def __init__(self) -> None:
         # rigid body does not have elements it only has one node. We are setting n_elems to
-        # make code to work. _bootstrap_from_data requires n_elems to be define
+        # make code to work.
         self.n_elems: int = 1
         self.n_nodes: int = 1
 

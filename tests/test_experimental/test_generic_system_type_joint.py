@@ -210,8 +210,8 @@ def test_generic_free_joint(
         point_system_one=point_system_one,
         point_system_two=point_system_two,
     )
-    frjt.apply_forces(system_one, system_one_index, system_two, system_two_index)
-    frjt.apply_torques(system_one, system_one_index, system_two, system_two_index)
+    frjt.apply_forces(system_one, system_one_index, system_two, system_two_index, 0.0)
+    frjt.apply_torques(system_one, system_one_index, system_two, system_two_index, 0.0)
 
     assert_allclose(
         system_one.external_forces[..., system_one_index],

@@ -1,4 +1,4 @@
-__doc__ = """ Built-in boundary condition implementationss """
+__doc__ = """ Built-in boundary condition implementations """
 
 from typing import Any, Optional, TypeVar, Generic
 
@@ -14,7 +14,7 @@ from elastica._rotations import _get_rotation_matrix
 from elastica.typing import SystemType, RodType, RigidBodyType, ConstrainingIndex
 
 
-S = TypeVar("S")
+S = TypeVar("S", bound=SystemType)
 
 
 class ConstraintBase(ABC, Generic[S]):
@@ -22,15 +22,13 @@ class ConstraintBase(ABC, Generic[S]):
 
     Notes
     -----
-    Constraint class must inherit BaseConstraint class.
+    Constraint class must inherit ConstraintBase class.
 
-
-        Attributes
-        ----------
-        system : RodBase or RigidBodyBase
-        node_indices : None or numpy.ndarray
-        element_indices : None or numpy.ndarray
-
+    Attributes
+    ----------
+    _system : RodType or RigidBodyType
+    _constrained_position_idx : NDArray[np.int32]
+    _constrained_director_idx : NDArray[np.int32]
     """
 
     _system: S
@@ -40,13 +38,14 @@ class ConstraintBase(ABC, Generic[S]):
     def __init__(
         self,
         *args: Any,
+        _system: S,
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
     ) -> None:
         """Initialize boundary condition"""
         try:
-            self._system = kwargs["_system"]
+            self._system = _system
             self._constrained_position_idx = np.array(
                 constrained_position_idx, dtype=np.int32
             )
@@ -85,7 +84,6 @@ class ConstraintBase(ABC, Generic[S]):
         time : float
             The time of simulation.
         """
-        pass
 
     @abstractmethod
     def constrain_rates(self, system: S, time: np.float64) -> None:
@@ -100,7 +98,6 @@ class ConstraintBase(ABC, Generic[S]):
             The time of simulation.
 
         """
-        pass
 
 
 class FreeBC(ConstraintBase):
@@ -115,13 +112,11 @@ class FreeBC(ConstraintBase):
         self, system: "RodType | RigidBodyType", time: np.float64
     ) -> None:
         """In FreeBC, this routine simply passes."""
-        pass
 
     def constrain_rates(
         self, system: "RodType | RigidBodyType", time: np.float64
     ) -> None:
         """In FreeBC, this routine simply passes."""
-        pass
 
 
 class OneEndFixedBC(ConstraintBase):
@@ -134,13 +129,17 @@ class OneEndFixedBC(ConstraintBase):
 
     Examples
     --------
-    How to fix one ends of the rod:
+    How to fix one end of the rod:
 
     >>> simulator.constrain(rod).using(
     ...    OneEndFixedBC,
-    ...    constrained_position_idx=(0,),
-    ...    constrained_director_idx=(0,)
+    ...    constrained_position_idx=(0,),  # Specify node to fix
+    ...    constrained_director_idx=(0,),  # Specify element to fix
     ... )
+
+    See Also
+    --------
+    :class:`GeneralConstraint`: For fixing multiple node/element with specific degrees-of-freedom.
     """
 
     def __init__(
@@ -195,22 +194,18 @@ class OneEndFixedBC(ConstraintBase):
         fixed_directors_collection: NDArray[np.float64],
     ) -> None:
         """
-        Computes constrain values in numba njit decorator
+        Computes constrain values in numba njit decorator.
 
         Parameters
         ----------
         position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
-        fixed_position : numpy.ndarray
+            2D (dim, blocksize) array containing data with 'float' type.
+        fixed_position_collection : numpy.ndarray
             2D (dim, 1) array containing data with 'float' type.
         director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
-        fixed_directors : numpy.ndarray
+            3D (dim, dim, blocksize) array containing data with 'float' type.
+        fixed_directors_collection : numpy.ndarray
             3D (dim, dim, 1) array containing data with 'float' type.
-
-        Returns
-        -------
-
         """
         position_collection[..., 0] = fixed_position_collection
         director_collection[..., 0] = fixed_directors_collection
@@ -222,18 +217,14 @@ class OneEndFixedBC(ConstraintBase):
         omega_collection: NDArray[np.float64],
     ) -> None:
         """
-        Compute contrain rates in numba njit decorator
+        Compute constrain rates in numba njit decorator
 
         Parameters
         ----------
         velocity_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         omega_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
-
-        Returns
-        -------
-
+            2D (dim, blocksize) array containing data with 'float' type.
         """
         velocity_collection[..., 0] = 0.0
         omega_collection[..., 0] = 0.0
@@ -288,22 +279,22 @@ class GeneralConstraint(ConstraintBase):
             np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained. If None, we constrain all dofs.
         rotational_constraint_selector: Optional[np.ndarray]
-            np.array of type bool indicating which translational degrees of freedom (dof) to constrain.
+            np.array of type bool indicating which rotational degrees of freedom (dof) to constrain.
             If entry is True, the corresponding dof will be constrained.
         """
         super().__init__(**kwargs)
         pos, dir = [], []
-        for data in fixed_data:
+        for idx, data in enumerate(fixed_data):
             if isinstance(data, np.ndarray) and data.shape == (3,):
                 pos.append(data)
-            elif isinstance(data, np.ndarray) and data.shape == (
-                3,
-                3,
-            ):
+            elif isinstance(data, np.ndarray) and data.shape == (3, 3):
                 dir.append(data)
             else:
-                # TODO: This part is prone to error.
-                break
+                raise ValueError(
+                    f"Invalid data at position {idx} in fixed_data. "
+                    f"Expected numpy array with shape (3,) for position or (3, 3) for director, "
+                    f"but got {type(data).__name__} with value: {data}."
+                )
 
         if len(pos) > 0:
             # transpose from (blocksize, dim) to (dim, blocksize)
@@ -371,14 +362,14 @@ class GeneralConstraint(ConstraintBase):
         constraint_selector: NDArray[np.int32],
     ) -> None:
         """
-        Computes constrain values in numba njit decorator
+        Computes constrain values in numba njit decorator.
 
         Parameters
         ----------
         position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         fixed_position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
@@ -413,7 +404,7 @@ class GeneralConstraint(ConstraintBase):
         Parameters
         ----------
         velocity_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
@@ -445,9 +436,9 @@ class GeneralConstraint(ConstraintBase):
         Parameters
         ----------
         director_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         omega_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
             1D array containing the index of constraining nodes
         constraint_selector: numpy.ndarray
@@ -561,15 +552,16 @@ class FixedConstraint(GeneralConstraint):
         indices: NDArray[np.int32],
     ) -> None:
         """
-        Computes constrain values in numba njit decorator
+        Computes constrain values in numba njit decorator.
+
         Parameters
         ----------
         director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
+            3D (dim, dim, blocksize) array containing data with 'float' type.
         fixed_director_collection : numpy.ndarray
-            3D (dim, dim, blocksize) array containing data with `float` type.
+            3D (dim, dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
-            1D array containing the index of constraining nodes
+            1D array containing the index of constraining nodes.
         """
         block_size = indices.size
         for i in range(block_size):
@@ -584,15 +576,16 @@ class FixedConstraint(GeneralConstraint):
         indices: NDArray[np.int32],
     ) -> None:
         """
-        Computes constrain values in numba njit decorator
+        Computes constrain values in numba njit decorator.
+
         Parameters
         ----------
         position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         fixed_position_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
-            1D array containing the index of constraining nodes
+            1D array containing the index of constraining nodes.
         """
         block_size = indices.size
         for i in range(block_size):
@@ -605,13 +598,14 @@ class FixedConstraint(GeneralConstraint):
         velocity_collection: NDArray[np.float64], indices: NDArray[np.int32]
     ) -> None:
         """
-        Compute constrain rates in numba njit decorator
+        Compute constrain rates in numba njit decorator.
+
         Parameters
         ----------
         velocity_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
-            1D array containing the index of constraining nodes
+            1D array containing the index of constraining nodes.
         """
 
         block_size = indices.size
@@ -627,13 +621,14 @@ class FixedConstraint(GeneralConstraint):
         omega_collection: NDArray[np.float64], indices: NDArray[np.int32]
     ) -> None:
         """
-        Compute constrain rates in numba njit decorator
+        Compute constrain rates in numba njit decorator.
+
         Parameters
         ----------
         omega_collection : numpy.ndarray
-            2D (dim, blocksize) array containing data with `float` type.
+            2D (dim, blocksize) array containing data with 'float' type.
         indices : numpy.ndarray
-            1D array containing the index of constraining nodes
+            1D array containing the index of constraining nodes.
         """
 
         block_size = indices.size
@@ -653,30 +648,28 @@ class HelicalBucklingBC(ConstraintBase):
 
     `Example case (helical buckling) <https://github.com/GazzolaLab/PyElastica/blob/master/examples/HelicalBucklingCase/helicalbuckling.py>`_
 
-        Attributes
-        ----------
-        twisting_time: float
-            Time to complete twist.
-        final_start_position: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Position of first node of rod after twist completed.
-        final_end_position: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Position of last node of rod after twist completed.
-        ang_vel: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Angular velocity of rod during twisting time.
-        shrink_vel: numpy.ndarray
-            2D (dim, 1) array containing data with 'float' type.
-            Shrink velocity of rod during twisting time.
-        final_start_directors: numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
-            Directors of first element of rod after twist completed.
-        final_end_directors: numpy.ndarray
-            3D (dim, dim, 1) array containing data with 'float' type.
-            Directors of last element of rod after twist completed.
-
-
+    Attributes
+    ----------
+    twisting_time: float
+        Time to complete twist.
+    final_start_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Position of first node of rod after twist completed.
+    final_end_position: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Position of last node of rod after twist completed.
+    ang_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Angular velocity of rod during twisting time.
+    shrink_vel: numpy.ndarray
+        2D (dim, 1) array containing data with 'float' type.
+        Shrink velocity of rod during twisting time.
+    final_start_directors: numpy.ndarray
+        3D (dim, dim, 1) array containing data with 'float' type.
+        Directors of first element of rod after twist completed.
+    final_end_directors: numpy.ndarray
+        3D (dim, dim, 1) array containing data with 'float' type.
+        Directors of last element of rod after twist completed.
     """
 
     def __init__(
@@ -719,7 +712,7 @@ class HelicalBucklingBC(ConstraintBase):
         super().__init__(**kwargs)
         self.twisting_time = np.float64(twisting_time)
 
-        angel_vel_scalar = np.float64(
+        angle_vel_scalar = np.float64(
             (2.0 * number_of_rotations * np.pi / self.twisting_time) / 2.0
         )
         shrink_vel_scalar = np.float64(slack / (self.twisting_time * 2.0))
@@ -731,7 +724,7 @@ class HelicalBucklingBC(ConstraintBase):
         self.final_start_position = position_start + slack / 2.0 * direction
         self.final_end_position = position_end - slack / 2.0 * direction
 
-        self.ang_vel = angel_vel_scalar * direction
+        self.ang_vel = angle_vel_scalar * direction
         self.shrink_vel = shrink_vel_scalar * direction
 
         theta = np.float64(number_of_rotations * np.pi)

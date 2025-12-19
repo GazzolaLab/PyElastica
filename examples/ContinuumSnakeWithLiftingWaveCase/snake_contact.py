@@ -1,4 +1,4 @@
-__doc__ = """Rod plane contact with anistropic friction (no static friction)"""
+__doc__ = """Rod plane contact with anisotropic friction (no static friction)"""
 from typing import Type
 
 import numpy as np
@@ -25,7 +25,6 @@ from elastica.contact_utils import (
 from numba import njit
 from elastica.rod.rod_base import RodBase
 from elastica.surface import Plane
-from elastica.surface.surface_base import SurfaceBase
 from elastica.contact_forces import NoContact
 from elastica.typing import RodType, SystemType
 
@@ -46,7 +45,7 @@ def apply_normal_force_numba(
 ):
     """
     This function computes the plane force response on the element, in the
-    case of contact. Contact model given in Eqn 4.8 Gazzola et. al. RSoS 2018 paper
+    case of contact. Contact model given in Eqn 4.8 Gazzola et al. RSoS 2018 paper
     is used.
 
     Parameters
@@ -291,9 +290,11 @@ class SnakeRodPlaneContact(NoContact):
     @property
     def _allowed_system_two(self) -> list[Type]:
         # Modify this list to include the allowed system types for contact
-        return [SurfaceBase]
+        return [Plane]
 
-    def apply_contact(self, system_one: RodType, system_two: SystemType) -> None:
+    def apply_contact(
+        self, system_one: RodType, system_two: SystemType, time: float
+    ) -> None:
         """
         In the case of contact with the plane, this function computes the plane reaction force on the element.
 

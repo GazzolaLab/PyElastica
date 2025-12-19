@@ -4,11 +4,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 from elastica.timestepper import integrate, extend_stepper_interface
-from elastica.experimental.timestepper.explicit_steppers import (
-    RungeKutta4,
-    EulerForward,
-    ExplicitStepperMixin,
-)
 from elastica.timestepper.symplectic_steppers import (
     PositionVerlet,
     PEFRL,
@@ -49,20 +44,6 @@ class TestExtendStepperInterface:
         def _dynamic_step(self):
             pass
 
-    class MockExplicitStepper(ExplicitStepperMixin):
-
-        def get_stages(self):
-            return [self._stage]
-
-        def get_updates(self):
-            return [self._update]
-
-        def _stage(self):
-            pass
-
-        def _update(self):
-            pass
-
     # We cannot call a stepper on a system until both the stepper
     # and system "see" one another (for performance reasons, mostly)
     # So before "seeing" the system, the stepper should not have
@@ -72,7 +53,6 @@ class TestExtendStepperInterface:
         "stepper_module",
         [
             MockSymplecticStepper,
-            MockExplicitStepper,
         ],
     )
     def test_symplectic_stepper_interface_for_simple_systems(self, stepper_module):
@@ -86,7 +66,7 @@ class TestExtendStepperInterface:
 
     @pytest.mark.parametrize(
         "stepper_module",
-        [MockSymplecticStepper, MockExplicitStepper],
+        [MockSymplecticStepper],
     )
     def test_symplectic_stepper_interface_for_collective_systems(self, stepper_module):
         system = SymplecticUndampedHarmonicOscillatorCollectiveSystem()
@@ -110,99 +90,20 @@ class TestExtendStepperInterface:
         assert "stepper is not supported" in str(excinfo.value)
 
 
-def test_integrate_throws_an_assert_for_negative_final_time():
+def test_integrate_throws_an_assert_for_negative_final_time(rng):
     with pytest.raises(AssertionError) as excinfo:
-        integrate([], [], -np.random.rand(1))
+        integrate([], [], -rng.random(1))
     assert "time is negative" in str(excinfo.value)
 
 
-def test_integrate_throws_an_assert_for_negative_total_steps():
+def test_integrate_throws_an_assert_for_negative_total_steps(rng):
     with pytest.raises(AssertionError) as excinfo:
-        integrate([], [], np.random.rand(1), -np.random.randint(100, 10000))
+        integrate([], [], rng.random(1), -rng.randint(100, 10000))
     assert "steps is negative" in str(excinfo.value)
 
 
-# Added automatic discovery of Stateful explicit integrators
-# ExplicitSteppers = StatefulExplicitStepper.__subclasses__()
 # SymplecticSteppers = SymplecticStepper.__subclasses__()
-# StatefulExplicitSteppers = [StatefulRungeKutta4, StatefulEulerForward]
-ExplicitSteppers = [EulerForward, RungeKutta4]
 SymplecticSteppers = [PositionVerlet, PEFRL]
-
-
-# class TestExplicitSteppers:
-#     @pytest.mark.parametrize("stepper", StatefulExplicitSteppers)
-#     def test_against_scalar_exponential(self, stepper):
-#         system = ScalarExponentialDecaySystem(-1, 1)
-#         final_time = 1
-#         n_steps = 1000
-#         integrate(stepper(), system, final_time=final_time, n_steps=n_steps)
-#
-#         assert_allclose(
-#             system.state,
-#             system.analytical_solution(final_time),
-#             rtol=Tolerance.rtol() * 1e3,
-#             atol=Tolerance.atol(),
-#         )
-#
-#     @pytest.mark.parametrize("stepper", StatefulExplicitSteppers[:-1])
-#     def test_against_undamped_harmonic_oscillator(self, stepper):
-#         system = UndampedSimpleHarmonicOscillatorSystem()
-#         final_time = 4.0 * np.pi
-#         n_steps = 2000
-#         integrate(stepper(), system, final_time=final_time, n_steps=n_steps)
-#
-#         assert_allclose(
-#             system.state,
-#             system.analytical_solution(final_time),
-#             rtol=Tolerance.rtol(),
-#             atol=Tolerance.atol(),
-#         )
-#
-#     @pytest.mark.parametrize("stepper", StatefulExplicitSteppers[:-1])
-#     def test_against_damped_harmonic_oscillator(self, stepper):
-#         system = DampedSimpleHarmonicOscillatorSystem()
-#         final_time = 4.0 * np.pi
-#         n_steps = 2000
-#         integrate(stepper(), system, final_time=final_time, n_steps=n_steps)
-#
-#         assert_allclose(
-#             system.state,
-#             system.analytical_solution(final_time),
-#             rtol=Tolerance.rtol(),
-#             atol=Tolerance.atol(),
-#         )
-#
-#     def test_linear_exponential_integrator(self):
-#         system = MultipleFrameRotationSystem(n_frames=128)
-#         final_time = np.pi
-#         n_steps = 1000
-#         integrate(
-#             StatefulLinearExponentialIntegrator(),
-#             system,
-#             final_time=final_time,
-#             n_steps=n_steps,
-#         )
-#
-#         assert_allclose(
-#             system.linearly_evolving_state,
-#             system.analytical_solution(final_time),
-#             atol=1e-4,
-#         )
-#
-#     @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
-#     def test_explicit_against_analytical_system(self, explicit_stepper):
-#         system = SecondOrderHybridSystem()
-#         final_time = 1.0
-#         n_steps = 2000
-#         integrate(explicit_stepper(), system, final_time=final_time, n_steps=n_steps)
-#
-#         assert_allclose(
-#             system.final_solution(final_time),
-#             system.analytical_solution(final_time),
-#             rtol=Tolerance.rtol() * 1e2,
-#             atol=Tolerance.atol(),
-#         )
 
 
 class TestSteppersAgainstCollectiveSystems:
@@ -223,59 +124,6 @@ class TestSteppersAgainstCollectiveSystems:
                 atol=Tolerance.atol(),
             )
 
-    @pytest.mark.parametrize("explicit_stepper", ExplicitSteppers)
-    def test_explicit_steppers(self, explicit_stepper):
-        collective_system = ScalarExponentialDampedHarmonicOscillatorCollectiveSystem()
-        final_time = 1.0
-        if explicit_stepper == EulerForward:
-            # Euler requires very small time-steps and in order not to slow down test,
-            # we are scaling the difference between analytical and numerical solution.
-            n_steps = 25000
-            scale = 1e3
-        else:
-            n_steps = 500
-            scale = 1
-
-        stepper = explicit_stepper()
-
-        dt = np.float64(float(final_time) / n_steps)
-        time = np.float64(0.0)
-        tol = Tolerance.atol()
-
-        # Before stepping, let's extend the interface of the stepper
-        # while providing memory slots
-        from elastica.experimental.timestepper.memory import (
-            make_memory_for_explicit_stepper,
-        )
-
-        memory_collection = make_memory_for_explicit_stepper(stepper, collective_system)
-        from elastica.timestepper import extend_stepper_interface
-
-        do_step, stagets_and_updates = extend_stepper_interface(
-            stepper, collective_system
-        )
-
-        while np.abs(final_time - time) > 1e5 * tol:
-            time = do_step(
-                stepper,
-                stagets_and_updates,
-                collective_system,
-                memory_collection,
-                time,
-                dt,
-            )
-
-        for system in collective_system:
-            assert_allclose(
-                system.state,
-                system.analytical_solution(final_time),
-                rtol=Tolerance.rtol() * scale,
-                atol=Tolerance.atol() * scale,
-            )
-
-    # @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
-    # def test_symplectic_against_collective_system(self, symplectic_stepper):
-
 
 class TestSteppersAgainstRodLikeSystems:
     """The rods compose specific data-structures that
@@ -285,13 +133,13 @@ class TestSteppersAgainstRodLikeSystems:
     # TODO : Figure out a way of integrating rods with explicit timesteppers
     # @pytest.mark.xfail
     # @pytest.mark.parametrize("explicit_stepper", StatefulExplicitSteppers[:-1])
-    # def test_explicit_against_ellipse_motion(self, explicit_stepper):
+    # def test_explicit_against_ellipse_motion(self, explicit_stepper, rng):
     #     from elastica._systems._analytical import (
     #         SimpleSystemWithPositionsDirectors,
     #     )
     #
     #     rod_like_system = SimpleSystemWithPositionsDirectors(
-    #         np.array([0.0, 0.0, 0.0]), np.random.randn(3, 3, 1)
+    #         np.array([0.0, 0.0, 0.0]), rng.normal((3, 3, 1))
     #     )
     #     final_time = 1.0
     #     n_steps = 500
@@ -307,11 +155,11 @@ class TestSteppersAgainstRodLikeSystems:
     #     )
 
     @pytest.mark.parametrize("symplectic_stepper", SymplecticSteppers)
-    def test_symplectics_against_ellipse_motion(self, symplectic_stepper):
+    def test_symplectics_against_ellipse_motion(self, symplectic_stepper, rng):
 
-        random_start_position = np.random.randn(3, 1)
-        random_end_position = np.random.randn(3, 1)
-        random_directors, _ = np.linalg.qr(np.random.randn(3, 3))
+        random_start_position = rng.standard_normal((3, 1))
+        random_end_position = rng.standard_normal((3, 1))
+        random_directors, _ = np.linalg.qr(rng.standard_normal((3, 3)))
         random_directors = random_directors.reshape(3, 3, 1)
 
         rod_like_system = make_simple_system_with_positions_directors(

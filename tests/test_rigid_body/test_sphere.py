@@ -9,7 +9,7 @@ from elastica.rigidbody import Sphere
 
 
 # tests Initialisation of sphere
-def test_sphere_initialization():
+def test_sphere_initialization(rng):
     """
     This test case is for testing initialization of rigid sphere and it checks the
     validity of the members of sphere class.
@@ -19,13 +19,13 @@ def test_sphere_initialization():
 
     """
     # setting up test params
-    start = np.random.rand(3)
+    start = rng.random(3)
     direction = np.array([0.0, 0.0, 1.0]).reshape(3, 1)
     normal = np.array([1.0, 0.0, 0.0]).reshape(3, 1)
     binormal = np.cross(direction[..., 0], normal[..., 0]).reshape(3, 1)
-    base_radius = np.random.uniform(1, 10)
+    base_radius = rng.uniform(1, 10)
     volume = 4.0 / 3.0 * np.pi * base_radius**3
-    density = np.random.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = density * volume
 
     # Mass second moment of inertia for disk cross-section
@@ -78,7 +78,7 @@ def test_sphere_initialization():
     )
 
 
-def test_sphere_update_accelerations():
+def test_sphere_update_accelerations(rng):
     """
     This test is testing the update acceleration method of Sphere class.
 
@@ -87,10 +87,10 @@ def test_sphere_update_accelerations():
 
     """
 
-    start = np.random.rand(3)
-    base_radius = np.random.uniform(1, 10)
+    start = rng.random(3)
+    base_radius = rng.uniform(1, 10)
     volume = 4.0 / 3.0 * np.pi * base_radius**3
-    density = np.random.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = density * volume
     test_sphere = Sphere(start, base_radius, density)
 
@@ -98,8 +98,8 @@ def test_sphere_update_accelerations():
         test_sphere.inv_mass_second_moment_of_inertia.reshape(3, 3)
     )
 
-    external_forces = np.random.randn(3).reshape(3, 1)
-    external_torques = np.random.randn(3).reshape(3, 1)
+    external_forces = rng.standard_normal(3).reshape(3, 1)
+    external_torques = rng.standard_normal(3).reshape(3, 1)
 
     correct_acceleration = external_forces / mass
     correct_alpha = inv_mass_second_moment_of_inertia @ external_torques.reshape(3)
@@ -116,7 +116,7 @@ def test_sphere_update_accelerations():
     assert_allclose(correct_alpha, test_sphere.alpha_collection, atol=Tolerance.atol())
 
 
-def test_compute_position_center_of_mass():
+def test_compute_position_center_of_mass(rng):
     """
     This test is testing compute position center of mass method of Sphere class.
 
@@ -125,9 +125,9 @@ def test_compute_position_center_of_mass():
 
     """
 
-    start = np.random.rand(3)
-    base_radius = np.random.uniform(1, 10)
-    density = np.random.uniform(1, 10)
+    start = rng.random(3)
+    base_radius = rng.uniform(1, 10)
+    density = rng.uniform(1, 10)
     test_sphere = Sphere(start, base_radius, density)
 
     correct_position = start
@@ -137,7 +137,7 @@ def test_compute_position_center_of_mass():
     assert_allclose(correct_position, test_position, atol=Tolerance.atol())
 
 
-def test_compute_translational_energy():
+def test_compute_translational_energy(rng):
     """
     This test is testing compute translational energy function.
 
@@ -145,14 +145,14 @@ def test_compute_translational_energy():
     -------
 
     """
-    start = np.random.rand(3)
-    base_radius = np.random.uniform(1, 10)
+    start = rng.random(3)
+    base_radius = rng.uniform(1, 10)
     volume = 4.0 / 3.0 * np.pi * base_radius**3
-    density = np.random.uniform(1, 10)
+    density = rng.uniform(1, 10)
     mass = density * volume
     test_sphere = Sphere(start, base_radius, density)
 
-    speed = np.random.randn()
+    speed = rng.standard_normal()
     test_sphere.velocity_collection[2] = speed
 
     correct_energy = 0.5 * mass * speed**2

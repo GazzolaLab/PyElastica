@@ -3,7 +3,6 @@ __doc__ = """ Test scripts for rotation kernels in Elastica Numpy implementaiton
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-import sys
 
 from elastica._rotations import (
     _generate_skew_map,  # noqa
@@ -15,11 +14,6 @@ from elastica._rotations import (
     _skew_symmetrize,  # noqa
     _skew_symmetrize_sq,  # noqa
 )
-
-
-###############################################################################
-##################### Implementation tests start ##############################
-###############################################################################
 
 
 # Cross products only make sense till dim = 3 (dim = 7 is an exception)
@@ -68,9 +62,9 @@ def test_matrix_diag_map(dim, diag_map):
     assert _get_diag_map(dim) == diag_map
 
 
-def test_skew_symmetrize_correctness_in_two_dimensions():
+def test_skew_symmetrize_correctness_in_two_dimensions(rng):
     dim = 3
-    vector = np.hstack((np.random.randn(2), 1))
+    vector = np.hstack((rng.standard_normal(2), 1))
 
     test_matrix = _skew_symmetrize(vector[:, np.newaxis])
 
@@ -84,9 +78,9 @@ def test_skew_symmetrize_correctness_in_two_dimensions():
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_skew_symmetrize_correctness_in_three_dimensions(blocksize):
+def test_skew_symmetrize_correctness_in_three_dimensions(blocksize, rng):
     dim = 3
-    vector = np.random.randn(dim, blocksize)
+    vector = rng.standard_normal((dim, blocksize))
     correct_matrix = np.zeros((dim * dim, blocksize))
 
     correct_matrix[1] = -vector[2]
@@ -106,9 +100,9 @@ def test_skew_symmetrize_correctness_in_three_dimensions(blocksize):
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_skew_symmetrize_sq_correctness_in_three_dimensions(blocksize):
+def test_skew_symmetrize_sq_correctness_in_three_dimensions(blocksize, rng):
     dim = 3
-    vector = np.random.randn(dim, blocksize)
+    vector = rng.standard_normal((dim, blocksize))
     correct_matrix = _skew_symmetrize(vector).reshape(dim, dim, -1)
     correct_matrix = np.einsum("ijk,jlk->ilk", correct_matrix, correct_matrix)
 
@@ -119,19 +113,19 @@ def test_skew_symmetrize_sq_correctness_in_three_dimensions(blocksize):
     assert_allclose(test_matrix, correct_matrix)
 
 
-def test_get_skew_symmetric_pair_correctness():
+def test_get_skew_symmetric_pair_correctness(rng):
     dim = 3
     blocksize = 8
-    vector_collection = np.random.randn(dim, blocksize)
+    vector_collection = rng.standard_normal((dim, blocksize))
     u, u_sq = _get_skew_symmetric_pair(vector_collection)
     assert u_sq.shape == (3, 3, blocksize)
     assert_allclose(u_sq, _skew_symmetrize_sq(vector_collection))
 
 
 @pytest.mark.parametrize("blocksize", [1, 32, 128, 512])
-def test_inv_skew_symmetrize_correctness(blocksize):
+def test_inv_skew_symmetrize_correctness(blocksize, rng):
     dim = 3
-    vector = np.random.randn(dim, blocksize)
+    vector = rng.standard_normal((dim, blocksize))
     input_matrix = _skew_symmetrize(vector)
 
     # reshape and squeeze because we are testing a single vector
@@ -139,15 +133,3 @@ def test_inv_skew_symmetrize_correctness(blocksize):
 
     assert test_vector.shape == (3, blocksize)
     assert_allclose(test_vector, vector)
-
-
-###############################################################################
-##################### Implementation tests finis ##############################
-###############################################################################
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        exec(sys.argv[1])
-    else:
-        from pytest import main
-
-        main([__file__])

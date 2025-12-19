@@ -1,12 +1,13 @@
-from typing import TypeAlias, Callable
+from typing import TypeAlias, Callable, cast
 
 import numpy as np
 from numba import njit
-from elastica.typing import SystemType
+from numpy.typing import NDArray
+from elastica.typing import RodType
 from elastica.external_forces import NoForces
 
-Position: TypeAlias = np.ndarray  # vector (3)
-Orientation: TypeAlias = np.ndarray  # SO3 matrix (3, 3)
+Position: TypeAlias = NDArray[np.float64]  # vector (3)
+Orientation: TypeAlias = NDArray[np.float64]  # SO3 matrix (3, 3)
 Pose: TypeAlias = tuple[Position, Orientation]
 
 
@@ -20,10 +21,10 @@ class TargetPoseProportionalControl(NoForces):
         elem_index: int,
         p_linear_value: float,
         p_angular_value: float,
-        target: Pose | Callable[[float, SystemType], Pose],
+        target: Pose | Callable[[float, RodType], Pose],
         target_history: list[Pose],
-        ramp_up_time=1.0,
-    ):
+        ramp_up_time: float = 1.0,
+    ) -> None:
         """
 
         Parameters
@@ -34,7 +35,7 @@ class TargetPoseProportionalControl(NoForces):
             proportional linear gain
         p_angular_value: float
             proportional angular gain
-        target: Pose | Callable[[float, SystemType], Pose]
+        target: Pose | Callable[[float, RodType], Pose]
             Target position and orientation.
             array (3,) containing data with 'float' type, or a function that returns the target Pose
             given time and rod.
@@ -47,15 +48,17 @@ class TargetPoseProportionalControl(NoForces):
         self.linear_gain = p_linear_value
         self.angular_gain = p_angular_value
         self.ramp_up_time = ramp_up_time
-        self.target = target
         self.target_history = target_history
         self.save_counter = 0
         self.save_every = 200
 
-        if isinstance(target, np.ndarray):
-            self.target = lambda t: target
+        self.target: Callable[[float, RodType], Pose]
+        if callable(target):
+            self.target = target
+        else:
+            self.target = cast(Callable[[float, RodType], Pose], lambda t, _: target)
 
-    def apply_forces(self, system: SystemType, time=0.0):
+    def apply_forces(self, system: RodType, time: float = 0.0) -> None:
         target_position, target_orientation = self.target(time, system)
         if self.save_counter % self.save_every == 0:
             self.target_history.append((target_position, target_orientation))
@@ -77,20 +80,20 @@ class TargetPoseProportionalControl(NoForces):
         )
 
     @staticmethod
-    @njit(cache=True)
+    @njit(cache=True)  # type: ignore
     def compute_node_force(
-        external_forces,
-        external_torques,
-        positions,
-        orientations,
-        linear_gain,
-        angular_gain,
-        time,
-        ramp_up_time,
-        target_position,
-        target_orientation,
-        index,
-    ):
+        external_forces: NDArray[np.float64],
+        external_torques: NDArray[np.float64],
+        positions: NDArray[np.float64],
+        orientations: NDArray[np.float64],
+        linear_gain: float,
+        angular_gain: float,
+        time: float,
+        ramp_up_time: float,
+        target_position: NDArray[np.float64],
+        target_orientation: NDArray[np.float64],
+        index: int,
+    ) -> None:
         factor = min(1.0, time / ramp_up_time)
 
         # Linear

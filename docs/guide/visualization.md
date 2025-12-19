@@ -6,7 +6,7 @@ If you wish to visualize your system, make sure you define your callback functio
 
 ## POVray
 
-For high-quality visualization, we suggest [POVray](http://povray.com). See [this tutorial](https://github.com/GazzolaLab/PyElastica/tree/master/examples/Visualization) for examples of different ways of visualizing the system. 
+For high-quality visualization, we suggest [POVray](http://povray.com).
 
 ## Rhino
 

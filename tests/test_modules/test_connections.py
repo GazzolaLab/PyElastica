@@ -126,11 +126,19 @@ class TestConnect:
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.using(illegal_connect)
-        assert "not a valid joint" in str(excinfo.value)
+        assert "not a valid" in str(excinfo.value)
 
-    from elastica.joint import FreeJoint, FixedJoint, HingeJoint
+    from elastica.joint import (
+        FreeJoint,
+        FixedJoint,
+        HingeJoint,
+        BallJoint,
+        SphericalJoint,
+    )
 
-    @pytest.mark.parametrize("legal_connect", [FreeJoint, HingeJoint, FixedJoint])
+    @pytest.mark.parametrize(
+        "legal_connect", [FreeJoint, HingeJoint, FixedJoint, BallJoint, SphericalJoint]
+    )
     def test_using_with_legal_connect(self, load_connect, legal_connect):
         connect = load_connect
         connect.using(legal_connect, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -174,10 +182,7 @@ class TestConnect:
         # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = connect.instantiate()
-        assert (
-            r"Unable to construct connection class.\nDid you provide all necessary joint properties?"
-            == str(excinfo.value)
-        )
+        assert r"Unable to construct connection class" in str(excinfo.value)
 
 
 class TestConnectionsMixin:
@@ -186,7 +191,6 @@ class TestConnectionsMixin:
     class SystemCollectionWithConnectionsMixin(BaseSystemCollection, Connections):
         pass
 
-    # TODO fix link after new PR
     from elastica.rod import RodBase
 
     class MockRod(RodBase):

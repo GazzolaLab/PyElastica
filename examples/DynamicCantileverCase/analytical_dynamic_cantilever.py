@@ -41,7 +41,7 @@ class AnalyticalDynamicCantilever:
             Cross-sectional area of the rod
         moment_of_inertia: float
             Second moment of area of the rod's cross-section
-        young's_modulus: float
+        youngs_modulus: float
             Young's modulus of the rod
         density: float
             Density of the rod

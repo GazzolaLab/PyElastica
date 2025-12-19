@@ -1,9 +1,6 @@
 __doc__ = """ Rod classes and implementation details """
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import Any, Optional, Type
 from typing_extensions import Self
-
-from elastica.typing import RodType
-from .protocol import CosseratRodProtocol
 
 from numpy.typing import NDArray
 
@@ -11,6 +8,7 @@ import numpy as np
 import functools
 import numba
 from elastica.rod import RodBase
+from elastica.systems.protocol import SystemProtocol
 from elastica._linalg import (
     _batch_cross,
     _batch_norm,
@@ -36,7 +34,7 @@ def _get_z_vector() -> NDArray[np.float64]:
     return np.array([0.0, 0.0, 1.0]).reshape(3, -1)
 
 
-def _compute_sigma_kappa_for_blockstructure(memory_block: RodType) -> None:
+def _compute_sigma_kappa_for_blockstructure(memory_block: RodBase) -> None:
     """
     This function is a wrapper to call functions which computes shear stretch, strain and bending twist and strain.
 
@@ -70,90 +68,90 @@ def _compute_sigma_kappa_for_blockstructure(memory_block: RodType) -> None:
     )
 
 
-class CosseratRod(RodBase, KnotTheory):
+class CosseratRod(RodBase, SystemProtocol):
     """
     Cosserat Rod class. This is the preferred class for rods because it is derived from some
     of the essential base classes.
 
-        Attributes
-        ----------
-        n_elems: int
-            The number of elements of the rod.
-        position_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node position vectors.
-        velocity_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node velocity vectors.
-        acceleration_collection: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Array containing node acceleration vectors.
-        omega_collection: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array containing element angular velocity vectors.
-        alpha_collection: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Array contining element angular acceleration vectors.
-        director_collection: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Array containing element director matrices.
-        rest_lengths: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element lengths at rest configuration.
-        density: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod elements densities.
-        volume: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element volumes.
-        mass: NDArray[np.float64]
-            1D (n_nodes) array containing data with 'float' type.
-            Rod node masses. Note that masses are stored on the nodes, not on elements.
-        mass_second_moment_of_inertia: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Rod element mass second moment of interia.
-        inv_mass_second_moment_of_inertia: NDArray[np.float64]
-            3D (dim, dim, n_elems) array containing data with 'float' type.
-            Rod element inverse mass moment of inertia.
-        rest_voronoi_lengths: NDArray[np.float64]
-            1D (n_voronoi) array containing data with 'float' type.
-            Rod lengths on the voronoi domain at the rest configuration.
-        internal_forces: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            Rod node internal forces. Note that internal forces are stored on the node, not on elements.
-        internal_torques: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Rod element internal torques.
-        external_forces: NDArray[np.float64]
-            2D (dim, n_nodes) array containing data with 'float' type.
-            External forces acting on rod nodes.
-        external_torques: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            External torques acting on rod elements.
-        lengths: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element lengths.
-        tangents: NDArray[np.float64]
-            2D (dim, n_elems) array containing data with 'float' type.
-            Rod element tangent vectors.
-        radius: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element radius.
-        dilatation: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dilatation.
-        voronoi_dilatation: NDArray[np.float64]
-            1D (n_voronoi) array containing data with 'float' type.
-            Rod dilatation on voronoi domain.
-        dilatation_rate: NDArray[np.float64]
-            1D (n_elems) array containing data with 'float' type.
-            Rod element dilatation rates.
+    Attributes
+    ----------
+    n_elems: int
+        The number of elements of the rod.
+    position_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node position vectors.
+    velocity_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node velocity vectors.
+    acceleration_collection: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Array containing node acceleration vectors.
+    omega_collection: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array containing element angular velocity vectors.
+    alpha_collection: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Array containing element angular acceleration vectors.
+    director_collection: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Array containing element director matrices.
+    rest_lengths: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element lengths at rest configuration.
+    density: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element densities.
+    volume: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element volumes.
+    mass: NDArray[np.float64]
+        1D (n_nodes) array containing data with 'float' type.
+        Rod node masses. Note that masses are stored on the nodes, not on elements.
+    mass_second_moment_of_inertia: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Rod element mass second moment of inertia.
+    inv_mass_second_moment_of_inertia: NDArray[np.float64]
+        3D (dim, dim, n_elems) array containing data with 'float' type.
+        Rod element inverse mass moment of inertia.
+    rest_voronoi_lengths: NDArray[np.float64]
+        1D (n_voronoi) array containing data with 'float' type.
+        Rod lengths on the voronoi domain at the rest configuration.
+    internal_forces: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        Rod node internal forces. Note that internal forces are stored on the node, not on elements.
+    internal_torques: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Rod element internal torques.
+    external_forces: NDArray[np.float64]
+        2D (dim, n_nodes) array containing data with 'float' type.
+        External forces acting on rod nodes.
+    external_torques: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        External torques acting on rod elements.
+    lengths: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element lengths.
+    tangents: NDArray[np.float64]
+        2D (dim, n_elems) array containing data with 'float' type.
+        Rod element tangent vectors.
+    radius: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element radius.
+    dilatation: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element dilatation.
+    voronoi_dilatation: NDArray[np.float64]
+        1D (n_voronoi) array containing data with 'float' type.
+        Rod dilatation on voronoi domain.
+    dilatation_rate: NDArray[np.float64]
+        1D (n_elems) array containing data with 'float' type.
+        Rod element dilatation rates.
     """
 
     REQUISITE_MODULES: list[Type] = []
 
     def __init__(
-        self: CosseratRodProtocol,
+        self,
         n_elements: int,
         position: NDArray[np.float64],
         velocity: NDArray[np.float64],
@@ -295,7 +293,7 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        **kwargs : dict, optional
+        kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
         Returns
@@ -413,7 +411,7 @@ class CosseratRod(RodBase, KnotTheory):
         **kwargs: Any,
     ) -> Self:
         """
-        Cosserat rod constructor for straight-rod geometry.
+        Cosserat rod constructor for ring-rod geometry.
 
 
         Notes
@@ -425,7 +423,7 @@ class CosseratRod(RodBase, KnotTheory):
         Parameters
         ----------
         n_elements : int
-            Number of element. Must be greater than 3. Generarally recommended to start with 40-50, and adjust the resolution.
+            Number of element. Must be greater than 3. Generally recommended to start with 40-50, and adjust the resolution.
         ring_center_position : NDArray[np.float64]
             Center coordinate for ring rod in 3D
         direction : NDArray[np.float64]
@@ -442,7 +440,7 @@ class CosseratRod(RodBase, KnotTheory):
             Damping coefficient for Rayleigh damping
         youngs_modulus : float
             Young's modulus
-        **kwargs : dict, optional
+        kwargs : dict, optional
             The "position" and/or "directors" can be overrided by passing "position" and "directors" argument. Remember, the shape of the "position" is (3,n_elements+1) and the shape of the "directors" is (3,3,n_elements).
 
         Returns
@@ -461,7 +459,7 @@ class CosseratRod(RodBase, KnotTheory):
                 "For reference see the class elastica.dissipation.AnalyticalLinearDamper(),\n"
                 "and for usage check examples/axial_stretching.py"
             )
-        # Straight rod is not ring rod set flag to false
+        # Ring rod flag set to true
         ring_rod_flag = True
         (
             n_elements,
@@ -547,9 +545,7 @@ class CosseratRod(RodBase, KnotTheory):
         rod.REQUISITE_MODULES.append(Constraints)
         return rod
 
-    def compute_internal_forces_and_torques(
-        self: CosseratRodProtocol, time: np.float64
-    ) -> None:
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None:
         """
         Compute internal forces and torques. We need to compute internal forces and torques before the acceleration because
         they are used in interaction. Thus in order to speed up simulation, we will compute internal forces and torques
@@ -604,7 +600,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self: CosseratRodProtocol, time: np.float64) -> None:
+    def update_accelerations(self, time: np.float64) -> None:
         """
         Updates the acceleration variables
 
@@ -626,14 +622,12 @@ class CosseratRod(RodBase, KnotTheory):
             self.dilatation,
         )
 
-    def zeroed_out_external_forces_and_torques(
-        self: CosseratRodProtocol, time: np.float64
-    ) -> None:
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:
         _zeroed_out_external_forces_and_torques(
             self.external_forces, self.external_torques
         )
 
-    def compute_translational_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_translational_energy(self) -> NDArray[np.float64]:
         """
         Compute total translational energy of the rod at the instance.
         """
@@ -647,7 +641,7 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_rotational_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_rotational_energy(self) -> NDArray[np.float64]:
         """
         Compute total rotational energy of the rod at the instance.
         """
@@ -657,9 +651,7 @@ class CosseratRod(RodBase, KnotTheory):
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, J_omega_upon_e).sum()
 
-    def compute_velocity_center_of_mass(
-        self: CosseratRodProtocol,
-    ) -> NDArray[np.float64]:
+    def compute_velocity_center_of_mass(self) -> NDArray[np.float64]:
         """
         Compute velocity center of mass of the rod at the instance.
         """
@@ -668,9 +660,7 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_velocity / self.mass.sum()
 
-    def compute_position_center_of_mass(
-        self: CosseratRodProtocol,
-    ) -> NDArray[np.float64]:
+    def compute_position_center_of_mass(self) -> NDArray[np.float64]:
         """
         Compute position center of mass of the rod at the instance.
         """
@@ -679,11 +669,10 @@ class CosseratRod(RodBase, KnotTheory):
 
         return sum_mass_times_position / self.mass.sum()
 
-    def compute_bending_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_bending_energy(self) -> NDArray[np.float64]:
         """
         Compute total bending energy of the rod at the instance.
         """
-
         kappa_diff = self.kappa - self.rest_kappa
         bending_internal_torques = _batch_matvec(self.bend_matrix, kappa_diff)
 
@@ -695,11 +684,10 @@ class CosseratRod(RodBase, KnotTheory):
             ).sum()
         )
 
-    def compute_shear_energy(self: CosseratRodProtocol) -> NDArray[np.float64]:
+    def compute_shear_energy(self) -> NDArray[np.float64]:
         """
         Compute total shear energy of the rod at the instance.
         """
-
         sigma_diff = self.sigma - self.rest_sigma
         shear_internal_forces = _batch_matvec(self.shear_matrix, sigma_diff)
 
@@ -761,11 +749,11 @@ def _compute_all_dilatations(
     for k in range(lengths.shape[0]):
         dilatation[k] = lengths[k] / rest_lengths[k]
 
-    # Cmopute eq (3.4) from 2018 RSOS paper
+    # Compute eq (3.4) from 2018 RSOS paper
     # Note : we can use trapezoidal kernel, but it has padding and will be slower
     voronoi_lengths = position_average(lengths)
 
-    # Cmopute eq (3.45 from 2018 RSOS paper
+    # Compute eq (3.4) from 2018 RSOS paper
     for k in range(voronoi_lengths.shape[0]):
         voronoi_dilatation[k] = voronoi_lengths[k] / rest_voronoi_lengths[k]
 
@@ -781,7 +769,6 @@ def _compute_dilatation_rate(
     """
     Update dilatation_rate given position, velocity, length, and rest_length
     """
-    # TODO Use the vector formula rather than separating it out
     # self.lengths = l_i = |r^{i+1} - r^{i}|
     r_dot_v = _batch_dot(position_collection, velocity_collection)
     r_plus_one_dot_v = _batch_dot(
@@ -1130,26 +1117,3 @@ def _zeroed_out_external_forces_and_torques(
     for i in range(3):
         for k in range(n_elems):
             external_torques[i, k] = 0.0
-
-
-if TYPE_CHECKING:
-    _: CosseratRodProtocol = CosseratRod.straight_rod(
-        3,
-        np.zeros(3),
-        np.array([0, 1, 0]),
-        np.array([0, 0, 1]),
-        1.0,
-        0.1,
-        1.0,
-        youngs_modulus=1.0,
-    )
-    _: CosseratRodProtocol = CosseratRod.ring_rod(  # type: ignore[no-redef]
-        3,
-        np.zeros(3),
-        np.array([0, 1, 0]),
-        np.array([0, 0, 1]),
-        1.0,
-        0.1,
-        1.0,
-        youngs_modulus=1.0,
-    )

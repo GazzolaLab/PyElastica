@@ -1,19 +1,16 @@
 __doc__ = """Parallel connection example"""
 
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     get_connection_vector_straight_straight_rod,
     SurfaceJointSideBySide,
 )
 from elastica._calculus import difference_kernel
-import sys
 
-sys.path.append("../")
-sys.path.append("../../")
-sys.path.append("../../../")
-
-from examples.JointCases.joint_cases_postprocessing import (
+from joint_cases_postprocessing import (
     plot_position,
     plot_video,
     plot_video_xy,
@@ -41,7 +38,6 @@ normal = np.array([0.0, 1.0, 0.0])
 binormal = np.cross(direction, normal)
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e4
 poisson_ratio = 0.5
@@ -120,22 +116,21 @@ parallel_connection_sim.add_forcing_to(rod_one).using(
     rod_one, rod_two, (0, n_elem), (0, n_elem)
 )
 
-for i in range(n_elem):
-    parallel_connection_sim.connect(
-        first_rod=rod_one, second_rod=rod_two, first_connect_idx=i, second_connect_idx=i
-    ).using(
-        SurfaceJointSideBySide,
-        k=1e2,
-        nu=1e-5,
-        k_repulsive=1e3,
-        rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame[
-            :, i
-        ],
-        rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame[
-            :, i
-        ],
-        offset_btw_rods=offset_btw_rods[i],
-    )  # k=kg/s2 nu=kg/s 1e-2
+indices = np.arange(n_elem)
+parallel_connection_sim.connect(
+    first_rod=rod_one,
+    second_rod=rod_two,
+    first_connect_idx=indices,
+    second_connect_idx=indices,
+).using(
+    SurfaceJointSideBySide,
+    k=1e2,
+    nu=1e-5,
+    k_repulsive=1e3,
+    rod_one_direction_vec_in_material_frame=rod_one_direction_vec_in_material_frame,
+    rod_two_direction_vec_in_material_frame=rod_two_direction_vec_in_material_frame,
+    offset_btw_rods=offset_btw_rods,
+)  # k=kg/s2 nu=kg/s 1e-2
 
 
 # add damping
@@ -153,13 +148,13 @@ parallel_connection_sim.dampen(rod_two).using(
 )
 
 
-class ParallelConnecitonCallback(ea.CallBackBaseClass):
+class ParallelConnectionCallback(ea.CallBackBaseClass):
     """
     Call back function for parallel connection
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -172,15 +167,15 @@ class ParallelConnecitonCallback(ea.CallBackBaseClass):
             return
 
 
-pp_list_rod1 = ea.defaultdict(list)
-pp_list_rod2 = ea.defaultdict(list)
+pp_list_rod1 = defaultdict(list)
+pp_list_rod2 = defaultdict(list)
 
 
 parallel_connection_sim.collect_diagnostics(rod_one).using(
-    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod1
+    ParallelConnectionCallback, step_skip=40, callback_params=pp_list_rod1
 )
 parallel_connection_sim.collect_diagnostics(rod_two).using(
-    ParallelConnecitonCallback, step_skip=40, callback_params=pp_list_rod2
+    ParallelConnectionCallback, step_skip=40, callback_params=pp_list_rod2
 )
 
 
@@ -188,10 +183,12 @@ parallel_connection_sim.finalize()
 timestepper = ea.PositionVerlet()
 
 final_time = 20.0
-dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, parallel_connection_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(parallel_connection_sim, time, dt)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False

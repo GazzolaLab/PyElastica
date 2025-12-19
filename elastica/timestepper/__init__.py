@@ -29,6 +29,8 @@ def extend_stepper_interface(
     return do_step_method, stepper_methods
 
 
+# Deprecated: Kept for backward compatibility.
+# Recommended to call integration loop explicitly by users.
 def integrate(
     stepper: StepperProtocol,
     systems: SystemCollectionType,

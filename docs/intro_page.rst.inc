@@ -5,10 +5,6 @@ More information about Elastica is available at the `project website`_
 
 PyElastica
 ~~~~~~~~~~
-.. image:: https://travis-ci.com/GazzolaLab/PyElastica.svg?branch=master
-	:target: https://travis-ci.com/gazzolalab
-	:alt: Build_status
-
 .. image:: https://codecov.io/gh/gazzolalab/PyElastica/branch/master/graph/badge.svg
 	:target: https://codecov.io/gh/gazzolalab/PyElastica
 	:alt: codecov
@@ -48,7 +44,7 @@ Details can be found `here <https://github.com/armantekinalp/MagnetoPyElastica>`
 
 Elastica++
 ==========
-Elastica++ is a C++ implementation of Elastica. The expected release date for the beta version is 2024 Q4.
+Elastica++ is a C++ implementation of Elastica. Please contact `Seung Hyun Kim <https://github.com/skim0119>`_ for more information.
 
 .. _project website: https://cosseratrods.org
 .. _GitHub repo: https://github.com/GazzolaLab/PyElastica

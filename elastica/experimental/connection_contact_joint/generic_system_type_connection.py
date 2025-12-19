@@ -1,7 +1,7 @@
 __doc__ = (
     """ Module containing joint classes to connect rods and rigid bodies together. """
 )
-from elastica.joint import FreeJoint, FixedJoint
+from elastica.joint import ConnectionBase, FixedJoint
 from elastica.typing import SystemType
 import numpy as np
 from typing import Optional
@@ -20,7 +20,7 @@ from typing import Optional
 #    - [x] Examples
 
 
-class GenericSystemTypeFreeJoint(FreeJoint):
+class GenericSystemTypeFreeJoint(ConnectionBase):
     """
     Constrains the relative movement between two nodes by applying restoring forces.
 
@@ -36,28 +36,6 @@ class GenericSystemTypeFreeJoint(FreeJoint):
     point_system_two : numpy.ndarray
         Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
         or the center of mass (for rigid bodies) to the joint.
-
-
-    Examples
-    --------
-    How to connect two Cosserat rods together using a spherical joint with a gap of 0.01 m in between.
-
-    >>> simulator.connect(rod_one, rod_two, first_connect_idx=-1, second_connect_idx=0).using(
-    ...    FreeJoint,
-    ...    k=1e4,
-    ...    nu=1,
-    ...    point_system_one=np.array([0.0, 0.0, 0.005]),
-    ...    point_system_two=np.array([0.0, 0.0, -0.005]),
-    ... )
-
-    How to connect the distal end of a CosseratRod with the base of a cylinder using a spherical joint.
-
-    >>> simulator.connect(rod, cylinder, first_connect_idx=-1, second_connect_idx=0).using(
-    ...    FreeJoint,
-    ...    k=1e4,
-    ...    nu=1,
-    ...    point_system_two=np.array([0.0, 0.0, -cylinder.length / 2.]),
-    ... )
 
     """
 
@@ -88,7 +66,8 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             or the center of mass (for rigid bodies) to the joint.
             (default = np.array([0.0, 0.0, 0.0]))
         """
-        super().__init__(k=k, nu=nu, **kwargs)
+        self.k = np.float64(k)
+        self.nu = np.float64(nu)
 
         self.point_system_one = (
             point_system_one
@@ -107,6 +86,7 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         index_one: int,
         system_two: SystemType,
         index_two: int,
+        time: np.float64,
     ):
         """
         Apply joint force to the connected systems.
@@ -196,11 +176,10 @@ class GenericSystemTypeFreeJoint(FreeJoint):
         index_one: int,
         system_two: SystemType,
         index_two: int,
+        time: np.float64,
     ):
         """
         Apply restoring joint torques to the connected systems.
-
-        In FreeJoint class, this routine simply passes.
 
         Parameters
         ----------
@@ -214,7 +193,6 @@ class GenericSystemTypeFreeJoint(FreeJoint):
             Index of second system for joint.
 
         """
-        pass
 
 
 class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint):
@@ -222,51 +200,51 @@ class GenericSystemTypeFixedJoint(GenericSystemTypeFreeJoint):
     The fixed joint class restricts the relative movement and rotation
     between two nodes and elements by applying restoring forces and torques.
 
-        Attributes
-        ----------
-        k : float
-            Stiffness coefficient of the joint.
-        nu : float
-            Damping coefficient of the joint.
-        kt : float
-            Rotational stiffness coefficient of the joint.
-        nut : float
-            Rotational damping coefficient of the joint.
-        point_system_one : numpy.ndarray
-            Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
-            or the center of mass (for rigid bodies) to the joint.
-        point_system_two : numpy.ndarray
-            Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
-            or the center of mass (for rigid bodies) to the joint.
-        rest_rotation_matrix : np.ndarray
-            2D (3,3) array containing data with 'float' type.
-            Rest 3x3 rotation matrix from system one to system two at the connected elements.
-            Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
-            is enforced.
+    Attributes
+    ----------
+    k : float
+        Stiffness coefficient of the joint.
+    nu : float
+        Damping coefficient of the joint.
+    kt : float
+        Rotational stiffness coefficient of the joint.
+    nut : float
+        Rotational damping coefficient of the joint.
+    point_system_one : numpy.ndarray
+        Describes for system one in the local coordinate system the translation from the node `index_one` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
+    point_system_two : numpy.ndarray
+        Describes for system two in the local coordinate system the translation from the node `index_two` (for rods)
+        or the center of mass (for rigid bodies) to the joint.
+    rest_rotation_matrix : np.ndarray
+        2D (3,3) array containing data with 'float' type.
+        Rest 3x3 rotation matrix from system one to system two at the connected elements.
+        Instead of aligning the directors of both systems directly, a desired rest rotational matrix labeled C_12*
+        is enforced.
 
-        Examples
-        --------
-        How to connect two Cosserat rods together using a fixed joint while aligning the tangents (e.g. local z-axis).
+    Examples
+    --------
+    How to connect two Cosserat rods together using a fixed joint while aligning the tangents (e.g. local z-axis).
 
-        >>> simulator.connect(rod_one, rod_two).using(
-        ...    FixedJoint,
-        ...    k=1e4,
-        ...    nu=1,
-        ... )
+    >>> simulator.connect(rod_one, rod_two).using(
+    ...    FixedJoint,
+    ...    k=1e4,
+    ...    nu=1,
+    ... )
 
-        How to connect a cosserat rod with the base of a cylinder using a fixed joint, where the cylinder is rotated
-        by 45 degrees around the y-axis.
+    How to connect a cosserat rod with the base of a cylinder using a fixed joint, where the cylinder is rotated
+    by 45 degrees around the y-axis.
 
-        >>> from scipy.spatial.transform import Rotation
-        ... simulator.connect(rod, cylinder).using(
-        ...    FixedJoint,
-        ...    k=1e5,
-        ...    nu=1e0,
-        ...    kt=1e3,
-        ...    nut=1e-3,
-        ...    point_system_two=np.array([0, 0, -cylinder.length / 2]),
-        ...    rest_rotation_matrix=Rotation.from_euler('y', np.pi / 4, degrees=False).as_matrix(),
-        ... )
+    >>> from scipy.spatial.transform import Rotation
+    ... simulator.connect(rod, cylinder).using(
+    ...    FixedJoint,
+    ...    k=1e5,
+    ...    nu=1e0,
+    ...    kt=1e3,
+    ...    nut=1e-3,
+    ...    point_system_two=np.array([0, 0, -cylinder.length / 2]),
+    ...    rest_rotation_matrix=Rotation.from_euler('y', np.pi / 4, degrees=False).as_matrix(),
+    ... )
     """
 
     def __init__(

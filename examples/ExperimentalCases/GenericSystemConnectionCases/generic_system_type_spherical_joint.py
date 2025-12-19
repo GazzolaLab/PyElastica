@@ -2,6 +2,8 @@ __doc__ = """Spherical(Free) joint example, for detailed explanation refer to Zh
 methods section."""
 
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
 from elastica.experimental.connection_contact_joint.generic_system_type_connection import (
     GenericSystemTypeFreeJoint,
@@ -31,10 +33,8 @@ spherical_joint_sim = SphericalJointSimulator()
 n_elem = 10
 direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
-roll_direction = np.cross(direction, normal)
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e7
 poisson_ratio = 0.5
@@ -131,9 +131,9 @@ spherical_joint_sim.dampen(rod2).using(
     time_step=dt,
 )
 
-pp_list_rod1 = ea.defaultdict(list)
-pp_list_rod2 = ea.defaultdict(list)
-pp_list_cylinder = ea.defaultdict(list)
+pp_list_rod1 = defaultdict(list)
+pp_list_rod2 = defaultdict(list)
+pp_list_cylinder = defaultdict(list)
 
 spherical_joint_sim.collect_diagnostics(rod1).using(
     ea.MyCallBack, step_skip=step_skip, callback_params=pp_list_rod1
@@ -149,10 +149,12 @@ spherical_joint_sim.finalize()
 timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
-dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, spherical_joint_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(spherical_joint_sim, time, dt)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = True
