@@ -1,4 +1,11 @@
-__doc__ = "Data structure wrapper for rod components"
+"""
+Data structures and Numba-jitted operators for handling rod components
+and their integration in a symplectic time-stepping scheme.
+
+This module provides the `_RodSymplecticStepperMixin` for managing
+kinematic and dynamic states of rods, and optimized functions for
+their in-place updates.
+"""
 
 from typing import TYPE_CHECKING
 import numpy as np
@@ -14,201 +21,144 @@ else:
 
 
 class _RodSymplecticStepperMixin:
+    """
+    Mixin class providing necessary methods for integration of the kinematic and
+    dynamic equations of the rod.
 
+    This mixin manages the rod's posture (position and directors), velocity
+    (linear and angular), and acceleration states. It provides `update_kinematics`
+    and `update_dynamics` methods to apply updates to these states, typically
+    called by a symplectic time-stepper.
+    """
+
+    n_nodes: int
+
+    # Posture state
     position_collection: NDArray[np.float64]
     director_collection: NDArray[np.float64]
+    # Velocity state
     velocity_collection: NDArray[np.float64]
     omega_collection: NDArray[np.float64]
+    v_w_collection: NDArray[np.float64]  # Rate collection
+    # Acceleration state
+    # acceleration_collection: NDArray[np.float64]
+    # alpha_collection: NDArray[np.float64]
+    dvdt_dwdt_collection: NDArray[np.float64]  # Second derivative collection
 
-    v_w_collection: NDArray[np.float64]
-    dvdt_dwdt_collection: NDArray[np.float64]
+    def update_kinematics(
+        self,
+        time: np.float64,
+        prefac: np.float64,
+    ) -> None:
+        """
+        Update kinematic state.
 
-    def __init__(self) -> None:
-        self.kinematic_states = _KinematicState(
-            self.position_collection, self.director_collection
-        )
-        self.dynamic_states = _DynamicState(
-            self.v_w_collection,
-            self.dvdt_dwdt_collection,
+        Typically called after velocity and omega (angular velocity) have been updated.
+
+        Parameters
+        ----------
+        time : float
+            Current time.
+        prefac : float
+            Integration prefactor.
+        """
+        overload_operator_kinematic_numba(
+            prefac,
+            self.position_collection,
+            self.director_collection,
             self.velocity_collection,
             self.omega_collection,
         )
 
-        # Expose rate returning functions in the interface
-        # to be used by the time-stepping algorithm
-        # dynamic rates needs to call update_accelerations and henc
-        # is another function
-        self.kinematic_rates = self.dynamic_states.kinematic_rates
-
-    def dynamic_rates(
-        self: SymplecticSystemProtocol,
+    def update_dynamics(
+        self,
         time: np.float64,
         prefac: np.float64,
-    ) -> NDArray[np.float64]:
-        self.update_accelerations(time)
-        return self.dynamic_states.dynamic_rates(time, prefac)
-
-
-"""
-Symplectic stepper interface
-"""
-
-
-class _KinematicState:
-    """State storing (x,Q) for symplectic steppers.
-    Wraps data as state, with overloaded methods for symplectic steppers.
-    Allows for separating implementation of stepper from actual
-    addition/multiplication/other formulae used.
-
-    Symplectic steppers rely only on in-place modifications to state and so
-    only these methods are provided.
-    """
-
-    def __init__(
-        self,
-        position_collection_view: NDArray[np.float64],
-        director_collection_view: NDArray[np.float64],
     ) -> None:
         """
+        Update dynamic state.
+
+        Typically called after acceleration and alpha (angular acceleration) have been updated.
+
         Parameters
         ----------
-        position_collection_view : view of positions (or) x
-        director_collection_view : view of directors (or) Q
+        time : float
+            Current time.
+        prefac : float
+            Integration prefactor.
         """
-        # super(_KinematicState, self).__init__()
+        overload_operator_dynamic_numba(
+            prefac,
+            self.v_w_collection,
+            self.dvdt_dwdt_collection,
+        )
 
-        self.position_collection = position_collection_view
-        self.director_collection = director_collection_view
+
+"""
+Symplectic stepper operation
+"""
 
 
 @njit(cache=True)  # type: ignore
 def overload_operator_kinematic_numba(
-    n_nodes: int,
     prefac: np.float64,
     position_collection: NDArray[np.float64],
     director_collection: NDArray[np.float64],
     velocity_collection: NDArray[np.float64],
     omega_collection: NDArray[np.float64],
 ) -> None:
-    """overloaded += operator
+    """Performs in-place update of kinematic states (position and director) using Numba.
 
-    The add for directors is customized to reflect Rodrigues' rotation
+    This operator updates the position and director collections of a rod based on
+    its velocity and angular velocity. The director update uses Rodrigues' rotation
     formula.
+
     Parameters
     ----------
-    scaled_deriv_array : np.ndarray containing dt * (v, ω),
-    as retured from _DynamicState's `kinematic_rates` method
-    Returns
-    -------
-    self : _KinematicState instance with inplace modified data
-    Caveats
-    -------
-    Takes a np.ndarray and not a _KinematicState object (as one expects).
-    This is done for efficiency reasons, see _DynamicState's `kinematic_rates`
-    method
+    prefac : numpy.float64
+        Pre-factor (e.g., time step `dt`) to scale the velocity and angular velocity.
+    position_collection : numpy.ndarray
+        Position of the rod nodes. Modified in-place.
+    director_collection : numpy.ndarray
+        Director (orientation) of the rod elements. Modified in-place.
+    velocity_collection : numpy.ndarray
+        Linear velocity of the rod nodes.
+    omega_collection : numpy.ndarray
+        Angular velocity of the rod elements.
     """
     # x += v*dt
+    blocksize = position_collection.shape[1]
     for i in range(3):
-        for k in range(n_nodes):
+        for k in range(blocksize):
             position_collection[i, k] += prefac * velocity_collection[i, k]
     rotation_matrix = _get_rotation_matrix(1.0, prefac * omega_collection)
     director_collection[:] = _batch_matmul(rotation_matrix, director_collection)
 
-    return
-
-
-class _DynamicState:
-    """State storing (v,ω, dv/dt, dω/dt) for symplectic steppers.
-
-    Wraps data as state, with overloaded methods for symplectic steppers.
-    Allows for separating implementation of stepper from actual
-    addition/multiplication/other formulae used.
-    Symplectic steppers rely only on in-place modifications to state and so
-    only these methods are provided.
-    """
-
-    def __init__(
-        self,
-        v_w_collection: NDArray[np.float64],
-        dvdt_dwdt_collection: NDArray[np.float64],
-        velocity_collection: NDArray[np.float64],
-        omega_collection: NDArray[np.float64],
-    ) -> None:
-        """
-        Parameters
-        ----------
-        n_elems : int, number of rod elements
-        rate_collection_view : np.ndarray containing (v, ω, dv/dt, dω/dt)
-        v_w_collection : numpy.ndarray
-
-        """
-        super(_DynamicState, self).__init__()
-        # Limit at which (v, w) end
-        # Create views for dynamic state
-        self.rate_collection = v_w_collection
-        self.dvdt_dwdt_collection = dvdt_dwdt_collection
-        self.velocity_collection = velocity_collection
-        self.omega_collection = omega_collection
-
-    def kinematic_rates(
-        self, time: np.float64, prefac: np.float64
-    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        """Yields kinematic rates to interact with _KinematicState
-
-        Returns
-        -------
-        v_and_omega : np.ndarray consisting of (v,ω)
-        Caveats
-        -------
-        Doesn't return a _KinematicState with (dt*v, dt*w) as members,
-        as one expects the _Kinematic __add__ operator to interact
-        with another _KinematicState. This is done for efficiency purposes.
-        """
-        # RHS functino call, gives v,w so that
-        # Comes from kin_state -> (x,Q) += dt * (v,w) <- First part of dyn_state
-        return self.velocity_collection, self.omega_collection
-
-    def dynamic_rates(
-        self, time: np.float64, prefac: np.float64
-    ) -> NDArray[np.float64]:
-        """Yields dynamic rates to add to with _DynamicState
-        Returns
-        -------
-        acc_and_alpha : np.ndarray consisting of (dv/dt,dω/dt)
-        Caveats
-        -------
-        Doesn't return a _DynamicState with (dt*v, dt*w) as members,
-        as one expects the _Dynamic __add__ operator to interact
-        with another _DynamicState. This is done for efficiency purposes.
-        """
-        return prefac * self.dvdt_dwdt_collection
-
 
 @njit(cache=True)  # type: ignore
 def overload_operator_dynamic_numba(
+    prefac: np.float64,
     rate_collection: NDArray[np.float64],
-    scaled_second_deriv_array: NDArray[np.float64],
+    second_deriv_array: NDArray[np.float64],
 ) -> None:
-    """overloaded += operator, updating dynamic_rates
+    """Performs in-place update of dynamic states (linear and angular velocities) using Numba.
+
+    This operator updates the rate collection (which stores linear and angular velocities)
+    of a rod based on the second derivative array (linear and angular accelerations).
+
     Parameters
     ----------
-    scaled_second_deriv_array : np.ndarray containing dt * (dvdt, dωdt),
-    as retured from _DynamicState's `dynamic_rates` method
-    Returns
-    -------
-    self : _DynamicState instance with inplace modified data
-    Caveats
-    -------
-    Takes a np.ndarray and not a _DynamicState object (as one expects).
-    This is done for efficiency reasons, see `dynamic_rates`.
+    prefac : numpy.float64
+        Pre-factor (e.g., time step `dt`) to scale the second derivative terms.
+    rate_collection : numpy.ndarray
+        Collection of linear and angular velocities of the rod. Modified in-place.
+    second_deriv_array : numpy.ndarray
+        Collection of linear and angular accelerations (dv/dt, dω/dt) of the rod.
     """
     # Always goes in LHS : that means the update is on the rates alone
-    # (v,ω) += dt * (dv/dt, dω/dt) ->  self.dynamic_rates
-    # rate_collection[..., : n_kinematic_rates] += scaled_second_deriv_array
-    blocksize = scaled_second_deriv_array.shape[1]
-
+    # (v,ω) += dt * (dv/dt, dω/dt)
+    # rate_collection[..., : n_kinematic_rates] += second_deriv_aray
+    blocksize = second_deriv_array.shape[1]
     for i in range(2):
         for k in range(blocksize):
-            rate_collection[i, k] += scaled_second_deriv_array[i, k]
-
-    return
+            rate_collection[i, k] += prefac * second_deriv_array[i, k]

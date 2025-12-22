@@ -12,10 +12,6 @@ from elastica.typing import (
 
 import numpy as np
 
-from elastica.rod.data_structures import (
-    overload_operator_kinematic_numba,
-    overload_operator_dynamic_numba,
-)
 from elastica.systems.protocol import SymplecticSystemProtocol
 from .protocol import SymplecticStepperProtocol
 
@@ -109,7 +105,6 @@ class SymplecticStepperMixin:
             # We need internal forces and torques because they are used by interaction module.
             for system in SystemCollection.final_systems():
                 system.compute_internal_forces_and_torques(time)
-                # system.update_internal_forces_and_torques()
 
             # Add external forces, controls etc.
             SystemCollection.synchronize(time)
@@ -185,22 +180,14 @@ class PositionVerlet(SymplecticStepperMixin):
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
         prefac = self._first_prefactor(dt)
-        overload_operator_kinematic_numba(
-            System.n_nodes,
-            prefac,
-            System.kinematic_states.position_collection,
-            System.kinematic_states.director_collection,
-            System.dynamic_states.velocity_collection,
-            System.dynamic_states.omega_collection,
-        )
+        System.update_kinematics(time, prefac)
 
     def _first_dynamic_step(
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
-        overload_operator_dynamic_numba(
-            System.dynamic_states.rate_collection,
-            System.dynamic_rates(time, dt),
-        )
+        prefac = dt
+        System.update_accelerations(time)
+        System.update_dynamics(time, prefac)
 
 
 class PEFRL(SymplecticStepperMixin):
@@ -245,25 +232,16 @@ class PEFRL(SymplecticStepperMixin):
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
         prefac = self._first_kinematic_prefactor(dt)
-        overload_operator_kinematic_numba(
-            System.n_nodes,
-            prefac,
-            System.kinematic_states.position_collection,
-            System.kinematic_states.director_collection,
-            System.dynamic_states.velocity_collection,
-            System.dynamic_states.omega_collection,
-        )
+        System.update_kinematics(time, prefac)
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _first_dynamic_step(
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
-        prefac = self.lambda_dash_coeff * dt
-        overload_operator_dynamic_numba(
-            System.dynamic_states.rate_collection,
-            System.dynamic_rates(time, prefac),
-        )
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+        prefac = self.lambda_dash_coeff * dt
+        System.update_accelerations(time)
+        System.update_dynamics(time, prefac)
 
     def _second_kinematic_prefactor(self, dt: np.float64) -> np.float64:
         return self.χ * dt
@@ -272,25 +250,16 @@ class PEFRL(SymplecticStepperMixin):
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
         prefac = self._second_kinematic_prefactor(dt)
-        overload_operator_kinematic_numba(
-            System.n_nodes,
-            prefac,
-            System.kinematic_states.position_collection,
-            System.kinematic_states.director_collection,
-            System.dynamic_states.velocity_collection,
-            System.dynamic_states.omega_collection,
-        )
+        System.update_kinematics(time, prefac)
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
     def _second_dynamic_step(
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
-        prefac = self.λ * dt
-        overload_operator_dynamic_numba(
-            System.dynamic_states.rate_collection,
-            System.dynamic_rates(time, prefac),
-        )
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
+        prefac = self.λ * dt
+        System.update_accelerations(time)
+        System.update_dynamics(time, prefac)
 
     def _third_kinematic_prefactor(self, dt: np.float64) -> np.float64:
         return self.xi_chi_dash_coeff * dt
@@ -299,15 +268,7 @@ class PEFRL(SymplecticStepperMixin):
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
         prefac = self._third_kinematic_prefactor(dt)
-        # Need to fill in
-        overload_operator_kinematic_numba(
-            System.n_nodes,
-            prefac,
-            System.kinematic_states.position_collection,
-            System.kinematic_states.director_collection,
-            System.dynamic_states.velocity_collection,
-            System.dynamic_states.omega_collection,
-        )
+        System.update_kinematics(time, prefac)
         # System.kinematic_states += prefac * System.kinematic_rates(time, prefac)
 
 

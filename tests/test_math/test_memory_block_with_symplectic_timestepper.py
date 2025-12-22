@@ -84,48 +84,9 @@ class BlockStructureWithSymplecticStepper(
 ):
     def __init__(self, systems):
         MemoryBlockCosseratRod.__init__(self, systems, [i for i in range(len(systems))])
-        _RodSymplecticStepperMixin.__init__(self)
 
     def update_accelerations(self, time):
         pass
-
-
-@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_kinematic_state_references(n_rods, rng):
-    """
-    This function is testing validity of kinematic state views and compare them
-    with the block structure vectors.
-
-    Parameters
-    ----------
-    n_rods
-
-    Returns
-    -------
-
-    """
-    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = BlockStructureWithSymplecticStepper(world_rods)
-
-    assert_allclose(
-        block_structure.position_collection,
-        block_structure.kinematic_states.position_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.position_collection,
-        block_structure.kinematic_states.position_collection,
-    )
-
-    assert_allclose(
-        block_structure.director_collection,
-        block_structure.kinematic_states.director_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.director_collection,
-        block_structure.kinematic_states.director_collection,
-    )
 
 
 @pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
@@ -162,10 +123,7 @@ def test_block_structure_kinematic_update(n_rods, rng):
         out=correct_director,
     )
 
-    # block_structure.kinematic_states += block_structure.kinematic_rates(0, prefac)
-
     overload_operator_kinematic_numba(
-        block_structure.n_nodes,
         prefac,
         block_structure.position_collection,
         block_structure.director_collection,
@@ -178,125 +136,6 @@ def test_block_structure_kinematic_update(n_rods, rng):
     )
     assert_allclose(
         correct_director, block_structure.director_collection, atol=Tolerance.atol()
-    )
-
-
-@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_references(n_rods, rng):
-    """
-    This function is testing validity of dynamic state views and compare them
-    with the block structure vectors.
-
-    Parameters
-    ----------
-    n_rods
-
-    Returns
-    -------
-
-    """
-    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = BlockStructureWithSymplecticStepper(world_rods)
-
-    assert_allclose(
-        block_structure.velocity_collection,
-        block_structure.dynamic_states.velocity_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.velocity_collection,
-        block_structure.dynamic_states.velocity_collection,
-    )
-
-    assert_allclose(
-        block_structure.omega_collection,
-        block_structure.dynamic_states.omega_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.omega_collection,
-        block_structure.dynamic_states.omega_collection,
-    )
-
-    assert_allclose(
-        block_structure.v_w_collection,
-        block_structure.dynamic_states.rate_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.v_w_collection, block_structure.dynamic_states.rate_collection
-    )
-
-    assert_allclose(
-        block_structure.dvdt_dwdt_collection,
-        block_structure.dynamic_states.dvdt_dwdt_collection,
-        atol=Tolerance.atol(),
-    )
-    assert np.shares_memory(
-        block_structure.dvdt_dwdt_collection,
-        block_structure.dynamic_states.dvdt_dwdt_collection,
-    )
-
-
-@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_kinematic_rates(n_rods, rng):
-    """
-    This function is testing validity of dynamic state function and compare them
-    with the block structure vectors.
-
-    Parameters
-    ----------
-    n_rods
-
-    Returns
-    -------
-
-    """
-    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = BlockStructureWithSymplecticStepper(world_rods)
-
-    prefac = 1.0
-
-    correct_velocity = prefac * block_structure.velocity_collection.copy()
-    velocity_test = block_structure.kinematic_rates(0, prefac)[0].copy()
-
-    assert_allclose(
-        correct_velocity,
-        velocity_test,
-        atol=Tolerance.atol(),
-    )
-
-    correct_omega = prefac * block_structure.omega_collection.copy()
-    omega_test = block_structure.kinematic_rates(0, prefac)[1].copy()
-
-    assert_allclose(
-        correct_omega,
-        omega_test,
-        atol=Tolerance.atol(),
-    )
-
-
-@pytest.mark.parametrize("n_rods", [1, 2, 5, 6])
-def test_block_structure_dynamic_state_dynamic_rates(n_rods, rng):
-    """
-    This function is testing validity of dynamic rates function and compare them
-    with the block structure vector.
-
-    Parameters
-    ----------
-    n_rods
-
-    Returns
-    -------
-
-    """
-    world_rods = [MockRod(rng.randint(10, 30 + 1)) for _ in range(n_rods)]
-    block_structure = BlockStructureWithSymplecticStepper(world_rods)
-
-    assert_allclose(
-        block_structure.dvdt_dwdt_collection,
-        block_structure.dynamic_rates(0, prefac=1),
-        atol=Tolerance.atol(),
     )
 
 
@@ -325,7 +164,9 @@ def test_block_structure_dynamic_update(n_rods, rng):
     correct_v_w = v_w + prefac * dvdt_dwdt
 
     overload_operator_dynamic_numba(
-        block_structure.v_w_collection, block_structure.dynamic_rates(0, prefac)
+        prefac,
+        block_structure.v_w_collection,
+        block_structure.dvdt_dwdt_collection,
     )
 
     assert_allclose(correct_v_w, block_structure.v_w_collection, atol=Tolerance.atol())

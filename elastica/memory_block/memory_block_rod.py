@@ -260,9 +260,6 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
                 self.rest_kappa, self.periodic_boundary_voronoi_idx
             )
 
-        # Initialize the mixin class for symplectic time-stepper.
-        _RodSymplecticStepperMixin.__init__(self)
-
     def _allocate_block_variables_in_nodes(self, systems: list[RodType]) -> None:
         """
         This function takes system collection and allocates the variables on
