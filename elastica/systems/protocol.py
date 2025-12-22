@@ -44,7 +44,6 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     (e.g., :class:`PositionVerlet`, :class:`PEFRL`) must satisfy this protocol.
 
     The symplectic stepper accesses:
-        - ``n_nodes``
         - ``update_kinematics`` and ``update_dynamics``: called by the timestepper
 
     See Also
@@ -53,8 +52,6 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     elastica.rod.CosseratRod : A concrete implementation satisfying this protocol
 
     """
-
-    n_nodes: int
 
     def update_kinematics(self, time: np.float64, prefac: np.float64) -> None:
         """Update kinematic state. Typically called after compute_internal_forces_and_torques."""

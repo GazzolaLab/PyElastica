@@ -19,7 +19,7 @@ class BaseStatefulSystem:
         self._state = new_state
 
 
-class BaseSymplecticSystem:
+class BaseSymplecticSystem(_RodSymplecticStepperMixin):
     def __init__(self):
         pass
 
@@ -116,7 +116,7 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         )
         return np.array([analytical_position, analytical_velocity])
 
-    def __call__(self, time, *args, **kwargs):
+    def __call__(self):
         return self.A_matrix @ self._state
 
 
@@ -139,13 +139,15 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         self._kin_state = TestKinematicState(self._state[0:1])  # Create a view instead
         self._dyn_state = TestDynamicState(self._state[1:2])  # Create a view instead
         self.n_nodes = self._kin_state.n_nodes
+        self.position_collection = self._kin_state.position_collection
+        self.director_collection = self._kin_state.director_collection
         self.velocity_collection = self._dyn_state.rate_collection[..., 0].reshape(3, 1)
         self.omega_collection = self._dyn_state.rate_collection[..., 1].reshape(3, 1)
+        self.v_w_collection = self._dyn_state.rate_collection
 
-    def dynamic_rates(self, time, *args, **kwargs):
-        temp = super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
-            *args, **kwargs
-        )[-1]
+    @property
+    def dvdt_dwdt_collection(self):
+        temp = super().__call__()[-1]
         # Expand rate vector in order to be consistent with time-stepper implementation
         blocksize = 1  # self._dyn_state.n_kinematic_rates
         rate = np.zeros((3, blocksize))
@@ -166,6 +168,9 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         return current_energy, anal_energy
 
     def compute_internal_forces_and_torques(self, time):
+        pass
+
+    def update_accelerations(self, time):
         pass
 
     def zeroed_out_external_forces_and_torques(self, time):
