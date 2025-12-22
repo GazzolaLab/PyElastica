@@ -6,7 +6,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from elasticapp._PyArrays import Tensor, Matrix
+import numpy as np
 from elasticapp._rotations import rotate, rotate_scalar, inv_rotate, inv_rotate_scalar
 
 
@@ -34,12 +34,11 @@ def test_rotate_correctness(rotate_func):
     rotated_by = np.deg2rad(15.0) + 0.0 * base_angle
     rotated_about = np.array([0.0, 0.0, 1.0]).reshape(-1, 1)
 
-    director_collection = Tensor(get_aligned_director_collection(base_angle))
+    director_collection = get_aligned_director_collection(base_angle)
     axis_collection = np.tile(rotated_about, blocksize)
     axis_collection *= rotated_by
 
-    rotate_func(director_collection, Matrix(axis_collection))
-    test_rotated_director_collection = np.asarray(director_collection)
+    test_rotated_director_collection = rotate_func(director_collection, axis_collection)
     correct_rotation = rotated_by + 1.0 * base_angle
     correct_rotated_director_collection = get_aligned_director_collection(
         correct_rotation
@@ -66,9 +65,7 @@ def test_inv_rotate(inv_rotate_func):
     )
 
     correct_axis_collection = np.ones((3, 1)) / np.sqrt(3.0)
-    test_axis_collection = np.asarray(
-        inv_rotate_func(Tensor(input_director_collection))
-    )
+    test_axis_collection = inv_rotate_func(input_director_collection)
 
     correct_angle = np.deg2rad(120)
     test_angle = np.linalg.norm(test_axis_collection, axis=0)  # (3,1)
@@ -135,7 +132,7 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions(
 
     correct_axis_collection = np.tile(axis_of_rotation.reshape(3, 1), blocksize - 1)
 
-    test_axis_collection = np.asarray(inv_rotate_func(Tensor(director_collection)))
+    test_axis_collection = inv_rotate_func(director_collection)
     test_scaling = np.linalg.norm(test_axis_collection, axis=0)
     test_axis_collection /= test_scaling
 
@@ -193,7 +190,7 @@ def test_inv_rotate_correctness_on_circle_in_two_dimensions_with_different_direc
     correct_axis_collection = np.tile(
         np.array([-1.0, 0.0, 0.0]).reshape(3, 1), blocksize - 1
     )
-    test_axis_collection = np.asarray(inv_rotate_func(Tensor(director_collection)))
+    test_axis_collection = inv_rotate_func(director_collection)
     test_scaling = np.linalg.norm(test_axis_collection, axis=0)
     test_axis_collection /= test_scaling
 
