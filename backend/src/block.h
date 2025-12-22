@@ -29,6 +29,7 @@ public:
         compute_width_and_indices(n_elems_per_rod);
         depth_ = SystemType::get_depth();
         data_ = MatrixType(static_cast<Eigen::Index>(depth_), static_cast<Eigen::Index>(width_));
+        reset_ghost();  // Initialize all ghost values
     }
 
     std::pair<std::size_t, std::size_t> shape() const {
@@ -71,6 +72,100 @@ public:
 
     // Get the n_elems_per_rod vector (for BlockView construction)
     const std::vector<std::size_t>& get_n_elems_per_rod() const { return rod_n_elems_; }
+
+    // Get ghost node indices
+    // Returns indices of ghost nodes between rods (length: n_rods - 1)
+    // Matches Python implementation: np.cumsum(n_nodes_in_rods[:-1]) + np.arange(n_rods - 1)
+    std::vector<std::size_t> ghost_nodes_idx() const {
+        std::vector<std::size_t> indices;
+        if (rod_n_elems_.size() < 2) {
+            return indices;  // No ghost nodes if less than 2 rods
+        }
+
+        indices.reserve(rod_n_elems_.size() - 1);
+        std::size_t cumulative_nodes = 0;
+        for (std::size_t i = 0; i < rod_n_elems_.size() - 1; ++i) {
+            cumulative_nodes += rod_n_elems_[i] + 1;  // n_elems + 1 = n_nodes
+            indices.push_back(cumulative_nodes + i);  // Add i to account for previous ghost nodes
+        }
+        return indices;
+    }
+
+    // Get ghost element indices
+    // Returns indices of ghost elements between rods (length: 2 * (n_rods - 1))
+    std::vector<std::size_t> ghost_elems_idx() const {
+        std::vector<std::size_t> indices;
+        auto ghost_nodes = ghost_nodes_idx();
+        if (ghost_nodes.empty()) {
+            return indices;
+        }
+
+        indices.reserve(2 * ghost_nodes.size());
+        for (std::size_t i = 0; i < ghost_nodes.size(); ++i) {
+            indices.push_back(ghost_nodes[i] - 1);  // Element before ghost node
+            indices.push_back(ghost_nodes[i]);      // Element at ghost node
+        }
+        return indices;
+    }
+
+    // Get ghost voronoi indices
+    // Returns indices of ghost voronoi nodes between rods (length: 3 * (n_rods - 1))
+    std::vector<std::size_t> ghost_voronoi_idx() const {
+        std::vector<std::size_t> indices;
+        auto ghost_nodes = ghost_nodes_idx();
+        if (ghost_nodes.empty()) {
+            return indices;
+        }
+
+        indices.reserve(3 * ghost_nodes.size());
+        for (std::size_t i = 0; i < ghost_nodes.size(); ++i) {
+            indices.push_back(ghost_nodes[i] - 2);  // Voronoi 2 before ghost node
+            indices.push_back(ghost_nodes[i] - 1);  // Voronoi 1 before ghost node
+            indices.push_back(ghost_nodes[i]);      // Voronoi at ghost node
+        }
+        return indices;
+    }
+
+    // Reset ghost values for a specific variable
+    // Uses VariableTag::ghost_value and appropriate ghost indices based on placement
+    template<typename VariableTag>
+    void reset_ghost_for_variable() {
+        static_assert(tuple_contains_v<VariableTag, system_variables_t<SystemType>>,
+            "VariableTag is not a valid member of tuple SystemType::Variables");
+
+        // Compute row offset for this variable
+        constexpr std::size_t row_offset = compute_variable_offset<VariableTag, SystemType>();
+        constexpr std::size_t var_dimension = get_dimension_v<VariableTag>;
+
+        // Get appropriate ghost indices based on placement
+        std::vector<std::size_t> ghost_indices;
+        if constexpr (std::is_base_of_v<Placement::OnNode, VariableTag>) {
+            ghost_indices = ghost_nodes_idx();
+        } else if constexpr (std::is_base_of_v<Placement::OnElement, VariableTag>) {
+            ghost_indices = ghost_elems_idx();
+        } else if constexpr (std::is_base_of_v<Placement::OnVoronoi, VariableTag>) {
+            ghost_indices = ghost_voronoi_idx();
+        }
+
+        // Set ghost values at each ghost index
+        // Note: ghost indices are in the full width coordinate system
+        const auto& ghost_val = VariableTag::ghost_value;
+        for (std::size_t ghost_col : ghost_indices) {
+            // Access data_ directly using row and column offsets
+            // ghost_val is a MatrixType (column vector), so we access it as (row, 0)
+            Eigen::Index data_col = static_cast<Eigen::Index>(ghost_col);
+            for (std::size_t row = 0; row < var_dimension; ++row) {
+                Eigen::Index data_row = static_cast<Eigen::Index>(row_offset + row);
+                data_(data_row, data_col) = ghost_val(static_cast<Eigen::Index>(row), 0);
+            }
+        }
+    }
+
+    // Reset ghost values for all variables
+    // Iterates over all variables and calls reset_ghost_for_variable for each
+    void reset_ghost() {
+        reset_ghost_impl<system_variables_t<SystemType>, 0>();
+    }
 
     // Get a view for a specific variable across all rods
     // Returns a view into the variable's data (rows) and adjusted columns based on placement
@@ -152,6 +247,18 @@ private:
             width_ += n_elems_per_rod.size() - 1;
         }
 
+    }
+
+    // Helper to iterate over all variables and reset ghost values
+    template<typename VariablesTuple, std::size_t Index>
+    void reset_ghost_impl() {
+        using CurrentVar = std::tuple_element_t<Index, VariablesTuple>;
+        reset_ghost_for_variable<CurrentVar>();
+
+        // Recurse to next variable if not last
+        if constexpr (Index + 1 < std::tuple_size_v<VariablesTuple>) {
+            reset_ghost_impl<VariablesTuple, Index + 1>();
+        }
     }
 
 };

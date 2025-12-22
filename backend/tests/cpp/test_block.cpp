@@ -1,7 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <vector>
 #include "block.h"
 #include "mock/mock_block_system.h"
+
+using Catch::Approx;
 
 using MockBlockSystem = elasticapp::mock::MockBlockSystem;
 
@@ -358,5 +361,222 @@ TEST_CASE("Block get() method", "[block]") {
 
         auto var5_empty = empty_block.get<MockVar5>();
         REQUIRE(var5_empty.cols() == 0);  // 0 - 2 clamped to 0
+    }
+}
+
+TEST_CASE("Block ghost indices", "[block]") {
+    using namespace elasticapp::mock;
+
+    SECTION("Ghost nodes indices with multiple rods") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5, 2};
+        MockBlockSystem block(n_elems_per_rod);
+        // Rod 0: 3 elems -> 4 nodes (indices 0-3)
+        // Ghost node at 4
+        // Rod 1: 5 elems -> 6 nodes (indices 5-10)
+        // Ghost node at 11
+        // Rod 2: 2 elems -> 3 nodes (indices 12-14)
+
+        auto ghost_nodes = block.ghost_nodes_idx();
+        REQUIRE(ghost_nodes.size() == 2);  // n_rods - 1
+        REQUIRE(ghost_nodes[0] == 4);      // After rod 0
+        REQUIRE(ghost_nodes[1] == 11);      // After rod 1
+    }
+
+    SECTION("Ghost elements indices with multiple rods") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5, 2};
+        MockBlockSystem block(n_elems_per_rod);
+
+        auto ghost_elems = block.ghost_elems_idx();
+        REQUIRE(ghost_elems.size() == 4);   // 2 * (n_rods - 1)
+        // For ghost node at 4: elements at 3 and 4
+        REQUIRE(ghost_elems[0] == 3);
+        REQUIRE(ghost_elems[1] == 4);
+        // For ghost node at 11: elements at 10 and 11
+        REQUIRE(ghost_elems[2] == 10);
+        REQUIRE(ghost_elems[3] == 11);
+    }
+
+    SECTION("Ghost voronoi indices with multiple rods") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5, 2};
+        MockBlockSystem block(n_elems_per_rod);
+
+        auto ghost_voronoi = block.ghost_voronoi_idx();
+        REQUIRE(ghost_voronoi.size() == 6);  // 3 * (n_rods - 1)
+        // For ghost node at 4: voronoi at 2, 3, 4
+        REQUIRE(ghost_voronoi[0] == 2);
+        REQUIRE(ghost_voronoi[1] == 3);
+        REQUIRE(ghost_voronoi[2] == 4);
+        // For ghost node at 11: voronoi at 9, 10, 11
+        REQUIRE(ghost_voronoi[3] == 9);
+        REQUIRE(ghost_voronoi[4] == 10);
+        REQUIRE(ghost_voronoi[5] == 11);
+    }
+
+    SECTION("Ghost indices with single rod") {
+        std::vector<std::size_t> n_elems_per_rod = {5};
+        MockBlockSystem block(n_elems_per_rod);
+
+        auto ghost_nodes = block.ghost_nodes_idx();
+        auto ghost_elems = block.ghost_elems_idx();
+        auto ghost_voronoi = block.ghost_voronoi_idx();
+
+        REQUIRE(ghost_nodes.empty());
+        REQUIRE(ghost_elems.empty());
+        REQUIRE(ghost_voronoi.empty());
+    }
+
+    SECTION("Ghost indices with two rods") {
+        std::vector<std::size_t> n_elems_per_rod = {2, 3};
+        MockBlockSystem block(n_elems_per_rod);
+        // Rod 0: 2 elems -> 3 nodes (indices 0-2)
+        // Ghost node at 3
+        // Rod 1: 3 elems -> 4 nodes (indices 4-7)
+
+        auto ghost_nodes = block.ghost_nodes_idx();
+        REQUIRE(ghost_nodes.size() == 1);
+        REQUIRE(ghost_nodes[0] == 3);
+
+        auto ghost_elems = block.ghost_elems_idx();
+        REQUIRE(ghost_elems.size() == 2);
+        REQUIRE(ghost_elems[0] == 2);  // Element before ghost node
+        REQUIRE(ghost_elems[1] == 3);  // Element at ghost node
+
+        auto ghost_voronoi = block.ghost_voronoi_idx();
+        REQUIRE(ghost_voronoi.size() == 3);
+        REQUIRE(ghost_voronoi[0] == 1);  // Voronoi 2 before ghost node
+        REQUIRE(ghost_voronoi[1] == 2);  // Voronoi 1 before ghost node
+        REQUIRE(ghost_voronoi[2] == 3);  // Voronoi at ghost node
+    }
+
+    SECTION("Ghost indices with empty block") {
+        std::vector<std::size_t> n_elems_per_rod = {};
+        MockBlockSystem block(n_elems_per_rod);
+
+        auto ghost_nodes = block.ghost_nodes_idx();
+        auto ghost_elems = block.ghost_elems_idx();
+        auto ghost_voronoi = block.ghost_voronoi_idx();
+
+        REQUIRE(ghost_nodes.empty());
+        REQUIRE(ghost_elems.empty());
+        REQUIRE(ghost_voronoi.empty());
+    }
+}
+
+TEST_CASE("Block reset_ghost operations", "[block]") {
+    using namespace elasticapp::mock;
+
+    SECTION("reset_ghost_for_variable for OnNode variable") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5};
+        MockBlockSystem block(n_elems_per_rod);
+        // Ghost nodes at indices 4, 10
+
+        // Get variable view and modify ghost positions
+        auto var1_view = block.get<MockVar1>();  // OnNode, Vector
+        var1_view(0, 4) = 999.0;  // Modify ghost node
+        var1_view(1, 4) = 888.0;
+        var1_view(2, 4) = 777.0;
+
+        // Reset ghost for this variable
+        block.reset_ghost_for_variable<MockVar1>();
+
+        // Verify ghost values are reset (MockVar1 uses DataType::Vector, ghost_value = Zero(3,1))
+        REQUIRE(var1_view(0, 4) == Approx(0.0));
+        REQUIRE(var1_view(1, 4) == Approx(0.0));
+        REQUIRE(var1_view(2, 4) == Approx(0.0));
+    }
+
+    SECTION("reset_ghost_for_variable for OnElement variable") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5};
+        MockBlockSystem block(n_elems_per_rod);
+        // Ghost elements at indices 3, 4, 10, 11
+
+        // Get variable view and modify ghost positions
+        auto var3_view = block.get<MockVar3>();  // OnElement, Vector
+        var3_view(0, 3) = 999.0;  // Modify ghost element
+        var3_view(1, 3) = 888.0;
+        var3_view(2, 3) = 777.0;
+
+        // Reset ghost for this variable
+        block.reset_ghost_for_variable<MockVar3>();
+
+        // Verify ghost values are reset (MockVar3 uses DataType::Vector, ghost_value = Zero(3,1))
+        REQUIRE(var3_view(0, 3) == Approx(0.0));
+        REQUIRE(var3_view(1, 3) == Approx(0.0));
+        REQUIRE(var3_view(2, 3) == Approx(0.0));
+    }
+
+    SECTION("reset_ghost_for_variable for OnVoronoi variable") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5};
+        MockBlockSystem block(n_elems_per_rod);
+        // Ghost voronoi at indices 2, 3, 4, 9, 10, 11
+
+        // Get variable view and modify ghost positions
+        auto var5_view = block.get<MockVar5>();  // OnVoronoi, Scalar
+        var5_view(0, 2) = 999.0;  // Modify ghost voronoi
+
+        // Reset ghost for this variable
+        block.reset_ghost_for_variable<MockVar5>();
+
+        // Verify ghost values are reset (MockVar5 uses DataType::Scalar, ghost_value = Zero(1,1))
+        REQUIRE(var5_view(0, 2) == Approx(0.0));
+    }
+
+    SECTION("reset_ghost resets all variables") {
+        std::vector<std::size_t> n_elems_per_rod = {2, 3};
+        MockBlockSystem block(n_elems_per_rod);
+        // Ghost nodes at index 3
+
+        // Modify ghost positions for multiple variables
+        auto var1_view = block.get<MockVar1>();  // OnNode
+        auto var2_view = block.get<MockVar2>();  // OnNode
+        auto var3_view = block.get<MockVar3>();  // OnElement
+
+        var1_view(0, 3) = 999.0;
+        var2_view(0, 3) = 888.0;
+        var3_view(0, 2) = 777.0;  // Ghost element at 2 (before ghost node at 3)
+
+        // Reset all ghosts
+        block.reset_ghost();
+
+        // Verify all ghost values are reset
+        REQUIRE(var1_view(0, 3) == Approx(0.0));
+        REQUIRE(var2_view(0, 3) == Approx(0.0));
+        REQUIRE(var3_view(0, 2) == Approx(0.0));
+    }
+
+    SECTION("reset_ghost called in constructor") {
+        std::vector<std::size_t> n_elems_per_rod = {3, 5};
+        MockBlockSystem block(n_elems_per_rod);
+        // Constructor should have called reset_ghost()
+
+        // Check that ghost values are already initialized
+        auto var1_view = block.get<MockVar1>();
+        auto ghost_nodes = block.ghost_nodes_idx();
+
+        if (!ghost_nodes.empty()) {
+            std::size_t ghost_col = ghost_nodes[0];
+            // Ghost values should be zero (default ghost_value for Vector)
+            REQUIRE(var1_view(0, ghost_col) == Approx(0.0));
+            REQUIRE(var1_view(1, ghost_col) == Approx(0.0));
+            REQUIRE(var1_view(2, ghost_col) == Approx(0.0));
+        }
+    }
+
+    SECTION("reset_ghost with single rod (no ghosts)") {
+        std::vector<std::size_t> n_elems_per_rod = {5};
+        MockBlockSystem block(n_elems_per_rod);
+
+        // Should not crash even with no ghost nodes
+        REQUIRE_NOTHROW(block.reset_ghost());
+        REQUIRE_NOTHROW(block.reset_ghost_for_variable<MockVar1>());
+    }
+
+    SECTION("reset_ghost with empty block") {
+        std::vector<std::size_t> n_elems_per_rod = {};
+        MockBlockSystem block(n_elems_per_rod);
+
+        // Should not crash even with empty block
+        REQUIRE_NOTHROW(block.reset_ghost());
+        REQUIRE_NOTHROW(block.reset_ghost_for_variable<MockVar1>());
     }
 }

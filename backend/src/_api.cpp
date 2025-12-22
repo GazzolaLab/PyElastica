@@ -80,6 +80,37 @@ auto get_block_variable_by_name(BlockType& block, const std::string& var_name) {
     }
 }
 
+// Helper to reset ghost for a variable by name
+template<typename BlockType, typename VariablesTuple, std::size_t Index>
+void reset_ghost_for_variable_by_name_impl(BlockType& block, const std::string& var_name) {
+    using CurrentVar = std::tuple_element_t<Index, VariablesTuple>;
+
+    // Check if current variable's name matches
+    if (var_name == std::string(CurrentVar::name)) {
+        block.template reset_ghost_for_variable<CurrentVar>();
+        return;
+    }
+
+    // Recurse to next variable if not last
+    if constexpr (Index + 1 < std::tuple_size_v<VariablesTuple>) {
+        reset_ghost_for_variable_by_name_impl<BlockType, VariablesTuple, Index + 1>(block, var_name);
+    } else {
+        throw std::runtime_error("Unknown variable name: " + var_name);
+    }
+}
+
+// Helper function to reset ghost for a variable by name
+template<typename BlockType>
+void reset_ghost_for_variable_by_name(BlockType& block, const std::string& var_name) {
+    using VariablesTuple = typename BlockType::Variables;
+
+    if constexpr (std::tuple_size_v<VariablesTuple> > 0) {
+        reset_ghost_for_variable_by_name_impl<BlockType, VariablesTuple, 0>(block, var_name);
+    } else {
+        throw std::runtime_error("System has no variables");
+    }
+}
+
 // Helper to convert Eigen Block view to numpy array
 template<typename BlockExpr>
 py::array_t<double> block_to_numpy(BlockExpr&& block_expr, py::object parent) {
@@ -87,18 +118,33 @@ py::array_t<double> block_to_numpy(BlockExpr&& block_expr, py::object parent) {
     auto rows = static_cast<py::ssize_t>(block_expr.rows());
     auto cols = static_cast<py::ssize_t>(block_expr.cols());
 
-    // Compute strides based on storage order
-    auto strides = compute_strides(
-        static_cast<std::size_t>(rows),
-        static_cast<std::size_t>(cols)
-    );
+    // Get actual strides from the Eigen Block expression
+    // For Eigen Blocks, innerStride() is the stride between elements in the same row/column
+    // and outerStride() is the stride between rows/columns depending on storage order
+    // For column-major: innerStride() = 1 (between rows), outerStride() = underlying_rows (between columns)
+    // For row-major: innerStride() = 1 (between columns), outerStride() = underlying_cols (between rows)
+    auto inner_stride = static_cast<py::ssize_t>(block_expr.innerStride() * sizeof(double));
+    auto outer_stride = static_cast<py::ssize_t>(block_expr.outerStride() * sizeof(double));
 
-    // Create numpy array view (non-owning)
+    // For numpy, strides are in bytes and represent the step size for each dimension
+    // For column-major (Eigen default): row_stride = inner_stride, col_stride = outer_stride
+    // For row-major: row_stride = outer_stride, col_stride = inner_stride
+    py::ssize_t row_stride, col_stride;
+    if constexpr (IsColMajor) {
+        // Column-major: stride between rows is inner_stride, between columns is outer_stride
+        row_stride = inner_stride;
+        col_stride = outer_stride;
+    } else {
+        // Row-major: stride between rows is outer_stride, between columns is inner_stride
+        row_stride = outer_stride;
+        col_stride = inner_stride;
+    }
+
+    // Create numpy array view (non-owning) with correct strides
     return py::array_t<double>(
         {rows, cols},
-        {static_cast<py::ssize_t>(strides.first),
-         static_cast<py::ssize_t>(strides.second)},
-        block_expr.data(),
+        {row_stride, col_stride},
+        const_cast<double*>(block_expr.data()),
         parent  // Keep parent object alive
     );
 }
@@ -261,6 +307,65 @@ PYBIND11_MODULE(_memory_block, m) {
 
             This operation updates the dynamic variables including forces
             and torques based on the current state.
+        )pbdoc")
+        .def_property_readonly("ghost_nodes_idx", [](const BlockRodSystem& block) {
+            auto indices = block.ghost_nodes_idx();
+            // Convert to numpy array (pybind11 will handle the conversion automatically)
+            return py::cast(indices);
+        },
+        R"pbdoc(
+            Get indices of ghost nodes between rods.
+
+            Returns:
+                numpy.ndarray: An array of ghost node indices (length: n_rods - 1).
+                The array does not own the data.
+        )pbdoc",
+        py::keep_alive<0, 1>())
+        .def_property_readonly("ghost_elems_idx", [](const BlockRodSystem& block) {
+            auto indices = block.ghost_elems_idx();
+            // Convert to numpy array (pybind11 will handle the conversion automatically)
+            return py::cast(indices);
+        },
+        R"pbdoc(
+            Get indices of ghost elements between rods.
+
+            Returns:
+                numpy.ndarray: An array of ghost element indices (length: 2 * (n_rods - 1)).
+                The array does not own the data.
+        )pbdoc",
+        py::keep_alive<0, 1>())
+        .def_property_readonly("ghost_voronoi_idx", [](const BlockRodSystem& block) {
+            auto indices = block.ghost_voronoi_idx();
+            // Convert to numpy array (pybind11 will handle the conversion automatically)
+            return py::cast(indices);
+        },
+        R"pbdoc(
+            Get indices of ghost voronoi nodes between rods.
+
+            Returns:
+                numpy.ndarray: An array of ghost voronoi indices (length: 3 * (n_rods - 1)).
+                The array does not own the data.
+        )pbdoc",
+        py::keep_alive<0, 1>())
+        .def("reset_ghost_for_variable", [](BlockRodSystem& block, const std::string& var_name) {
+            // Helper to reset ghost for a variable by name
+            reset_ghost_for_variable_by_name(block, var_name);
+        },
+        R"pbdoc(
+            Reset ghost values for a specific variable by name.
+
+            Args:
+                var_name: Name of the variable (e.g., "position", "velocity", "director")
+        )pbdoc",
+        py::arg("var_name"))
+        .def("reset_ghost", [](BlockRodSystem& block) {
+            block.reset_ghost();
+        },
+        R"pbdoc(
+            Reset ghost values for all variables.
+
+            This operation sets all ghost node/element/voronoi values to their
+            default ghost_value as defined in each variable type.
         )pbdoc");
 
     // BlockView class
