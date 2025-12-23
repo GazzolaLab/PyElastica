@@ -4,11 +4,15 @@
 from elasticapp.version import version
 
 # Import BlockRodSystem from C++ module
-from elasticapp._memory_block import BlockRodSystem, BlockView
+from elasticapp._memory_block import BlockRodSystem, BlockRodSystemView
+
+# Import MemoryBlockCosseratRod after BlockRodSystem is defined to avoid circular import
+from .memory_block_rod import MemoryBlockCosseratRod
 
 __all__ = [
     "BlockRodSystem",
-    "BlockView",
+    "BlockRodSystemView",
+    "MemoryBlockCosseratRod",
     "version",
 ]
 

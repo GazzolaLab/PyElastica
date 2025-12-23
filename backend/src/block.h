@@ -149,14 +149,29 @@ public:
 
         // Set ghost values at each ghost index
         // Note: ghost indices are in the full width coordinate system
+        // For OnElement and OnVoronoi variables, we need to ensure ghost indices
+        // are within the adjusted width (since get() returns adjusted width views)
         const auto& ghost_val = VariableTag::ghost_value;
+
+        // Compute adjusted width for this variable type
+        std::size_t adjusted_width = width_;
+        if constexpr (std::is_base_of_v<Placement::OnElement, VariableTag>) {
+            adjusted_width = width_ > 0 ? width_ - 1 : 0;
+        } else if constexpr (std::is_base_of_v<Placement::OnVoronoi, VariableTag>) {
+            adjusted_width = width_ > 1 ? width_ - 2 : 0;
+        }
+
         for (std::size_t ghost_col : ghost_indices) {
-            // Access data_ directly using row and column offsets
-            // ghost_val is a MatrixType (column vector), so we access it as (row, 0)
-            Eigen::Index data_col = static_cast<Eigen::Index>(ghost_col);
-            for (std::size_t row = 0; row < var_dimension; ++row) {
-                Eigen::Index data_row = static_cast<Eigen::Index>(row_offset + row);
-                data_(data_row, data_col) = ghost_val(static_cast<Eigen::Index>(row), 0);
+            // Only reset ghost values that are within the adjusted width
+            // (ghost indices beyond adjusted width are not accessible via get())
+            if (ghost_col < adjusted_width) {
+                // Access data_ directly using row and column offsets
+                // ghost_val is a MatrixType (column vector), so we access it as (row, 0)
+                Eigen::Index data_col = static_cast<Eigen::Index>(ghost_col);
+                for (std::size_t row = 0; row < var_dimension; ++row) {
+                    Eigen::Index data_row = static_cast<Eigen::Index>(row_offset + row);
+                    data_(data_row, data_col) = ghost_val(static_cast<Eigen::Index>(row), 0);
+                }
             }
         }
     }

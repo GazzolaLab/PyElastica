@@ -7,8 +7,17 @@
 #include "api.h"
 #include "operations.h"
 #include "cosserat_rod_system.h"
+#include <iostream>
 #include <string>
 #include <stdexcept>
+#include <utility>
+#include <vector>
+#include <Eigen/Core>
+
+// Include OpenMP headers if threading is enabled
+#ifdef ELASTICAPP_USE_THREADING
+#include <omp.h>
+#endif
 
 namespace py = pybind11;
 
@@ -112,8 +121,10 @@ void reset_ghost_for_variable_by_name(BlockType& block, const std::string& var_n
 }
 
 // Helper to convert Eigen Block view to numpy array
+// For Scalar variables (rows == 1), returns a 1D array instead of 2D
+// For Matrix variables (rows == 9), returns a 3D array (3, 3, N) directly
 template<typename BlockExpr>
-py::array_t<double> block_to_numpy(BlockExpr&& block_expr, py::object parent) {
+py::object block_to_numpy(BlockExpr&& block_expr, py::object parent) {
     // Evaluate the expression to get dimensions
     auto rows = static_cast<py::ssize_t>(block_expr.rows());
     auto cols = static_cast<py::ssize_t>(block_expr.cols());
@@ -126,6 +137,64 @@ py::array_t<double> block_to_numpy(BlockExpr&& block_expr, py::object parent) {
     auto inner_stride = static_cast<py::ssize_t>(block_expr.innerStride() * sizeof(double));
     auto outer_stride = static_cast<py::ssize_t>(block_expr.outerStride() * sizeof(double));
 
+    // For Scalar variables (rows == 1), return as 1D array
+    if (rows == 1) {
+        // For 1D array, stride is the column stride
+        py::ssize_t stride;
+        if constexpr (IsColMajor) {
+            // Column-major: stride between columns is outer_stride
+            stride = outer_stride;
+        } else {
+            // Row-major: stride between columns is inner_stride
+            stride = inner_stride;
+        }
+
+        return py::array_t<double>(
+            {cols},
+            {stride},
+            const_cast<double*>(block_expr.data()),
+            parent  // Keep parent object alive
+        );
+    }
+
+    // For Matrix variables (rows == 9), return as 3D array (3, 3, N)
+    // Matrix variables represent 3x3 matrices stored as flattened 9-element vectors
+    // Storage order: [m00, m10, m20, m01, m11, m21, m02, m12, m22] (column-major)
+    if (rows == 9) {
+        // For (3, 3, N) view from (9, N) column-major:
+        // Mapping: arr_3d[a, b, c] -> arr_2d[a*3 + b, c]
+        // Strides:
+        //   - Page stride (a dimension): 3 * row_stride (to skip 3 rows)
+        //   - Row stride (b dimension): row_stride (to skip 1 row)
+        //   - Col stride (c dimension): col_stride (to skip 1 column)
+        py::ssize_t page_stride, row_stride_3d, col_stride_3d;
+        if constexpr (IsColMajor) {
+            // Column-major: row_stride = inner_stride, col_stride = outer_stride
+            page_stride = 3 * inner_stride;  // Stride for first 3x3 dimension (skip 3 rows)
+            row_stride_3d = inner_stride;     // Stride between rows in 3x3 (skip 1 row)
+            col_stride_3d = outer_stride;    // Stride between columns (N dimension)
+        } else {
+            // Row-major: row_stride = outer_stride, col_stride = inner_stride
+            page_stride = 3 * outer_stride;
+            row_stride_3d = outer_stride;
+            col_stride_3d = inner_stride;
+        }
+
+        // Use py::buffer_info for 3D arrays with custom strides
+        std::vector<py::ssize_t> shape = {3, 3, cols};
+        std::vector<py::ssize_t> strides = {page_stride, row_stride_3d, col_stride_3d};
+        py::buffer_info buf_info(
+            const_cast<double*>(block_expr.data()),
+            sizeof(double),
+            py::format_descriptor<double>::format(),
+            3,
+            shape,
+            strides
+        );
+        return py::array_t<double>(buf_info, parent);
+    }
+
+    // For Vector variables (rows == 3), return as 2D array
     // For numpy, strides are in bytes and represent the step size for each dimension
     // For column-major (Eigen default): row_stride = inner_stride, col_stride = outer_stride
     // For row-major: row_stride = outer_stride, col_stride = inner_stride
@@ -157,6 +226,73 @@ PYBIND11_MODULE(_memory_block, m) {
         Provides BlockCosseratRod class for 2D array management with Eigen backend.
     )pbdoc";
 
+    // Forward declare BlockRodSystemView so it can be used as a return type
+    using BlockRodSystemViewType = BlockRodSystem::View;
+
+    // Thread management functions (only available when threading is enabled)
+    #ifdef ELASTICAPP_USE_THREADING
+    // Disable Eigen's internal threading to prevent oversubscription with OpenMP
+    // We use OpenMP for explicit parallelization, so Eigen should use single-threaded operations
+    Eigen::setNbThreads(1);
+
+    // Initialize thread count from CMake option if specified
+    #ifdef ELASTICAPP_NUM_THREADS
+    omp_set_num_threads(ELASTICAPP_NUM_THREADS);
+    #endif
+
+    m.def("set_num_threads", [](int num_threads) {
+        if (num_threads > 0) {
+            omp_set_num_threads(num_threads);
+            // Ensure Eigen uses single thread to avoid oversubscription
+            Eigen::setNbThreads(1);
+        }
+    },
+    R"pbdoc(
+        Set the number of OpenMP threads to use for parallel operations.
+
+        Args:
+            num_threads: Number of threads to use (must be > 0).
+                        If 0 or negative, OpenMP will use its default
+                        (typically all available CPU cores).
+
+        Note:
+            This affects all subsequent parallel regions in the code.
+            The environment variable OMP_NUM_THREADS can also be used
+            to control thread count.
+    )pbdoc",
+    py::arg("num_threads"));
+
+    m.def("get_num_threads", []() {
+        return omp_get_num_threads();
+    },
+    R"pbdoc(
+        Get the current number of threads in the current parallel region.
+
+        Returns:
+            int: Number of threads (returns 1 if called outside a parallel region).
+    )pbdoc");
+
+    m.def("get_max_threads", []() {
+        return omp_get_max_threads();
+    },
+    R"pbdoc(
+        Get the maximum number of threads that can be used.
+
+        Returns:
+            int: Maximum number of threads available.
+    )pbdoc");
+
+    m.def("get_thread_num", []() {
+        return omp_get_thread_num();
+    },
+    R"pbdoc(
+        Get the current thread number (0 to num_threads-1).
+
+        Returns:
+            int: Current thread number (returns 0 if called outside a parallel region).
+    )pbdoc");
+    #endif // ELASTICAPP_USE_THREADING
+
     // BlockRodSystem class
     py::class_<BlockRodSystem>(m, "BlockRodSystem")
         .def(py::init([](py::object n_elems_per_rod_obj) {
@@ -179,8 +315,29 @@ PYBIND11_MODULE(_memory_block, m) {
                 if (buf.ndim != 1) {
                     throw std::runtime_error("numpy array must be 1-dimensional");
                 }
-                auto* ptr = static_cast<std::size_t*>(buf.ptr);
-                n_elems_per_rod.assign(ptr, ptr + buf.size);
+                // Properly convert numpy array elements to std::size_t
+                // Handle different integer types safely
+                n_elems_per_rod.reserve(buf.size);
+                if (buf.itemsize == sizeof(std::int32_t)) {
+                    auto* ptr = static_cast<std::int32_t*>(buf.ptr);
+                    for (py::ssize_t i = 0; i < buf.size; ++i) {
+                        n_elems_per_rod.push_back(static_cast<std::size_t>(ptr[i]));
+                    }
+                } else if (buf.itemsize == sizeof(std::int64_t)) {
+                    auto* ptr = static_cast<std::int64_t*>(buf.ptr);
+                    for (py::ssize_t i = 0; i < buf.size; ++i) {
+                        n_elems_per_rod.push_back(static_cast<std::size_t>(ptr[i]));
+                    }
+                } else if (buf.itemsize == sizeof(std::size_t)) {
+                    auto* ptr = static_cast<std::size_t*>(buf.ptr);
+                    n_elems_per_rod.assign(ptr, ptr + buf.size);
+                } else {
+                    // Fallback: iterate and cast each element
+                    for (py::ssize_t i = 0; i < buf.size; ++i) {
+                        py::object item = arr.attr("__getitem__")(i);
+                        n_elems_per_rod.push_back(item.cast<std::size_t>());
+                    }
+                }
             } else {
                 throw std::runtime_error("n_elems_per_rod must be a list, tuple, or numpy array");
             }
@@ -235,8 +392,8 @@ PYBIND11_MODULE(_memory_block, m) {
                 int: Starting column index for the rod in the block
         )pbdoc",
         py::arg("index"))
-        .def("at", [](BlockRodSystem& block, std::size_t index) {
-            return block.at(index);
+        .def("at", [](BlockRodSystem& block, std::size_t index) -> BlockRodSystemViewType {
+            return std::move(block.at(index));
         },
         R"pbdoc(
             Get a view for a specific rod.
@@ -245,7 +402,7 @@ PYBIND11_MODULE(_memory_block, m) {
                 index: Index of the rod
 
             Returns:
-                BlockView: View object for accessing variables of this rod
+                BlockRodSystemView: View object for accessing variables of this rod
         )pbdoc",
         py::arg("index"), py::return_value_policy::reference_internal)
         .def("get", [](BlockRodSystem& block, const std::string& var_name) {
@@ -263,51 +420,73 @@ PYBIND11_MODULE(_memory_block, m) {
                 across all rods. The array does not own the data.
         )pbdoc",
         py::arg("var_name"), py::keep_alive<0, 1>())
-        .def("compute_internal_forces_and_torques", [](BlockRodSystem& block) {
-            block.compute_internal_forces_and_torques();
+        .def("compute_internal_forces_and_torques", [](BlockRodSystem& block, double time) {
+            block.compute_internal_forces_and_torques(time);
         },
         R"pbdoc(
             Compute internal forces and torques for all rods in the block.
 
             This operation computes the internal forces and torques based on the
             current state of the rods (positions, velocities, etc.).
-        )pbdoc")
-        .def("update_accelerations", [](BlockRodSystem& block) {
-            block.update_accelerations();
+
+            Args:
+                time: Current simulation time.
+        )pbdoc",
+        py::arg("time"))
+        .def("update_accelerations", [](BlockRodSystem& block, double time) {
+            block.update_accelerations(time);
         },
         R"pbdoc(
             Update accelerations based on forces and torques.
 
             This operation updates the acceleration variables based on the
             computed forces and torques.
-        )pbdoc")
-        .def("zeroed_out_external_forces_and_torques", [](BlockRodSystem& block) {
-            block.zeroed_out_external_forces_and_torques();
+
+            Args:
+                time: Current simulation time (included for API compatibility, not used in implementation).
+        )pbdoc",
+        py::arg("time"))
+        .def("zeroed_out_external_forces_and_torques", [](BlockRodSystem& block, double time) {
+            block.zeroed_out_external_forces_and_torques(time);
         },
         R"pbdoc(
             Zero out external forces and torques for all rods.
 
             This operation sets all external forces and torques to zero,
             typically called at the beginning of each time step.
-        )pbdoc")
-        .def("update_kinematics", [](BlockRodSystem& block) {
-            block.update_kinematics();
+
+            Args:
+                time: Current simulation time (included for API compatibility, not used in implementation).
+        )pbdoc",
+        py::arg("time"))
+        .def("update_kinematics", [](BlockRodSystem& block, double time, double prefac) {
+            block.update_kinematics(prefac);
         },
         R"pbdoc(
-            Update kinematics (position, velocity, etc.) for all rods.
+            Update kinematics (position, director) for all rods.
 
-            This operation updates the kinematic variables based on the
-            current state and time integration.
-        )pbdoc")
-        .def("update_dynamics", [](BlockRodSystem& block) {
-            block.update_dynamics();
+            This operation updates the kinematic variables based on velocity and omega.
+            Updates: position += prefac * velocity, director = R(prefac * omega) @ director
+
+            Args:
+                time: Current time (for compatibility with Python interface, not used in C++)
+                prefac: Integration prefactor (e.g., time step dt)
+        )pbdoc",
+        py::arg("time"), py::arg("prefac"))
+        .def("update_dynamics", [](BlockRodSystem& block, double time, double prefac) {
+            block.update_dynamics(prefac);
         },
         R"pbdoc(
-            Update dynamics (forces, torques, etc.) for all rods.
+            Update dynamics (velocity, omega) for all rods.
 
-            This operation updates the dynamic variables including forces
-            and torques based on the current state.
-        )pbdoc")
+            This operation updates the dynamic variables based on acceleration and alpha.
+            Updates: velocity += prefac * acceleration, omega += prefac * alpha
+
+            Args:
+                time: Current time (for compatibility with Python interface, not used in C++)
+                prefac: Integration prefactor (e.g., time step dt)
+        )pbdoc",
+        py::arg("time"), py::arg("prefac"))
         .def_property_readonly("ghost_nodes_idx", [](const BlockRodSystem& block) {
             auto indices = block.ghost_nodes_idx();
             // Convert to numpy array (pybind11 will handle the conversion automatically)
@@ -368,10 +547,9 @@ PYBIND11_MODULE(_memory_block, m) {
             default ghost_value as defined in each variable type.
         )pbdoc");
 
-    // BlockView class
-    using BlockViewType = BlockRodSystem::View;
-    py::class_<BlockViewType>(m, "BlockView")
-        .def_property_readonly("shape", [](const BlockViewType& view) {
+    // BlockRodSystemView class
+    py::class_<BlockRodSystemViewType>(m, "BlockRodSystemView")
+        .def_property_readonly("shape", [](const BlockRodSystemViewType& view) {
             auto shape = view.shape();
             return py::make_tuple(shape.first, shape.second);
         },
@@ -381,7 +559,7 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 tuple: (depth, width) tuple representing the view dimensions
         )pbdoc")
-        .def("get", [](BlockViewType& view, const std::string& var_name) {
+        .def("get", [](BlockRodSystemViewType& view, const std::string& var_name) {
             auto block_expr = get_variable_by_name(view, var_name);
             return block_to_numpy(block_expr, py::cast(view));
         },

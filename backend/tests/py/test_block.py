@@ -69,7 +69,7 @@ def test_block_rod_start_indices():
     assert block.system_start_index(2) == 10
 
 def test_block_view_variable_query():
-    """Test that BlockView can query variables."""
+    """Test that BlockRodSystemView can query variables."""
     block = BlockRodSystem([3, 5, 2])
     view = block.at(0)
     assert view.get("position") is not None
@@ -77,7 +77,14 @@ def test_block_view_variable_query():
     assert view.get("velocity") is not None
     assert view.get("velocity").shape == (3, 4)
     assert view.get("director") is not None
-    assert view.get("director").shape == (9, 3)
+
+    print("")
+    print(type(view))
+    print(type(view.get("director")))
+    print(view.get("director"))
+    print(view.get("director").flags)
+    print(view.get("director").shape)
+    assert view.get("director").shape == (3, 3, 3)
 
 
 def test_block_get_shape():
@@ -97,11 +104,11 @@ def test_block_get_shape():
     assert velocity.shape == (3, 10)  # OnNode: full width
 
     mass = block.get("mass")
-    assert mass.shape == (1, 10)  # OnNode: full width
+    assert mass.shape == (10,)  # OnNode: full width
 
     # OnElement variables: should have shape (dimension, width - 1)
     director = block.get("director")
-    assert director.shape == (9, 9)  # Matrix (9D) x (width - 1) = 10 - 1 = 9
+    assert director.shape == (3, 3, 9)  # Matrix (9D) x (width - 1) = 10 - 1 = 9
     assert director.flags['OWNDATA'] is False
     assert director.flags['WRITEABLE'] is True
 
@@ -160,15 +167,15 @@ def test_block_get_different_variable_types():
 
     # OnNode variable (Scalar) - full width
     mass = block.get("mass")
-    assert mass.shape == (1, 8)  # OnNode: full width
-    mass[0, 0] = 5.0
-    assert mass[0, 0] == 5.0
+    assert mass.shape == (8,)  # OnNode: full width
+    mass[0] = 5.0
+    assert mass[0] == 5.0
 
     # OnElement variable (Matrix) - width - 1
     director = block.get("director")
-    assert director.shape == (9, 7)  # OnElement: width - 1 = 8 - 1 = 7
-    director[0, 0] = 0.5
-    assert director[0, 0] == 0.5
+    assert director.shape == (3, 3, 7)  # OnElement: width - 1 = 8 - 1 = 7
+    director[0, 0, 0] = 0.5
+    assert director[0, 0, 0] == 0.5
 
     # OnElement variable (Vector)
     omega = block.get("omega")

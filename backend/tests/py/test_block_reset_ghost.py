@@ -32,15 +32,18 @@ def test_reset_ghost_for_variable_onelement():
 
     # Get director variable and modify ghost positions
     director = block.get("director")
-    director[0, 3] = 999.0  # Modify ghost element
-    director[1, 3] = 888.0
+    director[0, 0, 3] = 999.0  # Modify ghost element
+    director[1, 0, 3] = 888.0
+    director[2, 0, 3] = 777.0
 
     # Reset ghost for director variable
     block.reset_ghost_for_variable("director")
 
-    # Verify ghost values are reset (director uses Matrix, ghost_value = Zero(9,1))
-    assert director[0, 3] == 0.0
-    assert director[1, 3] == 0.0
+    # Verify ghost values are reset (director uses Matrix, ghost_value = Zero(3,3))
+    print(director.flags)
+    assert director[0, 0, 3] == 0.0
+    assert director[1, 0, 3] == 0.0
+    assert director[2, 0, 3] == 0.0
 
 
 def test_reset_ghost_for_variable_onvoronoi():
@@ -67,21 +70,24 @@ def test_reset_ghost_resets_all_variables():
     # Ghost nodes at index 3
 
     # Modify ghost positions for multiple variables
+    lengths = block.get("lengths")
     position = block.get("position")
     velocity = block.get("velocity")
     director = block.get("director")
 
+    lengths[3] = 999.0
     position[0, 3] = 999.0
     velocity[0, 3] = 888.0
-    director[0, 2] = 777.0  # Ghost element at 2 (before ghost node at 3)
+    director[0, 0, 3] = 777.0  # Ghost element at 2 (before ghost node at 3)
 
     # Reset all ghosts
     block.reset_ghost()
 
     # Verify all ghost values are reset
+    assert lengths[3] == 0.0
     assert position[0, 3] == 0.0
     assert velocity[0, 3] == 0.0
-    assert director[0, 2] == 0.0
+    assert director[0, 0, 3] == 0.0
 
 
 def test_reset_ghost_called_in_constructor():

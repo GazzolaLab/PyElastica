@@ -43,9 +43,9 @@ constexpr std::size_t get_variable_num_cols(std::size_t rod_n_nodes,
     }
 }
 
-// Generic implementation helper for Block::get() and BlockView::get()
+// Generic implementation helper for Block::get() and BlockRodSystemView::get()
 // Extracted to reduce code duplication between const and non-const versions
-// This can be used by both Block and BlockView classes
+// This can be used by both Block and BlockRodSystemView classes
 template<typename VariableTag, SystemModel SystemType, typename MatrixRef>
 auto get_impl(MatrixRef&& matrix,
               std::size_t rod_n_nodes,

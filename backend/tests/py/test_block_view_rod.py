@@ -5,7 +5,7 @@ from elasticapp import BlockRodSystem
 
 
 def test_at_returns_block_view():
-    """Test that at() returns a BlockView object."""
+    """Test that at() returns a BlockRodSystemView object."""
     n_elems_per_system = [3, 5, 2]
     block = BlockRodSystem(n_elems_per_system)
     expected_depth = 103

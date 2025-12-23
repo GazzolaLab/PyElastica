@@ -5,7 +5,7 @@ from elastica.rod.cosserat_rod import CosseratRod
 from elastica.rod.data_structures import _RodSymplecticStepperMixin
 from elastica.typing import RodType, SystemIdxType
 
-from elasticapp import BlockRodSystem
+from elasticapp._memory_block import BlockRodSystem
 
 # Mapping python CosseratRod attribute to C++ tag that will be block memory allocated.
 # Tags are defined in cosserat_rod_system.h
@@ -145,3 +145,19 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
 
             full_block_memory = self._block.get(cpp_key)
             setattr(self, py_key, full_block_memory)
+
+    # Override python implementation
+    def compute_internal_forces_and_torques(self, time: np.float64) -> None:
+        self._block.compute_internal_forces_and_torques(time)
+
+    def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:
+        self._block.zeroed_out_external_forces_and_torques(time)
+
+    def update_accelerations(self, time: np.float64) -> None:
+        self._block.update_accelerations(time)
+
+    def update_kinematics(self, time: np.float64, prefac: np.float64) -> None:
+        self._block.update_kinematics(time, prefac)
+
+    def update_dynamics(self, time: np.float64, prefac: np.float64) -> None:
+        self._block.update_dynamics(time, prefac)
