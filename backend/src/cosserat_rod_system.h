@@ -6,7 +6,7 @@ namespace elasticapp {
 
 // CosseratRod-specific variable tags
 // These variable types are now made internal to this translation unit
-namespace {
+namespace system::cosserat_rod {
     // Node variables
     struct Position : Placement::OnNode, DataType::Vector {
         static constexpr std::string_view name = "position";
@@ -120,41 +120,41 @@ namespace {
 // Variables are organized by placement (Node, Element, Voronoi)
 using CosseratRodSystem = System<
     // Node variables
-    Position,
-    Velocity,
-    Acceleration,
-    Mass,
-    InternalForces,
-    ExternalForces,
+    system::cosserat_rod::Position,
+    system::cosserat_rod::Velocity,
+    system::cosserat_rod::Acceleration,
+    system::cosserat_rod::Mass,
+    system::cosserat_rod::InternalForces,
+    system::cosserat_rod::ExternalForces,
 
     // Element variables
-    Omega,
-    Alpha,
-    Director,
-    RestLengths,
-    Density,
-    Volume,
-    MassSecondMomentOfInertia,
-    InvMassSecondMomentOfInertia,
-    InternalTorques,
-    ExternalTorques,
-    Lengths,
-    Tangents,
-    Radius,
-    Dilatation,
-    DilatationRate,
-    Sigma,
-    RestSigma,
-    InternalStress,
-    ShearMatrix,
+    system::cosserat_rod::Omega,
+    system::cosserat_rod::Alpha,
+    system::cosserat_rod::Director,
+    system::cosserat_rod::RestLengths,
+    system::cosserat_rod::Density,
+    system::cosserat_rod::Volume,
+    system::cosserat_rod::MassSecondMomentOfInertia,
+    system::cosserat_rod::InvMassSecondMomentOfInertia,
+    system::cosserat_rod::InternalTorques,
+    system::cosserat_rod::ExternalTorques,
+    system::cosserat_rod::Lengths,
+    system::cosserat_rod::Tangents,
+    system::cosserat_rod::Radius,
+    system::cosserat_rod::Dilatation,
+    system::cosserat_rod::DilatationRate,
+    system::cosserat_rod::Sigma,
+    system::cosserat_rod::RestSigma,
+    system::cosserat_rod::InternalStress,
+    system::cosserat_rod::ShearMatrix,
 
     // Voronoi variables
-    RestVoronoiLengths,
-    VoronoiDilatation,
-    Kappa,
-    RestKappa,
-    InternalCouple,
-    BendMatrix
+    system::cosserat_rod::RestVoronoiLengths,
+    system::cosserat_rod::VoronoiDilatation,
+    system::cosserat_rod::Kappa,
+    system::cosserat_rod::RestKappa,
+    system::cosserat_rod::InternalCouple,
+    system::cosserat_rod::BendMatrix
 >;
 
 } // namespace elasticapp
