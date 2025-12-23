@@ -17,13 +17,33 @@ build-cpp:
 	PYBIND11_DIR=$$(python -c "import pybind11; import os; print(os.path.join(os.path.dirname(pybind11.__file__), 'share', 'cmake', 'pybind11'))") && \
 	mkdir -p build && \
 	cd build && \
-		cmake .. \
-			-DCMAKE_BUILD_TYPE=Release \
-			-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
-			-DPython3_EXECUTABLE="$$VENV_PYTHON" \
-			-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
-			-DPython_EXECUTABLE="$$VENV_PYTHON" \
-			-Dpybind11_DIR="$$PYBIND11_DIR" && \
+		LIBOMP_PREFIX=$$(brew --prefix libomp 2>/dev/null || echo "") && \
+		if [ -n "$$LIBOMP_PREFIX" ]; then \
+			LLVM_PREFIX=$$(brew --prefix llvm 2>/dev/null || echo "") && \
+			cmake .. \
+				-DCMAKE_BUILD_TYPE=Release \
+				-DCMAKE_C_COMPILER=$$LLVM_PREFIX/bin/clang \
+				-DCMAKE_CXX_COMPILER=$$LLVM_PREFIX/bin/clang++ \
+				-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
+				-DPython3_EXECUTABLE="$$VENV_PYTHON" \
+				-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
+				-DPython_EXECUTABLE="$$VENV_PYTHON" \
+				-Dpybind11_DIR="$$PYBIND11_DIR" \
+				-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I$$LIBOMP_PREFIX/include" \
+				-DOpenMP_CXX_LIB_NAMES="omp" \
+				-DOpenMP_omp_LIBRARY="$$LIBOMP_PREFIX/lib/libomp.dylib" \
+				-DOpenMP_CXX_LIBRARIES="$$LIBOMP_PREFIX/lib/libomp.dylib"; \
+		else \
+			cmake .. \
+				-DCMAKE_BUILD_TYPE=Release \
+				-DCMAKE_C_COMPILER=clang \
+				-DCMAKE_CXX_COMPILER=clang++ \
+				-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
+				-DPython3_EXECUTABLE="$$VENV_PYTHON" \
+				-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
+				-DPython_EXECUTABLE="$$VENV_PYTHON" \
+				-Dpybind11_DIR="$$PYBIND11_DIR"; \
+		fi && \
 		cmake --build . --parallel
 
 #* C++ Tests (build and run, no pip)
