@@ -11,8 +11,8 @@ from elastica.systems import is_system_a_collection
 from .protocol import StepperProtocol
 
 
-# Deprecated: Remove in the future version
-# Many script still uses this method to control timestep. Keep it for backward compatibility
+# Deprecated: Kept for backward compatibility.
+# Many script still uses this method to control timestep.
 def extend_stepper_interface(
     stepper: StepperProtocol, system_collection: SystemCollectionType
 ) -> tuple[
