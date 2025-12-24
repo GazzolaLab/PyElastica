@@ -14,8 +14,10 @@ from numba import njit
 import numpy as np
 from numpy.typing import NDArray
 
+from elastica.typing import SystemType
 
-T = TypeVar("T")
+
+T = TypeVar("T", bound=SystemType)
 
 
 class DamperBase(Generic[T], ABC):
@@ -91,7 +93,6 @@ class DamperBase(Generic[T], ABC):
             The time of simulation.
 
         """
-        pass
 
 
 DampenType: TypeAlias = Callable[[RodType], None]
@@ -142,7 +143,7 @@ class AnalyticalLinearDamper(DamperBase):
     >>> simulator.dampen(rod).using(
     ...     AnalyticalLinearDamper,
     ...     damping_constant=0.1,
-    ...     time_step = 1E-4,   # Simulation time-step
+    ...     time_step=1E-4,
     ... )
 
     Notes
@@ -207,7 +208,7 @@ class AnalyticalLinearDamper(DamperBase):
             )
         else:
             # Invalid parameter combination
-            message = (
+            raise ValueError(
                 "AnalyticalLinearDamper usage:\n"
                 "\tsimulator.dampen(rod).using(\n"
                 "\t\tAnalyticalLinearDamper,\n"
@@ -228,7 +229,6 @@ class AnalyticalLinearDamper(DamperBase):
                 "\t\ttime_step=...,\n"
                 "\t)\n"
             )
-            raise ValueError(message)
 
     def _deprecated_damping_protocol(
         self, damping_constant: np.float64, time_step: np.float64
@@ -296,6 +296,102 @@ class AnalyticalLinearDamper(DamperBase):
 
     def dampen_rates(self, system: RodType, time: np.float64) -> None:
         self._dampen_rates_protocol(system)
+
+
+class RayleighDissipation(DamperBase):
+    """
+    Rayleigh dissipation model matching the C++ implementation.
+
+    This class implements the C++ force-based damping model for compatibility.
+    It is deprecated in favor of :class:`AnalyticalLinearDamper` which provides
+    better numerical stability and unconditional stability. This implementation
+    is kept for validation for old cases.
+
+    This class implements force-based damping that matches the C++ nest-simulator
+    implementation. It adds damping forces and torques proportional to velocities:
+
+    .. math::
+
+        \\mathbf{F}_{damp} = -\\nu \\mathbf{v}
+
+        \\boldsymbol{\\tau}_{damp} = -\\nu \\boldsymbol{\\omega}
+
+    where the damping coefficient :math:`\\nu` can decay exponentially over time.
+
+    The damping forces are added to external forces and integrated through the
+    time stepper, which may require smaller time steps for large damping values.
+
+    Parameters
+    ----------
+    damping_constant : float
+        Damping coefficient :math:`\\nu` (per unit length). Units: [1/s] or [kg/(m·s)]
+
+    Examples
+    --------
+    .. code-block:: python
+
+        simulator.dampen(rod).using(
+            RayleighDissipation,
+            damping_constant=0.1,
+        )
+
+    See Also
+    --------
+    AnalyticalLinearDamper : Recommended alternative with better stability
+    LaplaceDissipationFilter : Alternative filtering-based dissipation
+    """
+
+    def __init__(
+        self,
+        damping_constant: np.float64,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        if damping_constant < 0.0:
+            raise ValueError("damping_constant must be non-negative")
+
+        _relaxation_time = 0.0  # relaxation: scale damping by exp(-time/relaxation)
+
+        # Pre-compute average element length for rescaling
+        rest_lengths = self._system.rest_lengths
+        n_elems = self._system.n_elems
+        self._average_element_length = np.sum(rest_lengths) / n_elems
+
+        if _relaxation_time > 0.0:
+            self.get_nu = lambda time: damping_constant * np.exp(
+                -time / _relaxation_time
+            )
+        else:
+            self.get_nu = lambda time: damping_constant
+
+    def dampen_rates(self, system: RodType, time: np.float64) -> None:
+        """
+        Apply Rayleigh dissipation forces and torques.
+
+        Parameters
+        ----------
+        system : RodType
+            Rod system to apply damping to
+        time : float
+            Current simulation time
+        """
+        # Rescale since nu is per unit length
+        nu_now = self.get_nu(time) * self._average_element_length
+
+        # Apply damping forces: F = -nu * v
+        # Boundary factor: 0.5 at endpoints, 1.0 otherwise (matches C++)
+        # dampingForces[i] -= (nuNow * factor) * v[i]
+        for i in range(system.n_nodes):
+            factor = 0.5 if (i == 0 or i == system.n_nodes - 1) else 1.0
+            damping_force = -(nu_now * factor) * system.velocity_collection[:, i]
+            system.external_forces[:, i] += damping_force
+
+        # Apply damping torques: T = -nu * w
+        # dampingTorques[i] -= nuNow * w[i]
+        for i in range(system.n_elems):
+            damping_torque = -nu_now * system.omega_collection[:, i]
+            system.external_torques[:, i] += damping_torque
 
 
 class LaplaceDissipationFilter(DamperBase):

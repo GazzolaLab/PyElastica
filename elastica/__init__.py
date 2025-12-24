@@ -56,6 +56,7 @@ from elastica.dissipation import (
     DamperBase,
     AnalyticalLinearDamper,
     LaplaceDissipationFilter,
+    RayleighDissipation,
 )
 from elastica.modules.base_system import BaseSystemCollection
 from elastica.modules.callbacks import CallBacks

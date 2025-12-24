@@ -15,11 +15,7 @@ from elastica.typing import (
 )
 from .protocol import SystemCollectionProtocol, ModuleProtocol
 
-import logging
-
 from elastica.contact_forces import NoContact
-
-logger = logging.getLogger(__name__)
 
 
 class Contact(SystemCollectionProtocol):
