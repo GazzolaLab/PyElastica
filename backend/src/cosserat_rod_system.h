@@ -19,8 +19,6 @@ namespace system::cosserat_rod {
     };
     struct Mass : Placement::OnNode, DataType::Scalar {
         static constexpr std::string_view name = "mass";
-        // Note: Not constexpr because Eigen dynamic matrices don't have constexpr constructors
-        // For dynamic matrices, Constant requires dimensions: Constant(rows, cols, value)
         inline static MatrixType ghost_value = MatrixType::Constant(1, 1, 1.0);
     };
     struct InternalForces : Placement::OnNode, DataType::Vector {
@@ -31,14 +29,14 @@ namespace system::cosserat_rod {
     };
 
     // Element variables
+    struct Director : Placement::OnElement, DataType::Matrix {
+        static constexpr std::string_view name = "director";
+    };
     struct Omega : Placement::OnElement, DataType::Vector {
         static constexpr std::string_view name = "omega";
     };
     struct Alpha : Placement::OnElement, DataType::Vector {
         static constexpr std::string_view name = "alpha";
-    };
-    struct Director : Placement::OnElement, DataType::Matrix {
-        static constexpr std::string_view name = "director";
     };
     struct RestLengths : Placement::OnElement, DataType::Scalar {
         static constexpr std::string_view name = "rest_lengths";

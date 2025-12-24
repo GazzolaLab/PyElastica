@@ -87,7 +87,7 @@ template<typename Derived>
 class CosseratRodOperations {
 public:
     // Compute internal forces and torques
-    void compute_internal_forces_and_torques(double time) {
+    inline void compute_internal_forces_and_torques(double time) {
         (void)time;  // Suppress unused parameter warning
         auto& block = static_cast<Derived&>(*this);
         // Compute internal forces and torques separately
@@ -103,27 +103,39 @@ public:
         compute_internal_torques(block);
     }
 
+    // Compute strains
+    inline void compute_strains(double time) {
+        (void)time;  // Suppress unused parameter warning
+        auto& block = static_cast<Derived&>(*this);
+        // Compute internal forces and torques separately
+        compute_geometry_from_state(block);
+        compute_all_dilatations(block);
+        compute_shear_stretch_strains(block);
+        compute_bending_twist_strains(block);
+    }
+
     // Update accelerations based on forces
-    void update_accelerations(double time) {
+    inline void update_accelerations(double time) {
         (void)time;  // Suppress unused parameter warning
         auto& block = static_cast<Derived&>(*this);
 
         // Get all required variables
-        auto acceleration = block.template get<system::cosserat_rod::Acceleration>();
-        auto internal_forces = block.template get<system::cosserat_rod::InternalForces>();
-        auto external_forces = block.template get<system::cosserat_rod::ExternalForces>();
-        auto mass = block.template get<system::cosserat_rod::Mass>();
-        auto alpha = block.template get<system::cosserat_rod::Alpha>();
-        auto inv_mass_second_moment_of_inertia = block.template get<system::cosserat_rod::InvMassSecondMomentOfInertia>();
-        auto internal_torques = block.template get<system::cosserat_rod::InternalTorques>();
-        auto external_torques = block.template get<system::cosserat_rod::ExternalTorques>();
-        auto dilatation = block.template get<system::cosserat_rod::Dilatation>();
+        auto&& acceleration = block.template get<system::cosserat_rod::Acceleration>();
+        auto&& internal_forces = block.template get<system::cosserat_rod::InternalForces>();
+        auto&& external_forces = block.template get<system::cosserat_rod::ExternalForces>();
+        auto&& mass = block.template get<system::cosserat_rod::Mass>();
+        auto&& alpha = block.template get<system::cosserat_rod::Alpha>();
+        auto&& inv_mass_second_moment_of_inertia = block.template get<system::cosserat_rod::InvMassSecondMomentOfInertia>();
+        auto&& internal_torques = block.template get<system::cosserat_rod::InternalTorques>();
+        auto&& external_torques = block.template get<system::cosserat_rod::ExternalTorques>();
+        auto&& dilatation = block.template get<system::cosserat_rod::Dilatation>();
 
         // Update translational acceleration: a = (F_internal + F_external) / m
         // acceleration is OnNode, Vector (3 rows, n_nodes cols)
-        const Eigen::Index n_nodes = acceleration.cols();
-        for (Eigen::Index i = 0; i < 3; ++i) {
-            for (Eigen::Index k = 0; k < n_nodes; ++k) {
+        const IndexType n_nodes = acceleration.cols();
+        for (IndexType i = 0; i < 3; ++i) {
+            #pragma omp parallel for simd schedule(static)
+            for (IndexType k = 0; k < n_nodes; ++k) {
                 acceleration(i, k) = (internal_forces(i, k) + external_forces(i, k)) / mass(0, k);
             }
         }
@@ -135,12 +147,13 @@ public:
         // inv_mass_second_moment_of_inertia is OnElement, Matrix (9 rows, n_elems cols)
         // Stored as 9xN where each column is a flattened 3x3 matrix: [I00, I01, I02, I10, I11, I12, I20, I21, I22]
         // alpha is OnElement, Vector (3 rows, n_elems cols)
-        const Eigen::Index n_elems = alpha.cols();
-        for (Eigen::Index i = 0; i < 3; ++i) {
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                for (Eigen::Index k = 0; k < n_elems; ++k) {
+        const IndexType n_elems = alpha.cols();
+        for (IndexType i = 0; i < 3; ++i) {
+            for (IndexType j = 0; j < 3; ++j) {
+                #pragma omp parallel for simd schedule(static)
+                for (IndexType k = 0; k < n_elems; ++k) {
                     // Map 3x3 matrix index (i, j) to flattened 9x1 index: i*3 + j
-                    Eigen::Index inv_J_idx = i * 3 + j;
+                    IndexType inv_J_idx = i * 3 + j;
                     alpha(i, k) += inv_mass_second_moment_of_inertia(inv_J_idx, k)
                                  * (internal_torques(j, k) + external_torques(j, k))
                                  * dilatation(0, k);
@@ -151,25 +164,32 @@ public:
 
     // Zero out external forces and torques
     // time parameter is included to match Python signature, but not used in implementation
-    void zeroed_out_external_forces_and_torques(double time) {
+    inline void zeroed_out_external_forces_and_torques(double time) {
         (void)time;  // Suppress unused parameter warning
+
         auto& block = static_cast<Derived&>(*this);
-        auto external_forces = block.template get<system::cosserat_rod::ExternalForces>();
-        auto external_torques = block.template get<system::cosserat_rod::ExternalTorques>();
+        auto&& external_forces = block.template get<system::cosserat_rod::ExternalForces>();
+        auto&& external_torques = block.template get<system::cosserat_rod::ExternalTorques>();
+
+        external_forces.setZero();
+        external_torques.setZero();
+        return;
 
         // Zero out all external forces (OnNode, Vector: 3 rows, n_nodes columns)
         // Use explicit loop to ensure values are set (matching Python implementation)
-        const Eigen::Index n_nodes = external_forces.cols();
-        for (Eigen::Index i = 0; i < 3; ++i) {
-            for (Eigen::Index k = 0; k < n_nodes; ++k) {
+        const IndexType n_nodes = external_forces.cols();
+        for (IndexType i = 0; i < 3; ++i) {
+            #pragma omp parallel for simd schedule(static)
+            for (IndexType k = 0; k < n_nodes; ++k) {
                 external_forces(i, k) = 0.0;
             }
         }
 
         // Zero out all external torques (OnElement, Vector: 3 rows, n_elems columns)
-        const Eigen::Index n_elems = external_torques.cols();
-        for (Eigen::Index i = 0; i < 3; ++i) {
-            for (Eigen::Index k = 0; k < n_elems; ++k) {
+        const IndexType n_elems = external_torques.cols();
+        for (IndexType i = 0; i < 3; ++i) {
+            #pragma omp parallel for simd schedule(static)
+            for (IndexType k = 0; k < n_elems; ++k) {
                 external_torques(i, k) = 0.0;
             }
         }
@@ -177,19 +197,25 @@ public:
 
     // Update kinematics (position, director) using velocity and omega
     // Equivalent to Python: update_kinematics(time, prefac)
-    void update_kinematics(double prefac) {
+    inline void update_kinematics(double prefac) {
         auto& block = static_cast<Derived&>(*this);
 
         // Get variable views from block using accessible type names
-        auto position = block.template get<system::cosserat_rod::Position>();
-        auto velocity = block.template get<system::cosserat_rod::Velocity>();
-        auto director = block.template get<system::cosserat_rod::Director>();
-        auto omega = block.template get<system::cosserat_rod::Omega>();
+        auto&& position = block.template get<system::cosserat_rod::Position>();
+        auto&& velocity = block.template get<system::cosserat_rod::Velocity>();
+        auto&& director = block.template get<system::cosserat_rod::Director>();
+        auto&& omega = block.template get<system::cosserat_rod::Omega>();
 
         // Update position: x += prefac * v
         // position is (3, n_nodes), velocity is (3, n_nodes)
-        // Eigen operations are automatically vectorized if SIMD is enabled
-        position += prefac * velocity;
+        const IndexType n_nodes = position.cols();
+        for (IndexType i = 0; i < 3; ++i) {
+            #pragma omp parallel for simd schedule(static) // num_threads(2)
+            for (IndexType k = 0; k < n_nodes; ++k) {
+                position(i, k) += prefac * velocity(i, k);
+            }
+        }
+        // position += prefac * velocity;
 
         // Update director using rotation matrix from omega
         // director is stored as (9, n_elems) - flattened 3x3 matrices
@@ -198,52 +224,45 @@ public:
         constexpr std::size_t dim = 3;
 
         // Parallelize loop if threading is enabled
-        #ifdef ELASTICAPP_USE_THREADING
-        #ifdef ELASTICAPP_NUM_THREADS
-        #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS)
-        #else
-        #pragma omp parallel for
-        #endif
-        #endif
+        #pragma omp parallel for simd schedule(static)
         for (std::size_t k = 0; k < n_elems; ++k) {
-            // Compute scaled omega: prefac * omega
-            double omega_x = prefac * omega(0, k);
-            double omega_y = prefac * omega(1, k);
-            double omega_z = prefac * omega(2, k);
+            // Match Python implementation: _get_rotation_matrix in _rotations.py
+            // Step 1: Get unscaled omega components
+            double v0 = omega(0, k);
+            double v1 = omega(1, k);
+            double v2 = omega(2, k);
 
-            // Compute rotation angle (theta = ||omega||)
-            double theta = std::sqrt(omega_x * omega_x + omega_y * omega_y + omega_z * omega_z);
+            // Step 2: Compute theta = ||omega|| (magnitude before scaling)
+            double theta = std::sqrt(v0 * v0 + v1 * v1 + v2 * v2);
 
-            // If theta is very small, use identity rotation
-            if (theta < 1e-14) {
-                continue; // No rotation needed
-            }
+            // Step 3: Normalize axis (add epsilon to prevent division by zero, matching Python)
+            double norm = theta + 1e-14;
+            v0 /= norm;
+            v1 /= norm;
+            v2 /= norm;
 
-            // Normalize axis
-            double inv_theta = 1.0 / theta;
-            double ux = omega_x * inv_theta;
-            double uy = omega_y * inv_theta;
-            double uz = omega_z * inv_theta;
+            // Step 4: Scale theta by prefac (matching Python: theta *= scale)
+            theta *= prefac;
 
-            // Precompute sin and cos
-            double sin_theta = std::sin(theta);
-            double cos_theta = std::cos(theta);
-            double one_minus_cos = 1.0 - cos_theta;
+            // Step 5: Precompute sin and cos (matching Python: u_prefix = sin(theta), u_sq_prefix = 1.0 - cos(theta))
+            double u_prefix = std::sin(theta);
+            double u_sq_prefix = 1.0 - std::cos(theta);
 
-            // Build rotation matrix R using Rodrigues formula
-            // R = I + sin(theta) * [u]_× + (1 - cos(theta)) * [u]_×^2
-            // where [u]_× is the skew-symmetric matrix of u
+            // Step 6: Build rotation matrix using exact Python formulas
+            // Python: rot_mat[0, 0, k] = 1.0 - u_sq_prefix * (v1 * v1 + v2 * v2)
+            // This is equivalent to: cos(theta) + (1 - cos(theta)) * v0^2
+            // but we use Python's formula for exact numerical match
+            double R00 = 1.0 - u_sq_prefix * (v1 * v1 + v2 * v2);
+            double R11 = 1.0 - u_sq_prefix * (v0 * v0 + v2 * v2);
+            double R22 = 1.0 - u_sq_prefix * (v0 * v0 + v1 * v1);
 
-            // Rotation matrix elements
-            double R00 = cos_theta + one_minus_cos * ux * ux;
-            double R01 = one_minus_cos * ux * uy + sin_theta * uz;
-            double R02 = one_minus_cos * ux * uz - sin_theta * uy;
-            double R10 = one_minus_cos * ux * uy - sin_theta * uz;
-            double R11 = cos_theta + one_minus_cos * uy * uy;
-            double R12 = one_minus_cos * uy * uz + sin_theta * ux;
-            double R20 = one_minus_cos * ux * uz + sin_theta * uy;
-            double R21 = one_minus_cos * uy * uz - sin_theta * ux;
-            double R22 = cos_theta + one_minus_cos * uz * uz;
+            // Off-diagonal elements (matching Python exactly)
+            double R01 = u_prefix * v2 + u_sq_prefix * v0 * v1;
+            double R10 = -u_prefix * v2 + u_sq_prefix * v0 * v1;
+            double R02 = -u_prefix * v1 + u_sq_prefix * v0 * v2;
+            double R20 = u_prefix * v1 + u_sq_prefix * v0 * v2;
+            double R12 = u_prefix * v0 + u_sq_prefix * v1 * v2;
+            double R21 = -u_prefix * v0 + u_sq_prefix * v1 * v2;
 
             // Extract current director (3x3 matrix stored as 9 elements)
             // Storage order: [d00, d10, d20, d01, d11, d21, d02, d12, d22]
@@ -274,24 +293,80 @@ public:
 
     // Update dynamics (velocity, omega) using acceleration and alpha
     // Equivalent to Python: update_dynamics(time, prefac)
-    void update_dynamics(double prefac) {
+    // Optimized: Use direct loop instead of Eigen operations for better performance
+    // This matches the Python Numba implementation which uses simple nested loops
+    inline void update_dynamics(double prefac) {
         auto& block = static_cast<Derived&>(*this);
 
-        // Get variable views from block using accessible type names
-        auto velocity = block.template get<system::cosserat_rod::Velocity>();
-        auto acceleration = block.template get<system::cosserat_rod::Acceleration>();
-        auto omega = block.template get<system::cosserat_rod::Omega>();
-        auto alpha = block.template get<system::cosserat_rod::Alpha>();
+        // Get variable views once (these are lightweight Eigen block expressions)
+        // The get<>() calls are template functions that should be fully inlined
+        // However, to minimize overhead, we compute dimensions once and reuse
+        auto&& velocity = block.template get<system::cosserat_rod::Velocity>();
+        auto&& acceleration = block.template get<system::cosserat_rod::Acceleration>();
+        auto&& omega = block.template get<system::cosserat_rod::Omega>();
+        auto&& alpha = block.template get<system::cosserat_rod::Alpha>();
 
-        // Update velocity: v += prefac * a
-        // velocity is (3, n_nodes), acceleration is (3, n_nodes)
-        // Eigen operations are automatically vectorized if SIMD is enabled
-        velocity += prefac * acceleration;
+        // Cache dimensions (avoid repeated .cols() calls)
+        const IndexType n_nodes = velocity.cols();
+        const IndexType n_elems = omega.cols();
 
-        // Update omega: ω += prefac * α
-        // omega is (3, n_elems), alpha is (3, n_elems)
-        // Eigen operations are automatically vectorized if SIMD is enabled
-        omega += prefac * alpha;
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    velocity(0, k) += prefac * acceleration(0, k);
+                }
+            }
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    velocity(1, k) += prefac * acceleration(1, k);
+                }
+            }
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    velocity(2, k) += prefac * acceleration(2, k);
+                }
+            }
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    omega(0, k) += prefac * alpha(0, k);
+                }
+            }
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    omega(1, k) += prefac * alpha(1, k);
+                }
+            }
+            #pragma omp section
+            {
+                #ifdef ELASTICAPP_COMPONENT_THREADS
+                #pragma omp parallel for simd schedule(static) num_threads(ELASTICAPP_COMPONENT_THREADS)
+                #endif
+                for (IndexType k = 0; k < n_nodes; ++k) {
+                    omega(2, k) += prefac * alpha(2, k);
+                }
+            }
+        }
     }
 
 protected:

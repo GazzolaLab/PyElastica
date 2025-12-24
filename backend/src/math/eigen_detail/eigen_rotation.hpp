@@ -1,5 +1,6 @@
 #pragma once
 
+#include "traits.h"
 #include <Eigen/Dense>
 #include <cassert>
 #include <cmath>
@@ -8,32 +9,7 @@
 #include <omp.h>
 #endif
 
-namespace elastica {
-
-using ElasticaMatrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-
-// For 3D tensors, we represent them as matrices with manual indexing
-struct ElasticaTensor {
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> data_;
-    std::size_t pages_;
-    std::size_t rows_;
-    std::size_t cols_;
-
-    ElasticaTensor(std::size_t pages, std::size_t rows, std::size_t cols)
-        : data_(pages * rows, cols), pages_(pages), rows_(rows), cols_(cols) {}
-
-    double& operator()(std::size_t page, std::size_t row, std::size_t col) {
-        return data_(page * rows_ + row, col);
-    }
-
-    const double& operator()(std::size_t page, std::size_t row, std::size_t col) const {
-        return data_(page * rows_ + row, col);
-    }
-
-    std::size_t pages() const { return pages_; }
-    std::size_t rows() const { return rows_; }
-    std::size_t cols() const { return cols_; }
-};
+namespace elasticapp {
 
 //**************************************************************************
 /*!\brief Batchwise matrix logarithmic operator (inverse rotation).
@@ -56,11 +32,7 @@ void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
     assert(rot_axis_vector_batch.cols() == n_elems);
 
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-    #else
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         // Compute trace: tr(R) = R[0,0] + R[1,1] + R[2,2]
@@ -112,11 +84,7 @@ void exp_batch(TT& rot_matrix_batch, const MT& rot_axis_vector_batch) {
     const std::size_t n_elems = rot_axis_vector_batch.cols();
 
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-    #else
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         // Compute theta = ||axis||
@@ -154,4 +122,4 @@ void exp_batch(TT& rot_matrix_batch, const MT& rot_axis_vector_batch) {
     }
 }
 
-} // namespace elastica
+} // namespace elasticapp

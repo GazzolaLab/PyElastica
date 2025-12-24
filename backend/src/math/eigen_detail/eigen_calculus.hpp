@@ -1,20 +1,19 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include "traits.h"
 #include <cassert>
 
 #ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
 #endif
 
-namespace elastica {
-
-using ElasticaMatrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+namespace elasticapp {
 
 //**************************************************************************
 /*!\brief Simple 2-point difference rule with zero at end points.
 //
-// Discrete 2-point difference in \elastica of a function f:[a,b]-> R, i.e
+// Discrete 2-point difference in elasticapp of a function f:[a,b]-> R, i.e
 // D f[a,b] -> df[a,b] where f satisfies the conditions
 // f(a) = f(b) = 0.0. Operates from rod's elemental space to nodal space.
 //
@@ -23,7 +22,7 @@ using ElasticaMatrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eig
 // where n_nodes = n_elems + 1
 */
 template <typename MT1, typename MT2>
-void two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
+inline void two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
     constexpr std::size_t dimension(3UL);
     assert(in_matrix.rows() == dimension);
     assert(out_matrix.rows() == dimension);
@@ -48,7 +47,7 @@ void two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
 //**************************************************************************
 /*!\brief Simple trapezoidal quadrature rule with zero at end points.
 //
-// Discrete integral of a function in \elastica
+// Discrete integral of a function in elasticapp
 // f : [a,b] -> R, ∫[a,b] f -> R
 // where f satisfies the conditions f(a) = f(b) = 0.0.
 // Operates from rod's elemental space to nodal space.
@@ -58,7 +57,7 @@ void two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
 // where n_nodes = n_elems + 1
 */
 template <typename MT1, typename MT2>
-void quadrature_kernel(MT1& out_matrix, const MT2& in_matrix) {
+inline void quadrature_kernel(MT1& out_matrix, const MT2& in_matrix) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = in_matrix.cols();
     assert(in_matrix.rows() == dimension);
@@ -75,12 +74,10 @@ void quadrature_kernel(MT1& out_matrix, const MT2& in_matrix) {
     out_matrix.col(n_nodes - 1) = ValueType(0.5) * in_matrix.col(n_elems - 1);
 
     // Middle columns: 0.5 * (in_matrix[:, k] + in_matrix[:, k-1])
-    if (n_elems > 1) {
-        out_matrix.block(0, 1, dimension, n_elems - 1) =
-            ValueType(0.5) *
-            (in_matrix.block(0, 1, dimension, n_elems - 1) +
-             in_matrix.block(0, 0, dimension, n_elems - 1));
-    }
+    out_matrix.block(0, 1, dimension, n_elems - 1) =
+        ValueType(0.5) *
+        (in_matrix.block(0, 1, dimension, n_elems - 1) +
+            in_matrix.block(0, 0, dimension, n_elems - 1));
 }
 
 //**************************************************************************
@@ -97,22 +94,16 @@ auto average_kernel(const MT& in_vector) {
     const std::size_t n_elems = in_vector.cols();
     const std::size_t n_voronoi = n_elems > 0 ? n_elems - 1UL : 0UL;
 
-    ElasticaMatrix result(1, n_voronoi);
+    MatrixType result(1, n_voronoi);
 
-    if (n_voronoi > 0) {
-        #ifdef ELASTICAPP_USE_THREADING
-        #ifdef ELASTICAPP_NUM_THREADS
-        #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-        #else
-        #pragma omp parallel for if(!omp_in_parallel())
-        #endif
-        #endif
-        for (std::size_t k = 0; k < n_voronoi; ++k) {
-            result(0, k) = 0.5 * (in_vector(0, k + 1) + in_vector(0, k));
-        }
+    #ifdef ELASTICAPP_USE_THREADING
+    #pragma omp parallel for if(!omp_in_parallel())
+    #endif
+    for (std::size_t k = 0; k < n_voronoi; ++k) {
+        result(0, k) = 0.5 * (in_vector(0, k + 1) + in_vector(0, k));
     }
 
     return result;
 }
 
-} // namespace elastica
+} // namespace elasticapp

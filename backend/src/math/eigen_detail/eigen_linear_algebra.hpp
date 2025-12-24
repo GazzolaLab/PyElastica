@@ -1,5 +1,6 @@
 #pragma once
 
+#include "traits.h"
 #include <Eigen/Dense>
 #include <cassert>
 #include <cmath>
@@ -8,39 +9,7 @@
 #include <omp.h>
 #endif
 
-namespace elastica {
-
-// Type aliases for Eigen matrices
-using ElasticaMatrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-using ElasticaVector = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
-// For 3D tensors, we represent them as matrices with manual indexing
-// Tensor(pages, rows, cols) is stored as Matrix(pages * rows, cols)
-// Access: tensor(page, row, col) = matrix(page * rows + row, col)
-struct ElasticaTensor {
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> data_;
-    std::size_t pages_;
-    std::size_t rows_;
-    std::size_t cols_;
-
-    ElasticaTensor(std::size_t pages, std::size_t rows, std::size_t cols)
-        : data_(pages * rows, cols), pages_(pages), rows_(rows), cols_(cols) {}
-
-    double& operator()(std::size_t page, std::size_t row, std::size_t col) {
-        return data_(page * rows_ + row, col);
-    }
-
-    const double& operator()(std::size_t page, std::size_t row, std::size_t col) const {
-        return data_(page * rows_ + row, col);
-    }
-
-    std::size_t pages() const { return pages_; }
-    std::size_t rows() const { return rows_; }
-    std::size_t cols() const { return cols_; }
-
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& matrix() { return data_; }
-    const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& matrix() const { return data_; }
-};
+namespace elasticapp {
 
 //**************************************************************************
 /*!\brief Vector Difference
@@ -56,7 +25,7 @@ inline auto difference_kernel(const V& in_vector) {
     const std::size_t n_nodes = in_vector.cols();
     const std::size_t n_elems = n_nodes - 1UL;
 
-    ElasticaMatrix result(dimension, n_elems);
+    MatrixType result(dimension, n_elems);
     result = in_vector.block(0, 1, dimension, n_elems) -
              in_vector.block(0, 0, dimension, n_elems);
     return result;
@@ -72,7 +41,7 @@ inline auto difference_kernel(const V& in_vector) {
 // \param[in] vector_batch(3, n_elems)
 */
 template <typename MT1, typename TT, typename MT2>
-void batch_matvec(MT1& matvec_batch,
+inline void batch_matvec(MT1& matvec_batch,
                   const TT& matrix_batch,
                   const MT2& vector_batch) {
     constexpr std::size_t dimension(3UL);
@@ -86,11 +55,7 @@ void batch_matvec(MT1& matvec_batch,
     assert(vector_batch.cols() == n_elems);
 
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) collapse(2) if(!omp_in_parallel())
-    #else
-    #pragma omp parallel for collapse(2) if(!omp_in_parallel())
-    #endif
+    #pragma omp parallel for if(!omp_in_parallel())
     #endif
     for (std::size_t i = 0; i < dimension; ++i) {
         for (std::size_t k = 0; k < n_elems; ++k) {
@@ -113,7 +78,7 @@ void batch_matvec(MT1& matvec_batch,
 // \param[in] second_matrix_batch(3, 3, n_elems)
 */
 template <typename TT1, typename TT2, typename TT3>
-void batch_matmul(TT1& matmul_batch,
+inline void batch_matmul(TT1& matmul_batch,
                   const TT2& first_matrix_batch,
                   const TT3& second_matrix_batch) {
     constexpr std::size_t dimension(3UL);
@@ -151,7 +116,7 @@ void batch_matmul(TT1& matmul_batch,
 // \param[in] second_vector_batch(3, n_elems)
 */
 template <typename MT1, typename MT2, typename MT3>
-void batch_cross(MT1& cross_batch,
+inline void batch_cross(MT1& cross_batch,
                  const MT2& first_vector_batch,
                  const MT3& second_vector_batch) {
     constexpr std::size_t dimension(3UL);
@@ -164,11 +129,7 @@ void batch_cross(MT1& cross_batch,
     assert(second_vector_batch.cols() == n_elems);
 
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-    #else
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         cross_batch(0, k) = first_vector_batch(1, k) * second_vector_batch(2, k) -
@@ -191,7 +152,7 @@ void batch_cross(MT1& cross_batch,
 // \return dot_batch(n_elems)
 */
 template <typename MT1, typename MT2>
-auto batch_dot(const MT1& first_vector_batch,
+inline auto batch_dot(const MT1& first_vector_batch,
                const MT2& second_vector_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = first_vector_batch.cols();
@@ -200,13 +161,9 @@ auto batch_dot(const MT1& first_vector_batch,
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.cols() == n_elems);
 
-    ElasticaVector result(n_elems);
+    VectorType result(n_elems);
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-    #else
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         double sum = 0.0;
@@ -228,19 +185,15 @@ auto batch_dot(const MT1& first_vector_batch,
 // \return norm_batch(n_elems)
 */
 template <typename MT>
-auto batch_norm(const MT& vector_batch) {
+inline auto batch_norm(const MT& vector_batch) {
     constexpr std::size_t dimension(3UL);
     assert(vector_batch.rows() == dimension);
 
     const std::size_t n_elems = vector_batch.cols();
-    ElasticaVector result(n_elems);
+    VectorType result(n_elems);
 
     #ifdef ELASTICAPP_USE_THREADING
-    #ifdef ELASTICAPP_NUM_THREADS
-    #pragma omp parallel for num_threads(ELASTICAPP_NUM_THREADS) if(!omp_in_parallel())
-    #else
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         double sum = 0.0;
@@ -252,4 +205,4 @@ auto batch_norm(const MT& vector_batch) {
     return result;
 }
 
-}  // namespace elastica
+}  // namespace elasticapp
