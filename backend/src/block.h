@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <vector>
 #include <stdexcept>
+#include <string>
 #include "traits.h"
 #include "system.h"
 #include "block_get_impl.h"
@@ -24,11 +25,28 @@ public:
     using Variables = typename SystemType::Variables;
     using View = BlockView<SystemType>;
 
+    constexpr static std::size_t GHOST_NODE_WIDTH = 1; // Size of ghost for node variables.
+
     // Constructor: takes list of element counts per rod
     explicit Block(const std::vector<std::size_t>& n_elems_per_rod) {
+        // Validate input: reject empty list or less than 6 total elements
+        if (n_elems_per_rod.empty()) {
+            throw std::invalid_argument("n_elems_per_rod cannot be empty");
+        }
+
+        std::size_t total_elements = 0;
+        for (std::size_t n_elems : n_elems_per_rod) {
+            total_elements += n_elems;
+        }
+        if (total_elements < 6) {
+            throw std::invalid_argument("Total number of elements must be at least 6, got " +
+                                       std::to_string(total_elements));
+        }
+
         compute_width_and_indices(n_elems_per_rod);
         depth_ = SystemType::get_depth();
-        data_ = MatrixType(static_cast<Eigen::Index>(depth_), static_cast<Eigen::Index>(width_));
+        data_ = MatrixType(static_cast<IndexType>(depth_), static_cast<IndexType>(width_));
+        initialize_ghost_indices();
         reset_ghost();  // Initialize all ghost values
     }
 
@@ -73,57 +91,15 @@ public:
     // Get the n_elems_per_rod vector (for BlockView construction)
     const std::vector<std::size_t>& get_n_elems_per_rod() const { return rod_n_elems_; }
 
-    // Get ghost node indices
-    // Returns indices of ghost nodes between rods (length: n_rods - 1)
-    // Matches Python implementation: np.cumsum(n_nodes_in_rods[:-1]) + np.arange(n_rods - 1)
-    std::vector<std::size_t> ghost_nodes_idx() const {
-        std::vector<std::size_t> indices;
-        if (rod_n_elems_.size() < 2) {
-            return indices;  // No ghost nodes if less than 2 rods
-        }
-
-        indices.reserve(rod_n_elems_.size() - 1);
-        std::size_t cumulative_nodes = 0;
-        for (std::size_t i = 0; i < rod_n_elems_.size() - 1; ++i) {
-            cumulative_nodes += rod_n_elems_[i] + 1;  // n_elems + 1 = n_nodes
-            indices.push_back(cumulative_nodes + i);  // Add i to account for previous ghost nodes
-        }
-        return indices;
+    // Get ghost indices (return const references for efficiency)
+    inline const std::vector<std::size_t>& ghost_nodes_idx() const {
+        return ghost_nodes_idx_;
     }
-
-    // Get ghost element indices
-    // Returns indices of ghost elements between rods (length: 2 * (n_rods - 1))
-    std::vector<std::size_t> ghost_elems_idx() const {
-        std::vector<std::size_t> indices;
-        auto ghost_nodes = ghost_nodes_idx();
-        if (ghost_nodes.empty()) {
-            return indices;
-        }
-
-        indices.reserve(2 * ghost_nodes.size());
-        for (std::size_t i = 0; i < ghost_nodes.size(); ++i) {
-            indices.push_back(ghost_nodes[i] - 1);  // Element before ghost node
-            indices.push_back(ghost_nodes[i]);      // Element at ghost node
-        }
-        return indices;
+    inline const std::vector<std::size_t>& ghost_elems_idx() const {
+        return ghost_elems_idx_;
     }
-
-    // Get ghost voronoi indices
-    // Returns indices of ghost voronoi nodes between rods (length: 3 * (n_rods - 1))
-    std::vector<std::size_t> ghost_voronoi_idx() const {
-        std::vector<std::size_t> indices;
-        auto ghost_nodes = ghost_nodes_idx();
-        if (ghost_nodes.empty()) {
-            return indices;
-        }
-
-        indices.reserve(3 * ghost_nodes.size());
-        for (std::size_t i = 0; i < ghost_nodes.size(); ++i) {
-            indices.push_back(ghost_nodes[i] - 2);  // Voronoi 2 before ghost node
-            indices.push_back(ghost_nodes[i] - 1);  // Voronoi 1 before ghost node
-            indices.push_back(ghost_nodes[i]);      // Voronoi at ghost node
-        }
-        return indices;
+    inline const std::vector<std::size_t>& ghost_voronoi_idx() const {
+        return ghost_voronoi_idx_;
     }
 
     // Reset ghost values for a specific variable
@@ -153,25 +129,17 @@ public:
         // are within the adjusted width (since get() returns adjusted width views)
         const auto& ghost_val = VariableTag::ghost_value;
 
-        // Compute adjusted width for this variable type
-        std::size_t adjusted_width = width_;
-        if constexpr (std::is_base_of_v<Placement::OnElement, VariableTag>) {
-            adjusted_width = width_ > 0 ? width_ - 1 : 0;
-        } else if constexpr (std::is_base_of_v<Placement::OnVoronoi, VariableTag>) {
-            adjusted_width = width_ > 1 ? width_ - 2 : 0;
-        }
-
+        // Optimized: Add simd hint for inner loop (var_dimension is compile-time constant)
         for (std::size_t ghost_col : ghost_indices) {
             // Only reset ghost values that are within the adjusted width
             // (ghost indices beyond adjusted width are not accessible via get())
-            if (ghost_col < adjusted_width) {
-                // Access data_ directly using row and column offsets
-                // ghost_val is a MatrixType (column vector), so we access it as (row, 0)
-                Eigen::Index data_col = static_cast<Eigen::Index>(ghost_col);
-                for (std::size_t row = 0; row < var_dimension; ++row) {
-                    Eigen::Index data_row = static_cast<Eigen::Index>(row_offset + row);
-                    data_(data_row, data_col) = ghost_val(static_cast<Eigen::Index>(row), 0);
-                }
+            IndexType data_col = static_cast<IndexType>(ghost_col);
+            #ifdef ELASTICAPP_USE_THREADING
+            #pragma omp simd
+            #endif
+            for (std::size_t row = 0; row < var_dimension; ++row) {
+                IndexType data_row = static_cast<IndexType>(row_offset + row);
+                data_(data_row, data_col) = ghost_val(static_cast<IndexType>(row), 0);
             }
         }
     }
@@ -242,6 +210,10 @@ private:
     std::vector<std::size_t> rod_start_indices_;
     std::vector<std::size_t> rod_n_elems_;  // Store n_elems for each rod
 
+    std::vector<std::size_t> ghost_nodes_idx_; // Indices of ghost nodes between rods.
+    std::vector<std::size_t> ghost_elems_idx_; // Indices of ghost elements between rods.
+    std::vector<std::size_t> ghost_voronoi_idx_; // Indices of ghost voronoi nodes between rods.
+
     void compute_width_and_indices(const std::vector<std::size_t>& n_elems_per_rod) {
         width_ = 0;
         rod_start_indices_.clear();
@@ -253,15 +225,33 @@ private:
             rod_start_indices_.push_back(width_);
             rod_n_elems_.push_back(n_elems);
             // Each rod has n_elems + 1 nodes
-            width_ += n_elems + 1;
+            width_ += n_elems + 1 + GHOST_NODE_WIDTH;
+        }
+        width_ -= GHOST_NODE_WIDTH; // Remove the last ghost node width.
+    }
+
+    void initialize_ghost_indices() {
+        ghost_nodes_idx_.reserve(rod_n_elems_.size() * GHOST_NODE_WIDTH);
+        ghost_elems_idx_.reserve(rod_n_elems_.size() * (1 + GHOST_NODE_WIDTH));
+        ghost_voronoi_idx_.reserve(rod_n_elems_.size() * (2 + GHOST_NODE_WIDTH));
+
+        std::size_t cumulative_nodes = 0;
+        for (std::size_t i = 0; i < rod_n_elems_.size(); ++i) {
+            cumulative_nodes += rod_n_elems_[i] + 1;  // n_elems + 1 = n_nodes
+            ghost_elems_idx_.push_back(cumulative_nodes - 1);
+            ghost_voronoi_idx_.push_back(cumulative_nodes - 2);
+            ghost_voronoi_idx_.push_back(cumulative_nodes - 1);
+            for (std::size_t j = 0; j < GHOST_NODE_WIDTH; ++j) {
+                ghost_nodes_idx_.push_back(cumulative_nodes + j);
+                ghost_elems_idx_.push_back(cumulative_nodes + j);
+                ghost_voronoi_idx_.push_back(cumulative_nodes + j);
+            }
+            cumulative_nodes += GHOST_NODE_WIDTH;
         }
 
-        // Add ghost nodes between rods (only if there are at least 2 rods)
-        // For n rods, there are (n-1) ghost nodes between them
-        if (n_elems_per_rod.size() > 1) {
-            width_ += n_elems_per_rod.size() - 1;
-        }
-
+        ghost_nodes_idx_.pop_back();
+        ghost_elems_idx_.pop_back();
+        ghost_voronoi_idx_.pop_back();
     }
 
     // Helper to iterate over all variables and reset ghost values

@@ -25,7 +25,7 @@ constexpr bool tuple_contains_v = tuple_contains_impl<T, Tuple>::value;
 
 // Helper function to get number of columns for a variable based on placement
 template<typename VariableTag, SystemModel SystemType>
-constexpr std::size_t get_variable_num_cols(std::size_t rod_n_nodes,
+inline constexpr std::size_t get_variable_num_cols(std::size_t rod_n_nodes,
                                             std::size_t rod_n_elems,
                                             std::size_t rod_n_voronoi) {
     if constexpr (std::is_base_of_v<Placement::OnNode, VariableTag>) {
@@ -47,7 +47,7 @@ constexpr std::size_t get_variable_num_cols(std::size_t rod_n_nodes,
 // Extracted to reduce code duplication between const and non-const versions
 // This can be used by both Block and BlockRodSystemView classes
 template<typename VariableTag, SystemModel SystemType, typename MatrixRef>
-auto get_impl(MatrixRef&& matrix,
+inline auto get_impl(MatrixRef&& matrix,
               std::size_t rod_n_nodes,
               std::size_t rod_n_elems,
               std::size_t rod_n_voronoi,
