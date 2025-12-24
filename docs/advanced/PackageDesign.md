@@ -20,7 +20,7 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
       direction RL
       subgraph Systems Protocol
         direction RL
-        SymST["SymplecticSystemProtocol<br/>(Necessary to be stepped by the timestepper)"]
+        SymST["SymplecticSystemProtocol<br/>(Mixin for timestepper)<br/>• update_kinematics<br/>• update_dynamics"]
         style SymST text-align:left
         StaticSystemType["Static System Type"<br/>• Plane]
         SystemType["(Dynamic) System Type<br/>• CosseratRod (Rod)<br/>• Sphere (RigidBody)<br/>• Cylinder (RigidBody)"]
@@ -46,7 +46,7 @@ Elastica package uses [structural subtyping](https://peps.python.org/pep-0544/) 
 
 - Any object that conforms to `StaticSystemProtocol` can be added to the system collection.
     - If you want to add custom type to the system, you can use `append_allowed_types` to add it to the system collection. To add associated block support, you can use `enable_block_supports`.
-- Among the systems added to the system collection, only objects that conform to `SystemProtocol` will be integrated by the timestepper.
+- Among the systems added to the system collection, only objects that conform to `SymplecticSystemProtocol` will be integrated by the symplectic timestepper. This protocol requires `update_kinematics(time, prefac)` and `update_dynamics(time, prefac)` methods to be implemented.
 - If block support is available for a system, they will be collected together during the `finalize` step, and passed to the timestepper.
 
 

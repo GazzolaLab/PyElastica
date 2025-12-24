@@ -4,8 +4,6 @@ from typing import Protocol, Type, runtime_checkable
 
 from abc import abstractmethod
 
-from elastica.rod.data_structures import _KinematicState, _DynamicState
-
 import numpy as np
 from numpy.typing import NDArray
 
@@ -46,10 +44,7 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
     (e.g., :class:`PositionVerlet`, :class:`PEFRL`) must satisfy this protocol.
 
     The symplectic stepper accesses:
-        - ``n_nodes``
-        - ``kinematic_states`` (position_collection, director_collection)
-        - ``dynamic_states`` (velocity_collection, omega_collection, rate_collection)
-        - ``dynamic_rates(time, prefac)`` to compute acceleration updates
+        - ``update_kinematics`` and ``update_dynamics``: called by the timestepper
 
     See Also
     --------
@@ -58,26 +53,10 @@ class SymplecticSystemProtocol(SystemProtocol, Protocol):
 
     """
 
-    n_nodes: int
-
-    @property
-    def kinematic_states(self) -> _KinematicState:
-        """Return kinematic state."""
+    def update_kinematics(self, time: np.float64, prefac: np.float64) -> None:
+        """Update kinematic state. Typically called after compute_internal_forces_and_torques."""
         ...
 
-    @property
-    def dynamic_states(self) -> _DynamicState:
-        """Return dynamic state."""
-        ...
-
-    def kinematic_rates(
-        self, time: np.float64, prefac: np.float64
-    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        """Compute kinematic rates."""
-        ...
-
-    def dynamic_rates(
-        self, time: np.float64, prefac: np.float64
-    ) -> NDArray[np.float64]:
-        """Compute dynamic rates."""
+    def update_dynamics(self, time: np.float64, prefac: np.float64) -> None:
+        """Update dynamic state. Typically called after ``update_accelerations``."""
         ...
