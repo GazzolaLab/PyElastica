@@ -6,7 +6,7 @@ PYTHON_VERSION :=
 #* Installation
 .PHONY: install
 install:
-	source ../.venv/bin/activate && uv pip install -e "."
+	uv pip install "." -v
 
 #* C++ Build (direct CMake, no pip)
 .PHONY: build-cpp
@@ -18,33 +18,24 @@ build-cpp:
 	mkdir -p build && \
 	cd build && \
 		LIBOMP_PREFIX=$$(brew --prefix libomp 2>/dev/null || echo "") && \
-		if [ -n "$$LIBOMP_PREFIX" ]; then \
-			LLVM_PREFIX=$$(brew --prefix llvm 2>/dev/null || echo "") && \
-			cmake .. \
-				-DCMAKE_BUILD_TYPE=Release \
-				-DCMAKE_C_COMPILER=$$LLVM_PREFIX/bin/clang \
-				-DCMAKE_CXX_COMPILER=$$LLVM_PREFIX/bin/clang++ \
-				-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
-				-DPython3_EXECUTABLE="$$VENV_PYTHON" \
-				-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
-				-DPython_EXECUTABLE="$$VENV_PYTHON" \
-				-Dpybind11_DIR="$$PYBIND11_DIR" \
-				-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I$$LIBOMP_PREFIX/include" \
-				-DOpenMP_CXX_LIB_NAMES="omp" \
-				-DOpenMP_omp_LIBRARY="$$LIBOMP_PREFIX/lib/libomp.dylib" \
-				-DOpenMP_CXX_LIBRARIES="$$LIBOMP_PREFIX/lib/libomp.dylib"; \
-		else \
-			cmake .. \
-				-DCMAKE_BUILD_TYPE=Release \
-				-DCMAKE_C_COMPILER=clang \
-				-DCMAKE_CXX_COMPILER=clang++ \
-				-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
-				-DPython3_EXECUTABLE="$$VENV_PYTHON" \
-				-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
-				-DPython_EXECUTABLE="$$VENV_PYTHON" \
-				-Dpybind11_DIR="$$PYBIND11_DIR"; \
-		fi && \
-		cmake --build . --parallel
+		LLVM_PREFIX=$$(brew --prefix llvm 2>/dev/null || echo "") && \
+		cmake .. \
+			-DCMAKE_BUILD_TYPE=Release \
+			-DCMAKE_C_COMPILER=$$LLVM_PREFIX/bin/clang \
+			-DCMAKE_CXX_COMPILER=$$LLVM_PREFIX/bin/clang++ \
+			-DPython3_ROOT_DIR=$$(cd .. && pwd)/../.venv \
+			-DPython3_EXECUTABLE="$$VENV_PYTHON" \
+			-DPYTHON_EXECUTABLE="$$VENV_PYTHON" \
+			-DPython_EXECUTABLE="$$VENV_PYTHON" \
+			-Dpybind11_DIR="$$PYBIND11_DIR" \
+			-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I$$LIBOMP_PREFIX/include" \
+			-DOpenMP_CXX_LIB_NAMES="omp" \
+			-DOpenMP_omp_LIBRARY="$$LIBOMP_PREFIX/lib/libomp.dylib" \
+			-DOpenMP_CXX_LIBRARIES="$$LIBOMP_PREFIX/lib/libomp.dylib" \
+			-DELASTICAPP_VECTORIZATION_REPORTS=ON \
+			-DELASTICAPP_SAVE_ASSEMBLY=ON \
+			-DELASTICAPP_BUILD_TESTS=OFF; \
+		cmake --build . --parallel 2>&1 | tee ../vectorization_report.txt
 
 #* C++ Tests (build and run, no pip)
 .PHONY: test-cpp-direct

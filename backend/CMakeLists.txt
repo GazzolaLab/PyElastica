@@ -14,7 +14,6 @@ add_compile_options(-Wno-unused)
 # Set Python interpreter to ../.venv
 set(Python3_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.venv")
 set(PYTHON_EXECUTABLE "${Python3_ROOT_DIR}/bin/python")
-# set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
 
 # Find pybind11 and ensure it uses the Python interpreter from our venv
 set(PYBIND11_FINDPYTHON "ON")
@@ -48,6 +47,9 @@ FetchContent_Declare(
 )
 # Disable Eigen3 tests and documentation
 set(EIGEN_BUILD_DOC OFF)
+# Set Eigen's default storage order to row-major
+# This ensures Eigen's default behavior matches our explicit MatrixType template parameter
+set(EIGEN_DEFAULT_TO_ROW_MAJOR ON CACHE BOOL "Use row-major as default matrix storage order" FORCE)
 FetchContent_MakeAvailable(Eigen3)
 
 # Restore BUILD_TESTING state for our tests
@@ -60,17 +62,15 @@ set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/py")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-# Option to enable SIMD optimizations
-option(ELASTICAPP_USE_SIMD "Enable SIMD optimizations" ON)
-
-# Option to enable threading support
 option(ELASTICAPP_USE_THREADING "Enable threading support" ON)
+option(ELASTICAPP_VECTORIZATION_REPORTS "Enable compiler vectorization reports" OFF)
+option(ELASTICAPP_BUILD_TESTS "Build C++ unit tests" OFF)
 
-# Option to set default number of threads (0 = use OpenMP default, typically all CPU cores)
-# Note: This is a compile-time constant, set via -DELASTICAPP_NUM_THREADS=N at configure time
-# For runtime control, use the Python/C++ API or OMP_NUM_THREADS environment variable
-set(ELASTICAPP_NUM_THREADS "0" CACHE STRING "Default number of OpenMP threads (0 = use OpenMP default, typically all CPU cores)")
-mark_as_advanced(ELASTICAPP_NUM_THREADS)
+# Option to set number of threads per component in update_dynamics parallel sections
+# This controls how many threads are used for each spatial component (x, y, z) in the parallel sections
+# Default is 3 (one thread per component), but can be adjusted for different hardware configurations
+set(ELASTICAPP_COMPONENT_THREADS "2" CACHE STRING "Number of threads per component in update_dynamics parallel sections (default: 3)")
+mark_as_advanced(ELASTICAPP_COMPONENT_THREADS)
 
 # Configure threading support (OpenMP) - check early but apply per-target
 if(ELASTICAPP_USE_THREADING)
@@ -97,67 +97,62 @@ if(ELASTICAPP_USE_THREADING)
         endif()
     endif()
 
-    find_package(OpenMP COMPONENTS CXX)
-    if(OpenMP_CXX_FOUND)
-        message(STATUS "OpenMP found: ${OpenMP_CXX_VERSION}")
-        message(STATUS "Threading support enabled")
-        if(ELASTICAPP_NUM_THREADS)
-            message(STATUS "Default number of threads: ${ELASTICAPP_NUM_THREADS}")
-        else()
-            message(STATUS "Number of threads: use OpenMP default (typically all CPU cores)")
-        endif()
-    else()
-        message(FATAL_ERROR
-            "ELASTICAPP_USE_THREADING is ON but OpenMP was not found.\n"
-            "Please install OpenMP:\n"
-            "  - On macOS: brew install libomp\n"
-            "  - On Ubuntu/Debian: sudo apt-get install libomp-dev\n"
-            "  - On Fedora/RHEL: sudo dnf install libgomp-devel\n"
-            "Or set ELASTICAPP_USE_THREADING=OFF to disable threading support."
-        )
-    endif()
+    find_package(OpenMP COMPONENTS CXX REQUIRED)
 endif()
 
 # Helper function to apply optimization flags to a target
 # This function must be defined before targets are created
 function(apply_optimization_flags target_name)
-    if(ELASTICAPP_USE_SIMD)
-        # Enable Eigen vectorization
-        target_compile_definitions(${target_name} PRIVATE EIGEN_VECTORIZE ELASTICAPP_USE_SIMD)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${target_name} PRIVATE -O3 -march=native)
+        target_compile_options(${target_name} PRIVATE -ffunction-sections -fdata-sections)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        target_compile_options(${target_name} PRIVATE /O2)
+    endif()
+    # Add NDEBUG flag to disable assertions in release builds
+    target_compile_definitions(${target_name} PRIVATE NDEBUG)
 
-        # Add architecture-specific optimization flags
-        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-            # -march=native optimizes for the current CPU
-            target_compile_options(${target_name} PRIVATE -march=native)
+    # Enable Eigen vectorization
+    target_compile_definitions(${target_name} PRIVATE EIGEN_VECTORIZE)
 
-            # AVX2 and FMA are only available on x86_64, not ARM
-            if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
-                target_compile_options(${target_name} PRIVATE -mavx2 -mfma)
-            endif()
-        elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-            # MSVC flags for AVX2
-            target_compile_options(${target_name} PRIVATE /arch:AVX2)
+    # Add architecture-specific optimization flags
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        # AVX2 and FMA are only available on x86_64, not ARM
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+            target_compile_options(${target_name} PRIVATE -mavx2 -mfma)
         endif()
-        message(STATUS "SIMD optimizations enabled for ${target_name}")
+
+        # Add vectorization report flags if requested
+        if(ELASTICAPP_VECTORIZATION_REPORTS)
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                # Clang vectorization reports
+                target_compile_options(${target_name} PRIVATE
+                    -Rpass=loop-vectorize
+                    -Rpass-missed=loop-vectorize
+                    -Rpass-analysis=loop-vectorize
+                )
+                message(STATUS "Clang vectorization reports enabled for ${target_name}")
+            elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+                # GCC vectorization reports
+                target_compile_options(${target_name} PRIVATE
+                    -fopt-info-vec
+                    -fopt-info-vec-missed
+                    -fopt-info-vec-all
+                )
+                message(STATUS "GCC vectorization reports enabled for ${target_name}")
+            endif()
+        endif()
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        # MSVC flags for AVX2
+        target_compile_options(${target_name} PRIVATE /arch:AVX2)
     endif()
 
     if(ELASTICAPP_USE_THREADING AND OpenMP_CXX_FOUND)
         target_compile_definitions(${target_name} PRIVATE ELASTICAPP_USE_THREADING)
         target_link_libraries(${target_name} PRIVATE OpenMP::OpenMP_CXX)
-        # Set default number of threads if specified (non-zero)
-        if(ELASTICAPP_NUM_THREADS AND NOT ELASTICAPP_NUM_THREADS STREQUAL "0")
-            target_compile_definitions(${target_name} PRIVATE ELASTICAPP_NUM_THREADS=${ELASTICAPP_NUM_THREADS})
-        endif()
         message(STATUS "Threading support enabled for ${target_name}")
     endif()
 endfunction()
-
-# Static library for common C++ code
-# This allows both Python modules and test executables to link against it
-# add_library(elasticapp_core STATIC
-# )
-# target_include_directories(elasticapp_core PUBLIC ${SRC_DIR})
-# target_link_libraries(elasticapp_core PUBLIC Eigen3::Eigen)
 
 # Extension module: _memory_block (Python module name)
 pybind11_add_module(_memory_block
@@ -166,6 +161,21 @@ pybind11_add_module(_memory_block
 target_compile_definitions(_memory_block PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_include_directories(_memory_block PRIVATE ${SRC_DIR})
 target_link_libraries(_memory_block PRIVATE Eigen3::Eigen)
+
+if(APPLE)
+    target_link_options(_memory_block PRIVATE -Wl,-dead_strip)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    target_link_options(_memory_block PRIVATE -Wl,--gc-sections)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_link_options(_memory_block PRIVATE -Wl,--gc-sections)
+endif()
+
+
+# Apply component threads option to _memory_block (only if explicitly set and non-empty)
+# If not set, the code will use OpenMP's default thread count
+if(ELASTICAPP_COMPONENT_THREADS AND NOT ELASTICAPP_COMPONENT_THREADS STREQUAL "" AND NOT ELASTICAPP_COMPONENT_THREADS STREQUAL "0")
+    target_compile_definitions(_memory_block PRIVATE ELASTICAPP_COMPONENT_THREADS=${ELASTICAPP_COMPONENT_THREADS})
+endif()
 
 # Apply optimization flags to _memory_block
 apply_optimization_flags(_memory_block)
@@ -187,23 +197,6 @@ install(TARGETS version
         LIBRARY DESTINATION "elasticapp"
         COMPONENT python)
 
-# Extension module: _testing
-# pybind11_add_module(_testing
-#     "${TEST_DIR}/cpp/_testing.cpp"
-#     "${TEST_DIR}/cpp/mock_block_system.h"
-# )
-# target_compile_definitions(_testing PRIVATE VERSION_INFO=${PROJECT_VERSION})
-# target_include_directories(_testing PRIVATE ${TEST_DIR} ${SRC_DIR})
-# target_link_libraries(_testing PRIVATE Eigen3::Eigen elasticapp_core)
-
-# Option to control matrix storage order (default: column-major)
-option(ELASTICAPP_USE_ROW_MAJOR "Use row-major storage for Eigen matrices" OFF)
-
-# Install elasticapp_core module
-# install(TARGETS elasticapp_core
-#         LIBRARY DESTINATION "elasticapp"
-#         COMPONENT python)
-
 # Install Python package files
 install(FILES
         "${PYTHON_PACKAGE_DIR}/__init__.py"
@@ -212,34 +205,33 @@ install(FILES
         COMPONENT python)
 
 # C++ unit tests with Catch2
-enable_testing()
-include(CTest)
+if(ELASTICAPP_BUILD_TESTS)
+    enable_testing()
+    include(CTest)
 
-# Test executable
-add_executable(cpp_tests
-    "${TEST_DIR}/cpp/test_version.cpp"
-    "${TEST_DIR}/cpp/test_block.cpp"
-    "${TEST_DIR}/cpp/test_traits.cpp"
-    "${TEST_DIR}/cpp/test_system.cpp"
-    "${TEST_DIR}/cpp/test_system_variable_validation.cpp"
-    "${TEST_DIR}/cpp/test_block_view.cpp"
-    "${TEST_DIR}/cpp/test_block_operations.cpp"
-)
+    # Test executable
+    add_executable(cpp_tests
+        "${TEST_DIR}/cpp/test_version.cpp"
+        "${TEST_DIR}/cpp/test_block.cpp"
+        "${TEST_DIR}/cpp/test_traits.cpp"
+        "${TEST_DIR}/cpp/test_system.cpp"
+        "${TEST_DIR}/cpp/test_system_variable_validation.cpp"
+        "${TEST_DIR}/cpp/test_block_view.cpp"
+        "${TEST_DIR}/cpp/test_block_operations.cpp"
+    )
 
-target_compile_definitions(cpp_tests PRIVATE VERSION_INFO=${PROJECT_VERSION})
-target_include_directories(cpp_tests PRIVATE ${SRC_DIR} ${TEST_DIR}/cpp/mock)
-target_link_libraries(cpp_tests PRIVATE Catch2::Catch2WithMain Eigen3::Eigen)
+    target_compile_definitions(cpp_tests PRIVATE VERSION_INFO=${PROJECT_VERSION})
+    target_include_directories(cpp_tests PRIVATE ${SRC_DIR} ${TEST_DIR}/cpp/mock)
+    target_link_libraries(cpp_tests PRIVATE Catch2::Catch2WithMain Eigen3::Eigen)
 
-# Apply options to test executable
-if(ELASTICAPP_USE_ROW_MAJOR)
-    target_compile_definitions(cpp_tests PRIVATE ELASTICAPP_USE_ROW_MAJOR=1)
+    # Apply optimization flags to cpp_tests
+    apply_optimization_flags(cpp_tests)
+
+    # Use Catch2's test discovery to automatically register tests with CTest
+    # Add Catch2 extras directory to module path (FetchContent uses uppercase)
+    list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
+    include(Catch)
+    catch_discover_tests(cpp_tests)
+else()
+    message(STATUS "C++ tests disabled (ELASTICAPP_BUILD_TESTS=OFF)")
 endif()
-
-# Apply optimization flags to cpp_tests
-apply_optimization_flags(cpp_tests)
-
-# Use Catch2's test discovery to automatically register tests with CTest
-# Add Catch2 extras directory to module path (FetchContent uses uppercase)
-list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
-include(Catch)
-catch_discover_tests(cpp_tests)

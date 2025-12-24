@@ -34,7 +34,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	uv run black --version
-	uv run black --config pyproject.toml elastica tests examples
+	uv run black --config pyproject.toml elastica tests examples backend
 
 .PHONY: black-check
 black-check:
@@ -54,7 +54,7 @@ autoflake-check:
 .PHONY: autoflake-format
 autoflake-format:
 	uv run autoflake --version
-	uv run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
+	uv run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples backend
 
 .PHONY: format-codestyle
 format-codestyle: black autoflake-format
