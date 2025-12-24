@@ -69,8 +69,6 @@ If you are interested to contribute, please read `contribution-guide`_ first.
    api/simulator
    api/utility
 
-..   api/elastica++
-
 .. toctree::
    :maxdepth: 2
    :caption: Advanced Guide

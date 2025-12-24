@@ -3,6 +3,7 @@ Test case for many-rod simulation with CPP memory block in the back.
 """
 
 import numpy as np
+
 pass
 from tqdm import tqdm
 
@@ -53,7 +54,7 @@ shear_modulus = E / (poisson_ratio + 1.0)
 # %%
 # With all of the rod's parameters set, we can now create a rod with the specificed properties and add the rod to the simulator system. **Important:** Make sure that any rods you create get added to the simulator system (``timoshenko_sim``), otherwise they will not be included in your simulation.
 
-n_rods = 1000
+n_rods = 10_000_000
 for _ in range(n_rods):
     shearable_rod = ea.CosseratRod.straight_rod(
         n_elem,
