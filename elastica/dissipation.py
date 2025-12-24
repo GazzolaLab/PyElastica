@@ -377,7 +377,7 @@ class RayleighDissipation(DamperBase):
             Current simulation time
         """
         # Rescale since nu is per unit length
-        nu_now = self.get_nu(time) * self._average_element_length
+        nu_now = self.get_nu(time) * self._average_element_length  # type: ignore
 
         # Apply damping forces: F = -nu * v
         # Boundary factor: 0.5 at endpoints, 1.0 otherwise (matches C++)
