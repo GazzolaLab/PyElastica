@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <chrono>
 #include <Eigen/Core>
 
 // Include OpenMP headers if threading is enabled
@@ -235,11 +236,6 @@ PYBIND11_MODULE(_memory_block, m) {
     // We use OpenMP for explicit parallelization, so Eigen should use single-threaded operations
     Eigen::setNbThreads(1);
 
-    // Initialize thread count from CMake option if specified
-    #ifdef ELASTICAPP_NUM_THREADS
-    omp_set_num_threads(ELASTICAPP_NUM_THREADS);
-    #endif
-
     m.def("set_num_threads", [](int num_threads) {
         if (num_threads > 0) {
             omp_set_num_threads(num_threads);
@@ -368,7 +364,7 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 tuple: (depth, width) tuple representing the block dimensions
         )pbdoc")
-        .def("as_ref", [](BlockRodSystem& block) {
+        .def("as_ref", [](const BlockRodSystem& block) {
             return block_to_numpy(block.data(), py::cast(block));
         },
         R"pbdoc(
@@ -431,6 +427,19 @@ PYBIND11_MODULE(_memory_block, m) {
 
             Args:
                 time: Current simulation time.
+        )pbdoc",
+        py::arg("time"))
+        .def("compute_strains", [](BlockRodSystem& block, double time) {
+            block.compute_strains(time);
+        },
+        R"pbdoc(
+            Compute strains for all rods in the block.
+
+            This operation computes the shear/stretch strains and bending/twist strains
+            based on the current state of the rods.
+
+            Args:
+                time: Current simulation time (included for API compatibility, not used in implementation).
         )pbdoc",
         py::arg("time"))
         .def("update_accelerations", [](BlockRodSystem& block, double time) {
@@ -559,6 +568,17 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 tuple: (depth, width) tuple representing the view dimensions
         )pbdoc")
+        .def("as_ref", [](const BlockRodSystemViewType& view) {
+            return block_to_numpy(view.data(), py::cast(view));
+        },
+        R"pbdoc(
+            Get a numpy array view of the entire view data.
+
+            Returns:
+                numpy.ndarray: A writable numpy array view into the view's data.
+                The array does not own the data.
+        )pbdoc",
+        py::keep_alive<0, 1>())
         .def("get", [](BlockRodSystemViewType& view, const std::string& var_name) {
             auto block_expr = get_variable_by_name(view, var_name);
             return block_to_numpy(block_expr, py::cast(view));
@@ -574,5 +594,6 @@ PYBIND11_MODULE(_memory_block, m) {
                 The array does not own the data.
         )pbdoc",
         py::arg("var_name"), py::keep_alive<0, 1>());
+
 }
 } // namespace elasticapp
