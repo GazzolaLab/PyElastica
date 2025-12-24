@@ -44,11 +44,11 @@ def test_operations_are_callable():
     block = BlockRodSystem([3, 4])
 
     # Verify all methods exist
-    assert hasattr(block, 'compute_internal_forces_and_torques')
-    assert hasattr(block, 'update_accelerations')
-    assert hasattr(block, 'zeroed_out_external_forces_and_torques')
-    assert hasattr(block, 'update_kinematics')
-    assert hasattr(block, 'update_dynamics')
+    assert hasattr(block, "compute_internal_forces_and_torques")
+    assert hasattr(block, "update_accelerations")
+    assert hasattr(block, "zeroed_out_external_forces_and_torques")
+    assert hasattr(block, "update_kinematics")
+    assert hasattr(block, "update_dynamics")
 
     # Verify they are callable
     assert callable(block.compute_internal_forces_and_torques)

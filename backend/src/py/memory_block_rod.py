@@ -1,4 +1,5 @@
 """Create block-structure class for collection of Cosserat rod systems."""
+
 import numpy as np
 
 from elastica.rod.cosserat_rod import CosseratRod
@@ -101,13 +102,14 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
         # Sorted systems (only straight rods for now)
         self.system_idx_list = np.array(system_idx_list, dtype=np.int32)
 
-        n_elems_straight_rods = np.array(
-            [x.n_elems for x in systems], dtype=np.int32
-        )
+        n_elems_straight_rods = np.array([x.n_elems for x in systems], dtype=np.int32)
 
         # Create C++ block with element counts
         # BlockRodSystem accepts numpy arrays directly (as well as lists/tuples)
         self._block = BlockRodSystem(n_elems_straight_rods)
+        for py_key, cpp_key in PY2CPP_VARNAMES.items():
+            full_block_memory = self._block.get(cpp_key)
+            setattr(self, py_key, full_block_memory)
 
         # Get ghost indices from C++ block
         self.ghost_nodes_idx = np.array(self._block.ghost_nodes_idx, dtype=np.int32)
@@ -124,29 +126,31 @@ class MemoryBlockCosseratRod(CosseratRod, _RodSymplecticStepperMixin):
 
         for idx, system in enumerate(systems):
             self.relink_system_properties_to_block_memory(system, idx)
-        self.define_symplectic_stepper_variables()
 
-        # Note: The C++ block constructor calls reset_ghost() which sets all ghosts to default values
-        # If additional ghosting mechanism are needed, they can be added here. (like ring rods)
+        self._block.reset_ghost()
 
         # Compute strains for the block
-        self._block.compute_internal_forces_and_torques()
+        self.compute_strains(0.0)
 
     def relink_system_properties_to_block_memory(
-        self, system: RodType, system_idx: int,
+        self,
+        system: RodType,
+        system_idx: int,
     ) -> None:
         """Relink system properties to block memory."""
         for py_key, cpp_key in PY2CPP_VARNAMES.items():
-            assert hasattr(system, py_key), f"System {system} does not have attribute {py_key}."
+            assert hasattr(
+                system, py_key
+            ), f"System {system} does not have attribute {py_key}."
             value = getattr(system, py_key).copy()
             block_memory = self._block.at(system_idx).get(cpp_key)
             block_memory[...] = value
             setattr(system, py_key, block_memory)
 
-            full_block_memory = self._block.get(cpp_key)
-            setattr(self, py_key, full_block_memory)
+    # # Override python implementation
+    def compute_strains(self, time: np.float64) -> None:
+        self._block.compute_strains(time)
 
-    # Override python implementation
     def compute_internal_forces_and_torques(self, time: np.float64) -> None:
         self._block.compute_internal_forces_and_torques(time)
 

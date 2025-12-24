@@ -7,13 +7,13 @@ using MockBlockSystem = elasticapp::mock::MockBlockSystem;
 
 TEST_CASE("Traits - Matrix storage order", "[traits]") {
     SECTION("Matrix type is defined") {
-        std::vector<std::size_t> n_elems_per_rod = {3};  // 3 elements -> 4 nodes (width)
+        std::vector<std::size_t> n_elems_per_rod = {8};  // 3 elements -> 4 nodes (width)
         MockBlockSystem block(n_elems_per_rod);
         auto& matrix = block.data();
 
         // Verify matrix has correct dimensions
         REQUIRE(matrix.rows() == 17);  // MockSystem depth
-        REQUIRE(matrix.cols() == 4);    // (3+1) nodes + 0 ghost = 4 nodes
+        REQUIRE(matrix.cols() == 9);    // (3+1) nodes + 0 ghost = 4 nodes
 
         // Verify we can access and modify data
         matrix(0, 0) = 1.0;

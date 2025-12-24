@@ -19,4 +19,4 @@ def test_at_returns_block_view():
 
     for sys_index in range(block.n_systems):
         block_view = block.at(sys_index)
-        assert block_view.shape == (expected_depth, n_elems_per_system[sys_index]+1)
+        assert block_view.shape == (expected_depth, n_elems_per_system[sys_index] + 1)

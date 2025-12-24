@@ -16,22 +16,21 @@ def test_block_construction():
 
 def test_block_as_ref_returns_numpy_array():
     """Test that as_ref() returns a numpy array."""
-    block = BlockRodSystem([2, 3])
-    # Rod 0: 2 elems -> 3 nodes, Rod 1: 3 elems -> 4 nodes
+    block = BlockRodSystem([3, 3])
+    # Rod 0: 3 elems -> 4 nodes, Rod 1: 3 elems -> 4 nodes
     # Ghost nodes: 1 (between 2 rods)
-    # Total width = 3 + 4 + 1 = 8
+    # Total width = 4 + 4 + 1 = 9
     arr = block.as_ref()
     assert isinstance(arr, np.ndarray)
-    assert arr.shape == (103, 8)
+    assert arr.shape == (103, 9)
     assert arr.shape == block.shape
-    assert arr.flags['OWNDATA'] is False
-    assert arr.flags['WRITEABLE'] is True
-
+    assert arr.flags["OWNDATA"] is False
+    assert arr.flags["WRITEABLE"] is True
 
 
 def test_block_as_ref_modifies_underlying_memory():
     """Test that modifying the numpy array modifies the underlying C++ memory."""
-    block = BlockRodSystem([2, 3])
+    block = BlockRodSystem([3, 3])
     arr1 = block.as_ref()
 
     # Try to modify
@@ -61,12 +60,13 @@ def test_block_rod_start_indices():
     """Test that Block stores correct starting indices for each rod."""
     block = BlockRodSystem([3, 5, 2])
 
-    # Rod 0: starts at 0, has 3+1=4 nodes
+    # Rod 0: starts at 0, has 3+1=4 nodes + 1 ghost = 5 total
     assert block.system_start_index(0) == 0
-    # Rod 1: starts at 4, has 5+1=6 nodes
-    assert block.system_start_index(1) == 4
-    # Rod 2: starts at 4+6=10, has 2+1=3 nodes
-    assert block.system_start_index(2) == 10
+    # Rod 1: starts at 5, has 5+1=6 nodes + 1 ghost = 7 total
+    assert block.system_start_index(1) == 5
+    # Rod 2: starts at 5+7=12, has 2+1=3 nodes
+    assert block.system_start_index(2) == 12
+
 
 def test_block_view_variable_query():
     """Test that BlockRodSystemView can query variables."""
@@ -97,8 +97,8 @@ def test_block_get_shape():
     # OnNode variables: should have shape (dimension, full width)
     position = block.get("position")
     assert position.shape == (3, 10)  # Vector (3D) x total nodes (full width)
-    assert position.flags['OWNDATA'] is False
-    assert position.flags['WRITEABLE'] is True
+    assert position.flags["OWNDATA"] is False
+    assert position.flags["WRITEABLE"] is True
 
     velocity = block.get("velocity")
     assert velocity.shape == (3, 10)  # OnNode: full width
@@ -109,8 +109,8 @@ def test_block_get_shape():
     # OnElement variables: should have shape (dimension, width - 1)
     director = block.get("director")
     assert director.shape == (3, 3, 9)  # Matrix (9D) x (width - 1) = 10 - 1 = 9
-    assert director.flags['OWNDATA'] is False
-    assert director.flags['WRITEABLE'] is True
+    assert director.flags["OWNDATA"] is False
+    assert director.flags["WRITEABLE"] is True
 
     omega = block.get("omega")
     assert omega.shape == (3, 9)  # Vector (3D) x (width - 1) = 10 - 1 = 9
@@ -122,14 +122,14 @@ def test_block_get_shape():
 
 def test_block_get_contents():
     """Test that Block.get() returns writable views that modify underlying data."""
-    block = BlockRodSystem([2, 3])
-    # Rod 0: 2 elems -> 3 nodes, Rod 1: 3 elems -> 4 nodes
+    block = BlockRodSystem([3, 3])
+    # Rod 0: 3 elems -> 4 nodes, Rod 1: 3 elems -> 4 nodes
     # Ghost nodes: 1 (between 2 rods)
-    # Total width = 3 + 4 + 1 = 8
+    # Total width = 4 + 4 + 1 = 9
 
     # Get position variable (OnNode: full width)
     position = block.get("position")
-    assert position.shape == (3, 8)
+    assert position.shape == (3, 9)
 
     # Modify through the view
     position[0, 0] = 1.5
@@ -154,38 +154,38 @@ def test_block_get_contents():
 
 def test_block_get_different_variable_types():
     """Test that Block.get() works for different variable types (OnNode, OnElement, OnVoronoi)."""
-    block = BlockRodSystem([3, 2])
-    # Rod 0: 3 elems -> 4 nodes, Rod 1: 2 elems -> 3 nodes
+    block = BlockRodSystem([3, 3])
+    # Rod 0: 3 elems -> 4 nodes, Rod 1: 3 elems -> 4 nodes
     # Ghost nodes: 1 (between 2 rods)
-    # Total width = 4 + 3 + 1 = 8
+    # Total width = 4 + 4 + 1 = 9
 
     # OnNode variable (Vector) - full width
     velocity = block.get("velocity")
-    assert velocity.shape == (3, 8)  # OnNode: full width
+    assert velocity.shape == (3, 9)  # OnNode: full width
     velocity[0, 0] = 100.0
     assert velocity[0, 0] == 100.0
 
     # OnNode variable (Scalar) - full width
     mass = block.get("mass")
-    assert mass.shape == (8,)  # OnNode: full width
+    assert mass.shape == (9,)  # OnNode: full width
     mass[0] = 5.0
     assert mass[0] == 5.0
 
     # OnElement variable (Matrix) - width - 1
     director = block.get("director")
-    assert director.shape == (3, 3, 7)  # OnElement: width - 1 = 8 - 1 = 7
+    assert director.shape == (3, 3, 8)  # OnElement: width - 1 = 9 - 1 = 8
     director[0, 0, 0] = 0.5
     assert director[0, 0, 0] == 0.5
 
     # OnElement variable (Vector)
     omega = block.get("omega")
-    assert omega.shape == (3, 7)
+    assert omega.shape == (3, 8)
     omega[0, 0] = 1.0
     assert omega[0, 0] == 1.0
 
     # OnVoronoi variable (Vector) - width - 2
     kappa = block.get("kappa")
-    assert kappa.shape == (3, 6)  # OnVoronoi: width - 2 = 8 - 2 = 6
+    assert kappa.shape == (3, 7)  # OnVoronoi: width - 2 = 9 - 2 = 7
     kappa[0, 0] = 2.0
     assert kappa[0, 0] == 2.0
 
