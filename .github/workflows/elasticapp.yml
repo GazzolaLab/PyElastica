@@ -23,21 +23,36 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           uv-version: latest
+      - name: Compile OpenMP
+        env:
+          OMP_NUM_THREADS: 2
+        run: |
+          sudo apt-get update; sudo apt-get install -y libomp5 libomp-dev
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Set up cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install PyElastica and dependencies
         run: |
           make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
-          source .venv/bin/activate
 
-      - name: Install PyElastica + backend
+      - name: Install cpp-backend
         run: |
-          uv pip install . -v
+          source .venv/bin/activate
           uv pip install ./backend -v
+
       - name: Run elasticapp tests
         run: |
-          cd backend
+          source .venv/bin/activate
           make test
+          # pytest backend/tests/py

@@ -510,9 +510,6 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Reset ghost values for internal_couple_scaled (OnVoronoi)
     auto ghost_voronoi = block.ghost_voronoi_idx();
-    #ifdef ELASTICAPP_USE_THREADING
-    #pragma omp parallel for simd schedule(static)
-    #endif
     for (std::size_t ghost_col : ghost_voronoi) {
         IndexType data_col = static_cast<IndexType>(ghost_col);
         if (data_col >= 0 && data_col < n_voronoi) {
