@@ -16,6 +16,9 @@ jobs:
       matrix:
         python-version: ["3.11"] #, "3.12"]
         os: [ubuntu-latest] # , macos-latest]
+        include:
+          - os: ubuntu-latest
+            path: ~/.cache/pip
 
     steps:
       - uses: actions/checkout@v4
