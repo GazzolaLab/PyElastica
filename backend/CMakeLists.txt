@@ -52,9 +52,23 @@ set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/py")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-option(ELASTICAPP_USE_THREADING "Enable threading support" ON)
+option(ELASTICAPP_USE_THREADING         "Enable threading support"              ON )
 option(ELASTICAPP_VECTORIZATION_REPORTS "Enable compiler vectorization reports" OFF)
-option(ELASTICAPP_BUILD_TESTS "Build C++ unit tests" OFF)
+option(ELASTICAPP_BUILD_TESTS           "Build C++ unit tests"                  OFF)
+
+# Global CMake option to enable/disable for unittests
+if (DEFINED ENV{ELASTICAPP_BUILD_TESTS})
+    string(TOUPPER "$ENV{ELASTICAPP_BUILD_TESTS}" ELASTICAPP_BUILD_TESTS_ENV_VALUE)
+    if ("${ELASTICAPP_BUILD_TESTS_ENV_VALUE}" MATCHES "^(ON|TRUE|1)$")
+        set(ELASTICAPP_BUILD_TESTS ON)
+        message(STATUS "ELASTICAPP_BUILD_TESTS set to TRUE from environment variable.")
+    elseif ("${ELASTICAPP_BUILD_TESTS_ENV_VALUE}" MATCHES "^(OFF|FALSE|0)$")
+        set(ELASTICAPP_BUILD_TESTS OFF)
+        message(STATUS "ELASTICAPP_BUILD_TESTS set to OFF from environment variable.")
+    else()
+        message(WARNING "Environment variable ELASTICAPP_BUILD_TESTS has an unrecognized value. It will not be used to set the CMake option.")
+    endif()
+endif()
 
 # Option to set number of threads per component in update_dynamics parallel sections
 # This controls how many threads are used for each spatial component (x, y, z) in the parallel sections

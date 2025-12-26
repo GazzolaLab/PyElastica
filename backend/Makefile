@@ -12,7 +12,6 @@ install:
 .PHONY: build-cpp
 build-cpp:
 	@echo "Building C++ code with CMake..." && \
-	source ../.venv/bin/activate && \
 	VENV_PYTHON=$$(which python) && \
 	PYBIND11_DIR=$$(python -c "import pybind11; import os; print(os.path.join(os.path.dirname(pybind11.__file__), 'share', 'cmake', 'pybind11'))") && \
 	mkdir -p build && \
@@ -46,10 +45,8 @@ test-cpp-direct: build-cpp
 #* Testing
 .PHONY: test
 test:
-	echo "Building tests first..."; \
-	source ../.venv/bin/activate
-	$(MAKE) install; \
-	cd build && ./cpp_tests
+	@echo "Running C++ and Python tests..."
+	ELASTICAPP_BUILD_TESTS=ON make install && cd build && ./cpp_tests
 	pytest tests/py -v
 
 #* Cleaning

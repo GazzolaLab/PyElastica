@@ -19,6 +19,9 @@ jobs:
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v4
@@ -49,13 +52,9 @@ jobs:
           make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
 
-      - name: Install cpp-backend
-        run: |
-          source .venv/bin/activate
-          uv pip install ./backend -v
-
       - name: Run elasticapp tests
         run: |
           source .venv/bin/activate
+          cd backend
           make test
           # pytest backend/tests/py
