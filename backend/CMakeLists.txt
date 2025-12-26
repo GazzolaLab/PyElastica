@@ -29,16 +29,6 @@ include(FetchContent)
 set(BUILD_TESTING_SAVED ${BUILD_TESTING})
 set(BUILD_TESTING OFF)
 
-# Fetch Catch2 for C++ unit testing
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.5.4
-)
-set(CATCH_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(CATCH_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(Catch2)
-
 # Fetch Eigen3 for numerical computations
 FetchContent_Declare(
     Eigen3
@@ -208,6 +198,16 @@ install(FILES
 if(ELASTICAPP_BUILD_TESTS)
     enable_testing()
     include(CTest)
+
+    # Fetch Catch2 for C++ unit testing
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.5.4
+    )
+    set(CATCH_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(CATCH_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(Catch2)
 
     # Test executable
     add_executable(cpp_tests
