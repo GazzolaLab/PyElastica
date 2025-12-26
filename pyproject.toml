@@ -139,6 +139,7 @@ warn_unused_ignores = false
 
 exclude = [
     "elastica/experimental/*",
+    "backend/*"
 ]
 
 [tool.coverage.report]

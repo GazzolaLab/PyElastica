@@ -71,15 +71,15 @@ mypy:
 
 .PHONY: test
 test:
-	uv run pytest -c pyproject.toml
+	uv run pytest -c pyproject.toml tests
 
 .PHONY: test_coverage
 test_coverage:
-	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica -c pyproject.toml
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica -c pyproject.toml tests
 
 .PHONY: test_coverage_xml
 test_coverage_xml:
-	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica --cov-report=xml -c pyproject.toml
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica --cov-report=xml -c pyproject.toml tests
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8 autoflake-check
