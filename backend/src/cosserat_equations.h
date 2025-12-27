@@ -217,9 +217,8 @@ inline void compute_internal_forces(BlockType& block) {
         }
     }
 
-
     // Reset ghost values for cosserat_internal_stress (OnElement)
-    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorA>();
+    block.template reset_ghost_for_variable<system::cosserat_rod::ScratchVectorA>();
 
     // Compute internal_forces = two_point_difference_kernel(cosserat_internal_stress)
     // internal_forces is OnNode (3, n_nodes) where n_nodes = n_elems + 1
@@ -447,13 +446,13 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Scratch buffers
     auto&& voronoi_dilatation_inv_cube_cached = block.template get<system::cosserat_rod::ScratchScalarC>();
-    auto&& bend_twist_couple_2D = block.template get<system::cosserat_rod::ScratchVectorA>();
-    auto&& scratch_vec_a_voronoi = block.template get<system::cosserat_rod::ScratchVectorB>();
+    auto&& bend_twist_couple_2D = block.template get<system::cosserat_rod::InternalTorques>();
+    auto&& J_omega_upon_e = block.template get<system::cosserat_rod::ScratchVectorA>();
+    auto&& scratch_vec_b_voronoi = block.template get<system::cosserat_rod::ScratchVectorB>();
     auto&& bend_twist_couple_3D = block.template get<system::cosserat_rod::ScratchVectorC>();
     auto&& shear_stretch_couple = block.template get<system::cosserat_rod::ScratchVectorD>();
     auto&& lagrangian_transport = block.template get<system::cosserat_rod::ScratchVectorE>();
     auto&& unsteady_dilatation = block.template get<system::cosserat_rod::ScratchVectorF>();
-    auto&& director_tangents = block.template get<system::cosserat_rod::ScratchVectorA>();
 
     // Compute voronoi_dilatation_inv_cube_cached = 1.0 / voronoi_dilatation^3
     // MatrixType voronoi_dilatation_inv_cube_cached(1, n_voronoi);
@@ -466,7 +465,7 @@ inline void compute_internal_torques(BlockType& block) {
     // Compute bend_twist_couple_2D = difference_kernel(internal_couple * voronoi_dilatation_inv_cube_cached, ghost_voronoi_idx)
     // First compute the product
     // MatrixType internal_couple_scaled(3, n_voronoi);
-    auto internal_couple_scaled = scratch_vec_a_voronoi;
+    auto internal_couple_scaled = scratch_vec_b_voronoi;
     for (IndexType i = 0; i < 3; ++i) {
         #pragma omp parallel for simd schedule(static)
         for (IndexType k = 0; k < n_voronoi; ++k) {
@@ -476,7 +475,7 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Reset ghost values for internal_couple_scaled (OnVoronoi)
     // reset_ghost :: internal_couple_scaled
-    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
+    block.template reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
 
     // Apply difference_kernel (two_point_difference_kernel)
     // MatrixType bend_twist_couple_2D(3, n_nodes);
@@ -485,12 +484,12 @@ inline void compute_internal_torques(BlockType& block) {
     // Compute bend_twist_couple_3D = quadrature_kernel((kappa x internal_couple) * rest_voronoi_lengths * voronoi_dilatation_inv_cube_cached, ghost_voronoi_idx)
     // First compute kappa x internal_couple
     // MatrixType kappa_cross_internal_couple(3, n_voronoi);
-    auto kappa_cross_internal_couple = scratch_vec_a_voronoi;
+    auto kappa_cross_internal_couple = scratch_vec_b_voronoi;
     batch_cross(kappa_cross_internal_couple, kappa, internal_couple);
 
     // Multiply by rest_voronoi_lengths and voronoi_dilatation_inv_cube_cached
     // MatrixType bend_twist_couple_3D_input(3, n_voronoi);
-    auto bend_twist_couple_3D_input = scratch_vec_a_voronoi;
+    auto bend_twist_couple_3D_input = scratch_vec_b_voronoi;
     for (IndexType i = 0; i < 3; ++i) {
         #pragma omp parallel for simd schedule(static)
         for (IndexType k = 0; k < n_voronoi; ++k) {
@@ -502,7 +501,7 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Reset ghost values
     // reset_ghost:: bend_twist_couple_3D_input;
-    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
+    block.template reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
 
     // Apply quadrature_kernel (trapezoidal)
     // MatrixType bend_twist_couple_3D(3, n_nodes);
@@ -510,34 +509,54 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Compute shear_stretch_couple = (Q^T * tangents) x internal_stress * rest_lengths
     // First compute Q^T * tangents (same as director^T @ tangents)
+    // {  // DEPRECATED BLOCK: REPLACED WITH BELOW OPS
     // MatrixType director_tangents(3, n_elems);
-    for (IndexType i = 0; i < 3; ++i) {
-        #pragma omp parallel for simd schedule(static)
-        for (IndexType k = 0; k < n_elems; ++k) {
-            double sum = 0.0;
-            for (IndexType j = 0; j < 3; ++j) {
-                IndexType director_idx = j * 3 + i;
-                sum += director(director_idx, k) * tangents(j, k);
-            }
-            director_tangents(i, k) = sum;
-        }
-    }
+    // for (IndexType i = 0; i < 3; ++i) {
+    //     #pragma omp parallel for simd schedule(static)
+    //     for (IndexType k = 0; k < n_elems; ++k) {
+    //         double sum = 0.0;
+    //         for (IndexType j = 0; j < 3; ++j) {
+    //             IndexType director_idx = j * 3 + i;
+    //             sum += director(director_idx, k) * tangents(j, k);
+    //         }
+    //         director_tangents(i, k) = sum;
+    //     }
+    // }
 
-    // Compute cross product: (Q^T * tangents) x internal_stress
-    // MatrixType shear_stretch_couple(3, n_elems);
-    batch_cross(shear_stretch_couple, director_tangents, internal_stress);
+    // // Compute cross product: (Q^T * tangents) x internal_stress
+    // // MatrixType shear_stretch_couple(3, n_elems);
+    // batch_cross(shear_stretch_couple, director_tangents, internal_stress);
 
-    // Multiply by rest_lengths
-    for (IndexType i = 0; i < 3; ++i) {
-        #pragma omp parallel for simd schedule(static)
-        for (IndexType k = 0; k < n_elems; ++k) {
-            shear_stretch_couple(i, k) *= rest_lengths(0, k);
-        }
+    // // Multiply by rest_lengths
+    // for (IndexType i = 0; i < 3; ++i) {
+    //     #pragma omp parallel for simd schedule(static)
+    //     for (IndexType k = 0; k < n_elems; ++k) {
+    //         shear_stretch_couple(i, k) *= rest_lengths(0, k);
+    //     }
+    // }
+    // }
+
+    #pragma omp parallel for simd schedule(static)
+    for (IndexType k = 0; k < n_elems; ++k) {
+        // Compute Q^T * tangents
+
+        double a0 = director(0, k) * tangents(0, k) + director(3, k) * tangents(1, k) + director(6, k) * tangents(2, k);
+        double a1 = director(1, k) * tangents(0, k) + director(4, k) * tangents(1, k) + director(7, k) * tangents(2, k);
+        double a2 = director(2, k) * tangents(0, k) + director(5, k) * tangents(1, k) + director(8, k) * tangents(2, k);
+
+        // internal_stress alias
+        double i0 = internal_stress(0, k);
+        double i1 = internal_stress(1, k);
+        double i2 = internal_stress(2, k);
+
+        // cross-product (Q*t x n) * l_hat
+        shear_stretch_couple(0, k) += (a1 * i2 - a2 * i1) * rest_lengths(0, k);
+        shear_stretch_couple(1, k) += (a2 * i0 - a0 * i2) * rest_lengths(0, k);
+        shear_stretch_couple(2, k) += (a0 * i1 - a1 * i0) * rest_lengths(0, k);
     }
 
     // Compute J_omega_upon_e = batch_matvec(mass_second_moment_of_inertia, omega) / dilatation
     // MatrixType J_omega_upon_e(3, n_elems);
-    auto J_omega_upon_e = director_tangents;
     #pragma omp parallel for simd schedule(static)
     for (IndexType k = 0; k < n_elems; ++k) {
         // Extract 3x3 mass_second_moment_of_inertia for element k
@@ -576,7 +595,7 @@ inline void compute_internal_torques(BlockType& block) {
     for (IndexType i = 0; i < 3; ++i) {
         #pragma omp parallel for simd schedule(static)
         for (IndexType k = 0; k < n_elems; ++k) {
-            internal_torques(i, k) = bend_twist_couple_2D(i, k) +
+            internal_torques(i, k) += // bend_twist_couple_2D(i, k) +  // Note: internal_torques share bend_twist_couple_2D
                                      bend_twist_couple_3D(i, k) +
                                      shear_stretch_couple(i, k) +
                                      lagrangian_transport(i, k) +
