@@ -10,8 +10,11 @@ repos:
       - id: trailing-whitespace
       - id: check-json
       - id: check-yaml
+      - id: check-toml
       - id: end-of-file-fixer
         exclude: LICENSE
+      - id: check-added-large-files
+      - id: mixed-line-ending
 
   - repo: local
     hooks:
