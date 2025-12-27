@@ -112,6 +112,18 @@ namespace system::cosserat_rod {
     struct BendMatrix : Placement::OnVoronoi, DataType::Matrix {
         static constexpr std::string_view name = "bend_matrix";
     };
+
+    // Dummy variables for computation
+   struct ScratchVectorA : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_a"; };
+   struct ScratchVectorB : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_b"; };
+   struct ScratchVectorC : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_c"; };
+   struct ScratchVectorD : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_d"; };
+   struct ScratchVectorE : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_e"; };
+   struct ScratchVectorF : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_f"; };
+
+   struct ScratchScalarA : Placement::OnNode, DataType::Scalar { static constexpr std::string_view name = "scratch_scalar_a"; };
+   struct ScratchScalarB : Placement::OnNode, DataType::Scalar { static constexpr std::string_view name = "scratch_scalar_b"; };
+   struct ScratchScalarC : Placement::OnNode, DataType::Scalar { static constexpr std::string_view name = "scratch_scalar_c"; };
 }
 
 // CosseratRodSystem is a System with all variables from CosseratRod
@@ -152,7 +164,18 @@ using CosseratRodSystem = System<
     system::cosserat_rod::Kappa,
     system::cosserat_rod::RestKappa,
     system::cosserat_rod::InternalCouple,
-    system::cosserat_rod::BendMatrix
+    system::cosserat_rod::BendMatrix,
+
+    // Dummy variables
+    system::cosserat_rod::ScratchVectorA,
+    system::cosserat_rod::ScratchVectorB,
+    system::cosserat_rod::ScratchVectorC,
+    system::cosserat_rod::ScratchVectorD,
+    system::cosserat_rod::ScratchVectorE,
+    system::cosserat_rod::ScratchVectorF,
+    system::cosserat_rod::ScratchScalarA,
+    system::cosserat_rod::ScratchScalarB,
+    system::cosserat_rod::ScratchScalarC
 >;
 
 } // namespace elasticapp
