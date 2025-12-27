@@ -4,10 +4,7 @@
 #include <Eigen/Dense>
 #include <cassert>
 #include <cmath>
-
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace elasticapp {
 
@@ -54,9 +51,7 @@ inline void batch_matvec(MT1& matvec_batch,
     assert(vector_batch.rows() == dimension);
     assert(vector_batch.cols() == n_elems);
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t i = 0; i < dimension; ++i) {
         for (std::size_t k = 0; k < n_elems; ++k) {
             double sum = 0.0;
@@ -128,9 +123,7 @@ inline void batch_cross(MT1& cross_batch,
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.cols() == n_elems);
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         cross_batch(0, k) = first_vector_batch(1, k) * second_vector_batch(2, k) -
                            first_vector_batch(2, k) * second_vector_batch(1, k);
@@ -162,9 +155,7 @@ inline auto batch_dot(const MT1& first_vector_batch,
     assert(second_vector_batch.cols() == n_elems);
 
     VectorType result(n_elems);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         double sum = 0.0;
         for (std::size_t i = 0; i < dimension; ++i) {
@@ -192,9 +183,7 @@ inline auto batch_norm(const MT& vector_batch) {
     const std::size_t n_elems = vector_batch.cols();
     VectorType result(n_elems);
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         double sum = 0.0;
         for (std::size_t i = 0; i < dimension; ++i) {

@@ -134,9 +134,7 @@ public:
             // Only reset ghost values that are within the adjusted width
             // (ghost indices beyond adjusted width are not accessible via get())
             IndexType data_col = static_cast<IndexType>(ghost_col);
-            #ifdef ELASTICAPP_USE_THREADING
             #pragma omp simd
-            #endif
             for (std::size_t row = 0; row < var_dimension; ++row) {
                 IndexType data_row = static_cast<IndexType>(row_offset + row);
                 data_(data_row, data_col) = ghost_val(static_cast<IndexType>(row), 0);

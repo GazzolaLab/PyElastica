@@ -15,10 +15,7 @@
 #include <chrono>
 #include <Eigen/Core>
 
-// Include OpenMP headers if threading is enabled
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace py = pybind11;
 
@@ -237,7 +234,6 @@ PYBIND11_MODULE(_memory_block, m) {
     using BlockRodSystemViewType = BlockRodSystem::View;
 
     // Thread management functions (only available when threading is enabled)
-    #ifdef ELASTICAPP_USE_THREADING
     // Disable Eigen's internal threading to prevent oversubscription with OpenMP
     // We use OpenMP for explicit parallelization, so Eigen should use single-threaded operations
     Eigen::setNbThreads(1);
@@ -293,7 +289,6 @@ PYBIND11_MODULE(_memory_block, m) {
         Returns:
             int: Current thread number (returns 0 if called outside a parallel region).
     )pbdoc");
-    #endif // ELASTICAPP_USE_THREADING
 
     // BlockRodSystem class
     py::class_<BlockRodSystem>(m, "BlockRodSystem")
@@ -395,7 +390,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("index"))
         .def("at", [](BlockRodSystem& block, std::size_t index) -> BlockRodSystemViewType {
-            return std::move(block.at(index));
+            return block.at(index);
         },
         R"pbdoc(
             Get a view for a specific rod.

@@ -52,7 +52,6 @@ set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/py")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-option(ELASTICAPP_USE_THREADING         "Enable threading support"                         ON )
 option(ELASTICAPP_VECTORIZATION_REPORTS "Enable compiler vectorization reports"            OFF)
 option(ELASTICAPP_BUILD_TESTS           "Build C++ unit tests"                             OFF)
 option(ELASTICAPP_GIL_RELEASE           "Release Python GIL around compute-heavy bindings" ON )
@@ -78,32 +77,30 @@ set(ELASTICAPP_COMPONENT_THREADS "2" CACHE STRING "Number of threads per compone
 mark_as_advanced(ELASTICAPP_COMPONENT_THREADS)
 
 # Configure threading support (OpenMP) - check early but apply per-target
-if(ELASTICAPP_USE_THREADING)
-    # On macOS with Homebrew, help CMake find libomp
-    # This is needed for both Makefile builds and scikit-build-core builds
-    if(APPLE)
-        # Try to find Homebrew-installed libomp
-        execute_process(
-            COMMAND brew --prefix libomp
-            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-        )
-        if(HOMEBREW_LIBOMP_PREFIX)
-            message(STATUS "Found Homebrew libomp at: ${HOMEBREW_LIBOMP_PREFIX}")
-            # Set OpenMP variables for clang on macOS
-            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-                set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
-                set(OpenMP_CXX_LIB_NAMES "omp")
-                set(OpenMP_omp_LIBRARY "${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib")
-                set(OpenMP_CXX_LIBRARIES "${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib")
-                message(STATUS "Configured OpenMP for clang with Homebrew libomp")
-            endif()
+# On macOS with Homebrew, help CMake find libomp
+# This is needed for both Makefile builds and scikit-build-core builds
+if(APPLE)
+    # Try to find Homebrew-installed libomp
+    execute_process(
+        COMMAND brew --prefix libomp
+        OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(HOMEBREW_LIBOMP_PREFIX)
+        message(STATUS "Found Homebrew libomp at: ${HOMEBREW_LIBOMP_PREFIX}")
+        # Set OpenMP variables for clang on macOS
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+            set(OpenMP_CXX_LIB_NAMES "omp")
+            set(OpenMP_omp_LIBRARY "${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib")
+            set(OpenMP_CXX_LIBRARIES "${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib")
+            message(STATUS "Configured OpenMP for clang with Homebrew libomp")
         endif()
     endif()
-
-    find_package(OpenMP COMPONENTS CXX REQUIRED)
 endif()
+
+find_package(OpenMP COMPONENTS CXX REQUIRED)
 
 # Helper function to apply optimization flags to a target
 # This function must be defined before targets are created
@@ -152,8 +149,7 @@ function(apply_optimization_flags target_name)
         target_compile_options(${target_name} PRIVATE /arch:AVX2)
     endif()
 
-    if(ELASTICAPP_USE_THREADING AND OpenMP_CXX_FOUND)
-        target_compile_definitions(${target_name} PRIVATE ELASTICAPP_USE_THREADING)
+    if(OpenMP_CXX_FOUND)
         target_link_libraries(${target_name} PRIVATE OpenMP::OpenMP_CXX)
         message(STATUS "Threading support enabled for ${target_name}")
     endif()

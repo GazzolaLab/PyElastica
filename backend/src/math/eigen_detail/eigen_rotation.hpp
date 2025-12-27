@@ -4,10 +4,7 @@
 #include <Eigen/Dense>
 #include <cassert>
 #include <cmath>
-
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace elasticapp {
 
@@ -31,9 +28,7 @@ void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
     assert(rot_axis_vector_batch.rows() == dimension);
     assert(rot_axis_vector_batch.cols() == n_elems);
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         // Compute trace: tr(R) = R[0,0] + R[1,1] + R[2,2]
         double trace = rot_matrix_batch(0, 0, k) +
@@ -83,9 +78,7 @@ void exp_batch(TT& rot_matrix_batch, const MT& rot_axis_vector_batch) {
 
     const std::size_t n_elems = rot_axis_vector_batch.cols();
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_elems; ++k) {
         // Compute theta = ||axis||
         double v0 = rot_axis_vector_batch(0, k);

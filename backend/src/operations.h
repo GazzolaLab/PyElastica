@@ -6,15 +6,11 @@
 #include "cosserat_equations.h"
 #include "traits.h"
 
-// Include OpenMP headers if threading is enabled
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace elasticapp {
 
-// Thread management utilities (only available when threading is enabled)
-#ifdef ELASTICAPP_USE_THREADING
+// Thread management utilities
 // Set the number of OpenMP threads to use
 // This affects all subsequent parallel regions
 // Args:
@@ -42,7 +38,6 @@ inline int get_max_threads() {
 inline int get_thread_num() {
     return omp_get_thread_num();
 }
-#endif // ELASTICAPP_USE_THREADING
 
 // Default empty operations class using CRTP pattern
 // This class can be extended with operations that work on the derived Block type

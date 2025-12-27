@@ -6,10 +6,7 @@
 #include "traits.h"
 #include "math/eigen_detail/eigen_linear_algebra.hpp"
 #include "math/eigen_detail/eigen_calculus.hpp"
-
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace elasticapp {
 
@@ -37,17 +34,13 @@ inline void compute_geometry_from_state(BlockType& block) {
     // FIXME: 1e-14 is added to fix ghost lengths, which is 0, and causes division by zero error!
     auto lengths_vec = batch_norm(position_diff);
     const IndexType n_elems = lengths.cols();
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         lengths(0, k) = lengths_vec(k) + 1e-14;
     }
 
     // Compute tangents = position_diff / lengths
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         const double len = lengths(0, k);
         tangents(0, k) = position_diff(0, k) / len;
@@ -57,9 +50,7 @@ inline void compute_geometry_from_state(BlockType& block) {
 
     // Compute radius from volume conservation: radius = sqrt(volume / (lengths * pi))
     const double pi = 3.14159265358979323846;
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         radius(0, k) = std::sqrt(volume(0, k) / (lengths(0, k) * pi));
     }
@@ -78,9 +69,7 @@ inline void compute_all_dilatations(BlockType& block) {
 
     // Compute dilatation = lengths / rest_lengths
     const IndexType n_elems = lengths.cols();
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         dilatation(0, k) = lengths(0, k) / rest_lengths(0, k);
     }
@@ -91,9 +80,7 @@ inline void compute_all_dilatations(BlockType& block) {
 
     // Compute voronoi_dilatation = voronoi_lengths / rest_voronoi_lengths
     const IndexType n_voronoi = voronoi_dilatation.cols();
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_voronoi; ++k) {
         voronoi_dilatation(0, k) = voronoi_lengths(0, k) / rest_voronoi_lengths(0, k);
     }
@@ -116,9 +103,7 @@ inline void compute_shear_stretch_strains(BlockType& block) {
     // sigma is (3, n_elems)
     const IndexType n_elems = sigma.cols();
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         // Extract 3x3 director matrix for element k
         // director[:, k] is (row-wise flattened 3x3 matrix)
@@ -166,9 +151,7 @@ inline void compute_internal_shear_stretch_stresses_from_model(BlockType& block)
     // Compute internal_stress = batch_matvec(shear_matrix, sigma - rest_sigma)
     // shear_matrix is stored as (9, n_elems) - flattened 3x3 matrices
     // Storage order: [m00, m10, m20, m01, m11, m21, m02, m12, m22] (column-major)
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         // Compute sigma_diff = sigma - rest_sigma for element k
         double sigma_diff0 = sigma(0, k) - rest_sigma(0, k);
@@ -221,9 +204,7 @@ inline void compute_internal_forces(BlockType& block) {
     // Python: cosserat_internal_stress[i, k] = sum_j(director_collection[j, i, k] * internal_stress[j, k])
     // In C++: director_collection[j, i, k] = director(j*3 + i, k)
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_elems; ++k) {
             double sum = 0.0;
             for (IndexType j = 0; j < 3; ++j) {
@@ -281,9 +262,7 @@ inline void compute_bending_twist_strains(BlockType& block) {
 
     // Compute inv_rotate manually: relative rotation between consecutive directors
     // Python implementation computes cross products between consecutive director rows
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for schedule(static)
-    #endif
     for (IndexType k = 0; k < n_voronoi; ++k) {
         // Extract director matrices for k and k+1
         // director[:, k] is (row-wise flattened 3x3 matrix)
@@ -355,9 +334,7 @@ inline void compute_internal_bending_twist_stresses_from_model(BlockType& block)
     // Compute temp = kappa - rest_kappa
     MatrixType temp(3, n_voronoi);
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_voronoi; ++k) {
             temp(i, k) = kappa(i, k) - rest_kappa(i, k);
         }
@@ -366,9 +343,7 @@ inline void compute_internal_bending_twist_stresses_from_model(BlockType& block)
     // Compute internal_couple = batch_matvec(bend_matrix, temp)
     // bend_matrix is stored as (9, n_voronoi) - flattened 3x3 matrices
     // Storage order: [m00, m10, m20, m01, m11, m21, m02, m12, m22] (column-major)
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_voronoi; ++k) {
         // Extract 3x3 bend_matrix for voronoi k
         // bend_matrix[:, k] is [m00, m10, m20, m01, m11, m21, m02, m12, m22]
@@ -410,9 +385,7 @@ inline void compute_dilatation_rate(BlockType& block) {
     // Compute r_dot_v = batch_dot(position, velocity)
     // This is the dot product of position and velocity at each node
     MatrixType r_dot_v(1, n_nodes);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_nodes; ++k) {
         r_dot_v(0, k) = position(0, k) * velocity(0, k) +
                        position(1, k) * velocity(1, k) +
@@ -422,9 +395,7 @@ inline void compute_dilatation_rate(BlockType& block) {
     // Compute r_plus_one_dot_v = batch_dot(position[..., 1:], velocity[..., :-1])
     // Dot product of position[1:] and velocity[:-1] (both have n_elems elements)
     MatrixType r_plus_one_dot_v(1, n_elems);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         r_plus_one_dot_v(0, k) = position(0, k + 1) * velocity(0, k) +
                                 position(1, k + 1) * velocity(1, k) +
@@ -434,9 +405,7 @@ inline void compute_dilatation_rate(BlockType& block) {
     // Compute r_dot_v_plus_one = batch_dot(position[..., :-1], velocity[..., 1:])
     // Dot product of position[:-1] and velocity[1:] (both have n_elems elements)
     MatrixType r_dot_v_plus_one(1, n_elems);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         r_dot_v_plus_one(0, k) = position(0, k) * velocity(0, k + 1) +
                                  position(1, k) * velocity(1, k + 1) +
@@ -446,9 +415,7 @@ inline void compute_dilatation_rate(BlockType& block) {
     // Compute dilatation_rate for each element
     // dilatation_rate[k] = (r_dot_v[k] + r_dot_v[k + 1] - r_dot_v_plus_one[k] - r_plus_one_dot_v[k])
     //                     / lengths[k] / rest_lengths[k]
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         dilatation_rate(0, k) = (r_dot_v(0, k) + r_dot_v(0, k + 1) -
                                  r_dot_v_plus_one(0, k) - r_plus_one_dot_v(0, k)) /
@@ -488,9 +455,7 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Compute voronoi_dilatation_inv_cube_cached = 1.0 / voronoi_dilatation^3
     MatrixType voronoi_dilatation_inv_cube_cached(1, n_voronoi);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_voronoi; ++k) {
         double voronoi_dil = voronoi_dilatation(0, k);
         voronoi_dilatation_inv_cube_cached(0, k) = 1.0 / (voronoi_dil * voronoi_dil * voronoi_dil);
@@ -500,9 +465,7 @@ inline void compute_internal_torques(BlockType& block) {
     // First compute the product
     MatrixType internal_couple_scaled(3, n_voronoi);
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_voronoi; ++k) {
             internal_couple_scaled(i, k) = internal_couple(i, k) * voronoi_dilatation_inv_cube_cached(0, k);
         }
@@ -531,9 +494,7 @@ inline void compute_internal_torques(BlockType& block) {
     // Multiply by rest_voronoi_lengths and voronoi_dilatation_inv_cube_cached
     MatrixType bend_twist_couple_3D_input(3, n_voronoi);
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_voronoi; ++k) {
             bend_twist_couple_3D_input(i, k) = kappa_cross_internal_couple(i, k) *
                                               rest_voronoi_lengths(0, k) *
@@ -559,9 +520,7 @@ inline void compute_internal_torques(BlockType& block) {
     // First compute Q^T * tangents (same as director^T @ tangents)
     MatrixType director_tangents(3, n_elems);
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_elems; ++k) {
             double sum = 0.0;
             for (IndexType j = 0; j < 3; ++j) {
@@ -578,9 +537,7 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Multiply by rest_lengths
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_elems; ++k) {
             shear_stretch_couple(i, k) *= rest_lengths(0, k);
         }
@@ -588,9 +545,7 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Compute J_omega_upon_e = batch_matvec(mass_second_moment_of_inertia, omega) / dilatation
     MatrixType J_omega_upon_e(3, n_elems);
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for simd schedule(static)
-    #endif
     for (IndexType k = 0; k < n_elems; ++k) {
         // Extract 3x3 mass_second_moment_of_inertia for element k
         double m00 = mass_second_moment_of_inertia(0, k);
@@ -616,9 +571,7 @@ inline void compute_internal_torques(BlockType& block) {
     // Compute unsteady_dilatation = J_omega_upon_e * dilatation_rate / dilatation
     MatrixType unsteady_dilatation(3, n_elems);
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_elems; ++k) {
             unsteady_dilatation(i, k) = J_omega_upon_e(i, k) * dilatation_rate(0, k) / dilatation(0, k);
         }
@@ -628,9 +581,7 @@ inline void compute_internal_torques(BlockType& block) {
     // Note: bend_twist_couple_2D and bend_twist_couple_3D are (3, n_nodes), but we need (3, n_elems)
     // So we need to take the element values (columns 0 to n_elems-1)
     for (IndexType i = 0; i < 3; ++i) {
-        #ifdef ELASTICAPP_USE_THREADING
         #pragma omp parallel for simd schedule(static)
-        #endif
         for (IndexType k = 0; k < n_elems; ++k) {
             internal_torques(i, k) = bend_twist_couple_2D(i, k) +
                                      bend_twist_couple_3D(i, k) +

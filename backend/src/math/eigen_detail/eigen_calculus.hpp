@@ -3,10 +3,7 @@
 #include <Eigen/Dense>
 #include "traits.h"
 #include <cassert>
-
-#ifdef ELASTICAPP_USE_THREADING
 #include <omp.h>
-#endif
 
 namespace elasticapp {
 
@@ -96,9 +93,7 @@ auto average_kernel(const MT& in_vector) {
 
     MatrixType result(1, n_voronoi);
 
-    #ifdef ELASTICAPP_USE_THREADING
     #pragma omp parallel for if(!omp_in_parallel())
-    #endif
     for (std::size_t k = 0; k < n_voronoi; ++k) {
         result(0, k) = 0.5 * (in_vector(0, k + 1) + in_vector(0, k));
     }
