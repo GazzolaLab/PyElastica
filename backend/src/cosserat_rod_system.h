@@ -114,8 +114,8 @@ namespace system::cosserat_rod {
     };
 
     // Dummy variables for computation
-   struct ScratchVectorA : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_a"; };
-   struct ScratchVectorB : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_b"; };
+   struct ScratchVectorA : Placement::OnElement, DataType::Vector { static constexpr std::string_view name = "scratch_vector_a"; };
+   struct ScratchVectorB : Placement::OnVoronoi, DataType::Vector { static constexpr std::string_view name = "scratch_vector_b"; };
    struct ScratchVectorC : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_c"; };
    struct ScratchVectorD : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_d"; };
    struct ScratchVectorE : Placement::OnNode, DataType::Vector { static constexpr std::string_view name = "scratch_vector_e"; };

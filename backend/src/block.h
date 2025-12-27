@@ -46,6 +46,7 @@ public:
         compute_width_and_indices(n_elems_per_rod);
         depth_ = SystemType::get_depth();
         data_ = MatrixType(static_cast<IndexType>(depth_), static_cast<IndexType>(width_));
+        data_.setZero();
         initialize_ghost_indices();
         reset_ghost();  // Initialize all ghost values
     }

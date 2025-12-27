@@ -219,21 +219,7 @@ inline void compute_internal_forces(BlockType& block) {
 
 
     // Reset ghost values for cosserat_internal_stress (OnElement)
-    // Note: ghost_elems_idx() returns indices in full block coordinate system
-    // But cosserat_internal_stress has adjusted width (width - 1 for OnElement)
-    // So we need to map ghost indices to adjusted coordinate system
-    // For OnElement: adjusted_index = full_index (since we just remove the last column, not ghost columns)
-    // Actually, ghost elements are in the middle, so we need to check if they're within bounds
-    auto ghost_elems = block.ghost_elems_idx();
-    for (std::size_t ghost_col : ghost_elems) {
-        IndexType data_col = static_cast<IndexType>(ghost_col);
-        // Check bounds (ghost indices might be out of bounds for adjusted width)
-        if (data_col >= 0 && data_col < n_elems) {
-            for (IndexType i = 0; i < 3; ++i) {
-                cosserat_internal_stress(i, data_col) = 0.0;
-            }
-        }
-    }
+    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorA>();
 
     // Compute internal_forces = two_point_difference_kernel(cosserat_internal_stress)
     // internal_forces is OnNode (3, n_nodes) where n_nodes = n_elems + 1
@@ -461,8 +447,8 @@ inline void compute_internal_torques(BlockType& block) {
 
     // Scratch buffers
     auto&& voronoi_dilatation_inv_cube_cached = block.template get<system::cosserat_rod::ScratchScalarC>();
-    auto&& scratch_vec_a_voronoi = block.template get<system::cosserat_rod::ScratchVectorA>();
-    auto&& bend_twist_couple_2D = block.template get<system::cosserat_rod::ScratchVectorB>();
+    auto&& bend_twist_couple_2D = block.template get<system::cosserat_rod::ScratchVectorA>();
+    auto&& scratch_vec_a_voronoi = block.template get<system::cosserat_rod::ScratchVectorB>();
     auto&& bend_twist_couple_3D = block.template get<system::cosserat_rod::ScratchVectorC>();
     auto&& shear_stretch_couple = block.template get<system::cosserat_rod::ScratchVectorD>();
     auto&& lagrangian_transport = block.template get<system::cosserat_rod::ScratchVectorE>();
@@ -489,15 +475,8 @@ inline void compute_internal_torques(BlockType& block) {
     }
 
     // Reset ghost values for internal_couple_scaled (OnVoronoi)
-    auto ghost_voronoi = block.ghost_voronoi_idx();
-    for (std::size_t ghost_col : ghost_voronoi) {
-        IndexType data_col = static_cast<IndexType>(ghost_col);
-        if (data_col >= 0 && data_col < n_voronoi) {
-            for (IndexType i = 0; i < 3; ++i) {
-                internal_couple_scaled(i, data_col) = 0.0;
-            }
-        }
-    }
+    // reset_ghost :: internal_couple_scaled
+    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
 
     // Apply difference_kernel (two_point_difference_kernel)
     // MatrixType bend_twist_couple_2D(3, n_nodes);
@@ -522,14 +501,8 @@ inline void compute_internal_torques(BlockType& block) {
     }
 
     // Reset ghost values
-    for (std::size_t ghost_col : ghost_voronoi) {
-        IndexType data_col = static_cast<IndexType>(ghost_col);
-        if (data_col >= 0 && data_col < n_voronoi) {
-            for (IndexType i = 0; i < 3; ++i) {
-                bend_twist_couple_3D_input(i, data_col) = 0.0;
-            }
-        }
-    }
+    // reset_ghost:: bend_twist_couple_3D_input;
+    block.reset_ghost_for_variable<system::cosserat_rod::ScratchVectorB>();
 
     // Apply quadrature_kernel (trapezoidal)
     // MatrixType bend_twist_couple_3D(3, n_nodes);
