@@ -52,9 +52,10 @@ set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/py")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-option(ELASTICAPP_USE_THREADING         "Enable threading support"              ON )
-option(ELASTICAPP_VECTORIZATION_REPORTS "Enable compiler vectorization reports" OFF)
-option(ELASTICAPP_BUILD_TESTS           "Build C++ unit tests"                  OFF)
+option(ELASTICAPP_USE_THREADING         "Enable threading support"                         ON )
+option(ELASTICAPP_VECTORIZATION_REPORTS "Enable compiler vectorization reports"            OFF)
+option(ELASTICAPP_BUILD_TESTS           "Build C++ unit tests"                             OFF)
+option(ELASTICAPP_GIL_RELEASE           "Release Python GIL around compute-heavy bindings" ON )
 
 # Global CMake option to enable/disable for unittests
 if (DEFINED ENV{ELASTICAPP_BUILD_TESTS})
@@ -179,6 +180,10 @@ endif()
 # If not set, the code will use OpenMP's default thread count
 if(ELASTICAPP_COMPONENT_THREADS AND NOT ELASTICAPP_COMPONENT_THREADS STREQUAL "" AND NOT ELASTICAPP_COMPONENT_THREADS STREQUAL "0")
     target_compile_definitions(_memory_block PRIVATE ELASTICAPP_COMPONENT_THREADS=${ELASTICAPP_COMPONENT_THREADS})
+endif()
+
+if(ELASTICAPP_GIL_RELEASE)
+    target_compile_definitions(_memory_block PRIVATE ELASTICAPP_GIL_RELEASE)
 endif()
 
 # Apply optimization flags to _memory_block

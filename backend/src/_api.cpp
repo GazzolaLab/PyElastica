@@ -24,6 +24,12 @@ namespace py = pybind11;
 
 namespace elasticapp {
 
+#ifdef ELASTICAPP_GIL_RELEASE
+#define ELASTICAPP_GIL_RELEASE_SCOPE() py::gil_scoped_release gil_release;
+#else
+#define ELASTICAPP_GIL_RELEASE_SCOPE()
+#endif
+
 // Helper to find a variable type by name at runtime
 // Iterates through SystemType::Variables tuple and finds matching name
 template<SystemModel SystemType, typename VariablesTuple, std::size_t Index>
@@ -417,6 +423,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("var_name"), py::keep_alive<0, 1>())
         .def("compute_internal_forces_and_torques", [](BlockRodSystem& block, double time) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.compute_internal_forces_and_torques(time);
         },
         R"pbdoc(
@@ -430,6 +437,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("time"))
         .def("compute_strains", [](BlockRodSystem& block, double time) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.compute_strains(time);
         },
         R"pbdoc(
@@ -443,6 +451,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("time"))
         .def("update_accelerations", [](BlockRodSystem& block, double time) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.update_accelerations(time);
         },
         R"pbdoc(
@@ -456,6 +465,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("time"))
         .def("zeroed_out_external_forces_and_torques", [](BlockRodSystem& block, double time) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.zeroed_out_external_forces_and_torques(time);
         },
         R"pbdoc(
@@ -469,6 +479,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("time"))
         .def("update_kinematics", [](BlockRodSystem& block, double time, double prefac) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.update_kinematics(prefac);
         },
         R"pbdoc(
@@ -483,6 +494,7 @@ PYBIND11_MODULE(_memory_block, m) {
         )pbdoc",
         py::arg("time"), py::arg("prefac"))
         .def("update_dynamics", [](BlockRodSystem& block, double time, double prefac) {
+            ELASTICAPP_GIL_RELEASE_SCOPE();
             block.update_dynamics(prefac);
         },
         R"pbdoc(
