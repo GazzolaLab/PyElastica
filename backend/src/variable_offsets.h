@@ -12,20 +12,26 @@ namespace elasticapp {
 // Generic helpers for computing variable offsets in any System
 
 // Helper to find the index of a type in a parameter pack
-template<typename Target, std::size_t CurrentIndex, typename First, typename... Rest>
-struct find_index_impl {
-    using type = std::conditional_t<
-        std::is_same_v<Target, First>,
-        std::integral_constant<std::size_t, CurrentIndex>,
-        find_index_impl<Target, CurrentIndex + 1, Rest...>
-    >;
-    static constexpr std::size_t value = type::value;
+template<typename Target, std::size_t CurrentIndex, typename... Ts>
+struct find_index_impl; // Forward declaration
+
+// Found the type
+template<typename Target, std::size_t CurrentIndex, typename... Rest>
+struct find_index_impl<Target, CurrentIndex, Target, Rest...> {
+    static constexpr std::size_t value = CurrentIndex;
 };
 
-// Base case: when Target matches First (Rest may be empty)
+// Recurse to the next type in the pack
+template<typename Target, std::size_t CurrentIndex, typename First, typename... Rest>
+struct find_index_impl<Target, CurrentIndex, First, Rest...> {
+    static constexpr std::size_t value = find_index_impl<Target, CurrentIndex + 1, Rest...>::value;
+};
+
+// Type not found in the pack (empty pack) - this provides a clear error message
 template<typename Target, std::size_t CurrentIndex>
-struct find_index_impl<Target, CurrentIndex, Target> {
-    static constexpr std::size_t value = CurrentIndex;
+struct find_index_impl<Target, CurrentIndex> {
+    static_assert(dependent_false<Target>::value,
+        "Undefined variable requested. Please ensure the variable is defined in the System's variable list.");
 };
 
 // Helper to sum dimensions of variables up to (but not including) a given index

@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <cstddef>
+#include <type_traits>
 
 namespace elasticapp {
 
@@ -10,6 +11,10 @@ using VectorType = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 using IndexType = Eigen::Index;
 constexpr bool IsRowMajor = true;
 constexpr bool IsColMajor = false;
+
+// Helper for static_asserts in templates
+template<typename T>
+struct dependent_false : std::false_type {};
 
 // Helper functions for computing strides for numpy array views
 inline std::pair<ptrdiff_t, ptrdiff_t> compute_strides(std::size_t rows, std::size_t cols) {
