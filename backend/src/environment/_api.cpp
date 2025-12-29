@@ -23,7 +23,7 @@ PYBIND11_MODULE(_collision, m) {
     using namespace elasticapp::environment::collision::physics;
 
     // NoInteraction model class (for testing)
-    py::class_<physics::NoInteraction>(m, "NoInteraction")
+    py::class_<NoInteraction>(m, "NoInteraction")
         .def(py::init<>(),
             R"pbdoc(
                 Initialize a NoInteraction collision physics model.
@@ -36,7 +36,7 @@ PYBIND11_MODULE(_collision, m) {
             )pbdoc");
 
     // LinearSpringDashpot model class
-    py::class_<physics::LinearSpringDashpot>(m, "LinearSpringDashpot")
+    py::class_<LinearSpringDashpot>(m, "LinearSpringDashpot")
         .def(py::init<double, double, double>(),
             R"pbdoc(
                 Initialize a LinearSpringDashpot collision physics model.
@@ -82,61 +82,61 @@ PYBIND11_MODULE(_collision, m) {
 
     // CollisionSystem class (using DefaultCollisionSystem)
     // Support both LinearSpringDashpot and NoInteraction models
-    // py::class_<DefaultCollisionSystem>(m, "CollisionSystem")
-    //     .def(py::init<const physics::LinearSpringDashpot&, std::size_t>(),
-    //         R"pbdoc(
-    //             Initialize a CollisionSystem with a LinearSpringDashpot physics model.
+    py::class_<DefaultCollisionSystem>(m, "CollisionSystem")
+        .def(py::init<const LinearSpringDashpot&, std::size_t>(),
+            R"pbdoc(
+                Initialize a CollisionSystem with a LinearSpringDashpot physics model.
 
-    //             Uses default policies: HashGrid (coarse), MaxContacts (fine), UnionFind (batching).
+                Uses default policies: HashGrid (coarse), MaxContacts (fine), UnionFind (batching).
 
-    //             Args:
-    //                 model: The LinearSpringDashpot collision physics model
-    //                 detect_every: Perform coarse detection every N steps (default: 1, meaning every step)
-    //         )pbdoc",
-    //         py::arg("model"),
-    //         py::arg("detect_every") = 1)
-    //     .def(py::init<const physics::NoInteraction&, std::size_t>(),
-    //         R"pbdoc(
-    //             Initialize a CollisionSystem with a NoInteraction physics model.
+                Args:
+                    model: The LinearSpringDashpot collision physics model
+                    detect_every: Perform coarse detection every N steps (default: 1, meaning every step)
+            )pbdoc",
+            py::arg("model"),
+            py::arg("detect_every") = 1)
+        .def(py::init<const NoInteraction&, std::size_t>(),
+            R"pbdoc(
+                Initialize a CollisionSystem with a NoInteraction physics model.
 
-    //             Uses default policies: HashGrid (coarse), MaxContacts (fine), UnionFind (batching).
-    //             Useful for testing collision detection without applying forces.
+                Uses default policies: HashGrid (coarse), MaxContacts (fine), UnionFind (batching).
+                Useful for testing collision detection without applying forces.
 
-    //             Args:
-    //                 model: The NoInteraction collision physics model
-    //                 detect_every: Perform coarse detection every N steps (default: 1, meaning every step)
-    //         )pbdoc",
-    //         py::arg("model"),
-    //         py::arg("detect_every") = 1)
-    //     .def("detect_every", &DefaultCollisionSystem::detect_every,
-    //         R"pbdoc(
-    //             Get the detect_every parameter.
+                Args:
+                    model: The NoInteraction collision physics model
+                    detect_every: Perform coarse detection every N steps (default: 1, meaning every step)
+            )pbdoc",
+            py::arg("model"),
+            py::arg("detect_every") = 1)
+        .def("detect_every", &DefaultCollisionSystem::detect_every,
+            R"pbdoc(
+                Get the detect_every parameter.
 
-    //             Returns:
-    //                 int: Number of steps between coarse detection calls
-    //         )pbdoc")
-    //     .def("set_detect_every", &DefaultCollisionSystem::set_detect_every,
-    //         R"pbdoc(
-    //             Set the detect_every parameter.
+                Returns:
+                    int: Number of steps between coarse detection calls
+            )pbdoc")
+        .def("set_detect_every", &DefaultCollisionSystem::set_detect_every,
+            R"pbdoc(
+                Set the detect_every parameter.
 
-    //             Args:
-    //                 detect_every: Number of steps between coarse detection calls
-    //         )pbdoc",
-    //         py::arg("detect_every"))
-    //     .def("resolve", &DefaultCollisionSystem::resolve,
-    //         R"pbdoc(
-    //             Resolve collisions for a BlockRodSystem.
+                Args:
+                    detect_every: Number of steps between coarse detection calls
+            )pbdoc",
+            py::arg("detect_every"))
+        .def("resolve", &DefaultCollisionSystem::resolve,
+            R"pbdoc(
+                Resolve collisions for a BlockRodSystem.
 
-    //             This method performs the full collision detection and resolution pipeline:
-    //             1. Data extraction from Block
-    //             2. Coarse collision detection (HashGrid)
-    //             3. Fine collision detection (MaxContacts)
-    //             4. Contact batching (UnionFind)
-    //             5. Contact resolution (LinearSpringDashpot)
-    //             6. Force application to ExternalForces
+                This method performs the full collision detection and resolution pipeline:
+                1. Data extraction from Block
+                2. Coarse collision detection (HashGrid)
+                3. Fine collision detection (MaxContacts)
+                4. Contact batching (UnionFind)
+                5. Contact resolution (LinearSpringDashpot)
+                6. Force application to ExternalForces
 
-    //             Args:
-    //                 system: The BlockRodSystem to resolve collisions for
-    //         )pbdoc",
-    //         py::arg("system"));
+                Args:
+                    system: The BlockRodSystem to resolve collisions for
+            )pbdoc",
+            py::arg("system"));
 }
