@@ -10,12 +10,3 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-subprojects/packagecache
-
-subprojects/blaze
-subprojects/blaze_tensor
-subprojects/brigand
-subprojects/cxxopts-3.1.1
-subprojects/sleef
-subprojects/tbb
-subprojects/yaml-cpp
