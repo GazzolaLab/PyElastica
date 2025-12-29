@@ -202,10 +202,46 @@ install(TARGETS version
         LIBRARY DESTINATION "elasticapp"
         COMPONENT python)
 
+# Extension module: _collision (Python module name)
+pybind11_add_module(_collision
+    "${SRC_DIR}/environment/_api.cpp"
+    "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
+    "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
+    "${SRC_DIR}/environment/collision/batching/union_find.cpp"
+    "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
+    "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
+    "${SRC_DIR}/math/node_element_mapping.cpp"
+)
+target_compile_definitions(_collision PRIVATE VERSION_INFO=${PROJECT_VERSION})
+target_include_directories(_collision PRIVATE ${SRC_DIR})
+target_link_libraries(_collision PRIVATE Eigen3::Eigen)
+
+if(APPLE)
+    target_link_options(_collision PRIVATE -Wl,-dead_strip)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    target_link_options(_collision PRIVATE -Wl,--gc-sections)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_link_options(_collision PRIVATE -Wl,--gc-sections)
+endif()
+
+if(ELASTICAPP_GIL_RELEASE)
+    target_compile_definitions(_collision PRIVATE ELASTICAPP_GIL_RELEASE)
+endif()
+
+# Apply optimization flags to _collision
+apply_optimization_flags(_collision)
+
+# Install _collision module
+install(TARGETS _collision
+        LIBRARY DESTINATION "elasticapp"
+        COMPONENT python)
+
 # Install Python package files
 install(FILES
         "${PYTHON_PACKAGE_DIR}/__init__.py"
         "${PYTHON_PACKAGE_DIR}/memory_block_rod.py"
+        "${PYTHON_PACKAGE_DIR}/collision_physics.py"
+        "${PYTHON_PACKAGE_DIR}/module_collision.py"
         DESTINATION "elasticapp"
         COMPONENT python)
 
