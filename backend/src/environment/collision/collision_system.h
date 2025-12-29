@@ -1,29 +1,20 @@
 #pragma once
 
 #include "../../api.h"  // For BlockRodSystem
-#include "physics/linear_spring_dashpot.h"
-#include "physics/no_interaction.h"
-#include "course_detection/hash_grid.h"
-#include "fine_detection/max_contacts.h"
-#include "batching/union_find.h"
+#include "../../cosserat_rod_system.h"  // For system::cosserat_rod namespace
+#include "../../utility/hash.h"
+#include "concepts.hpp"
+// #include "physics/linear_spring_dashpot.h"
+// #include "physics/no_interaction.h"
 #include "types.h"
 #include <variant>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>  // For std::pair
 #include <functional>  // For std::hash
 
-namespace elasticapp/environment {
+namespace elasticapp::environment {
 namespace collision {
-
-// Hash function for std::pair<std::size_t, std::size_t> (needed for unordered_map)
-// C++11 doesn't provide std::hash for pairs by default
-struct PairHash {
-    std::size_t operator()(const std::pair<std::size_t, std::size_t>& p) const {
-        // Combine hashes of both elements
-        // Using a simple hash combination (can be improved with boost::hash_combine)
-        return std::hash<std::size_t>()(p.first) ^ (std::hash<std::size_t>()(p.second) << 1);
-    }
-};
 
 /**
  * CollisionSystem class for collision detection and resolution.
@@ -46,8 +37,8 @@ struct PairHash {
  * @tparam FineDetectionPolicy Policy for fine collision detection
  * @tparam BatchingPolicy Policy for contact batching
  */
-template<typename CoarseDetectionPolicy, typename FineDetectionPolicy, typename BatchingPolicy>
-class CollisionSystem : public CoarseDetectionPolicy, public FineDetectionPolicy, public BatchingPolicy {
+template<CoarseDetectionPolicy CoarseDetection, FineDetectionPolicy FineDetection, BatchingPolicy Batching>
+class CollisionSystem : public CoarseDetection, public FineDetection, public Batching {
 public:
     /**
      * Variant type for physics models.
@@ -59,7 +50,9 @@ public:
      * 1. Implement the model class with a compute_force(Contact&, double&) method
      * 2. Add it to this variant: using PhysicsModel = std::variant<...>;
      */
-    using PhysicsModel = std::variant<physics::LinearSpringDashpot, physics::NoInteraction>;
+
+    // using PhysicsModel = std::variant<physics::LinearSpringDashpot, physics::NoInteraction>;
+    using PhysicsModel = std::variant<std::nullptr_t>; // FIXME: not yet implemented
 
     /**
      * Constructor takes a physics model and detection frequency.
@@ -74,7 +67,7 @@ public:
      *
      * This method performs the full collision detection and resolution pipeline.
      */
-    void resolve(BlockRodSystem& system);
+    void resolve(BlockRodSystem& block);
 
     /**
      * Get the contact cache (non-const).
@@ -148,7 +141,7 @@ private:
      * Key: Normalized node pair (min(node1, node2), max(node1, node2))
      * Value: Contact from previous call with accumulated displacement
      */
-    std::unordered_map<std::pair<std::size_t, std::size_t>, Contact, PairHash> previous_contacts_;
+    std::unordered_map<std::pair<std::size_t, std::size_t>, Contact, utility::PairHash> previous_contacts_;
 
     /**
      * Normalize a node pair to ensure consistent ordering.
@@ -168,19 +161,22 @@ private:
     }
 };
 
-// Template method implementations
-template<typename CoarseDetectionPolicy, typename FineDetectionPolicy, typename BatchingPolicy>
-void CollisionSystem<CoarseDetectionPolicy, FineDetectionPolicy, BatchingPolicy>::resolve(
-    BlockRodSystem& system) {
+
+template<CoarseDetectionPolicy CoarseDetection, FineDetectionPolicy FineDetection, BatchingPolicy Batching>
+void CollisionSystem<CoarseDetection, FineDetection, Batching>::resolve(
+    BlockRodSystem& block) {
 
     // Get data from BlockRodSystem
-    auto&& positions = system.template get<system::cosserat_rod::Position>();
-    auto&& velocities = system.template get<system::cosserat_rod::Velocity>();
-    auto&& radii_elem = system.template get<system::cosserat_rod::Radius>();
-    auto&& external_forces = system.template get<system::cosserat_rod::ExternalForces>();
+    namespace variable_tags = ::elasticapp::system::cosserat_rod;
+    auto&& positions = block.template get<variable_tags::Position>();
+    auto&& velocities = block.template get<variable_tags::Velocity>();
+    auto&& radii_elem = block.template get<variable_tags::Radius>();
+    auto&& external_forces = block.template get<variable_tags::ExternalForces>();
 
     const std::size_t n_nodes = positions.cols();
     const std::size_t n_elems = radii_elem.cols();
+
+    /*
 
     // Convert element radii to node radii
     // Treat entire block as a single rod - ghost nodes handle edge cases
@@ -208,8 +204,8 @@ void CollisionSystem<CoarseDetectionPolicy, FineDetectionPolicy, BatchingPolicy>
     if (should_detect) {
         // Clear contact cache and perform coarse detection
         contact_cache_.clear();
-        // Call coarse detection via CRTP (inherited from CoarseDetectionPolicy)
-        contact_cache_ = static_cast<CoarseDetectionPolicy&>(*this).detect(positions, radii);
+        // Call coarse detection via CRTP (inherited from CoarseDetection)
+        contact_cache_ = static_cast<CoarseDetection&>(*this).detect(positions, radii);
     }
     // Otherwise, reuse cached contact pairs from previous detection
 
@@ -218,12 +214,12 @@ void CollisionSystem<CoarseDetectionPolicy, FineDetectionPolicy, BatchingPolicy>
     if (!contact_cache_.empty()) {
         // Extract physics parameters from model and call fine detection via CRTP
         std::visit([&](const auto& physics_model) {
-            contacts = static_cast<FineDetectionPolicy&>(*this).detect(contact_cache_, positions, velocities, radii, physics_model);
+            contacts = static_cast<FineDetection&>(*this).detect(contact_cache_, positions, velocities, radii, physics_model);
         }, model_);
     }
 
     // Step 3: Contact batching (via CRTP)
-    std::vector<std::vector<std::size_t>> batches = static_cast<BatchingPolicy&>(*this).batch(contacts);
+    std::vector<std::vector<std::size_t>> batches = static_cast<Batching&>(*this).batch(contacts);
 
     // Step 4 & 5: Contact resolution and force application
     for (const auto& batch : batches) {
@@ -273,7 +269,8 @@ void CollisionSystem<CoarseDetectionPolicy, FineDetectionPolicy, BatchingPolicy>
 
     // Increment step counter
     step_counter_++;
+    */
 }
 
 } // namespace collision
-} // namespace elasticapp/environment
+} // namespace elasticapp::environment

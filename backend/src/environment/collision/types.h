@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <cstddef>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 /**
@@ -84,4 +84,4 @@ struct Contact {
 };
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

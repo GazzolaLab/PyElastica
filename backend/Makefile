@@ -44,7 +44,7 @@ test-cpp-direct: build-cpp
 
 #* Testing
 .PHONY: test
-test: clean-build
+test:
 	@echo "Running C++ and Python tests..."
 	ELASTICAPP_BUILD_TESTS=ON make install && cd build && ./cpp_tests
 	pytest tests/py -v

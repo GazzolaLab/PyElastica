@@ -205,11 +205,11 @@ install(TARGETS version
 # Extension module: _collision (Python module name)
 pybind11_add_module(_collision
     "${SRC_DIR}/environment/_api.cpp"
-    "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
-    "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
-    "${SRC_DIR}/environment/collision/batching/union_find.cpp"
-    "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
-    "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
+    # "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
+    # "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
+    # "${SRC_DIR}/environment/collision/batching/union_find.cpp"
+    # "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
+    # "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
     "${SRC_DIR}/math/node_element_mapping.cpp"
 )
 target_compile_definitions(_collision PRIVATE VERSION_INFO=${PROJECT_VERSION})
@@ -269,6 +269,7 @@ if(ELASTICAPP_BUILD_TESTS)
         "${TEST_DIR}/cpp/test_system_variable_validation.cpp"
         "${TEST_DIR}/cpp/test_block_view.cpp"
         "${TEST_DIR}/cpp/test_block_operations.cpp"
+        "${TEST_DIR}/cpp/collision/test_collision_system.cpp"
     )
 
     target_compile_definitions(cpp_tests PRIVATE VERSION_INFO=${PROJECT_VERSION})

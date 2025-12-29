@@ -12,9 +12,8 @@ from typing import Any, Type, Literal
 import functools
 
 from elastica.external_forces import NoForces
-from elastica.typing import SystemType, SystemIdxType
-from elastica.systems.protocol import SystemProtocol
-from elastica.systems.protocol import SystemCollectionProtocol, ModuleProtocol
+from elastica.typing import SystemIdxType
+from elastica.modules.protocol import SystemCollectionProtocol, ModuleProtocol
 
 from .memory_block_rod import MemoryBlockCosseratRod
 from .collision_physics import CollisionPhysics
