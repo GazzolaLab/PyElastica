@@ -7,7 +7,10 @@ from elasticapp.version import version
 from elasticapp._memory_block import BlockRodSystem, BlockRodSystemView
 
 # Import MemoryBlockCosseratRod after BlockRodSystem is defined to avoid circular import
+from .module_collision import CollisionEnvironment
+from .collision_physics import LinearSpringDashpot
 from .memory_block_rod import MemoryBlockCosseratRod
+
 
 __all__ = [
     "BlockRodSystem",
