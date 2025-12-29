@@ -4,8 +4,8 @@
 #include "../../cosserat_rod_system.h"  // For system::cosserat_rod namespace
 #include "../../utility/hash.h"
 #include "concepts.hpp"
-// #include "physics/linear_spring_dashpot.h"
-// #include "physics/no_interaction.h"
+#include "physics/linear_spring_dashpot.h"
+#include "physics/no_interaction.h"
 #include "types.h"
 #include <variant>
 #include <type_traits>
@@ -51,8 +51,7 @@ public:
      * 2. Add it to this variant: using PhysicsModel = std::variant<...>;
      */
 
-    // using PhysicsModel = std::variant<physics::LinearSpringDashpot, physics::NoInteraction>;
-    using PhysicsModel = std::variant<std::nullptr_t>; // FIXME: not yet implemented
+    using PhysicsModel = std::variant<physics::LinearSpringDashpot, physics::NoInteraction, std::nullptr_t>;
 
     /**
      * Constructor takes a physics model and detection frequency.

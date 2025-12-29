@@ -4,6 +4,8 @@
 #include "../api.h"
 #include "api.h"
 #include "collision/collision_system.h"
+#include "collision/physics/no_interaction.h"
+#include "collision/physics/linear_spring_dashpot.h"
 
 namespace py = pybind11;
 
@@ -18,65 +20,65 @@ PYBIND11_MODULE(_collision, m) {
 
     using namespace elasticapp;
     using namespace elasticapp::environment::collision;
-    // using namespace elasticapp::collision::physics;
+    using namespace elasticapp::environment::collision::physics;
 
-    // NoInteraction model class (for testing)
-    // py::class_<physics::NoInteraction>(m, "NoInteraction")
-    //     .def(py::init<>(),
-    //         R"pbdoc(
-    //             Initialize a NoInteraction collision physics model.
+    NoInteraction model class (for testing)
+    py::class_<physics::NoInteraction>(m, "NoInteraction")
+        .def(py::init<>(),
+            R"pbdoc(
+                Initialize a NoInteraction collision physics model.
 
-    //             This model returns zero force for all contacts, useful for testing
-    //             collision detection without applying forces.
+                This model returns zero force for all contacts, useful for testing
+                collision detection without applying forces.
 
-    //             Args:
-    //                 None (no parameters required)
-    //         )pbdoc");
+                Args:
+                    None (no parameters required)
+            )pbdoc");
 
-    // // LinearSpringDashpot model class
-    // py::class_<physics::LinearSpringDashpot>(m, "LinearSpringDashpot")
-    //     .def(py::init<double, double, double>(),
-    //         R"pbdoc(
-    //             Initialize a LinearSpringDashpot collision physics model.
+    // LinearSpringDashpot model class
+    py::class_<physics::LinearSpringDashpot>(m, "LinearSpringDashpot")
+        .def(py::init<double, double, double>(),
+            R"pbdoc(
+                Initialize a LinearSpringDashpot collision physics model.
 
-    //             Args:
-    //                 k_normal: Normal spring constant for repulsion force
-    //                 eta_normal: Normal damping coefficient (also used for tangential damping)
-    //                 friction: Static friction coefficient
-    //         )pbdoc",
-    //         py::arg("k_normal") = 1.0,
-    //         py::arg("eta_normal") = 0.1,
-    //         py::arg("friction") = 0.5)
-    //     .def(py::init<double, double, double, double>(),
-    //         R"pbdoc(
-    //             Initialize a LinearSpringDashpot collision physics model with explicit tangential damping.
+                Args:
+                    k_normal: Normal spring constant for repulsion force
+                    eta_normal: Normal damping coefficient (also used for tangential damping)
+                    friction: Static friction coefficient
+            )pbdoc",
+            py::arg("k_normal") = 1.0,
+            py::arg("eta_normal") = 0.1,
+            py::arg("friction") = 0.5)
+        .def(py::init<double, double, double, double>(),
+            R"pbdoc(
+                Initialize a LinearSpringDashpot collision physics model with explicit tangential damping.
 
-    //             Args:
-    //                 k_normal: Normal spring constant for repulsion force
-    //                 eta_normal: Normal damping coefficient
-    //                 eta_tangential: Tangential damping coefficient
-    //                 friction: Static friction coefficient
-    //         )pbdoc",
-    //         py::arg("k_normal"),
-    //         py::arg("eta_normal"),
-    //         py::arg("eta_tangential"),
-    //         py::arg("friction"))
-    //     .def(py::init<double, double, double, double, double>(),
-    //         R"pbdoc(
-    //             Initialize a LinearSpringDashpot collision physics model with explicit tangential spring and damping.
+                Args:
+                    k_normal: Normal spring constant for repulsion force
+                    eta_normal: Normal damping coefficient
+                    eta_tangential: Tangential damping coefficient
+                    friction: Static friction coefficient
+            )pbdoc",
+            py::arg("k_normal"),
+            py::arg("eta_normal"),
+            py::arg("eta_tangential"),
+            py::arg("friction"))
+        .def(py::init<double, double, double, double, double>(),
+            R"pbdoc(
+                Initialize a LinearSpringDashpot collision physics model with explicit tangential spring and damping.
 
-    //             Args:
-    //                 k_normal: Normal spring constant for repulsion force
-    //                 eta_normal: Normal damping coefficient
-    //                 k_tangential: Tangential spring constant
-    //                 eta_tangential: Tangential damping coefficient
-    //                 friction: Static friction coefficient
-    //         )pbdoc",
-    //         py::arg("k_normal"),
-    //         py::arg("eta_normal"),
-    //         py::arg("k_tangential"),
-    //         py::arg("eta_tangential"),
-    //         py::arg("friction"));
+                Args:
+                    k_normal: Normal spring constant for repulsion force
+                    eta_normal: Normal damping coefficient
+                    k_tangential: Tangential spring constant
+                    eta_tangential: Tangential damping coefficient
+                    friction: Static friction coefficient
+            )pbdoc",
+            py::arg("k_normal"),
+            py::arg("eta_normal"),
+            py::arg("k_tangential"),
+            py::arg("eta_tangential"),
+            py::arg("friction"));
 
     // CollisionSystem class (using DefaultCollisionSystem)
     // Support both LinearSpringDashpot and NoInteraction models

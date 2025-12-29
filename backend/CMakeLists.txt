@@ -208,8 +208,8 @@ pybind11_add_module(_collision
     # "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
     # "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
     # "${SRC_DIR}/environment/collision/batching/union_find.cpp"
-    # "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
-    # "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
+    "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
+    "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
     "${SRC_DIR}/math/node_element_mapping.cpp"
 )
 target_compile_definitions(_collision PRIVATE VERSION_INFO=${PROJECT_VERSION})
