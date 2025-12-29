@@ -182,15 +182,22 @@ void CollisionSystem<CoarseDetectionPolicy, FineDetectionPolicy, BatchingPolicy>
     const std::size_t n_nodes = positions.cols();
     const std::size_t n_elems = radii_elem.cols();
 
-    // Convert element radii to node radii (interpolate: node i gets radius from element floor(i/2))
-    // For nodes: node 0 and 1 share element 0, node 2 and 3 share element 1, etc.
+    // Convert element radii to node radii
+    // Treat entire block as a single rod - ghost nodes handle edge cases
+    // Mapping strategy for a rod with n_elems elements and n_nodes nodes:
+    // - Node 0 -> Element 0
+    // - Node i (1 to n_elems-1) -> Element i-1
+    // - Node i >= n_elems -> Element n_elems-1 (ghost nodes use last element)
     Eigen::MatrixXd radii(1, n_nodes);
     for (std::size_t i = 0; i < n_nodes; ++i) {
-        std::size_t elem_idx = (i < n_elems) ? i : (n_elems - 1);
-        if (i > 0 && i % 2 == 0 && elem_idx < n_elems - 1) {
-            elem_idx = i / 2;
-        } else if (i > 0) {
-            elem_idx = std::min(i / 2, n_elems - 1);
+        std::size_t elem_idx;
+        if (i == 0) {
+            elem_idx = 0;
+        } else if (i < n_elems) {
+            elem_idx = i - 1;
+        } else {
+            // For ghost nodes (i >= n_elems), use the last element
+            elem_idx = n_elems - 1;
         }
         radii(0, i) = radii_elem(0, elem_idx);
     }
