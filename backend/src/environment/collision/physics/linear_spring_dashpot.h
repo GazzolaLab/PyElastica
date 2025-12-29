@@ -2,13 +2,10 @@
 
 #include <Eigen/Dense>
 #include <cstddef>
+#include "../types.h"
 
-namespace elasticapp {
-namespace collision {
+namespace elasticapp::environment::collision {
 namespace physics {
-
-// Forward declaration - Contact will be defined in types.h
-struct Contact;
 
 /**
  * Linear spring-dashpot collision physics model.
@@ -112,7 +109,7 @@ struct LinearSpringDashpot {
      * @return Net force vector to apply to the first body (force on second body is -net_force)
      */
     inline Eigen::Vector3d compute_force(
-        const Contact& contact,
+        const collision::Contact& contact,
         double& penetration_depth
     ) const;
 
@@ -122,9 +119,8 @@ struct LinearSpringDashpot {
      * @param contact The contact information
      * @return True if bodies are penetrating (distance < 0)
      */
-    inline static bool is_penetrating(const Contact& contact);
+    inline static bool is_penetrating(const collision::Contact& contact);
 };
 
 } // namespace physics
-} // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment::collision

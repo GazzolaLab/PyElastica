@@ -1,12 +1,11 @@
 #include "no_interaction.h"
 #include "../types.h"
 
-namespace elasticapp {
-namespace collision {
+namespace elasticapp::environment::collision {
 namespace physics {
 
 inline Eigen::Vector3d NoInteraction::compute_force(
-    const Contact& contact,
+    const collision::Contact& contact,
     double& penetration_depth
 ) const {
     // No interaction - always return zero force
@@ -15,5 +14,4 @@ inline Eigen::Vector3d NoInteraction::compute_force(
 }
 
 } // namespace physics
-} // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment::collision

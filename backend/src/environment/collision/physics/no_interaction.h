@@ -2,13 +2,10 @@
 
 #include <Eigen/Dense>
 #include <cstddef>
+#include "../types.h"
 
-namespace elasticapp {
-namespace collision {
+namespace elasticapp::environment::collision {
 namespace physics {
-
-// Forward declaration - Contact will be defined in types.h
-struct Contact;
 
 /**
  * NoInteraction physics model for testing purposes.
@@ -35,11 +32,10 @@ struct NoInteraction {
      * @return Zero force vector
      */
     inline Eigen::Vector3d compute_force(
-        const Contact& contact,
+        const collision::Contact& contact,
         double& penetration_depth
     ) const;
 };
 
 } // namespace physics
-} // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment::collision

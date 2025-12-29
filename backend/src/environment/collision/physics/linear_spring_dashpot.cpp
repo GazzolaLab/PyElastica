@@ -3,12 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
-namespace elasticapp {
-namespace collision {
+namespace elasticapp::environment::collision {
 namespace physics {
 
 inline Eigen::Vector3d LinearSpringDashpot::compute_force(
-    const Contact& contact,
+    const collision::Contact& contact,
     double& penetration_depth
 ) const {
     // Check if contact is penetrating
@@ -83,11 +82,10 @@ inline Eigen::Vector3d LinearSpringDashpot::compute_force(
     return f_normal + f_tangential;
 }
 
-inline bool LinearSpringDashpot::is_penetrating(const Contact& contact) {
+inline bool LinearSpringDashpot::is_penetrating(const collision::Contact& contact) {
     // Contact is penetrating if distance < 0 (overlap)
     return contact.distance < 0.0;
 }
 
 } // namespace physics
-} // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment::collision

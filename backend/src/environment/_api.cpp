@@ -22,7 +22,7 @@ PYBIND11_MODULE(_collision, m) {
     using namespace elasticapp::environment::collision;
     using namespace elasticapp::environment::collision::physics;
 
-    NoInteraction model class (for testing)
+    // NoInteraction model class (for testing)
     py::class_<physics::NoInteraction>(m, "NoInteraction")
         .def(py::init<>(),
             R"pbdoc(
