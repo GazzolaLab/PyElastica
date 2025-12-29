@@ -44,19 +44,19 @@ test-cpp-direct: build-cpp
 
 #* Testing
 .PHONY: test
-test:
+test: clean-build
 	@echo "Running C++ and Python tests..."
 	ELASTICAPP_BUILD_TESTS=ON make install && cd build && ./cpp_tests
 	pytest tests/py -v
 
 #* Cleaning
 .PHONY: clean
-clean:
-	rm -rf build/ dist/ *.egg-info
+clean: clean-build
+	rm -rf dist/ *.egg-info
 	find . -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
 	find . -type f -name "*.pyo" -delete
 
 .PHONY: clean-build
 clean-build:
-	rm -rf build/ dist/ *.egg-info
+	rm -rf build/
