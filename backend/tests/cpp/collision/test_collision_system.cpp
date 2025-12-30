@@ -110,8 +110,8 @@ TEST_CASE("CollisionSystem contact_cache", "[collision]") {
         cache.push_back({2, 3});
 
         REQUIRE(cache.size() == 2);
-        REQUIRE(cache[0] == std::make_pair(0, 1));
-        REQUIRE(cache[1] == std::make_pair(2, 3));
+        REQUIRE(cache[0] == std::make_pair<std::size_t, std::size_t>(0, 1));
+        REQUIRE(cache[1] == std::make_pair<std::size_t, std::size_t>(2, 3));
     }
 
     SECTION("contact_cache() const returns const reference") {
@@ -126,7 +126,7 @@ TEST_CASE("CollisionSystem contact_cache", "[collision]") {
 
         // Const reference should see the change
         REQUIRE(cache.size() == 1);
-        REQUIRE(cache[0] == std::make_pair(4, 5));
+        REQUIRE(cache[0] == std::make_pair<std::size_t, std::size_t>(4, 5));
     }
 
     SECTION("contact_cache persists across calls") {
@@ -135,7 +135,7 @@ TEST_CASE("CollisionSystem contact_cache", "[collision]") {
 
         auto& cache2 = system.contact_cache();
         REQUIRE(cache2.size() == 1);
-        REQUIRE(cache2[0] == std::make_pair(10, 20));
+        REQUIRE(cache2[0] == std::make_pair<std::size_t, std::size_t>(10, 20));
     }
 }
 
