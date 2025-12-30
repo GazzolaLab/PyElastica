@@ -10,9 +10,7 @@
 
 using Catch::Approx;
 
-namespace elasticapp {
-namespace environment {
-namespace collision {
+namespace elasticapp::environment::collision {
 namespace testing {
 
 /**
@@ -58,7 +56,7 @@ struct NullFineDetection {
  */
 struct NullBatching {
     std::vector<std::vector<std::size_t>> batch(
-        const std::vector<Contact>& contacts
+        std::vector<Contact>& contacts
     ) const {
         (void)contacts;
         return {};
@@ -66,9 +64,7 @@ struct NullBatching {
 };
 
 } // namespace testing
-} // namespace collision
-} // namespace environment
-} // namespace elasticapp
+} // namespace elasticapp::environment::collision
 
 // Type alias for test CollisionSystem with null policies
 using TestCollisionSystem = elasticapp::environment::collision::CollisionSystem<

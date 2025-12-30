@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 /**
@@ -83,4 +83,4 @@ private:
 };
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <Eigen/Dense>
 #include "types.h"
-// #include "physics/linear_spring_dashpot.h"
+#include "physics/linear_spring_dashpot.h"
 
 namespace elasticapp::environment {
 namespace collision {
@@ -65,7 +65,7 @@ concept FineDetectionPolicyFor = requires(
  * This is checked by requiring it to work with at least one model type (LinearSpringDashpot).
  */
 template<typename T>
-concept FineDetectionPolicy = FineDetectionPolicyFor<T, std::nullptr_t>; //physics::LinearSpringDashpot>;
+concept FineDetectionPolicy = FineDetectionPolicyFor<T, physics::LinearSpringDashpot>;
 
 /**
  * Concept for BatchingPolicy.
@@ -80,7 +80,7 @@ concept FineDetectionPolicy = FineDetectionPolicyFor<T, std::nullptr_t>; //physi
 template<typename T>
 concept BatchingPolicy = requires(
     T policy,
-    const std::vector<Contact>& contacts
+    std::vector<Contact>& contacts
 ) {
     // Must have a batch method that takes contacts and returns batches
     { policy.batch(contacts) } -> std::convertible_to<std::vector<std::vector<std::size_t>>>;

@@ -7,7 +7,7 @@
 
 #include <omp.h>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 /**
@@ -183,4 +183,4 @@ private:
 };
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

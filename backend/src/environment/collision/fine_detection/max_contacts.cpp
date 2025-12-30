@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 std::vector<Contact> MaxContacts::detect_sphere_sphere(
@@ -75,4 +75,4 @@ std::vector<Contact> MaxContacts::detect_sphere_sphere(
 // Template implementation moved to header file (max_contacts.h) due to template nature
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

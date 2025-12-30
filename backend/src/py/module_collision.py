@@ -8,7 +8,7 @@ Provides the collision environment interface to configure collision detection an
 detection resolution for Cosserat rods in the simulation.
 """
 __all__ = ["CollisionEnvironment"]
-from typing import Any, Type, Literal
+from typing import Any, Type
 import functools
 
 from elastica.external_forces import NoForces
@@ -18,9 +18,7 @@ from elastica.modules.protocol import SystemCollectionProtocol, ModuleProtocol
 from .memory_block_rod import MemoryBlockCosseratRod
 from .collision_physics import CollisionPhysics
 
-CoarseDetectionType = Literal["hash_grid"]
-FineDetectionType = Literal["sphere_sphere"]
-BatchingType = Literal["union_find"]  # , "single_batch", "hybrid_batch"]
+from .typing_alias import CoarseDetectionType, FineDetectionType, BatchingType
 
 
 class CollisionEnvironment(SystemCollectionProtocol):

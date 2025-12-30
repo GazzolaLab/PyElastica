@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from elasticapp._memory_block import BlockRodSystem
 from elasticapp._collision import CollisionSystem
 
-from .module_collision import CoarseDetectionType, FineDetectionType, BatchingType
+from .typing_alias import CoarseDetectionType, FineDetectionType, BatchingType
 
 
 class CollisionPhysics(ABC):
@@ -13,9 +13,9 @@ class CollisionPhysics(ABC):
 
     def __init__(
         self,
-        coarse_detection: CoarseDetectionType,
-        fine_detection: FineDetectionType,
-        batching: BatchingType,
+        coarse_detection: CoarseDetectionType = "hash_grid",
+        fine_detection: FineDetectionType = "sphere_sphere",
+        batching: BatchingType = "union_find",
     ) -> None:
         super().__init__()
         self.coarse_detection = coarse_detection

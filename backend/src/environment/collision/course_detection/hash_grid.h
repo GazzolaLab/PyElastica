@@ -12,7 +12,7 @@
 #include <cmath>
 #include <cstdint>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 /**
@@ -80,7 +80,7 @@ public:
     std::vector<std::pair<std::size_t, std::size_t>> detect(
         const Eigen::MatrixXd& positions,
         const Eigen::MatrixXd& radii
-    ) const;
+    );
 
     /**
      * Clear all grids (for reuse).
@@ -259,4 +259,4 @@ private:
 };
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

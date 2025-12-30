@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 //==============================================================================
@@ -333,7 +333,7 @@ void HashGrid::clear() {
 std::vector<std::pair<std::size_t, std::size_t>> HashGrid::detect(
     const Eigen::MatrixXd& positions,
     const Eigen::MatrixXd& radii
-) const {
+) {
     const Eigen::Index n_nodes = positions.cols();
 
     if (n_nodes == 0) {
@@ -436,4 +436,4 @@ std::vector<std::pair<std::size_t, std::size_t>> HashGrid::detect(
 }
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

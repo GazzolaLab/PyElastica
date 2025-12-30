@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <unordered_map>
 
-namespace elasticapp {
+namespace elasticapp::environment {
 namespace collision {
 
 //==============================================================================
@@ -102,4 +102,4 @@ std::vector<std::vector<std::size_t>> UnionFind::batch(
 }
 
 } // namespace collision
-} // namespace elasticapp
+} // namespace elasticapp::environment

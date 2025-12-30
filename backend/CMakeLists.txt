@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Compiler flags
-add_compile_options(-Wno-unused)
+add_compile_options(-Wno-unused -fdiagnostics-color=always -Wall -Wextra -pedantic -flto)
 
 # Find Python and pybind11 (temp)
 # pybind11 will find Python and NumPy automatically
@@ -205,9 +205,9 @@ install(TARGETS version
 # Extension module: _collision (Python module name)
 pybind11_add_module(_collision
     "${SRC_DIR}/environment/_api.cpp"
-    # "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
-    # "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
-    # "${SRC_DIR}/environment/collision/batching/union_find.cpp"
+    "${SRC_DIR}/environment/collision/course_detection/hash_grid.cpp"
+    "${SRC_DIR}/environment/collision/fine_detection/max_contacts.cpp"
+    "${SRC_DIR}/environment/collision/batching/union_find.cpp"
     "${SRC_DIR}/environment/collision/physics/linear_spring_dashpot.cpp"
     "${SRC_DIR}/environment/collision/physics/no_interaction.cpp"
     "${SRC_DIR}/math/node_element_mapping.cpp"
@@ -239,6 +239,7 @@ install(TARGETS _collision
 # Install Python package files
 install(FILES
         "${PYTHON_PACKAGE_DIR}/__init__.py"
+        "${PYTHON_PACKAGE_DIR}/typing_alias.py"
         "${PYTHON_PACKAGE_DIR}/memory_block_rod.py"
         "${PYTHON_PACKAGE_DIR}/collision_physics.py"
         "${PYTHON_PACKAGE_DIR}/module_collision.py"
