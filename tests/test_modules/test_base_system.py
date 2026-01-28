@@ -1,7 +1,8 @@
 __doc__ = """ Test modules for base systems """
 
 import pytest
-import warnings
+
+pass
 import numpy as np
 
 from elastica.modules import (
@@ -142,47 +143,6 @@ class TestBaseSystemCollection:
 
     def test_get_sys_index_returns_correct_idx(self, load_collection):
         assert load_collection.get_system_index(1) == 1
-
-    def test_duplicate_system_warning(self):
-        """Test that adding the same system instance twice emits a warning."""
-        bsc = BaseSystemCollection()
-        bsc.extend_allowed_types((int,))
-
-        # Add a system
-        test_system = 42
-        bsc.append(test_system)
-
-        # Try to add the same system again - should emit warning
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            bsc._check_type(test_system)
-
-            # Verify warning was issued
-            assert len(w) == 1
-            assert issubclass(w[0].category, UserWarning)
-            assert "already in the system collection" in str(w[0].message)
-            assert "not recommended" in str(w[0].message)
-
-    def test_duplicate_system_warning_with_rod(self, mock_rod):
-        """Test that adding the same rod instance twice emits a warning."""
-        bsc = BaseSystemCollection()
-        from elastica.rod import RodBase
-
-        bsc.extend_allowed_types((RodBase,))
-
-        # Add a rod
-        bsc.append(mock_rod)
-
-        # Try to add the same rod again - should emit warning
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            bsc.append(mock_rod)
-
-            # Verify warning was issued
-            assert len(w) == 1
-            assert issubclass(w[0].category, UserWarning)
-            assert "already in the system collection" in str(w[0].message)
-            assert "not recommended" in str(w[0].message)
 
     @pytest.mark.xfail
     def test_delitem(self, load_collection):

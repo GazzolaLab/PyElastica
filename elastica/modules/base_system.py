@@ -18,7 +18,6 @@ from elastica.typing import (
 )
 
 import numpy as np
-import warnings
 from itertools import chain
 
 from collections import defaultdict
@@ -128,13 +127,6 @@ class BaseSystemCollection(MutableSequence):
             raise RuntimeError(
                 f"The system {sys_to_be_added.__class__} requires the following modules:\n"
                 f"{sys_to_be_added.REQUISITE_MODULES}\n"
-            )
-        if id(sys_to_be_added) in [id(system) for system in self.__systems]:
-            # Warning for duplicate system instance
-            warnings.warn(
-                f"System {sys_to_be_added.__class__} is already in the system collection.\n"
-                "Adding multiple instance is technically allowed, but it is not recommended.",
-                UserWarning,
             )
         return True
 
