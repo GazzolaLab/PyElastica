@@ -1,11 +1,12 @@
 __doc__ = """Symplectic time steppers and concepts for integrating the kinematic and dynamic equations of rod-like objects.  """
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from itertools import zip_longest
 
 from elastica.typing import (
     SystemCollectionType,
+    SystemType,
     StepType,
     SteppersOperatorsType,
 )
@@ -13,7 +14,7 @@ from elastica.typing import (
 import numpy as np
 
 from elastica.systems.protocol import SymplecticSystemProtocol
-from .protocol import SymplecticStepperProtocol
+from .protocol import StepperProtocol
 
 """
 Developer Note
@@ -25,10 +26,13 @@ is referred to the same section on `explicit_steppers.py`.
 
 
 class SymplecticStepperMixin:
-    def __init__(self: SymplecticStepperProtocol):
+    get_steps: Callable[[], list[StepType]]
+    get_prefactors: Callable[[], list[StepType]]
+
+    def __init__(self) -> None:
         self.steps_and_prefactors: SteppersOperatorsType = self.step_methods()
 
-    def step_methods(self: SymplecticStepperProtocol) -> SteppersOperatorsType:
+    def step_methods(self) -> SteppersOperatorsType:
         # Let the total number of steps for the Symplectic method
         # be (2*n + 1) (for time-symmetry).
         _steps: list[StepType] = self.get_steps()
@@ -56,32 +60,14 @@ class SymplecticStepperMixin:
         )
 
     @property
-    def n_stages(self: SymplecticStepperProtocol) -> int:
+    def n_stages(self) -> int:
         return len(self.steps_and_prefactors)
 
     def step(
-        self: SymplecticStepperProtocol,
+        self,
         SystemCollection: SystemCollectionType,
         time: np.float64 | float,
         dt: np.float64 | float,
-    ) -> np.float64:
-        return SymplecticStepperMixin.do_step(
-            self,
-            self.steps_and_prefactors,
-            SystemCollection,
-            np.float64(time),
-            np.float64(dt),
-        )
-
-    # TODO: Merge with .step method in the future.
-    # DEPRECATED: Use .step instead.
-    @staticmethod
-    def do_step(
-        TimeStepper: SymplecticStepperProtocol,
-        steps_and_prefactors: SteppersOperatorsType,
-        SystemCollection: SystemCollectionType,
-        time: np.float64,
-        dt: np.float64,
     ) -> np.float64:
         """
         Function for doing symplectic stepper over the user defined rods (system).
@@ -92,53 +78,73 @@ class SymplecticStepperMixin:
             The time after the integration step.
 
         """
-        for kin_prefactor, kin_step, dyn_step in steps_and_prefactors[:-1]:
+        simulation_time = np.float64(time)
+        simulation_dt = np.float64(dt)
 
+        for kin_prefactor, kin_step, dyn_step in self.steps_and_prefactors[:-1]:
             for system in SystemCollection.final_systems():
-                kin_step(system, time, dt)
+                kin_step(system, simulation_time, simulation_dt)
 
-            time += kin_prefactor(dt)
+            simulation_time += kin_prefactor(simulation_dt)
 
             # Constrain only values
-            SystemCollection.constrain_values(time)
+            SystemCollection.constrain_values(simulation_time)
 
             # We need internal forces and torques because they are used by interaction module.
             for system in SystemCollection.final_systems():
-                system.compute_internal_forces_and_torques(time)
+                system.compute_internal_forces_and_torques(simulation_time)
 
             # Add external forces, controls etc.
-            SystemCollection.synchronize(time)
+            SystemCollection.synchronize(simulation_time)
 
             for system in SystemCollection.final_systems():
-                dyn_step(system, time, dt)
+                dyn_step(system, simulation_time, simulation_dt)
 
             # Constrain only rates
-            SystemCollection.constrain_rates(time)
+            SystemCollection.constrain_rates(simulation_time)
 
         # Peel the last kinematic step and prefactor alone
-        last_kin_prefactor = steps_and_prefactors[-1][0]
-        last_kin_step = steps_and_prefactors[-1][1]
+        last_kin_prefactor = self.steps_and_prefactors[-1][0]
+        last_kin_step = self.steps_and_prefactors[-1][1]
 
         for system in SystemCollection.final_systems():
-            last_kin_step(system, time, dt)
-        time += last_kin_prefactor(dt)
-        SystemCollection.constrain_values(time)
+            last_kin_step(system, simulation_time, simulation_dt)
+        simulation_time += last_kin_prefactor(simulation_dt)
+        SystemCollection.constrain_values(simulation_time)
 
         # Call back function, will call the user defined call back functions and store data
-        SystemCollection.apply_callbacks(time, round(time / dt))
+        SystemCollection.apply_callbacks(
+            simulation_time, round(simulation_time / simulation_dt)
+        )
 
         # Zero out the external forces and torques
         for system in SystemCollection.final_systems():
-            system.zeroed_out_external_forces_and_torques(time)
+            system.zeroed_out_external_forces_and_torques(simulation_time)
 
-        return time
+        return simulation_time
+
+    @staticmethod
+    def do_step(
+        TimeStepper: StepperProtocol,
+        steps_and_prefactors: SteppersOperatorsType,
+        SystemCollection: SystemCollectionType,
+        time: np.float64,
+        dt: np.float64,
+    ) -> np.float64:  # pragma: no cover
+        from warning import warn
+
+        warn("This method is deprecated. Use the instance method .step instead.")
+        return Timestepper.step(SystemCollection, time, dt)  # type: ignore
 
     def step_single_instance(
-        self: SymplecticStepperProtocol,
-        System: SymplecticSystemProtocol,
+        self,
+        System: SystemType,
         time: np.float64,
         dt: np.float64,
     ) -> np.float64:
+        """
+        (The function is used for single system instance, mainly for testing purposes.)
+        """
 
         for kin_prefactor, kin_step, dyn_step in self.steps_and_prefactors[:-1]:
             kin_step(System, time, dt)

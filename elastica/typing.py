@@ -24,10 +24,7 @@ if TYPE_CHECKING:
         SystemProtocol,
         SymplecticSystemProtocol,
     )
-    from .timestepper.protocol import (
-        StepperProtocol,
-        SymplecticStepperProtocol,
-    )
+    from .timestepper.protocol import StepperProtocol
     from .memory_block.protocol import BlockSystemProtocol
 
 else:
@@ -40,7 +37,6 @@ else:
     StaticSystemProtocol = "StaticSystemProtocol"
     SymplecticSystemProtocol = "SymplecticSystemProtocol"
     StepperProtocol = "StepperProtocol"
-    SymplecticStepperProtocol = "SymplecticStepperProtocol"
     BlockSystemProtocol = "BlockSystemProtocol"
 
 

@@ -22,7 +22,7 @@ def extend_stepper_interface(
     SteppersOperatorsType,
 ]:
     try:
-        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
+        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors  # type: ignore
         do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
     except AttributeError as e:
         raise NotImplementedError(f"{stepper} stepper is not supported.") from e
