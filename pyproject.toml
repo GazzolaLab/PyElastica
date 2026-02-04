@@ -37,6 +37,7 @@ dependencies = [
     "mypy-extensions",
     "flake8",
     "cma",
+	"typing-extensions"
 ]
 
 [build-system]
