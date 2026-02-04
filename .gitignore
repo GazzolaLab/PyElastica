@@ -7,6 +7,10 @@ __pycache__/
 *.so
 
 *.swp
+.vscode
+docs/_gallery
+docs/gen_modules
+docs/sg_execution_times.rst
 
 # Distribution / packaging
 .Python

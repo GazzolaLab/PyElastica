@@ -51,10 +51,10 @@ def plot_timoshenko(rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD=False):
     ax = fig.add_subplot(111)
     ax.grid(which="minor", color="k", linestyle="--")
     ax.grid(which="major", color="k", linestyle="-")
-    analytical_shearable_positon = analytical_shearable(rod, end_force)
+    analytical_shearable_position = analytical_shearable(rod, end_force)
     ax.plot(
-        analytical_shearable_positon[0],
-        analytical_shearable_positon[1],
+        analytical_shearable_position[0],
+        analytical_shearable_position[1],
         "k--",
         label="Timoshenko",
     )
@@ -65,10 +65,10 @@ def plot_timoshenko(rod, end_force, SAVE_FIGURE, ADD_UNSHEARABLE_ROD=False):
         label="n=" + str(rod.n_elems),
     )
     if ADD_UNSHEARABLE_ROD:
-        analytical_unshearable_positon = analytical_unshearable(rod, end_force)
+        analytical_unshearable_position = analytical_unshearable(rod, end_force)
         ax.plot(
-            analytical_unshearable_positon[0],
-            analytical_unshearable_positon[1],
+            analytical_unshearable_position[0],
+            analytical_unshearable_position[1],
             "r-.",
             label="Euler-Bernoulli",
         )

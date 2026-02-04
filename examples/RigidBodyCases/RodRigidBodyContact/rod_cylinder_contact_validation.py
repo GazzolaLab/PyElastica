@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 from post_processing import plot_video, plot_cylinder_rod_position
 
@@ -114,14 +115,14 @@ single_rod_sim.detect_contact_between(rod1, cylinder).using(
 )
 
 
-# Add call backs
+# Add callbacks
 class PositionCollector(ea.CallBackBaseClass):
     """
-    Call back function for continuum snake
+    Callback function for collecting position data of a rod and cylinder.
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -130,15 +131,17 @@ class PositionCollector(ea.CallBackBaseClass):
             self.callback_params["time"].append(time)
             # Collect only x
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
             return
 
 
-recorded_rod_history = ea.defaultdict(list)
+recorded_rod_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(rod1).using(
     PositionCollector, step_skip=200, callback_params=recorded_rod_history
 )
-recorded_cyl_history = ea.defaultdict(list)
+recorded_cyl_history = defaultdict(list)
 single_rod_sim.collect_diagnostics(cylinder).using(
     PositionCollector, step_skip=200, callback_params=recorded_cyl_history
 )
@@ -159,7 +162,10 @@ dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
 
-ea.integrate(timestepper, single_rod_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(single_rod_sim, time, dt)
 
 if PLOT_FIGURE:
     plot_video(

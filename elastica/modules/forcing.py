@@ -8,37 +8,35 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 import logging
 import functools
 from typing import Any, Type, List
-from typing_extensions import Self
-
-import numpy as np
 
 from elastica.external_forces import NoForces
 from elastica.typing import SystemType, SystemIdxType
-from .protocol import ForcedSystemCollectionProtocol, ModuleProtocol
+from elastica.systems.protocol import SystemProtocol
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 logger = logging.getLogger(__name__)
 
 
-class Forcing:
+class Forcing(SystemCollectionProtocol):
     """
     The Forcing class is a module for applying boundary conditions that
     consist of applied external forces. To apply forcing on rod-like objects,
     the simulator class must be derived from the Forcing class.
 
-        Attributes
-        ----------
-        _ext_forces_torques: list
-            List of forcing class defined for rod-like objects.
+    Attributes
+    ----------
+    _ext_forces_torques: list
+        List of forcing class defined for rod-like objects.
     """
 
-    def __init__(self: ForcedSystemCollectionProtocol) -> None:
-        self._ext_forces_torques: List[ModuleProtocol] = []
+    _ext_forces_torques: List[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._ext_forces_torques = []
         super().__init__()
         self._feature_group_finalize.append(self._finalize_forcing)
 
-    def add_forcing_to(
-        self: ForcedSystemCollectionProtocol, system: SystemType
-    ) -> ModuleProtocol:
+    def add_forcing_to(self, system: "SystemType") -> ModuleProtocol:
         """
         This method applies external forces and torques on the relevant
         user-defined system or rod-like object. You must input the system
@@ -62,7 +60,7 @@ class Forcing:
 
         return _ext_force_torque
 
-    def _finalize_forcing(self: ForcedSystemCollectionProtocol) -> None:
+    def _finalize_forcing(self) -> None:
         # From stored _ExtForceTorque objects, and instantiate a Force
         # inplace : https://stackoverflow.com/a/1208792
 
@@ -111,7 +109,7 @@ class _ExtForceTorque:
         self._args: Any
         self._kwargs: Any
 
-    def using(self, cls: Type[NoForces], *args: Any, **kwargs: Any) -> Self:
+    def using(self, cls: Type[NoForces], *args: Any, **kwargs: Any) -> None:
         """
         This method sets which forcing class is used to apply forcing
         to user defined rod-like objects.
@@ -137,7 +135,6 @@ class _ExtForceTorque:
         self._forcing_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxType:
         return self._sys_idx

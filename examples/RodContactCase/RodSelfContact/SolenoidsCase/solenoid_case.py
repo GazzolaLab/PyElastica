@@ -1,6 +1,8 @@
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
-from examples.RodContactCase.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_link_writhe_twist,
 )
@@ -38,7 +40,6 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 # Rest of the rod parameters and construct rod
 base_radius = 0.025
 base_area = np.pi * base_radius**2
-I = np.pi / 4 * base_radius**4
 volume = base_area * base_length
 mass = 1.0
 density = mass / volume
@@ -82,7 +83,7 @@ solenoid_sim.dampen(sherable_rod).using(
 from elastica._rotations import _get_rotation_matrix
 
 
-class SelonoidsBC(ea.ConstraintBase):
+class SolenoidsBC(ea.ConstraintBase):
     """ """
 
     def __init__(
@@ -102,7 +103,7 @@ class SelonoidsBC(ea.ConstraintBase):
 
         theta = 2.0 * number_of_rotations * np.pi
 
-        angel_vel_scalar = theta / self.twisting_time
+        angle_vel_scalar = theta / self.twisting_time
 
         direction = -(position_end - position_start) / np.linalg.norm(
             position_end - position_start
@@ -120,45 +121,45 @@ class SelonoidsBC(ea.ConstraintBase):
             @ director_end
         )  # rotation_matrix wants vectors 3,1
 
-        self.ang_vel = angel_vel_scalar * axis_of_rotation_in_material_frame
+        self.ang_vel = angle_vel_scalar * axis_of_rotation_in_material_frame
 
         self.position_start = position_start
         self.director_start = director_start
 
     def constrain_values(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
-            rod.position_collection[..., 0] = self.position_start
-            rod.position_collection[0, -1] = 0.0
-            rod.position_collection[2, -1] = 0.0
+            system.position_collection[..., 0] = self.position_start
+            system.position_collection[0, -1] = 0.0
+            system.position_collection[2, -1] = 0.0
 
-            rod.director_collection[..., 0] = self.director_start
-            rod.director_collection[..., -1] = self.final_end_directors
+            system.director_collection[..., 0] = self.director_start
+            system.director_collection[..., -1] = self.final_end_directors
 
     def constrain_rates(self, system, time):
         if time > self.twisting_time + self.time_twis_start:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
-            rod.velocity_collection[..., -1] = 0.0
-            rod.omega_collection[..., -1] = 0.0
+            system.velocity_collection[..., -1] = 0.0
+            system.omega_collection[..., -1] = 0.0
 
         elif time < self.time_twis_start:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
         else:
-            rod.velocity_collection[..., 0] = 0.0
-            rod.omega_collection[..., 0] = 0.0
+            system.velocity_collection[..., 0] = 0.0
+            system.omega_collection[..., 0] = 0.0
 
-            rod.velocity_collection[0, -1] = 0.0
-            rod.velocity_collection[2, -1] = 0.0
-            rod.omega_collection[..., -1] = -self.ang_vel
+            system.velocity_collection[0, -1] = 0.0
+            system.velocity_collection[2, -1] = 0.0
+            system.omega_collection[..., -1] = -self.ang_vel
 
-            rod.velocity_collection[2, int(rod.n_elems / 2)] -= 1e-4
+            system.velocity_collection[2, int(system.n_elems / 2)] -= 1e-4
 
 
 solenoid_sim.constrain(sherable_rod).using(
-    SelonoidsBC,
+    SolenoidsBC,
     constrained_position_idx=(0, -1),
     constrained_director_idx=(0, -1),
     time_twis_start=time_start_twist,
@@ -186,7 +187,7 @@ class RodCallBack(ea.CallBackBaseClass):
     """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -196,7 +197,9 @@ class RodCallBack(ea.CallBackBaseClass):
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
             self.callback_params["com_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
@@ -213,7 +216,7 @@ class RodCallBack(ea.CallBackBaseClass):
             return
 
 
-post_processing_dict = ea.defaultdict(list)  # list which collected data will be append
+post_processing_dict = defaultdict(list)  # list which collected data will be append
 # set the diagnostics for rod and collect data
 solenoid_sim.collect_diagnostics(sherable_rod).using(
     RodCallBack,
@@ -226,7 +229,10 @@ solenoid_sim.finalize()
 
 # Run the simulation
 time_stepper = ea.PositionVerlet()
-ea.integrate(time_stepper, solenoid_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = time_stepper.step(solenoid_sim, time, dt)
 
 # plotting the videos
 filename_video = "solenoid.mp4"
@@ -250,14 +256,14 @@ director_history = np.array(post_processing_dict["directors"])
 
 # Compute twist density
 theta = 2.0 * number_of_rotations * np.pi
-angel_vel_scalar = theta / time_twist
+angle_vel_scalar = theta / time_twist
 
 twist_time_interval_start_idx = np.where(time > time_start_twist)[0][0]
 twist_time_interval_end_idx = np.where(time < (time_relax + time_twist))[0][-1]
 
 twist_density = (
     (time[twist_time_interval_start_idx:twist_time_interval_end_idx] - time_start_twist)
-    * angel_vel_scalar
+    * angle_vel_scalar
     * base_radius
 )
 

@@ -6,9 +6,9 @@ import os
 import json
 from itertools import groupby
 
-from .memory_block import MemoryBlockCosseratRod, MemoryBlockRigidBody
+from .memory_block.protocol import BlockSystemProtocol
 
-from .typing import SystemType, SystemCollectionType
+from .typing import SystemCollectionType
 
 
 def all_equal(iterable: Iterable[Any]) -> bool:
@@ -53,7 +53,7 @@ def save_state(
     os.makedirs(directory, exist_ok=True)
 
     # Save system state
-    for idx, system in enumerate(simulator):
+    for idx, system in enumerate(simulator.systems()):
         name = system.__class__.__name__
         path = os.path.join(directory, f"{name}_{idx}.npz")
         np.savez(path, **system.__dict__)  # type: ignore
@@ -94,9 +94,9 @@ def load_state(
     time = meta["time"]
 
     # Load system state
-    for idx, system in enumerate(simulator):
+    for idx, system in enumerate(simulator.systems()):
         # TODO: Not exactly sure why this condition is necessary.
-        if isinstance(system, (MemoryBlockCosseratRod, MemoryBlockRigidBody)):
+        if isinstance(system, BlockSystemProtocol):
             continue
         name = system.__class__.__name__  # type: ignore
         path = os.path.join(directory, f"{name}_{idx}.npz")

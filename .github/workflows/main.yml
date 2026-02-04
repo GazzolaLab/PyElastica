@@ -3,14 +3,6 @@ name: CI
 
 # Controls when the action will run.
 on: [push, pull_request]
-# Older settings:
-# Triggers the workflow on push request events for the master branch,
-# and pull request events for all branches.
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ '**' ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -62,7 +54,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: |
-          make install-dev-deps
+          make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
           source .venv/bin/activate
       # Runs a single command using the runners shell
@@ -102,7 +94,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ matrix.path }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
@@ -111,7 +103,7 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies
         run: |
-          make install-dev-deps
+          make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
           uv cache prune --ci
           source .venv/bin/activate
       - name: Test PyElastica using pytest
@@ -119,6 +111,6 @@ jobs:
         run: |
           make test_coverage_xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -30,8 +30,6 @@ External force and environmental interaction are represented as force/torque bou
 .. autosummary::
    :nosignatures:
 
-   AnisotropicFrictionalPlane
-   InteractionPlane
    SlenderBodyTheory
 
 Compatibility
@@ -52,8 +50,6 @@ EndpointForcesSinusoidal    ✅      ❌
 ========================== ======= ============
 Interaction                 Rod     Rigid Body
 ========================== ======= ============
-AnisotropicFrictionalPlane  ✅      ❌
-InteractionPlane            ✅      ❌
 SlenderBodyTheory           ✅      ❌
 ========================== ======= ============
 
@@ -87,12 +83,6 @@ Built-in Environment Interactions
 ---------------------------------
 .. automodule:: elastica.interaction
    :noindex:
-
-.. autoclass:: AnisotropicFrictionalPlane
-   :special-members: __init__
-
-.. autoclass:: InteractionPlane
-   :special-members: __init__
 
 .. autoclass:: SlenderBodyTheory
    :special-members: __init__

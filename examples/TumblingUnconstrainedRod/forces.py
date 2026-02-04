@@ -2,8 +2,6 @@ import numpy as np
 from elastica.external_forces import NoForces
 from elastica.typing import SystemType
 
-from tqdm import tqdm
-
 
 class EndpointforcesWithTimeFactor(NoForces):
 
@@ -29,14 +27,12 @@ class EndpointtorqueWithTimeFactor(NoForces):
         self.time_factor = time_factor
 
     def apply_torques(self, system: SystemType, time: np.float64 = 0.0):
-        n_elems = system.n_elems
-
         factor = self.time_factor(time)
 
         system.external_torques[..., -1] += self.torque * factor
 
 
-def lamda_t_function(time):
+def time_factor_function(time):
     if time < 2.5:
         factor = time * (1 / 2.5)
     elif time > 2.5 and time < 5.0:

@@ -624,7 +624,7 @@ class TestCalculateContactForcesRodSphere:
 
         "initializing sphere parameters"
         sphere = MockSphere()
-        x_sph = sphere.position[..., 0] - sphere.radius * sphere.director[2, :, 0]
+        x_sph = sphere.position[..., 0]
 
         "initializing constants"
         """
@@ -640,16 +640,11 @@ class TestCalculateContactForcesRodSphere:
         _calculate_contact_forces_rod_sphere(
             rod_element_position,
             rod.lengths * rod.tangents,
-            sphere.position[..., 0],
             x_sph,
-            sphere.radius * sphere.director[2, :, 0],
             rod.radius + sphere.radius,
             rod.lengths + sphere.radius * 2,
-            rod.internal_forces,
             rod.external_forces,
             sphere.external_forces,
-            sphere.external_torques,
-            sphere.director[:, :, 0],
             rod.velocity_collection,
             sphere.velocity_collection,
             k,

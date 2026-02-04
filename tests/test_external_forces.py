@@ -13,7 +13,7 @@ from elastica.external_forces import (
     UniformForces,
     MuscleTorques,
     inplace_addition,
-    inplace_substraction,
+    inplace_subtraction,
     EndpointForcesSinusoidal,
 )
 from elastica.utils import Tolerance
@@ -297,7 +297,7 @@ def test_inplace_addition(rng, n_elem):
 
 
 @pytest.mark.parametrize("n_elem", [33, 59, 100])
-def test_inplace_substraction(rng, n_elem):
+def test_inplace_subtraction(rng, n_elem):
     """
     This test is for inplace substraction written using Numba njit functions
     Parameters
@@ -317,6 +317,6 @@ def test_inplace_substraction(rng, n_elem):
     correct_vector = first_input_vector - second_input_vector
 
     test_vector = first_input_vector.copy()
-    inplace_substraction(test_vector, second_input_vector)
+    inplace_subtraction(test_vector, second_input_vector)
 
     assert_allclose(correct_vector, test_vector, atol=Tolerance.atol())

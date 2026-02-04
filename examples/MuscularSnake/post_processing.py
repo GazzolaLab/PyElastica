@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib
 
-matplotlib.use("Agg")  # Must be before importing matplotlib.pyplot or pylab!
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 from matplotlib import cm
+from matplotlib.patches import Circle
+import matplotlib.animation as manimation
 from tqdm import tqdm
 
 from typing import Dict, Sequence
@@ -22,9 +23,6 @@ def plot_video_with_surface(
 
     folder_name = kwargs.get("folder_name", "")
 
-    # 2d case <always 2d case for now>
-    import matplotlib.animation as animation
-
     # simulation time
     sim_time = np.array(rods_history[0]["time"])
 
@@ -36,7 +34,9 @@ def plot_video_with_surface(
         rods_history[rod_idx]["radius"][t_idx],
     )
     # Rod center of mass
-    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
+    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx][
+        "center_of_mass"
+    ][t_idx]
 
     # Generate target sphere data
     sphere_flag = False
@@ -53,7 +53,7 @@ def plot_video_with_surface(
 
     # video pre-processing
     print("plot scene visualization video")
-    FFMpegWriter = animation.writers["ffmpeg"]
+    FFMpegWriter = manimation.writers["ffmpeg"]
     metadata = dict(title="Movie Test", artist="Matplotlib", comment="Movie support!")
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     dpi = kwargs.get("dpi", 100)

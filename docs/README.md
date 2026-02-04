@@ -8,8 +8,8 @@ In addition, we utilize the following extensions to enhance the documentation :c
 
 ## Build documentation
 
-The `sphinx` is already initialized in `docs` directory. 
-In order to build the documentation, you will need additional 
+The `sphinx` is already initialized in `docs` directory.
+In order to build the documentation, you will need additional
 packages listed in extra dependencies.
 
 ```bash
@@ -27,7 +27,7 @@ Use `make help` for other options.
 
 # Contribution
 
-The documentation-related commits will be collected in the branch `doc_**` separate from `master` branch, and merged into `master` collectively. Ideally, the updates in the documentation branch will seek upcoming version update (i.e. `update-**` branch) and merged shortly after the version release. If an update is critical and urgent, create PR directly to `master` branch.
+Documentation-related commits should be pushed to the appropriate `update-**` branch. These changes will be incorporated into the `master` branch upon the corresponding release. For urgent or critical documentation updates, you may create a pull request directly to `master`.
 
 ## User Guide
 
@@ -39,7 +39,7 @@ These files will be managed in `docs` directory.
 ## API documentation
 
 The docstring for function or modules are automatically parsed using `sphinx`+`numpydoc`.
-Any inline function description, such as 
+Any inline function description, such as
 
 ```py
 """ This is the form of a docstring.
@@ -62,4 +62,4 @@ will be parsed and displayed in API documentation. See `numpydoc` for more detai
 
 `ReadtheDocs` runs `sphinx` internally and maintain the documentation website. We will always activate the `stable` and `latest` version, and few past-documentations will also be available for the support.
 
-@nmnaughton and @skim449 has access to the `ReadtheDocs` account.
+@nmnaughton and [@skim0119](https://github.com/skim0119) has access to the `ReadtheDocs` account.

@@ -1,8 +1,9 @@
-__doc__ = """Snake friction case from X. Zhang et. al. Nat. Comm. 2021"""
+__doc__ = """Snake friction case from X. Zhang et al. Nat. Comm. 2021"""
 
 import os
 import numpy as np
 import pickle
+from collections import defaultdict
 
 from elastica import *
 
@@ -188,7 +189,10 @@ def run_snake(
     snake_sim.finalize()
 
     timestepper = PositionVerlet()
-    integrate(timestepper, snake_sim, final_time, total_steps)
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(snake_sim, time, dt)
 
     if PLOT_FIGURE:
         filename_plot = "continuum_snake_velocity.png"

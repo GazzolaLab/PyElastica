@@ -28,7 +28,9 @@ def plot_video(
         rods_history[rod_idx]["radius"][t_idx],
     )
     # Rod center of mass
-    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
+    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx][
+        "center_of_mass"
+    ][t_idx]
 
     # video pre-processing
     print("plot scene visualization video")
@@ -135,7 +137,9 @@ def plot_video_2D(
         rods_history[rod_idx]["radius"][t_idx],
     )
     # Rod center of mass
-    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx]["com"][time_idx]
+    com_history_unpacker = lambda rod_idx, t_idx: rods_history[rod_idx][
+        "center_of_mass"
+    ][t_idx]
 
     # video pre-processing
     print("plot scene visualization video")
@@ -270,7 +274,7 @@ def plot_com_position_vs_time(
 ):
 
     time = rods_history["time"]
-    # rod_com_position = np.array(rods_history["com"]) * -1e3
+    # rod_com_position = np.array(rods_history["center_of_mass"]) * -1e3
     rod_com_position = np.array(rods_history["position"])[:, :, 9] * -1e3
 
     # We are interested in dx, subtract initial position.

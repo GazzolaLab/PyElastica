@@ -171,22 +171,22 @@ class TestExportCallBackClass:
             callback = ExportCallBack(step_skip, "rod", temp_dir_path, "npz")
             callback.make_callback(mock_rod, 1, step_skip - 1)
             # Check empty
-            callback.clear()
+            callback.on_close()
             saved_path_name = callback.get_last_saved_path()
             assert saved_path_name is None, "No file should be saved."
 
             # Check saved
             callback.make_callback(mock_rod, 1, step_skip)
-            callback.clear()
+            callback.on_close()
             saved_path_name = callback.get_last_saved_path()
             assert saved_path_name is not None, "File should be saved."
             assert os.path.exists(saved_path_name), "File should be saved"
 
             # Check saved file number
             callback.make_callback(mock_rod, 1, step_skip * 2)
-            callback.clear()
+            callback.on_close()
             callback.make_callback(mock_rod, 1, step_skip * 5)
-            callback.clear()
+            callback.on_close()
             saved_path_name = callback.get_last_saved_path()
             assert (
                 str(2) in saved_path_name
@@ -222,19 +222,7 @@ class TestExportCallBackClass:
             )
             for step in range(10):
                 callback.make_callback(mock_rod, 1, step)
-            callback.close()
-            saved_path_name = callback.get_last_saved_path()
-            assert os.path.exists(saved_path_name), "File is not saved."
-
-    def test_export_call_back_clear_test(self, rng):
-        mock_rod = MockRodWithElements(5)
-        with tempfile.TemporaryDirectory() as temp_dir_path:
-            callback = ExportCallBack(
-                1, "rod", temp_dir_path, "npz", file_save_interval=50
-            )
-            for step in range(10):
-                callback.make_callback(mock_rod, 1, step)
-            callback.clear()
+            callback.on_close()
             saved_path_name = callback.get_last_saved_path()
             assert os.path.exists(saved_path_name), "File is not saved."
 

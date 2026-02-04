@@ -1,11 +1,12 @@
 __doc__ = """Muscular snake example from Zhang et. al. Nature Comm 2019 paper."""
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.MuscularSnake.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_snake_velocity,
 )
-from examples.MuscularSnake.muscle_forces import MuscleForces
+from muscle_forces import MuscleForces
 from elastica.experimental.connection_contact_joint.parallel_connection import (
     SurfaceJointSideBySide,
     get_connection_vector_straight_straight_rod,
@@ -248,7 +249,7 @@ for rod in rod_list:
 post_processing_forces_dict_list = []
 
 for i in range(n_muscle_fibers):
-    post_processing_forces_dict_list.append(ea.defaultdict(list))
+    post_processing_forces_dict_list.append(defaultdict(list))
     muscle_rod = muscle_rod_list[i]
     side_of_body = 1 if i % 2 == 0 else -1
 
@@ -268,7 +269,7 @@ for i in range(n_muscle_fibers):
 
 
 straight_straight_rod_connection_list = []
-straight_straight_rod_connection_post_processing_dict = ea.defaultdict(list)
+straight_straight_rod_connection_post_processing_dict = defaultdict(list)
 for idx, rod_two in enumerate(muscle_rod_list):
     rod_one = snake_body
     (
@@ -359,8 +360,13 @@ muscular_snake_simulator.detect_contact_between(snake_body, friction_plane).usin
 
 
 class MuscularSnakeCallBack(ea.CallBackBaseClass):
+    """
+    Callback function for collecting data from Muscular Snake simulation.
+    Records time, position, center of mass, radius, and average velocity.
+    """
+
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -368,15 +374,11 @@ class MuscularSnakeCallBack(ea.CallBackBaseClass):
 
         if current_step % self.every == 0:
             self.callback_params["time"].append(time)
-            self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
             self.callback_params["avg_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
-
             self.callback_params["center_of_mass"].append(
                 system.compute_position_center_of_mass()
             )
@@ -385,7 +387,7 @@ class MuscularSnakeCallBack(ea.CallBackBaseClass):
 post_processing_dict_list = []
 
 for idx, rod in enumerate(rod_list):
-    post_processing_dict_list.append(ea.defaultdict(list))
+    post_processing_dict_list.append(defaultdict(list))
     muscular_snake_simulator.collect_diagnostics(rod).using(
         MuscularSnakeCallBack,
         step_skip=step_skip,
@@ -394,7 +396,9 @@ for idx, rod in enumerate(rod_list):
 
 muscular_snake_simulator.finalize()
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, muscular_snake_simulator, final_time, total_steps)
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(muscular_snake_simulator, time, time_step)
 
 
 plot_video_with_surface(

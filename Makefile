@@ -2,15 +2,24 @@
 PYTHON := python3
 PYTHONPATH := `pwd`
 AUTOFLAKE_ARGS := -r
+PYTHON_VERSION :=
 
 #* Installation
 .PHONY: install
 install:
+ifdef PYTHON_VERSION
+	uv sync --python $(PYTHON_VERSION)
+else
 	uv sync
+endif
 
 .PHONY: install-dev-deps
 install-dev-deps:
+ifdef PYTHON_VERSION
+	uv sync --all-groups --all-extras --python $(PYTHON_VERSION)
+else
 	uv sync --all-groups --all-extras
+endif
 
 
 .PHONY: build
@@ -35,7 +44,7 @@ black-check:
 .PHONY: flake8
 flake8:
 	uv run flake8 --version
-	uv run flake8 elastica tests
+	uv run flake8 elastica
 
 .PHONY: autoflake-check
 autoflake-check:
@@ -103,8 +112,12 @@ pytestcache-remove:
 build-remove:
 	rm -rf build/ dist/
 
+.PHONY: doc-remove
+doc-remove:
+	rm -rf docs/_build docs/gen_modules/ docs/sg_execution_times.rst docs/_gallery/
+
 .PHONY: cleanup
-cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove build-remove
+cleanup: pycache-remove dsstore-remove ipynbcheckpoints-remove pytestcache-remove mypycache-remove build-remove doc-remove
 
 all: format-codestyle cleanup test
 

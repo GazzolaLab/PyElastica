@@ -1,7 +1,8 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 
-from examples.RingRodCase.ring_rod_post_processing import plot_video
+from ring_rod_post_processing import plot_video
 
 
 class RingSimulator(
@@ -67,14 +68,14 @@ rendering_fps = 60
 step_skip = int(1.0 / (rendering_fps * time_step))
 
 
-# Add call backs
+# Add callbacks
 class RingRodCallBack(ea.CallBackBaseClass):
     """
-    Call back function for ring rod
+    Callback function for ring rod
     """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -85,20 +86,16 @@ class RingRodCallBack(ea.CallBackBaseClass):
             self.callback_params["time"].append(time)
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
-            self.callback_params["length"].append(system.rest_lengths.copy())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["velocity"].append(system.velocity_collection.copy())
-            self.callback_params["avg_velocity"].append(
-                system.compute_velocity_center_of_mass()
-            )
 
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
-            self.callback_params["curvature"].append(system.kappa.copy())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
 
             return
 
 
-pp_list = ea.defaultdict(list)
+pp_list = defaultdict(list)
 ring_sim.collect_diagnostics(ring_rod).using(
     RingRodCallBack, step_skip=step_skip, callback_params=pp_list
 )
@@ -106,7 +103,9 @@ ring_sim.collect_diagnostics(ring_rod).using(
 ring_sim.finalize()
 
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, ring_sim, final_time, total_steps)
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(ring_sim, time, time_step)
 
 
 filename_video = "ring_rod.mp4"

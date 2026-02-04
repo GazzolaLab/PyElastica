@@ -11,8 +11,8 @@ from elastica.systems import is_system_a_collection
 from .protocol import StepperProtocol
 
 
-# Deprecated: Remove in the future version
-# Many script still uses this method to control timestep. Keep it for backward compatibility
+# Deprecated: Kept for backward compatibility.
+# Many script still uses this method to control timestep.
 def extend_stepper_interface(
     stepper: StepperProtocol, system_collection: SystemCollectionType
 ) -> tuple[
@@ -22,13 +22,15 @@ def extend_stepper_interface(
     SteppersOperatorsType,
 ]:
     try:
-        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors
+        stepper_methods: SteppersOperatorsType = stepper.steps_and_prefactors  # type: ignore
         do_step_method: Callable = stepper.do_step  # type: ignore[attr-defined]
     except AttributeError as e:
         raise NotImplementedError(f"{stepper} stepper is not supported.") from e
     return do_step_method, stepper_methods
 
 
+# Deprecated: Kept for backward compatibility.
+# Recommended to call integration loop explicitly by users.
 def integrate(
     stepper: StepperProtocol,
     systems: SystemCollectionType,

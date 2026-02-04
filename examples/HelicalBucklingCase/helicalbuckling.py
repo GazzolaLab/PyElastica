@@ -1,9 +1,9 @@
 __doc__ = """Helical buckling validation case, for detailed explanation refer to
-Gazzola et. al. R. Soc. 2018  section 3.4.1 """
+Gazzola et al. R. Soc. 2018  section 3.4.1 """
 
 import numpy as np
 import elastica as ea
-from examples.HelicalBucklingCase.helicalbuckling_postprocessing import (
+from helicalbuckling_postprocessing import (
     plot_helicalbuckling,
 )
 
@@ -34,7 +34,7 @@ nu = 0.01 / density / base_area
 E = 1e6
 slack = 3
 number_of_rotations = 27
-# For shear modulus of 1e5, nu is 99!
+# For shear modulus of 1e5, poisson_ratio should be 9
 poisson_ratio = 9
 shear_modulus = E / (poisson_ratio + 1.0)
 shear_matrix = np.repeat(
@@ -57,8 +57,8 @@ shearable_rod = ea.CosseratRod.straight_rod(
 )
 # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
 
-shearable_rod.shear_matrix = shear_matrix
-shearable_rod.bend_matrix = bend_matrix
+shearable_rod.shear_matrix[:] = shear_matrix
+shearable_rod.bend_matrix[:] = bend_matrix
 
 
 helicalbuckling_sim.append(shearable_rod)
@@ -88,7 +88,9 @@ shearable_rod.velocity_collection[..., int((n_elem) / 2)] += np.array([0, 1e-6, 
 final_time = 10500.0
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, helicalbuckling_sim, final_time, total_steps)
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(helicalbuckling_sim, time, dt)
 
 if PLOT_FIGURE:
     plot_helicalbuckling(shearable_rod, SAVE_FIGURE)

@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-    from examples.RigidBodyCases.RodRigidBodyContact.rod_cylinder_contact_friction import (
+    from rod_cylinder_contact_friction import (
         rod_cylinder_contact_friction_case,
     )
 

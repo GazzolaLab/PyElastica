@@ -1,6 +1,8 @@
 import numpy as np
+from collections import defaultdict
+
 import elastica as ea
-from examples.RodContactCase.post_processing import (
+from post_processing import (
     plot_video_with_surface,
     plot_velocity,
 )
@@ -30,9 +32,7 @@ step_skip = int(1.0 / (rendering_fps * time_step))
 # Rod parameters
 base_length = 0.5
 base_radius = 0.01
-base_area = np.pi * base_radius**2
 density = 1750
-nu = 0.0
 E = 3e5
 poisson_ratio = 0.5
 shear_modulus = E / (poisson_ratio + 1.0)
@@ -109,7 +109,7 @@ class RodCallBack(ea.CallBackBaseClass):
     """ """
 
     def __init__(self, step_skip: int, callback_params: dict):
-        ea.CallBackBaseClass.__init__(self)
+        super().__init__()
         self.every = step_skip
         self.callback_params = callback_params
 
@@ -119,7 +119,9 @@ class RodCallBack(ea.CallBackBaseClass):
             self.callback_params["step"].append(current_step)
             self.callback_params["position"].append(system.position_collection.copy())
             self.callback_params["radius"].append(system.radius.copy())
-            self.callback_params["com"].append(system.compute_position_center_of_mass())
+            self.callback_params["center_of_mass"].append(
+                system.compute_position_center_of_mass()
+            )
             self.callback_params["com_velocity"].append(
                 system.compute_velocity_center_of_mass()
             )
@@ -135,7 +137,7 @@ class RodCallBack(ea.CallBackBaseClass):
             return
 
 
-post_processing_dict_rod1 = ea.defaultdict(
+post_processing_dict_rod1 = defaultdict(
     list
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data
@@ -145,7 +147,7 @@ parallel_rod_rod_contact_sim.collect_diagnostics(rod_one).using(
     callback_params=post_processing_dict_rod1,
 )
 
-post_processing_dict_rod2 = ea.defaultdict(
+post_processing_dict_rod2 = defaultdict(
     list
 )  # list which collected data will be append
 # set the diagnostics for rod and collect data
@@ -159,7 +161,10 @@ parallel_rod_rod_contact_sim.finalize()
 # Do the simulation
 
 timestepper = ea.PositionVerlet()
-ea.integrate(timestepper, parallel_rod_rod_contact_sim, final_time, total_steps)
+dt = final_time / total_steps
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(parallel_rod_rod_contact_sim, time, dt)
 
 # plotting the videos
 filename_video = "parallel_rods_contact.mp4"
@@ -172,10 +177,10 @@ plot_video_with_surface(
     vis2D=True,
 )
 
-filaname = "parallel_rods_velocity.png"
+filename = "parallel_rods_velocity.png"
 plot_velocity(
     post_processing_dict_rod1,
     post_processing_dict_rod2,
-    filename=filaname,
+    filename=filename,
     SAVE_FIGURE=True,
 )
