@@ -44,7 +44,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       # Set up cache
       - name: Set up cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ matrix.path }}
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}

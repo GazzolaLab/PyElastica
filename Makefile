@@ -34,7 +34,7 @@ pre-commit-install:
 .PHONY: black
 black:
 	uv run black --version
-	uv run black --config pyproject.toml elastica tests examples
+	uv run black --config pyproject.toml elastica tests examples backend
 
 .PHONY: black-check
 black-check:
@@ -54,7 +54,7 @@ autoflake-check:
 .PHONY: autoflake-format
 autoflake-format:
 	uv run autoflake --version
-	uv run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples
+	uv run autoflake --in-place $(AUTOFLAKE_ARGS) elastica tests examples backend
 
 .PHONY: format-codestyle
 format-codestyle: black autoflake-format
@@ -71,15 +71,15 @@ mypy:
 
 .PHONY: test
 test:
-	uv run pytest -c pyproject.toml
+	uv run pytest -c pyproject.toml tests
 
 .PHONY: test_coverage
 test_coverage:
-	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica -c pyproject.toml
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica -c pyproject.toml tests
 
 .PHONY: test_coverage_xml
 test_coverage_xml:
-	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica --cov-report=xml -c pyproject.toml
+	NUMBA_DISABLE_JIT=1 uv run pytest --cov=elastica --cov-report=xml -c pyproject.toml tests
 
 .PHONY: check-codestyle
 check-codestyle: black-check flake8 autoflake-check
