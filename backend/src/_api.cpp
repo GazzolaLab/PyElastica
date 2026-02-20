@@ -514,8 +514,7 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 numpy.ndarray: An array of ghost node indices (length: n_rods - 1).
                 The array does not own the data.
-        )pbdoc",
-        py::keep_alive<0, 1>())
+        )pbdoc")
         .def_property_readonly("ghost_elems_idx", [](const BlockRodSystem& block) {
             auto indices = block.ghost_elems_idx();
             // Convert to numpy array (pybind11 will handle the conversion automatically)
@@ -527,8 +526,7 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 numpy.ndarray: An array of ghost element indices (length: 2 * (n_rods - 1)).
                 The array does not own the data.
-        )pbdoc",
-        py::keep_alive<0, 1>())
+        )pbdoc")
         .def_property_readonly("ghost_voronoi_idx", [](const BlockRodSystem& block) {
             auto indices = block.ghost_voronoi_idx();
             // Convert to numpy array (pybind11 will handle the conversion automatically)
@@ -540,8 +538,7 @@ PYBIND11_MODULE(_memory_block, m) {
             Returns:
                 numpy.ndarray: An array of ghost voronoi indices (length: 3 * (n_rods - 1)).
                 The array does not own the data.
-        )pbdoc",
-        py::keep_alive<0, 1>())
+        )pbdoc")
         .def("reset_ghost_for_variable", [](BlockRodSystem& block, const std::string& var_name) {
             // Helper to reset ghost for a variable by name
             reset_ghost_for_variable_by_name(block, var_name);

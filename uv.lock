@@ -1290,6 +1290,7 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "tqdm" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -1356,6 +1357,7 @@ requires-dist = [
     { name = "sphinxcontrib-mermaid", marker = "extra == 'docs'", specifier = ">=0.9.2" },
     { name = "sphinxcontrib-video", marker = "extra == 'docs'", specifier = ">=0.4.1" },
     { name = "tqdm" },
+    { name = "typing-extensions" },
 ]
 provides-extras = ["docs", "dev"]
 
