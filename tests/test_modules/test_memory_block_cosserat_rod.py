@@ -79,7 +79,7 @@ class BaseRodForTestingSteppable(SystemProtocol):
     def compute_internal_forces_and_torques(self, time: np.float64) -> None:
         pass
 
-    def update_accelerations(self, time: np.float64) -> None:
+    def update_accelerations(self, time: np.float64, dt: np.float64) -> None:
         pass
 
     def zeroed_out_external_forces_and_torques(self, time: np.float64) -> None:

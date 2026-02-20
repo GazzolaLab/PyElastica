@@ -845,7 +845,7 @@ class TestingClass:
         test_rod.inv_mass_second_moment_of_inertia[:] = inv_mass_moment_of_inertia
 
         # Compute acceleration
-        test_rod.update_accelerations(time=0)
+        test_rod.update_accelerations(time=0, dt=0)
 
         correct_acceleration = external_forces / mass
         assert_allclose(

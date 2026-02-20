@@ -85,7 +85,7 @@ class BlockStructureWithSymplecticStepper(
     def __init__(self, systems):
         MemoryBlockCosseratRod.__init__(self, systems, [i for i in range(len(systems))])
 
-    def update_accelerations(self, time):
+    def update_accelerations(self, time, dt):
         pass
 
 

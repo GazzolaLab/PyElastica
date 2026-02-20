@@ -51,7 +51,7 @@ class RigidBodyBase(ABC, SystemProtocol):
         self.mass_second_moment_of_inertia: NDArray[np.float64]
         self.inv_mass_second_moment_of_inertia: NDArray[np.float64]
 
-    def update_accelerations(self, time: np.float64) -> None:
+    def update_accelerations(self, time: np.float64, dt: np.float64) -> None:
         np.copyto(
             self.acceleration_collection,
             (self.external_forces) / self.mass,

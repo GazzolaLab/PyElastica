@@ -192,7 +192,7 @@ class PositionVerlet(SymplecticStepperMixin):
         self, System: SymplecticSystemProtocol, time: np.float64, dt: np.float64
     ) -> None:
         prefac = dt
-        System.update_accelerations(time)
+        System.update_accelerations(time, prefac)
         System.update_dynamics(time, prefac)
 
 
@@ -246,7 +246,7 @@ class PEFRL(SymplecticStepperMixin):
     ) -> None:
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
         prefac = self.lambda_dash_coeff * dt
-        System.update_accelerations(time)
+        System.update_accelerations(time, prefac)
         System.update_dynamics(time, prefac)
 
     def _second_kinematic_prefactor(self, dt: np.float64) -> np.float64:
@@ -264,7 +264,7 @@ class PEFRL(SymplecticStepperMixin):
     ) -> None:
         # System.dynamic_states += prefac * System.dynamic_rates(time, prefac)
         prefac = self.λ * dt
-        System.update_accelerations(time)
+        System.update_accelerations(time, prefac)
         System.update_dynamics(time, prefac)
 
     def _third_kinematic_prefactor(self, dt: np.float64) -> np.float64:

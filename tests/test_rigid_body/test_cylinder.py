@@ -111,7 +111,7 @@ def test_cylinder_update_accelerations(rng):
     test_cylinder.external_forces[:] = external_forces
     test_cylinder.external_torques[:] = external_torques
 
-    test_cylinder.update_accelerations(time=0)
+    test_cylinder.update_accelerations(time=0, dt=0)
 
     assert_allclose(
         correct_acceleration,

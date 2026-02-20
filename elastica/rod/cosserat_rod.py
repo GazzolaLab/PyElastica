@@ -599,7 +599,7 @@ class CosseratRod(RodBase, SystemProtocol):
         )
 
     # Interface to time-stepper mixins (Symplectic, Explicit), which calls this method
-    def update_accelerations(self, time: np.float64) -> None:
+    def update_accelerations(self, time: np.float64, dt: np.float64) -> None:
         """
         Updates the acceleration variables
 
@@ -607,6 +607,8 @@ class CosseratRod(RodBase, SystemProtocol):
         ----------
         time: np.float64
             current time
+        dt: np.float64
+            timestep. (may involve designing implicit solver)
 
         """
         _update_accelerations(
