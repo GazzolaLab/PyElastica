@@ -1,0 +1,61 @@
+name: elasticapp (Elastica++ based backend) tests
+
+# trigger run only on changes to the backend folder.
+on:
+  push:
+    paths:
+      - backend/**
+  pull_request:
+    paths:
+      - backend/**
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.11"] #, "3.12"]
+        os: [ubuntu-latest] # , macos-latest]
+        include:
+          - os: ubuntu-latest
+            path: ~/.cache/pip
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          uv-version: latest
+      - name: Compile OpenMP
+        env:
+          OMP_NUM_THREADS: 2
+        run: |
+          sudo apt-get update; sudo apt-get install -y libomp5 libomp-dev
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('uv.lock') }}
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install PyElastica and dependencies
+        run: |
+          make install-dev-deps PYTHON_VERSION=${{ matrix.python-version }}
+          uv cache prune --ci
+
+      - name: Run elasticapp tests
+        run: |
+          source .venv/bin/activate
+          cd backend
+          make clean-build
+          make test
+          # pytest backend/tests/py

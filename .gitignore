@@ -219,6 +219,7 @@ sample_prog.py
 
 # txt files
 *.txt
+!CMakelists.txt
 
 # movie or video file formats
 *.mp4
@@ -241,3 +242,6 @@ outcmaes/*
 
 # csv files
 *.csv
+
+# ./backend dependencies
+deps

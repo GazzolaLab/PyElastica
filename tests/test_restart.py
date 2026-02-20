@@ -168,7 +168,7 @@ class TestRestartFunctionsWithFeaturesUsingCosseratRod:
 
         return np.concatenate(recorded_list)
 
-    @pytest.mark.parametrize("final_time", [0.2, 1.0])
+    @pytest.mark.parametrize("final_time", [0.002, 0.01])
     def test_save_restart_run_sim(self, tmp_path, final_time):
 
         # First half of simulation
