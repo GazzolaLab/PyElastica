@@ -11,7 +11,7 @@ Rigid Body
 
 .. automodule:: elastica.rigidbody.rigid_body_base
    :members:
-   :exclude-members: __weakref__, update_acceleration, zeroed_out_external_forces_and_torques
+   :exclude-members: __weakref__, update_accelerations, zeroed_out_external_forces_and_torques
 
 .. automodule:: elastica.rigidbody.cylinder
    :members:

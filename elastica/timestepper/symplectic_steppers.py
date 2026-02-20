@@ -134,7 +134,7 @@ class SymplecticStepperMixin:
         from warning import warn
 
         warn("This method is deprecated. Use the instance method .step instead.")
-        return Timestepper.step(SystemCollection, time, dt)  # type: ignore
+        return TimeStepper.step(SystemCollection, time, dt)  # type: ignore
 
     def step_single_instance(
         self,
