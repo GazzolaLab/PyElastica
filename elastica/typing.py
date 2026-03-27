@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from typing import Callable, Any, TypeAlias, Protocol
 
 import numpy as np
+import numpy.typing as npt
 
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 # Indexing types
 ConstrainingIndex: TypeAlias = tuple[int, ...]
 ConnectionIndex: TypeAlias = (
-    int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
+    int | np.int32 | list[int] | tuple[int, ...] | npt.NDArray[np.int32]
 )
 
 
