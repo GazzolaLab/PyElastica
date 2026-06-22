@@ -1,13 +1,28 @@
+# Release 1.0.0
+
+## What's Changed
+* [Feat] Collective call method for closing callbacks by @skim0119 in https://github.com/GazzolaLab/PyElastica/pull/503
+* fix: compute_additional_segment directions  by @zzzzzbk in https://github.com/GazzolaLab/PyElastica/pull/509
+* [CI] Specify python version for UV installation by @skim0119 in https://github.com/GazzolaLab/PyElastica/pull/508
+* [Feat] Callback for multiple system types in simulation by @skim0119 in https://github.com/GazzolaLab/PyElastica/pull/511
+* [Examples] Clean up for V1 release by @skim0119 in https://github.com/GazzolaLab/PyElastica/pull/502
+* [Bug] Fix sphere-rod contact by @skim0119 in https://github.com/GazzolaLab/PyElastica/pull/513
+
+## New Contributors
+* @zzzzzbk made their first contribution in https://github.com/GazzolaLab/PyElastica/pull/509
+
+**Full Changelog**: https://github.com/GazzolaLab/PyElastica/compare/v0.3.3.post3...v1.0.0
+
 # Release 0.3.3
 
 # PyElastica v0.3.3pre Release Notes
 
 ## Major Changes
 
-This release introduces updates, new examples, and minor bug fixes to PyElastica. 
+This release introduces updates, new examples, and minor bug fixes to PyElastica.
 Several **typing improvements** have been made across core modules (`rods`, `rigid_body`, `systems`, `contact`, etc.), which will improve readability, maintainability, and debugging.
 
-In terms of features, a new **OperatorGroup system** has been added for handling constraints and callbacks, improving modularity. 
+In terms of features, a new **OperatorGroup system** has been added for handling constraints and callbacks, improving modularity.
 All modules now receive `time` as an argument, in case a user desires to implement external forcing/couple condition that depends on time.
 
 Example cases have been expanded with **cantilever load and unconstrained tumbling simulations**, along with a new **underhand knot case**.
@@ -177,11 +192,11 @@ Finally, `PyElastica` now uses `uv` as a main dev and deployment scheme.
 # Release Note (version 0.2.3)
 
 ## Developer Note
-The major updates are knot theory module added to the Cosserat rod as *mixin*, and muscular snake example is added. 
+The major updates are knot theory module added to the Cosserat rod as *mixin*, and muscular snake example is added.
 
 ## Notable Changes
 - #70: Knot theory module to compute topological quantities.
-- #71: Reorganize rod constructor warning messages and collect messages in log.  
+- #71: Reorganize rod constructor warning messages and collect messages in log.
 - #72: Muscular snake example is added.
 
 ---
@@ -205,22 +220,22 @@ Constraint and finalize module are refactored to enhance readability.
 
 ## Developer Note
 
-Contact model between two different rods and rod with itself is implemented. 
+Contact model between two different rods and rod with itself is implemented.
 Testing the contact model is done through simulations. These simulation scripts can be found under
-[RodContactCase](./RodContactCase). 
+[RodContactCase](./RodContactCase).
 However, in future releases we have to add unit tests for contact model functions to test them and increase code coverage.
 
 ## Notable Changes
 - #31: Merge contact model to master [PR #40 in public](https://github.com/GazzolaLab/PyElastica/pull/40)
 - #46: The progress bar can be disabled by passing an argument to `integrate`.
 - #48: Experimental modules are added to hold functions that are in test phase.
-- 
+-
 ### Release Note
 <details>
   <summary>Click to expand</summary>
 
 - Rod-Rod contact and Rod self contact is added.
-- Two example cases for rod-rod contact is added, i.e. two rods colliding to each other in space. 
+- Two example cases for rod-rod contact is added, i.e. two rods colliding to each other in space.
 - Two example cases for rod self contact is added, i.e. plectonemes and solenoids.
 - Progress bar can be disabled by passing an argument to `integrate` function.
 - Experimental module added.
@@ -243,7 +258,7 @@ Good luck! If it explode, increase nu. :rofl: If it doesn't explode, thoroughly 
 - #100: ExportCallBack is added to export the rod-data into file.
 - #109: Numpy-only version is now removed. Numba-implementation is set to default.
 - #112: Save and load implementation with the example are added.
- 
+
 ### Release Note
 <details>
   <summary>Click to expand</summary>
@@ -260,4 +275,3 @@ Good luck! If it explode, increase nu. :rofl: If it doesn't explode, thoroughly 
 - Save/Load example
 
 </details>
-
