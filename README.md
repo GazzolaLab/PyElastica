@@ -25,11 +25,13 @@ Documentation of PyElastica is available [here][link-docs-website].
 
 ## Related Projects
 
+- C++ elastica for large-simulation: [elasticapp](https://github.com/GazzolaLab/elasticapp)
+- JAX extension for PyElastica, blocking and GPU computing: [PyElastica-Jax](https://github.com/skim0119/PyElastica-JAX)
 - Cosserat rod with magnetic field: [magneto-pyelastica](https://github.com/armantekinalp/MagnetoPyElastica)
     - Simulate magnetic Cosserat rods interacting with external magnetic environments.
-    - `pip install magneto_pyelastica`
 - gymnasium environment for learning and control: [gym-softrobot](https://github.com/skim0119/gym-softrobot)
 - BR2 FREE pneumatic actuator simulation: [BR2-simulator](https://github.com/skim0119/BR2-simulator)
+- Octopus muscle actuation model: [COOMM](https://github.com/hanson-hschang/COOMM)
 - Blender visualization: [Blender-Soft-Rod](https://github.com/GazzolaLab/Blender-Soft-Rod)
 - Rhino3D plugin for visualizaion: [plugin](https://github.com/skim0119/PyElastica-to-Rhino)
 - Elastica web-interface: [PyElastica-Interactive](https://github.com/GazzolaLab/PyElastica-Interactive)
@@ -69,7 +71,8 @@ We ask that any publications which use Elastica cite as following:
 </details>
 
 ## List of publications and submissions
-- [Simulations and experiments with assemblies of fiber-reinforced soft actuators](https://arxiv.org/abs/2507.10121) (UIUC 2025)
+- [Digital twins for the design, interactive control, and deployment of modular, fiber-reinforced soft continuum arms](https://arxiv.org/abs/2507.10121) (UIUC 2026) (Advanced Intelligent Systems)
+- [Elastica++: A high-performance, multiphysics framework for large interacting assemblies of Cosserat rods](https://arxiv.org/abs/2605.13766) (UIUC 2026)
 - [Soft, slender and active structures in fluids: embedding Cosserat rods in vortex methods](https://doi.org/10.48550/arXiv.2401.09506) (UIUC 2024)
 - [Neural models and algorithms for sensorimotor control of an octopus arm](https://doi.org/10.48550/arXiv.2402.01074)(UIUC 2024)
 - [On the mechanical origins of waving, coiling and skewing in Arabidopsis thaliana roots](https://www.pnas.org/doi/10.1073/pnas.2312761121) (Tel Aviv University, UIUC 2024) (PNAS)
