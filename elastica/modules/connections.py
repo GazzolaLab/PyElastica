@@ -6,6 +6,7 @@ Provides the connections interface to connect entities (rods,
 rigid bodies) using joints (see `joints.py`).
 """
 from typing import Type, cast, Any
+import inspect
 from elastica.typing import (
     SystemIdxType,
     ConnectionIndex,
@@ -290,9 +291,10 @@ class _Connect:
             )
 
         try:
-            return self._connect_cls(*self._args, **self._kwargs)
-        except (TypeError, IndexError):
+            inspect.signature(self._connect_cls).bind(*self._args, **self._kwargs)
+        except TypeError:
             raise TypeError(
                 r"Unable to construct connection class.\n"
                 r"Did you provide all necessary connection properties?"
             )
+        return self._connect_cls(*self._args, **self._kwargs)

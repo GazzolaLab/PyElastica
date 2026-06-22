@@ -10,6 +10,7 @@ on the rods. (see `dissipation.py`).
 """
 
 from typing import Any, Type, List
+import inspect
 
 import functools
 
@@ -152,7 +153,9 @@ class _Damper:
             )
 
         try:
-            damper = self._damper_cls(*self._args, _system=rod, **self._kwargs)
-            return damper
-        except (TypeError, IndexError):
+            inspect.signature(self._damper_cls).bind(
+                *self._args, _system=rod, **self._kwargs
+            )
+        except TypeError:
             raise TypeError("Unable to construct damping class.\n")
+        return self._damper_cls(*self._args, _system=rod, **self._kwargs)

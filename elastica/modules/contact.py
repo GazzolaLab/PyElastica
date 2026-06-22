@@ -6,6 +6,7 @@ Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
 from typing import Type, Any
+import inspect
 
 import functools
 from elastica.typing import (
@@ -167,9 +168,10 @@ class _Contact:
             )
 
         try:
-            return self._contact_cls(*self._args, **self._kwargs)
-        except (TypeError, IndexError):
+            inspect.signature(self._contact_cls).bind(*self._args, **self._kwargs)
+        except TypeError:
             raise TypeError(
                 r"Unable to construct contact class.\n"
                 r"Did you provide all necessary contact properties?"
             )
+        return self._contact_cls(*self._args, **self._kwargs)

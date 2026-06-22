@@ -106,7 +106,7 @@ class RigidBodyBase(ABC, SystemProtocol):
         """
         Return rotational energy
         """
-        j_omega = np.einsum(
-            "ijk,jk->ik", self.mass_second_moment_of_inertia, self.omega_collection
+        j_omega = _batch_matvec(
+            self.mass_second_moment_of_inertia, self.omega_collection
         )
         return 0.5 * np.einsum("ik,ik->k", self.omega_collection, j_omega).sum()

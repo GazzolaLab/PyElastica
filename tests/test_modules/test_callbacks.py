@@ -36,24 +36,17 @@ class TestCallBacks:
         assert load_callback.id() == 100
 
     def test_call_improper_args_throws(self, load_callback):
-        # Example of bad initiailization function
-        # This needs at least four args which the user might
-        # forget to pass later on
-        def mock_init(self, *args, **kwargs):
-            self.nu = args[3]  # Need at least four args
-            self.k = kwargs.get("k")
+        def mock_init(self, required_arg, another_required_arg):
+            self.nu = required_arg
+            self.k = another_required_arg
 
-        # in place class
         MockCallBack = type(
             "MockCallBack", (self.CallBackBaseClass, object), {"__init__": mock_init}
         )
 
-        # The user thinks 4.0 goes to nu, but we don't accept it because of error in
-        # construction og a Forcing class
         callback = load_callback
-        callback.using(MockCallBack, 4.0, k=1, l_var="2", j=3.0)
+        callback.using(MockCallBack, 4.0)
 
-        # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = callback.instantiate()
         assert "Unable to construct" in str(excinfo.value)

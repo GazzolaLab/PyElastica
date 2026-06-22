@@ -8,17 +8,16 @@ Provides the collision environment interface to configure collision detection an
 detection resolution for Cosserat rods in the simulation.
 """
 __all__ = ["CollisionEnvironment"]
-from typing import Any, Type
 import functools
+from typing import Any, Type
 
 from elastica.external_forces import NoForces
+from elastica.modules.protocol import ModuleProtocol, SystemCollectionProtocol
 from elastica.typing import SystemIdxType
-from elastica.modules.protocol import SystemCollectionProtocol, ModuleProtocol
 
-from .memory_block_rod import MemoryBlockCosseratRod
 from .collision_physics import CollisionPhysics
-
-from .typing_alias import CoarseDetectionType, FineDetectionType, BatchingType
+from .memory_block_rod import MemoryBlockCosseratRod
+from .typing_alias import BatchingType, CoarseDetectionType, FineDetectionType
 
 
 class CollisionEnvironment(SystemCollectionProtocol):
@@ -76,7 +75,7 @@ class CollisionEnvironment(SystemCollectionProtocol):
         self._collision_coarse_detection: CoarseDetectionType
         self._collision_fine_detection: FineDetectionType
         self._collision_batching: BatchingType
-        self._collision_controller: "_CollisionController"
+        self._collision_controller: _CollisionController
         self.configure_collision_detection()
 
     def configure_collision_detection(
@@ -160,9 +159,7 @@ class _CollisionController:
         """
         assert issubclass(
             cls, CollisionPhysics
-        ), "{} is not a valid collision physics. Did you forget to derive from CollisionPhysics?".format(
-            cls
-        )
+        ), f"{cls} is not a valid collision physics. Did you forget to derive from CollisionPhysics?"
         self._cls = cls
         self._args = args
         self._kwargs = kwargs
@@ -170,7 +167,7 @@ class _CollisionController:
     def id(self) -> SystemIdxType:
         return None  # type: ignore
 
-    def instantiate(self) -> "CollisionPhysics":
+    def instantiate(self) -> CollisionPhysics:
         """Constructs a constraint after checks"""
         if not hasattr(self, "_cls"):
             raise RuntimeError(

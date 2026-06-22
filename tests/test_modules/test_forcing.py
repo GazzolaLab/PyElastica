@@ -43,27 +43,36 @@ class TestExtForceTorque:
         assert "No forcing" in str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_forcing):
-        # Example of bad initiailization function
-        # This needs at least four args which the user might
-        # forget to pass later on
-        def mock_init(self, *args, **kwargs):
-            self.nu = args[3]  # Need at least four args
-            self.k = kwargs.get("k")
+        def mock_init(self, required_arg, another_required_arg):
+            self.nu = required_arg
+            self.k = another_required_arg
 
-        # in place class
         MockForcing = type(
             "MockForcing", (self.NoForces, object), {"__init__": mock_init}
         )
 
-        # The user thinks 4.0 goes to nu, but we don't accept it because of error in
-        # construction og a Forcing class
         forcing = load_forcing
-        forcing.using(MockForcing, 4.0, k=1, l_var="2", j=3.0)
+        forcing.using(MockForcing, 4.0)
 
-        # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = forcing.instantiate()
         assert "Unable to construct" in str(excinfo.value)
+
+    def test_constructor_type_error_propagates_original_message(self, load_forcing):
+        def mock_init(self, *args, **kwargs):
+            raise TypeError("forcing constructor bug")
+
+        MockForcing = type(
+            "MockForcing", (self.NoForces, object), {"__init__": mock_init}
+        )
+
+        forcing = load_forcing
+        forcing.using(MockForcing, 4.0, k=1)
+
+        with pytest.raises(TypeError) as excinfo:
+            forcing.instantiate()
+
+        assert str(excinfo.value) == "forcing constructor bug"
 
 
 class TestForcingMixin:

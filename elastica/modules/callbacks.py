@@ -7,6 +7,7 @@ CallBacks
 Provides the callBack interface to collect data over time (see `callback_functions.py`).
 """
 from types import EllipsisType
+import inspect
 from typing import Type, Any, TypeAlias, cast
 from elastica.typing import (
     SystemType,
@@ -189,9 +190,10 @@ class _CallBack:
             )
 
         try:
-            return self._callback_cls(*self._args, **self._kwargs)
-        except (TypeError, IndexError):
+            inspect.signature(self._callback_cls).bind(*self._args, **self._kwargs)
+        except TypeError:
             raise TypeError(
                 r"Unable to construct callback class.\n"
                 r"Did you provide all necessary callback properties?"
             )
+        return self._callback_cls(*self._args, **self._kwargs)

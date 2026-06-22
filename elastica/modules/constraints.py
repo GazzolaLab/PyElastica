@@ -5,6 +5,7 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 from typing import Any, Type, cast
+import inspect
 
 import functools
 
@@ -224,7 +225,7 @@ class _Constraint:
             else []
         )
         try:
-            bc = self._bc_cls(
+            inspect.signature(self._bc_cls).bind(
                 *positions,
                 *directors,
                 *self._args,
@@ -233,8 +234,7 @@ class _Constraint:
                 constrained_director_idx=self.constrained_director_idx,
                 **self._kwargs,
             )
-            return bc
-        except (TypeError, IndexError):
+        except TypeError:
             raise TypeError(
                 "Unable to construct boundary condition class. Note that:\n"
                 "1. Any rod properties needed should be placed first\n"
@@ -243,3 +243,12 @@ class _Constraint:
                 "the __init__ method. eg MyBC.__init__(pos_one, director_one, director_two)\n"
                 "should have the `using` call as .using(MyBC, positions=(1,), directors=(1,-1))\n"
             )
+        return self._bc_cls(
+            *positions,
+            *directors,
+            *self._args,
+            _system=system,
+            constrained_position_idx=self.constrained_position_idx,
+            constrained_director_idx=self.constrained_director_idx,
+            **self._kwargs,
+        )

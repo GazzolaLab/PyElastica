@@ -7,6 +7,7 @@ Provides the forcing interface to apply forces and torques to rod-like objects
 """
 import logging
 import functools
+import inspect
 from typing import Any, Type, List
 
 from elastica.external_forces import NoForces
@@ -149,9 +150,10 @@ class _ExtForceTorque:
             )
 
         try:
-            return self._forcing_cls(*self._args, **self._kwargs)
-        except (TypeError, IndexError):
+            inspect.signature(self._forcing_cls).bind(*self._args, **self._kwargs)
+        except TypeError:
             raise TypeError(
                 r"Unable to construct forcing class.\n"
                 r"Did you provide all necessary force properties?"
             )
+        return self._forcing_cls(*self._args, **self._kwargs)

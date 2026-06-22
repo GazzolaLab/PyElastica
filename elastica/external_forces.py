@@ -219,7 +219,7 @@ class EndpointForces(NoForces):
 
 class UniformTorques(NoForces):
     """
-    This class applies a uniform torque to the entire rod.
+    This class applies a uniform torque (defined in global frame) to the entire rod.
 
     Attributes
     ----------
@@ -565,7 +565,6 @@ class EndpointForcesSinusoidal(NoForces):
     def apply_forces(
         self, system: "RodType | RigidBodyType", time: np.float64 = np.float64(0.0)
     ) -> None:
-
         if time < self.ramp_up_time:
             # When time smaller than ramp up time apply the force in normal direction
             # First pull the rod upward or downward direction some time.

@@ -131,7 +131,7 @@ def overload_operator_kinematic_numba(
     for i in range(3):
         for k in range(blocksize):
             position_collection[i, k] += prefac * velocity_collection[i, k]
-    rotation_matrix = _get_rotation_matrix(1.0, prefac * omega_collection)
+    rotation_matrix = _get_rotation_matrix(prefac, omega_collection)
     director_collection[:] = _batch_matmul(rotation_matrix, director_collection)
 
 
