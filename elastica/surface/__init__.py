@@ -1,2 +1,2 @@
-__doc__ = """Surface classes"""
+"""Surface classes"""
 from elastica.surface.plane import Plane
