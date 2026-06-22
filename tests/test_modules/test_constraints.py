@@ -213,7 +213,6 @@ class TestConstraintsMixin:
     class SystemCollectionWithConstraintsMixedin(BaseSystemCollection, Constraints):
         pass
 
-    # TODO fix link after new PR
     from elastica.rod import RodBase
 
     class MockRod(RodBase):

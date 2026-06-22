@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 import elastica as ea
 from post_processing import plot_velocity, plot_video_with_surface
 
@@ -109,23 +110,22 @@ def rod_cylinder_contact_friction_case(
     # For rod
     class StraightRodCallBack(ea.CallBackBaseClass):
         """
-        Call back function for two arm octopus
+        Callback function for a straight rod in contact with a cylinder.
         """
 
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
         def make_callback(self, system, time, current_step: int):
             if current_step % self.every == 0:
                 self.callback_params["time"].append(time)
-                self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
                 )
                 self.callback_params["radius"].append(system.radius.copy())
-                self.callback_params["com"].append(
+                self.callback_params["center_of_mass"].append(
                     system.compute_position_center_of_mass()
                 )
                 if current_step == 0:
@@ -149,13 +149,13 @@ def rod_cylinder_contact_friction_case(
 
     class RigidCylinderCallBack(ea.CallBackBaseClass):
         """
-        Call back function for two arm octopus
+        Callback function for a rigid cylinder
         """
 
         def __init__(
             self, step_skip: int, callback_params: dict, resize_cylinder_elems: int
         ):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
             self.n_elem_cylinder = resize_cylinder_elems
@@ -164,7 +164,6 @@ def rod_cylinder_contact_friction_case(
         def make_callback(self, system, time, current_step: int):
             if current_step % self.every == 0:
                 self.callback_params["time"].append(time)
-                self.callback_params["step"].append(current_step)
 
                 cylinder_center_position = system.position_collection
                 cylinder_length = system.length
@@ -199,7 +198,7 @@ def rod_cylinder_contact_friction_case(
                     cylinder_velocity_collection.copy()
                 )
                 self.callback_params["radius"].append(cylinder_radius_collection.copy())
-                self.callback_params["com"].append(
+                self.callback_params["center_of_mass"].append(
                     system.compute_position_center_of_mass()
                 )
 
@@ -219,14 +218,14 @@ def rod_cylinder_contact_friction_case(
                 return
 
     if POST_PROCESSING:
-        post_processing_dict_list.append(ea.defaultdict(list))
+        post_processing_dict_list.append(defaultdict(list))
         rod_cylinder_parallel_contact_simulator.collect_diagnostics(rod).using(
             StraightRodCallBack,
             step_skip=step_skip,
             callback_params=post_processing_dict_list[0],
         )
         # For rigid body
-        post_processing_dict_list.append(ea.defaultdict(list))
+        post_processing_dict_list.append(defaultdict(list))
         rod_cylinder_parallel_contact_simulator.collect_diagnostics(rigid_body).using(
             RigidCylinderCallBack,
             step_skip=step_skip,
@@ -237,9 +236,10 @@ def rod_cylinder_contact_friction_case(
     rod_cylinder_parallel_contact_simulator.finalize()
     timestepper = ea.PositionVerlet()
 
-    ea.integrate(
-        timestepper, rod_cylinder_parallel_contact_simulator, final_time, total_steps
-    )
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rod_cylinder_parallel_contact_simulator, time, dt)
 
     if POST_PROCESSING:
         # Plot the rods

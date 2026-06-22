@@ -1,8 +1,9 @@
-__doc__ = """Fixed joint example, for detailed explanation refer to Zhang et. al. Nature Comm.  methods section."""
+__doc__ = """Fixed joint example, for detailed explanation refer to Zhang et al. Nature Comm.  methods section."""
 
 import numpy as np
+from collections import defaultdict
 import elastica as ea
-from examples.JointCases.joint_cases_postprocessing import (
+from joint_cases_postprocessing import (
     plot_position,
     plot_video,
     plot_video_xy,
@@ -27,10 +28,9 @@ fixed_joint_sim = FixedJointSimulator()
 n_elem = 10
 direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
-roll_direction = np.cross(direction, normal)
+
 base_length = 0.2
 base_radius = 0.007
-base_area = np.pi * base_radius**2
 density = 1750
 E = 3e7
 poisson_ratio = 0.5
@@ -100,14 +100,33 @@ fixed_joint_sim.dampen(rod2).using(
     time_step=dt,
 )
 
-pp_list_rod1 = ea.defaultdict(list)
-pp_list_rod2 = ea.defaultdict(list)
+
+class JointCasesCallBack(ea.CallBackBaseClass):
+    """
+    Callback function for joint cases.
+    """
+
+    def __init__(self, step_skip: int, callback_params: dict):
+        super().__init__()
+        self.every = step_skip
+        self.callback_params = callback_params
+
+    def make_callback(self, system, time, current_step: int):
+        if current_step % self.every == 0:
+            self.callback_params["time"].append(time)
+            self.callback_params["position"].append(system.position_collection.copy())
+            self.callback_params["directors"].append(system.director_collection.copy())
+            return
+
+
+pp_list_rod1 = defaultdict(list)
+pp_list_rod2 = defaultdict(list)
 
 fixed_joint_sim.collect_diagnostics(rod1).using(
-    ea.MyCallBack, step_skip=1000, callback_params=pp_list_rod1
+    JointCasesCallBack, step_skip=1000, callback_params=pp_list_rod1
 )
 fixed_joint_sim.collect_diagnostics(rod2).using(
-    ea.MyCallBack, step_skip=1000, callback_params=pp_list_rod2
+    JointCasesCallBack, step_skip=1000, callback_params=pp_list_rod2
 )
 
 fixed_joint_sim.finalize()
@@ -115,10 +134,11 @@ timestepper = ea.PositionVerlet()
 # timestepper = PEFRL()
 
 final_time = 10
-dl = base_length / n_elem
 total_steps = int(final_time / dt)
 print("Total steps", total_steps)
-ea.integrate(timestepper, fixed_joint_sim, final_time, total_steps)
+time = 0.0
+for i in range(total_steps):
+    time = timestepper.step(fixed_joint_sim, time, dt)
 
 PLOT_FIGURE = True
 SAVE_FIGURE = False

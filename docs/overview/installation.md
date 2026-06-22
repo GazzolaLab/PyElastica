@@ -1,6 +1,6 @@
 # Installation
 
-## Instruction
+## Instructions
 
 PyElastica requires Python 3.10+, which needs to be installed prior to using PyElastica. For information on installing Python, see [here](https://realpython.com/installing-python/). If you are interested in using a package manager like Conda, see [here](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html).
 

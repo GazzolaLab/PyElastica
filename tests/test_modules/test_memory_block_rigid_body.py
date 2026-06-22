@@ -60,9 +60,10 @@ def test_construct_memory_block_structures_for_rigid_bodies(n_bodies):
 
     systems = [MockRigidBodyForTesting() for _ in range(n_bodies)]
 
-    memory_block_list = construct_memory_block_structures(systems)
+    block_supports = {MemoryBlockRigidBody: [MockRigidBodyForTesting]}
+    memory_block_list, _ = construct_memory_block_structures(systems, block_supports)
 
-    assert issubclass(memory_block_list[0].__class__, MemoryBlockRigidBody)
+    assert isinstance(memory_block_list[0], MemoryBlockRigidBody)
 
 
 @pytest.mark.parametrize("n_bodies", [1, 2, 5, 6])

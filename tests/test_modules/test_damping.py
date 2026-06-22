@@ -89,7 +89,6 @@ class TestDampingMixin:
     class SystemCollectionWithDampingMixedin(BaseSystemCollection, Damping):
         pass
 
-    # TODO fix link after new PR
     from elastica.rod import RodBase
 
     class MockRod(RodBase):

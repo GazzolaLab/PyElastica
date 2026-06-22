@@ -12,8 +12,6 @@ from .utils import MaxDimension, isqrt
 
 from numpy.typing import NDArray
 
-# TODO Complete, but nicer interface, evolve it eventually
-
 
 def format_vector_shape(
     vector_collection: NDArray[np.float64],

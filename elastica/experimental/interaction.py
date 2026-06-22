@@ -102,7 +102,9 @@ def anisotropic_friction_numba_rigid_body(
         velocity_collection,
         external_forces,
     )
-    # FIXME: In future change the below part we should be able to compute the normal
+    # NOTE: Currently uses director_collection[0] as axial direction.
+    # If user anticipate the normal direction to be different from the director_collection[0]
+    # due to the rolling motion, this function cannot be used.
     axial_direction = director_collection[0]  # rigid_body_normal  # system.tangents
     element_velocity = velocity_collection
 

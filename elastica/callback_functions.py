@@ -26,7 +26,12 @@ class CallBackBaseClass(Generic[T]):
 
     """
 
-    def make_callback(self, system: T, time: np.float64, current_step: int) -> None:
+    def make_callback(
+        self,
+        system: T,
+        time: np.float64,
+        current_step: int,
+    ) -> None:
         """
         This method is called every time step. Users can define
         which parameters are called back and recorded. Also users
@@ -35,7 +40,7 @@ class CallBackBaseClass(Generic[T]):
 
         Parameters
         ----------
-        system : object
+        system : T (SystemType | tuple[SystemType] | dict[Any, SystemType] | list[SystemType])
             System is a rod-like object.
         time : float
             The time of the simulation.
@@ -43,7 +48,12 @@ class CallBackBaseClass(Generic[T]):
             Simulation step.
 
         """
-        pass
+
+    def on_close(self) -> None:
+        """
+        This method is called collectively when when .close() is
+        called by the system collection.
+        """
 
 
 class MyCallBack(CallBackBaseClass):
@@ -52,12 +62,12 @@ class MyCallBack(CallBackBaseClass):
     This is just an example of a callback class, this class as an example/template to write
     new call back classes in your client file.
 
-        Attributes
-        ----------
-        sample_every: int
-            Collect data using make_callback method every sampling step.
-        callback_params: dict
-            Collected callback data is saved in this dictionary.
+    Attributes
+    ----------
+    sample_every: int
+        Collect data using make_callback method every sampling step.
+    callback_params: dict
+        Collected callback data is saved in this dictionary.
     """
 
     def __init__(self, step_skip: int, callback_params: dict) -> None:
@@ -75,7 +85,7 @@ class MyCallBack(CallBackBaseClass):
         self.callback_params = callback_params
 
     def make_callback(
-        self, system: "RodType | RigidBodyType", time: np.float64, current_step: int
+        self, system: RodType, time: np.float64, current_step: int
     ) -> None:
 
         if current_step % self.sample_every == 0:
@@ -97,16 +107,16 @@ class ExportCallBack(CallBackBaseClass):
     If one wants to customize the saving data, we recommend to
     override `make_callback` method.
 
-        Attributes
-        ----------
-        AVAILABLE_METHOD
-            Supported method to save the file. We recommend
-            binary save to maintain the tensor structure of
-            data.
-        FILE_SIZE_CUTOFF
-            Maximum buffer size for each file. If the buffer
-            size exceed, new file is created. Actual size of
-            the file is expected to be marginally larger.
+    Attributes
+    ----------
+    AVAILABLE_METHOD
+        Supported method to save the file. We recommend
+        binary save to maintain the tensor structure of
+        data.
+    FILE_SIZE_CUTOFF
+        Maximum buffer size for each file. If the buffer
+        size exceed, new file is created. Actual size of
+        the file is expected to be marginally larger.
     """
 
     AVAILABLE_METHOD = ["pickle", "npz", "tempfile"]
@@ -198,15 +208,16 @@ class ExportCallBack(CallBackBaseClass):
         self, system: "RodType | RigidBodyType", time: np.float64, current_step: int
     ) -> None:
         """
+        Collect simulation data at specified intervals.
 
         Parameters
         ----------
-        system :
-            Each part of the system (i.e. rod, rigid body, etc)
-        time :
-            simulation time unit
+        system : RodType | RigidBodyType
+            Each part of the system (i.e. rod, rigid body, etc).
+        time : float
+            Simulation time.
         current_step : int
-            simulation step
+            Current simulation step.
         """
         if current_step % self.step_skip == 0:
             position = system.position_collection.copy()
@@ -264,15 +275,10 @@ class ExportCallBack(CallBackBaseClass):
         else:
             return self.save_path.format(self.file_count - 1, self._ext)
 
-    def close(self) -> None:
+    def on_close(self) -> None:
         """
-        Save residual buffer
+        Save residual buffer.
+        Can be called using `simulator.close()`.
         """
         if self.buffer_size:
             self._dump()
-
-    def clear(self) -> None:
-        """
-        Alias to `close`
-        """
-        self.close()

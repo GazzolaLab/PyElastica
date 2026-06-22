@@ -6,48 +6,39 @@ Provides the contact interface to apply contact forces between objects
 (rods, rigid bodies, surfaces).
 """
 from typing import Type, Any
-from typing_extensions import Self
+import inspect
 
 import functools
 from elastica.typing import (
     SystemIdxType,
-    OperatorType,
-    StaticSystemType,
     SystemType,
+    StaticSystemType,
 )
-from .protocol import ContactedSystemCollectionProtocol, ModuleProtocol
-
-import logging
-
-import numpy as np
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 from elastica.contact_forces import NoContact
 
-logger = logging.getLogger(__name__)
 
-
-def warnings() -> None:
-    logger.warning("Contact features should be instantiated lastly.")
-
-
-class Contact:
+class Contact(SystemCollectionProtocol):
     """
-    The Contact class is a module for applying contact between rod-like objects . To apply contact between rod-like objects,
+    The Contact class is a module for applying contact between rod-like objects. To apply contact between rod-like objects,
     the simulator class must be derived from the Contact class.
 
-        Attributes
-        ----------
-        _contacts: list
-            List of contact classes defined for rod-like objects.
+    Attributes
+    ----------
+    _contacts: list
+        List of contact classes defined for rod-like objects.
     """
 
-    def __init__(self: ContactedSystemCollectionProtocol) -> None:
-        self._contacts: list[ModuleProtocol] = []
+    _contacts: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._contacts = []
         super(Contact, self).__init__()
         self._feature_group_finalize.append(self._finalize_contact)
 
     def detect_contact_between(
-        self: ContactedSystemCollectionProtocol,
+        self,
         first_system: SystemType,
         second_system: "SystemType | StaticSystemType",
     ) -> ModuleProtocol:
@@ -74,7 +65,7 @@ class Contact:
 
         return _contact
 
-    def _finalize_contact(self: ContactedSystemCollectionProtocol) -> None:
+    def _finalize_contact(self) -> None:
 
         # dev : the first indices stores the
         # (first_rod_idx, second_rod_idx)
@@ -96,9 +87,6 @@ class Contact:
             )
 
             self._feature_group_synchronize.add_operators(contact, [func])
-
-            if not self._feature_group_synchronize.is_last(contact):
-                warnings()
 
         self._contacts = []
         del self._contacts
@@ -137,7 +125,7 @@ class _Contact:
         self._args: Any
         self._kwargs: Any
 
-    def using(self, cls: Type[NoContact], *args: Any, **kwargs: Any) -> Self:
+    def using(self, cls: Type[NoContact], *args: Any, **kwargs: Any) -> None:
         """
         This method is a module to set which contact class is used to apply contact
         between user defined rod-like objects.
@@ -163,7 +151,6 @@ class _Contact:
         self._contact_cls = cls
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> Any:
         return (
@@ -181,9 +168,10 @@ class _Contact:
             )
 
         try:
-            return self._contact_cls(*self._args, **self._kwargs)
-        except (TypeError, IndexError):
+            inspect.signature(self._contact_cls).bind(*self._args, **self._kwargs)
+        except TypeError:
             raise TypeError(
                 r"Unable to construct contact class.\n"
                 r"Did you provide all necessary contact properties?"
             )
+        return self._contact_cls(*self._args, **self._kwargs)

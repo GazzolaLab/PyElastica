@@ -19,7 +19,7 @@ class BaseStatefulSystem:
         self._state = new_state
 
 
-class BaseSymplecticSystem:
+class BaseSymplecticSystem(_RodSymplecticStepperMixin):
     def __init__(self):
         pass
 
@@ -65,6 +65,9 @@ class TestDynamicState:
         for k in range(blocksize + 1):
             self.rate_collection[:, k] = state
         self.n_kinematic_rates = blocksize
+        # velocity and omega are accessed via dynamic_states by the stepper
+        self.velocity_collection = self.rate_collection[..., 0].reshape(3, 1)
+        self.omega_collection = self.rate_collection[..., 1].reshape(3, 1)
 
 
 # class BaseLinearStatefulSystem:
@@ -113,7 +116,7 @@ class BaseUndampedSimpleHarmonicOscillatorSystem:
         )
         return np.array([analytical_position, analytical_velocity])
 
-    def __call__(self, time, *args, **kwargs):
+    def __call__(self):
         return self.A_matrix @ self._state
 
 
@@ -136,13 +139,15 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         self._kin_state = TestKinematicState(self._state[0:1])  # Create a view instead
         self._dyn_state = TestDynamicState(self._state[1:2])  # Create a view instead
         self.n_nodes = self._kin_state.n_nodes
+        self.position_collection = self._kin_state.position_collection
+        self.director_collection = self._kin_state.director_collection
         self.velocity_collection = self._dyn_state.rate_collection[..., 0].reshape(3, 1)
         self.omega_collection = self._dyn_state.rate_collection[..., 1].reshape(3, 1)
+        self.v_w_collection = self._dyn_state.rate_collection
 
-    def dynamic_rates(self, time, *args, **kwargs):
-        temp = super(SymplecticUndampedSimpleHarmonicOscillatorSystem, self).__call__(
-            *args, **kwargs
-        )[-1]
+    @property
+    def dvdt_dwdt_collection(self):
+        temp = super().__call__()[-1]
         # Expand rate vector in order to be consistent with time-stepper implementation
         blocksize = 1  # self._dyn_state.n_kinematic_rates
         rate = np.zeros((3, blocksize))
@@ -163,6 +168,9 @@ class SymplecticUndampedSimpleHarmonicOscillatorSystem(
         return current_energy, anal_energy
 
     def compute_internal_forces_and_torques(self, time):
+        pass
+
+    def update_accelerations(self, time, dt):
         pass
 
     def zeroed_out_external_forces_and_torques(self, time):
@@ -300,22 +308,22 @@ class CollectiveSystem:
     """This collective system class is to test multiple memory structure blocks."""
 
     def __init__(self):
-        self._memory_blocks = []
+        self._final_systems = []
 
     def systems(self):
-        return self._memory_blocks
+        return self._final_systems
 
-    def block_systems(self):
-        return self._memory_blocks
+    def final_systems(self):
+        return self._final_systems
 
     def __getitem__(self, idx):
-        return self._memory_blocks[idx]
+        return self._final_systems[idx]
 
     def __len__(self):
-        return len(self._memory_blocks)
+        return len(self._final_systems)
 
     def __iter__(self):
-        return self._memory_blocks.__iter__()
+        return self._final_systems.__iter__()
 
     def synchronize(self, time):
         pass
@@ -333,12 +341,12 @@ class CollectiveSystem:
 class SymplecticUndampedHarmonicOscillatorCollectiveSystem(CollectiveSystem):
     def __init__(self):
         super(SymplecticUndampedHarmonicOscillatorCollectiveSystem, self).__init__()
-        self._memory_blocks.append(
+        self._final_systems.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=2.0 * np.pi, init_val=np.array([1.0, 0.0])
             )
         )
-        self._memory_blocks.append(
+        self._final_systems.append(
             SymplecticUndampedSimpleHarmonicOscillatorSystem(
                 omega=1.0 * np.pi, init_val=np.array([0.0, 0.5])
             )
@@ -350,8 +358,8 @@ class ScalarExponentialDampedHarmonicOscillatorCollectiveSystem(CollectiveSystem
         super(
             ScalarExponentialDampedHarmonicOscillatorCollectiveSystem, self
         ).__init__()
-        self._memory_blocks.append(ScalarExponentialDecaySystem())
-        self._memory_blocks.append(DampedSimpleHarmonicOscillatorSystem())
+        self._final_systems.append(ScalarExponentialDecaySystem())
+        self._final_systems.append(DampedSimpleHarmonicOscillatorSystem())
 
 
 def make_simple_system_with_positions_directors(
@@ -418,7 +426,7 @@ class SimpleSystemWithPositionsDirectors(_RodSymplecticStepperMixin, RodBase):
     def compute_internal_forces_and_torques(self, time):
         pass
 
-    def update_accelerations(self, time):
+    def update_accelerations(self, time, dt):
         np.copyto(self.acceleration_collection, -np.sin(np.pi * time))
         np.copyto(self.alpha_collection[2, ...], 0.1 * np.pi)
 

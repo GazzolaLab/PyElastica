@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from collections import defaultdict
 import numpy as np
 import elastica as ea
 import json
@@ -29,7 +30,7 @@ def conservative_force_simulator(load, animation=False):
         np.pi ** (1 / 2)
     )  # The Cross-sectional area is 1e-4(we assume its equivalent to a square cross-sectional surface with same area)
     base_area = np.pi * base_radius**2
-    density = 1000  # nomilized with conservative case F=15
+    density = 1000  # normalized with conservative case F=15
     youngs_modulus = 1.2e7
     dl = base_length / n_elem
     dt = 0.1 * dl / 50
@@ -79,7 +80,7 @@ def conservative_force_simulator(load, animation=False):
     # Add call backs
     class CantileverDistributedLoadCallBack(ea.CallBackBaseClass):
         def __init__(self, step_skip: int, callback_params: dict):
-            ea.CallBackBaseClass.__init__(self)
+            super().__init__()
             self.every = step_skip
             self.callback_params = callback_params
 
@@ -89,9 +90,6 @@ def conservative_force_simulator(load, animation=False):
                 self.callback_params["step"].append(current_step)
                 self.callback_params["position"].append(
                     system.position_collection.copy()
-                )
-                self.callback_params["com"].append(
-                    system.compute_position_center_of_mass()
                 )
                 self.callback_params["radius"].append(system.radius.copy())
                 self.callback_params["velocity"].append(
@@ -113,7 +111,7 @@ def conservative_force_simulator(load, animation=False):
                     ** 0.5
                 )
 
-    recorded_history = ea.defaultdict(list)
+    recorded_history = defaultdict(list)
     square_rod_sim.collect_diagnostics(square_rod).using(
         CantileverDistributedLoadCallBack,
         step_skip=200,
@@ -124,13 +122,10 @@ def conservative_force_simulator(load, animation=False):
     timestepper = ea.PositionVerlet()
 
     total_steps = int(final_time / dt)
-    ea.integrate(timestepper, square_rod_sim, final_time, total_steps)
-
-    relative_tip_position = np.zeros(
-        2,
-    )
-    relative_tip_position[0] = find_tip_position(square_rod, n_elem)[0] / base_length
-    relative_tip_position[1] = -find_tip_position(square_rod, n_elem)[1] / base_length
+    dt = final_time / total_steps
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(square_rod_sim, time, dt)
 
     if animation:
         plot_video_with_surface(

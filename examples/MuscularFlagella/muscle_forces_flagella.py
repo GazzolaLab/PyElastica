@@ -31,10 +31,6 @@ class MuscleForces(NoForces):
         self.wave_number = 2 * np.pi * frequency
 
     def apply_forces(self, system, time: np.float64 = 0.0):
-        # muscle_force = (
-        #     system.tangents * self.amplitude * np.abs(np.sin(self.wave_number * time))
-        # )
-        # system.external_forces += difference_kernel(muscle_force)
 
         self._apply_forces(
             self.amplitude,

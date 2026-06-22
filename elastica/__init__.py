@@ -1,4 +1,7 @@
-from collections import defaultdict
+from elastica.systems.protocol import (
+    StaticSystemProtocol,
+    SystemProtocol,
+)
 from elastica.rod.knot_theory import (
     compute_link,
     compute_twist,
@@ -6,7 +9,7 @@ from elastica.rod.knot_theory import (
 )
 from elastica.rod.rod_base import RodBase
 from elastica.rod.cosserat_rod import CosseratRod
-from elastica.rigidbody.rigid_body import RigidBodyBase
+from elastica.rigidbody.rigid_body_base import RigidBodyBase
 from elastica.rigidbody.cylinder import Cylinder
 from elastica.rigidbody.sphere import Sphere
 from elastica.surface.plane import Plane
@@ -28,13 +31,14 @@ from elastica.external_forces import (
     EndpointForcesSinusoidal,
 )
 from elastica.interaction import (
-    AnisotropicFrictionalPlane,
-    InteractionPlane,
     SlenderBodyTheory,
 )
 from elastica.joint import (
+    ConnectionBase,
     FreeJoint,
     FixedJoint,
+    BallJoint,  # Alias
+    SphericalJoint,  # Alias
     HingeJoint,
 )
 from elastica.contact_forces import (
@@ -52,6 +56,7 @@ from elastica.dissipation import (
     DamperBase,
     AnalyticalLinearDamper,
     LaplaceDissipationFilter,
+    RayleighDissipation,
 )
 from elastica.modules.base_system import BaseSystemCollection
 from elastica.modules.callbacks import CallBacks

@@ -1,15 +1,8 @@
 # PyElastica Examples
 
-This directory contains number of examples of elastica.
+This directory contains a number of examples of elastica.
 Each [example cases](#example-cases) are stored in separate subdirectories, containing case descriptions, run file, and all other data/script necessary to run.
 More [advanced cases](#advanced-cases) are stored in separate repository with its description.
-
-## Installing Requirements
-In order to run examples, you will need to install additional dependencies.
-
-```bash
-make install_examples_dependencies
-```
 
 ## Case Examples
 
@@ -21,7 +14,7 @@ Examples can serve as a starting template for customized usages.
     * __Features__: CosseratRod, OneEndFixedRod, EndpointForces
 * [TimoshenkoBeamCase](./TimoshenkoBeamCase)
     * __Purpose__: Physical convergence test of simple Timoshenko beam.
-    * __Features__: CosseratRod, OneEndFixedRod, EndpointForces,
+    * __Features__: CosseratRod, OneEndFixedRod, EndpointForces
 * [FlexibleSwingingPendulumCase](./FlexibleSwingingPendulumCase)
     * __Purpose__: Physical convergence test of simple pendulum with flexible rod.
     * __Features__: CosseratRod, HingeBC, GravityForces
@@ -38,13 +31,13 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__: CosseratRod
 * [CantileverDistributedLoad](./CantileverDistributedLoad)
-    * __Purpose__: Demonstrate the demformation of a straight cantilever under both conservative (like water pressure) and non-conservative (like gravity) distributed load, compared with numerical solutions from Tschisgale, Silvio (2019).[<strong>"Chapter 3: Numerical models of partitioned problems"</strong>](https://nbn-resolving.org/urn:nbn:de:bsz:14-qucosa2-387063) Technische Univerisitat Dresden Institution of Fluid Mechanics
+    * __Purpose__: Demonstrate the deformation of a straight cantilever under both conservative (like water pressure) and non-conservative (like gravity) distributed load, compared with numerical solutions from Tschisgale, Silvio (2019).[<strong>"Chapter 3: Numerical models of partitioned problems"</strong>](https://nbn-resolving.org/urn:nbn:de:bsz:14-qucosa2-387063) Technische Univerisitat Dresden Institution of Fluid Mechanics
     * __Features__: CosseratRod
 * [CantileverTransversalLoadCase](./CantileverTransversalLoadCase)
-    * __Purpose__: Demonstrate the demformation of a curved cantilever under transversal one-end load, and also do Physical convergence test, compared with numerical solutions from Tschisgale, Silvio (2019).
+    * __Purpose__: Demonstrate the deformation of a curved cantilever under transversal one-end load, and also do Physical convergence test, compared with numerical solutions from Tschisgale, Silvio (2019).
     * __Features__: CosseratRod
 * [TumblingUnconstrainedRod](./TumblingUnconstrainedRod)
-    * __Purpose__: Demostrate the dynamics of tumbling uncontrained rod, compared with analytical solution from [Hisao, Kou Hou (1998).](https://www.sciencedirect.com/science/article/pii/S0045782598001522), Computer methods in applied mechanics and engineering.
+    * __Purpose__: Demonstrate the dynamics of tumbling unconstrained rod, compared with analytical solution from [Hisao, Kou Hou (1998).](https://www.sciencedirect.com/science/article/pii/S0045782598001522), Computer methods in applied mechanics and engineering.
     * __Features__: CosseratRod
 * [FrictionValidationCases](./FrictionValidationCases)
     * __Purpose__: Physical validation of rolling and translational friction.
@@ -56,8 +49,8 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Demonstrate usage of rigid body on simulation.
     * __Features__: Cylinder, Sphere
     * [RodRigidBodyContact](./RigidBodyCases/RodRigidBodyContact)
-      * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
-      * __Features__: Cylinder, CosseratRods, RodCylinderContact
+        * __Purpose__: Demonstrate contact between cylinder and rod, for different intial conditions.
+        * __Features__: Cylinder, CosseratRods, RodCylinderContact
 * [HelicalBucklingCase](./HelicalBucklingCase)
     * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
     * __Features__: HelicalBucklingBC
@@ -68,16 +61,16 @@ Examples can serve as a starting template for customized usages.
     * __Purpose__: Example of customizing [Joint module](./MuscularFlagella/connection_flagella.py) and [Force module](./MuscularFlagella/muscle_forces_flagella.py) to implement muscular flagella.
     * __Features__: MuscleForces(custom implemented)
 * [RodContactCase](./RodContactCase)
-  * [RodRodContact](./RodContactCase/RodRodContact)
-    * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
-    * __Features__: CosseratRod, RodRodContact
-  * [RodSelfContact](./RodContactCase/RodSelfContact)
-    * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
-      * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
-    * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
-      * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
-      * __Features__: CosseratRod, SelonoidsBC, RodSelfContact, Link-Writhe-Twist
+    * [RodRodContact](./RodContactCase/RodRodContact)
+        * __Purpose__: Demonstrates contact between two rods, for different initial conditions.
+        * __Features__: CosseratRod, RodRodContact
+    * [RodSelfContact](./RodContactCase/RodSelfContact)
+        * [PlectonemesCase](./RodContactCase/RodSelfContact/PlectonemesCase)
+            * __Purpose__: Demonstrates rod self contact with Plectoneme example, and how to use link-writhe-twist after simulation completed.
+            * __Features__: CosseratRod, SolenoidsBC, RodSelfContact, Link-Writhe-Twist
+        * [SolenoidsCase](./RodContactCase/RodSelfContact/SolenoidsCase)
+            * __Purpose__: Demonstrates rod self contact with Solenoid example, and how to use link-writhe-twist after simulation completed.
+            * __Features__: CosseratRod, SolenoidsBC, RodSelfContact, Link-Writhe-Twist
 * [BoundaryConditionsCases](./BoundaryConditionsCases)
     * __Purpose__: Demonstrate the usage of boundary conditions for constraining the movement of the system.
     * __Features__: GeneralConstraint, CosseratRod
@@ -97,11 +90,8 @@ Examples can serve as a starting template for customized usages.
 ## Functional Examples
 
 * [RestartExample](./RestartExample)
-   * __Purpose__: Demonstrate the usage of restart module.
-   * __Features__: save_state, load_state
-* [Visualization](./Visualization)
-    * __Purpose__: Include simple examples of raytrace rendering data.
-    * __Features__: POVray
+    * __Purpose__: Demonstrate the usage of restart module.
+    * __Features__: save_state, load_state
 
 ## Advanced Cases
 
@@ -109,6 +99,10 @@ Examples can serve as a starting template for customized usages.
 * [Gym Softrobot](https://github.com/skim0119/gym-softrobot) - Soft-robot control environment developed in OpenAI-gym format to study slender body control with reinforcement learning.
 
 ## Experimental Cases
+
 * [ParallelConnectionExample](./ExperimentalCases/ParallelConnectionExample)
-  * __Purpose__: Demonstrate the usage of parallel connection.
-  * __Features__: connect two parallel rods
+    * __Purpose__: Demonstrate the usage of parallel connection.
+    * __Features__: connect two parallel rods
+* [GenericSystemConnectionCases](./ExperimentalCases/GenericSystemConnectionCases)
+    * __Purpose__: Demonstrate the usage of generic system type connections for connecting different system types (rods and rigid bodies).
+    * __Features__: GenericSystemTypeFixedJoint, GenericSystemTypeFreeJoint, CosseratRod, Cylinder

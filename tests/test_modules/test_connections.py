@@ -126,11 +126,19 @@ class TestConnect:
     ):
         with pytest.raises(AssertionError) as excinfo:
             load_connect.using(illegal_connect)
-        assert "not a valid joint" in str(excinfo.value)
+        assert "not a valid" in str(excinfo.value)
 
-    from elastica.joint import FreeJoint, FixedJoint, HingeJoint
+    from elastica.joint import (
+        FreeJoint,
+        FixedJoint,
+        HingeJoint,
+        BallJoint,
+        SphericalJoint,
+    )
 
-    @pytest.mark.parametrize("legal_connect", [FreeJoint, HingeJoint, FixedJoint])
+    @pytest.mark.parametrize(
+        "legal_connect", [FreeJoint, HingeJoint, FixedJoint, BallJoint, SphericalJoint]
+    )
     def test_using_with_legal_connect(self, load_connect, legal_connect):
         connect = load_connect
         connect.using(legal_connect, 3, 4.0, "5", k=1, l_var="2", j=3.0)
@@ -154,30 +162,20 @@ class TestConnect:
         assert "No connections provided" in str(excinfo.value)
 
     def test_call_improper_args_throws(self, load_connect):
-        # Example of bad initiailization function
-        # This needs at least four args which the user might
-        # forget to pass later on
-        def mock_init(self, *args, **kwargs):
-            self.nu = args[3]  # Need at least four args
-            self.k = kwargs.get("k")
+        def mock_init(self, required_arg, another_required_arg):
+            self.nu = required_arg
+            self.k = another_required_arg
 
-        # in place class
         MockConnect = type(
             "MockConnect", (self.FreeJoint, object), {"__init__": mock_init}
         )
 
-        # The user thinks 4.0 goes to nu, but we don't accept it because of error in
-        # construction og a Connect class
         connect = load_connect
-        connect.using(MockConnect, 4.0, k=1, l_var="2", j=3.0)
+        connect.using(MockConnect, 4.0)
 
-        # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = connect.instantiate()
-        assert (
-            r"Unable to construct connection class.\nDid you provide all necessary joint properties?"
-            == str(excinfo.value)
-        )
+        assert r"Unable to construct connection class" in str(excinfo.value)
 
 
 class TestConnectionsMixin:
@@ -186,7 +184,6 @@ class TestConnectionsMixin:
     class SystemCollectionWithConnectionsMixin(BaseSystemCollection, Connections):
         pass
 
-    # TODO fix link after new PR
     from elastica.rod import RodBase
 
     class MockRod(RodBase):

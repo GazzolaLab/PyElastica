@@ -2,11 +2,11 @@ __doc__ = """Muscular flagella connection class Numba implementation. """
 __all__ = ["MuscularFlagellaConnection"]
 import numpy as np
 from numba import njit
-from elastica.joint import FreeJoint
+from elastica.joint import ConnectionBase
 from elastica._linalg import _batch_matvec
 
 
-class MuscularFlagellaConnection(FreeJoint):
+class MuscularFlagellaConnection(ConnectionBase):
     """
     This connection class is for Muscular Flagella and it is not generalizable. Since our goal is to
     replicate the experimental data. We assume muscular flagella is not moving out of plane.
@@ -27,8 +27,7 @@ class MuscularFlagellaConnection(FreeJoint):
         normal : np.ndarray
             1D array of floats. Normal direction of the rods.
         """
-        super().__init__(k, nu=0)
-
+        self.k = np.float64(k)
         self.normal = normal
 
     def apply_forces(self, system_one, index_one, system_two, index_two, time):
@@ -56,7 +55,7 @@ class MuscularFlagellaConnection(FreeJoint):
         system_two_external_forces,
     ):
         # This connection routine is not generalizable. Our goal here is to replicate the experiment data.
-        # Thus below code is hard codded. Torques are computed along the centerline of the muscle
+        # Thus below code is hard coded. Torques are computed along the centerline of the muscle
         # and transfered to the body.
         start_idx = index_one[0]
         end_idx = index_one[-1]

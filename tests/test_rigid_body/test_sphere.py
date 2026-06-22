@@ -108,7 +108,7 @@ def test_sphere_update_accelerations(rng):
     test_sphere.external_forces[:] = external_forces
     test_sphere.external_torques[:] = external_torques
 
-    test_sphere.update_accelerations(time=0)
+    test_sphere.update_accelerations(time=0, dt=0.0)
 
     assert_allclose(
         correct_acceleration, test_sphere.acceleration_collection, atol=Tolerance.atol()

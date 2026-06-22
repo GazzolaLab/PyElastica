@@ -1,4 +1,4 @@
-"""Handy utilities"""
+__doc__ = """Handy utilities"""
 
 from typing import Generator, Iterable, Any, Literal, TypeVar
 import functools
@@ -32,11 +32,9 @@ def isqrt(num: int) -> int:
 
     Notes
     -----
-    - Doesn't handle edge-cases of negative numbers by design
-    - Doesn't type-check for integers by design, although it is hinted at
+    Doesn't handle edge-cases of negative numbers by design
 
-    Examples
-    --------
+    Doesn't type-check for integers by design, although it is hinted at
 
     """
     if num > 0:
@@ -97,18 +95,17 @@ def perm_parity(lst: list[int]) -> int:
     """
     Given a permutation of the digits 0..N in order as a list,
     returns its parity (or sign): +1 for even parity; -1 for odd.
+    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
+    licensed with a MIT License
 
     Parameters
     ----------
-    lst
+    lst : list[int]
 
     Returns
     -------
+    int
 
-    Credits
-    -------
-    Code obtained with thanks from https://code.activestate.com/recipes/578227-generate-the-parity-or-sign-of-a-permutation/
-    licensed with a MIT License
     """
     parity = 1
     for i in range(0, len(lst) - 1):
@@ -123,24 +120,18 @@ _T = TypeVar("_T")
 
 
 def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, None]:
-    """Collect data into fixed-length chunks or blocks"
+    """
+    Collect data into fixed-length chunks or blocks"
+    https://docs.python.org/3/library/itertools.html#itertools-recipes
+    https://stackoverflow.com/a/10791887
+
+    grouper('ABCDEFG', 3) --> ABC DEF G"
 
     Parameters
     ----------
     iterable : input collection
     n : size of chunk
 
-    Returns
-    -------
-
-    Example
-    -------
-    grouper('ABCDEFG', 3) --> ABC DEF G"
-
-    Credits
-    -------
-    https://docs.python.org/3/library/itertools.html#itertools-recipes
-    https://stackoverflow.com/a/10791887
     """
 
     it = iter(iterable)
@@ -153,23 +144,16 @@ def grouper(iterable: Iterable[_T], n: int) -> Generator[tuple[_T, ...], None, N
 
 def extend_instance(obj: Any, cls: Any) -> None:
     """
-
-    Apply mixins to a class instance after creation
+    Apply mixins to a class instance after creation.
+    https://stackoverflow.com/a/31075641
 
     Parameters
     ----------
-    obj : object (not class!) targeted for interface extension
-          Interface carries throughout its lifetime.
-    cls : class (not object!) to dynamically mixin
-
-    Returns
-    -------
-    None
-
-    Credits
-    -------
-    https://stackoverflow.com/a/31075641
-
+    obj :
+        object (not class!) targeted for interface extension
+        Interface carries throughout its lifetime.
+    cls :
+        class (not object!) to dynamically mixin
     """
     base_cls = obj.__class__
     base_cls_name = obj.__class__.__name__
@@ -186,17 +170,21 @@ def _bspline(  # type: ignore[no-any-unimported]
 
     Parameters
     ----------
-    t_coeff : np.array
+    t_coeff : numpy.ndarray
         The spline coefficients, denoted by :math:`beta_i`. Note that the first
         and the last values are set to zero by default.
-    l_centreline : float
+    l_centerline : float
         The length of the centerline in meters.
 
     Returns
     -------
-    spline : scipy.interpolate.Bspline class
+    spline : scipy.interpolate.BSpline
         A spline class that can be called as spline(x), where x are the points at
         which the spline needs to be evaluated.
+    ctr_pts : numpy.ndarray
+        Control points.
+    ctr_coeffs : numpy.ndarray
+        Control coefficients.
     """
     # Divide into n_control_pts number of points (n_ctr_pts-1) regions
     control_pts = l_centerline * np.linspace(0.0, 1.0, t_coeff.shape[0] - 2)
@@ -210,8 +198,6 @@ def _bspline(  # type: ignore[no-any-unimported]
 def __bspline_impl__(  # type: ignore[no-any-unimported]
     x_pts: NDArray, t_c: NDArray, degree: int
 ) -> tuple[BSpline, NDArray, NDArray]:
-    """"""
-
     # Update the knots
     n_upd = t_c.shape[0] + (degree + 1)
 

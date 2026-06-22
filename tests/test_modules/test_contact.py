@@ -56,24 +56,17 @@ class TestContact:
         )
 
     def test_call_improper_args_throws(self, load_contact):
-        # Example of bad initiailization function
-        # This needs at least four args which the user might
-        # forget to pass later on
-        def mock_init(self, *args, **kwargs):
-            self.nu = args[3]  # Need at least four args
-            self.k = kwargs.get("k")
+        def mock_init(self, required_arg, another_required_arg):
+            self.nu = required_arg
+            self.k = another_required_arg
 
-        # in place class
         MockContact = type(
             "MockContact", (self.NoContact, object), {"__init__": mock_init}
         )
 
-        # The user thinks 4.0 goes to nu, but we don't accept it because of error in
-        # construction og a Contact class
         contact = load_contact
-        contact.using(MockContact, 4.0, k=1, l_var="2", j=3.0)
+        contact.using(MockContact, 4.0)
 
-        # Actual test is here, this should not throw
         with pytest.raises(TypeError) as excinfo:
             _ = contact.instantiate()
         assert (
@@ -90,7 +83,7 @@ class TestContactMixin:
 
     from elastica.rod import RodBase
     from elastica.rigidbody import RigidBodyBase
-    from elastica.surface import SurfaceBase
+    from elastica.systems.protocol import StaticSystemProtocol
 
     class MockRod(RodBase):
         def __init__(self, *args, **kwargs):
@@ -113,7 +106,7 @@ class TestContactMixin:
         def __init__(self, *args, **kwargs):
             self.n_elems = 1
 
-    class MockSurface(SurfaceBase):
+    class MockSurface(StaticSystemProtocol):
         def __init__(self, *args, **kwargs):
             self.n_facets = 1
 

@@ -1,18 +1,10 @@
 __doc__ = """Visualization of simulated dynamic cantilever beam"""
 
-import elastica as ea
 from dynamic_cantilever import simulate_dynamic_cantilever_with
 from dynamic_cantilever_post_processing import (
     plot_end_position_with,
     plot_dynamic_cantilever_video_with,
 )
-
-
-class DynamicCantileverSimulator(ea.BaseSystemCollection, ea.Constraints, ea.CallBacks):
-    pass
-
-
-cantilever_sim = DynamicCantileverSimulator()
 
 # Options
 PLOT_FIGURE = True
@@ -33,7 +25,6 @@ sim_result = simulate_dynamic_cantilever_with(
     rendering_fps=rendering_fps,
 )
 
-cantilever = sim_result["rod"]
 recorded_history = sim_result["recorded_history"]
 omegas = sim_result["fft_frequencies"]
 amplitudes = sim_result["fft_amplitudes"]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __doc__ = """
 This module contains aliases of type-hints for elastica.
 
@@ -7,42 +9,35 @@ from typing import TYPE_CHECKING
 from typing import Callable, Any, TypeAlias, Protocol
 
 import numpy as np
+import numpy.typing as npt
 
 
 if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE
-    from .rod.protocol import CosseratRodProtocol
-    from .rigidbody.protocol import RigidBodyProtocol
-    from .surface.surface_base import SurfaceBase
+    from .rod.rod_base import RodBase
+    from .rigidbody.rigid_body_base import RigidBodyBase
     from .modules.base_system import BaseSystemCollection
 
     from .modules.protocol import SystemCollectionProtocol
-    from .rod.data_structures import _State as State
     from .systems.protocol import (
-        SystemProtocol,
         StaticSystemProtocol,
+        SystemProtocol,
         SymplecticSystemProtocol,
     )
-    from .timestepper.protocol import (
-        StepperProtocol,
-        SymplecticStepperProtocol,
-    )
+    from .timestepper.protocol import StepperProtocol
     from .memory_block.protocol import BlockSystemProtocol
 
 else:
-    CosseratRodProtocol = "CosseratRodProtocol"
-    RigidBodyProtocol = "RigidBodyProtocol"
-    SurfaceBase = "SurfaceBase"
+    RodBase = "RodBase"
+    RigidBodyType = "RigidBodyBase"
     BaseSystemCollection = "BaseSystemCollection"
 
     SystemCollectionProtocol = "SystemCollectionProtocol"
-    State = "State"
     SystemProtocol = "SystemProtocol"
     StaticSystemProtocol = "StaticSystemProtocol"
     SymplecticSystemProtocol = "SymplecticSystemProtocol"
     StepperProtocol = "StepperProtocol"
-    SymplecticStepperProtocol = "SymplecticStepperProtocol"
     BlockSystemProtocol = "BlockSystemProtocol"
 
 
@@ -51,26 +46,18 @@ SystemType: TypeAlias = "SystemProtocol"
 SystemIdxType: TypeAlias = int
 BlockSystemType: TypeAlias = "BlockSystemProtocol"
 
-
-# Mostly used in explicit stepper: for symplectic, use kinetic and dynamic state
-StateType: TypeAlias = "State"
-
-# TODO: Maybe can be more specific. Up for discussion.
 StepType: TypeAlias = Callable[..., Any]
 SteppersOperatorsType: TypeAlias = tuple[tuple[StepType, ...], ...]
 
-
-RodType: TypeAlias = "CosseratRodProtocol"
-RigidBodyType: TypeAlias = "RigidBodyProtocol"
-SurfaceType: TypeAlias = "SurfaceBase"
+RodType: TypeAlias = "RodBase"
+RigidBodyType: TypeAlias = "RigidBodyBase"
 
 SystemCollectionType: TypeAlias = "SystemCollectionProtocol"
 
 # Indexing types
-# TODO: Maybe just use slice??
 ConstrainingIndex: TypeAlias = tuple[int, ...]
 ConnectionIndex: TypeAlias = (
-    int | np.int32 | list[int] | tuple[int, ...] | np.typing.NDArray[np.int32]
+    int | np.int32 | list[int] | tuple[int, ...] | npt.NDArray[np.int32]
 )
 
 

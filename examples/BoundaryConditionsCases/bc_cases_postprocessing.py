@@ -53,7 +53,7 @@ def plot_video(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
 
     print("plot video")
@@ -62,15 +62,15 @@ def plot_video(
     writer = FFMpegWriter(fps=fps, metadata=metadata)
     fig = plt.figure(figsize=(10, 8), frameon=True, dpi=150)
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
             ax.grid(which="minor", color="k", linestyle="--")
             ax.grid(which="major", color="k", linestyle="-")
             ax.plot(
-                position_of_rod1[time, 0],
-                position_of_rod1[time, 1],
-                position_of_rod1[time, 2],
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                position_of_rod1[time_idx, 2],
                 "or",
                 label="rod1",
             )
@@ -91,7 +91,7 @@ def plot_video_xy(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
 
     print("plot video xy")
@@ -101,10 +101,13 @@ def plot_video_xy(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 1], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 1],
+                "or",
+                label="rod1",
             )
 
             plt.xlim([-0.25, 0.25])
@@ -121,7 +124,7 @@ def plot_video_xz(
 ):  # (time step, x/y/z, node)
     import matplotlib.animation as manimation
 
-    time = plot_params_rod1["time"]
+    time_list = plot_params_rod1["time"]
     position_of_rod1 = np.array(plot_params_rod1["position"])
 
     print("plot video xz")
@@ -131,10 +134,13 @@ def plot_video_xz(
     fig = plt.figure()
     plt.axis("equal")
     with writer.saving(fig, video_name, 100):
-        for time in range(1, len(time)):
+        for time_idx in range(1, len(time_list)):
             fig.clf()
             plt.plot(
-                position_of_rod1[time, 0], position_of_rod1[time, 2], "or", label="rod1"
+                position_of_rod1[time_idx, 0],
+                position_of_rod1[time_idx, 2],
+                "or",
+                label="rod1",
             )
 
             plt.xlim([-0.25, 0.25])

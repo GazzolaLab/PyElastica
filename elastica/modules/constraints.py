@@ -5,7 +5,7 @@ Constraints
 Provides the constraints interface to enforce displacement boundary conditions (see `boundary_conditions.py`).
 """
 from typing import Any, Type, cast
-from typing_extensions import Self
+import inspect
 
 import functools
 
@@ -16,33 +16,33 @@ from elastica.boundary_conditions import ConstraintBase
 from elastica.typing import (
     SystemIdxType,
     ConstrainingIndex,
-    RigidBodyType,
     RodType,
+    RigidBodyType,
 )
-from elastica.memory_block.protocol import BlockRodProtocol
-from .protocol import ConstrainedSystemCollectionProtocol, ModuleProtocol
+from elastica.typing import RodType  # noqa: F811
+from .protocol import SystemCollectionProtocol, ModuleProtocol
 
 
-class Constraints:
+class Constraints(SystemCollectionProtocol):
     """
     The Constraints class is a module for enforcing displacement boundary conditions.
     To enforce boundary conditions on rod-like objects, the simulator class
     must be derived from Constraints class.
 
-        Attributes
-        ----------
-        _constraints: list
-            List of boundary condition classes defined for rod-like objects.
+    Attributes
+    ----------
+    _constraints: list
+        List of boundary condition classes defined for rod-like objects.
     """
 
-    def __init__(self: ConstrainedSystemCollectionProtocol) -> None:
-        self._constraints_list: list[ModuleProtocol] = []
+    _constraints_list: list[ModuleProtocol]
+
+    def __init__(self) -> None:
+        self._constraints_list = []
         super(Constraints, self).__init__()
         self._feature_group_finalize.append(self._finalize_constraints)
 
-    def constrain(
-        self: ConstrainedSystemCollectionProtocol, system: "RodType | RigidBodyType"
-    ) -> ModuleProtocol:
+    def constrain(self, system: "RodType | RigidBodyType") -> ModuleProtocol:
         """
         This method enforces a displacement boundary conditions to the relevant user-defined
         system or rod-like object. You must input the system or rod-like
@@ -67,16 +67,16 @@ class Constraints:
 
         return _constraint
 
-    def _finalize_constraints(self: ConstrainedSystemCollectionProtocol) -> None:
+    def _finalize_constraints(self) -> None:
         """
         In case memory block have ring rod, then periodic boundaries have to be synched. In order to synchronize
         periodic boundaries, a new constrain for memory block rod added called as _ConstrainPeriodicBoundaries. This
         constrain will synchronize the only periodic boundaries of position, director, velocity and omega variables.
         """
 
-        for block in self.block_systems():
+        for block in self.final_systems():
             # append the memory block to the simulation as a system. Memory block is the final system in the simulation.
-            if hasattr(block, "ring_rod_flag"):
+            if hasattr(block, "ring_rod_flag") and block.ring_rod_flag:
                 from elastica._synchronize_periodic_boundary import (
                     _ConstrainPeriodicBoundaries,
                 )
@@ -84,7 +84,7 @@ class Constraints:
                 # Apply the constrain to synchronize the periodic boundaries of the memory rod. Find the memory block
                 # sys idx among other systems added and then apply boundary conditions.
                 memory_block_idx = self.get_system_index(block)
-                block_system = cast(BlockRodProtocol, self[memory_block_idx])
+                block_system = cast(RodType, self[memory_block_idx])
                 self.constrain(block_system).using(
                     _ConstrainPeriodicBoundaries,
                 )
@@ -166,7 +166,7 @@ class _Constraint:
         constrained_position_idx: ConstrainingIndex = (),
         constrained_director_idx: ConstrainingIndex = (),
         **kwargs: Any,
-    ) -> Self:
+    ) -> None:
         """
         This method is a module to set which boundary condition class is used to
         enforce boundary condition from user defined rod-like objects.
@@ -194,7 +194,6 @@ class _Constraint:
         self.constrained_director_idx = constrained_director_idx
         self._args = args
         self._kwargs = kwargs
-        return self
 
     def id(self) -> SystemIdxType:
         return self._sys_idx
@@ -226,7 +225,7 @@ class _Constraint:
             else []
         )
         try:
-            bc = self._bc_cls(
+            inspect.signature(self._bc_cls).bind(
                 *positions,
                 *directors,
                 *self._args,
@@ -235,8 +234,7 @@ class _Constraint:
                 constrained_director_idx=self.constrained_director_idx,
                 **self._kwargs,
             )
-            return bc
-        except (TypeError, IndexError):
+        except TypeError:
             raise TypeError(
                 "Unable to construct boundary condition class. Note that:\n"
                 "1. Any rod properties needed should be placed first\n"
@@ -245,3 +243,12 @@ class _Constraint:
                 "the __init__ method. eg MyBC.__init__(pos_one, director_one, director_two)\n"
                 "should have the `using` call as .using(MyBC, positions=(1,), directors=(1,-1))\n"
             )
+        return self._bc_cls(
+            *positions,
+            *directors,
+            *self._args,
+            _system=system,
+            constrained_position_idx=self.constrained_position_idx,
+            constrained_director_idx=self.constrained_director_idx,
+            **self._kwargs,
+        )

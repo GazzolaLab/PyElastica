@@ -7,6 +7,10 @@ __pycache__/
 *.so
 
 *.swp
+.vscode
+docs/_gallery
+docs/gen_modules
+docs/sg_execution_times.rst
 
 # Distribution / packaging
 .Python
@@ -215,6 +219,7 @@ sample_prog.py
 
 # txt files
 *.txt
+!CMakelists.txt
 
 # movie or video file formats
 *.mp4
@@ -237,3 +242,6 @@ outcmaes/*
 
 # csv files
 *.csv
+
+# ./backend dependencies
+deps

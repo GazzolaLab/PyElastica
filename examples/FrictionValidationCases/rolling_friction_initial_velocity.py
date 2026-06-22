@@ -1,9 +1,10 @@
-__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et. al. R. Soc. 2018
+__doc__ = """Rolling friction validation, for detailed explanation refer to Gazzola et al. R. Soc. 2018
 section 4.1.4 and Appendix G """
 
 import numpy as np
 import elastica as ea
-from examples.FrictionValidationCases.friction_validation_postprocessing import (
+
+from friction_validation_postprocessing import (
     plot_friction_validation,
 )
 
@@ -56,7 +57,7 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     )
 
     # TODO: CosseratRod has to be able to take shear matrix as input, we should change it as done below
-    shearable_rod.shear_matrix = shear_matrix
+    shearable_rod.shear_matrix[:] = shear_matrix
     # change the mass moment of inertia matrix and its inverse
     shearable_rod.mass_second_moment_of_inertia *= IFactor
     shearable_rod.inv_mass_second_moment_of_inertia /= IFactor
@@ -108,9 +109,9 @@ def simulate_rolling_friction_initial_velocity_with(IFactor=0.0):
     final_time = 2.0
     total_steps = int(final_time / dt)
     print("Total steps", total_steps)
-    ea.integrate(
-        timestepper, rolling_friction_initial_velocity_sim, final_time, total_steps
-    )
+    time = 0.0
+    for i in range(total_steps):
+        time = timestepper.step(rolling_friction_initial_velocity_sim, time, dt)
 
     # compute translational and rotational energy
     translational_energy = shearable_rod.compute_translational_energy()
