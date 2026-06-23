@@ -11,7 +11,6 @@ import logging
 
 from collections import defaultdict
 
-
 T = TypeVar("T")
 
 

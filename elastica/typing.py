@@ -11,7 +11,6 @@ from typing import Callable, Any, TypeAlias, Protocol
 import numpy as np
 import numpy.typing as npt
 
-
 if TYPE_CHECKING:
     # Used for type hinting without circular imports
     # NEVER BACK-IMPORT ANY ELASTICA MODULES HERE

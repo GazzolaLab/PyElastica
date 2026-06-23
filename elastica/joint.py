@@ -10,7 +10,6 @@ from elastica.typing import SystemType, RodType, ConnectionIndex, RigidBodyType
 import numpy as np
 from numpy.typing import NDArray
 
-
 S = TypeVar("S", bound=SystemType)
 
 

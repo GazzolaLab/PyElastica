@@ -13,7 +13,6 @@ from elastica._linalg import _batch_matvec, _batch_matrix_transpose
 from elastica._rotations import _get_rotation_matrix
 from elastica.typing import SystemType, RodType, RigidBodyType, ConstrainingIndex
 
-
 S = TypeVar("S", bound=SystemType)
 
 

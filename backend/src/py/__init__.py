@@ -11,7 +11,6 @@ from .module_collision import CollisionEnvironment
 from .collision_physics import LinearSpringDashpot
 from .memory_block_rod import MemoryBlockCosseratRod
 
-
 __all__ = [
     "BlockRodSystem",
     "BlockRodSystemView",

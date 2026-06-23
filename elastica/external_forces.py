@@ -12,7 +12,6 @@ from elastica.utils import _bspline
 from numba import njit
 from elastica._linalg import _batch_product_i_k_to_ik
 
-
 S = TypeVar("S")
 
 

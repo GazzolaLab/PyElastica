@@ -14,7 +14,6 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
-
 # TODO: change tests and made them independent of rod, at least assigin hardcoded values for forces and torques
 
 

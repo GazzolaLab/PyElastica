@@ -114,7 +114,7 @@ class TestExtendInstance:
 
     @pytest.mark.parametrize("class_and_extension", [(A, Aext), (B, Bext)])
     def test_extend_instance_correctness(self, class_and_extension):
-        (cls, ext_cls) = class_and_extension
+        cls, ext_cls = class_and_extension
         cls_obj = cls()
         assert ext_cls not in cls_obj.__class__.__bases__
         extend_instance(cls_obj, ext_cls)

@@ -26,7 +26,6 @@ from elastica._contact_functions import (
 import numpy as np
 from numpy.typing import NDArray
 
-
 S1 = TypeVar("S1", bound=StaticSystemType)
 S2 = TypeVar("S2", bound=StaticSystemType)
 

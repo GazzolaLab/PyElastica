@@ -194,10 +194,8 @@ def allocate(
 
     # Shear/Stretch matrix
     if not shear_modulus:
-        log.info(
-            """Shear modulus is not explicitly given.\n
-            In such case, we compute shear_modulus assuming poisson's ratio of 0.5"""
-        )
+        log.info("""Shear modulus is not explicitly given.\n
+            In such case, we compute shear_modulus assuming poisson's ratio of 0.5""")
         shear_modulus = youngs_modulus / (2.0 * (1.0 + 0.5))
 
     # Value taken based on best correlation for Poisson ratio = 0.5, from

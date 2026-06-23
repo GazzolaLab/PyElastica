@@ -16,7 +16,6 @@ from numpy.typing import NDArray
 
 from elastica.typing import SystemType
 
-
 T = TypeVar("T", bound=SystemType)
 
 
