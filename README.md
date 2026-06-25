@@ -121,7 +121,7 @@ _Names arranged alphabetically_
 [badge-pepy-download-count]: https://pepy.tech/badge/pyelastica
 [badge-codecov]: https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg
 [badge-gitter]: https://badges.gitter.im/PyElastica/community.svg
-[badge-doi]: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.7658871-blue
+[badge-doi]: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20799824-blue
 [link-pypi]: https://badge.fury.io/py/pyelastica
 [link-CI]: https://github.com/GazzolaLab/PyElastica/actions
 [link-docs-status]: https://docs.cosseratrods.org/en/latest/?badge=latest
@@ -129,4 +129,4 @@ _Names arranged alphabetically_
 [link-codecov]: https://codecov.io/gh/GazzolaLab/PyElastica
 
 [link-gitter]: https://gitter.im/PyElastica/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[link-doi]: https://doi.org/10.5281/zenodo.7658871
+[link-doi]: https://doi.org/10.5281/zenodo.20799824
