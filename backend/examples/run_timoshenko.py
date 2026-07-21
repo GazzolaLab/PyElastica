@@ -155,7 +155,7 @@ timoshenko_sim.finalize()
 # %%
 # Define Simulation Time
 # ----------------------
-# The last thing we need to do decide how long we want the simulation to run for and what timestepping method to use. Currently, the PositionVerlet algorithim is suggested default method.
+# The last thing we need to do decide how long we want the simulation to run for and what timestepping method to use. Currently, the PositionVerlet algorithm is suggested default method.
 #
 # In this example, we are trying to match a steady-state solution by temporally evolving our system to reach equilibrium. As such, there is a tradeoff between letting the simulation run long enough to reach the equilibrium and waiting around for the simulation to be done. Here we are running the simulation for 10 seconds, this produces reasonable agreement with the analytical solution without taking to long to finish. If you run the simulation for longer, you will get better agreement with the analytical solution.
 
