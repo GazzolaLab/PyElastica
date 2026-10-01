@@ -120,7 +120,7 @@ _Names arranged alphabetically_
 
 [badge-pypi]: https://badge.fury.io/py/pyelastica.svg
 [badge-CI]: https://github.com/GazzolaLab/PyElastica/workflows/CI/badge.svg
-[badge-docs-status]: https://readthedocs.org/projects/pyelastica/badge/?version=latest
+[badge-docs-status]: https://app.readthedocs.org/projects/pyelastica/badge/?version=latest
 [badge-pepy-download-count]: https://pepy.tech/badge/pyelastica
 [badge-codecov]: https://codecov.io/gh/GazzolaLab/PyElastica/branch/master/graph/badge.svg
 [badge-gitter]: https://badges.gitter.im/PyElastica/community.svg
