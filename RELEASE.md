@@ -1,3 +1,10 @@
+# Release 1.0.1
+
+## What's Changed
+* Require Python 3.11 or newer, including the experimental C++ backend.
+* Update locked Pillow, filelock, and certifi dependencies to address security vulnerabilities.
+* Update CI, documentation builds, and development tools for Python 3.11.
+
 # Release 1.0.0
 
 ## What's Changed
