@@ -2,7 +2,7 @@
 name = "elasticapp"
 version = "0.0.4"
 description = "A CPP accelerated backend for PyElastica kernels"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT License"}
 dependencies = [
     "pybind11",

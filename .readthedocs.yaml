@@ -6,7 +6,7 @@ build:
   os: ubuntu-24.04
   apt_packages:
     - ffmpeg
-  tools: { python: "3.10" }
+  tools: { python: "3.11" }
   jobs:
     create_environment:
       - asdf plugin add uv
