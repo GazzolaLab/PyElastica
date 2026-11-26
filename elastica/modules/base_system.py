@@ -288,11 +288,6 @@ class BaseSystemCollection(MutableSequence):
         all rod-like objects to the simulator as well as all boundary conditions, callbacks, etc.,
         acting on these rod-like objects. After the finalize method called,
         the user cannot add new features to the simulator class.
-
-        Parameters
-        ----------
-        verbose: bool
-            If True, will print verbose output.
         """
 
         assert not self._finalize_flag, "The finalize cannot be called twice."
